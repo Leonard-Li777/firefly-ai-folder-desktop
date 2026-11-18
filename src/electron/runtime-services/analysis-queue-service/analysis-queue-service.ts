@@ -64,128 +64,9 @@ import {
   installCanonicalMaintenanceListener
 } from './canonical-maintenance-service'
 
-/**
- * 等待 CPU 提取阶段就绪的上限。
- *
- * 为什么必须有上限：GPU 消费者靠 `notify(itemId)` 唤醒，而 CPU 生产者在
- * 「任务已被移除」「循环被意外打断」「单文件提取永久挂死」等情况下可能**一次都不发通知**。
- * 旧实现是纯事件等待、没有任何兜底，一旦漏发，`waitForStage2` 就永久 pending，
- * `Promise.all([runCPUProducer(), runGPUConsumer()])` 永不收敛，`isProcessingLoopActive`
- * 永远为 true —— 整个分析队列卡死，界面上表现为「一直显示分析中、进度不动」，
- * 日志则停在 `[并行队列:GPU通道] 等待 CPU 提取阶段就绪` 之后再无下文。
- *
- * 取值要够长：单个超大视频/压缩包的 CPU 提取可能需要十几分钟，超时太短会把
- * 「慢」误判成「失败」，导致重复提取与重复 GPU 分析。
- */
-const STAGE2_WAIT_TIMEOUT_MS = 30 * 60 * 1000
-
-/** CPU 提取阶段等待超时（区别于用户主动中止，调用方需要分别处理） */
-export class Stage2TimeoutError extends Error {
-  constructor(
-    readonly itemId: number,
-    readonly timeoutMs: number
-  ) {
-    super(`等待 CPU 提取阶段超时（${Math.round(timeoutMs / 60000)} 分钟）: itemId=${itemId}`)
-    this.name = 'Stage2TimeoutError'
-  }
-}
-
-/** 导出仅为单测可覆盖超时分支，生产代码不应直接 new */
-export class StageNotifier {
-  private resolvers = new Map<number, () => void>()
-  private completedSet = new Set<number>()
-
-  notify(itemId: number) {
-    this.completedSet.add(itemId)
-    const resolve = this.resolvers.get(itemId)
-    if (resolve) {
-      resolve()
-      this.resolvers.delete(itemId)
-    }
-  }
-
-  /**
-   * 等待指定任务进入 Stage 2（CPU 提取完成）。
-   *
-   * 超时后**先复核一次** `checkStage()`：如果 CPU 数据其实已经落库（只是通知丢了），
-   * 就按「已就绪」放行；确实没有数据才抛 `Stage2TimeoutError`，由调用方把任务退回
-   * pending 等下一轮，而不是标记失败 —— 超时说明「不知道」，不等于「错了」。
-   */
-  waitForStage2(
-    itemId: number,
-    checkStage: () => boolean,
-    signal?: AbortSignal,
-    timeoutMs: number = STAGE2_WAIT_TIMEOUT_MS
-  ): Promise<void> {
-    if (this.completedSet.has(itemId)) {
-      return Promise.resolve()
-    }
-    // 首次复核必须自己兜住异常：checkStage 内部会查库，DB 未初始化 / 已关闭时会抛。
-    // 若让它冒出去，调用方（GPU 消费者）会把一次 DB 抖动当成「分析失败」并标记 failed，
-    // 而真实语义只是「现在还不知道 CPU 提取完没完」—— 按未就绪继续等，交给超时兜底。
-    let readyNow = false
-    try {
-      readyNow = checkStage()
-    } catch {
-      readyNow = false
-    }
-    if (readyNow) {
-      return Promise.resolve()
-    }
-    return new Promise<void>((resolve, reject) => {
-      let settled = false
-      let timer: NodeJS.Timeout | null = null
-
-      const cleanup = () => {
-        if (timer) {
-          clearTimeout(timer)
-          timer = null
-        }
-        this.resolvers.delete(itemId)
-        signal?.removeEventListener('abort', onAbort)
-      }
-
-      const onAbort = () => {
-        if (settled) return
-        settled = true
-        cleanup()
-        reject(new Error('Aborted'))
-      }
-
-      if (signal?.aborted) {
-        return onAbort()
-      }
-      signal?.addEventListener('abort', onAbort)
-
-      timer = setTimeout(() => {
-        if (settled) return
-        settled = true
-        cleanup()
-        // 通知可能只是丢了：数据在就直接放行，避免无谓地把任务退回 pending
-        let ready = false
-        try {
-          ready = checkStage()
-        } catch {
-          ready = false
-        }
-        if (ready) {
-          resolve()
-          return
-        }
-        reject(new Stage2TimeoutError(itemId, timeoutMs))
-      }, timeoutMs)
-      // 不让兜底计时器把进程吊住（退出应用时不应等这 30 分钟）
-      timer.unref?.()
-
-      this.resolvers.set(itemId, () => {
-        if (settled) return
-        settled = true
-        cleanup()
-        resolve()
-      })
-    })
-  }
-}
+import { StageNotifier } from './stage-notifier'
+import { AnalysisWriteDispatcher } from './analysis-write-dispatcher'
+import { AnalysisOrchestratorWorker } from './analysis-orchestrator-worker'
 
 /**
  * 分析队列服务类
@@ -227,6 +108,8 @@ export class AnalysisQueueService {
   private statsCollector: AnalysisStatsCollector
   private directoryProcessor: DirectoryProcessor
   private fileProcessor: FileProcessor
+  private writeDispatcher: AnalysisWriteDispatcher
+  private orchestratorWorker: AnalysisOrchestratorWorker
   private currentAbortController: AbortController | null = null
 
   private wakeUpResolver?: () => void
@@ -247,6 +130,11 @@ export class AnalysisQueueService {
     )
 
     this.statsCollector = new AnalysisStatsCollector()
+    this.writeDispatcher = new AnalysisWriteDispatcher(
+      this.queueManager,
+      (type, message, sticky, id, autoClose, action) =>
+        this.notifyFrontend(type, message, sticky, id, autoClose, action)
+    )
 
     this.directoryProcessor = new DirectoryProcessor(
       () => ({
@@ -255,7 +143,7 @@ export class AnalysisQueueService {
         errorRecoveryConfig: this.errorRecoveryConfig,
         ignoreRules: this.ignoreRules
       }),
-      (itemId, status, progress, error) => this.updateItemStatus(itemId, status, progress, error),
+      (itemId, status, progress, error) => this.writeDispatcher.updateItemStatus(itemId, status, progress, error),
       () => this.pause(),
       async (inputs, forceReanalyze) => {
         await this.addItems(inputs, forceReanalyze)
@@ -271,12 +159,21 @@ export class AnalysisQueueService {
         errorRecoveryConfig: this.errorRecoveryConfig
       }),
       (itemId, status, progress, error, extra) =>
-        this.updateItemStatus(itemId, status, progress, error, extra),
+        this.writeDispatcher.updateItemStatus(itemId, status, progress, error, extra),
       () => this.pause(),
       timer => this.statsCollector.collectAnalysisStats(timer),
       (modelId, mode) => this.statsCollector.getModelName(modelId, mode),
       (directoryPath, force?, cacheOnly?) =>
         this.directoryProcessor.analyzeDirectoryContext(directoryPath, force, cacheOnly)
+    )
+
+    this.orchestratorWorker = new AnalysisOrchestratorWorker(
+      this.queueManager,
+      this.aiServiceManager,
+      this.directoryProcessor,
+      this.fileProcessor,
+      (itemId, status, progress, error, extra) =>
+        this.writeDispatcher.updateItemStatus(itemId, status, progress, error, extra)
     )
 
     loggingService.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务实例已创建')
@@ -638,387 +535,7 @@ export class AnalysisQueueService {
           this.currentAbortController = new AbortController()
           const signal = this.currentAbortController.signal
 
-          // 记录本次 CPU 阶段被跳过（复用历史提取数据）的队列项 id，
-          // GPU 消费者据此透传 cpuSkipped，使 fresh 重建为仅含本次 GPU 指标
-          const cpuSkippedIds = new Set<number>()
-
-          const isVideoFile = (filePath: string): boolean => {
-            return getFileCategory(filePath) === FileCategory.VIDEO
-          }
-
-          const hasMissingVideoChunks = (item: AnalysisQueueItem): boolean => {
-            if (!isVideoFile(item.path)) return false
-            const db = databaseService.db
-            if (!db || !item.workspaceId) return false
-            try {
-              const wf = db
-                .prepare(
-                  'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-                )
-                .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
-              if (!wf?.file_fingerprint) return true
-              // 抽帧间隔已由引擎按 90s 向量预算自决（设置页已移除该项），不再与配置比对；
-              // 此处只判断切片记录是否缺失
-              const chunkRow = db
-                .prepare('SELECT 1 AS ok FROM file_video_chunks WHERE file_fingerprint = ? LIMIT 1')
-                .get(wf.file_fingerprint) as { ok?: number } | undefined
-              return !chunkRow
-            } catch {
-              return true
-            }
-          }
-
-          const isAlreadyStage2 = (item: AnalysisQueueItem): boolean => {
-            const db = databaseService.db
-            if (!db || !item.workspaceId) return false
-            const stage = getFileStageFromDB(db, item.workspaceId, item.path)
-            return stage >= 2
-          }
-
-          // 判断“强制重新分析 + 复用关闭 + 之前已分析完成”场景：此时必须重新提取
-          // 视频文件时序切片与普通文件统一遵循 REUSE_BASIC_ANALYSIS_DATA 配置与抽帧精度对齐校验
-          const isForcedReextract = (item: AnalysisQueueItem): boolean => {
-            if (item.forceReanalyze !== true) return false
-            const reuseBasicAnalysisData =
-              ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
-              true
-            if (reuseBasicAnalysisData) return false
-            const db = databaseService.db
-            if (!db || !item.workspaceId) return false
-            return getFileAnalysisStateFromDB(db, item.workspaceId, item.path).isAnalyzed
-          }
-
-          const runCPUProducer = async () => {
-            for (const item of pendingItems) {
-              if (signal.aborted || !this.running) break
-              if (!this.queueManager.hasItem(item.id)) {
-                // 任务已被移除（用户删除 / 取消）：仍然必须发出就绪通知。
-                // GPU 消费者此时可能已经通过了它自己的 hasItem 检查、正等在这条通知上，
-                // 漏发就会永久挂起（30 分钟超时只是最后一道防线，不能当作正常路径）。
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:CPU通道] 队列中已无此任务，跳过 CPU 提取: ${item.name}`
-                )
-                notifier.notify(item.id)
-                continue
-              }
-
-              if (item.itemType === 'directory') {
-                notifier.notify(item.id)
-                continue
-              }
-
-              let reuseBasicAnalysisData = true
-              let shouldSkipCpu = false
-              try {
-                reuseBasicAnalysisData =
-                  ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ??
-                  true
-
-                if (isAlreadyStage2(item)) {
-                  if (!reuseBasicAnalysisData) {
-                    // 用户配置关闭复用：重新分析或已分析均强制重跑 CPU 提取
-                    shouldSkipCpu =
-                      item.forceReanalyze !== true &&
-                      !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path)
-                        .isAnalyzed
-                  } else {
-                    // 用户配置开启复用：必须严格检查向量、切片、OCR、LRC、正文等数据是否健全
-                    const wf = databaseService
-                      .db!.prepare(
-                        'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-                      )
-                      .get(item.workspaceId!, item.path) as
-                      | { file_fingerprint?: string }
-                      | undefined
-                    const completeness = await checkBasicDataCompleteness(
-                      databaseService.db!,
-                      item.workspaceId!,
-                      item.path,
-                      wf?.file_fingerprint
-                    )
-                    if (completeness.isComplete) {
-                      shouldSkipCpu = true
-                      logger.debug(
-                        LogCategory.ANALYSIS_QUEUE,
-                        `[并行队列:CPU通道] 基础数据齐全健全（向量、OCR/LRC/摘要均完备），跳过 CPU 提取: ${item.name}`
-                      )
-                    } else {
-                      shouldSkipCpu = false
-                      logger.debug(
-                        LogCategory.ANALYSIS_QUEUE,
-                        `[并行队列:CPU通道] 基础数据不完整 (${completeness.missingReasons.join(', ')})，执行 CPU 提取补全: ${item.name}`
-                      )
-                    }
-                  }
-                }
-              } catch (preErr) {
-                // 阶段判定本身异常（配置未初始化 / DB 查询失败）时不能直接放弃该文件，
-                // 否则它会永远停在 pending 且不发出通知 —— 退化为「照常提取」最安全。
-                logger.error(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:CPU通道] 阶段判定异常，按「需要提取」处理: ${item.name}`,
-                  preErr
-                )
-              }
-
-              if (shouldSkipCpu) {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列] 文件已处于 Stage >= 2，CPU 阶段跳过（暂停恢复不重复提取 / 重新分析复用数据）: ${item.name}`
-                )
-                cpuSkippedIds.add(item.id)
-                this.updateItemStatus(item.id, 'pending', 50, undefined, { analysisStage: 2 })
-                notifier.notify(item.id)
-                continue
-              }
-
-              try {
-                // 关闭复用时，重置阶段状态为 stage 1 过渡状态
-                if (!reuseBasicAnalysisData && item.workspaceId && databaseService.db) {
-                  try {
-                    const row = databaseService.db
-                      .prepare(
-                        `
-                      SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?
-                    `
-                      )
-                      .get(item.workspaceId, item.path) as { file_fingerprint?: string } | undefined
-                    if (row?.file_fingerprint) {
-                      await databaseService.updateAnalysisStage(row.file_fingerprint, 1)
-                    }
-                  } catch (stageErr) {
-                    logger.warn(
-                      LogCategory.ANALYSIS_QUEUE,
-                      '[并行队列] 重置 Stage 1 状态失败:',
-                      stageErr
-                    )
-                  }
-                }
-
-                this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
-                await this.fileProcessor.processFile(item, signal, 'cpu')
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:CPU通道] CPU 提取完成并发出就绪通知: ${item.name} (id: ${item.id})`
-                )
-                notifier.notify(item.id)
-              } catch (err) {
-                logger.error(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:CPU通道] CPU 提取异常: ${item.name}`,
-                  err
-                )
-                this.updateItemStatus(
-                  item.id,
-                  'failed',
-                  100,
-                  err instanceof Error ? err.message : String(err)
-                )
-                notifier.notify(item.id)
-              }
-            }
-          }
-
-          const runGPUConsumer = async () => {
-            logger.debug(
-              LogCategory.ANALYSIS_QUEUE,
-              `[并行队列:GPU通道] 启动 GPU 消费者循环，待处理文件数: ${pendingItems.length}`
-            )
-            for (const item of pendingItems) {
-              if (signal.aborted || !this.running) {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:GPU通道] 收到中止或停止信号，退出 GPU 循环`
-                )
-                break
-              }
-              if (!this.queueManager.hasItem(item.id)) {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:GPU通道] 队列中已无此任务: ${item.name}`
-                )
-                continue
-              }
-
-              this.current = item
-
-              if (item.itemType === 'directory') {
-                this.updateItemStatus(item.id, 'analyzing', 0)
-                await this.directoryProcessor.processDirectory(item)
-                continue
-              }
-
-              try {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:GPU通道] 等待 CPU 提取阶段就绪: ${item.name} (id: ${item.id})`
-                )
-                // 若 CPU 提取被跳过（cpuSkippedIds 包含），无需等待通知直接放行；
-                // 若 CPU 提取正在执行，必须严格等待 CPU 通知（禁止凭旧 isAlreadyStage2 抢跑）
-                await notifier.waitForStage2(
-                  item.id,
-                  () => cpuSkippedIds.has(item.id),
-                  signal,
-                  this.stage2WaitTimeoutMs
-                )
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:GPU通道] CPU 阶段已就绪，进入 GPU AI 分析: ${item.name}`
-                )
-
-                // 等待期间任务可能已被移除（用户删除 / 取消）：此时不应继续往下处理，
-                // 否则会对着一条已经不存在的队列项做 GPU 分析并把状态写回去。
-                if (!this.queueManager.hasItem(item.id)) {
-                  logger.debug(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列:GPU通道] 等待期间任务已被移除，跳过 GPU 分析: ${item.name}`
-                  )
-                  continue
-                }
-
-                if (item.status === 'failed') {
-                  logger.warn(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列:GPU通道] CPU 提取失败，跳过 GPU 分析: ${item.name}`
-                  )
-                  continue
-                }
-
-                this.updateItemStatus(item.id, 'analyzing', 51, undefined, { analysisStage: 3 })
-                await this.fileProcessor.processFile(
-                  item,
-                  signal,
-                  'gpu',
-                  cpuSkippedIds.has(item.id)
-                )
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列:GPU通道] GPU AI 分析成功完成: ${item.name}`
-                )
-                cloudSyncWorker.triggerSync(2000)
-              } catch (err: any) {
-                const isAbort = err && (err.name === 'AbortError' || err.message === 'Aborted')
-                const isStage2Timeout =
-                  err instanceof Stage2TimeoutError || err?.name === 'Stage2TimeoutError'
-                if (isStage2Timeout) {
-                  // 超时 = 「不知道 CPU 提取完了没有」，不等于失败：
-                  // 退回 pending 让下一轮重新调度，绝不标记 failed 丢掉用户的任务。
-                  logger.warn(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列:GPU通道] 等待 CPU 提取阶段超时，任务退回 pending 待下一轮调度: ${item.name}`,
-                    err
-                  )
-                  this.updateItemStatus(item.id, 'pending', 0)
-                } else if (isAbort) {
-                  logger.debug(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`
-                  )
-                  this.updateItemStatus(item.id, 'pending', 0)
-                } else if (isTransientInfraError(err)) {
-                  logger.warn(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列:GPU通道] AI 引擎瞬态未就绪，重置为 pending 并等待引擎恢复: ${item.name}`,
-                    err
-                  )
-                  this.updateItemStatus(item.id, 'pending', 0)
-                  const isReady = await this.aiServiceManager.waitForAIServiceReady()
-                  if (isReady && !signal.aborted && this.running) {
-                    const currentMode =
-                      ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-                    if (currentMode === 'local') {
-                      await engineBridgeService?.ensureMode?.('language')
-                    }
-                    try {
-                      logger.debug(
-                        LogCategory.ANALYSIS_QUEUE,
-                        `[并行队列:GPU通道] AI 引擎已恢复，重试 GPU AI 分析: ${item.name}`
-                      )
-                      this.updateItemStatus(item.id, 'analyzing', 51, undefined, {
-                        analysisStage: 3
-                      })
-                      await this.fileProcessor.processFile(
-                        item,
-                        signal,
-                        'gpu',
-                        cpuSkippedIds.has(item.id)
-                      )
-                      logger.debug(
-                        LogCategory.ANALYSIS_QUEUE,
-                        `[并行队列:GPU通道] 重试后 GPU AI 分析成功完成: ${item.name}`
-                      )
-                      cloudSyncWorker.triggerSync(2000)
-                    } catch (retryErr: any) {
-                      const isRetryAbort =
-                        retryErr &&
-                        (retryErr.name === 'AbortError' || retryErr.message === 'Aborted')
-                      if (isRetryAbort) {
-                        this.updateItemStatus(item.id, 'pending', 0)
-                      } else {
-                        logger.error(
-                          LogCategory.ANALYSIS_QUEUE,
-                          `[并行队列:GPU通道] GPU 重试分析失败: ${item.name}`,
-                          retryErr
-                        )
-                        this.updateItemStatus(
-                          item.id,
-                          'failed',
-                          100,
-                          retryErr instanceof Error ? retryErr.message : String(retryErr)
-                        )
-                      }
-                    }
-                  } else {
-                    // 若等待超时/引擎无法恢复，标记为 failed，停止死循环
-                    logger.warn(
-                      LogCategory.ANALYSIS_QUEUE,
-                      `[并行队列:GPU通道] AI 引擎未能就绪或已取消，任务标记为失败: ${item.name}`
-                    )
-                    this.updateItemStatus(
-                      item.id,
-                      'failed',
-                      100,
-                      err instanceof Error ? err.message : String(err)
-                    )
-                  }
-                } else {
-                  logger.error(
-                    LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列:GPU通道] GPU 分析失败: ${item.name}`,
-                    err
-                  )
-                  this.updateItemStatus(
-                    item.id,
-                    'failed',
-                    100,
-                    err instanceof Error ? err.message : String(err)
-                  )
-                }
-              } finally {
-                if (this.current?.id === item.id) {
-                  this.current = undefined
-                  this.emitUpdate()
-                }
-              }
-            }
-          }
-
-          try {
-            // 确保并发分析执行时 AI 引擎处于激活状态
-            moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
-            await Promise.all([runCPUProducer(), runGPUConsumer()])
-          } catch (error) {
-            logger.error(LogCategory.ANALYSIS_QUEUE, '[并行队列] 并行通道执行异常:', error)
-            // 任一通道抛出后 Promise.all 会立刻 settle，另一条通道却还在跑 ——
-            // 它会变成持有 signal 的游离 promise，继续往下处理队列项并写状态。
-            // 这里显式中止，让它按「被中止」正常退出。
-            this.currentAbortController?.abort()
-          } finally {
-            this.currentAbortController = null
-            this.current = undefined
-            this.emitUpdate()
-          }
+          await this.orchestratorWorker.runParallel(pendingItems, signal, this.stage2WaitTimeoutMs)
 
           const updatedSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
           if (updatedSnapshot.items.filter(item => item.status === 'pending').length === 0) {
