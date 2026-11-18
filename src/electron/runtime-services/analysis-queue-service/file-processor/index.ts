@@ -113,10 +113,10 @@ export {
   persistOmniVectors,
   cleanupOrphanedVideoChunks,
   ensureLemmaAliasesSeeded,
-  getFallbackLyrics,
-  type OmniVectorPersistenceParams,
-  type BasicDataCompletenessResult
+  getFallbackLyrics
 }
+export type { OmniVectorPersistenceParams } from './omni-vector-persistence'
+export type { BasicDataCompletenessResult } from './db-analysis-state'
 
 /**
  * CPU 阶段耗时登记表（item.id → 毫秒）
