@@ -64,9 +64,11 @@ import {
   installCanonicalMaintenanceListener
 } from './canonical-maintenance-service'
 
-import { StageNotifier } from './stage-notifier'
+import { StageNotifier, STAGE2_WAIT_TIMEOUT_MS } from './stage-notifier'
 import { AnalysisWriteDispatcher } from './analysis-write-dispatcher'
 import { AnalysisOrchestratorWorker } from './analysis-orchestrator-worker'
+import { OmniHttpAdapter } from './omni-http-adapter'
+import { EngineHealthTier } from './engine-health-tier'
 
 /**
  * 分析队列服务类
@@ -110,6 +112,8 @@ export class AnalysisQueueService {
   private fileProcessor: FileProcessor
   private writeDispatcher: AnalysisWriteDispatcher
   private orchestratorWorker: AnalysisOrchestratorWorker
+  private omniAdapter: OmniHttpAdapter
+  private engineHealth: EngineHealthTier
   private currentAbortController: AbortController | null = null
 
   private wakeUpResolver?: () => void
@@ -129,6 +133,9 @@ export class AnalysisQueueService {
         this.notifyFrontend(type, message, sticky, id, autoClose, action)
     )
 
+    this.engineHealth = new EngineHealthTier(this.aiServiceManager)
+    this.omniAdapter = new OmniHttpAdapter()
+
     this.statsCollector = new AnalysisStatsCollector()
     this.writeDispatcher = new AnalysisWriteDispatcher(
       this.queueManager,
@@ -143,7 +150,8 @@ export class AnalysisQueueService {
         errorRecoveryConfig: this.errorRecoveryConfig,
         ignoreRules: this.ignoreRules
       }),
-      (itemId, status, progress, error) => this.writeDispatcher.updateItemStatus(itemId, status, progress, error),
+      (itemId, status, progress, error) =>
+        this.writeDispatcher.updateItemStatus(itemId, status, progress, error),
       () => this.pause(),
       async (inputs, forceReanalyze) => {
         await this.addItems(inputs, forceReanalyze)
@@ -511,7 +519,7 @@ export class AnalysisQueueService {
             }
           }
 
-          const isReady = await this.aiServiceManager.waitForAIServiceReady()
+          const isReady = await this.engineHealth.waitForReady()
           if (!isReady) {
             this.running = false
             this.isProcessingLoopActive = false
@@ -521,13 +529,9 @@ export class AnalysisQueueService {
           // 并行分析模式：在启动并行流水线前，确保底层引擎处于主语言模型模式；
           // 避免应用刚启动或加载模型期间（10~20s）GPU 消费者抢跑导致反向代理 503
           if (isAiStageEnabled(analysisMode)) {
-            const modeRes = await engineBridgeService?.ensureMode?.('language')
+            const modeRes = await this.omniAdapter.ensureMode('language')
             if (modeRes && !modeRes.ok) {
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                '[并行分析] 确保主语言模型就绪告警:',
-                modeRes.error
-              )
+              this.engineHealth.logWarning('[并行分析] 确保主语言模型就绪告警:', modeRes.error)
             }
           }
 
@@ -551,7 +555,7 @@ export class AnalysisQueueService {
             if (next.taskType === 'analysis' && !isAiStageEnabled()) {
               // 跳过 AI 就绪检查
             } else if (next.taskType === 'analysis') {
-              const isReady = await this.aiServiceManager.waitForAIServiceReady()
+              const isReady = await this.engineHealth.waitForReady()
               if (!isReady) {
                 this.running = false
                 this.isProcessingLoopActive = false
@@ -594,13 +598,9 @@ export class AnalysisQueueService {
 
           // 普通分析任务：仅在启用 AI 阶段（增强分析 / 全面分析）时确保引擎处于主语言模型模式；标准分析模式无需语言模型
           if (isAiStageEnabled()) {
-            const modeRes = await engineBridgeService?.ensureMode?.('language')
+            const modeRes = await this.omniAdapter.ensureMode('language')
             if (modeRes && !modeRes.ok) {
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                '[普通分析] 切换主语言模型告警:',
-                modeRes.error
-              )
+              this.engineHealth.logWarning('[普通分析] 切换主语言模型告警:', modeRes.error)
             }
           }
           if (next.itemType === 'directory') {
