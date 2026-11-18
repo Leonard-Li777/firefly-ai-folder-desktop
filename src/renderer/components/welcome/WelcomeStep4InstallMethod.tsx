@@ -41,21 +41,21 @@ export function WelcomeStep4InstallMethod({
   }> = [
     {
       id: 'online',
-      title: '在线安装插件',
-      subtitle: '联网自动装好，最省事',
+      title: t('在线安装插件'),
+      subtitle: t('联网自动装好，最省事'),
       description:
-        '插件和存放文件夹前面都选好了，只要电脑能上网，下一步软件就会自己把需要的东西下载好、装好，全程不用你操心。第一次花的时间主要看网速。',
-      badge: '推荐',
+        t('插件和存放文件夹前面都选好了，只要电脑能上网，下一步软件就会自己把需要的东西下载好、装好，全程不用你操心。第一次花的时间主要看网速。'),
+      badge: t('推荐'),
       icon: <Wifi className="w-6 h-6 text-primary" />,
       accent: 'sky'
     },
     {
       id: 'offline',
-      title: '导入离线总包',
-      subtitle: '不联网也能一次装齐',
+      title: t('导入离线总包'),
+      subtitle: t('不联网也能一次装齐'),
       description:
-        '电脑不方便上网，或者你手上已经有完整的安装包时选这个。存放文件夹上一步已经选好，下一步会让你挑一个安装包文件，一次导入就能把插件装齐，全程不联网、不上传任何文件。',
-      badge: '无网可用',
+        t('电脑不方便上网，或者你手上已经有完整的安装包时选这个。存放文件夹上一步已经选好，下一步会让你挑一个安装包文件，一次导入就能把插件装齐，全程不联网、不上传任何文件。'),
+      badge: t('无网可用'),
       icon: <PackageOpen className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />,
       accent: 'emerald'
     }
