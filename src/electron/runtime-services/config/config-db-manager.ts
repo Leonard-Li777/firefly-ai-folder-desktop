@@ -26,7 +26,6 @@ import { omniClient, OmniTagAliasRow } from '../../services/omni-client'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
-import { resolveAppRegion } from '../../main/worktree-env'
 import { LocalWorkflowDao, LocalWorkflowRecord } from '../database/dao/modular-resource-dao'
 import { t } from '@app/languages'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
@@ -164,20 +163,22 @@ export class ConfigDbManager {
   /**
    * 迁移后回调：从本地 JSON 文件加载初始配置到数据库
    * 由 databaseService 的 post-migration 机制调用，确保在数据库迁移完成后执行
-   * 直接清空再导入，覆盖旧表迁移过来的数据
+   * 注意：app_config 不再从本地 JSON 落库（云端 SSOT，由 syncFromCloud 下行覆盖）；
+   * file_constants / system_config 保留种子导入语义，详见各方法注释。
    */
   loadFromJson = (db: Database.Database, language?: string): void => {
     try {
       const resolvedLanguage = language || this.currentLanguage || 'zh-CN'
       this.currentLanguage = resolvedLanguage
 
-      // 1. 清空并导入 app_config
-      this.loadInitialAppConfigToDb(db)
+      // 1. app_config：云端 SSOT（TIER_CONSTANTS/OPERATION_PRICES/PAYMENT_INFO 等），
+      //    由 syncFromCloud() 下行覆盖写入，禁止从本地 JSON 先 DELETE 再 INSERT OR REPLACE
+      //    （旧 loadInitialAppConfigToDb 已删：会把云端权威值冻回 JSON 旧值，违背云端唯一合法标准）
 
-      // 2. 清空并导入 file_constants
+      // 2. 清空并导入 file_constants（种子导入：由 @firefly/shared JSON SSOT 派生，云端无托管端点）
       this.loadInitialFileConstantsToDb(db)
 
-      // 3. 清空并导入 system_config（含模型配置）
+      // 3. 增量导入 system_config（含模型配置）（种子导入：本地模型预置/Ollama/服务商/维度策略）
       this.loadInitialSystemConfigToDb(db, resolvedLanguage)
       this.loadInitialLocalWorkflowsToDb(db, resolvedLanguage)
 
@@ -198,44 +199,10 @@ export class ConfigDbManager {
   }
 
   /**
-   * 从 app-config.[region].json 读取初始配置写入 DB（先清空再导入）
-   */
-  private loadInitialAppConfigToDb(db: Database.Database): void {
-    try {
-      const region = resolveAppRegion()
-      const configPath = this.getConfigFilePath(`app-config.${region}.json`)
-
-      if (!fs.existsSync(configPath)) {
-        logger.warn(
-          LogCategory.CONFIG,
-          `ConfigDbManager: 初始 app-config 配置文件不存在: ${configPath}`
-        )
-        return
-      }
-
-      const raw = fs.readFileSync(configPath, 'utf-8')
-      const parsed = JSON.parse(raw)
-
-      const insertStmt = db.prepare(
-        `INSERT OR REPLACE INTO app_config (key, value, updated_at) VALUES (?, ?, ?)`
-      )
-
-      db.transaction(() => {
-        db.prepare('DELETE FROM app_config').run()
-        Object.entries(parsed).forEach(([key, value]) => {
-          insertStmt.run(key.toUpperCase(), JSON.stringify(value), new Date().toISOString())
-        })
-      })()
-
-      logger.debug(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 app_config 数据`)
-    } catch (error) {
-      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 app_config 失败:', error)
-    }
-  }
-
-  /**
    * 从 system-config_[lang].json 和 model_[lang].json 读取初始配置写入 system_config 表（增量合并，DEC-03）
    * 绝对禁止执行 DELETE FROM system_config，确保离线启动不丢失云端同步策略
+   * 【种子导入，非客户端配置变更写库】仅首次启动无云端托管数据时落本地基础配置（模型/Ollama/服务商/维度策略），
+   * 统一使用 INSERT OR IGNORE 幂等落库；DIMENSION_POLICIES 走 INSERT OR REPLACE 以便预置策略升级时刷新。
    */
   private loadInitialSystemConfigToDb(db: Database.Database, language: string): void {
     try {
@@ -388,6 +355,8 @@ export class ConfigDbManager {
 
   /**
    * 将源自 file-extension-policies.json (SSOT) 的全局文件常量配置写入 file_constants 表（先清空再导入）
+   * 【种子导入，非客户端配置变更写库】file_constants 由 @firefly/shared JSON SSOT 派生，云端无对应托管端点，
+   * 必须保留以支撑离线首启；云端下行不覆盖此表。
    */
   private loadInitialFileConstantsToDb(db: Database.Database): void {
     try {
@@ -1115,6 +1084,8 @@ export class ConfigDbManager {
 
   /**
    * 异步从云端同步配置（启动时仅同步一次，非阻塞）
+   * 【云端 SSOT 下行，非客户端配置变更写库】调用方 = 云端权威返回（cloud → local 单向），
+   * 客户端不本地写库再"要求云端迎合"；本方法严格遵从"先云端 RPC 成功、后采纳返回更新本地缓存"原则。
    */
   async syncFromCloud(): Promise<void> {
     // 集成测试环境下禁止远程配置同步，避免干扰测试结果
@@ -1200,6 +1171,8 @@ export class ConfigDbManager {
         }
 
         // 3. 在事务中一次性写入（失败则回滚）
+        // 注：此 INSERT OR REPLACE 是「云端 SSOT 下行落地」，不是客户端发起的配置变更写库；
+        // 客户端配置变更统一走云端 RPC/更新，成功后由本方法采纳云端返回刷新本地缓存与内存。
         db.transaction(() => {
           // 合并导入 app_config（云端数据覆盖本地，保留本地独有 key）
           if (appData.length > 0) {

@@ -1279,7 +1279,7 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
               ...m,
               is_crashed: true,
               is_running: false,
-              error_message: '插件宿主已崩溃，点击重试恢复'
+              error_message: t('插件宿主已崩溃，点击重试恢复')
             }
           : m
       )

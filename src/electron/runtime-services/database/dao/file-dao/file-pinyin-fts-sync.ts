@@ -1,6 +1,7 @@
 import { LogCategory, logger } from '@firefly/shared'
 import { buildPinyinIndexRow, computePinyinSrcHash } from '../../../utils/pinyin-text'
 import { FileCrudMixin } from './file-crud'
+import { FtsProjectionService } from '../../fts-projection'
 
 /**
  * FileDao 拼音正排索引同步 mixin（P1' 重构落新模块 · 融合方案 §3.1）。
@@ -12,6 +13,13 @@ import { FileCrudMixin } from './file-crud'
  * FileQueryMixin extends FilePinyinFtsSyncMixin，门面方法签名不变，调用方零改动。
  */
 export class FilePinyinFtsSyncMixin extends FileCrudMixin {
+  private ftsProjection: FtsProjectionService
+
+  constructor(db: any) {
+    super(db)
+    this.ftsProjection = new FtsProjectionService(db)
+  }
+
   /**
    * 聚合某文件指纹的标签展示名文本（files_fts.tags 列与 files_pinyin_fts.tags_py 列共用）。
    * 受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），故在 JS 侧聚合。
@@ -133,93 +141,15 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
     rid: number,
     fields: { name: string; smartName: string; description: string; tagsText: string }
   ): void {
-    const row = buildPinyinIndexRow({
-      name: fields.name,
-      smartName: fields.smartName,
-      description: fields.description,
-      tags: fields.tagsText
-    })
-    if (!row) {
-      this.db.prepare(`DELETE FROM files_pinyin_fts WHERE rowid = ?`).run(rid)
-      return
-    }
-    this.db
-      .prepare(
-        `INSERT OR REPLACE INTO files_pinyin_fts(rowid, file_fingerprint, name_py, smart_name_py, description_py, tags_py, src_hash)
-         VALUES (?,?,?,?,?,?,?)`
-      )
-      .run(
-        rid,
-        fingerprint,
-        row.namePy,
-        row.smartNamePy,
-        row.descriptionPy,
-        row.tagsPy,
-        row.srcHash
-      )
+    // 薄委托：拼音行构建与写入唯一归属 FtsProjectionService.projectPinyin（工单 08 §8.2），
+    // 消除本 mixin 内联 SQL 与投影服务的双轨。rowid 对齐 / 纯 ASCII 删行等语义均在投影侧实现。
+    this.ftsProjection.projectPinyin(fingerprint, rid, fields)
   }
 
   syncFTSTags(fingerprint: string): void {
-    if (!fingerprint) return
-    try {
-      // Issue #661 contentless：不能 UPDATE FTS 列，需按业务表重建倒排（含 tags）
-      const row = this.db
-        .prepare(
-          `
-          SELECT f.rowid AS rid, f.file_fingerprint,
-            COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
-            COALESCE(f.smart_name, '') AS smart_name,
-            COALESCE(f.description, '') AS description,
-            COALESCE(decompress_text(fc.content), '') AS content,
-            COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
-            COALESCE(decompress_text(fc.ocr), '') AS ocr,
-            COALESCE(decompress_text(fc.lrc), '') AS lrc,
-            COALESCE(decompress_text(fc.asr), '') AS asr
-          FROM files f
-          LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
-          WHERE f.file_fingerprint = ?
-        `
-        )
-        .get(fingerprint) as any
-      if (!row) return
-
-      // FTS 倒排的 tags 列：受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），
-      // 故在 JS 侧聚合：LEFT JOIN file_tags_private 取本地名，缺失时走 resolveDisplayName（语言分表 lemma → 可读 slug），
-      // 保证"设计稿/如云西点"等感知标签展示名可被全文搜索命中。
-      const tagsText = this.collectTagsText(fingerprint)
-
-      this.db.transaction(() => {
-        this.db.prepare(`DELETE FROM files_fts WHERE rowid = ?`).run(row.rid)
-        this.db
-          .prepare(
-            `INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-          )
-          .run(
-            row.rid,
-            row.file_fingerprint,
-            row.name,
-            row.smart_name,
-            row.description,
-            row.content,
-            row.multimodal_content,
-            row.ocr,
-            row.lrc,
-            row.asr,
-            tagsText
-          )
-        // 拼音正排索引 write-through（设计文档 §4.3）：与 files_fts 同事务，两端字段严格同源；
-        // rowid 与 files.rowid 对齐（A-H1），寻址/删除 O(log n)
-        this.writePinyinIndexRow(fingerprint, row.rid, {
-          name: row.name,
-          smartName: row.smart_name,
-          description: row.description,
-          tagsText
-        })
-      })()
-    } catch (error) {
-      logger.error(LogCategory.DATABASE_SERVICE, '同步FTS标签失败', { error, fingerprint })
-    }
+    // 薄委托：FTS 倒排重建（含 tags 列）+ 拼音 write-through 统一归属 FtsProjectionService，
+    // 防止本 mixin 与投影服务出现两份实现（工单 08 §8.1）。逻辑已整体迁入 fts-projection.ts。
+    this.ftsProjection.syncFTSTags(fingerprint)
   }
 
   syncFTSTagsBatch(fingerprints: string[]): void {

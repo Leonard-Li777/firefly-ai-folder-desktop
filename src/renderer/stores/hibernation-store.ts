@@ -9,6 +9,7 @@ import type {
   ModuleRuntimeMetric
 } from '../../electron/runtime-services/hibernation/types'
 import { projectMemoryGauges } from '../../electron/runtime-services/hibernation/memory-gauges'
+import { t } from '@app/languages'
 
 export interface HibernationStoreState {
   snapshot: HibernationSnapshot | null
@@ -48,7 +49,7 @@ export const useHibernationStore = create<HibernationStoreState>((set, get) => (
       const snap: HibernationSnapshot = await bridge.getSnapshot()
       set({ snapshot: snap, loading: false })
     } catch (err: any) {
-      set({ error: err?.message || '获取休眠快照失败', loading: false })
+      set({ error: err?.message || t('获取休眠快照失败'), loading: false })
     }
   },
 
@@ -68,7 +69,7 @@ export const useHibernationStore = create<HibernationStoreState>((set, get) => (
     } catch (err: any) {
       set({
         isReclaiming: false,
-        error: err?.message || '释放模块内存失败'
+        error: err?.message || t('释放模块内存失败')
       })
       return { success: false, releasedBytes: 0 }
     }
@@ -82,7 +83,7 @@ export const useHibernationStore = create<HibernationStoreState>((set, get) => (
       await get().fetchSnapshot()
       return res
     } catch (err: any) {
-      set({ error: err?.message || `重置模块 ${targetId} 失败` })
+      set({ error: err?.message || t('重置模块 {{targetId}} 失败', { targetId }) })
       return false
     }
   },
@@ -95,7 +96,7 @@ export const useHibernationStore = create<HibernationStoreState>((set, get) => (
       await get().fetchSnapshot()
       return res
     } catch (err: any) {
-      set({ error: err?.message || `重试模块 ${targetId} 失败` })
+      set({ error: err?.message || t('重试模块 {{targetId}} 失败', { targetId }) })
       return false
     }
   },

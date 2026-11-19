@@ -6,7 +6,15 @@ import { getOfficialSiteDomain } from '../../lib/marketing-link'
 import { t } from '@app/languages'
 
 export interface UpdateStatePayload {
-  status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+  status:
+    | 'idle'
+    | 'checking'
+    | 'available'
+    | 'not-available'
+    | 'downloading'
+    | 'downloaded'
+    | 'installing'
+    | 'error'
   currentVersion: string
   latestVersion: string | null
   minVersion: string | null
@@ -101,9 +109,12 @@ export const UpdateNotification: React.FC = () => {
 
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>
-              {t('检测到应用存在重大架构或协议演进，当前版本已无法继续提供基础服务，必须升级至 v{version} 即可恢复使用。', {
-                version: latestVersion || '最新版本'
-              })}
+              {t(
+                '检测到应用存在重大架构或协议演进，当前版本已无法继续提供基础服务，必须升级至 v{version} 即可恢复使用。',
+                {
+                  version: latestVersion || t('最新版本')
+                }
+              )}
             </p>
             {releaseNotes && (
               <div className="mt-3 max-h-32 overflow-y-auto rounded-lg bg-muted/40 p-3 text-xs text-foreground/80 font-mono whitespace-pre-wrap">
@@ -118,7 +129,8 @@ export const UpdateNotification: React.FC = () => {
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{t('正在差分增量下载...')}</span>
                 <span>
-                  {progress.percent}% ({formatBytes(progress.transferred)} / {formatBytes(progress.total)})
+                  {progress.percent}% ({formatBytes(progress.transferred)} /{' '}
+                  {formatBytes(progress.total)})
                 </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
@@ -317,7 +329,9 @@ export const UpdateNotification: React.FC = () => {
               onClick={() => {
                 // 工单04 AC4.3：macOS/Linux 浮窗引导打开安装包覆盖安装
                 if (updateState?.downloadedFilePath) {
-                  window.electronAPI?.utils?.openFileWithDefaultApp?.(updateState.downloadedFilePath)
+                  window.electronAPI?.utils?.openFileWithDefaultApp?.(
+                    updateState.downloadedFilePath
+                  )
                 }
               }}
             >

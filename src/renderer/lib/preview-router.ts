@@ -6,6 +6,7 @@
 import { PreviewCandidate, PreviewContext, PreviewRouteType } from './preview-types'
 import { FLYFISH_EXTENSIONS, NATIVE_EXTENSIONS } from './preview-utils'
 import { logger, LogCategory } from '@firefly/shared'
+import { t } from '@app/languages'
 
 /**
  * 三级熔断管理器
@@ -158,7 +159,7 @@ export class PreviewRouter {
     // 1. 系统大图标与元数据保底
     this.registerProvider({
       id: 'system_icon_fallback',
-      name: '系统图标与元数据',
+      name: t('系统图标与元数据'),
       kind: 'system_icon',
       supportedExtensions: ['*'],
       declaredPriority: 0,
@@ -170,7 +171,7 @@ export class PreviewRouter {
     // 2. Flyfish 通用预览引擎保底 (30+ 常见与专业格式)
     this.registerProvider({
       id: 'flyfish_viewer_fallback',
-      name: 'Flyfish 通用预览引擎',
+      name: t('Flyfish 通用预览引擎'),
       kind: 'flyfish',
       supportedExtensions: Array.from(FLYFISH_EXTENSIONS),
       declaredPriority: 10,
@@ -182,7 +183,7 @@ export class PreviewRouter {
     // 3. 原生内置可信 React 预览器 (音视频、图片、文本脚本)
     this.registerProvider({
       id: 'builtin_media_previewer',
-      name: '原生音视频与文档预览器',
+      name: t('原生音视频与文档预览器'),
       kind: 'builtin_react',
       supportedExtensions: Array.from(NATIVE_EXTENSIONS),
       declaredPriority: 70,

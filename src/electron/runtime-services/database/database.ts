@@ -604,6 +604,60 @@ export const GENESIS_V1_SCHEMA = `
 
   -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
   -- 避免 contentless 模式在多表异步写入/更新时发生 token 不匹配导致 SQLITE_CORRUPT_VTAB (database disk image is malformed)
+  
+  -- #region V4 Core Tables
+  CREATE TABLE IF NOT EXISTS tag_paths (
+    path_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tag_code TEXT NOT NULL,
+    ancestor_code TEXT NOT NULL,
+    depth INTEGER NOT NULL
+  );
+  -- tag_path_ancestors 闭包表：为 tree_fast.rs 提供祖先路径快速查询。
+  -- 每行记录 (path_id, ancestor_path_id, depth) 三元组，depth=0 表示自身；
+  -- 查询某路径全部祖先：SELECT ancestor_path_id FROM tag_path_ancestors WHERE path_id = ? ORDER BY depth DESC;
+  -- 查询某祖先下所有后代：SELECT path_id FROM tag_path_ancestors WHERE ancestor_path_id = ? AND depth > 0;
+  -- 风格对齐同 region 的 tag_paths：主键复合、显式 NOT NULL、配套双列索引。
+  CREATE TABLE IF NOT EXISTS tag_path_ancestors (
+    path_id INTEGER NOT NULL,
+    ancestor_path_id INTEGER NOT NULL,
+    depth INTEGER NOT NULL,
+    PRIMARY KEY (path_id, ancestor_path_id)
+  );
+  CREATE INDEX IF NOT EXISTS idx_tag_path_ancestors_ancestor ON tag_path_ancestors(ancestor_path_id, depth);
+  -- #endregion
+
+  -- #region FTS5 Projections
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_body_fts USING fts5(
+    file_fingerprint UNINDEXED,
+    content,
+    tokenize='trigram'
+  );
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_meta_fts USING fts5(
+    file_fingerprint UNINDEXED,
+    name,
+    smart_name,
+    description,
+    tags,
+    tokenize='trigram'
+  );
+
+  -- 17.5 拼音正排索引（短字段；设计文档 docs/specs/pinyin-forward-index-redesign-spec.md §4.1）
+  -- 索引侧把 name/smart_name/description/tags 的中文段转拼音串（全拼+首字母，多音字全变体），
+  -- 查询侧纯字母输入直接 MATCH——不依赖任何封闭词表，索引里有什么中文就能搜什么。
+  -- 字段范围决策：仅短字段（正文拼音检索的投入产出比不成立，见设计文档 §7.2 / §11）。
+  -- src_hash 列利用 FTS5 原生 UNINDEXED 能力做陈旧检测，取代独立 meta 表（二轮 review 裁决）。
+  -- 拼音域跨域唯一归属，由本 Slice 统一合入 V4 region，避免定义漂移散落在 region 外。
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_pinyin_fts USING fts5(
+    file_fingerprint UNINDEXED,                  -- 关联键（不建全文索引）
+    name_py,                                     -- 物理文件名拼音串（空格分隔 token，首尾补空格）
+    smart_name_py,                               -- 智能名称拼音串
+    description_py,                              -- 描述拼音串
+    tags_py,                                     -- 标签聚合文本拼音串
+    src_hash UNINDEXED,                          -- sha256(name|smartName|description|tags)，reconciler 陈旧检测
+    tokenize='trigram'                           -- 与 files_fts 同构：>=3 字符串子串匹配
+  );
+  -- #endregion
+
   CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
     name,                                        -- 物理文件名
@@ -616,21 +670,6 @@ export const GENESIS_V1_SCHEMA = `
     asr,                                         -- ASR 语音转录内容 (Issue 0046)
     tags,                                        -- 聚合后的标签文本
     tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
-  );
-
-  -- 17.5 拼音正排索引（短字段；设计文档 docs/specs/pinyin-forward-index-redesign-spec.md §4.1）
-  -- 索引侧把 name/smart_name/description/tags 的中文段转拼音串（全拼+首字母，多音字全变体），
-  -- 查询侧纯字母输入直接 MATCH——不依赖任何封闭词表，索引里有什么中文就能搜什么。
-  -- 字段范围决策：仅短字段（正文拼音检索的投入产出比不成立，见设计文档 §7.2 / §11）。
-  -- src_hash 列利用 FTS5 原生 UNINDEXED 能力做陈旧检测，取代独立 meta 表（二轮 review 裁决）。
-  CREATE VIRTUAL TABLE IF NOT EXISTS files_pinyin_fts USING fts5(
-    file_fingerprint UNINDEXED,                  -- 关联键（不建全文索引）
-    name_py,                                     -- 物理文件名拼音串（空格分隔 token，首尾补空格）
-    smart_name_py,                               -- 智能名称拼音串
-    description_py,                              -- 描述拼音串
-    tags_py,                                     -- 标签聚合文本拼音串
-    src_hash UNINDEXED,                          -- sha256(name|smartName|description|tags)，reconciler 陈旧检测
-    tokenize='trigram'                           -- 与 files_fts 同构：>=3 字符串子串匹配
   );
 
   -- 18. 高频索引

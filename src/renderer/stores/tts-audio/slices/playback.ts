@@ -3,7 +3,13 @@ import { getVoiceById, DEFAULT_VOICE_ID } from '../../../constants/tts-voices'
 import { cleanTextForTTS, splitTextIntoChunks } from '../../../lib/text-chunker'
 import { useConfigStore } from '../../config-store'
 import { useSettingsStore } from '../../settings-store'
-import { createCrossfadedSource, flushPrebufferedChunks, getOrCreateAudioContext, clearScheduledSources, stopProgressMonitor } from '../audio-engine'
+import {
+  createCrossfadedSource,
+  flushPrebufferedChunks,
+  getOrCreateAudioContext,
+  clearScheduledSources,
+  stopProgressMonitor
+} from '../audio-engine'
 import { TTS_BUFFER_WATERMARK } from '../constants'
 import { triggerHotSwitch } from '../hot-switch'
 import { hasActiveTTSPlugin, getActiveTTSPluginId } from '../plugin'
@@ -219,7 +225,7 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
           currentFilePath: null,
           currentTitle: null,
           currentRealName: null,
-          errorMessage: '没有可朗读的有效文本内容'
+          errorMessage: t('没有可朗读的有效文本内容')
         })
         return
       }
@@ -259,7 +265,8 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
       }
 
       // 解析发音人显示名称与本地磁盘缓存目标路径（传入 text，纯文本/试听例句变化时指纹实时变化）
-      const isAudition = options?.textId?.startsWith('audition-') || options?.fieldName === 'audition'
+      const isAudition =
+        options?.textId?.startsWith('audition-') || options?.fieldName === 'audition'
       const targetFingerprint = isAudition ? 'preview' : options?.fileFingerprint
       const targetFieldName = isAudition ? 'audition' : options?.fieldName
       const chosenDisplayName =
@@ -356,7 +363,9 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
             hasValidSamples &&
             (metadata.completed === true ||
               (typeof metadata.doneCharEnd === 'number' && metadata.doneCharEnd >= text.length) ||
-              (metadata.total > 1 && metadata.total === chunks.length && metadata.done === chunks.length))
+              (metadata.total > 1 &&
+                metadata.total === chunks.length &&
+                metadata.done === chunks.length))
           )
 
           // (1) 完整秒播：已全量完成且语速匹配，直接读取完整本地 WAV 秒播
@@ -544,7 +553,7 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
                 currentFilePath: null,
                 currentTitle: null,
                 currentRealName: null,
-                errorMessage: '语音合成失败，请检查服务连接状态'
+                errorMessage: t('语音合成失败，请检查服务连接状态')
               })
               stopProgressMonitor()
               toast.error(t('语音合成失败，请检查服务连接状态'), 4000, 'tts-error')
@@ -663,7 +672,7 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
             currentFilePath: null,
             currentTitle: null,
             currentRealName: null,
-            errorMessage: '语音合成未能生成有效音频'
+            errorMessage: t('语音合成未能生成有效音频')
           })
           stopProgressMonitor()
           toast.error(t('语音合成未能生成有效音频，请稍后重试'), 4000, 'tts-error')
@@ -676,7 +685,7 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
             currentFilePath: null,
             currentTitle: null,
             currentRealName: null,
-            errorMessage: err instanceof Error ? err.message : '语音合成失败'
+            errorMessage: err instanceof Error ? err.message : t('语音合成失败')
           })
           stopProgressMonitor()
           toast.error(t('语音合成服务异常，请稍后重试'), 4000, 'tts-error')
@@ -752,7 +761,12 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
       }
 
       // 1. 若当前文本已具备整段全量缓存文件 (completed === true)，直接按时间毫秒级定位起播
-      if (localMetadata && localMetadata.completed && localWavBuffer && localWavBuffer.byteLength > 44) {
+      if (
+        localMetadata &&
+        localMetadata.completed &&
+        localWavBuffer &&
+        localWavBuffer.byteLength > 44
+      ) {
         try {
           const audioBuffer = await ctx.decodeAudioData(localWavBuffer.slice(0))
           const totalDuration = audioBuffer.duration
@@ -833,7 +847,10 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
         const hasLocalAudioForTarget =
           Boolean(localWavBuffer && localWavBuffer.byteLength > 44) &&
           (doneCharEnd > targetCharStart ||
-            Boolean(localMetadata?.chunks && localMetadata.chunks.some((c: any) => c.index === clampedIndex)))
+            Boolean(
+              localMetadata?.chunks &&
+              localMetadata.chunks.some((c: any) => c.index === clampedIndex)
+            ))
 
         if (hasLocalAudioForTarget && localWavBuffer && localWavBuffer.byteLength > 44) {
           // 从本地文件中切出从 targetCharStart 开始到已录制末尾的全部纯 24kHz PCM
@@ -851,7 +868,9 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
           }
 
           const startByteOffset = 44 + startSample * 2
-          const pcmSlice = localWavBuffer.slice(Math.min(startByteOffset, localWavBuffer.byteLength))
+          const pcmSlice = localWavBuffer.slice(
+            Math.min(startByteOffset, localWavBuffer.byteLength)
+          )
 
           console.info(
             `[TTS Seek] 🎯 命中本地已落盘文件秒播通道: 目标分句=${clampedIndex + 1}, 起始字符=${targetCharStart}, 本地已有字符=${doneCharEnd}, 切片PCM=${pcmSlice.byteLength}字节 (${(pcmSlice.byteLength / 48000).toFixed(2)}s)`
@@ -968,7 +987,13 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
           }
 
           if (!baseBuffer) {
-            const synthRes = await safeSynthesizeChunk(chunkText, voiceId, 1.0, thisSeekSession, sid)
+            const synthRes = await safeSynthesizeChunk(
+              chunkText,
+              voiceId,
+              1.0,
+              thisSeekSession,
+              sid
+            )
             if (synthRes) {
               if (synthRes.hitCap) {
                 toast.warning(t('音频片段过长已自动截断'))
@@ -1080,6 +1105,6 @@ export function createPlaybackSlice(set: TTSStoreSet, get: TTSStoreGet): Partial
       })().catch(err => {
         console.warn('[TTS Seek] 后续分句流式排程异常:', err)
       })
-  }
+    }
   }
 }

@@ -5,8 +5,8 @@ import { SENTINEL_NAMES } from '@firefly/shared'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 const UNKNOWN_NAME = SENTINEL_NAMES.UNKNOWN
-const PROJECT_CORE_NAME = '项目核心'
-const CORE_PROJECT_NAME = '核心项目'
+const PROJECT_CORE_NAME = t('项目核心')
+const CORE_PROJECT_NAME = t('核心项目')
 
 /**
  * 富化整理树中的文件名称字段。
@@ -184,7 +184,11 @@ export function mergeTreesWithDraft(
       (draftNode as any).unclassified
     ) {
       if (!unclassifiedDraftNode) {
-        unclassifiedDraftNode = { ...draftNode, name: UNCLASSIFIED_NAME, isUnclassified: true } as any
+        unclassifiedDraftNode = {
+          ...draftNode,
+          name: UNCLASSIFIED_NAME,
+          isUnclassified: true
+        } as any
       } else {
         unclassifiedDraftNode.files = mergeFiles(unclassifiedDraftNode.files, draftNode.files)
         unclassifiedDraftNode.subdirectories = mergeTreesWithDraft(
@@ -359,7 +363,8 @@ export function sanitizeDirectoryName(name: string): string {
   }
 
   // 5. 过滤“未知”等无意义的名称
-  if (cleaned === UNKNOWN_NAME || cleaned === t('未知') || cleaned.toLowerCase() === 'unknown') { // locale-invariant-ok: 过滤未知目录名
+  if (cleaned === UNKNOWN_NAME || cleaned === t('未知') || cleaned.toLowerCase() === 'unknown') {
+    // locale-invariant-ok: 过滤未知目录名
     return UNCLASSIFIED_NAME
   }
 
@@ -693,7 +698,10 @@ export function unwrapRedundantRoot(
  */
 export function isPlaceholderDirectoryName(name: string): boolean {
   if (!name) return true
-  const clean = name.trim().replace(/[{}[\\\]（）()]/g, '').trim()
+  const clean = name
+    .trim()
+    .replace(/[{}[\\\]（）()]/g, '')
+    .trim()
   const lower = clean.toLowerCase()
   return (
     clean === '目录' ||

@@ -245,7 +245,7 @@ export const Organize: React.FC = () => {
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
     if (!Array.isArray(tree) || tree.length === 0) return false
-    const UNCLASSIFIED_ALIAS = '未分类'
+    const UNCLASSIFIED_ALIAS = t('未分类')
 
     const checkNode = (nodes: any[]): boolean => {
       for (const node of nodes) {
@@ -1252,7 +1252,7 @@ export const Organize: React.FC = () => {
               placeholder={t('请描述您的整理需求，例如：以设计师视角整理素材文件')}
               value={
                 guidancePrompt ||
-                `以设计师视角，按以下目录结构整理素材文件：
+                t(`以设计师视角，按以下目录结构整理素材文件：
 
 - 设计素材库
   - UI设计
@@ -1274,7 +1274,7 @@ export const Organize: React.FC = () => {
   - 动效资源
     - Lottie动画
     - GIF动图
-    - 视频素材`
+    - 视频素材`)
               }
               onChange={e => setGuidancePrompt(e.target.value)}
             />

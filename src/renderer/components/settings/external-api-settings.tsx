@@ -1,6 +1,6 @@
 /**
  * 萤核对外接口设置面板 (ExternalApiSettingsTab)
- * 
+ *
  * 对应技术规格说明书: docs/specs/external-api-settings-tab-and-plugin-delist-spec.md §3.4 & §3.5
  */
 
@@ -83,8 +83,8 @@ const getCapabilityText = (id: ExternalApiCapabilityId) => {
 const SEARCH_KEYWORDS = [
   'ai-folder-organize',
   'firefly-folder-organize',
-  '萤核智能文件夹',
-  '萤核整理'
+  t('萤核智能文件夹'),
+  t('萤核整理')
 ]
 
 export const ExternalApiSettingsTab: React.FC = () => {
@@ -205,7 +205,7 @@ export const ExternalApiSettingsTab: React.FC = () => {
       setTestResult({
         success: false,
         latencyMs: null,
-        error: { code: 'INTERNAL', message: err.message || '自检失败' }
+        error: { code: 'INTERNAL', message: err.message || t('自检失败') }
       })
     } finally {
       setIsTesting(false)
@@ -228,7 +228,10 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
   const getPhaseBadge = () => {
     if (isRunning) {
       return (
-        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1.5 py-1 px-2.5">
+        <Badge
+          variant="outline"
+          className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1.5 py-1 px-2.5"
+        >
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           {t('服务运行中')}
         </Badge>
@@ -236,7 +239,10 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
     }
     if (isDegraded) {
       return (
-        <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 gap-1.5 py-1 px-2.5">
+        <Badge
+          variant="outline"
+          className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 gap-1.5 py-1 px-2.5"
+        >
           <AlertTriangle className="w-3.5 h-3.5 text-rose-500" />
           {t('启动异常 (降级)')}
         </Badge>
@@ -244,7 +250,10 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
     }
     if (isStarting) {
       return (
-        <Badge variant="outline" className="bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 gap-1.5 py-1 px-2.5">
+        <Badge
+          variant="outline"
+          className="bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30 gap-1.5 py-1 px-2.5"
+        >
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-500" />
           {t('正在启动...')}
         </Badge>
@@ -252,14 +261,20 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
     }
     if (isStopping) {
       return (
-        <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1.5 py-1 px-2.5">
+        <Badge
+          variant="outline"
+          className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 gap-1.5 py-1 px-2.5"
+        >
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
           {t('正在停止...')}
         </Badge>
       )
     }
     return (
-      <Badge variant="outline" className="bg-muted text-muted-foreground border-border gap-1.5 py-1 px-2.5">
+      <Badge
+        variant="outline"
+        className="bg-muted text-muted-foreground border-border gap-1.5 py-1 px-2.5"
+      >
         <span className="w-2 h-2 rounded-full bg-muted-foreground/60" />
         {t('服务已停止')}
       </Badge>
@@ -322,7 +337,9 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
               {getPhaseBadge()}
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed pl-11">
-              {t('开启后，桌面端将在本地 127.0.0.1 提供 HTTP 接口，供开源整理 Skill (ai-folder-organize) 或本机 AI 智能体跨进程通信。')}
+              {t(
+                '开启后，桌面端将在本地 127.0.0.1 提供 HTTP 接口，供开源整理 Skill (ai-folder-organize) 或本机 AI 智能体跨进程通信。'
+              )}
             </p>
           </div>
           <div className="pt-1">
@@ -404,7 +421,10 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
               )}
               <span>
                 {testResult.success
-                  ? t('环回测试成功！响应延迟: {0} ms (HTTP {1})', [testResult.latencyMs ?? 0, testResult.statusCode ?? 200])
+                  ? t('环回测试成功！响应延迟: {0} ms (HTTP {1})', [
+                      testResult.latencyMs ?? 0,
+                      testResult.statusCode ?? 200
+                    ])
                   : t('环回测试失败: {0}', [testResult.error?.message || t('连接未建立')])}
               </span>
             </div>
@@ -458,7 +478,9 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
         {/* 发现文件路径 */}
         <div className="p-3 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-between gap-3 text-xs">
           <div className="space-y-0.5 flex-1 min-w-0">
-            <span className="text-muted-foreground block">{t('服务发现配置 (ai-skill-config.json)')}</span>
+            <span className="text-muted-foreground block">
+              {t('服务发现配置 (ai-skill-config.json)')}
+            </span>
             <span className="font-mono text-[11px] text-foreground truncate block select-all">
               {status?.discoveryPath || t('未定位')}
             </span>
@@ -500,15 +522,23 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
           </div>
 
           <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
-            <span className="text-muted-foreground text-[11px] block">{t('调用方标识 (自报)')}</span>
-            <span className="font-mono text-xs font-medium text-foreground truncate block" title={status?.activity.lastCaller || ''}>
+            <span className="text-muted-foreground text-[11px] block">
+              {t('调用方标识 (自报)')}
+            </span>
+            <span
+              className="font-mono text-xs font-medium text-foreground truncate block"
+              title={status?.activity.lastCaller || ''}
+            >
               {status?.activity.lastCaller || t('无')}
             </span>
           </div>
 
           <div className="p-3 rounded-lg bg-muted/30 border border-border/40">
             <span className="text-muted-foreground text-[11px] block">{t('最近调用路径')}</span>
-            <span className="font-mono text-xs font-medium text-foreground truncate block" title={status?.activity.lastEndpoint || ''}>
+            <span
+              className="font-mono text-xs font-medium text-foreground truncate block"
+              title={status?.activity.lastEndpoint || ''}
+            >
               {status?.activity.lastEndpoint || t('无')}
             </span>
           </div>
@@ -551,7 +581,9 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
                 key={id}
                 className="p-3 rounded-lg bg-muted/30 border border-border/40 flex items-start gap-2.5"
               >
-                <div className="mt-0.5">{CAPABILITY_ICONS[id] || <Activity className="w-4 h-4" />}</div>
+                <div className="mt-0.5">
+                  {CAPABILITY_ICONS[id] || <Activity className="w-4 h-4" />}
+                </div>
                 <div className="space-y-0.5">
                   <span className="font-medium text-foreground block">{meta.name}</span>
                   <span className="text-[11px] text-muted-foreground block">{meta.desc}</span>
@@ -574,7 +606,9 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
               size="sm"
               variant="ghost"
               className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary/80"
-              onClick={() => openExternalLink('https://github.com/Leonard-Li777/ai-folder-organize')}
+              onClick={() =>
+                openExternalLink('https://github.com/Leonard-Li777/ai-folder-organize')
+              }
             >
               <span>GitHub</span>
               <ExternalLink className="w-3 h-3" />
@@ -583,7 +617,9 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
               size="sm"
               variant="ghost"
               className="h-7 px-2 text-xs gap-1 text-primary hover:text-primary/80"
-              onClick={() => openExternalLink('https://clawhub.ai/leonard-li777/skills/ai-folder-organize')}
+              onClick={() =>
+                openExternalLink('https://clawhub.ai/leonard-li777/skills/ai-folder-organize')
+              }
             >
               <span>ClawHub</span>
               <ExternalLink className="w-3 h-3" />
@@ -616,7 +652,9 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
         {/* 一键复制 Agent 接入提示词 */}
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">{t('Agent 快捷配置提示词 (一键复制到聊天对话中)：')}</span>
+            <span className="text-muted-foreground">
+              {t('Agent 快捷配置提示词 (一键复制到聊天对话中)：')}
+            </span>
             <Button
               size="sm"
               variant="outline"
@@ -641,11 +679,11 @@ ${t('技能主页:')} https://clawhub.ai/leonard-li777/skills/ai-folder-organize
       <div className="p-4 rounded-xl bg-muted/30 border border-border/40 flex items-start gap-3 text-xs text-muted-foreground">
         <Info className="w-4 h-4 text-sky-500 flex-shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-medium text-foreground">
-            {t('本地接口最小权限与安全说明')}
-          </p>
+          <p className="font-medium text-foreground">{t('本地接口最小权限与安全说明')}</p>
           <p className="leading-relaxed">
-            {t('本地开放接口仅供本机已授权智能体查询文件分析元数据与推送多维整理草案，绝无直接改写或删除物理文件的权限。外部智能体推送的所有整理方案均作为草案提交，必须由您在桌面端显式确认后方可落地生效。')}
+            {t(
+              '本地开放接口仅供本机已授权智能体查询文件分析元数据与推送多维整理草案，绝无直接改写或删除物理文件的权限。外部智能体推送的所有整理方案均作为草案提交，必须由您在桌面端显式确认后方可落地生效。'
+            )}
           </p>
         </div>
       </div>

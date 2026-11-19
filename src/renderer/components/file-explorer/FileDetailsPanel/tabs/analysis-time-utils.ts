@@ -12,7 +12,13 @@ import { MarkitdownBenchmark, Stage1Benchmark, getSubtaskMs } from '@firefly/typ
 /** 子任务执行流拓扑类型 */
 export type SubtaskExecutionType = 'sync' | 'async'
 
-export type MetricGroupId = 'stage1' | 'content' | 'tag_group' | 'semantic_fusion' | 'quality_group' | 'other'
+export type MetricGroupId =
+  | 'stage1'
+  | 'content'
+  | 'tag_group'
+  | 'semantic_fusion'
+  | 'quality_group'
+  | 'other'
 
 /** 子任务/指标条目 */
 export interface SubtaskItem {
@@ -84,7 +90,7 @@ const DYNAMIC_PALETTE = [
   '#3b82f6', // 皇家蓝
   '#14b8a6', // 绿松石
   '#ec4899', // 玫红
-  '#a855f7'  // 蓝紫
+  '#a855f7' // 蓝紫
 ]
 
 /**
@@ -173,14 +179,23 @@ const TAG_GROUP_KEYWORDS = ['clip', 'ram', 'nsfw', 'tag'] as const
 const SEMANTIC_FUSION_KEYWORDS = ['bekko', 'keybert', 'slot', 'fusion'] as const
 
 /** 画质与形态组的动态归类关键词 (唯一事实源，quality/other 扫描共用) */
-const QUALITY_GROUP_KEYWORDS = ['watermark', 'mosaic', 'aesthetic', 'quality', 'blur', 'bw'] as const
+const QUALITY_GROUP_KEYWORDS = [
+  'watermark',
+  'mosaic',
+  'aesthetic',
+  'quality',
+  'blur',
+  'bw'
+] as const
 
 /**
  * 动态子任务键路由 (开闭原则唯一归类入口):
  * 按关键词将未知算子键路由到标签生成组 / 语义融合组 / 画质与形态组 / 扩展算子组。
  * 新增分类关键词只需修改对应关键词表，无需改动任何扫描调用方。
  */
-function classifySubtaskKey(rawKey: string): 'tag_group' | 'semantic_fusion' | 'quality_group' | 'other' {
+function classifySubtaskKey(
+  rawKey: string
+): 'tag_group' | 'semantic_fusion' | 'quality_group' | 'other' {
   const lowerKey = rawKey.toLowerCase()
   if (TAG_GROUP_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'tag_group'
   if (SEMANTIC_FUSION_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'semantic_fusion'
@@ -257,7 +272,7 @@ export function computeGroupedMetrics(
     stage1TotalMs = validP1Items.reduce((acc, it) => acc + it.duration, 0)
     // 兼容旧数据中只有 phases 耗时
     if (stage1TotalMs === 0 && !filter.hiddenKeys.has('hashAndTypeIdentification')) {
-      stage1TotalMs = Number(phases['hashAndTypeIdentification'] || phases['哈希与类型识别'] || 0)
+      stage1TotalMs = Number(phases['hashAndTypeIdentification'] || phases['哈希与类型识别'] || 0) // i18n-disable-line
     }
 
     if (stage1TotalMs > 0 || validP1Items.length > 0) {
@@ -278,7 +293,8 @@ export function computeGroupedMetrics(
   if (contentBreakdown) {
     // 2.1 基础内容组 (content)
     if (!filter.hiddenGroupIds.has('content')) {
-      const isSubItemsHidden = filter.hideSubItems.has('content') || filter.collapsedGroupIds?.has('content')
+      const isSubItemsHidden =
+        filter.hideSubItems.has('content') || filter.collapsedGroupIds?.has('content')
       // Office 预转 PDF 作为串行前缀已独立成项，封面图渲染仅统计自身耗时
       const rawContentItems: SubtaskItem[] = [
         // Magika 类型识别：在内容提取分支分发前串行执行，为后续分析提供确切类型识别
@@ -425,16 +441,50 @@ export function computeGroupedMetrics(
 
     // 2.2 视觉标签组 (tag_group)
     if (!filter.hiddenGroupIds.has('tag_group')) {
-      const isSubItemsHidden = filter.hideSubItems.has('tag_group') || filter.collapsedGroupIds?.has('tag_group')
+      const isSubItemsHidden =
+        filter.hideSubItems.has('tag_group') || filter.collapsedGroupIds?.has('tag_group')
       const tagSubItems: SubtaskItem[] = []
 
       // 已知静态标签生成子项
       const knownTagKeys = [
-        { key: 'clipMs', label: t('CLIP视觉打标'), badge: 'ViT-B/16', color: '#60a5fa', type: 'async' as const, weight: 31 },
-        { key: 'clipEmbedMs', label: t('CLIP图像嵌入'), badge: 'ViT-B/16', color: '#818cf8', type: 'sync' as const, weight: 32 },
-        { key: 'clipMutualMs', label: t('CLIP互斥分类'), color: '#93c5fd', type: 'sync' as const, weight: 33 },
-        { key: 'ramMs', label: t('RAM++实体打标'), badge: 'Swin', color: '#2dd4bf', type: 'async' as const, weight: 34 },
-        { key: 'nsfwMs', label: t('NSFW敏感鉴定'), color: '#f43f5e', type: 'async' as const, weight: 35 }
+        {
+          key: 'clipMs',
+          label: t('CLIP视觉打标'),
+          badge: 'ViT-B/16',
+          color: '#60a5fa',
+          type: 'async' as const,
+          weight: 31
+        },
+        {
+          key: 'clipEmbedMs',
+          label: t('CLIP图像嵌入'),
+          badge: 'ViT-B/16',
+          color: '#818cf8',
+          type: 'sync' as const,
+          weight: 32
+        },
+        {
+          key: 'clipMutualMs',
+          label: t('CLIP互斥分类'),
+          color: '#93c5fd',
+          type: 'sync' as const,
+          weight: 33
+        },
+        {
+          key: 'ramMs',
+          label: t('RAM++实体打标'),
+          badge: 'Swin',
+          color: '#2dd4bf',
+          type: 'async' as const,
+          weight: 34
+        },
+        {
+          key: 'nsfwMs',
+          label: t('NSFW敏感鉴定'),
+          color: '#f43f5e',
+          type: 'async' as const,
+          weight: 35
+        }
       ]
 
       for (const k of knownTagKeys) {
@@ -551,14 +601,44 @@ export function computeGroupedMetrics(
     // 2.3 语义与多模态融合组 (semantic_fusion)
     // 物理流水线特性: 在底层 OmniTextEngine 与感知端点中，语义特征嵌入 -> 主题词抽取 -> 5W摘要命名 -> 多模态融合裁决具有严格的前后序依赖，构成完整的串行链，组耗时按累加和计算
     if (!filter.hiddenGroupIds.has('semantic_fusion')) {
-      const isSubItemsHidden = filter.hideSubItems.has('semantic_fusion') || filter.collapsedGroupIds?.has('semantic_fusion')
+      const isSubItemsHidden =
+        filter.hideSubItems.has('semantic_fusion') ||
+        filter.collapsedGroupIds?.has('semantic_fusion')
       const fusionSubItems: SubtaskItem[] = []
 
       const knownFusionKeys = [
-        { key: 'bekkoEmbedMs', label: t('语义特征嵌入'), badge: '轻量文本语义搜索', color: '#8b5cf6', type: 'sync' as const, weight: 41 },
-        { key: 'keybertMs', label: t('主题词抽取'), badge: 'MMR', color: '#a855f7', type: 'sync' as const, weight: 42 },
-        { key: 'slotSummaryMs', label: t('5W摘要重命名'), badge: 'SlotEngine', color: '#c084fc', type: 'sync' as const, weight: 43 },
-        { key: 'fusionMs', label: t('多模态融合裁决'), badge: 'fused_tags', color: '#6366f1', type: 'sync' as const, weight: 44 }
+        {
+          key: 'bekkoEmbedMs',
+          label: t('语义特征嵌入'),
+          badge: t('轻量文本语义搜索'),
+          color: '#8b5cf6',
+          type: 'sync' as const,
+          weight: 41
+        },
+        {
+          key: 'keybertMs',
+          label: t('主题词抽取'),
+          badge: 'MMR',
+          color: '#a855f7',
+          type: 'sync' as const,
+          weight: 42
+        },
+        {
+          key: 'slotSummaryMs',
+          label: t('5W摘要重命名'),
+          badge: 'SlotEngine',
+          color: '#c084fc',
+          type: 'sync' as const,
+          weight: 43
+        },
+        {
+          key: 'fusionMs',
+          label: t('多模态融合裁决'),
+          badge: 'fused_tags',
+          color: '#6366f1',
+          type: 'sync' as const,
+          weight: 44
+        }
       ]
 
       for (const k of knownFusionKeys) {
@@ -638,12 +718,25 @@ export function computeGroupedMetrics(
 
     // 2.4 画质与形态组 (quality_group)
     if (!filter.hiddenGroupIds.has('quality_group')) {
-      const isSubItemsHidden = filter.hideSubItems.has('quality_group') || filter.collapsedGroupIds?.has('quality_group')
+      const isSubItemsHidden =
+        filter.hideSubItems.has('quality_group') || filter.collapsedGroupIds?.has('quality_group')
       const qualitySubItems: SubtaskItem[] = []
 
       const knownQualityKeys = [
-        { key: 'aestheticMs', label: t('美学画质评分'), badge: 'Aesthetic Predictor', color: '#06b6d4', weight: 51 },
-        { key: 'watermarkMs', label: t('频域盲水印检测'), badge: '2D-FFT', color: '#0ea5e9', weight: 52 },
+        {
+          key: 'aestheticMs',
+          label: t('美学画质评分'),
+          badge: 'Aesthetic Predictor',
+          color: '#06b6d4',
+          weight: 51
+        },
+        {
+          key: 'watermarkMs',
+          label: t('频域盲水印检测'),
+          badge: '2D-FFT',
+          color: '#0ea5e9',
+          weight: 52
+        },
         { key: 'mosaicMs', label: t('打码检测'), badge: '2D-DCT', color: '#6366f1', weight: 53 },
         { key: 'bwMs', label: t('黑白全彩判定'), badge: 'Hist1ms', color: '#64748b', weight: 54 }
       ]
@@ -800,8 +893,8 @@ export function computeGroupedMetrics(
   }
 
   // 4. 阶段 3 与阶段 4 耗时 (串行阶段，独立于饼图并发分组，但计入总挂钟)
-  const stage3Ms = Number(phases['qualityScoring'] || phases['质量分析'] || 0)
-  const stage4Ms = Number(phases['dimensionAnalysis'] || phases['维度分析'] || 0)
+  const stage3Ms = Number(phases['qualityScoring'] || phases['质量分析'] || 0) // i18n-disable-line
+  const stage4Ms = Number(phases['dimensionAnalysis'] || phases['维度分析'] || 0) // i18n-disable-line
 
   const phasesSum = stage1TotalMs + stage2TotalMs + stage3Ms + stage4Ms
   const visibleTotalMs = phasesSum
@@ -864,7 +957,10 @@ export function buildCoaxialTracks(
   const stage2TotalAngleSpan = (stage2TotalMs / totalMs) * 360
 
   // 记录每个组的起始角和跨度角，供同轴外环精准对齐
-  const groupAngleMap = new Map<string, { startAngle: number; spanAngle: number; groupDuration: number }>()
+  const groupAngleMap = new Map<
+    string,
+    { startAngle: number; spanAngle: number; groupDuration: number }
+  >()
 
   if (stage2Groups.length > 0 && stage2TotalAngleSpan > 0) {
     // 阶段 2 内部各分支根据其物理耗时比例在 stage2TotalAngleSpan 内部划分

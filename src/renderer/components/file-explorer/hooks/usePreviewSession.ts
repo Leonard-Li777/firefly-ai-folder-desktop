@@ -13,6 +13,7 @@ import {
 } from '../../../lib/preview-types'
 import { PreviewRouter } from '../../../lib/preview-router'
 import { logger, LogCategory } from '@firefly/shared'
+import { t } from '@app/languages'
 
 export interface UsePreviewSessionProps {
   filePath: string
@@ -44,7 +45,7 @@ export interface UsePreviewSessionReturn {
 
 const FALLBACK_ICON_CANDIDATE: PreviewCandidate = {
   id: 'system_icon_fallback',
-  name: '系统图标与元数据',
+  name: t('系统图标与元数据'),
   kind: 'system_icon',
   supportedExtensions: ['*'],
   declaredPriority: 0,

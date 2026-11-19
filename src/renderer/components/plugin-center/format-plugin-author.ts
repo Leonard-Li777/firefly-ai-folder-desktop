@@ -21,10 +21,10 @@ export function formatPluginAuthor(
   translate: (key: string) => string = t
 ): string {
   if (!module?.author_code || module.author_code === 'official') {
-    return translate('Firefly 官方')
+    return translate(t('Firefly 官方'))
   }
   if (module.author_code === 'community') {
-    return module.author_name?.trim() || translate('社区贡献（作者未提供）')
+    return module.author_name?.trim() || translate(t('社区贡献（作者未提供）'))
   }
-  return module.author_name?.trim() || translate('第三方插件（作者未提供）')
+  return module.author_name?.trim() || translate(t('第三方插件（作者未提供）'))
 }

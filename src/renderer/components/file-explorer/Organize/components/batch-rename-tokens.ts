@@ -54,49 +54,56 @@ export function getBatchRenameTokenCategories(
         label: t('智能文件名'),
         value: '{SMART_NAME}',
         desc: t('AI 解析提取的纯净核心命名'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: true
       },
       {
         label: t('原始文件名'),
         value: '{ORIG_NAME}',
         desc: t('文件在磁盘上的原始文件名（不含扩展名）'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: true
       },
       {
         label: t('作者'),
         value: '{AUTHOR}',
         desc: t('内容作者标签 (如 [{AUTHOR}])'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: true
       },
       {
         label: t('文件扩展名'),
         value: '{EXT}',
         desc: t('文件后缀扩展名（自动带点 .ext）'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: true
       },
       {
         label: t('质量评分'),
         value: '{QUALITY_SCORE}',
         desc: t('AI 质量分值 (如 [Q{QUALITY_SCORE}])'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: true
       },
       {
         label: t('文件大小'),
         value: '{SIZE}',
         desc: t('友好文件大小 (如 12MB)'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: true
       },
       {
         label: t('语言代码'),
         value: '{LANG}',
         desc: t('文档语言代码 (如 zh-CN, en)'),
-        pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
+        pillClass:
+          'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20',
         isCommon: false
       }
     ]
@@ -111,35 +118,40 @@ export function getBatchRenameTokenCategories(
         label: t('修改日期(年-月-日)'),
         value: '{MOD:YYYY-MM-DD}',
         desc: t('文件最后修改日期 (如 2024-03-15)'),
-        pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
+        pillClass:
+          'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
         isCommon: true
       },
       {
         label: t('创建日期(年-月-日)'),
         value: '{CRE:YYYY-MM-DD}',
         desc: t('文件创建日期 (如 2024-01-01)'),
-        pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
+        pillClass:
+          'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
         isCommon: true
       },
       {
         label: t('修改时间(年月日时分)'),
         value: '{MOD:YYYYMMDD_HHmm}',
         desc: t('精确修改时间戳 (如 20240315_1430)'),
-        pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
+        pillClass:
+          'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
         isCommon: true
       },
       {
         label: t('修改年份(YYYY)'),
         value: '{MOD:YYYY}',
         desc: t('四位修改年份 (如 2024)'),
-        pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
+        pillClass:
+          'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
         isCommon: true
       },
       {
         label: t('创建年份(YYYY)'),
         value: '{CRE:YYYY}',
         desc: t('四位创建年份 (如 2024)'),
-        pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
+        pillClass:
+          'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20',
         isCommon: false
       }
     ]
@@ -162,28 +174,32 @@ export function getBatchRenameTokenCategories(
         label: t('分辨率'),
         value: `{META:${t('分辨率')}}`,
         desc: t('图片/视频分辨率 (如 1920x1080)'),
-        pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
+        pillClass:
+          'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
         isCommon: true
       },
       {
         label: t('时长'),
         value: `{META:${t('时长')}}`,
         desc: t('音视频时长 (如 03分25秒)'),
-        pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
+        pillClass:
+          'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
         isCommon: true
       },
       {
         label: t('页数'),
         value: `{META:${t('页数')}}`,
         desc: t('文档总页数 (如 15P)'),
-        pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
+        pillClass:
+          'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
         isCommon: true
       },
       {
         label: t('编码格式'),
         value: `{META:${t('编码')}}`,
         desc: t('媒体编码格式 (如 H264, AAC)'),
-        pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
+        pillClass:
+          'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20',
         isCommon: true
       }
     ]
@@ -198,33 +214,30 @@ export function getBatchRenameTokenCategories(
         label: t('两位序号(01)'),
         value: '{SEQ:01}',
         desc: t('两位补零自增序号 (01, 02...)'),
-        pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20',
+        pillClass:
+          'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20',
         isCommon: true
       },
       {
         label: t('三位序号(001)'),
         value: '{SEQ:001}',
         desc: t('三位补零自增序号 (001, 002...)'),
-        pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20',
+        pillClass:
+          'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20',
         isCommon: true
       },
       {
         label: t('四位序号(0001)'),
         value: '{SEQ:0001}',
         desc: t('四位补零自增序号 (0001, 0002...)'),
-        pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20',
+        pillClass:
+          'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20',
         isCommon: true
       }
     ]
   }
 
-  return [
-    coreCategory,
-    datetimeCategory,
-    dimensionCategory,
-    metaCategory,
-    seqCategory
-  ]
+  return [coreCategory, datetimeCategory, dimensionCategory, metaCategory, seqCategory]
 }
 
 /**
@@ -285,7 +298,9 @@ interface RawDimensionEntry {
 /**
  * 解析任意维度对象或标识符的规范受控代码
  */
-function resolveConceptCode(dim: { id?: number | string; code?: string; name?: string } | string | undefined): string | undefined {
+function resolveConceptCode(
+  dim: { id?: number | string; code?: string; name?: string } | string | undefined
+): string | undefined {
   if (!dim) return undefined
   if (typeof dim === 'string') {
     if (dim.startsWith('builtin.') || dim.startsWith('omw.') || dim.startsWith('hownet.')) {
@@ -299,7 +314,11 @@ function resolveConceptCode(dim: { id?: number | string; code?: string; name?: s
     return CONTROLLED_DIMENSION_ROOT_CODES[numId]
   }
   if (dim.name) {
-    if (dim.name.startsWith('builtin.') || dim.name.startsWith('omw.') || dim.name.startsWith('hownet.')) {
+    if (
+      dim.name.startsWith('builtin.') ||
+      dim.name.startsWith('omw.') ||
+      dim.name.startsWith('hownet.')
+    ) {
       return dim.name
     }
     if (isControlledConcept(dim.name)) {
@@ -357,12 +376,12 @@ export function buildDimensionSystem(
     if (validParents.length > 0) {
       // 敏感内容：严格只作为「内容分级」之下的二级维度显示，不作为三级维度在媒体细分下重复挂载
       if (isSensitiveDimIdentifier(rawName)) {
-        const rootParent = '内容分级'
+        const rootParent = t('内容分级')
         const list = childrenMap.get(rootParent) || []
         if (!list.some(item => item.rawName === rawName)) {
           list.push({
             rawName,
-            rawDesc: d.description,
+            rawDesc: d.description ? t(d.description) : undefined,
             level: 2
           })
         }
@@ -446,7 +465,8 @@ export function buildDimensionSystem(
       label: localizedName,
       value: tokenVal,
       desc,
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
+      pillClass:
+        'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
       isCommon,
       parentName,
       level,
@@ -498,13 +518,29 @@ export function buildDimensionSystem(
 
   // 5. 权威 7 大受控根维度为顶层树干（强类型受控概念对齐）
   const ROOT_CANONICAL_DEFINITIONS = [
-    { code: concept('文件类型'), rawName: '文件类型', rawDesc: '文件的基础格式分类 (如文本/图片/视频/音频等)' },
-    { code: concept('文件用途'), rawName: '文件用途', rawDesc: '文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)' },
-    { code: concept('文件来源'), rawName: '文件来源', rawDesc: '文件的原始获取途径 (如本地创建/网络下载/设备导入等)' },
-    { code: concept('作者'), rawName: '作者', rawDesc: '文件的创建者或贡献者' },
-    { code: concept('文件质量'), rawName: '文件质量', rawDesc: '文件的品质与质量评分 (如优质/良好/一般等)' },
-    { code: concept('内容标签'), rawName: '内容标签', rawDesc: '开放式语义与主题内容标签' },
-    { code: concept('内容分级'), rawName: '内容分级', rawDesc: '合规安全审查与年龄受众分级' }
+    {
+      code: concept('文件类型'),
+      rawName: t('文件类型'),
+      rawDesc: t('文件的基础格式分类 (如文本/图片/视频/音频等)')
+    },
+    {
+      code: concept('文件用途'),
+      rawName: t('文件用途'),
+      rawDesc: t('文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)')
+    },
+    {
+      code: concept('文件来源'),
+      rawName: t('文件来源'),
+      rawDesc: t('文件的原始获取途径 (如本地创建/网络下载/设备导入等)')
+    },
+    { code: concept('作者'), rawName: t('作者'), rawDesc: t('文件的创建者或贡献者') },
+    {
+      code: concept('文件质量'),
+      rawName: t('文件质量'),
+      rawDesc: t('文件的品质与质量评分 (如优质/良好/一般等)')
+    },
+    { code: concept('内容标签'), rawName: t('内容标签'), rawDesc: t('开放式语义与主题内容标签') },
+    { code: concept('内容分级'), rawName: t('内容分级'), rawDesc: t('合规安全审查与年龄受众分级') }
   ]
 
   const dimensionTree: DimensionTreeNode[] = []

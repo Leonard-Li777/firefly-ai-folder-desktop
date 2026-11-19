@@ -539,7 +539,7 @@ export const InterfaceSettings: React.FC = () => {
           <div>
             <Label
               data-testid="interface-language-label"
-              data-i18n-key="界面语言"
+              data-i18n-key="界面语言" // i18n-disable-line
               className="text-base font-medium"
             >
               {t('界面语言')}

@@ -194,9 +194,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   }
 
   const isFiltered =
-    filter.hiddenGroupIds.size > 0 ||
-    filter.hideSubItems.size > 0 ||
-    filter.hiddenKeys.size > 0
+    filter.hiddenGroupIds.size > 0 || filter.hideSubItems.size > 0 || filter.hiddenKeys.size > 0
 
   // 2. 提取 fresh 与 archive 数据
   const fresh = stats.performance?.fresh || {
@@ -286,12 +284,12 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   // 挂钟物理耗时：发生过滤时实时联动为当前可见项的物理耗时，未过滤时展示完整挂钟耗时
   const freshTotalMs = isFiltered
     ? freshMetrics.visibleTotalMs
-    : (fresh.durationMs || stats.durationMs || freshMetrics.visibleTotalMs)
+    : fresh.durationMs || stats.durationMs || freshMetrics.visibleTotalMs
   const archiveTotalMs = isFiltered
     ? archiveMetrics.visibleTotalMs
-    : ((archive.durationMs && archive.durationMs >= archiveMetrics.visibleTotalMs)
-        ? archive.durationMs
-        : archiveMetrics.visibleTotalMs)
+    : archive.durationMs && archive.durationMs >= archiveMetrics.visibleTotalMs
+      ? archive.durationMs
+      : archiveMetrics.visibleTotalMs
 
   // 计算无过滤状态下的原始可用分组与包含子项的分组列表
   const { availableGroupIds, groupsWithSubItems } = useMemo(() => {
@@ -312,7 +310,15 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       availableGroupIds: new Set(base.groups.map(g => g.id)),
       groupsWithSubItems: base.groups.filter(g => g.items.some(i => i.isSubItem)).map(g => g.id)
     }
-  }, [freshStage1Breakdown, archiveStage1Breakdown, freshBreakdown, archiveBreakdown, fresh.phases, archive.phases, activeLanguage])
+  }, [
+    freshStage1Breakdown,
+    archiveStage1Breakdown,
+    freshBreakdown,
+    archiveBreakdown,
+    fresh.phases,
+    archive.phases,
+    activeLanguage
+  ])
 
   const hasTagGroup = availableGroupIds.has('tag_group')
   const hasQualityGroup = availableGroupIds.has('quality_group')
@@ -330,7 +336,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   // 检查当前是否所有可用且包含子项的分组均已隐藏细项
   const areAllSubItemsHidden =
     expandableGroupsWithSubItems.length > 0 &&
-    expandableGroupsWithSubItems.every(id => filter.hideSubItems.has(id) || filter.collapsedGroupIds.has(id))
+    expandableGroupsWithSubItems.every(
+      id => filter.hideSubItems.has(id) || filter.collapsedGroupIds.has(id)
+    )
 
   const toggleAllSubItems = () => {
     setFilter(prev => {
@@ -358,10 +366,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   )
 
   // 渲染层级树状图例组件
-  const renderTreeLegend = (
-    metrics: typeof freshMetrics,
-    isArchive: boolean
-  ) => {
+  const renderTreeLegend = (metrics: typeof freshMetrics, isArchive: boolean) => {
     return (
       <div className="w-full flex-1 space-y-2 text-left">
         {metrics.groups.map(group => {
@@ -369,7 +374,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           const isSubHidden = effectiveFilter.hideSubItems.has(group.id)
           const hasSubItems = group.items.some(i => i.isSubItem)
           // 生产模式下，视觉标签组、画质与形态组、语义与融合组的子项不允许展开
-          const canExpand = hasSubItems && (effectiveDevMode || !DEV_ONLY_EXPANDABLE_GROUPS.has(group.id))
+          const canExpand =
+            hasSubItems && (effectiveDevMode || !DEV_ONLY_EXPANDABLE_GROUPS.has(group.id))
 
           return (
             <div
@@ -479,7 +485,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                         (freshStage1Breakdown as any)?.[subItem.key] !== undefined ||
                         (freshBreakdown as any)?.[subItem.key] !== undefined ||
                         (checkParent && (freshBreakdown as any)?.[checkParent] !== undefined) ||
-                        (checkParent && (freshBreakdown as any)?.[checkParent.toLowerCase()] !== undefined) ||
+                        (checkParent &&
+                          (freshBreakdown as any)?.[checkParent.toLowerCase()] !== undefined) ||
                         (fresh.phases as any)?.[subItem.key] !== undefined
                       isReused = !hasFreshVal
                     }
@@ -594,7 +601,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                 </span>
                 {isArchive &&
                   (fresh.phases as any)?.qualityScoring === undefined &&
-                  (fresh.phases as any)?.['质量分析'] === undefined && (
+                  (fresh.phases as any)?.['质量分析'] === undefined && ( // i18n-disable-line
                     <span className="text-[9px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20">
                       {t('复用')}
                     </span>
@@ -636,7 +643,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                 </span>
                 {isArchive &&
                   (fresh.phases as any)?.dimensionAnalysis === undefined &&
-                  (fresh.phases as any)?.['维度分析'] === undefined && (
+                  (fresh.phases as any)?.['维度分析'] === undefined && ( // i18n-disable-line
                     <span className="text-[9px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20">
                       {t('复用')}
                     </span>
@@ -781,7 +788,13 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                   ? 'bg-muted/40 border-border/40 text-muted-foreground opacity-70'
                   : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-500/20'
             )}
-            title={groupsWithSubItems.length === 0 ? t('当前各分组暂无细分子项') : (areAllSubItemsHidden ? t('展开显示各分组细分子项') : t('收起隐藏各分组细分子项'))}
+            title={
+              groupsWithSubItems.length === 0
+                ? t('当前各分组暂无细分子项')
+                : areAllSubItemsHidden
+                  ? t('展开显示各分组细分子项')
+                  : t('收起隐藏各分组细分子项')
+            }
           >
             <Layers className="w-3 h-3" />
             <span>{areAllSubItemsHidden ? t('展开细项') : t('收起细项')}</span>

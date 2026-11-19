@@ -47,7 +47,7 @@ export const DEFAULT_WELCOME_SELECTION: WelcomeSelection = {
 export const DEFAULT_HARDWARE: HardwareProbeResult = {
   totalMemGB: 16,
   totalMemMB: 16384,
-  gpuName: '检测中...',
+  gpuName: t('检测中...'),
   vramGB: 0,
   isGpuSupported: false,
   storageFreeGB: 50

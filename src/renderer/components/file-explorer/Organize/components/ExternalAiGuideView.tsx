@@ -15,28 +15,28 @@ interface ExternalAiGuideViewProps {
 
 const AI_PLATFORMS = [
   {
-    name: '字节跳动 · 豆包',
+    name: t('字节跳动 · 豆包'),
     desc: t('国内响应迅速，上下文丰富'),
     url: 'https://www.doubao.com/chat/',
     icon: 'smart_toy',
     badge: t('推荐')
   },
   {
-    name: 'OpenAI · ChatGPT',
+    name: t('OpenAI · ChatGPT'),
     desc: t('全球顶尖大模型，架构逻辑严密'),
     url: 'https://chatgpt.com/',
     icon: 'bolt',
     badge: t('强大')
   },
   {
-    name: '月之暗面 · Kimi',
+    name: t('月之暗面 · Kimi'),
     desc: t('超长上下文，擅长大批量文件处理'),
     url: 'https://kimi.moonshot.cn/',
     icon: 'auto_awesome',
     badge: t('长文本')
   },
   {
-    name: '深度求索 · DeepSeek',
+    name: t('深度求索 · DeepSeek'),
     desc: t('深度推理模型，结构化层次极佳'),
     url: 'https://chat.deepseek.com/',
     icon: 'psychology',
@@ -91,7 +91,7 @@ export const ExternalAiGuideView: React.FC<ExternalAiGuideViewProps> = ({
           fileCount: totalFiles,
           totalDirCount,
           fileTypeDistribution: extSummary,
-          tagsSection: tagsList ? `\n- 高频特征标签：${tagsList}` : '',
+          tagsSection: tagsList ? `\n${t('- 高频特征标签：')}${tagsList}` : '',
           fileStructurePreview: sampleNames.join('\n')
         })) || ''
 

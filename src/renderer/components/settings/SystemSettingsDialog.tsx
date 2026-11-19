@@ -144,7 +144,7 @@ export const SystemSettingsDialog: React.FC = () => {
           <div>
             <DialogTitle
               data-testid="settings-title"
-              data-i18n-key="系统设置"
+              data-i18n-key="系统设置" // i18n-disable-line
               className="text-xl font-bold flex items-center gap-2"
             >
               <span>⚙️</span>

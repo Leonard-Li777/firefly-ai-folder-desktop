@@ -6,13 +6,13 @@ import { CATEGORY_EXT_MAP } from '@firefly/shared'
 import { DirectoryNode } from '@firefly/types/organize-types'
 import { t } from '@app/languages'
 
-const THEME_DIM_NAME = '题材'
-const GAME_TYPE_DIM_NAME = '游戏类型'
-const VIDEO_TAG_NAME = '视频'
-const MOVIE_TAG_NAME = '影视'
-const EBOOK_TAG_NAME = '电子书'
-const NOVEL_TAG_NAME = '小说'
-const GAME_ENTERTAINMENT_TAG_NAME = '游戏娱乐'
+const THEME_DIM_NAME = t('题材')
+const GAME_TYPE_DIM_NAME = t('游戏类型')
+const VIDEO_TAG_NAME = t('视频')
+const MOVIE_TAG_NAME = t('影视')
+const EBOOK_TAG_NAME = t('电子书')
+const NOVEL_TAG_NAME = t('小说')
+const GAME_ENTERTAINMENT_TAG_NAME = t('游戏娱乐')
 
 interface DirectoryPreviewNode {
   name: string

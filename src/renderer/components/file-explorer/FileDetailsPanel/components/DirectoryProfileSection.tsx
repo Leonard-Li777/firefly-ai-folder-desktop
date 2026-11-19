@@ -16,7 +16,7 @@ import { SettingsCategory } from '@firefly/types'
  */
 const EXTERNAL_AI_PLATFORMS = [
   {
-    name: '豆包',
+    name: t('豆包'),
     url: 'https://www.doubao.com/chat/',
     icon: 'smart_toy'
   },

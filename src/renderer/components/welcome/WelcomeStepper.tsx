@@ -7,11 +7,11 @@ export type WelcomeStepNumber = 1 | 2 | 3 | 4 | 5
 
 /** 与 5 步向导一一对应的短标签，保持大白话、避免技术黑话 */
 const STEP_LABELS = [
-  '选择语言',
-  '能力装配',
-  '安装目录',
-  '插件安装方式',
-  '安装完成'
+  t('选择语言'),
+  t('能力装配'),
+  t('安装目录'),
+  t('插件安装方式'),
+  t('安装完成')
 ] as const
 
 interface WelcomeStepperProps {

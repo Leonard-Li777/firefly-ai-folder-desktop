@@ -443,8 +443,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const sanitizedRawTags = rawTags.map(t => {
         if (isSecurityDim && t.tagValue) {
           const trimmed = t.tagValue.trim()
-          if (trimmed === '共') return { ...t, tagValue: '公开' } // locale-invariant-ok: 历史脏别名清洗
-          if (trimmed === '内') return { ...t, tagValue: '内部' } // locale-invariant-ok: 历史脏别名清洗
+          if (trimmed === '共') return { ...t, tagValue: '公开' } // i18n-disable-line: 历史脏别名清洗，受控概念展示名非 UI 文案
+          if (trimmed === '内') return { ...t, tagValue: '内部' } // i18n-disable-line: 历史脏别名清洗，受控概念展示名非 UI 文案
         }
         return t
       })
@@ -1024,7 +1024,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimId = Number(dimIdStr)
       const group =
         fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
-      const dimName = group?.name || '内容标签'
+      const dimName = group?.name || t('内容标签')
       const dimCode =
         group?.code ||
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
@@ -1065,7 +1065,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         processedRemoveKeys.add(lowerKey)
         const group =
           fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
-        const dimName = group?.name || '内容标签'
+        const dimName = group?.name || t('内容标签')
         const dimCode =
           group?.code ||
           CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
@@ -1088,7 +1088,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimId = Number(dimIdStr)
       const group =
         fullPresetGroups.find(g => g.id === dimId) || dimensionGroups.find(g => g.id === dimId)
-      const dimName = group?.name || '内容标签'
+      const dimName = group?.name || t('内容标签')
       const dimCode =
         group?.code ||
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||

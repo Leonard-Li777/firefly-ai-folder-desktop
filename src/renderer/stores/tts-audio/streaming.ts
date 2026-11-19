@@ -2,6 +2,7 @@ import { StreamingPCMPlayer } from '../../utils/streaming-pcm-player'
 import { stopProgressMonitor } from './audio-engine'
 import { rt } from './runtime'
 import { ttsStore } from './store-ref'
+import { t } from '@app/languages'
 
 /**
  * 启动纯流式 PCM 播放会话 (Scheme B - M5 Pure Streaming)
@@ -134,7 +135,7 @@ export async function launchStreamingSession(params: {
       if (payload.reason === 'error' || payload.reason === 'renderer_frozen') {
         ttsStore().setState({
           status: 'error',
-          errorMessage: payload.errorCode || '流式播放中断'
+          errorMessage: payload.errorCode || t('流式播放中断')
         })
       }
     })
