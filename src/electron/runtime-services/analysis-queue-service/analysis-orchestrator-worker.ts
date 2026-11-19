@@ -1,5 +1,5 @@
 import { AnalysisQueueItem, AnalysisStats } from '@firefly/types'
-import { LogCategory, logger, FileCategory, getFileCategory } from '@firefly/shared'
+import { LogCategory, logger } from '@firefly/shared'
 import { StageNotifier, Stage2TimeoutError } from './stage-notifier'
 import { AIServiceManager } from './ai-service-manager'
 import { QueueManager } from './queue-manager'
@@ -41,10 +41,6 @@ export class AnalysisOrchestratorWorker {
   ) {
     const notifier = new StageNotifier()
     const cpuSkippedIds = new Set<number>()
-
-    const isVideoFile = (filePath: string): boolean => {
-      return getFileCategory(filePath) === FileCategory.VIDEO
-    }
 
     const isAlreadyStage2 = (item: AnalysisQueueItem): boolean => {
       const db = databaseService.db

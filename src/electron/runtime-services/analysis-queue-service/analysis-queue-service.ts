@@ -46,6 +46,7 @@ export type { EnqueueResult }
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { createCoreEngineAdapters } from '../../adapters'
 import { databaseService } from '../database/database-service'
+import { FtsProjectionService } from '../database/fts-projection'
 import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
@@ -187,6 +188,7 @@ export class AnalysisQueueService {
       this.aiServiceManager,
       this.directoryProcessor,
       this.fileProcessor,
+      new FtsProjectionService(databaseService.db),
       (itemId, status, progress, error, extra) =>
         this.writeDispatcher.updateItemStatus(itemId, status, progress, error, extra)
     )
@@ -673,15 +675,21 @@ export class AnalysisQueueService {
       const cols = db.prepare('PRAGMA table_info(analysis_queue)').all() as Array<{ name: string }>
       if (!cols.some(c => c.name === 'claimed_at')) return
 
-      const cutoff = new Date(Date.now() - AnalysisQueueService.ORPHAN_STALE_THRESHOLD_MS)
-      const staleRows = db
+      const cutoffMs = Date.now() - AnalysisQueueService.ORPHAN_STALE_THRESHOLD_MS
+      // ⚠️ 时间比对必须在 JS 侧统一解析为毫秒再比较，严禁把 SQL CURRENT_TIMESTAMP（空格分隔
+      // 'YYYY-MM-DD HH:MM:SS'）与 JS toISOString()（含 'T'）直接做字符串比较——ASCII ' '(0x20)
+      // < 'T'(0x54) 会让当日任务 claimed_at < cutoff 恒真，把所有在跑任务误判为孤儿。
+      const rawRows = db
         .prepare(
-          `SELECT id, item_id FROM analysis_queue
+          `SELECT id, item_id, claimed_at FROM analysis_queue
            WHERE status = 'analyzing'
-             AND claimed_at IS NOT NULL
-             AND claimed_at < ?`
+             AND claimed_at IS NOT NULL`
         )
-        .all(cutoff.toISOString()) as Array<{ id: number; item_id: number }>
+        .all() as Array<{ id: number; item_id: number; claimed_at: string }>
+      const staleRows = rawRows.filter(r => {
+        const claimedMs = Date.parse(r.claimed_at.replace(' ', 'T'))
+        return Number.isFinite(claimedMs) && claimedMs < cutoffMs
+      })
 
       // 排除当前正在处理的行（内存真实在跑，非孤儿）
       const currentId = this.current?.id
