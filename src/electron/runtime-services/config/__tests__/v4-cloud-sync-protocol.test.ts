@@ -123,4 +123,30 @@ describe('V4 云端单 RTT 文件缓存同步协议 (Issue 08 & Issue 10)', () =
     expect(arg.p_payload.file_tag_relations).toHaveLength(1)
     expect(arg.p_payload.file_tag_relations[0].file_fingerprint).toBe('fp_ok')
   })
+
+  it('registerDevice 应调用签名校验的 rpc_register_device_heartbeat，严禁 anon 直写 devices 表', async () => {
+    const rpcMock = vi.fn().mockResolvedValue({ data: { success: true }, error: null })
+    const fromMock = vi.fn(() => {
+      throw new Error('anon must not write devices table directly')
+    })
+
+    const svc = CloudAnalysisService.getInstance() as any
+    svc.isRegistered = false
+    svc.supabase = { schema: () => ({ rpc: rpcMock, from: fromMock }) }
+    svc.identityProvider = {
+      getMachineId: () => 'c'.repeat(64),
+      getSignature: () => 'd'.repeat(64),
+      getFeatures: () => ({ os: 'windows' })
+    }
+
+    await svc.syncFeatures()
+    expect(fromMock).not.toHaveBeenCalled()
+    expect(rpcMock).toHaveBeenCalledWith(
+      'rpc_register_device_heartbeat',
+      expect.objectContaining({
+        p_machine_id: 'c'.repeat(64),
+        p_features: { os: 'windows' }
+      })
+    )
+  })
 })

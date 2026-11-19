@@ -1254,7 +1254,7 @@ export class ConfigDbManager {
           .schema(sharedSchema)
           .from('app_configs')
           .select('namespace, key, locale, value, config_version, is_deleted')
-          .in('namespace', ['app', 'system'])
+          .in('namespace', ['app', 'system', 'file_constants'])
           .in('locale', ['*', this.currentLanguage])
           .order('config_version', { ascending: true })
 
@@ -1306,6 +1306,10 @@ export class ConfigDbManager {
             `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES (?, ?, ?)`
           )
           const systemDelete = db.prepare(`DELETE FROM system_config WHERE key = ?`)
+          const constantsInsert = db.prepare(
+            `INSERT OR REPLACE INTO file_constants (key, value, updated_at) VALUES (?, ?, ?)`
+          )
+          const constantsDelete = db.prepare(`DELETE FROM file_constants WHERE key = ?`)
 
           for (const row of sortedRows) {
             if (!row.key) continue
@@ -1325,6 +1329,12 @@ export class ConfigDbManager {
                   finalValue = { ...finalValue, language: this.currentLanguage }
                 }
                 systemInsert.run(normalizedKey, JSON.stringify(finalValue), now)
+              }
+            } else if (row.namespace === 'file_constants') {
+              if (row.is_deleted) {
+                constantsDelete.run(normalizedKey)
+              } else {
+                constantsInsert.run(normalizedKey, JSON.stringify(row.value), now)
               }
             }
           }
