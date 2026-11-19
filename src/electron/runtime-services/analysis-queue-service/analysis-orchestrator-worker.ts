@@ -68,7 +68,7 @@ export class AnalysisOrchestratorWorker {
 
   /** 判断并行双通道是否有活跃任务（可选按 workspaceId 过滤） */
   hasActiveItems(workspaceId?: number): boolean {
-    if (this.activeItemCounts.size === 0) return false
+    if (this.activeItemCounts.size === 0 && this.handoverPendingIds.size === 0) return false
     if (workspaceId === undefined) return true
     return this.activeParallelWorkspaceId === workspaceId
   }
@@ -117,6 +117,8 @@ export class AnalysisOrchestratorWorker {
   ) {
     const notifier = new StageNotifier()
     const cpuSkippedIds = new Set<number>()
+    // 记录已被 GPU 消费者跳过/超时/完结的项，防止异步预检让出后滞后 CPU 再次将其加入 handoverPendingIds 造成批次内滞留
+    const gpuSkippedOrDoneIds = new Set<number>()
     this.parallelItemPaths.clear()
     for (const item of pendingItems) {
       if (item.path) this.parallelItemPaths.set(item.id, item.path)
@@ -182,6 +184,17 @@ export class AnalysisOrchestratorWorker {
           continue
         }
 
+        // 异步预检（checkBasicDataCompleteness）可能让出事件循环：
+        // 若期间批次已中止、任务已被删除或 GPU 已超时跳过，严禁再加入 handoverPendingIds 导致批次内滞留误判
+        if (
+          signal.aborted ||
+          !this.getQueueManager()?.hasItem(item.id) ||
+          gpuSkippedOrDoneIds.has(item.id)
+        ) {
+          notifier.notify(item.id)
+          continue
+        }
+
         this.markActive(item.id)
         this.handoverPendingIds.add(item.id)
         try {
@@ -209,6 +222,7 @@ export class AnalysisOrchestratorWorker {
         if (signal.aborted) break
         if (!this.getQueueManager()?.hasItem(item.id)) {
           // 已被删除的项不得滞留交接保护集合，否则 isItemActive / 目录中止判定会持续误判
+          gpuSkippedOrDoneIds.add(item.id)
           this.handoverPendingIds.delete(item.id)
           continue
         }
@@ -306,6 +320,7 @@ export class AnalysisOrchestratorWorker {
             )
           }
         } finally {
+          gpuSkippedOrDoneIds.add(item.id)
           this.unmarkActive(item.id)
           this.handoverPendingIds.delete(item.id)
         }

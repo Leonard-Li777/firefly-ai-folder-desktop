@@ -1,11 +1,7 @@
 import type { MutableRefObject } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import {
-  VirtualDirectory,
-  VirtualDirectoryFileRow,
-  VirtualDirectoryNode
-} from '@firefly/types'
+import { VirtualDirectory, VirtualDirectoryFileRow, VirtualDirectoryNode } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
@@ -141,9 +137,7 @@ export function useOrganizeDrafts({
         const res = await window.electronAPI!.virtualDirectory.getTreeSnapshotAsTree(vdId)
         let tree = Array.isArray(res) ? res : res?.tree || []
 
-        let unclassifiedNode = tree.find(
-          (n: any) => isUnclassifiedNodeName(n.name)
-        )
+        let unclassifiedNode = tree.find((n: any) => isUnclassifiedNodeName(n.name))
         if (!unclassifiedNode) {
           unclassifiedNode = {
             name: UNCLASSIFIED_NAME,
@@ -258,7 +252,7 @@ export function useOrganizeDrafts({
         }
 
         try {
-          const targetVDir = await window.electronAPI!.virtualDirectory.get(vdId)
+          let targetVDir = await window.electronAPI!.virtualDirectory.get(vdId)
           if (!targetVDir) {
             const list = await window.electronAPI!.virtualDirectory.list(
               currentWorkspaceDirectory?.id || 0

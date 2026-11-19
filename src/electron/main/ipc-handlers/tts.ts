@@ -27,8 +27,24 @@ import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-
 import { modularResourceService } from '../../runtime-services/system/modular-resource-service'
 import { moduleHibernationCoordinator } from '../../runtime-services/hibernation/module-hibernation-coordinator'
 
+/** M5-TTS 纯流式会话运行态记录 */
+interface ActiveStreamSession {
+  sessionId: string
+  sender: Electron.WebContents
+  pause: () => void
+  resume: () => void
+  abort: () => void
+  lastHeartbeatTime: number
+  pendingFramesCount: number
+  watchdogTimer: NodeJS.Timeout
+  recorder?: StreamWavRecorder
+}
+
 /** 管理会话级活跃请求的 AbortController，键为 sessionId */
 const activeSessionControllers = new Map<number, Set<AbortController>>()
+
+/** 管理纯流式 TTS 活跃会话，键为 sessionId（置于模块顶层以供 isTTSActive 查询） */
+const activeStreamSessions = new Map<string, ActiveStreamSession>()
 
 /** 检测当前是否有活跃的 TTS 合成或流式朗读任务 */
 export function isTTSActive(): boolean {
@@ -492,20 +508,6 @@ export function registerTTSIPCHandlers(): void {
   // ============================================================================
   // M5-TTS 纯流式会话 IPC 管道 (v1.7.2 规格书 §4.0 / §4.2 / §4.3)
   // ============================================================================
-
-  interface ActiveStreamSession {
-    sessionId: string
-    sender: Electron.WebContents
-    pause: () => void
-    resume: () => void
-    abort: () => void
-    lastHeartbeatTime: number
-    pendingFramesCount: number
-    watchdogTimer: NodeJS.Timeout
-    recorder?: StreamWavRecorder
-  }
-
-  const activeStreamSessions = new Map<string, ActiveStreamSession>()
 
   // 18. 启动纯流式 TTS 会话
   ipcMain.handle(

@@ -68,9 +68,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     {
       id: 2,
       name: 'file2.txt',
-      dimensionTags: [
-        { dimensionId: 4, dimensionName: '作者', tagValue: '鲁迅' }
-      ]
+      dimensionTags: [{ dimensionId: 4, dimensionName: '作者', tagValue: '鲁迅' }]
     }
   ]
 
@@ -89,7 +87,10 @@ describe('BatchTagView 批量打标视图回归测试', () => {
       id: 17,
       name: '安全等级',
       code: concept('安全等级'),
-      metadata: { flag: { isPanDimension: false }, triggerConditions: [{ parentDimension: concept('文件用途') }] },
+      metadata: {
+        flag: { isPanDimension: false },
+        triggerConditions: [{ parentDimension: concept('文件用途') }]
+      },
       tags: [
         { dimensionId: 17, tagValue: '安全等级', fileCount: 0 }, // 应该被门禁过滤（自身维度名）
         { dimensionId: 17, tagValue: '公开', fileCount: 1 },
@@ -112,18 +113,14 @@ describe('BatchTagView 批量打标视图回归测试', () => {
       name: '地理位置',
       code: concept('地理位置'),
       metadata: { flag: { isPanDimension: true, isRuleSubdivision: true } },
-      tags: [
-        { dimensionId: 16, tagValue: '地理位置', fileCount: 0 }
-      ]
+      tags: [{ dimensionId: 16, tagValue: '地理位置', fileCount: 0 }]
     },
     {
       id: 28,
       name: '内容标签',
       code: concept('内容标签'),
       metadata: { flag: { isPanDimension: true } },
-      tags: [
-        { dimensionId: 28, tagValue: '塔防', fileCount: 0 }
-      ]
+      tags: [{ dimensionId: 28, tagValue: '塔防', fileCount: 0 }]
     }
   ]
 
@@ -153,15 +150,11 @@ describe('BatchTagView 批量打标视图回归测试', () => {
 
   it('防首屏空态误判：在预设加载中绝不提前显示“未找到匹配的维度或标签”', () => {
     // 模拟尚未完成加载（返回 pending Promise）
-    ;(window as any).electronAPI.analyzedDirectory.getDimensionGroups = vi.fn().mockReturnValue(new Promise(() => {}))
+    ;(window as any).electronAPI.analyzedDirectory.getDimensionGroups = vi
+      .fn()
+      .mockReturnValue(new Promise(() => {}))
 
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     // 应展示正在加载中
     expect(screen.getByText('正在加载维度与标签...')).toBeInTheDocument()
@@ -170,17 +163,14 @@ describe('BatchTagView 批量打标视图回归测试', () => {
   })
 
   it('预设维度加载完成后正常呈现两列布局（分类维度在左，泛维度在右）', async () => {
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
-      expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
-      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+      const left = screen.getByTestId('section-standard-dimensions')
+      const right = screen.getByTestId('section-pan-dimensions')
+      expect(left).toBeInTheDocument()
+      expect(right).toBeInTheDocument()
+      expect(within(left).getByText('文件用途')).toBeInTheDocument()
     })
 
     // 展开所有分类维度以查看子维度与标签
@@ -198,13 +188,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
   })
 
   it('铁律校验：维度名自身绝不能作为其卡片下的可选标签', async () => {
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
@@ -225,13 +209,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
   })
 
   it('标签胶囊只显示文件命中数，不显示“文件总数”分母', async () => {
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
@@ -242,13 +220,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
   })
 
   it('搜索功能：仅当无任何匹配时才显示空态提示', async () => {
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
@@ -262,13 +234,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
 
   it('在泛维度（如作者）中新建标签时，新标签归属于该泛维度', async () => {
     const handleSaveTags = vi.fn().mockResolvedValue(undefined)
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={handleSaveTags}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={handleSaveTags} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
@@ -310,13 +276,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
 
   it('移除安全等级维度的“公开”标签并保存时，必须准确提交 removeTags 且包含安全等级上下文', async () => {
     const handleSaveTags = vi.fn().mockResolvedValue(undefined)
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={handleSaveTags}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={handleSaveTags} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
@@ -353,13 +313,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
   })
 
   it('防自身同名污染：在作者维度下输入“作者”时必须被拦截阻止添加并弹出警告 toast', async () => {
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
@@ -398,13 +352,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     })
     ;(window as any).electronAPI.organizeBatch.inspectControlledTags = inspectMock
 
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
@@ -430,13 +378,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     const inspectMock = vi.fn().mockRejectedValue(new Error('Omni timeout 1500ms'))
     ;(window as any).electronAPI.organizeBatch.inspectControlledTags = inspectMock
 
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
@@ -477,13 +419,7 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     })
     ;(window as any).electronAPI.organizeBatch.inspectControlledTags = inspectMock
 
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={onSaveTagsMock}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={onSaveTagsMock} />)
 
     await waitFor(() => {
       expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
@@ -581,17 +517,16 @@ describe('BatchTagView 批量打标视图回归测试', () => {
       .fn()
       .mockResolvedValue({ groups: customPresetGroups })
 
-    render(
-      <BatchTagView
-        files={mockFiles}
-        dimensionGroups={[]}
-        onSaveTags={vi.fn()}
-      />
-    )
+    render(<BatchTagView files={mockFiles} dimensionGroups={[]} onSaveTags={vi.fn()} />)
 
     await waitFor(() => {
-      expect(screen.getByTestId('section-standard-dimensions')).toBeInTheDocument()
-      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+      const left = screen.getByTestId('section-standard-dimensions')
+      const right = screen.getByTestId('section-pan-dimensions')
+      expect(left).toBeInTheDocument()
+      expect(right).toBeInTheDocument()
+      // 必须等待异步 getDimensionGroups 回填及自动展开 effect 全部完成，避免首帧折叠态偶发抖动
+      expect(within(right).getByText('作者')).toBeInTheDocument()
+      expect(within(left).getByText('子维度 (2)')).toBeInTheDocument()
     })
 
     const leftCol = screen.getByTestId('section-standard-dimensions')
