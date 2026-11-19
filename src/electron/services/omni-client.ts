@@ -5,7 +5,7 @@
  * 职责：
  * 1. 消费 Omni 暴露的高阶业务 HTTP API（taxonomy / vector）
  * 2. 屏蔽 Desktop 对 OMW 底层 SQLite 与 file_vectors 堆表的直接依赖
- * 3. 供主库语言分表 tag_aliases_{lang} 初值补录、虚拟目录渲染与分析向量链路统一调用
+ * 3. 供主库语言分表 tag_aliases 初值补录、虚拟目录渲染与分析向量链路统一调用
  *    （TaxonomyAliasCache 内存总线已按主设计废除，展示别名一律分表直查）
  */
 
@@ -452,7 +452,7 @@ export class OmniClient {
   /**
    * 按 lemma 批量回源语义包受控词：POST /api/v1/taxonomy/inspect-tag
    *
-   * 运行时「首见回源」专用：本地 tag_aliases_[lang] 镜像未命中的 lemma，用本端点查 pack。
+   * 运行时「首见回源」专用：本地 tag_aliases 镜像未命中的 lemma，用本端点查 pack。
    * 端点内部按 lemma 精确匹配 pack 别名表（omw > hownet > builtin 权威优先级），
    * 只返回受控 code（is_controlled_code 校验），**永不返回 _ext**。
    * 回源场景无父级约束，targetParentCode 传空串即可（端点仍按 lemma 匹配返回 code）。

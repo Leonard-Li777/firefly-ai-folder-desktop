@@ -6,7 +6,7 @@
  *
  * 背景（实测 bug：妈妈 → _ext.45f1364f）：
  * 回源候选若只取 groundTruthTags（CPU 物理事实标签），会漏掉 AI 推理 lemma。
- * 「妈妈」是 AI 推理标签，镜像 tag_aliases_zh_CN 长期缺受控码 omw.10332385.n，
+ * 「妈妈」是 AI 推理标签，镜像 tag_aliases 长期缺受控码 omw.10332385.n，
  * 下游 resolveControlledCode('妈妈') 落空 → saver.ts 兜底派生 _ext.45f1364f。
  * 故回源前必须把 AI 推理 lemma 一并纳入候选。
  */

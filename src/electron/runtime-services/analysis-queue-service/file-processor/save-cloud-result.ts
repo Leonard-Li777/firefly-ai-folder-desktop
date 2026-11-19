@@ -31,6 +31,7 @@ import { t } from '@app/languages'
 const CONTENT_TAGS_NAME = CANONICAL_NAMES.CONTENT_TAGS
 import { DeterministicCodeGenerator, stripXmlWrapperTags } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
+import { ConfigDbManager } from '../../config/config-db-manager'
 import { magikaService } from '../../system/magika-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import fs from 'node:fs'
@@ -207,6 +208,16 @@ export async function saveCloudResult(
 
     const dirPath = path.dirname(filePath)
     const directoryId = await databaseService.addDirectory(dirPath, workspaceId)
+
+    // Issue 02 Step 5：云端下行携带的受控码先按当前语言补齐规范名（差集回源，离线不阻断）。
+    // 必须置于同步事务之外：Omni 回源是 async IO，禁止在 db.transaction 回调内 await。
+    if (Array.isArray(data.tags)) {
+      await ConfigDbManager.getInstance().ensureCodesHydrated(
+        db,
+        data.tags.map((tag: any) => (typeof tag?.code === 'string' ? tag.code : undefined)),
+        databaseService.getCurrentLanguage()
+      )
+    }
 
     // 本次回灌是否造成文件标签集合增删（供事务末尾置 files.pinyin_state=0 脏标记）
     let tagsChanged = false

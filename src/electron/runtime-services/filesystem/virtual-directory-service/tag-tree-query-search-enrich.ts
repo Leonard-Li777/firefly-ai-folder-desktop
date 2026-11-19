@@ -17,7 +17,7 @@ import fs from 'node:fs'
 import { FileItem } from '@firefly/types'
 import { LogCategory, logger, extractSnippet, getCanonicalConceptName } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
-import { resolveTagAliasesLangTable } from '@runtime/database/database'
+import { normalizeSupportedLocale } from '@runtime/database/database'
 import { decompressText } from '../../../utils/text-compressor'
 import { splitPassages, HYBRID_SEARCH_POOL_SIZE } from './HybridSearchArbiter'
 import type { HybridRankedCandidate } from './HybridSearchArbiter'
@@ -25,13 +25,13 @@ import type { TagTreeQuery, FilterFilesParams, HybridPageRef } from './TagTreeQu
 
 /**
  * 【模型 B】按 code_path 拆段实时译名的轻量解析器。
- * 模型 B 无物化 name_path 列：展示名统一经 tag_aliases_{locale} ∪ file_tags_private 词表反查，
+ * 模型 B 无物化 name_path 列：展示名统一经单表 tag_aliases(locale) ∪ file_tags_private 词表反查，
  * 严禁在业务层重建物化 name_path。单条查询带记忆化，避免逐段重复打库。
  */
 function buildCodePathNameResolver(db: any, locale: string): (code: string) => string {
   const memo = new Map<string, string>()
-  const aliasTable = resolveTagAliasesLangTable(locale)
-  const isZh = locale.toLowerCase().startsWith('zh')
+  const safeLocale = normalizeSupportedLocale(locale)
+  const isZh = safeLocale.toLowerCase().startsWith('zh')
   return (code: string): string => {
     if (!code) return code
     const cached = memo.get(code)
@@ -44,14 +44,20 @@ function buildCodePathNameResolver(db: any, locale: string): (code: string) => s
         const row = db
           .prepare(
             `SELECT COALESCE(
-               (SELECT a.lemma FROM ${aliasTable} a WHERE a.tag_code = ? AND a.is_canonical = 1 LIMIT 1),
+               (SELECT a.lemma FROM tag_aliases a
+                WHERE a.locale = ? AND a.tag_code = ? AND a.is_canonical = 1 LIMIT 1),
                (SELECT p.name FROM file_tags_private p WHERE p.code = ? LIMIT 1)
              ) AS display_name`
           )
-          .get(code, code) as { display_name: string | null } | undefined
+          .get(safeLocale, code, code) as { display_name: string | null } | undefined
         if (row?.display_name) name = row.display_name
-      } catch {
-        // 词表分表缺失（旧库/局部 schema）属可容忍降级，继续走下方兜底
+      } catch (err) {
+        // 单表缺失（旧库/局部 schema）属可容忍降级，记录后继续走下方兜底
+        logger.debug(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[TagTreeQuery] 单表 tag_aliases 展示名解析失败，降级 code:',
+          err
+        )
       }
     }
     if (!name) name = code
@@ -598,7 +604,7 @@ export const tagTreeQuerySearchEnrichMixin = {
       tagNameLocale =
         ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
     } catch {
-      // 配置中心未就绪按默认中文，resolveTagAliasesLangTable 内含白名单校验杜绝注入
+      // 配置中心未就绪按默认中文，normalizeSupportedLocale 内含白名单校验杜绝注入
     }
     const resolveName = buildCodePathNameResolver(this.db, tagNameLocale)
     return files

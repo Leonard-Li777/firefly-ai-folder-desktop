@@ -307,7 +307,7 @@ export const tagTreeQueryDimensionTreeMixin = {
     try {
       const locale = opts.language || language || 'zh-CN'
       // 多语言别名已落库分表，展示名直接查 DB，无需内存总线 TaxonomyAliasCache
-      // 如需确保当前语言分表存在，可在此调用 createTagAliasesLangTable(db, locale)
+      // 如需确保当前语言分表存在，可在此调用 normalizeSupportedLocale(locale)
 
       if ((opts as any).forceRefresh || (opts as any).refresh) {
         omniClient.clearTaxonomyTreeCache()

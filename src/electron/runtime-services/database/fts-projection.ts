@@ -1,7 +1,7 @@
 import { buildPinyinIndexRow } from '../utils/pinyin-text'
 import { LogCategory, logger, getCanonicalConceptName } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { resolveTagAliasesLangTable } from './database'
+import { normalizeSupportedLocale } from './database'
 
 /**
  * 从受控标签 code 提取可读 slug 作为展示名兜底（builtin.* / omw.* / dim.xxx）
@@ -65,7 +65,7 @@ export class FtsProjectionService {
    * 受控标签展示名解析（与 file-dao/shared.ts resolveDisplayName 同口径）：
    * 1. 中文环境下命中 AOT 受控权威概念字典（Canonical Concept）的受控代码 → 规范中文展示名；
    * 2. 本地 file_tags_private.name（动态/扩展标签）其次；
-   * 3. 主库当前语言分表 tag_aliases_{lang} 直查再次；
+   * 3. 主库当前语言分表 tag_aliases 直查再次；
    * 4. 仍未命中时以受控词表规范名或 code 可读 slug 兜底，绝不暴露技术代码。
    * @param code 标签 code（受控 builtin.* / omw.* / dim.xxx 或本地动态标签）
    * @param ftName 已从 file_tags_private 取到的本地展示名（无则传 null）
@@ -86,15 +86,15 @@ export class FtsProjectionService {
       return ftName
     }
 
-    // 3. 主库当前语言分表 tag_aliases_{lang} 直查
+    // 3. 主库当前语言别名单表 tag_aliases 直查（Issue 02：locale 普通列，参数化零拼表）
     try {
-      const langTable = resolveTagAliasesLangTable(locale)
+      const safeLocale = normalizeSupportedLocale(locale)
       const row = this.db
         .prepare(
-          `SELECT lemma FROM ${langTable}
-           WHERE tag_code = ? ORDER BY is_canonical DESC LIMIT 1`
+          `SELECT lemma FROM tag_aliases
+           WHERE locale = ? AND tag_code = ? AND is_canonical = 1 LIMIT 1`
         )
-        .get(code) as { lemma?: string } | undefined
+        .get(safeLocale, code) as { lemma?: string } | undefined
       if (row?.lemma) return row.lemma
     } catch (error) {
       // 分表不可用时降级，记录告警并走下方 canonical / slug 兜底，严禁静默吞错

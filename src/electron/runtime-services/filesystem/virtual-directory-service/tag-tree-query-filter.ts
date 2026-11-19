@@ -14,7 +14,7 @@ import path from 'path'
 import { FilteredFilesResponse, SelectedTag } from '@firefly/types'
 import { LogCategory, logger, isMultiHostDimension } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
-import { resolveTagAliasesLangTable } from '@runtime/database/database'
+import { normalizeSupportedLocale } from '@runtime/database/database'
 import { PinyinQueryPlanner } from './pinyin-query-expander'
 import { escapeLikePrefixWindows, normalizeCodePath } from './tag-tree-query-path-utils'
 import { escapeLike } from './tag-tree-query-shared'
@@ -139,17 +139,18 @@ export const tagTreeQueryFilterMixin = {
            )) OR `
       }
 
-      // 模型 B 无物化 name_path：标签名模糊搜索改走「别名词表 ∪ 私有标签 → 祖先闭包 → 关联表」结构化链路。
-      // 先在 tag_aliases_{locale} / file_tags_private 命中展示名对应的 tag_code，再经 tag_path_ancestors
+      // 模型 B 无物化 name_path：标签名模糊搜索改走「单表 tag_aliases(locale) ∪ file_tags_private
+      // → 祖先闭包 → 关联表」结构化链路（Issue 02：动态 10 分表已退役）。
+      // 先在 tag_aliases 当前 locale 命中展示名对应的 tag_code，再经 tag_path_ancestors
       // （闭包含自身）拿到 path_id 集合，最后用 idx_ftr_path_fp O(log N) 探测命中的 file_fingerprint。
-      let aliasTable = 'tag_aliases_zh_CN'
+      let safeAliasLocale = 'zh-CN'
       try {
-        aliasTable = resolveTagAliasesLangTable(
+        safeAliasLocale = normalizeSupportedLocale(
           ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
         )
       } catch {
-        // 配置中心未就绪按默认中文分表，resolveTagAliasesLangTable 内含白名单校验杜绝注入
-        aliasTable = resolveTagAliasesLangTable('zh-CN')
+        // 配置中心未就绪按默认中文，normalizeSupportedLocale 内含白名单校验杜绝注入
+        safeAliasLocale = normalizeSupportedLocale('zh-CN')
       }
       const patternClauses: string[] = []
       const likeParams: any[] = []
@@ -168,15 +169,17 @@ export const tagTreeQueryFilterMixin = {
             FROM file_tag_relations ftr
             JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
             WHERE tpa.ancestor_code IN (
-              SELECT tag_code FROM ${aliasTable} WHERE lemma LIKE ? ESCAPE '\\'
+              SELECT tag_code FROM tag_aliases WHERE locale = ? AND lemma LIKE ? ESCAPE '\\'
               UNION
               SELECT code FROM file_tags_private WHERE name LIKE ? ESCAPE '\\'
             )
           )
         )`)
-        for (let i = 0; i < 10; i++) {
+        // 占位符顺序：8 个外层 LIKE → 1 个 locale → 2 个别名/私有标签 LIKE
+        for (let i = 0; i < 8; i++) {
           likeParams.push(pattern)
         }
+        likeParams.push(safeAliasLocale, pattern, pattern)
       }
 
       whereClauses.push(`(${ftsClause}${pinyinClause}${patternClauses.join(' OR ')})`)

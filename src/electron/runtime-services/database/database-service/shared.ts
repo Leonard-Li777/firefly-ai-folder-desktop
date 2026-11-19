@@ -34,8 +34,8 @@ import {
   findTagCodeTwoStage,
   getDatabaseConfig,
   migrations,
-  registerDatabaseFunctions,
-  resolveTagAliasesLangTable
+  normalizeSupportedLocale,
+  registerDatabaseFunctions
 } from '.././database'
 import { omniClient } from '../../../services/omni-client'
 
@@ -45,7 +45,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
 
-import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao } from '.././dao'
+import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao } from '.././dao'
 import type { AnalysisTaskType } from '.././dao'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
@@ -66,6 +66,8 @@ export abstract class DatabaseSharedBase {
   protected tagUnitDao!: TagUnitDao
   protected queueDao!: QueueDao
   protected localWorkflowDao!: LocalWorkflowDao
+  /** [Issue 04 Step 2] 文件系统变更 DAO：单事务原子更新 workspace_files（取代 FileDao.updateFilePath） */
+  protected fsMutationDao!: FileSystemMutationDao
 
   protected initPromise: Promise<void> | null = null
 
@@ -140,7 +142,7 @@ export abstract class DatabaseSharedBase {
 
   /**
    * 权威反查标签的自然主键 code
-   * 1. 优先查 tag_aliases_{lang} 当前语言别名表（受控 + 动态标签本地镜像）
+   * 1. 优先查 tag_aliases 当前语言别名表（受控 + 动态标签本地镜像）
    * 2. 查 AOT 受控词表 CONTROLLED_CONCEPTS 字典
    * 3. 查 file_tags_private 本地私有表
    */
@@ -149,19 +151,22 @@ export abstract class DatabaseSharedBase {
     const trimmed = String(tagName).trim()
     if (!trimmed) return null
 
-    // 1. 查询当前语言别名分表
+    // 1. 查询当前语言别名单表（Issue 02：locale 普通列，参数化零拼表 + 三源权威排序）
     if (this._db) {
       try {
-        const targetLocale = this.currentLanguage || 'zh-CN'
-        const langTable = resolveTagAliasesLangTable(targetLocale)
+        const targetLocale = normalizeSupportedLocale(this.currentLanguage || 'zh-CN')
         const row = this._db
           .prepare(
-            `SELECT tag_code FROM ${langTable}
-             WHERE lemma = ?
-             ORDER BY is_canonical DESC
+            `SELECT tag_code FROM tag_aliases
+             WHERE locale = ? AND lemma = ?
+             ORDER BY CASE
+               WHEN tag_code GLOB 'omw.*' THEN 0
+               WHEN tag_code GLOB 'hownet.*' THEN 1
+               ELSE 2 END,
+               is_canonical DESC, count DESC, tag_code ASC
              LIMIT 1`
           )
-          .get(trimmed) as { tag_code: string } | undefined
+          .get(targetLocale, trimmed) as { tag_code: string } | undefined
         if (row?.tag_code) return row.tag_code
       } catch {}
 

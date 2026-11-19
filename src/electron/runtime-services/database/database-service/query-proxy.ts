@@ -37,9 +37,10 @@ import {
   findTagCodeTwoStage,
   getDatabaseConfig,
   migrations,
+  normalizeSupportedLocale,
   rebuildDebugTagViews,
   registerDatabaseFunctions,
-  resolveTagAliasesLangTable
+  seedTagAliasesSingleTable
 } from '.././database'
 import { omniClient } from '../../../services/omni-client'
 
@@ -172,9 +173,21 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     return wf?.id || null
   }
 
-  async updateFilePath(oldPath: string, newPath: string): Promise<void> {
+  /**
+   * [Issue 04 Step 2] 物理文件移动后的数据库更新：改走 FileSystemMutationDao，
+   * 单事务原子更新 workspace_files(path/name/directory_id/mtime_ms/modified_at)，
+   * name 变更由 trg_workspace_files_fts_update 触发器自动同步 files_fts。
+   * @param oldPath 原绝对路径
+   * @param newPath 新绝对路径
+   * @param statMtimeMs 移动后文件 mtime_ms（Math.trunc(stats.mtimeMs)，FileGuard 围栏锚点）
+   */
+  async updateFilePath(
+    oldPath: string,
+    newPath: string,
+    statMtimeMs?: number
+  ): Promise<void> {
     await this.addDirectory(path.dirname(newPath))
-    return this.fileDao.updateFilePath(oldPath, newPath)
+    this.fsMutationDao.updateFilePathAtomic(oldPath, newPath, statMtimeMs)
   }
 
   async addDirectory(dirPath: string, existingWorkspaceId?: number): Promise<number> {
@@ -1909,7 +1922,7 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   /**
    * 多语言展示层标签名解析器 (Tag Display Resolver)
    * ADR-0038 / Issue #682 / tag-aliases-lang-tables：
-   * 1. 受控 + 动态标签展示名统一查主库当前语言分表 tag_aliases_{lang}（本地持久化镜像，零网络）；
+   * 1. 受控 + 动态标签展示名统一查主库当前语言分表 tag_aliases（本地持久化镜像，零网络）；
    * 2. 用户/扩展标签兜底读取本地 file_tags_private.name；
    * 3. 彻底废除对 omw_lexical_entries 等只读语义表的裸 SQL 查询与 TaxonomyAliasCache 内存总线。
    *
@@ -1936,8 +1949,7 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
 
     try {
       const activeDb = dbInstance || this._db
-      const targetLocale = locale || this.currentLanguage || 'zh-CN'
-      const langTable = resolveTagAliasesLangTable(targetLocale)
+      const targetLocale = normalizeSupportedLocale(locale || this.currentLanguage || 'zh-CN')
       const isZh = targetLocale.toLowerCase().startsWith('zh')
 
       // 0) 中文环境下优先 AOT 受控权威词条（仅针对受控代码：omw.*, hownet.*, builtin.*）
@@ -1963,11 +1975,11 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
           // 优先规范名（is_canonical=1），其次首个词形
           const aliasRows = activeDb
             .prepare(
-              `SELECT tag_code, lemma FROM ${langTable}
-               WHERE tag_code IN (${aliasPlaceholders})
-               ORDER BY is_canonical DESC`
+              `SELECT tag_code, lemma FROM tag_aliases
+               WHERE locale = ? AND tag_code IN (${aliasPlaceholders})
+               ORDER BY is_canonical DESC, count DESC`
             )
-            .all(...distinctCodes) as { tag_code: string; lemma: string }[]
+            .all(targetLocale, ...distinctCodes) as { tag_code: string; lemma: string }[]
           for (const r of aliasRows) {
             if (r.lemma && result[r.tag_code] === r.tag_code) {
               result[r.tag_code] = r.lemma
@@ -2048,66 +2060,52 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   }
 
   /**
-   * 运行时「首见回源」：把从 pack 回源命中的受控词补写进 tag_aliases_[lang] 镜像表。
+   * 运行时「首见回源」：把从 Omni inspectTags 回源命中的受控词补写进 tag_aliases 单表镜像。
    *
-   * 只补受控 code（omw.* / hownet.* / builtin.*）；严禁写入 `_ext.` 开头的派生码——否则会复现旧恶性循环
-   * （派生 _ext → 写回镜像 → 同名词永久钉死在 _ext、丢失受控 parentCodes）。
-   * 幂等：INSERT OR REPLACE，按 (tag_code, lemma) 主键去重。
-   * @param rows 回源命中的受控别名行（tag_code + lemma + is_canonical）
+   * 防污染闸（Issue 02 Step 3 / Spec §B L326-344）：只放行受控前缀 omw.* / hownet.* / builtin.*，
+   * 非受控码（_ext.* / user.* / custom.*）一律 logger.warn 后过滤，绝不入表（撞 CHECK 物理免疫）。
+   *
+   * R2-4 成对规范名三步 Upsert（单事务）：
+   *   ① 写 is_canonical=1 前先降级同 (locale,tag_code) 下不同的旧规范名（防撞 uq_tag_aliases_one_canonical）；
+   *   ② 规范名 ON CONFLICT DO UPDATE 且 count=MAX(不回退)；
+   *   ③ 同义词 is_canonical=0 绝不清空既有 is_canonical=1。
+   *
+   * @param rows 回源命中的别名行（tagCode + lemma + isCanonical；同义词对由调用方成对传入）
    * @param locale 目标语言，如 zh-CN
-   * @returns 实际写入行数（过滤 _ext 后）
+   * @returns 实际写入行数（过滤非受控后）
    */
   public seedTagAliasRows(
-    rows: Array<{ tagCode: string; lemma: string; isCanonical?: boolean }>,
+    rows: Array<{ tagCode: string; lemma: string; isCanonical?: boolean; n?: number; count?: number }>,
     locale?: string
   ): number {
-    if (!this._db || !rows.length) return 0
-    const targetLocale = locale || this.currentLanguage || 'zh-CN'
-    const langTable = resolveTagAliasesLangTable(targetLocale)
-    // 防污染闸：_ext.*/user.*/custom. 等非受控 code 一律不入镜像表
-    const controlled = rows.filter(
-      r =>
-        r.tagCode &&
-        !r.tagCode.startsWith('_ext.') &&
-        !r.tagCode.startsWith('user.') &&
-        !r.tagCode.startsWith('custom.')
-    )
-    if (!controlled.length) return 0
+    if (!this._db) return 0
     try {
-      const insert = this._db.prepare(
-        `INSERT OR REPLACE INTO ${langTable} (tag_code, lemma, is_canonical, n, count)
-         VALUES (?, ?, ?, ?, ?)`
+      return seedTagAliasesSingleTable(
+        this._db,
+        locale || this.currentLanguage || 'zh-CN',
+        rows
       )
-      let written = 0
-      this._db.transaction(() => {
-        for (const r of controlled) {
-          insert.run(r.tagCode, r.lemma, r.isCanonical ? 1 : 0, 1, 0)
-          written++
-        }
-      })()
-      return written
     } catch (error) {
-      logger.warn(LogCategory.DATABASE_SERVICE, 'seedTagAliasRows 补写镜像表失败:', error)
+      logger.warn(LogCategory.DATABASE_SERVICE, 'seedTagAliasRows 补写单表失败:', error)
       return 0
     }
   }
 
   /**
-   * 按 tag_code 快速查询当前语言规范展示名 (读当前语言分表，优先规范名)
+   * 按 tag_code 快速查询当前语言规范展示名（单表 tag_aliases，优先规范名）
    */
   public findLemmaByTagCode(tagCode: string, locale?: string): string | undefined {
     if (!tagCode || !this._db) return undefined
-    const targetLocale = locale || this.currentLanguage || 'zh-CN'
-    const langTable = resolveTagAliasesLangTable(targetLocale)
+    const safeLocale = normalizeSupportedLocale(locale || this.currentLanguage || 'zh-CN')
     try {
       const rows = this._db
         .prepare(
-          `SELECT lemma FROM ${langTable}
-           WHERE tag_code = ?
-           ORDER BY is_canonical DESC
+          `SELECT lemma FROM tag_aliases
+           WHERE locale = ? AND tag_code = ? AND is_canonical = 1
+           ORDER BY count DESC
            LIMIT 1`
         )
-        .all(tagCode) as { lemma: string }[]
+        .all(safeLocale, tagCode) as { lemma: string }[]
       return rows[0]?.lemma
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, 'findLemmaByTagCode 查询失败:', error)

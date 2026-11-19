@@ -15,7 +15,7 @@ import { t } from '@app/languages'
 import * as path from 'path'
 import * as fs from 'fs'
 import { AccessTimeBatchUpdater } from '../../access-time-batch-updater'
-import { resolveTagAliasesLangTable } from '../../database'
+import { normalizeSupportedLocale } from '../../database'
 import { ConfigOrchestrator } from '../../../../config/config-orchestrator'
 import {
   isAnalyzedForMode,
@@ -43,7 +43,7 @@ export function readableCode(code: string): string {
 
 /**
  * 受控标签展示名解析：本地 file_tags_private.name 优先，
- * 其次主库当前语言分表 tag_aliases_{lang}（DAO 层直查 SQL，替换 TaxonomyAliasCache 内存总线），最后 code 可读 slug 兜底。
+ * 其次主库当前语言分表 tag_aliases（DAO 层直查 SQL，替换 TaxonomyAliasCache 内存总线），最后 code 可读 slug 兜底。
  * 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags_private 表（file_tags_private.source CHECK 仅 expanded/user），
  * 其展示名须经语言分表 / Omni 语义包 tag_aliases 镜像解析。
  */
@@ -93,10 +93,10 @@ export abstract class FileDaoSharedBase {
   constructor(protected db: Database) {}
 
   /**
-   * 受控标签展示名解析（DAO 层直查主库当前语言分表 tag_aliases_{lang}）
-   * 受控标签展示名解析（AOT 概念字典与主库当前语言分表 tag_aliases_{lang} 联合解析）
+   * 受控标签展示名解析（DAO 层直查主库当前语言分表 tag_aliases）
+   * 受控标签展示名解析（AOT 概念字典与主库当前语言分表 tag_aliases 联合解析）
    * 1. 中文环境下，凡命中 AOT 受控权威词条（Canonical Concept）的受控代码，强制采用规范中文展示名；
-   * 2. 本地语言分表 tag_aliases_{lang} 规范名（is_canonical=1）其次；
+   * 2. 本地语言分表 tag_aliases 规范名（is_canonical=1）其次；
    * 3. 本地 file_tags_private.name 再次（动态标签/扩展标签，中文环境下拦截过滤常见英文机器码）；
    * 4. 仍未命中时以受控词表或 code 的可读 slug 兜底，绝不暴露未处理的技术代码。
    * @param code 标签 code（受控 builtin.* / omw.* / dim.xxx 或本地动态标签）
@@ -119,15 +119,15 @@ export abstract class FileDaoSharedBase {
       return ftName
     }
 
-    // 3. 本地主库语言分表 tag_aliases_{lang} 直查
+    // 3. 本地主库别名单表 tag_aliases 直查（Issue 02：locale 普通列，参数化零拼表）
     try {
-      const langTable = resolveTagAliasesLangTable(locale)
+      const safeLocale = normalizeSupportedLocale(locale)
       const row = this.db
         .prepare(
-          `SELECT lemma FROM ${langTable}
-           WHERE tag_code = ? ORDER BY is_canonical DESC LIMIT 1`
+          `SELECT lemma FROM tag_aliases
+           WHERE locale = ? AND tag_code = ? AND is_canonical = 1 LIMIT 1`
         )
-        .get(code) as { lemma?: string } | undefined
+        .get(safeLocale, code) as { lemma?: string } | undefined
       if (row?.lemma) return row.lemma
     } catch {
       // 分表不可用时降级，不影响主查询

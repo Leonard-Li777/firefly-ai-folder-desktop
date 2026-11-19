@@ -67,7 +67,6 @@ import {
   type FileInfoInput
 } from '@firefly/core-engine'
 import { executeProPreflight, executeProTagReconciliation } from '@pro'
-import { extractAiLemmasFromDimResult } from './lemma-candidates'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
@@ -105,7 +104,6 @@ import {
   checkBasicDataCompleteness
 } from './db-analysis-state'
 import { persistOmniVectors, cleanupOrphanedVideoChunks } from './omni-vector-persistence'
-import { ensureLemmaAliasesSeeded } from './lemma-alias-seeder'
 import { getFallbackLyrics } from './fallback-lyrics'
 
 export {
@@ -115,7 +113,6 @@ export {
   checkBasicDataCompleteness,
   persistOmniVectors,
   cleanupOrphanedVideoChunks,
-  ensureLemmaAliasesSeeded,
   getFallbackLyrics
 }
 export type { OmniVectorPersistenceParams } from './omni-vector-persistence'
@@ -1324,13 +1321,6 @@ export class FileProcessor {
             )
           }
         }
-
-        // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
-        await ensureLemmaAliasesSeeded(
-          preflightContext?.groundTruthTags?.map(t => t.tagName),
-          baseMetadata?.language,
-          extractAiLemmasFromDimResult(dimResult)
-        )
 
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
@@ -2598,13 +2588,6 @@ export class FileProcessor {
               // 容错：清空失败不阻断后续落库（INSERT OR REPLACE 会覆盖同主键行）
             }
           }
-          // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
-          // 此分支（CPU Stage 2）无 AI 推理结果（dimResult 为 null），仅回源 groundTruthTags。
-          await ensureLemmaAliasesSeeded(
-            preflightContext?.groundTruthTags?.map(t => t.tagName),
-            language
-          )
-
           executeProTagReconciliation({
             db,
             fileFingerprint,
@@ -2781,13 +2764,6 @@ export class FileProcessor {
         logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           `[基础分析] 保存 category: ${JSON.stringify(magikaCategory).slice(0, 200)}`
-        )
-
-        // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
-        // 此 simple 基础分析分支无 AI 推理结果（下游传 dimResult: null），仅回源 groundTruthTags。
-        await ensureLemmaAliasesSeeded(
-          preflightContext?.groundTruthTags?.map(t => t.tagName),
-          language
         )
 
         // 运行找补裁决器单点持久化：全量注入物理事实（来源、状态、安全、水印、作者、分类、扩展名等）
@@ -3004,13 +2980,6 @@ export class FileProcessor {
         stage1Benchmark,
         finalTargetSmartNameSource,
         null
-      )
-
-      // 运行时首见回源：本批 lemma 本地镜像未命中的，批量查 pack 补镜像（防误派生 _ext）
-      await ensureLemmaAliasesSeeded(
-        preflightContext?.groundTruthTags?.map(t => t.tagName),
-        language,
-        extractAiLemmasFromDimResult(dimResult)
       )
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库

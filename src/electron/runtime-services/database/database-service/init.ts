@@ -37,8 +37,7 @@ import {
   getDatabaseConfig,
   migrations,
   rebuildDebugTagViews,
-  registerDatabaseFunctions,
-  resolveTagAliasesLangTable
+  registerDatabaseFunctions
 } from '.././database'
 import { omniClient } from '../../../services/omni-client'
 
@@ -48,9 +47,12 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
 
-import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao } from '.././dao'
+import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao } from '.././dao'
 import type { AnalysisTaskType } from '.././dao'
-import { DeterministicCodeGenerator } from '@firefly/core-engine'
+import {
+  DeterministicCodeGenerator,
+  configureControlledPreResolver
+} from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
@@ -149,6 +151,8 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
         this.tagUnitDao = new TagUnitDao(this._db)
         this.queueDao = new QueueDao(this._db)
         this.localWorkflowDao = new LocalWorkflowDao(this._db)
+        // [Issue 04 Step 2] 文件系统变更 DAO：单事务原子更新 workspace_files（移动/重命名/前缀批量）
+        this.fsMutationDao = new FileSystemMutationDao(this._db)
 
         this._db.pragma(`journal_mode = ${config.pragma.journal_mode}`)
         this._db.pragma(`synchronous = ${config.pragma.synchronous}`)
@@ -191,6 +195,26 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
             logger.error(LogCategory.DATABASE_SERVICE, '迁移后回调执行失败:', cbError)
           }
         }
+
+        // Issue 02 Step 4：将 Fix-14 统一预解析闸口注入 core-engine saver。
+        // IO 全部由 Desktop 宿主提供（core-engine 严禁反向依赖 desktop/src）：
+        // 本地覆盖索引 → Omni inspectTags 回源 → R2-4 单表成对 Upsert。
+        configureControlledPreResolver({
+          findLocalCode: (lemma, locale) => {
+            if (!this._db) return undefined
+            return findTagCodeTwoStage(this._db, lemma, locale, this.currentLanguage)?.tagCode
+          },
+          inspectTags: async (lemmas, locale) => {
+            const resp = await omniClient.inspectTags(
+              lemmas.map(tagName => ({ tagName, targetParentCode: '' })),
+              locale
+            )
+            if (!resp?.success) return null
+            return resp.results
+          },
+          seedAliasRows: (rows, locale) =>
+            (this as any).seedTagAliasRows(rows, locale) as number
+        })
 
         // Issue 01 目标 4：建库/迁移与初始语言别名准备完成后，按当前语言重建动态调试视图。
         // 视图仅供开发调试直查（零数据行写入），业务读侧一律 JOIN tag_paths；

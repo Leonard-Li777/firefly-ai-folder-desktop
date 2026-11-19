@@ -257,8 +257,26 @@ export const GENESIS_V1_SCHEMA = `
     meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isRuleSubdivision, isMultiSelect, color, icon 等（注：isDimension 标志位已废除，PRD-0060 v2.2；isPanDimension 真实存活在策略表 metadata.flag 域，非 file_tags.meta）
   );
 
-  -- 8. 用户/扩展标签多语言别名（受控 builtin.*/omw.* 别名由语言分表 tag_aliases_{lang} 镜像）
-  -- 语言分表 DDL 见 createTagAliasesLangTable（表名含语言后缀，需按语言动态创建）；单表 tag_aliases 已废止。
+  -- 8. 受控别名本地镜像单表（Issue 02：取代原 10 张动态拼名分表，物理免疫 _ext/user 污染）。
+  -- 权威 spec §B L325-344：locale 作为普通列，WITHOUT ROWID + 受控前缀 CHECK + 三索引；
+  -- 未切语种 0 行防膨胀；Omni 只读语义包内 tag_aliases 10 分表保持不变（不在此建）。
+  CREATE TABLE IF NOT EXISTS tag_aliases (
+    locale       TEXT NOT NULL,
+    tag_code     TEXT NOT NULL CHECK (
+                   tag_code GLOB 'omw.*' OR tag_code GLOB 'hownet.*' OR tag_code GLOB 'builtin.*'
+                 ),
+    lemma        TEXT NOT NULL CHECK (lemma != ''),
+    is_canonical INTEGER NOT NULL DEFAULT 0 CHECK (is_canonical IN (0, 1)),
+    n            INTEGER NOT NULL DEFAULT 1,
+    count        INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (locale, tag_code, lemma)
+  ) WITHOUT ROWID;
+  CREATE INDEX IF NOT EXISTS idx_tag_aliases_locale_lemma
+    ON tag_aliases(locale, lemma, tag_code, is_canonical, count);
+  CREATE UNIQUE INDEX IF NOT EXISTS uq_tag_aliases_one_canonical
+    ON tag_aliases(locale, tag_code) WHERE is_canonical = 1;
+  CREATE INDEX IF NOT EXISTS idx_tag_aliases_canonical
+    ON tag_aliases(locale, tag_code, lemma) WHERE is_canonical = 1;
 
   -- 9. 文件指纹与标签多对多关联表（模型 B：物化路径外迁至 tag_paths，仅存 4B 外键 path_id）
   -- 权威 spec §B L306-323：移除 code_path/name_path/depth，新增 path_id 外键 + WITHOUT ROWID；
@@ -398,6 +416,22 @@ export const GENESIS_V1_SCHEMA = `
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+
+  -- 16.2 孤儿指纹 GC 队列（Issue 04 Step 1 / Spec §3.1.C.2：SQLite↔FTS5↔zvec 两阶段真自愈）
+  -- workspace_files 删除触发器在指纹全库零引用时入队；FileCleanupService.reconcileOrphanFingerprints 统一调度。
+  CREATE TABLE IF NOT EXISTS orphan_gc_queue (
+    file_fingerprint TEXT PRIMARY KEY,
+    enqueued_at      INTEGER NOT NULL
+  ) WITHOUT ROWID;
+
+  -- 16.3 向量删除 outbox（SQLite-First Outbox 阶段二：离线保留待 Omni 重启自愈）
+  -- 阶段一删 files 同时写入；阶段二二次校验 NOT EXISTS files 后调 omniClient.deleteVectors，成功才删行。
+  CREATE TABLE IF NOT EXISTS vector_delete_outbox (
+    file_fingerprint TEXT PRIMARY KEY,
+    state            TEXT NOT NULL DEFAULT 'pending' CHECK (state IN ('pending', 'failed')),
+    retry_count      INTEGER NOT NULL DEFAULT 0,
+    enqueued_at      INTEGER NOT NULL
+  ) WITHOUT ROWID;
 
   -- 16.5 视频时序切片元数据表 (EmbeddingGemma-2 视频时序切片与跳轴定位)
   CREATE TABLE IF NOT EXISTS file_video_chunks (
@@ -827,6 +861,45 @@ export const GENESIS_V1_SCHEMA = `
     UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = new.file_fingerprint;
   END;
 
+  -- ===== Issue 04 Step 1：SQLite ↔ FTS5 ↔ zvec 两阶段自愈 GC 触发器（Spec §3.1.C.2） =====
+  -- 正向入队：workspace_files 某指纹全库零引用时入队 orphan_gc_queue（依赖 idx_wf_fp O(log N) 探测）。
+  DROP TRIGGER IF EXISTS trg_wf_enqueue_orphan_gc;
+  CREATE TRIGGER trg_wf_enqueue_orphan_gc AFTER DELETE ON workspace_files
+  WHEN old.file_fingerprint IS NOT NULL
+    AND NOT EXISTS (SELECT 1 FROM workspace_files WHERE file_fingerprint = old.file_fingerprint)
+  BEGIN
+    INSERT OR IGNORE INTO orphan_gc_queue(file_fingerprint, enqueued_at)
+    VALUES (old.file_fingerprint, CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER));
+  END;
+
+  -- [R2-2b] 反向出队：重新扫入同指纹文件时立即撤回 GC 排队与向量删除 outbox，
+  --   防阶段一已删 files、阶段二尚未调 Omni 删向量时，该指纹被重新扫入建好新向量却被延迟 outbox 误删。
+  DROP TRIGGER IF EXISTS trg_wf_cancel_orphan_gc;
+  CREATE TRIGGER trg_wf_cancel_orphan_gc AFTER INSERT ON workspace_files
+  WHEN new.file_fingerprint IS NOT NULL
+  BEGIN
+    DELETE FROM orphan_gc_queue WHERE file_fingerprint = new.file_fingerprint;
+    DELETE FROM vector_delete_outbox WHERE file_fingerprint = new.file_fingerprint;
+  END;
+
+  -- [R2-2a] 指纹变更双向 GC：堵死「延迟算哈希误删」与「原地修改永久孤儿」两类边界。
+  --   SQLite 的 IS NOT 等价 IS DISTINCT FROM（NULL 安全），WHEN 天然只在指纹真正变化时触发。
+  DROP TRIGGER IF EXISTS trg_wf_update_orphan_gc;
+  CREATE TRIGGER trg_wf_update_orphan_gc AFTER UPDATE OF file_fingerprint ON workspace_files
+  WHEN old.file_fingerprint IS NOT new.file_fingerprint
+  BEGIN
+    -- 新指纹非空：从待回收队列与待删向量 outbox 撤回（防延迟算哈希误删）
+    DELETE FROM orphan_gc_queue
+     WHERE new.file_fingerprint IS NOT NULL AND file_fingerprint = new.file_fingerprint;
+    DELETE FROM vector_delete_outbox
+     WHERE new.file_fingerprint IS NOT NULL AND file_fingerprint = new.file_fingerprint;
+    -- 旧指纹非空且全库零引用：入队回收（防原地修改永久孤儿泄漏）
+    INSERT OR IGNORE INTO orphan_gc_queue(file_fingerprint, enqueued_at)
+    SELECT old.file_fingerprint, CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)
+     WHERE old.file_fingerprint IS NOT NULL
+       AND NOT EXISTS (SELECT 1 FROM workspace_files WHERE file_fingerprint = old.file_fingerprint);
+  END;
+
   -- 26. 模块运行时快照与持久门闩表 (Module Runtime Snapshots)
   CREATE TABLE IF NOT EXISTS module_runtime_snapshots (
     target_id                   TEXT PRIMARY KEY,
@@ -867,9 +940,12 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS app_config;
       DROP TABLE IF EXISTS file_constants;
       DROP TABLE IF EXISTS file_tag_relations;
+      DROP TABLE IF EXISTS tag_aliases;
       DROP TABLE IF EXISTS file_tags_private;
       DROP TABLE IF EXISTS file_tags;
       DROP TABLE IF EXISTS analysis_queue;
+      DROP TABLE IF EXISTS vector_delete_outbox;
+      DROP TABLE IF EXISTS orphan_gc_queue;
       DROP TABLE IF EXISTS workspace_files;
       DROP TABLE IF EXISTS file_contents;
       DROP TABLE IF EXISTS files;
@@ -900,54 +976,89 @@ export function resolveAndMigrateDatabasePath(userDataPath: string, _language?: 
 }
 
 /**
- * 将语言区域代码转换为分表后缀（与 Omni 语义包 / build-semantic-pack 的 localeToTableSuffix 一致）
- * 如 zh-CN → zh_CN；en-US → en_US
- */
-export function localeToTableSuffix(locale: string): string {
-  return locale.replace(/-/g, '_')
-}
-
-/**
- * 分表兜底语言：白名单外 locale 一律回退，防止非法值拼入表名（Fix-09）
+ * 语言白名单兜底 locale（Issue 02：单表 tag_aliases 后 locale 为普通列值，仍须白名单校验防脏值入库）
  */
 const TAG_ALIASES_FALLBACK_LOCALE = 'en-US'
 
 /**
- * 生成某个语言的分表名（与 Omni 语义包 tag_aliases_{lang} 一一对应）
- * 安全入口：locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（与构建期语言清单同源），
- * 非白名单值回退 en-US 并记 warn，杜绝任意字符串拼入表名。
+ * 归一化受支持 locale（Issue 02 Step 1 / 取代原分表解析器）：
+ * 命中 SUPPORTED_LANGUAGES_KEY 白名单原样返回，否则回退 en-US 并记 warn。
+ * 单表 tag_aliases 下 locale 是普通列，本函数只做白名单校验，不再拼表名（杜绝 SQL 注入面）。
  * @param locale 如 zh-CN
  */
-export function resolveTagAliasesLangTable(locale: string): string {
+export function normalizeSupportedLocale(locale: string): string {
   if (!(SUPPORTED_LANGUAGES_KEY as readonly string[]).includes(locale)) {
     logger.warn(
       LogCategory.DATABASE,
-      `非法语言 locale "${locale}"，分表名解析回退 ${TAG_ALIASES_FALLBACK_LOCALE}`
+      `非法语言 locale "${locale}"，别名 locale 回退 ${TAG_ALIASES_FALLBACK_LOCALE}`
     )
-    locale = TAG_ALIASES_FALLBACK_LOCALE
+    return TAG_ALIASES_FALLBACK_LOCALE
   }
-  return `tag_aliases_${localeToTableSuffix(locale)}`
+  return locale
 }
 
 /**
- * 创建主库语言分表 tag_aliases_{lang}（受控别名的本地持久化镜像）
- * - 字段与 Omni 语义包 tag_aliases_{lang} 完全一致：无 locale / meta 列，语言体现在表名；
- * - 附加 lemma 索引支撑反查（对应语义包 _lemma_index）；
- * - 幂等：已存在则跳过。
+ * R2-4 成对规范名 Upsert 唯一实现（Issue 02 Step 3）：
+ * ① 写 is_canonical=1 前先降级同 (locale, tag_code) 的旧规范名（防撞 uq_tag_aliases_one_canonical）；
+ * ② 规范名 ON CONFLICT DO UPDATE 且 count/n 不回退；
+ * ③ 同义词 is_canonical=0 绝不覆盖已有规范名。
+ * 非受控码（_ext.* / user.*）在入场前过滤并告警，物理 CHECK 双保险。
+ *
+ * @returns 实际写入行数（被过滤的非受控码不计）
  */
-export function createTagAliasesLangTable(db: Database, locale: string): void {
-  const table = resolveTagAliasesLangTable(locale)
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS ${table} (
-      tag_code    TEXT NOT NULL,          -- 受控 code（builtin.* / omw.*）
-      lemma       TEXT NOT NULL,          -- 该语言词形
-      is_canonical INTEGER NOT NULL DEFAULT 0,   -- 是否规范名
-      n           INTEGER NOT NULL DEFAULT 1,    -- 语义包词频（镜像字段）
-      count       INTEGER NOT NULL DEFAULT 0,    -- 语义包文档数（镜像字段）
-      PRIMARY KEY (tag_code, lemma)
-    ) WITHOUT ROWID;
-    CREATE INDEX IF NOT EXISTS idx_${table}_lemma ON ${table}(lemma);
-  `)
+export function seedTagAliasesSingleTable(
+  db: any,
+  locale: string,
+  rows: Array<{
+    tagCode: string
+    lemma: string
+    isCanonical?: boolean
+    n?: number
+    count?: number
+  }>
+): number {
+  if (!db || !Array.isArray(rows) || rows.length === 0) return 0
+  const safeLocale = normalizeSupportedLocale(locale)
+  const controlled = rows.filter(r => {
+    const ok =
+      typeof r?.tagCode === 'string' &&
+      typeof r?.lemma === 'string' &&
+      r.lemma.length > 0 &&
+      (r.tagCode.startsWith('omw.') ||
+        r.tagCode.startsWith('hownet.') ||
+        r.tagCode.startsWith('builtin.'))
+    if (!ok) {
+      logger.warn(
+        LogCategory.DATABASE,
+        `[seedTagAliasRows] 非受控码拒绝入镜像表: code=${r?.tagCode}, lemma=${r?.lemma}`
+      )
+    }
+    return ok
+  })
+  if (controlled.length === 0) return 0
+
+  const downgrade = db.prepare(
+    `UPDATE tag_aliases SET is_canonical = 0
+     WHERE locale = ? AND tag_code = ? AND is_canonical = 1 AND lemma <> ?`
+  )
+  const upsert = db.prepare(
+    `INSERT INTO tag_aliases (locale, tag_code, lemma, is_canonical, n, count)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(locale, tag_code, lemma) DO UPDATE SET
+       is_canonical = CASE WHEN excluded.is_canonical = 1 THEN 1 ELSE tag_aliases.is_canonical END,
+       n = MAX(tag_aliases.n, excluded.n),
+       count = MAX(tag_aliases.count, excluded.count)`
+  )
+  return db.transaction(() => {
+    let written = 0
+    for (const r of controlled) {
+      const canonical = r.isCanonical ? 1 : 0
+      if (canonical === 1) downgrade.run(safeLocale, r.tagCode, r.lemma)
+      upsert.run(safeLocale, r.tagCode, r.lemma, canonical, r.n ?? 1, r.count ?? 0)
+      written++
+    }
+    return written
+  })()
 }
 
 /**
@@ -975,22 +1086,21 @@ export interface TwoStageTagLookup {
  * 保证 `is_canonical`/`count` 全 tie 时结果仍**确定**（GH #727：原实现仅按 3 档分层、
  * 无次级键，同档多条 `omw.*` 时 `LIMIT 1` 取未定序任意行 → 反查非确定）。
  */
-function queryTagCodeInTable(db: Database, table: string, lemma: string): { tagCode?: string } {
+function queryTagCodeByLocale(db: Database, locale: string, lemma: string): { tagCode?: string } {
   const rows = db
     .prepare(
-      `SELECT tag_code FROM ${table}
-       WHERE lemma = ?
+      `SELECT tag_code FROM tag_aliases
+       WHERE locale = ? AND lemma = ?
        ORDER BY CASE
-         WHEN tag_code LIKE 'omw.%' THEN 0
-         WHEN tag_code LIKE 'hownet.%' THEN 1
-         WHEN tag_code LIKE 'builtin.%' THEN 2
-         ELSE 3 END,
+         WHEN tag_code GLOB 'omw.*' THEN 0
+         WHEN tag_code GLOB 'hownet.*' THEN 1
+         ELSE 2 END,
          is_canonical DESC,
          count DESC,
          tag_code ASC
        LIMIT 1`
     )
-    .all(lemma) as { tag_code: string }[]
+    .all(locale, lemma) as { tag_code: string }[]
   const tagCode = rows[0]?.tag_code
   if (!tagCode) return {}
   return { tagCode }
@@ -1014,41 +1124,32 @@ export function findTagCodeTwoStage(
   if (!lemma) return undefined
   const cleanLemma = lemma.trim()
   if (!cleanLemma) return undefined
-  const targetLocale = locale || currentLanguage || 'zh-CN'
+  const targetLocale = normalizeSupportedLocale(locale || currentLanguage || 'zh-CN')
 
-  // ─── 第一阶段：当前语言分表直查 ───
-  const langTable = resolveTagAliasesLangTable(targetLocale)
-  const first = queryTagCodeInTable(db, langTable, cleanLemma)
+  // ─── 第一阶段：当前语言单表直查（Issue 02：locale 为普通列，参数化查询零拼表） ───
+  const first = queryTagCodeByLocale(db, targetLocale, cleanLemma)
   if (first.tagCode) {
     // 当前语言命中：lemma 本身即为当前语言词形，无需就地本地化
     return { tagCode: first.tagCode }
   }
 
-  // ─── 第二阶段：Unicode LID 语言识别与异语分表反查 (ADR-0048) ───
-  const detectedLocale = detectTagLanguage(cleanLemma)
+  // ─── 第二阶段：Unicode LID 语言识别与异语单表反查 (ADR-0048) ───
+  const detectedLocale = normalizeSupportedLocale(detectTagLanguage(cleanLemma))
   // 同语种短路：识别语种与当前语言相同，不再重复查询
   if (detectedLocale === targetLocale) {
     return undefined
   }
 
-  const detectedTable = resolveTagAliasesLangTable(detectedLocale)
-  // 检查本地库是否存在该异语分表
-  const tableExists = db
-    .prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`)
-    .get(detectedTable)
-  if (!tableExists) {
-    return undefined
-  }
-  const second = queryTagCodeInTable(db, detectedTable, cleanLemma)
+  const second = queryTagCodeByLocale(db, detectedLocale, cleanLemma)
   if (second.tagCode) {
-    // canonicalName 在异语表上无意义，需回当前语言分表反查规范名
+    // canonicalName 在异语上无意义，需回当前语言反查规范名
     const canonRows = db
       .prepare(
-        `SELECT lemma FROM ${langTable}
-         WHERE tag_code = ? AND is_canonical = 1
+        `SELECT lemma FROM tag_aliases
+         WHERE locale = ? AND tag_code = ? AND is_canonical = 1
          LIMIT 1`
       )
-      .all(second.tagCode) as { lemma: string }[]
+      .all(targetLocale, second.tagCode) as { lemma: string }[]
     return { tagCode: second.tagCode, canonicalName: canonRows[0]?.lemma }
   }
 
@@ -1194,27 +1295,22 @@ export { ensureTagPath, parseCodePath } from '@firefly/shared'
  *   v_file_tags_readable  —— file_tag_relations(模型B) JOIN v_tag_paths_readable 后的可读视图
  *
  * 安全铁律：
- * - locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（复用 resolveTagAliasesLangTable 同源校验）；
- * - 视图按语言动态拼名，严禁写入静态 GENESIS_V1_SCHEMA；
+ * - locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（normalizeSupportedLocale 同源校验）；
+ * - 视图按语言动态 WHERE locale = '<whitelisted>'，严禁把原始 locale 直接拼进 SQL；
  * - 仅供开发期调试直查，全仓业务代码零引用 v_*（业务读侧 JOIN tag_paths / tag_path_ancestors）。
  *
- * 拆段方案：彻底废弃原 json_each(substr(tp.code_path, 2)) —— substr 结果并非合法 JSON，
- * 运行时必报 `malformed JSON`。改用 WITH RECURSIVE split 按 '/' 逐段切分，子查询按 idx 回译：
- * COALESCE(tag_aliases_{lang}.lemma WHERE is_canonical=1, file_tags_private.name, code) 三级兜底，
+ * 拆段方案：WITH RECURSIVE split 按 '/' 逐段切分，子查询按 idx 回译：
+ * COALESCE(tag_aliases.lemma WHERE locale=当前 AND is_canonical=1, file_tags_private.name, code) 三级兜底，
  * 并用 group_concat(label, '/' ORDER BY idx) 锁定段序（杜绝同义词一对多笛卡尔膨胀与段序错乱）。
- *
- * ⚠️ Issue 02 单表 tag_aliases 落地后，仅需将 FROM tag_aliases_${suffix} 换为
- *    FROM tag_aliases WHERE locale = '<whitelisted_locale>'（本单保持分表兼容，不跨单抢跑）。
+ * Issue 02 单表已落地：FROM tag_aliases WHERE locale = '<whitelisted_locale>'。
  *
  * @param db     better-sqlite3 连接
  * @param locale 目标语言（如 zh-CN）
  */
 export function rebuildDebugTagViews(db: Database, locale: string): void {
-  // 安全表名（内含白名单校验 + 回退 en-US）：形如 tag_aliases_zh_CN。
-  // 视图 SQL 必须从此 table 名派生后缀，严禁再用原始 locale 二次拼接——否则非法 locale
-  // 会绕过回退、拼出不存在的分表抛 no such table（Fix-09 表名注入防护 + 禁止静默降级）。
-  const table = resolveTagAliasesLangTable(locale)
-  const suffix = table.slice('tag_aliases_'.length)
+  // 白名单校验（非法 locale 回退 en-US），视图 SQL 用此安全 locale 参数化拼入 WHERE 字面量，
+  // 杜绝 SQL 注入与非法 locale 拼串（Fix-09 防护 + 禁止静默降级）。
+  const safeLocale = normalizeSupportedLocale(locale)
   db.exec(`
     DROP VIEW IF EXISTS v_tag_paths_readable;
     CREATE VIEW v_tag_paths_readable AS
@@ -1229,8 +1325,8 @@ export function rebuildDebugTagViews(db: Database, locale: string): void {
     labels AS (
       SELECT s.path_id, s.idx,
              COALESCE(
-               (SELECT a.lemma FROM tag_aliases_${suffix} a
-                WHERE a.tag_code = s.code AND a.is_canonical = 1 LIMIT 1),
+               (SELECT a.lemma FROM tag_aliases a
+                WHERE a.locale = '${safeLocale}' AND a.tag_code = s.code AND a.is_canonical = 1 LIMIT 1),
                (SELECT p.name FROM file_tags_private p WHERE p.code = s.code),
                s.code
              ) AS label
@@ -1253,6 +1349,6 @@ export function rebuildDebugTagViews(db: Database, locale: string): void {
   `)
   logger.debug(
     LogCategory.DATABASE,
-    `已按 ${table} 重建调试视图 v_tag_paths_readable / v_file_tags_readable`
+    `已按 tag_aliases[locale=${safeLocale}] 重建调试视图 v_tag_paths_readable / v_file_tags_readable`
   )
 }

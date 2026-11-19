@@ -15,7 +15,6 @@ import { t } from '@app/languages'
 import * as path from 'path'
 import * as fs from 'fs'
 import { AccessTimeBatchUpdater } from '../../access-time-batch-updater'
-import { resolveTagAliasesLangTable } from '../../database'
 import { ConfigOrchestrator } from '../../../../config/config-orchestrator'
 import {
   isAnalyzedForMode,

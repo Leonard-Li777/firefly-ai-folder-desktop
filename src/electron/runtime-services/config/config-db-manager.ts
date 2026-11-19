@@ -20,7 +20,10 @@ import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { SystemIdentityService } from '../system/system-identity-service'
 import { databaseService } from '../database/database-service'
-import { createTagAliasesLangTable, resolveTagAliasesLangTable } from '../database/database'
+import {
+  normalizeSupportedLocale,
+  seedTagAliasesSingleTable
+} from '../database/database'
 import { omniClient, OmniTagAliasRow } from '../../services/omni-client'
 
 import { userTierService } from '../user-tier/user-tier-service'
@@ -79,12 +82,11 @@ export class ConfigDbManager {
       return
     }
 
-    // Slice 6 / R3.2：语言初始化/切换时创建 tag_aliases_{lang} 分表
-    createTagAliasesLangTable(db, language)
-    // 主设计 §2/§7（Fix-01/02）：初始化期异步补录分表初值（首建拉全集 / 切语言 codes= 补漏）。
-    // 不阻塞启动；失败仅告警——R3.3 分析同事务「首见补录」仍是兜底写路径。
+    // Issue 02：别名镜像已收敛为创世单表 tag_aliases(locale, ...)，无需按语言动态建表。
+    // 初始化期异步补录该 locale 的受控分类树初值（首次拉全集 / 切语言差集补漏）。
+    // 不阻塞启动；失败仅告警——分析同事务「首见回源」仍是兜底写路径。
     void this.seedTagAliasesLangTable(db, language).catch(err => {
-      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 分表初值补录异常:', err)
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 别名初值补录异常:', err)
     })
 
     try {
@@ -113,51 +115,149 @@ export class ConfigDbManager {
    * @param language 目标 locale，如 zh-CN
    */
   async seedTagAliasesLangTable(db: Database.Database, language: string): Promise<void> {
-    const table = resolveTagAliasesLangTable(language)
+    const safeLocale = normalizeSupportedLocale(language)
     const existingCnt =
-      (db.prepare(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number } | undefined)
-        ?.cnt ?? 0
+      (
+        db.prepare(`SELECT COUNT(*) AS cnt FROM tag_aliases WHERE locale = ?`).get(safeLocale) as {
+          cnt: number
+        } | undefined
+      )?.cnt ?? 0
 
-    // 首次创建该语言分表才灌表；已有数据（含运行时动态/_ext 词）一律幂等跳过，不回源。
-    // 旧「差集补录」会把其它语言分表的 code（含运行时 _ext/动态词）倒灌到目标语言，
-    // 违背「轻灌受控分类树 + 运行时按需回源」原则，已移除。
+    // 首次灌入该 locale 才拉全集；已有数据一律幂等跳过，不回源（防启动重复请求 Omni）。
     if (existingCnt > 0) {
       logger.debug(
         LogCategory.CONFIG,
-        `ConfigDbManager: 分表 ${table} 已有 ${existingCnt} 行，跳过初值灌表（首次创建才灌）`
+        `ConfigDbManager: tag_aliases[${safeLocale}] 已有 ${existingCnt} 行，跳过初值灌表`
       )
+      // 已有基础种子时仍需补译本库活跃但缺该 locale 规范名的受控码（切语言 <1ms 差集）
+      await this.ensureActiveControlledCodesHydrated(db, safeLocale)
       return
     }
 
-    let rows: OmniTagAliasRow[] = []
-    // 防膨胀铁律：启动灌表只镜像「受控分类树」(source=dimension,tag)，绝不全量拉词库。
-    // 13 万词库开放概念（如「妈妈→omw.10332385.n」）大多数运行时根本不会生成，全量灌只会让
-    // 分表无谓膨胀；分类树外的词库词反查落空时，由运行时「首见回源」(见 file-processor
-    // ensureLemmaAliasesSeeded) 按需查 pack → 补镜像 → 再用，pack 也没有才派生 _ext。
+    // 防膨胀铁律：只镜像「受控分类树」(source=dimension,tag)，绝不全量拉 13 万词库。
     const SEED_SOURCES = 'dimension,tag'
-    rows = (await omniClient.getTaxonomyAliases(language, { source: SEED_SOURCES })) ?? []
+    const rows: OmniTagAliasRow[] =
+      (await omniClient.getTaxonomyAliases(safeLocale, { source: SEED_SOURCES })) ?? []
 
     if (rows.length === 0) {
       logger.warn(
         LogCategory.CONFIG,
-        `ConfigDbManager: Omni 未返回 ${language} 别名（服务未就绪或语义包缺失），分表暂空，展示走 code slug 兜底、后续分析首见补录`
+        `ConfigDbManager: Omni 未返回 ${safeLocale} 别名（服务未就绪或语义包缺失），展示走 code slug 兜底、后续分析首见补录`
       )
       return
     }
 
     const t0 = Date.now()
-    const insert = db.prepare(
-      `INSERT OR REPLACE INTO ${table} (tag_code, lemma, is_canonical, n, count) VALUES (?, ?, ?, ?, ?)`
-    )
-    db.transaction(() => {
-      for (const r of rows) {
-        insert.run(r.tag_code, r.lemma, r.is_canonical ? 1 : 0, r.n ?? 1, r.count ?? 0)
-      }
-    })()
+    this.seedAliasRowsToSingleTable(db, safeLocale, rows)
     logger.debug(
       LogCategory.CONFIG,
-      `ConfigDbManager: 分表 ${table} 初值灌表完成 rows=${rows.length}, 来源=受控分类树(source=dimension,tag), 耗时=${Date.now() - t0}ms`
+      `ConfigDbManager: tag_aliases[${safeLocale}] 初值灌表完成 rows=${rows.length}, 来源=受控分类树(source=dimension,tag), 耗时=${Date.now() - t0}ms`
     )
+    // 基础种子后补译本库已挂载活跃码（切语言场景）
+    await this.ensureActiveControlledCodesHydrated(db, safeLocale)
+  }
+
+  /**
+   * R2-4 成对规范名三步 Upsert（单事务，防 uq_tag_aliases_one_canonical 撞约束）：
+   * ① 规范名写入前降级同 (locale,tag_code) 旧规范名；② 规范名 ON CONFLICT 保 count 不回退；
+   * ③ 同义词冲突绝不降级既有规范名。所有 tag_code 经受控前缀过滤（撞 CHECK 物理免疫 _ext/user）。
+   */
+  private seedAliasRowsToSingleTable(
+    db: Database.Database,
+    safeLocale: string,
+    rows: OmniTagAliasRow[]
+  ): void {
+    seedTagAliasesSingleTable(
+      db,
+      safeLocale,
+      rows.map(r => ({
+        tagCode: r.tag_code,
+        lemma: r.lemma,
+        isCanonical: Boolean(r.is_canonical),
+        n: r.n,
+        count: r.count
+      }))
+    )
+  }
+
+  /**
+   * Issue 02 Step 5：切语言后 < 1ms 精准补译活跃受控码。
+   * 经 tag_path_ancestors 单句 SQL 提取本库已挂载、但新 locale 尚缺 is_canonical=1 的受控码，
+   * 一次性向 Omni 批量拉取规范名落单表（仅差集，绝不 13 万全库膨胀）。
+   */
+  async ensureActiveControlledCodesHydrated(
+    db: Database.Database,
+    safeLocale: string
+  ): Promise<void> {
+    const missing = db
+      .prepare(
+        `SELECT DISTINCT tpa.ancestor_code AS code
+         FROM tag_path_ancestors tpa
+         WHERE (tpa.ancestor_code GLOB 'omw.*' OR tpa.ancestor_code GLOB 'hownet.*' OR tpa.ancestor_code GLOB 'builtin.*')
+           AND NOT EXISTS (
+             SELECT 1 FROM tag_aliases ta
+             WHERE ta.locale = ? AND ta.tag_code = tpa.ancestor_code AND ta.is_canonical = 1
+           )`
+      )
+      .all(safeLocale) as Array<{ code: string }>
+    await this.ensureCodesHydrated(
+      db,
+      missing.map(r => r.code),
+      safeLocale
+    )
+  }
+
+  /**
+   * 按显式 code 列表补齐当前语言规范名（云端缓存下行回灌 Step 5 同源入口）。
+   * 先在本地单表做差集，仅对缺失规范名的受控码发一次批量请求，绝不写 _ext/user 污染码。
+   */
+  async ensureCodesHydrated(
+    db: Database.Database,
+    codes: Array<string | undefined | null>,
+    locale: string
+  ): Promise<void> {
+    const safeLocale = normalizeSupportedLocale(locale)
+    const controlled = Array.from(
+      new Set(
+        codes
+          .map(code => (typeof code === 'string' ? code.trim() : ''))
+          .filter(
+            code =>
+              code.startsWith('omw.') || code.startsWith('hownet.') || code.startsWith('builtin.')
+          )
+      )
+    )
+    if (controlled.length === 0 || !db) return
+    const placeholders = controlled.map(() => '?').join(',')
+    const present = new Set(
+      (
+        db
+          .prepare(
+            `SELECT tag_code FROM tag_aliases
+             WHERE locale = ? AND is_canonical = 1 AND tag_code IN (${placeholders})`
+          )
+          .all(safeLocale, ...controlled) as Array<{ tag_code: string }>
+      ).map(r => r.tag_code)
+    )
+    const missing = controlled.filter(code => !present.has(code))
+    if (missing.length === 0) return
+    const t0 = Date.now()
+    try {
+      const rows: OmniTagAliasRow[] =
+        (await omniClient.getTaxonomyAliases(safeLocale, { codes: missing })) ?? []
+      if (rows.length > 0) {
+        this.seedAliasRowsToSingleTable(db, safeLocale, rows)
+        // 视图规范名子查询依赖单表 canonical 行，补译后立即重建（语言白名单由视图内部负责）
+        databaseService.rebuildDebugTagViewsForLanguage(safeLocale)
+      }
+      logger.debug(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 显式受控码补译 ${missing.length}→${rows.length} 行 (${safeLocale}), 耗时=${Date.now() - t0}ms`
+      )
+    } catch (err) {
+      // 补译失败不阻塞切语言/回灌（离线可降级到 code slug），显式告警不静默吞
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 显式受控码补译失败:', err)
+    }
   }
 
   /**
@@ -779,11 +879,11 @@ export class ConfigDbManager {
    *   · 桌面主进程严禁直接解密/挂载 `semantic.pack`（AGENTS.md 硬性契约）；
    *   · Omni 侧亦未提供 `/api/v1/taxonomy/dimensions` 端点（全仓 0 命中，仅 `taxonomy/aliases`）；
    *   · 故读取侧以随包分发的 `builtin-tag-identity.json`（+ OMW 根维度常量）为权威源，
-   *     展示名经 `tag_aliases_{lang}` 分表按 locale 还原 —— 即原设计中的「三级降级第 3 级」，
+   *     展示名经 `tag_aliases` 分表按 locale 还原 —— 即原设计中的「三级降级第 3 级」，
    *     经裁定**升格为确定性主路径**（随包分发、无网络依赖、单测可复现）。
    *
    * 1. 主源：内置受控事实源 (builtin-tag-identity.json + OMW 受控根维度)，以稳定 code 为唯一主键
-   * 2. 展示名：优先从当前语言 tag_aliases_{lang} 分表还原，回退别名表与 en/slug
+   * 2. 展示名：优先从当前语言 tag_aliases 单表还原，回退别名表与 en/slug
    * 3. 增量策略：从 system_config.DIMENSION_POLICIES 或 dimension-policies.json 合并门限与 flag
    * （原第 4 段「用户维度 source='dimension'」已删除 —— 该功能不存在，见函数尾部说明）
    */
@@ -791,26 +891,24 @@ export class ConfigDbManager {
     const dimensions: Array<any> = []
     const dimCodeSet = new Set<string>()
 
-    // 1. 尝试从当前语言分表加载规范展示名 (tag_code -> lemma WHERE is_canonical = 1)
+    // 1. 尝试从单表 tag_aliases 加载当前语言规范展示名 (tag_code -> lemma WHERE is_canonical = 1)
     const aliasMap = new Map<string, string>()
     if (db) {
-      const table = resolveTagAliasesLangTable(language)
+      const safeLocale = normalizeSupportedLocale(language)
       try {
-        const hasTable = db
-          .prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name = ?`)
-          .get(table)
-        if (hasTable) {
-          const rows = db
-            .prepare(`SELECT tag_code, lemma FROM ${table} WHERE is_canonical = 1`)
-            .all() as Array<{ tag_code: string; lemma: string }>
-          for (const r of rows) {
-            aliasMap.set(r.tag_code, r.lemma)
-          }
+        const rows = db
+          .prepare(
+            `SELECT tag_code, lemma FROM tag_aliases
+             WHERE locale = ? AND is_canonical = 1`
+          )
+          .all(safeLocale) as Array<{ tag_code: string; lemma: string }>
+        for (const r of rows) {
+          aliasMap.set(r.tag_code, r.lemma)
         }
       } catch (err) {
         logger.debug(
           LogCategory.CONFIG,
-          `ConfigDbManager: 读取分表 ${table} 别名失败，降级本地别名:`,
+          `ConfigDbManager: 读取 tag_aliases(${safeLocale}) 规范名失败，降级本地别名:`,
           err
         )
       }
@@ -1045,7 +1143,7 @@ export class ConfigDbManager {
    * 本身作为内容标签时按名拒绝（如「作者」同时是 OMW 受控根维度 hownet.*[作者]）。
    *
    * - 单一事实源：直接派生自 getFileDimensions()，不另建维度名副本；
-   * - 随语言变化：维度名走 tag_aliases_{lang} 还原，语言切换后 invalidateDimensionCache()
+   * - 随语言变化：维度名走 tag_aliases 还原，语言切换后 invalidateDimensionCache()
    *   会清空 fileDimensionsCache，本方法下次调用即按新语言重建；
    * - 过滤空串与占位 code 名，避免把兜底值误当维度名。
    */

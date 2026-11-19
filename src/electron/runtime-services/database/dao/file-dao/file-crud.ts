@@ -15,7 +15,6 @@ import { t } from '@app/languages'
 import * as path from 'path'
 import * as fs from 'fs'
 import { AccessTimeBatchUpdater } from '../../access-time-batch-updater'
-import { resolveTagAliasesLangTable } from '../../database'
 import { ConfigOrchestrator } from '../../../../config/config-orchestrator'
 import {
   isAnalyzedForMode,
@@ -147,7 +146,7 @@ export class FileCrudMixin extends FileDaoSharedBase {
     // 创世 Baseline V1：以 code 自然主键 LEFT JOIN file_tags_private，彻底移除自增 id / dimension_id / tag_id 兼容分支。
     // 维度归属由单次标注关系经由的 via_parent_code 决定，无维度则为空（真根），严禁回退 parent_codes 首父。
     // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags_private 表（file_tags_private.source CHECK 仅 expanded/user），
-    // 其展示名与维度归属经主库语言分表 tag_aliases_{lang} 直查解析（原 TaxonomyAliasCache 内存总线已按主设计废除），故不可使用内连接过滤。
+    // 其展示名与维度归属经主库语言分表 tag_aliases 直查解析（原 TaxonomyAliasCache 内存总线已按主设计废除），故不可使用内连接过滤。
     let tags: any[] = []
     if (fingerprint) {
       try {
