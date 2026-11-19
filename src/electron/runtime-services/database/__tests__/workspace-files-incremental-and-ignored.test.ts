@@ -198,7 +198,9 @@ describe('SC-5 切片C：workspace_files 增量扫描与 is_ignored 闭环', () 
       .all(1, 10) as Array<{ detail: string }>
 
     const detail = plan.map(p => p.detail).join(' | ')
-    expect(detail).toMatch(/idx_wf_diff_cover|idx_workspace_files_dir_id/)
+    // [Ticket 14 C6] 严格锁死命中 idx_wf_diff_cover，禁止退化到单列索引或全表扫描
+    expect(detail).toContain('idx_wf_diff_cover')
+    expect(detail).toMatch(/SEARCH\s+workspace_files\s+USING\s+(?:COVERING\s+)?INDEX\s+idx_wf_diff_cover/)
     expect(detail).not.toMatch(/SCAN workspace_files(?!\s+USING)/)
   })
 
