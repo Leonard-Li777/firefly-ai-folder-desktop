@@ -37,7 +37,6 @@ import {
   registerDatabaseFunctions,
   resolveTagAliasesLangTable
 } from '.././database'
-import { rebuildNamePaths, type RebuildNamePathsResult } from '.././name-path-rebuilder'
 import { omniClient } from '../../../services/omni-client'
 
 import Database from 'better-sqlite3'

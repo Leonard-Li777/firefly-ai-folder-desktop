@@ -380,14 +380,15 @@ export class DatabaseHelper {
             wf.id AS file_id,
             ftr.tag_code,
             ftr.via_parent_code,
-            ftr.code_path,
+            tp.code_path,
             ft.name AS tag_name
           FROM workspace_files wf
           INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
           INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
+          JOIN tag_paths tp ON tp.path_id = ftr.path_id
           LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE wf.id IN (SELECT CAST(value AS INTEGER) FROM json_each(?))
-          ORDER BY ftr.depth ASC, ftr.created_at ASC
+          ORDER BY tp.depth ASC, ftr.created_at ASC
         `
         )
         .all(JSON.stringify(fileIds)) as Array<{

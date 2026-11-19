@@ -276,9 +276,10 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
                 ftr.file_fingerprint,
                 ftr.tag_code,
                 COALESCE(ft.name, ftr.tag_code) AS tag_name,
-                ftr.name_path,
+                tp.code_path,
                 ftr.tag_group
               FROM file_tag_relations ftr
+              JOIN tag_paths tp ON tp.path_id = ftr.path_id
               LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint IN (${placeholders})
               ORDER BY ftr.file_fingerprint ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
@@ -288,9 +289,10 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
                 ftr.file_fingerprint,
                 ftr.tag_code,
                 ftr.tag_code AS tag_name,
-                ftr.name_path,
+                tp.code_path,
                 ftr.tag_group
               FROM file_tag_relations ftr
+              JOIN tag_paths tp ON tp.path_id = ftr.path_id
               WHERE ftr.file_fingerprint IN (${placeholders})
               ORDER BY ftr.file_fingerprint ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
             `
@@ -298,7 +300,7 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
             file_fingerprint: string
             tag_code: string
             tag_name: string | null
-            name_path: string | null
+            code_path: string | null
             tag_group: string | null
           }>
 
@@ -320,6 +322,15 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
             fpToStructuredTags.set(rel.file_fingerprint, structuredList)
           }
 
+          // 模型 B：name_path 物化列已删除，按 code_path 拆段实时译名（禁物化）
+          const codeSegs = (rel.code_path || '').split('/').filter(Boolean)
+          const namePath = codeSegs.length
+            ? '/' +
+              codeSegs
+                .map(s => getCanonicalConceptName(s) || s.split('.').pop() || s)
+                .join('/')
+            : ''
+
           let name = rel.tag_name || rel.tag_code
           if (name && name.includes('.')) {
             name = getCanonicalConceptName(name) || (name.split('.').pop() || name)
@@ -329,12 +340,12 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
             structuredList.push({
               code: rel.tag_code,
               name,
-              namePath: rel.name_path || undefined,
+              namePath: namePath || undefined,
               tagGroup: group as TagProvenanceGroup
             })
           }
-          if (rel.name_path) {
-            const segs = rel.name_path.split('/').filter(Boolean)
+          if (namePath) {
+            const segs = namePath.split('/').filter(Boolean)
             const leafSeg = segs[segs.length - 1]
             if (
               leafSeg &&

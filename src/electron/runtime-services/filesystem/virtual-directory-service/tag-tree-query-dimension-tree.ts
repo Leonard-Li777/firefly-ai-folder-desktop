@@ -458,12 +458,13 @@ export const tagTreeQueryDimensionTreeMixin = {
       const prefixCountSql = `
         WITH RECURSIVE
         target_pairs AS (
-          SELECT DISTINCT wf.id AS file_id, ftr.code_path
+          SELECT DISTINCT wf.id AS file_id, tp.code_path
           FROM workspace_files wf
           JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
+          JOIN tag_paths tp ON tp.path_id = ftr.path_id
           WHERE wf.file_fingerprint IN (${filteredFingerprintsSql})
-            AND ftr.code_path IS NOT NULL
-            AND ftr.code_path LIKE '/%'
+            AND tp.code_path IS NOT NULL
+            AND tp.code_path LIKE '/%'
         ),
         split_prefixes(file_id, prefix_code_path, rest_path, curr_depth) AS (
           SELECT
@@ -547,15 +548,16 @@ export const tagTreeQueryDimensionTreeMixin = {
 
       // D. 提取去重后的标签物化路径对照 (几十到几百行，轻量传输)
       const tagChainsSql = `
-        SELECT DISTINCT ftr.tag_code, ftr.code_path, ftr.name_path
+        SELECT DISTINCT ftr.tag_code, tp.code_path
         FROM file_tag_relations ftr
+        JOIN tag_paths tp ON tp.path_id = ftr.path_id
         WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
-          AND ((ftr.code_path IS NOT NULL AND ftr.code_path != '') OR (ftr.name_path IS NOT NULL AND ftr.name_path != ''))
+          AND tp.code_path IS NOT NULL
+          AND tp.code_path != ''
       `
       const chainRows = this.db.prepare(tagChainsSql).all(...filteredFingerprintsParams) as Array<{
         tag_code: string
         code_path: string
-        name_path: string
       }>
 
       dbQueryTime += performance.now() - countStartTime
@@ -586,7 +588,8 @@ export const tagTreeQueryDimensionTreeMixin = {
           tagChainsMap.set(r.tag_code, [])
         }
         tagChainsMap.get(r.tag_code)!.push({
-          name_path: r.name_path || '',
+          // name_path 由下方 aliasResolver 按 code_path 拆段实时译名回填（模型 B 无物化列）
+          name_path: '',
           code_path: r.code_path || ''
         })
       }
@@ -626,6 +629,19 @@ export const tagTreeQueryDimensionTreeMixin = {
           if (canonical) return canonical
         }
         return fallbackName || code
+      }
+
+      // 【模型 B】name_path 物化列已删除：按 code_path 段序经既有 aliasResolver 实时译名回填，
+      // 保持 tagChainsMap 下游消费接口（L778/820/1058/1431-1453/1511/1669/1880 的 name_path 字段）零变化。
+      for (const chains of tagChainsMap.values()) {
+        for (const chain of chains) {
+          if (!chain.name_path && chain.code_path) {
+            const segments = chain.code_path.split('/').filter(Boolean)
+            chain.name_path = segments.length > 0
+              ? '/' + segments.map(segment => aliasResolver(segment)).join('/')
+              : ''
+          }
+        }
       }
 
       // 建立动态子标签映射：parentCode -> Array<{ code, name, meta, count }>

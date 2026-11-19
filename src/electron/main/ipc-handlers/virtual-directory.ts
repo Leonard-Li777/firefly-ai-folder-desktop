@@ -1060,11 +1060,11 @@ export function registerVirtualDirectoryIPCHandlers() {
                   f.canonical_text AS canonical_text,
                   ftr.tag_code AS tag_code,
                   ftr.tag_group AS tag_group,
-                  ftr.name_path AS name_path,
-                  ftr.code_path AS code_path
+                  tp.code_path AS code_path
                 FROM workspace_files wf
                 LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
                 LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
+                LEFT JOIN tag_paths tp ON tp.path_id = ftr.path_id
                 WHERE wf.id IN (${placeholders})
                 ORDER BY wf.id ASC, COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC
               `
@@ -1080,7 +1080,6 @@ export function registerVirtualDirectoryIPCHandlers() {
                 canonical_text: string | null
                 tag_code: string | null
                 tag_group: string | null
-                name_path: string | null
                 code_path: string | null
               }>
 
@@ -1098,13 +1097,6 @@ export function registerVirtualDirectoryIPCHandlers() {
                   }
                 }
                 const meta = injectedFileMeta[row.file_id]
-                if (row.name_path) {
-                  const parts = row.name_path.split('/').filter(Boolean)
-                  const tagName = parts[parts.length - 1]
-                  if (tagName && !meta.tags?.includes(tagName)) {
-                    meta.tags?.push(tagName)
-                  }
-                }
                 if (row.tag_code && !meta.tagCodes?.includes(row.tag_code)) {
                   meta.tagCodes?.push(row.tag_code)
                 }
@@ -1112,6 +1104,16 @@ export function registerVirtualDirectoryIPCHandlers() {
                   const codeChain = row.code_path.split('/').filter(Boolean)
                   if (codeChain.length > 0) {
                     meta.codePaths?.push(codeChain)
+                    // 模型 B：name_path 物化列已删除，parts 由 code_path 拆段实时译名（禁物化）
+                    const leaf = codeChain[codeChain.length - 1]
+                    const currentLang =
+                      ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') ||
+                      'zh-CN'
+                    const displayMap = databaseService.resolveTagDisplayNames([leaf], currentLang)
+                    const tagName = displayMap[leaf] || leaf.split('.').pop() || leaf
+                    if (tagName && !meta.tags?.includes(tagName)) {
+                      meta.tags?.push(tagName)
+                    }
                   }
                 }
               }

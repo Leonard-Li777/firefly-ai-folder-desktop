@@ -14,6 +14,7 @@ import path from 'path'
 import { FilteredFilesResponse, SelectedTag } from '@firefly/types'
 import { LogCategory, logger, isMultiHostDimension } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { resolveTagAliasesLangTable } from '@runtime/database/database'
 import { PinyinQueryPlanner } from './pinyin-query-expander'
 import { escapeLikePrefixWindows, normalizeCodePath } from './tag-tree-query-path-utils'
 import { escapeLike } from './tag-tree-query-shared'
@@ -62,7 +63,9 @@ export const tagTreeQueryFilterMixin = {
       )
     }
 
-    const whereClauses: string[] = ['should_ignore_file(wf.path, wf.name) = 0']
+    // SC-3：改用切片A 预计算列 wf.is_ignored = 0，命中 idx_wf_ws_active_dir / idx_wf_diff_cover，
+    //       消除 10 万文件下每次筛选 10 万次 Node↔SQLite UDF 跨界调用。should_ignore_file UDF 仅留作兼容兜底。
+    const whereClauses: string[] = ['wf.is_ignored = 0']
     const queryParams: any[] = []
 
     if (!includeUnanalyzed) {
@@ -136,6 +139,18 @@ export const tagTreeQueryFilterMixin = {
            )) OR `
       }
 
+      // 模型 B 无物化 name_path：标签名模糊搜索改走「别名词表 ∪ 私有标签 → 祖先闭包 → 关联表」结构化链路。
+      // 先在 tag_aliases_{locale} / file_tags_private 命中展示名对应的 tag_code，再经 tag_path_ancestors
+      // （闭包含自身）拿到 path_id 集合，最后用 idx_ftr_path_fp O(log N) 探测命中的 file_fingerprint。
+      let aliasTable = 'tag_aliases_zh_CN'
+      try {
+        aliasTable = resolveTagAliasesLangTable(
+          ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+        )
+      } catch {
+        // 配置中心未就绪按默认中文分表，resolveTagAliasesLangTable 内含白名单校验杜绝注入
+        aliasTable = resolveTagAliasesLangTable('zh-CN')
+      }
       const patternClauses: string[] = []
       const likeParams: any[] = []
       for (const pattern of patterns) {
@@ -151,8 +166,12 @@ export const tagTreeQueryFilterMixin = {
           OR wf.file_fingerprint IN (
             SELECT ftr.file_fingerprint
             FROM file_tag_relations ftr
-            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-            WHERE ft.name LIKE ? ESCAPE '\\' OR ftr.name_path LIKE ? ESCAPE '\\'
+            JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
+            WHERE tpa.ancestor_code IN (
+              SELECT tag_code FROM ${aliasTable} WHERE lemma LIKE ? ESCAPE '\\'
+              UNION
+              SELECT code FROM file_tags_private WHERE name LIKE ? ESCAPE '\\'
+            )
           )
         )`)
         for (let i = 0; i < 10; i++) {
@@ -224,7 +243,13 @@ export const tagTreeQueryFilterMixin = {
         .map(path => {
           const normPath = normalizeCodePath(path)
           params.push(normPath, escapeLike(normPath))
-          return `(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`
+          // 模型 B：ftr 无 code_path 列，前缀判定下沉到微型字典 tag_paths（数百~数千行），
+          // 命中 path_id 后由外层 file_tag_relations 走 idx_ftr_path_fp 探测，消灭 ftr 全表 LIKE 扫。
+          return `EXISTS (
+            SELECT 1 FROM tag_paths tp
+            WHERE tp.path_id = ftr.path_id
+              AND (tp.code_path = ? OR tp.code_path LIKE (? || '/%') ESCAPE '\\')
+          )`
         })
         .join(' OR ')
       return `(${pathClauses})`
@@ -256,10 +281,14 @@ export const tagTreeQueryFilterMixin = {
     // 当标签携带宿主父级受控作用域（如外部细分维度挂载于文档/电子书）时，
     // 追加宿主共现约束，杜绝跨父类同名同Code叶子跨介质误召回（彻底保障 AC-4 树徽标与列表一致性）
     if (tag.hostScopeCode) {
-      params.push(tag.hostScopeCode, escapeLike(tag.hostScopeCode))
+      // 闭包表含自身：单条件 ancestor_code = ? 同时覆盖宿主自身与其任意祖先，
+      // 经 ftr_host.path_id 命中 idx_ftr_path_fp，彻底消灭 LIKE '%/x/%' 前导通配全表扫。
+      params.push(tag.hostScopeCode)
       return `(${baseTagClause} AND ftr.file_fingerprint IN (
-        SELECT ftr_host.file_fingerprint FROM file_tag_relations ftr_host
-        WHERE ftr_host.tag_code = ? OR ftr_host.code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'
+        SELECT ftr_host.file_fingerprint
+        FROM file_tag_relations ftr_host
+        JOIN tag_path_ancestors tpa_host ON tpa_host.path_id = ftr_host.path_id
+        WHERE tpa_host.ancestor_code = ?
       ))`
     }
 
@@ -391,11 +420,12 @@ export const tagTreeQueryFilterMixin = {
               json_object(
                 'code', ftr.tag_code,
                 'name', ft.name,
-                'name_path', ftr.name_path
+                'code_path', tp.code_path
               )
             )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            JOIN tag_paths tp ON tp.path_id = ftr.path_id
             WHERE ftr.file_fingerprint = wf.file_fingerprint
           ) as dimension_tags,
           (
@@ -403,11 +433,12 @@ export const tagTreeQueryFilterMixin = {
               json_object(
                 'code', ftr.tag_code,
                 'name', ft.name,
-                'name_path', ftr.name_path
+                'code_path', tp.code_path
               )
             )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            JOIN tag_paths tp ON tp.path_id = ftr.path_id
             WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
           ) as fused_tags
         FROM workspace_files wf

@@ -33,6 +33,7 @@ import {
   isTrustworthyMaterializedCodePath,
   getCanonicalConceptName,
   resolveRuntimeMaterializedPath,
+  ensureTagPath,
   CONTROLLED_CONCEPTS,
   normalizeLangCode,
   normalizeFileExtension,
@@ -67,6 +68,7 @@ import {
 } from '@firefly/core-engine'
 import { executeProPreflight, executeProTagReconciliation } from '@pro'
 import { extractAiLemmasFromDimResult } from './lemma-candidates'
+import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
 import { modularResourceService } from '../../system/modular-resource-service'
@@ -259,8 +261,9 @@ export class FileProcessor {
     this.insertWorkspaceFileStmt = db.prepare(`
       INSERT INTO workspace_files (
         file_fingerprint, workspace_id, directory_id, path, name,
-        created_at, modified_at, accessed_at, is_analyzed, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        created_at, modified_at, accessed_at, is_analyzed, status,
+        file_size, mtime_ms, is_ignored
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?)
       ON CONFLICT(workspace_id, path) DO UPDATE SET
         file_fingerprint = excluded.file_fingerprint,
         is_analyzed = excluded.is_analyzed,
@@ -806,12 +809,14 @@ export class FileProcessor {
             )
 
             db.prepare(
-              `INSERT INTO workspace_files (workspace_id, directory_id, path, name, file_fingerprint, is_analyzed, created_at, modified_at, accessed_at)
-               VALUES (?, (SELECT id FROM workspace_directories WHERE workspace_id = ? AND path = ?), ?, ?, ?, 0, ?, ?, ?)
+              `INSERT INTO workspace_files (workspace_id, directory_id, path, name, file_fingerprint, is_analyzed, created_at, modified_at, accessed_at, file_size, mtime_ms, is_ignored)
+               VALUES (?, (SELECT id FROM workspace_directories WHERE workspace_id = ? AND path = ?), ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(workspace_id, path) DO UPDATE SET
                  file_fingerprint = excluded.file_fingerprint,
                  modified_at = excluded.modified_at,
-                 accessed_at = excluded.accessed_at`
+                 accessed_at = excluded.accessed_at,
+                 file_size = CASE WHEN excluded.file_size = 0 THEN workspace_files.file_size ELSE excluded.file_size END,
+                 mtime_ms = CASE WHEN excluded.mtime_ms = 0 THEN workspace_files.mtime_ms ELSE excluded.mtime_ms END`
             ).run(
               currentWorkspaceId,
               currentWorkspaceId,
@@ -821,7 +826,10 @@ export class FileProcessor {
               fileFingerprint,
               new Date().toISOString(),
               new Date().toISOString(),
-              new Date().toISOString()
+              new Date().toISOString(),
+              stats?.size ?? 0,
+              Math.trunc(stats?.mtimeMs ?? Date.now()),
+              shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0
             )
           } catch (fpErr: any) {
             logger.warn(
@@ -901,8 +909,9 @@ export class FileProcessor {
               .prepare(
                 `
                 SELECT r.tag_code, r.via_parent_code, r.tag_group, r.confidence,
-                       r.code_path, r.name_path, r.depth, t.name as tag_name
+                       tp.code_path, tp.depth, t.name as tag_name
                 FROM file_tag_relations r
+                JOIN tag_paths tp ON tp.path_id = r.path_id
                 LEFT JOIN file_tags_private t ON r.tag_code = t.code
                 WHERE r.file_fingerprint = ?
               `
@@ -982,7 +991,8 @@ export class FileProcessor {
                 viaParentCode: row.via_parent_code,
                 parentCodes: row.via_parent_code ? [row.via_parent_code] : undefined,
                 codePath: row.code_path,
-                namePath: row.name_path,
+                // 模型 B 已无 name_path 物化列：展示名置空交下游按 code_path 拆段实时译名
+                namePath: '',
                 depth: typeof row.depth === 'number' ? row.depth : undefined,
                 group: row.tag_group || 'fused'
               })
@@ -2646,12 +2656,15 @@ export class FileProcessor {
             `
             INSERT INTO workspace_files (
               file_fingerprint, workspace_id, directory_id, path, name,
-              created_at, modified_at, accessed_at, is_analyzed
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+              created_at, modified_at, accessed_at, is_analyzed,
+              file_size, mtime_ms, is_ignored
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(workspace_id, path) DO UPDATE SET
               file_fingerprint = excluded.file_fingerprint,
               modified_at = excluded.modified_at,
-              accessed_at = ?
+              accessed_at = ?,
+              file_size = CASE WHEN excluded.file_size = 0 THEN workspace_files.file_size ELSE excluded.file_size END,
+              mtime_ms = CASE WHEN excluded.mtime_ms = 0 THEN workspace_files.mtime_ms ELSE excluded.mtime_ms END
             `
           ).run(
             fileFingerprint,
@@ -2663,6 +2676,9 @@ export class FileProcessor {
             new Date(stats.mtime).toISOString(),
             new Date(stats.atime).toISOString(),
             0,
+            stats?.size ?? 0,
+            Math.trunc(stats?.mtimeMs ?? Date.now()),
+            shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0,
             new Date().toISOString()
           )
 
@@ -3322,11 +3338,26 @@ export class FileProcessor {
 
       db.prepare(
         `
-        INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, is_analyzed, last_analyzed_at, created_at, modified_at, accessed_at)
-        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
-        ON CONFLICT(workspace_id, path) DO UPDATE SET is_analyzed = 1, file_fingerprint = excluded.file_fingerprint, last_analyzed_at = ?, modified_at = ?
+        INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, is_analyzed, last_analyzed_at, created_at, modified_at, accessed_at, file_size, mtime_ms, is_ignored)
+        VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(workspace_id, path) DO UPDATE SET is_analyzed = 1, file_fingerprint = excluded.file_fingerprint, last_analyzed_at = ?, modified_at = ?, file_size = excluded.file_size, mtime_ms = excluded.mtime_ms, is_ignored = excluded.is_ignored
       `
-      ).run(fingerprint, workspaceId, directoryId, filePath, fileName, now, now, now, now, now, now)
+      ).run(
+        fingerprint,
+        workspaceId,
+        directoryId,
+        filePath,
+        fileName,
+        now,
+        now,
+        now,
+        now,
+        now,
+        now,
+        fileData.size || 0,
+        0,
+        shouldIgnoreFile(filePath, fileName, loadIgnoreRules()) ? 1 : 0
+      )
 
       const mockTagsList = this.mockData.file_tags_private || this.mockData.file_tags
       if (this.mockData.file_tag_relations && mockTagsList) {
@@ -3376,7 +3407,6 @@ export class FileProcessor {
               typeof rel.code_path === 'string' && rel.code_path.trim() ? rel.code_path.trim() : ''
             const relNamePath =
               typeof rel.name_path === 'string' && rel.name_path.trim() ? rel.name_path.trim() : ''
-            const relDepth = typeof rel.depth === 'number' && rel.depth > 0 ? rel.depth : 0
 
             const fileCat = getFileCategory(filePath)
             const topologyContext = {
@@ -3404,19 +3434,31 @@ export class FileProcessor {
             }
 
             const finalCodePath = materialized.codePath
-            const finalNamePath = materialized.namePath
-            const finalDepth = relDepth > 0 ? relDepth : materialized.depth || 2
 
+            // 模型 B：先经唯一收口 ensureTagPath 取 path_id；非法 code_path 按契约 warn + 记 CONSTRAINT 后跳过
+            let pathId: number
+            try {
+              pathId = ensureTagPath(db, finalCodePath)
+            } catch (err) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[file-processor][CONSTRAINT] mock 标签非法 code_path，跳过: tag=${tagCode}, codePath=${finalCodePath}, error=${err instanceof Error ? err.message : String(err)}`
+              )
+              continue
+            }
+            const nowMs = Date.now()
             db.prepare(
-              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, 1.0, 0)`
+              `INSERT OR IGNORE INTO file_tag_relations (
+                 file_fingerprint, tag_code, via_parent_code, path_id, tag_group, confidence, source, sync_status, created_at, updated_at, meta
+               ) VALUES (?, ?, ?, ?, ?, 1.0, 'rule', 0, ?, ?, '{}')`
             ).run(
               fingerprint,
               tagCode,
               viaParentCode,
-              finalCodePath,
-              finalNamePath,
-              finalDepth,
-              mockGroup
+              pathId,
+              mockGroup,
+              nowMs,
+              nowMs
             )
           }
         }

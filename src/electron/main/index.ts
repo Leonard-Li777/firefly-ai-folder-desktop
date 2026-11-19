@@ -703,18 +703,19 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
         await initDatabaseAndDependentServices(newLanguage as any, true)
         await analysisQueueService.reloadDatabase()
 
-        // 核心：在多语言切换完成后，按当前新语言全量重建 file_tag_relations.name_path，确保新语言下可直接复用物化路径
+        // 核心：多语言切换完成后，按新语言重建动态调试视图（v_* 只读视图，零数据行写入）。
+        // 模型 B 下 name_path 物化已退役，展示名由 code_path 按段实时译名，无需再回写物化路径。
         if (databaseService.db) {
           try {
-            const rebuildResult = await databaseService.rebuildNamePathsForLanguage(newLanguage)
+            databaseService.rebuildDebugTagViewsForLanguage(newLanguage)
             logger.debug(
               LogCategory.MAIN,
-              `[LanguageSwitch] 已按 ${newLanguage} 重建物化展示路径 name_path: 更新 ${rebuildResult.updatedCount} 行 (涉及 ${rebuildResult.distinctPathsCount} 条路径)`
+              `[LanguageSwitch] 已按 ${newLanguage} 重建调试视图 v_tag_paths_readable / v_file_tags_readable`
             )
           } catch (rebuildErr) {
             logger.error(
               LogCategory.MAIN,
-              '[LanguageSwitch] 重建物化路径 name_path 失败:',
+              '[LanguageSwitch] 重建调试视图失败:',
               rebuildErr
             )
           }

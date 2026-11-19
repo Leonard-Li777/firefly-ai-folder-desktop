@@ -22,6 +22,7 @@ import {
   normalizeLangCode,
   isControlledConcept,
   CONTROLLED_CONCEPT_DETAILS,
+  ensureTagPath,
   getParentDimensionCodeOfTag,
   normalizeFileExtension
 } from '@firefly/shared'
@@ -38,6 +39,7 @@ import { compressText, compressJson } from '../../../utils/text-compressor'
 // 工单 05 终态 D（缓存命中）：与 file-processor 五终态共用同一 canonical 固化入口
 import { solidifyCanonicalForTerminal } from '../canonical-text-service'
 import { queueFtsSync } from '../fts-sync-hooks'
+import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 
 /**
  * 保存云端分析结果到数据库
@@ -206,6 +208,8 @@ export async function saveCloudResult(
     const dirPath = path.dirname(filePath)
     const directoryId = await databaseService.addDirectory(dirPath, workspaceId)
 
+    // 本次回灌是否造成文件标签集合增删（供事务末尾置 files.pinyin_state=0 脏标记）
+    let tagsChanged = false
     const runTransaction = db.transaction(() => {
       db.prepare(
         `
@@ -295,12 +299,15 @@ export async function saveCloudResult(
         INSERT INTO workspace_files (
           file_fingerprint, workspace_id, directory_id,
           path, name, is_analyzed, last_analyzed_at,
-          created_at, modified_at, accessed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          created_at, modified_at, accessed_at,
+          file_size, mtime_ms, is_ignored
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(workspace_id, path) DO UPDATE SET
           file_fingerprint = excluded.file_fingerprint,
           is_analyzed = 1,
-          last_analyzed_at = ?
+          last_analyzed_at = ?,
+          file_size = CASE WHEN excluded.file_size = 0 THEN workspace_files.file_size ELSE excluded.file_size END,
+          mtime_ms = CASE WHEN excluded.mtime_ms = 0 THEN workspace_files.mtime_ms ELSE excluded.mtime_ms END
       `
       ).run(
         fileFingerprint,
@@ -313,7 +320,10 @@ export async function saveCloudResult(
         new Date(stats.birthtime).toISOString(),
         new Date(stats.mtime).toISOString(),
         new Date(stats.atime).toISOString(),
-        new Date().toISOString()
+        new Date().toISOString(),
+        stats?.size ?? 0,
+        Math.trunc(stats?.mtimeMs ?? Date.now()),
+        shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0
       )
 
       if (data.tags && Array.isArray(data.tags)) {
@@ -423,25 +433,36 @@ export async function saveCloudResult(
               }
 
               const codePath = materialized.codePath
-              const namePath = materialized.namePath
-              const depth =
-                typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : materialized.depth || 2
               const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
-              db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, source, sync_status, meta)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'rule', 2, ?)`
+              // 模型 B：先经唯一收口 ensureTagPath 取 path_id；非法 code_path 按契约 warn + 记 CONSTRAINT 后跳过
+              let pathId: number
+              try {
+                pathId = ensureTagPath(db, codePath)
+              } catch (err) {
+                logger.warn(
+                  LogCategory.FILE_ANALYSIS,
+                  `[saveCloudResult][CONSTRAINT] 受控标签非法 code_path，跳过: tag=${tagCode}, codePath=${codePath}, error=${err instanceof Error ? err.message : String(err)}`
+                )
+                continue
+              }
+              const now = Date.now()
+              const insertRes = db.prepare(
+                `INSERT OR IGNORE INTO file_tag_relations (
+                   file_fingerprint, tag_code, via_parent_code, path_id, tag_group, confidence, source, sync_status, created_at, updated_at, meta
+                 ) VALUES (?, ?, ?, ?, ?, ?, 'rule', 2, ?, ?, ?)`
               ).run(
                 fileFingerprint,
                 tagCode,
                 localDimCode,
-                codePath,
-                namePath,
-                depth,
+                pathId,
                 cloudGroup,
                 confidence,
+                now,
+                now,
                 JSON.stringify({ syncStatus: 2 })
               )
+              if (insertRes?.changes > 0) tagsChanged = true
             } else {
               // 私有标签：可写入 file_tags_private 与 file_tag_relations
               try {
@@ -461,6 +482,7 @@ export async function saveCloudResult(
                   1,
                   topologyContext
                 )
+                tagsChanged = true
               } catch {
                 // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
                 const finalTagCode =
@@ -487,11 +509,6 @@ export async function saveCloudResult(
                 }
 
                 const codePath = materialized.codePath
-                const namePath = materialized.namePath
-                const depth =
-                  typeof tag.depth === 'number' && tag.depth > 0
-                    ? tag.depth
-                    : materialized.depth || 2
                 const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
                 db.prepare(
@@ -508,26 +525,45 @@ export async function saveCloudResult(
                     syncStatus: 0
                   })
                 )
-                db.prepare(
-                  `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, source, meta)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'rule', ?)`
+                // 模型 B：先经唯一收口 ensureTagPath 取 path_id；非法 code_path 按契约 warn + 记 CONSTRAINT 后跳过
+                let pathId: number
+                try {
+                  pathId = ensureTagPath(db, codePath)
+                } catch (err) {
+                  logger.warn(
+                    LogCategory.FILE_ANALYSIS,
+                    `[saveCloudResult][CONSTRAINT] 私有标签非法 code_path，跳过: tag=${finalTagCode}, codePath=${codePath}, error=${err instanceof Error ? err.message : String(err)}`
+                  )
+                  continue
+                }
+                const now = Date.now()
+                const insertRes = db.prepare(
+                  `INSERT OR IGNORE INTO file_tag_relations (
+                     file_fingerprint, tag_code, via_parent_code, path_id, tag_group, confidence, source, sync_status, created_at, updated_at, meta
+                   ) VALUES (?, ?, ?, ?, ?, ?, 'rule', 0, ?, ?, ?)`
                 ).run(
                   fileFingerprint,
                   finalTagCode,
                   localDimCode,
-                  codePath,
-                  namePath,
-                  depth,
+                  pathId,
                   cloudGroup,
                   confidence,
+                  now,
+                  now,
                   JSON.stringify({ syncStatus: 0 })
                 )
+                if (insertRes?.changes > 0) tagsChanged = true
               }
             }
           } catch (tagError) {
             logger.warn(LogCategory.FILE_ANALYSIS, '[云端结果] 写入文件标签关系失败:', tagError)
           }
         }
+      }
+
+      // 标签集合有增删变更时置脏，供后台拼音回填刷新 files_pinyin_fts.tags_py（Spec §2.4.2 R2-7 & §3.1.B L304）
+      if (tagsChanged) {
+        db.prepare('UPDATE files SET pinyin_state = 0 WHERE file_fingerprint = ?').run(fileFingerprint)
       }
     })
 

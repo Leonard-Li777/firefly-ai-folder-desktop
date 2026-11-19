@@ -1,5 +1,5 @@
 import type { Database } from 'better-sqlite3'
-import type { SemanticTagInput } from '@firefly/shared'
+import { getCanonicalConceptName, type SemanticTagInput } from '@firefly/shared'
 import { decompressText } from '../../../utils/text-compressor'
 
 /**
@@ -439,8 +439,9 @@ export class CanonicalDao {
     try {
       const tagRows = this.db
         .prepare(
-          `SELECT ftr.tag_code AS code, ft.name AS name, ftr.name_path AS name_path, ftr.tag_group AS tag_group
+          `SELECT ftr.tag_code AS code, ft.name AS name, tp.code_path AS code_path, ftr.tag_group AS tag_group
            FROM file_tag_relations ftr
+           JOIN tag_paths tp ON tp.path_id = ftr.path_id
            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
            WHERE ftr.file_fingerprint = ?
            ORDER BY COALESCE(ftr.confidence, 0) DESC, ftr.tag_code ASC, ftr.via_parent_code ASC`
@@ -448,16 +449,23 @@ export class CanonicalDao {
         .all(fileFingerprint) as Array<{
         code: string
         name: string | null
-        name_path: string | null
+        code_path: string | null
         tag_group: string | null
       }>
-      tags = tagRows.map(t => ({
-        name: t.name ?? undefined,
-        code: t.code,
-        namePath: t.name_path ?? undefined,
-        // 缺省分组一律原样回传为空串，由 shared 构建器 fail-closed 剔除
-        tagGroup: (t.tag_group ?? '') as SemanticTagInput['tagGroup']
-      }))
+      tags = tagRows.map(t => {
+        // 模型 B：name_path 物化列已删除，按 code_path 拆段实时译名（禁物化）
+        const segs = (t.code_path || '').split('/').filter(Boolean)
+        const namePath = segs.length
+          ? '/' + segs.map(s => getCanonicalConceptName(s) || s.split('.').pop() || s).join('/')
+          : ''
+        return {
+          name: t.name ?? undefined,
+          code: t.code,
+          namePath: namePath || undefined,
+          // 缺省分组一律原样回传为空串，由 shared 构建器 fail-closed 剔除
+          tagGroup: (t.tag_group ?? '') as SemanticTagInput['tagGroup']
+        }
+      })
     } catch {
       tags = []
     }

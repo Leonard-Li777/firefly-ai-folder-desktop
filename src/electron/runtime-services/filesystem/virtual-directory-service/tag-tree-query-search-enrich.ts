@@ -17,10 +17,48 @@ import fs from 'node:fs'
 import { FileItem } from '@firefly/types'
 import { LogCategory, logger, extractSnippet, getCanonicalConceptName } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { resolveTagAliasesLangTable } from '@runtime/database/database'
 import { decompressText } from '../../../utils/text-compressor'
 import { splitPassages, HYBRID_SEARCH_POOL_SIZE } from './HybridSearchArbiter'
 import type { HybridRankedCandidate } from './HybridSearchArbiter'
 import type { TagTreeQuery, FilterFilesParams, HybridPageRef } from './TagTreeQuery'
+
+/**
+ * 【模型 B】按 code_path 拆段实时译名的轻量解析器。
+ * 模型 B 无物化 name_path 列：展示名统一经 tag_aliases_{locale} ∪ file_tags_private 词表反查，
+ * 严禁在业务层重建物化 name_path。单条查询带记忆化，避免逐段重复打库。
+ */
+function buildCodePathNameResolver(db: any, locale: string): (code: string) => string {
+  const memo = new Map<string, string>()
+  const aliasTable = resolveTagAliasesLangTable(locale)
+  const isZh = locale.toLowerCase().startsWith('zh')
+  return (code: string): string => {
+    if (!code) return code
+    const cached = memo.get(code)
+    if (cached !== undefined) return cached
+    let name = ''
+    // 受控码在中文环境优先 AOT 权威词条
+    if (isZh) name = getCanonicalConceptName(code) || ''
+    if (!name && db) {
+      try {
+        const row = db
+          .prepare(
+            `SELECT COALESCE(
+               (SELECT a.lemma FROM ${aliasTable} a WHERE a.tag_code = ? AND a.is_canonical = 1 LIMIT 1),
+               (SELECT p.name FROM file_tags_private p WHERE p.code = ? LIMIT 1)
+             ) AS display_name`
+          )
+          .get(code, code) as { display_name: string | null } | undefined
+        if (row?.display_name) name = row.display_name
+      } catch {
+        // 词表分表缺失（旧库/局部 schema）属可容忍降级，继续走下方兜底
+      }
+    }
+    if (!name) name = code
+    memo.set(code, name)
+    return name
+  }
+}
 
 export interface TagTreeQuerySearchEnrich {
   enrichSearchPage(
@@ -243,11 +281,12 @@ export const tagTreeQuerySearchEnrichMixin = {
               json_object(
                 'code', ftr.tag_code,
                 'name', ft.name,
-                'name_path', ftr.name_path
+                'code_path', tp.code_path
               )
             )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            JOIN tag_paths tp ON tp.path_id = ftr.path_id
             WHERE ftr.file_fingerprint = wf.file_fingerprint
           ) as dimension_tags,
           (
@@ -255,11 +294,12 @@ export const tagTreeQuerySearchEnrichMixin = {
               json_object(
                 'code', ftr.tag_code,
                 'name', ft.name,
-                'name_path', ftr.name_path
+                'code_path', tp.code_path
               )
             )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            JOIN tag_paths tp ON tp.path_id = ftr.path_id
             WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
           ) as fused_tags
       FROM workspace_files wf
@@ -464,11 +504,12 @@ export const tagTreeQuerySearchEnrichMixin = {
               json_object(
                 'code', ftr.tag_code,
                 'name', ft.name,
-                'name_path', ftr.name_path
+                'code_path', tp.code_path
               )
             )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            JOIN tag_paths tp ON tp.path_id = ftr.path_id
             WHERE ftr.file_fingerprint = wf.file_fingerprint
           ) as dimension_tags,
           (
@@ -476,11 +517,12 @@ export const tagTreeQuerySearchEnrichMixin = {
               json_object(
                 'code', ftr.tag_code,
                 'name', ft.name,
-                'name_path', ftr.name_path
+                'code_path', tp.code_path
               )
             )
             FROM file_tag_relations ftr
             LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            JOIN tag_paths tp ON tp.path_id = ftr.path_id
             WHERE ftr.file_fingerprint = wf.file_fingerprint AND ftr.tag_group = 'fused'
           ) as fused_tags
         FROM workspace_files wf
@@ -550,6 +592,15 @@ export const tagTreeQuerySearchEnrichMixin = {
     workspaceDirectoryPath: string | undefined,
     showMissing: boolean
   ): FileItem[] {
+    // 【模型 B】标签名 JSON 仅含 code_path：初始化按段译名解析器（locale 取自配置中心，缺省 zh-CN）
+    let tagNameLocale = 'zh-CN'
+    try {
+      tagNameLocale =
+        ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    } catch {
+      // 配置中心未就绪按默认中文，resolveTagAliasesLangTable 内含白名单校验杜绝注入
+    }
+    const resolveName = buildCodePathNameResolver(this.db, tagNameLocale)
     return files
       .map(file => {
         const currentStatus = file.status ?? 1
@@ -589,10 +640,17 @@ export const tagTreeQuerySearchEnrichMixin = {
                   tags.push(canon || item)
                 } else {
                   if (item.code) tagCodes.push(item.code)
+                  // 模型 B：按 code_path 拆段译名回填 name_path，保持下游消费字段契约不变
+                  if (item.code_path && !item.name_path) {
+                    const segs = item.code_path.split('/').filter(Boolean)
+                    item.name_path = segs.length ? '/' + segs.map((s: string) => resolveName(s)).join('/') : ''
+                  }
                   let displayName = item.name
-                  if (!displayName && item.name_path) {
-                    const parts = item.name_path.split('/').filter(Boolean)
-                    if (parts.length > 0) displayName = parts[parts.length - 1]
+                  // 【模型 B】无物化 name_path：解析 code_path 末段经词表反查展示名
+                  if (!displayName && item.code_path) {
+                    const parts = item.code_path.split('/').filter(Boolean)
+                    const leafCode = parts.length > 0 ? parts[parts.length - 1] : ''
+                    displayName = leafCode ? resolveName(leafCode) : ''
                   }
                   if (!displayName && item.code) {
                     displayName = getCanonicalConceptName(item.code) || item.code
@@ -600,11 +658,13 @@ export const tagTreeQuerySearchEnrichMixin = {
                   if (displayName) tags.push(displayName)
                   // 沿物化路径注入全链路祖先层级名（如 "/文件类型/图片/摄影照片" 注入 "图片"），
                   // 确保按父维度筛选时文件能够精准命中预览树节点
-                  if (item.name_path) {
-                    const parts = item.name_path.split('/').filter(Boolean)
-                    for (const p of parts) {
-                      if (p && !tags.includes(p)) {
-                        tags.push(p)
+                  // 【模型 B】改为按 code_path 拆段经词表实时译名，禁止取物化 name_path
+                  if (item.code_path) {
+                    const parts = item.code_path.split('/').filter(Boolean)
+                    for (const seg of parts) {
+                      const ancestorName = resolveName(seg)
+                      if (ancestorName && !tags.includes(ancestorName)) {
+                        tags.push(ancestorName)
                       }
                     }
                   }
@@ -633,10 +693,17 @@ export const tagTreeQuerySearchEnrichMixin = {
                   const canon = getCanonicalConceptName(item)
                   fusedTags.push(canon || item)
                 } else {
+                  // 模型 B：按 code_path 拆段译名回填 name_path，保持下游消费字段契约不变
+                  if (item.code_path && !item.name_path) {
+                    const segs = item.code_path.split('/').filter(Boolean)
+                    item.name_path = segs.length ? '/' + segs.map((s: string) => resolveName(s)).join('/') : ''
+                  }
                   let displayName = item.name
-                  if (!displayName && item.name_path) {
-                    const parts = item.name_path.split('/').filter(Boolean)
-                    if (parts.length > 0) displayName = parts[parts.length - 1]
+                  // 【模型 B】解析 code_path 末段经词表反查展示名
+                  if (!displayName && item.code_path) {
+                    const parts = item.code_path.split('/').filter(Boolean)
+                    const leafCode = parts.length > 0 ? parts[parts.length - 1] : ''
+                    displayName = leafCode ? resolveName(leafCode) : ''
                   }
                   if (!displayName && item.code) {
                     displayName = getCanonicalConceptName(item.code) || item.code

@@ -18,6 +18,7 @@ import {
   getCanonicalConceptName,
   isTagAdmissible,
   resolveRuntimeMaterializedPath,
+  ensureTagPath,
   CONTROLLED_CONCEPTS,
   CONTROLLED_DIMENSION_ROOT_CODES,
   concept,
@@ -36,10 +37,10 @@ import {
   findTagCodeTwoStage,
   getDatabaseConfig,
   migrations,
+  rebuildDebugTagViews,
   registerDatabaseFunctions,
   resolveTagAliasesLangTable
 } from '.././database'
-import { rebuildNamePaths, type RebuildNamePathsResult } from '.././name-path-rebuilder'
 import { omniClient } from '../../../services/omni-client'
 
 import Database from 'better-sqlite3'
@@ -54,6 +55,7 @@ import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
+import type { IIgnoreRule } from '@firefly/types/settings-types'
 import { ConfigDbManager } from '../../config/config-db-manager'
 
 
@@ -106,8 +108,21 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
       fileFingerprint = await calculateFileFingerprint(filePath)
     }
 
-    if (fileFingerprint) {
-      const stats = fs.statSync(filePath)
+    // SC-1：提前取物理 stats，供 workspace_files 维护 file_size/mtime_ms 预计算列（免 LEFT JOIN files）
+    // 安全守卫：skipHash 且文件不存在时 statSync 会抛错，回退 0 值（与 DDL DEFAULT 0 一致）
+    let stats: fs.Stats | null = null
+    try {
+      stats = fs.statSync(filePath)
+    } catch {
+      stats = null
+    }
+    const physicalSize = stats?.size ?? 0
+    const physicalMtimeMs = Math.trunc(stats?.mtimeMs ?? Date.now())
+    const physicalIsIgnored = shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules())
+      ? 1
+      : 0
+
+    if (fileFingerprint && stats) {
       this._db!.prepare(
         `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, extension, file_group, created_at, modified_at, accessed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
@@ -127,11 +142,14 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
 
     this._db!.prepare(
       `
-      INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at, is_analyzed)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at, is_analyzed, file_size, mtime_ms, is_ignored)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(workspace_id, path) DO UPDATE SET
         file_fingerprint = excluded.file_fingerprint,
-        modified_at = excluded.modified_at
+        modified_at = excluded.modified_at,
+        file_size = excluded.file_size,
+        mtime_ms = excluded.mtime_ms,
+        is_ignored = excluded.is_ignored
     `
     ).run(
       fileFingerprint,
@@ -142,7 +160,10 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
       new Date().toISOString(),
       new Date().toISOString(),
       new Date().toISOString(),
-      existing?.is_analyzed || 0
+      existing?.is_analyzed || 0,
+      physicalSize,
+      physicalMtimeMs,
+      physicalIsIgnored
     )
 
     const wf = this._db!.prepare(
@@ -448,6 +469,80 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   async getFilesByParentPath(p: string, wsId: number) {
     return this.fileDao.getFilesByParentPath(p, wsId)
   }
+  /**
+   * SC-2：目录增量扫描专用存量读取（零 LEFT JOIN files，直击 idx_wf_diff_cover 覆盖索引）。
+   * 仅返回增量 diff 所需字段，根治「未分析文件 files.size 为 NULL → LEFT JOIN 后恒失配重扫」Bug。
+   * file_size/mtime_ms 为切片A 预计算列，未分析文件（file_fingerprint IS NULL）亦有物理值可比对。
+   */
+  async getWorkspaceFilesForDiffScan(wsId: number, dirId: number) {
+    if (!this._db) throw new Error('数据库未初始化')
+    return this._db
+      .prepare(
+        `
+      SELECT id, path, name, file_fingerprint, file_size, mtime_ms, is_ignored, is_analyzed, status, modified_at
+      FROM workspace_files
+      WHERE workspace_id = ? AND directory_id = ? AND status = 1
+    `
+      )
+      .all(wsId, dirId) as any[]
+  }
+  /**
+   * SC-4：排除规则变更后异步分批重算 workspace_files.is_ignored 预计算列。
+   * 每批 2000 行分事务更新，严禁长事务锁死主库阻塞并发读写（实施铁律 4）。
+   * @returns { totalChecked, updatedToIgnored, updatedToActive } 统计（无翻转则 0 写盘）
+   */
+  async refreshWorkspaceFilesIgnoredState(rules?: IIgnoreRule[]): Promise<{
+    totalChecked: number
+    updatedToIgnored: number
+    updatedToActive: number
+  }> {
+    if (!this._db) throw new Error('数据库未初始化')
+    const activeRules = rules && rules.length > 0 ? rules : loadIgnoreRules()
+
+    const rows = this._db
+      .prepare(`SELECT id, path, name, is_ignored FROM workspace_files`)
+      .all() as Array<{ id: number; path: string; name: string; is_ignored: number }>
+
+    const BATCH_SIZE = 2000
+    let updatedToIgnored = 0
+    let updatedToActive = 0
+    let totalChecked = 0
+
+    const toIgnoreIds: number[] = []
+    const toActiveIds: number[] = []
+    for (const row of rows) {
+      totalChecked++
+      const newIgnored = shouldIgnoreFile(row.path, row.name, activeRules) ? 1 : 0
+      if (newIgnored !== row.is_ignored) {
+        if (newIgnored === 1) toIgnoreIds.push(row.id)
+        else toActiveIds.push(row.id)
+      }
+    }
+
+    const now = new Date().toISOString()
+    const updateStmt = this._db.prepare(
+      `UPDATE workspace_files SET is_ignored = ?, modified_at = ? WHERE id = ?`
+    )
+    const runBatch = (ids: number[], target: number) => {
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE)
+        this._db!.transaction(() => {
+          for (const id of batch) updateStmt.run(target, now, id)
+        })()
+      }
+    }
+
+    runBatch(toIgnoreIds, 1)
+    runBatch(toActiveIds, 0)
+    updatedToIgnored = toIgnoreIds.length
+    updatedToActive = toActiveIds.length
+
+    logger.info(
+      LogCategory.DATABASE_SERVICE,
+      `[SC-4] 排除规则变更刷新 is_ignored: 检查 ${totalChecked} 行, 标记忽略 ${updatedToIgnored}, 恢复活跃 ${updatedToActive}`
+    )
+    return { totalChecked, updatedToIgnored, updatedToActive }
+  }
   async getFilesByWorkspaceId(workspaceId: number) {
     if (!this._db) throw new Error('数据库未初始化')
     return this._db
@@ -745,12 +840,18 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     `)
 
     const insertWorkspaceFileStmt = this._db.prepare(`
-      INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at, is_analyzed)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at, is_analyzed, file_size, mtime_ms, is_ignored)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(workspace_id, path) DO UPDATE SET
         file_fingerprint = excluded.file_fingerprint,
-        modified_at = excluded.modified_at
+        modified_at = excluded.modified_at,
+        file_size = excluded.file_size,
+        mtime_ms = excluded.mtime_ms,
+        is_ignored = excluded.is_ignored
     `)
+
+    // SC-1：一次性预取排除规则，供批量入库计算 is_ignored 预计算列
+    const activeIgnoreRules = loadIgnoreRules()
 
     const dirIdCache = new Map<string, number>()
 
@@ -808,7 +909,10 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
           new Date().toISOString(),
           stats.mtime.toISOString(),
           new Date().toISOString(),
-          existing?.is_analyzed || 0
+          existing?.is_analyzed || 0,
+          stats?.size ?? 0,
+          Math.trunc(stats?.mtimeMs ?? Date.now()),
+          shouldIgnoreFile(filePath, path.basename(filePath), activeIgnoreRules) ? 1 : 0
         )
       }
     })()
@@ -949,6 +1053,8 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     let successCount = 0
     let failedCount = 0
     const updatedFileIds: number[] = []
+    // 标签集合有增删变更的文件指纹（供事务末尾置 files.pinyin_state=0 脏标记）
+    const dirtyFingerprints = new Set<string>()
 
     // ──────── Phase 1: 事务外异步预裁决 (Pre-transaction Async Arbitration) ────────
     // 收集所有待添加标签，若未携带显式受控 tagCode 则批量请求 Omni 鉴别受控与祖先继承链
@@ -1336,8 +1442,12 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
           { codePath: string; namePath: string; depth: number }
         >()
 
+        // 模型 B：路径三元组迁至 tag_paths，本表只存 path_id 外键；
+        // created_at / updated_at 为 INTEGER NOT NULL（Unix ms），必须显式 Date.now()
         const insertStmt = this._db!.prepare(
-          "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+          `INSERT OR REPLACE INTO file_tag_relations (
+             file_fingerprint, tag_code, via_parent_code, path_id, tag_group, source, confidence, sync_status, created_at, updated_at, meta
+           ) VALUES (?, ?, ?, ?, ?, 'user', 1.0, 0, ?, ?, '{}')`
         )
 
         // 预编译指纹与路径查询语句（杜绝循环内重复 prepare）
@@ -1383,10 +1493,17 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         // S2 互斥收拢语句（规格 §4.1 阶段 B / §4.3）：与 insertStmt 一同在事务开头预编译，循环内只 run/get。
         // 覆盖删除必须写成「tag_code <> winner」而不是「清空该作用域」——否则 INSERT winner 失败时维度已被清空（P0-A）。
         const selectSiblingsStmt = this._db!.prepare(
-          "SELECT tag_code FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE ('%/' || ? || '/') OR tag_code LIKE (? || '.%')) AND tag_code <> ?"
+          `SELECT ftr.tag_code FROM file_tag_relations ftr
+           JOIN tag_paths tp ON tp.path_id = ftr.path_id
+           WHERE ftr.file_fingerprint = ?
+             AND (ftr.via_parent_code = ? OR tp.code_path LIKE ('%/' || ? || '/') OR ftr.tag_code LIKE (? || '.%'))
+             AND ftr.tag_code <> ?`
         )
         const overrideDeleteStmt = this._db!.prepare(
-          "DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND (via_parent_code = ? OR code_path LIKE ('%/' || ? || '/') OR tag_code LIKE (? || '.%')) AND tag_code <> ?"
+          `DELETE FROM file_tag_relations
+           WHERE file_fingerprint = ?
+             AND (via_parent_code = ? OR path_id IN (SELECT tp.path_id FROM tag_paths tp WHERE tp.code_path LIKE ('%/' || ? || '/')) OR tag_code LIKE (? || '.%'))
+             AND tag_code <> ?`
         )
 
         // S2 显式移除集合（覆盖删除豁免判定用，规格 §4.4 第三行）：
@@ -1492,17 +1609,22 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
                 )
                 return
               }
+              // 模型 B：先经唯一收口 ensureTagPath 取 path_id；非法 code_path 按契约 warn + 记 CONSTRAINT 后跳过
+              let pathId: number
+              try {
+                pathId = ensureTagPath(this._db!, materialized.codePath)
+              } catch (err) {
+                logger.warn(
+                  LogCategory.DATABASE_SERVICE,
+                  `[batchApplyTags][CONSTRAINT] 非法 code_path，跳过写入: ${tagCode} (${materialized.codePath}), error=${err instanceof Error ? err.message : String(err)}`
+                )
+                return
+              }
               const effectiveGroup =
                 tagGroup || this.resolveBatchTagProvenanceGroup(tagCode, viaParentCode)
-              insertStmt.run(
-                fp,
-                tagCode,
-                viaParentCode,
-                materialized.codePath,
-                materialized.namePath,
-                materialized.depth,
-                effectiveGroup
-              )
+              const now = Date.now()
+              insertStmt.run(fp, tagCode, viaParentCode, pathId, effectiveGroup, now, now)
+              if (fp) dirtyFingerprints.add(fp)
             }
 
             // 步骤 2：过滤（全媒体排他门禁 + 准入闸）。被拦者不参与胜出裁决，也就不会造成覆盖删除。
@@ -1603,6 +1725,7 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
                 if (deletedTagCodes.length > 0) {
                   // 7c. 删除既有兄弟；`tag_code <> winner` 保证刚写入的 winner 不被自己删掉
                   overrideDeleteStmt.run(fp, parentCode, parentCode, parentCode, winner.tagCode)
+                  if (fp) dirtyFingerprints.add(fp)
                   // 7d. 只有真实删除过既有兄弟才计入 overriddenCount（回答「有没有覆盖旧值」）
                   overriddenCount++
                 }
@@ -1631,10 +1754,12 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
             // 移除标签关联（精准索引点删：有维度限定走带 via_parent_code，无维度限定走全局点删）
             for (const { stmt, dimCode, params } of dimDeleteStmts) {
               stmt.run(fp, dimCode, ...params)
+              if (fp) dirtyFingerprints.add(fp)
             }
 
             if (globalDeleteStmt) {
               globalDeleteStmt.stmt.run(fp, ...globalDeleteStmt.params)
+              if (fp) dirtyFingerprints.add(fp)
             }
 
             successCount++
@@ -1690,6 +1815,14 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
               }
             }
           }
+        }
+
+        // 标签集合有增删变更时置脏，供后台拼音回填刷新 files_pinyin_fts.tags_py（Spec §2.4.2 R2-7 & §3.1.B L304）
+        if (dirtyFingerprints.size > 0) {
+          const pinyinDirtyStmt = this._db!.prepare(
+            'UPDATE files SET pinyin_state = 0 WHERE file_fingerprint = ?'
+          )
+          for (const fp of dirtyFingerprints) pinyinDirtyStmt.run(fp)
         }
       })()
 
@@ -2112,12 +2245,9 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   }
 
   /**
-   * 切换语言时，按指定目标语言重建存量 file_tag_relations 中的 name_path 物化路径
+   * 切换语言时重建只读调试视图的展示路径（模型 B 下 name_path 物化已退役，零数据行写入）
    */
-  public async rebuildNamePathsForLanguage(targetLocale: string): Promise<RebuildNamePathsResult> {
-    if (!this._db) {
-      return { distinctPathsCount: 0, updatedCount: 0 }
-    }
-    return rebuildNamePaths(this._db, targetLocale)
+  public rebuildDebugTagViewsForLanguage(locale: string): void {
+    rebuildDebugTagViews(this._db!, locale)
   }
 }

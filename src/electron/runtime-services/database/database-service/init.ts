@@ -36,10 +36,10 @@ import {
   findTagCodeTwoStage,
   getDatabaseConfig,
   migrations,
+  rebuildDebugTagViews,
   registerDatabaseFunctions,
   resolveTagAliasesLangTable
 } from '.././database'
-import { rebuildNamePaths, type RebuildNamePathsResult } from '.././name-path-rebuilder'
 import { omniClient } from '../../../services/omni-client'
 
 import Database from 'better-sqlite3'
@@ -190,6 +190,17 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
           } catch (cbError) {
             logger.error(LogCategory.DATABASE_SERVICE, '迁移后回调执行失败:', cbError)
           }
+        }
+
+        // Issue 01 目标 4：建库/迁移与初始语言别名准备完成后，按当前语言重建动态调试视图。
+        // 视图仅供开发调试直查（零数据行写入），业务读侧一律 JOIN tag_paths；
+        // 语言沿用 initialize 入参（与切语言链路同源），非法值由 rebuildDebugTagViews 内部白名单回退。
+        try {
+          rebuildDebugTagViews(this._db!, language)
+        } catch (viewError) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '重建调试标签视图失败（不影响启动）', {
+            error: viewError
+          })
         }
       } catch (error) {
         logger.error(LogCategory.DATABASE_SERVICE, t('数据库初始化失败'), {

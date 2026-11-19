@@ -156,6 +156,10 @@ export const GENESIS_V1_SCHEMA = `
     canonical_text_hash TEXT,                    -- sha256(profile|dim|ver|text)；skipped 行为 NULL
     canonical_vector_state TEXT,                 -- pending/ready/visual_only/skipped/failed；NULL=未计算
     rating_user_override TEXT,                   -- 用户手动评级受控码覆盖 (r18g/r18/r15/all_ages)，重扫不覆盖，Egress展示优先
+    -- [P1-D / R2-7 方案 B] 拼音回填状态机：0=pending(待 P1-D 后台回填)、1=ready(含汉字已建拼音)、
+    --   2=skip(纯 ASCII 无汉字永久免建)。标签集合变更时由 saveTagsAsync 同事务置 0，后台扫描
+    --   idx_files_pinyin_pending 批量刷新 files_pinyin_fts.tags_py（Spec §3.1.C L395-411）。
+    pinyin_state INTEGER NOT NULL DEFAULT 0,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的修改时间
     accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 文件在文件系统中的最后访问时间
@@ -256,27 +260,23 @@ export const GENESIS_V1_SCHEMA = `
   -- 8. 用户/扩展标签多语言别名（受控 builtin.*/omw.* 别名由语言分表 tag_aliases_{lang} 镜像）
   -- 语言分表 DDL 见 createTagAliasesLangTable（表名含语言后缀，需按语言动态创建）；单表 tag_aliases 已废止。
 
-  -- 9. 文件指纹与标签多对多关联表（tag_code 为业务软外键，兼容受控标签 code）
+  -- 9. 文件指纹与标签多对多关联表（模型 B：物化路径外迁至 tag_paths，仅存 4B 外键 path_id）
+  -- 权威 spec §B L306-323：移除 code_path/name_path/depth，新增 path_id 外键 + WITHOUT ROWID；
+  -- created_at/updated_at 改 INTEGER NOT NULL（Unix ms，无 DEFAULT，写入方必须显式传 Date.now()）。
   CREATE TABLE IF NOT EXISTS file_tag_relations (
-    file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
-    tag_code           TEXT NOT NULL,                 -- 业务软外键：允许 builtin.*/omw.*/_ext.*/user.*，由应用层校验
-    via_parent_code    TEXT NOT NULL DEFAULT '',      -- 经由父级标签 code (ADR-0047：用于一词多义消歧与限定类型上下文；真根填 '')
-    code_path          TEXT NOT NULL DEFAULT '',      -- 完整物化代码路径 (如 "/builtin.file_type/builtin.image/builtin.subject_type/omw.01846331.n")
-    name_path          TEXT NOT NULL DEFAULT '',      -- 完整物化展示名路径 (如 "/文件类型/图片/主体类型/鸭子")
-    depth              INTEGER NOT NULL DEFAULT 1,    -- 物化路径层级深度 (1-based，根节点=1，直属子标签=2...)
-    tag_group          TEXT NOT NULL DEFAULT '',      -- 标签来源分组 (ADR-0045)：fact/fused/visual/ai/user；列名不用 group，因其为 SQL 关键字
-    confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
-    source             TEXT DEFAULT 'ai'
-                           CHECK (source IN ('ai', 'user', 'rule')),
-    sync_status        INTEGER NOT NULL DEFAULT 0,    -- 同步状态: 0-待同步, 1-同步中, 2-已同步
-    created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    meta               TEXT NOT NULL DEFAULT '{}',    -- JSON 元数据
-    PRIMARY KEY (file_fingerprint, tag_code, via_parent_code),
-    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
-    CHECK (tag_code NOT GLOB '*[^ -~]*' AND tag_code != ''),
-    CHECK (tag_group IN ('fact', 'fused', 'visual', 'ai', 'user', ''))
-  );
+    file_fingerprint   TEXT NOT NULL REFERENCES files(file_fingerprint) ON DELETE CASCADE,
+    tag_code           TEXT NOT NULL CHECK (tag_code NOT GLOB '*[^ -~]*' AND tag_code != ''),
+    via_parent_code    TEXT NOT NULL DEFAULT '',      -- 经由父级标签 code (ADR-0047：用于一词多义消歧；真根填 '')
+    path_id            INTEGER NOT NULL REFERENCES tag_paths(path_id), -- 物化路径外键（闭包表 + 覆盖索引支撑子树筛选）
+    tag_group          TEXT NOT NULL DEFAULT '' CHECK (tag_group IN ('fact', 'fused', 'visual', 'ai', 'user', '')),
+    confidence         REAL NOT NULL DEFAULT 1.0,
+    source             TEXT NOT NULL DEFAULT 'ai' CHECK (source IN ('ai', 'user', 'rule')),
+    sync_status        INTEGER NOT NULL DEFAULT 0,
+    created_at         INTEGER NOT NULL,              -- Unix ms（写入方显式 Date.now()）
+    updated_at         INTEGER NOT NULL,              -- Unix ms（写入方显式 Date.now()）
+    meta               TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (file_fingerprint, tag_code, via_parent_code)
+  ) WITHOUT ROWID;
 
   -- 10. 独立文件常量配置表 (file_constants)
   CREATE TABLE IF NOT EXISTS file_constants (
@@ -621,11 +621,10 @@ export const GENESIS_V1_SCHEMA = `
   
   -- #region V4 Core Tables
   -- tag_paths 微型路径字典（权威 spec：docs/specs/v4-genesis-database-architecture-optimization-spec.md §B L284）。
-  -- 存"完整物化路径 → path_id"映射（code_path UNIQUE），file_tag_relations 目标态仅存 4B 外键 path_id，
+  -- 存"完整物化路径 → path_id"映射（code_path UNIQUE），file_tag_relations 模型 B 仅存 4B 外键 path_id，
   -- 侧边栏聚合 1 次 JOIN 替代路径重算。维护铁律：严禁裸写，唯一收口于 ensureTagPath(db, codePath)
-  -- （单事务插 tag_paths 并写入含自身的全量祖先闭包）。
-  -- 注：当前桌面端仍为模型 A（file_tag_relations.code_path 直存），本表为模型 B 目标态预留，暂无写入方；
-  --     omni tree_fast 消费方对空表/缺列已做安全 fallback（回退 code_path 直读），两模型不并行。
+  -- （已下沉 @firefly/shared，单事务插 tag_paths 并写入含自身的全量祖先闭包）。
+  -- 模型 B 已全量落地：业务写入方统一经 ensureTagPath 取 path_id，读方 JOIN tag_paths / tag_path_ancestors。
   CREATE TABLE IF NOT EXISTS tag_paths (
     path_id         INTEGER PRIMARY KEY AUTOINCREMENT,
     leaf_code       TEXT NOT NULL CHECK (leaf_code NOT GLOB '*[^ -~]*' AND leaf_code != ''),
@@ -682,6 +681,8 @@ export const GENESIS_V1_SCHEMA = `
   -- 18. 高频索引
   CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
   CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
+  -- [P1-D] 拼音回填待办部分索引：仅扫 pinyin_state=0 的脏文件，空库/全就绪零成本
+  CREATE INDEX IF NOT EXISTS idx_files_pinyin_pending ON files(pinyin_state) WHERE pinyin_state = 0;
   CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_ws_fp ON workspace_files(workspace_id, file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_fp_ws ON workspace_files(file_fingerprint, workspace_id);
@@ -693,7 +694,9 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_lightweight ON workspace_files(workspace_id, is_analyzed, path);
   -- V4 切片A（Issue 01 §2）：增量扫描覆盖索引——diff 扫描单表命中，免回表
-  CREATE INDEX IF NOT EXISTS idx_wf_diff_cover    ON workspace_files(workspace_id, directory_id, is_ignored, path, file_size, mtime_ms);
+  -- 切片C（SC-2/SC-5）：纳入 status 列，使 workspace_id + directory_id + status 三条件
+  --   在任意数据量（含单行）下优化器稳定选中本覆盖索引，避免退化到单列 idx_workspace_files_status。
+  CREATE INDEX IF NOT EXISTS idx_wf_diff_cover    ON workspace_files(workspace_id, directory_id, status, is_ignored, path, file_size, mtime_ms);
   -- 活跃目录快速过滤（部分索引，排除 is_ignored=1）
   CREATE INDEX IF NOT EXISTS idx_wf_ws_active_dir ON workspace_files(workspace_id, directory_id) WHERE is_ignored = 0;
   -- 指纹反查（部分索引，覆盖 fk 路径）
@@ -706,16 +709,18 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
   CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
 
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(via_parent_code, tag_code);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_code_path ON file_tag_relations(code_path);
+  -- 模型 B 覆盖索引（Spec §B L320-323）：path_id 前导命中子树闭包，tag_code 前导命中标签反查，
+  -- via_parent_code 前导命中父级互斥，sync_status 部分索引支撑增量同步水位。
+  CREATE INDEX IF NOT EXISTS idx_ftr_path_fp ON file_tag_relations(path_id, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_ftr_tag_fp ON file_tag_relations(tag_code, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_ftr_parent ON file_tag_relations(via_parent_code, tag_code);
+  CREATE INDEX IF NOT EXISTS idx_ftr_sync ON file_tag_relations(sync_status, file_fingerprint, updated_at) WHERE sync_status != 2;
   CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, via_parent_code, confidence);
   CREATE INDEX IF NOT EXISTS idx_file_video_chunks_fp ON file_video_chunks(file_fingerprint);
 
   -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）
@@ -1178,102 +1183,28 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
 `
 
 /**
- * 校验 tag_paths.code_path 格式（写入端闸口，比建表 CHECK 更严）：
- * 以 '/' 开头、不以 '/' 结尾、无 '//'、每段为非空可打印 ASCII（受控 code 不含中文/乱码/空格）。
- *
- * 与建表 CHECK 的关系：tag_paths.code_path 的 CHECK 只覆盖首尾斜杠与 '//'（较宽），
- * 本函数在其之上额外拒绝空格与不可打印字符 [^ -~]。方向是「CHECK 宽 / parse 严」——
- * 保证不会出现「CHECK 拒绝但 parse 放行」的插入报错；严闸口在写入端提前拦截脏路径。
- * @returns 合法返回分段数组（去除首尾空段），非法返回 null
+ * ensureTagPath / parseCodePath 已下沉至 @firefly/shared（apps/desktop/pro/packages/shared/src/utils/tag-path-store.ts），
+ * 消除 core-engine / shared 反向依赖 desktop/src 的跨包循环。此处 re-export 保持既有导入路径兼容。
  */
-function parseCodePath(codePath: string): string[] | null {
-  if (
-    typeof codePath !== 'string' ||
-    !codePath.startsWith('/') ||
-    codePath.length <= 1 ||
-    codePath.endsWith('/') ||
-    codePath.includes('//') ||
-    codePath.includes(' ') ||
-    /[^ -~]/.test(codePath)
-  ) {
-    return null
-  }
-  const segs = codePath
-    .slice(1)
-    .split('/')
-    .map(s => s.trim())
-    .filter(Boolean)
-  if (segs.length === 0) return null
-  return segs
-}
+export { ensureTagPath, parseCodePath } from '@firefly/shared'
 
 /**
- * 单源原子函数：ensureTagPath(db, codePath)（Issue 01 §3 / v4-genesis spec §B）
- *
- * 唯一合法的 tag_paths 写入收口（严禁业务代码裸 INSERT INTO tag_paths）。
- * 单事务内：① 幂等插入 tag_paths（code_path UNIQUE，已存在直接复用 path_id）；
- * ② 写入含自身在内的全量祖先闭包行到 tag_path_ancestors（供子树筛选与切语言补译）。
- *
- * 返回该 code_path 对应的 path_id；code_path 非法时抛错（调用方据契约记录 CONSTRAINT 后 CONTINUE）。
- *
- * @param db        better-sqlite3 连接
- * @param codePath  完整物化代码路径（如 "/omw.100.n/omw.200.n"，语言无关）
- * @returns path_id（已落库或已存在的稳定主键）
- */
-export function ensureTagPath(db: Database, codePath: string): number {
-  const segs = parseCodePath(codePath)
-  if (!segs) {
-    throw new Error(
-      `ensureTagPath: 非法 code_path "${codePath}"（须以 / 开头、不以 / 结尾、无 //、纯可打印 ASCII）`
-    )
-  }
-
-  const leafCode = segs[segs.length - 1]
-  const viaParentCode = segs.length >= 2 ? segs[segs.length - 2] : ''
-  const depth = segs.length
-
-  const tx = db.transaction((): number => {
-    // ① 幂等插入 tag_paths：命中 UNIQUE(code_path) 冲突则忽略，随后统一查回 path_id
-    db.prepare(
-      `INSERT OR IGNORE INTO tag_paths (leaf_code, via_parent_code, code_path, depth)
-       VALUES (?, ?, ?, ?)`
-    ).run(leafCode, viaParentCode, codePath, depth)
-
-    const row = db.prepare(`SELECT path_id FROM tag_paths WHERE code_path = ?`).get(codePath) as
-      | { path_id: number }
-      | undefined
-    if (!row) {
-      throw new Error(`ensureTagPath: 插入 tag_paths 后未取回 path_id（code_path="${codePath}"）`)
-    }
-    const pathId = row.path_id
-
-    // ② 含自身在内的全量祖先闭包：ancestor_code 遍历全部段（含 leaf 自身），OR IGNORE 幂等
-    const insertAncestor = db.prepare(
-      `INSERT OR IGNORE INTO tag_path_ancestors (ancestor_code, path_id) VALUES (?, ?)`
-    )
-    for (const ancestorCode of segs) {
-      insertAncestor.run(ancestorCode, pathId)
-    }
-
-    return pathId
-  })
-
-  return tx()
-}
-
-/**
- * 动态调试视图重建（Issue 01 §4）：按目标语言 DROP + CREATE VIEW
- *   v_tag_paths_readable  —— tag_paths 每行追加当前语言的物化展示名路径 name_path_readable
- *   v_file_tags_readable  —— file_tag_relations(模型A) JOIN tag_paths 后的可读视图
+ * 动态调试视图重建（Issue 01 §4 / Spec v3.5 §3.1.B L347-375）：按目标语言 DROP + CREATE VIEW
+ *   v_tag_paths_readable  —— tag_paths 每行按 '/' 拆段并逐段回译，产出可读 name_path
+ *   v_file_tags_readable  —— file_tag_relations(模型B) JOIN v_tag_paths_readable 后的可读视图
  *
  * 安全铁律：
  * - locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（复用 resolveTagAliasesLangTable 同源校验）；
  * - 视图按语言动态拼名，严禁写入静态 GENESIS_V1_SCHEMA；
- * - 仅供开发期调试直查，全仓业务代码零引用 v_*（业务读侧仍走物化列）。
+ * - 仅供开发期调试直查，全仓业务代码零引用 v_*（业务读侧 JOIN tag_paths / tag_path_ancestors）。
  *
- * name_path_readable 拼装：用 json_each 把 code_path（如 "/omw.100.n/omw.200.n"）拆成段，
- * 左连 tag_aliases_{lang} 取各段规范展示名，再按原顺序 group_concat 回 '/' 分隔路径。
- * 任一段在当前语言缺译时回退该段 code（COALESCE），保证视图永不因个别缺译而断链。
+ * 拆段方案：彻底废弃原 json_each(substr(tp.code_path, 2)) —— substr 结果并非合法 JSON，
+ * 运行时必报 `malformed JSON`。改用 WITH RECURSIVE split 按 '/' 逐段切分，子查询按 idx 回译：
+ * COALESCE(tag_aliases_{lang}.lemma WHERE is_canonical=1, file_tags_private.name, code) 三级兜底，
+ * 并用 group_concat(label, '/' ORDER BY idx) 锁定段序（杜绝同义词一对多笛卡尔膨胀与段序错乱）。
+ *
+ * ⚠️ Issue 02 单表 tag_aliases 落地后，仅需将 FROM tag_aliases_${suffix} 换为
+ *    FROM tag_aliases WHERE locale = '<whitelisted_locale>'（本单保持分表兼容，不跨单抢跑）。
  *
  * @param db     better-sqlite3 连接
  * @param locale 目标语言（如 zh-CN）
@@ -1287,40 +1218,38 @@ export function rebuildDebugTagViews(db: Database, locale: string): void {
   db.exec(`
     DROP VIEW IF EXISTS v_tag_paths_readable;
     CREATE VIEW v_tag_paths_readable AS
-    SELECT
-      tp.path_id,
-      tp.leaf_code,
-      tp.via_parent_code,
-      tp.code_path,
-      tp.depth,
-      '/' || (
-        -- group_concat 聚合顺序不保证，须按 je.key 显式 ORDER BY 锁定段序，
-        -- 否则多段/缺译时 name_path_readable 段序可能错乱（调试视图直接误导定位）。
-        SELECT group_concat(x, '/')
-        FROM (
-          SELECT COALESCE(a.lemma, je.value) AS x
-          FROM json_each(substr(tp.code_path, 2)) je
-          LEFT JOIN tag_aliases_${suffix} a ON a.tag_code = je.value
-          ORDER BY je.key
-        ) seg
-      ) AS name_path_readable
-    FROM tag_paths tp;
+    WITH RECURSIVE split(path_id, idx, code, rest) AS (
+      SELECT path_id, 0, '', ltrim(code_path, '/') || '/' FROM tag_paths
+      UNION ALL
+      SELECT path_id, idx + 1,
+             substr(rest, 1, instr(rest, '/') - 1),
+             substr(rest, instr(rest, '/') + 1)
+      FROM split WHERE rest != ''
+    ),
+    labels AS (
+      SELECT s.path_id, s.idx,
+             COALESCE(
+               (SELECT a.lemma FROM tag_aliases_${suffix} a
+                WHERE a.tag_code = s.code AND a.is_canonical = 1 LIMIT 1),
+               (SELECT p.name FROM file_tags_private p WHERE p.code = s.code),
+               s.code
+             ) AS label
+      FROM split s WHERE s.idx > 0
+    )
+    SELECT tp.path_id, tp.leaf_code, tp.via_parent_code, tp.depth,
+           '/' || group_concat(l.label, '/' ORDER BY l.idx) AS name_path, tp.code_path
+    FROM tag_paths tp JOIN labels l ON l.path_id = tp.path_id
+    GROUP BY tp.path_id;
 
     DROP VIEW IF EXISTS v_file_tags_readable;
-    -- 模型A 直出调试视图（file_tag_relations 直存 code_path/name_path）。
-    -- 待模型B 切换（file_tag_relations.path_id）后改为 JOIN tag_paths 带出 name_path_readable。
     CREATE VIEW v_file_tags_readable AS
     SELECT
-      ftr.file_fingerprint,
-      ftr.tag_code,
-      ftr.via_parent_code,
-      ftr.code_path,
-      ftr.name_path,
-      ftr.depth,
-      ftr.tag_group,
-      ftr.confidence,
-      ftr.source
-    FROM file_tag_relations ftr;
+      wf.path AS file_path, wf.name AS file_name, f.smart_name, ftr.tag_group,
+      vp.name_path, vp.code_path, ftr.confidence, ftr.source, ftr.file_fingerprint
+    FROM file_tag_relations ftr
+    JOIN v_tag_paths_readable vp ON vp.path_id = ftr.path_id
+    JOIN files f ON f.file_fingerprint = ftr.file_fingerprint
+    LEFT JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint;
   `)
   logger.debug(
     LogCategory.DATABASE,

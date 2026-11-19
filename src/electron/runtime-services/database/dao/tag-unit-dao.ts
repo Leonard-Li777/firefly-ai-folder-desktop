@@ -196,11 +196,11 @@ export class TagUnitDao {
           ftr.via_parent_code AS via_parent_code,
           ftr.tag_group       AS tag_group,
           ft.parent_codes     AS parent_codes,
-          ftr.code_path       AS code_path,
-          ftr.name_path       AS name_path,
-          ftr.depth           AS depth,
+          tp.code_path        AS code_path,
+          tp.depth            AS depth,
           ftr.confidence      AS confidence
         FROM file_tag_relations ftr
+        JOIN tag_paths tp ON tp.path_id = ftr.path_id
         LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
         WHERE ftr.file_fingerprint = ?
       `
@@ -208,6 +208,21 @@ export class TagUnitDao {
         .all(fileFingerprint) as Array<{ name: string | null; code: string; parent_codes: string | null } & Record<string, unknown>>
       // 云端 `file_tags_private.parent_codes` 为 JSONB（数组），本地列是 TEXT（JSON 字符串）。
       // 为兑现「与云端 RPC 同形」契约，此处统一解析为数组；解析失败退回 `[]`（与列默认值一致）。
+      const targetLocale =
+        ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+      const isZh = targetLocale.toLowerCase().startsWith('zh')
+      // 模型 B：name_path 物化列已删除，展示路径按 code_path 拆段实时译名（禁物化）
+      const translateCodePath = (codePath: string): string => {
+        const segs = codePath.split('/').filter(Boolean)
+        if (segs.length === 0) return ''
+        const displayMap = databaseService.resolveTagDisplayNames(segs, targetLocale)
+        return (
+          '/' +
+          segs
+            .map(seg => displayMap[seg] || (isZh ? getCanonicalConceptName(seg) : '') || seg)
+            .join('/')
+        )
+      }
       return rows.map(row => {
         let parentCodes: unknown = []
         try {
@@ -220,9 +235,6 @@ export class TagUnitDao {
         let displayName = typeof row.name === 'string' && row.name ? row.name : ''
         const code = String(row.code || '')
         if (!displayName && code) {
-          const targetLocale =
-            ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
-          const isZh = targetLocale.toLowerCase().startsWith('zh')
           if (isZh) {
             displayName = getCanonicalConceptName(code) || ''
           }
@@ -236,7 +248,13 @@ export class TagUnitDao {
           }
         }
 
-        return { ...row, name: displayName, parent_codes: parentCodes }
+        const codePath = typeof row.code_path === 'string' ? row.code_path : ''
+        return {
+          ...row,
+          name: displayName,
+          name_path: translateCodePath(codePath),
+          parent_codes: parentCodes
+        }
       })
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '获取文件标签失败', { error, fileFingerprint })
