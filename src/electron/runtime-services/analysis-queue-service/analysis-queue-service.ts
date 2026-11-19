@@ -1,9 +1,4 @@
-import type {
-  AnalysisQueueItem,
-  AnalysisQueueSnapshot,
-  AnalysisStats,
-  IIgnoreRule
-} from '@firefly/types'
+import type { AnalysisQueueItem, AnalysisQueueSnapshot, IIgnoreRule } from '@firefly/types'
 import { t } from '@app/languages'
 import {
   DimensionAnalyzer,
@@ -12,33 +7,14 @@ import {
   FileProcessorService
 } from '@firefly/core-engine'
 import type { EnqueueInput, IErrorRecoveryConfig } from './types'
-import {
-  LogCategory,
-  logger,
-  PerformanceTimer,
-  isCpuBackend,
-  FileCategory,
-  getFileCategory,
-  isPathEqual,
-  isSubPath
-} from '@firefly/shared'
+import { LogCategory, logger, isCpuBackend, isPathEqual, isSubPath } from '@firefly/shared'
 import { loggingService } from '../system/logging-service'
 import { systemHealthService } from '../system'
 import { loadIgnoreRules } from '../analysis/analysis-ignore-service'
 import { LlamaIndexAIService } from '@firefly/electron-llamaIndex-service'
 import { AIServiceStatus, ILlamaIndexAIService } from '@firefly/types'
-import { BrowserWindow } from 'electron'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
-import {
-  resolveAnalysisMode,
-  resolveEffectiveAnalysisMode,
-  isAiStageEnabled,
-  isAnalysisComplete,
-  isAnalyzedForMode,
-  getRequiredStage,
-  normalizeAnalysisMode,
-  type AnalysisMode
-} from '@app/electron/config/analysis-mode'
+import { resolveEffectiveAnalysisMode, isAiStageEnabled } from '@app/electron/config/analysis-mode'
 import { DirectoryContextService } from '../filesystem/directory-context-service'
 import { ErrorHandler } from './error-handler'
 import { QueueManager, pickNextPending, type EnqueueResult } from './queue-manager'
@@ -46,30 +22,30 @@ export type { EnqueueResult }
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { createCoreEngineAdapters } from '../../adapters'
 import { databaseService } from '../database/database-service'
-import { FtsProjectionService } from '../database/fts-projection'
 import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
-import {
-  FileProcessor,
-  getFileStageFromDB,
-  getFileAnalysisStateFromDB,
-  checkBasicDataCompleteness
-} from './file-processor'
-import path from 'node:path'
-import { engineBridgeService } from '../engine-bridge'
-import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
-import { isTransientInfraError } from './file-processor/analysis-error-classifier'
+import { FileProcessor } from './file-processor'
 import {
   canonicalMaintenanceService,
   installCanonicalMaintenanceListener
 } from './canonical-maintenance-service'
 
-import { StageNotifier, STAGE2_WAIT_TIMEOUT_MS } from './stage-notifier'
+import { STAGE2_WAIT_TIMEOUT_MS } from './stage-notifier'
 import { AnalysisWriteDispatcher } from './analysis-write-dispatcher'
 import { AnalysisOrchestratorWorker } from './analysis-orchestrator-worker'
 import { OmniHttpAdapter } from './omni-http-adapter'
 import { EngineHealthTier } from './engine-health-tier'
+import { OrphanWatchdog } from './orphan-watchdog'
+import { flushFtsSync } from './fts-sync-hooks'
+import {
+  checkExtensionMismatchFiles,
+  batchFixFileExtensions,
+  checkAlreadyAnalyzedFilesByPaths,
+  collectIncompleteVideoEnqueueInputs,
+  updateVirtualDirectoriesAfterQueueCompletion,
+  type ExtensionMismatchItem
+} from './extension-and-precheck-helpers'
 
 /**
  * 分析队列服务类
@@ -97,13 +73,6 @@ export class AnalysisQueueService {
    */
   private stage2WaitTimeoutMs: number = STAGE2_WAIT_TIMEOUT_MS
 
-  // 工单 B6 · 孤儿 watchdog：扫描 status='analyzing' AND claimed_at 超时的孤儿行
-  private orphanWatchdogTimer: NodeJS.Timeout | null = null
-  /** 孤儿判定阈值：认领后超过此时长仍 analyzing 且无活动即判孤儿 */
-  private static readonly ORPHAN_STALE_THRESHOLD_MS = 10 * 60 * 1000
-  /** watchdog 扫描周期 */
-  private static readonly ORPHAN_SCAN_INTERVAL_MS = 60 * 1000
-
   private ignoreRules: IIgnoreRule[] = []
   private errorRecoveryConfig: IErrorRecoveryConfig = {
     maxRetries: 0,
@@ -122,6 +91,7 @@ export class AnalysisQueueService {
   private orchestratorWorker: AnalysisOrchestratorWorker
   private omniAdapter: OmniHttpAdapter
   private engineHealth: EngineHealthTier
+  private orphanWatchdog: OrphanWatchdog
   private currentAbortController: AbortController | null = null
 
   private wakeUpResolver?: () => void
@@ -134,21 +104,37 @@ export class AnalysisQueueService {
     this.errorHandler = new ErrorHandler()
 
     // 初始化委托组件
+    this.writeDispatcher = new AnalysisWriteDispatcher(
+      () => this.queueManager,
+      () => this.getSnapshot()
+    )
+
     this.aiServiceManager = new AIServiceManager(
       () => this.aiService,
       () => this.running,
       (type, message, sticky, id, autoClose, action) =>
-        this.notifyFrontend(type, message, sticky, id, autoClose, action)
+        this.writeDispatcher.notifyFrontend(type, message, sticky, id, autoClose, action)
     )
 
     this.engineHealth = new EngineHealthTier(this.aiServiceManager)
     this.omniAdapter = new OmniHttpAdapter()
 
     this.statsCollector = new AnalysisStatsCollector()
-    this.writeDispatcher = new AnalysisWriteDispatcher(
-      this.queueManager,
-      (type, message, sticky, id, autoClose, action) =>
-        this.notifyFrontend(type, message, sticky, id, autoClose, action)
+    this.orphanWatchdog = new OrphanWatchdog(
+      itemId => this.current?.id === itemId || this.orchestratorWorker.isItemActive(itemId),
+      reclaimedIds => {
+        // 同步 queueManager 内存态，避免前端快照残留 analyzing 状态
+        const idSet = new Set(reclaimedIds)
+        const now = Date.now()
+        for (const item of this.queueManager?.getQueue() ?? []) {
+          if (idSet.has(item.id) && item.status === 'analyzing') {
+            item.status = 'failed'
+            item.error = 'orphaned_reclaimed'
+            item.updatedAt = now
+          }
+        }
+        this.writeDispatcher.emitUpdate()
+      }
     )
 
     this.directoryProcessor = new DirectoryProcessor(
@@ -184,11 +170,10 @@ export class AnalysisQueueService {
     )
 
     this.orchestratorWorker = new AnalysisOrchestratorWorker(
-      this.queueManager,
+      () => this.queueManager,
       this.aiServiceManager,
       this.directoryProcessor,
       this.fileProcessor,
-      new FtsProjectionService(databaseService.db),
       (itemId, status, progress, error, extra) =>
         this.writeDispatcher.updateItemStatus(itemId, status, progress, error, extra)
     )
@@ -260,7 +245,7 @@ export class AnalysisQueueService {
       }
 
       this.queueManager = new QueueManager(this.ignoreRules, {
-        onUpdate: () => this.emitUpdate(),
+        onUpdate: () => this.writeDispatcher.emitUpdate(),
         onPersist: () => this.persist(),
         onWakeUp: () => this.wakeUp()
       })
@@ -404,21 +389,35 @@ export class AnalysisQueueService {
     }
   }
 
+  private async ensureWorkspaceConfigReadyOrBrake(
+    workspaceId: number,
+    inLoop: boolean
+  ): Promise<boolean> {
+    let isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
+    if (!isReady) {
+      await databaseService.ensureWorkspaceConfigReady(workspaceId)
+      isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
+    }
+    if (!isReady) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        inLoop
+          ? `[分析队列动态刹车] 工作区 ${workspaceId} 尚未就绪 (status: pending)，挂起调度并弹出运行栈`
+          : `[分析队列动态刹车] 启动工作区 ${workspaceId} 尚未就绪 (status: pending)，立即拦截并通知`
+      )
+      if (inLoop) {
+        this.runningWorkspaceStack.pop()
+        this.writeDispatcher.emitUpdate()
+      }
+      this.writeDispatcher.notifyLatchBrake(workspaceId)
+      return false
+    }
+    return true
+  }
+
   async start(workspaceId?: number): Promise<void> {
     if (workspaceId) {
-      let isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
-      if (!isReady) {
-        await databaseService.ensureWorkspaceConfigReady(workspaceId)
-        isReady = await databaseService.isWorkspaceConfigReady(workspaceId)
-      }
-      if (!isReady) {
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          `[分析队列动态刹车] 启动工作区 ${workspaceId} 尚未就绪 (status: pending)，立即拦截并通知`
-        )
-        this.notifyLatchBrake(workspaceId)
-        return
-      }
+      if (!(await this.ensureWorkspaceConfigReadyOrBrake(workspaceId, false))) return
       // 指定了工作空间：抢占最高优先级，移至栈顶
       this.runningWorkspaceStack = this.runningWorkspaceStack.filter(id => id !== workspaceId)
       this.runningWorkspaceStack.push(workspaceId)
@@ -437,7 +436,7 @@ export class AnalysisQueueService {
 
     if (this.isProcessingLoopActive) {
       this.wakeUp()
-      this.emitUpdate()
+      this.writeDispatcher.emitUpdate()
       return
     }
 
@@ -445,52 +444,37 @@ export class AnalysisQueueService {
 
     systemHealthService.updateMonitoringInterval(30000)
     cloudSyncWorker.updateInterval(30000)
-    this.startOrphanWatchdog()
+    this.orphanWatchdog.start()
 
-    this.emitUpdate()
+    this.writeDispatcher.emitUpdate()
 
     while (this.running && this.runningWorkspaceStack.length > 0) {
       try {
         const activeWorkspaceId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
 
         // TASK-01 动态刹车：若当前工作区尚未确认配置 (pending)，尝试自适应就绪默认配置
-        if (activeWorkspaceId != null) {
-          let isConfigReady = await databaseService.isWorkspaceConfigReady(activeWorkspaceId)
-          if (!isConfigReady) {
-            await databaseService.ensureWorkspaceConfigReady(activeWorkspaceId)
-            isConfigReady = await databaseService.isWorkspaceConfigReady(activeWorkspaceId)
-          }
-          if (!isConfigReady) {
-            logger.warn(
-              LogCategory.ANALYSIS_QUEUE,
-              `[分析队列动态刹车] 工作区 ${activeWorkspaceId} 尚未就绪 (status: pending)，挂起调度并弹出运行栈`
-            )
-            this.runningWorkspaceStack.pop()
-            this.emitUpdate()
-            this.notifyLatchBrake(activeWorkspaceId)
-            continue
-          }
+        if (
+          activeWorkspaceId != null &&
+          !(await this.ensureWorkspaceConfigReadyOrBrake(activeWorkspaceId, true))
+        ) {
+          continue
         }
 
         const config = ConfigOrchestrator.getInstance()
         const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE') ?? 'local'
         // PRD-0049：当前引擎唯一真相 = 萤核AI引擎桥接快照 backend
-        // 不再读取 AI_ENGINE_FORCE_CPU_MODE / SELECTED_ACCELERATION 等遗留配置（残留值会污染判定）
-        const currentEngineAcc = engineBridgeService.getSnapshot().backend
+        const backendSnap = this.omniAdapter.getBackendSnapshot()
+        const currentEngineAcc = backendSnap.backend
 
-        // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/vulkan/cuda 等）均启用并行
-        // 引擎可能上报 "CPU (AVX2)" / "cpu-avx" 等变体，用前缀匹配避免全等漏判
-        // 引擎离线（backend 为 null）时视为非 CPU 引擎：分析由 Tier 1 兜底时本就无 CPU 引擎约束
+        // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎均启用并行
         const isCpuEngine =
           aiServiceMode === 'cpu' || (aiServiceMode === 'local' && isCpuBackend(currentEngineAcc))
 
         // 统一走 analysis-mode 模块解析，考虑底层本地引擎可用性
         const hasInstalledAiEngine =
           aiServiceMode === 'local'
-            ? engineBridgeService.hasInstalledEngines !== false &&
-              Boolean(
-                engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
-              )
+            ? this.omniAdapter.hasInstalledEngines() &&
+              Boolean(backendSnap.backend || backendSnap.model)
             : true
         const analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
 
@@ -499,34 +483,13 @@ export class AnalysisQueueService {
         const useParallel = !isCpuEngine && isAiStageEnabled(analysisMode) && hasAnalysisPending
 
         if (useParallel) {
-          const snapshot = decisionSnapshot
-          const pendingItems = snapshot.items.filter(i => i.status === 'pending')
+          const pendingItems = decisionSnapshot.items.filter(i => i.status === 'pending')
 
           if (pendingItems.length === 0) {
-            logger.info(
-              LogCategory.ANALYSIS_QUEUE,
-              `[分析队列] 工作空间 ${activeWorkspaceId} 的队列已分析完毕，从运行栈中弹出`
-            )
-            this.runningWorkspaceStack.pop()
-
-            if (this.runningWorkspaceStack.length > 0) {
-              const nextWsId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
-              logger.info(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 自动恢复运行栈顶工作空间 ${nextWsId} 的分析队列`
-              )
-              this.emitUpdate()
+            if ((await this.advanceOrStopWorkspaceQueue(activeWorkspaceId)) === 'continue') {
               continue
-            } else {
-              this.running = false
-              this.current = undefined
-              this.isProcessingLoopActive = false
-              systemHealthService.updateMonitoringInterval(300000)
-              cloudSyncWorker.updateInterval(300000)
-              await this.updateVirtualDirectoriesAfterQueueCompletion()
-              this.emitUpdate()
-              break
             }
+            break
           }
 
           const isReady = await this.engineHealth.waitForReady()
@@ -536,8 +499,7 @@ export class AnalysisQueueService {
             break
           }
 
-          // 并行分析模式：在启动并行流水线前，确保底层引擎处于主语言模型模式；
-          // 避免应用刚启动或加载模型期间（10~20s）GPU 消费者抢跑导致反向代理 503
+          // 并行分析模式：在启动并行流水线前，确保底层引擎处于主语言模型模式
           if (isAiStageEnabled(analysisMode)) {
             const modeRes = await this.omniAdapter.ensureMode('language')
             if (modeRes && !modeRes.ok) {
@@ -545,26 +507,17 @@ export class AnalysisQueueService {
             }
           }
 
-          const notifier = new StageNotifier()
           this.currentAbortController = new AbortController()
           const signal = this.currentAbortController.signal
 
           await this.orchestratorWorker.runParallel(pendingItems, signal, this.stage2WaitTimeoutMs)
-
-          const updatedSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-          if (updatedSnapshot.items.filter(item => item.status === 'pending').length === 0) {
-            await this.updateVirtualDirectoriesAfterQueueCompletion()
-          }
         } else {
           // SERIAL LOOP
           const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
           const next = pickNextPending(snapshot.items)
 
           if (next) {
-            // 标准分析模式无需 AI 服务就绪检查
-            if (next.taskType === 'analysis' && !isAiStageEnabled()) {
-              // 跳过 AI 就绪检查
-            } else if (next.taskType === 'analysis') {
+            if (next.taskType === 'analysis' && isAiStageEnabled()) {
               const isReady = await this.engineHealth.waitForReady()
               if (!isReady) {
                 this.running = false
@@ -575,153 +528,71 @@ export class AnalysisQueueService {
           }
 
           if (!next) {
-            logger.info(
-              LogCategory.ANALYSIS_QUEUE,
-              `[分析队列] 工作空间 ${activeWorkspaceId} 的队列已分析完毕，从运行栈中弹出`
-            )
-            this.runningWorkspaceStack.pop()
-
-            if (this.runningWorkspaceStack.length > 0) {
-              const nextWsId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
-              logger.info(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 自动恢复运行栈顶工作空间 ${nextWsId} 的分析队列`
-              )
-              this.emitUpdate()
+            if ((await this.advanceOrStopWorkspaceQueue(activeWorkspaceId)) === 'continue') {
               continue
-            } else {
-              this.running = false
-              this.current = undefined
-              this.isProcessingLoopActive = false
-              systemHealthService.updateMonitoringInterval(300000)
-              cloudSyncWorker.updateInterval(300000)
-              await this.updateVirtualDirectoriesAfterQueueCompletion()
-              this.emitUpdate()
-              break
             }
+            break
           }
 
           this.currentAbortController = new AbortController()
           const currentSignal = this.currentAbortController.signal
           this.current = next
-          this.updateItemStatus(next.id, 'analyzing', 0)
+          await this.orchestratorWorker.runSerialItem(
+            next,
+            currentSignal,
+            isAiStageEnabled(),
+            this.omniAdapter,
+            (msg, err) => this.engineHealth.logWarning(msg, err)
+          )
+        }
 
-          // 普通分析任务：仅在启用 AI 阶段（增强分析 / 全面分析）时确保引擎处于主语言模型模式；标准分析模式无需语言模型
-          if (isAiStageEnabled()) {
-            const modeRes = await this.omniAdapter.ensureMode('language')
-            if (modeRes && !modeRes.ok) {
-              this.engineHealth.logWarning('[普通分析] 切换主语言模型告警:', modeRes.error)
-            }
-          }
-          if (next.itemType === 'directory') {
-            await this.directoryProcessor.processDirectory(next)
-          } else {
-            await this.fileProcessor.processFile(next, currentSignal)
-            cloudSyncWorker.triggerSync(2000)
-          }
-
-          const updatedSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-          if (updatedSnapshot.items.filter(item => item.status === 'pending').length === 0) {
-            await this.updateVirtualDirectoriesAfterQueueCompletion()
-          }
+        const updatedSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
+        if (updatedSnapshot.items.filter(item => item.status === 'pending').length === 0) {
+          await updateVirtualDirectoriesAfterQueueCompletion()
         }
       } catch (error) {
+        logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 调度主循环异常，2秒后重试:', error)
         await new Promise(resolve => setTimeout(resolve, 2000))
       } finally {
         this.currentAbortController = null
         this.current = undefined
-        this.emitUpdate()
+        this.writeDispatcher.emitUpdate()
       }
     }
     this.isProcessingLoopActive = false
     this.syncHibernationState(false)
-    this.stopOrphanWatchdog()
-    this.emitUpdate()
+    this.orphanWatchdog.stop()
+    flushFtsSync()
+    this.writeDispatcher.emitUpdate()
   }
 
-  /**
-   * 工单 B6 · 孤儿 watchdog 启动。
-   * 主进程定期扫描 `analysis_queue WHERE status='analyzing' AND claimed_at < now()-阈值`，
-   * 判定孤儿（主进程重启 / Worker 静默消失）→ 置 `failed + error='orphaned_reclaimed'` 可重试。
-   * 杜绝孤儿 'analyzing' 行永无 Worker 认领导致该文件分析永久卡死（用户侧"转圈不停"）。
-   */
-  private startOrphanWatchdog(): void {
-    if (this.orphanWatchdogTimer) return
-    this.orphanWatchdogTimer = setInterval(() => {
-      // 让路给事件循环，避免与主分析链路争抢
-      setImmediate(() => this.reclaimOrphanedQueueRows())
-    }, AnalysisQueueService.ORPHAN_SCAN_INTERVAL_MS)
-    // 不阻止进程退出
-    if (this.orphanWatchdogTimer.unref) this.orphanWatchdogTimer.unref()
-  }
+  private async advanceOrStopWorkspaceQueue(
+    activeWorkspaceId: number
+  ): Promise<'continue' | 'break'> {
+    logger.info(
+      LogCategory.ANALYSIS_QUEUE,
+      `[分析队列] 工作空间 ${activeWorkspaceId} 的队列已分析完毕，从运行栈中弹出`
+    )
+    this.runningWorkspaceStack.pop()
 
-  /** 工单 B6 · 卸载孤儿 watchdog */
-  private stopOrphanWatchdog(): void {
-    if (this.orphanWatchdogTimer) {
-      clearInterval(this.orphanWatchdogTimer)
-      this.orphanWatchdogTimer = null
-    }
-  }
-
-  /**
-   * 工单 B6 · 回收孤儿 'analyzing' 队列行。
-   * 仅回收 claimed_at 超阈值且当前非本进程正在处理的行（this.current 排除，防误杀在跑任务）。
-   */
-  private reclaimOrphanedQueueRows(): void {
-    const db = databaseService.db
-    if (!db) return
-    try {
-      // 表结构探活：claimed_at 列存在才扫描（兼容存量库）
-      const cols = db.prepare('PRAGMA table_info(analysis_queue)').all() as Array<{ name: string }>
-      if (!cols.some(c => c.name === 'claimed_at')) return
-
-      const cutoffMs = Date.now() - AnalysisQueueService.ORPHAN_STALE_THRESHOLD_MS
-      // ⚠️ 时间比对必须在 JS 侧统一解析为毫秒再比较，严禁把 SQL CURRENT_TIMESTAMP（空格分隔
-      // 'YYYY-MM-DD HH:MM:SS'）与 JS toISOString()（含 'T'）直接做字符串比较——ASCII ' '(0x20)
-      // < 'T'(0x54) 会让当日任务 claimed_at < cutoff 恒真，把所有在跑任务误判为孤儿。
-      const rawRows = db
-        .prepare(
-          `SELECT id, item_id, claimed_at FROM analysis_queue
-           WHERE status = 'analyzing'
-             AND claimed_at IS NOT NULL`
-        )
-        .all() as Array<{ id: number; item_id: number; claimed_at: string }>
-      const staleRows = rawRows.filter(r => {
-        const claimedMs = Date.parse(r.claimed_at.replace(' ', 'T'))
-        return Number.isFinite(claimedMs) && claimedMs < cutoffMs
-      })
-
-      // 排除当前正在处理的行（内存真实在跑，非孤儿）
-      const currentId = this.current?.id
-      const orphans = staleRows.filter(r => r.id !== currentId)
-      if (orphans.length === 0) return
-
-      logger.warn(
+    if (this.runningWorkspaceStack.length > 0) {
+      const nextWsId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
+      logger.info(
         LogCategory.ANALYSIS_QUEUE,
-        `[孤儿 watchdog] 回收 ${orphans.length} 个孤儿 analyzing 行`,
-        { ids: orphans.map(r => r.id) }
+        `[分析队列] 自动恢复运行栈顶工作空间 ${nextWsId} 的分析队列`
       )
-
-      const tx = db.transaction(() => {
-        for (const row of orphans) {
-          db.prepare(
-            `UPDATE analysis_queue
-             SET status = 'failed', error = 'orphaned_reclaimed',
-                 end_time = CURRENT_TIMESTAMP, claimed_at = NULL
-             WHERE id = ? AND status = 'analyzing'`
-          ).run(row.id)
-          // 复位 workspace_files 未分析标记，允许重新入队认领
-          if (row.item_id != null) {
-            db.prepare(`UPDATE workspace_files SET is_analyzed = 0 WHERE id = ?`).run(row.item_id)
-          }
-        }
-      })
-      tx()
-      this.emitUpdate()
-    } catch (e) {
-      // watchdog 失败不阻断主分析链路，显式上报
-      logger.warn(LogCategory.ANALYSIS_QUEUE, '[孤儿 watchdog] 扫描回收失败:', e)
+      this.writeDispatcher.emitUpdate()
+      return 'continue'
     }
+
+    this.running = false
+    this.current = undefined
+    this.isProcessingLoopActive = false
+    systemHealthService.updateMonitoringInterval(300000)
+    cloudSyncWorker.updateInterval(300000)
+    await updateVirtualDirectoriesAfterQueueCompletion()
+    this.writeDispatcher.emitUpdate()
+    return 'break'
   }
 
   /**
@@ -767,7 +638,10 @@ export class AnalysisQueueService {
     // 「当前打开的工作目录」，而 this.current 可能是运行栈中另一个工作空间的
     // 任务。若二者不一致，旧逻辑会跳过 abort，但下方仍把 running 置为 false，
     // 导致「界面显示已暂停，任务却在后台继续跑」。
-    if (this.current && (!workspaceId || this.current.workspaceId === workspaceId)) {
+    const shouldAbortCurrent =
+      (this.current && (!workspaceId || this.current.workspaceId === workspaceId)) ||
+      this.orchestratorWorker.hasActiveItems(workspaceId)
+    if (shouldAbortCurrent) {
       if (this.currentAbortController) {
         this.currentAbortController.abort()
         this.currentAbortController = null
@@ -776,10 +650,11 @@ export class AnalysisQueueService {
 
     if (this.runningWorkspaceStack.length === 0) {
       this.running = false
+      flushFtsSync()
     }
 
     this.wakeUp()
-    this.emitUpdate()
+    this.writeDispatcher.emitUpdate()
   }
 
   async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
@@ -924,46 +799,10 @@ export class AnalysisQueueService {
    * 恢复与重新入队存在未完成切片的视频（例如会员升级为 Pro 后唤醒待续作长视频，ISS-60）
    */
   public async requeueIncompleteVideos(): Promise<number> {
-    // 1. 系统崩溃或残留重置：先将 processing 切片恢复为 pending (超限熔断为 failed) (ISS-75)
-    databaseService.resetDanglingVideoSegmentsOnStartup()
-
-    // 2. 批量解锁因免费限制而锁定的切片 (locked -> pending, ISS-66 / ISS-75)
-    const unlockedCount = databaseService.unlockVideoSegments()
-    if (unlockedCount > 0) {
-      logger.info(
-        LogCategory.ANALYSIS_QUEUE,
-        `[分析队列] 会员升级 Pro，成功解锁 ${unlockedCount} 个待续作视频切片`
-      )
-    }
-
-    // 2. 查询包含 pending 切片的视频文件 (DISTINCT 指纹去重，防多工作区重复入队)
-    const incompleteVideos = databaseService.getIncompleteVideoFiles()
-    if (!incompleteVideos || incompleteVideos.length === 0) {
-      return 0
-    }
-
-    // 按 fileFingerprint 去重
-    const uniqueMap = new Map<string, (typeof incompleteVideos)[0]>()
-    for (const v of incompleteVideos) {
-      if (!uniqueMap.has(v.fileFingerprint)) {
-        uniqueMap.set(v.fileFingerprint, v)
-      }
-    }
-    const deduplicated = Array.from(uniqueMap.values())
-
-    logger.info(
-      LogCategory.ANALYSIS_QUEUE,
-      `[分析队列] 发现 ${deduplicated.length} 个未完成长视频，执行升级后自动断点续作入队`
-    )
-    const inputs: EnqueueInput[] = deduplicated.map(v => ({
-      path: v.path,
-      name: v.name || path.basename(v.path),
-      size: v.size || 0,
-      type: v.extension || path.extname(v.path).toLowerCase() || 'video',
-      workspaceId: Number(v.workspaceId) || undefined
-    }))
+    const inputs = collectIncompleteVideoEnqueueInputs()
+    if (inputs.length === 0) return 0
     await this.addItems(inputs, true)
-    return deduplicated.length
+    return inputs.length
   }
 
   getMaxRetries(): number {
@@ -1086,44 +925,13 @@ export class AnalysisQueueService {
    * 通知前端：本地模型正忙，请停止当前 AI 工作后再请求
    */
   notifyLocalModelBusy(): void {
-    void this.notifyFrontend(
+    void this.writeDispatcher.notifyFrontend(
       'warning',
       t('当前AI已经在工作中，如：分析队列，请停止后再请求'),
       false,
       'local-model-busy',
       5000
     )
-  }
-
-  private notifyLatchBrake(workspaceId: number): void {
-    const windows = BrowserWindow.getAllWindows()
-    if (windows && windows.length > 0) {
-      windows.forEach(win => {
-        if (!win.webContents.isDestroyed()) {
-          try {
-            win.webContents.send('analysis-queue/latch-brake', { workspaceId })
-          } catch (e) {
-            logger.warn(LogCategory.MAIN, '[AnalysisQueue] 发送动态刹车通知失败:', e)
-          }
-        }
-      })
-    }
-  }
-
-  private emitUpdate(): void {
-    const windows = BrowserWindow.getAllWindows()
-    const snapshot = this.getSnapshot()
-    if (windows && windows.length > 0) {
-      windows.forEach(win => {
-        if (!win.webContents.isDestroyed()) {
-          try {
-            win.webContents.send('analysis-queue-updated', snapshot)
-          } catch (e) {
-            logger.warn(LogCategory.MAIN, '[AnalysisQueue] 发送更新通知到窗口失败:', e)
-          }
-        }
-      })
-    }
   }
 
   private persist(): void {}
@@ -1144,248 +952,12 @@ export class AnalysisQueueService {
     return Promise.race([timeoutPromise, this.wakeUpPromise])
   }
 
-  private updateItemStatus(
-    itemId: number,
-    status: 'pending' | 'analyzing' | 'completed' | 'failed',
-    progress: number,
-    error?: string,
-    extra?: { analysisStats?: AnalysisStats; fromCache?: boolean; analysisStage?: number }
-  ): void {
-    const item = this.queueManager.getQueue().find(i => i.id === itemId)
-    if (!item) return
-
-    if (status === 'failed') {
-      if (error && (error.includes('timeout') || error.includes('超时'))) {
-        this.notifyFrontend(
-          'warning',
-          `${t('分析超时')}: ${item.name}。${t('建议切换低显存需求的AI模型')}`,
-          false,
-          `timeout-${itemId}`,
-          5000,
-          // PRD-0044：模型管理 tab 已合并，通知跳链改指「高级AI引擎配置」
-          { label: t('前往设置'), category: 'AI_ENGINE_CONFIG' }
-        )
-      }
-    }
-
-    item.status = status
-    item.progress = progress
-    item.updatedAt = Date.now()
-    if (error !== undefined) item.error = error
-    if (extra?.analysisStats) item.analysisStats = extra.analysisStats
-    if (extra?.fromCache !== undefined) item.fromCache = extra.fromCache
-
-    const currentStage =
-      extra?.analysisStage ??
-      (extra?.analysisStats ? Number(extra.analysisStats.analysis_stage) : undefined)
-
-    if (currentStage !== undefined) {
-      item.analysisStage = currentStage
-      item.stage = currentStage as any
-    } else if (status === 'completed') {
-      const statsStage = item.analysisStats ? Number(item.analysisStats.analysis_stage) : undefined
-      const finalStage = item.analysisStage ?? statsStage ?? 4
-      item.analysisStage = finalStage
-      item.stage = finalStage as any
-    }
-
-    try {
-      databaseService.updateAnalysisQueue({ id: itemId, status, progress, error: error || null })
-    } catch (e) {
-      logger.warn(LogCategory.MAIN, '[AnalysisQueue] 更新分析队列状态到数据库失败:', e)
-    }
-    this.emitUpdate()
-
-    if (status === 'completed' || status === 'failed') {
-      try {
-        const windows = BrowserWindow.getAllWindows()
-        if (windows && windows.length > 0) {
-          windows.forEach(win => {
-            if (!win.webContents.isDestroyed()) {
-              win.webContents.send('file-analysis-updated', {
-                filePath: item.path,
-                fileFingerprint: (item as any).fileFingerprint,
-                status,
-                source: 'queue'
-              })
-            }
-          })
-        }
-      } catch (broadcastErr) {
-        logger.debug(
-          LogCategory.MAIN,
-          '[AnalysisQueue] 广播 file-analysis-updated 失败(非致命):',
-          broadcastErr
-        )
-      }
-    }
-  }
-
-  private async notifyFrontend(
-    type: 'info' | 'success' | 'warning' | 'error',
-    message: string,
-    sticky = false,
-    id?: string,
-    autoClose?: number,
-    action?: any
-  ): Promise<void> {
-    try {
-      const windows = BrowserWindow.getAllWindows()
-      if (windows && windows.length > 0) {
-        windows.forEach(win => {
-          if (!win.webContents.isDestroyed()) {
-            win.webContents.send('system:notification', {
-              type,
-              message,
-              sticky,
-              id,
-              autoClose,
-              action
-            })
-          }
-        })
-      }
-    } catch (e) {
-      logger.warn(LogCategory.MAIN, '[AnalysisQueue] notifyFrontend 发送通知失败:', e)
-    }
-  }
-
-  private async updateVirtualDirectoriesAfterQueueCompletion(): Promise<void> {
-    try {
-      const db = databaseService.db
-      if (!db) return
-      const directoriesWithVirtualDirs = db
-        .prepare(
-          `SELECT DISTINCT md.path FROM workspaces md INNER JOIN virtual_directories vd ON vd.workspace_id = md.workspace_id`
-        )
-        .all() as Array<{ path: string }>
-      if (!directoriesWithVirtualDirs || directoriesWithVirtualDirs.length === 0) return
-      const { VirtualDirectoryService } =
-        await import('../filesystem/virtual-directory-service/index')
-      for (const directory of directoriesWithVirtualDirs) {
-        try {
-          await new VirtualDirectoryService(db).updateAllVirtualDirectories(directory.path)
-        } catch (error) {
-          logger.warn(
-            LogCategory.MAIN,
-            '[AnalysisQueue] 更新单个虚拟目录失败:',
-            directory.path,
-            error
-          )
-        }
-      }
-    } catch (error) {
-      logger.error(LogCategory.MAIN, '[AnalysisQueue] 队列完成后更新虚拟目录失败:', error)
-    }
-  }
-
   /**
    * 检查扩展名不匹配的文件
    * 查询工作区中 file_group.extensions 不包含 files.extension 的文件列表
    */
-  async checkExtensionMismatch(workspaceId: number): Promise<
-    Array<{
-      fileFingerprint: string
-      path: string
-      name: string
-      smartName: string
-      extension: string
-      extensions: string[]
-      workspaceRootPath: string
-    }>
-  > {
-    const db = databaseService.db
-    if (!db) return []
-
-    try {
-      // 获取工作区根目录路径
-      const workspaceDir = db
-        .prepare('SELECT path FROM workspace_directories WHERE id = ?')
-        .get(workspaceId) as { path: string } | undefined
-      const workspaceRootPath = workspaceDir?.path || ''
-
-      // 查询有分组 (file_group) 的文件及其物理路径信息（V4: category→file_group, type→extension）
-      const rows = db
-        .prepare(
-          `
-        SELECT f.file_fingerprint, wf.path, wf.name, f.extension, f.file_group, f.smart_name
-        FROM files f
-        JOIN workspace_files wf ON f.file_fingerprint = wf.file_fingerprint
-        WHERE f.file_group IS NOT NULL AND wf.workspace_id = ?
-        ORDER BY wf.path ASC
-      `
-        )
-        .all(workspaceId) as Array<{
-        file_fingerprint: string
-        path: string
-        name: string
-        extension: string
-        file_group: string
-        smart_name: string | null
-      }>
-
-      const results: Array<{
-        fileFingerprint: string
-        path: string
-        name: string
-        smartName: string
-        extension: string
-        extensions: string[]
-        workspaceRootPath: string
-      }> = []
-
-      for (const row of rows) {
-        try {
-          const fileGroup = JSON.parse(row.file_group)
-
-          // 低置信度 Magika 结果（score < 0.8）不进入扩展名校准弹窗，
-          // 避免 magika 误判（如带 BOM 的中文 txt 被识别为 powershell，score≈0.58）
-          // 字符串类型的 file_group（旧兜底数据）无 score，视为可信，保持原有行为
-          const score = fileGroup && typeof fileGroup === 'object' ? (fileGroup.score ?? 1) : 1
-          if (score < 0.8) continue
-
-          // 跳过 file_group 解析为 null 的情况（空对象或无效数据）
-          const extensions = fileGroup?.extensions || []
-
-          // 跳过 extensions 为空数组的情况
-          if (extensions.length === 0) continue
-
-          // 白名单门禁（ADR-0008）：macOS 文档软件专有格式（Keynote/Numbers/Pages 等）
-          // 物理上即 ZIP 压缩包，Magika 会判为 zip 而误入改名列表，此类扩展名绝不可改名
-          if (isRenameProtectedExtension(row.extension)) continue
-
-          // 归一化比较：去除开头的点并转小写
-          const currentType = row.extension.toLowerCase().replace(/^\./, '')
-          const normalizedExtensions = extensions.map((e: string) =>
-            e.toLowerCase().replace(/^\./, '')
-          )
-
-          // 如果当前 extension 不在 extensions 中，则属于不匹配
-          if (!normalizedExtensions.includes(currentType)) {
-            results.push({
-              fileFingerprint: row.file_fingerprint,
-              path: row.path,
-              name: row.name,
-              smartName: row.smart_name || row.name,
-              extension: row.extension,
-              extensions: extensions,
-              workspaceRootPath
-            })
-          }
-        } catch (parseError) {
-          logger.warn(
-            LogCategory.ANALYSIS_QUEUE,
-            `[扩展名校准] 解析 file_group JSON 失败: ${row.file_fingerprint}`,
-            parseError
-          )
-        }
-      }
-
-      return results
-    } catch (error) {
-      logger.error(LogCategory.ANALYSIS_QUEUE, '[扩展名校准] 查询扩展名不匹配文件失败:', error)
-      return []
-    }
+  async checkExtensionMismatch(workspaceId: number): Promise<ExtensionMismatchItem[]> {
+    return checkExtensionMismatchFiles(workspaceId)
   }
 
   /**
@@ -1395,242 +967,15 @@ export class AnalysisQueueService {
   async batchFixExtensions(
     fixes: Array<{ fileFingerprint: string; chosenExtension: string | null }>
   ): Promise<{ success: boolean; count: number }> {
-    const db = databaseService.db
-    if (!db) return { success: false, count: 0 }
-
-    let count = 0
-    try {
-      // 使用事务确保原子性
-      db.transaction(() => {
-        for (const fix of fixes) {
-          const { fileFingerprint, chosenExtension } = fix
-
-          if (chosenExtension === null) {
-            // "不更名"逻辑：将当前 files.extension 追加到 file_group.extensions
-            const row = db
-              .prepare('SELECT extension, file_group FROM files WHERE file_fingerprint = ?')
-              .get(fileFingerprint) as { extension: string; file_group: string } | undefined
-
-            if (row?.file_group) {
-              try {
-                const groupObj = JSON.parse(row.file_group)
-                const extensions = groupObj.extensions || []
-                const currentExt = (row.extension || '').toLowerCase().replace(/^\./, '')
-
-                // 只有当 extensions 中不包含当前 extension 时才追加
-                if (
-                  !extensions.some((e: string) => e.toLowerCase().replace(/^\./, '') === currentExt)
-                ) {
-                  // 保持格式一致：检查原 extensions 第一个元素的格式
-                  const hasDot = extensions.length > 0 && extensions[0].startsWith('.')
-                  const valueToAdd = hasDot ? `.${currentExt}` : currentExt
-                  extensions.push(valueToAdd)
-                  groupObj.extensions = extensions
-
-                  db.prepare('UPDATE files SET file_group = ? WHERE file_fingerprint = ?').run(
-                    JSON.stringify(groupObj),
-                    fileFingerprint
-                  )
-                  count++
-                }
-              } catch (e) {
-                logger.warn(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[扩展名校准] 解析 file_group 失败: ${fix.fileFingerprint}`
-                )
-              }
-            }
-          } else {
-            // "选扩展名"逻辑：更新 files.extension 和 files.smart_name
-            const row = db
-              .prepare('SELECT smart_name, extension FROM files WHERE file_fingerprint = ?')
-              .get(fileFingerprint) as { smart_name: string; extension: string } | undefined
-
-            // 纵深防护：白名单扩展名（macOS 文档专有 zip 内核格式，如 .key/.numbers/.pages）
-            // 即使经前端传入也拒绝改名，杜绝「先入列表后改名」的旁路
-            if (row && isRenameProtectedExtension(row.extension)) {
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                `[扩展名校准] 拒绝改名：${fileFingerprint} 的扩展名 ${row.extension} 受 macOS 文档格式白名单保护`
-              )
-              continue
-            }
-
-            if (row) {
-              const oldSmartName = row.smart_name || ''
-              const newExt = chosenExtension.startsWith('.')
-                ? chosenExtension
-                : `.${chosenExtension}`
-
-              let newSmartName = oldSmartName
-              const currentExt = path.extname(oldSmartName)
-
-              if (currentExt) {
-                // 替换扩展名
-                newSmartName = oldSmartName.slice(0, -currentExt.length) + newExt
-              } else {
-                // 追加扩展名
-                newSmartName = oldSmartName + newExt
-              }
-
-              db.prepare(
-                'UPDATE files SET extension = ?, smart_name = ? WHERE file_fingerprint = ?'
-              ).run(newExt, newSmartName, fileFingerprint)
-              count++
-            }
-          }
-        }
-      })()
-      return { success: true, count }
-    } catch (error) {
-      logger.error(LogCategory.ANALYSIS_QUEUE, '[扩展名校准] 批量修正扩展名失败:', error)
-      return { success: false, count }
-    }
+    return batchFixFileExtensions(fixes)
   }
 
   /**
    * 检查指定文件的分析状态，供前端弹窗提示用户。
-   *
-   * 按「相对当前模式的完成程度」分为两类，二者判定互斥：
-   *
-   * 1. `analyzed`（已完成）：`analysis_stage >= 当前模式所需阶段` AND `is_analyzed = 1`
-   *    —— 已按当前模式完整分析过，提示用户「可跳过」，默认不重复消耗算力。
-   * 2. `insufficient`（分析不完整）：已产生过分析痕迹，但未达到当前模式要求。
-   *    涵盖两种子情况：
-   *    - `is_analyzed = 1` 但 stage 不达标：此前用较低模式分析过
-   *      （例如已完成【简单分析】，而当前是【全面分析】）；
-   *    - stage 有值但 `is_analyzed = 0`：CPU 提取完成却未走完 AI 阶段的中间态。
-   *    这类文件应当参与分析以补全结果。
-   *
-   * 两者都不属于的文件（完全没有分析记录）不会被返回，由调用方直接入队。
-   *
-   * @param filePaths 待检查的文件路径列表
-   * @returns 含 `status: 'analyzed' | 'insufficient'` 标记的文件数组
+   * 按「相对当前模式的完成程度」分为 `analyzed` | `insufficient`。
    */
   async checkAlreadyAnalyzedFiles(filePaths: string[]): Promise<any[]> {
-    const db = databaseService.db
-    if (!db || !filePaths || filePaths.length === 0) return []
-
-    // 统一走 analysis-mode 模块解析
-    const analysisMode = resolveAnalysisMode()
-
-    const result: any[] = []
-    const chunkSize = 500
-
-    try {
-      for (let i = 0; i < filePaths.length; i += chunkSize) {
-        const chunk = filePaths.slice(i, i + chunkSize)
-        const placeholders = chunk.map(() => '?').join(',')
-        const sql = `
-          SELECT 
-            wf.path, wf.name, wf.is_analyzed,
-            fc.quality_score, f.description, f.smart_name, f.author, f.language,
-            fc.analysis_stats,
-            (
-              SELECT GROUP_CONCAT(COALESCE(ft.name, ftr.tag_code), ',')
-              FROM file_tag_relations ftr
-              LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-              WHERE ftr.file_fingerprint = wf.file_fingerprint
-            ) as tags_str
-          FROM workspace_files wf
-          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-          LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
-          WHERE wf.path IN (${placeholders})
-        `
-        const rows = db.prepare(sql).all(...chunk) as Array<{
-          path: string
-          name: string
-          is_analyzed: number
-          quality_score: number | null
-          description: string | null
-          smart_name: string | null
-          author: string | null
-          language: string | null
-          analysis_stats: string | null
-          tags_str: string | null
-        }>
-
-        const allTagCodesToResolve: string[] = []
-        for (const row of rows) {
-          if (row.tags_str) {
-            for (const item of row.tags_str.split(',')) {
-              if (item.includes('.')) {
-                allTagCodesToResolve.push(item)
-              }
-            }
-          }
-        }
-        const resolvedNames =
-          allTagCodesToResolve.length > 0
-            ? databaseService.resolveTagDisplayNames(allTagCodesToResolve)
-            : {}
-
-        for (const row of rows) {
-          let stageValue = 0
-          let completedMode: AnalysisMode | undefined
-          try {
-            const stats = row.analysis_stats ? JSON.parse(row.analysis_stats) : null
-            stageValue = Number(stats?.analysis_stage ?? 0) || 0
-            completedMode = normalizeAnalysisMode(stats?.completed_mode)
-          } catch (e) {
-            // 解析失败视为未达标
-            stageValue = 0
-            completedMode = undefined
-          }
-
-          // 口径：stage 达标 **且** completed_mode 的等级不低于当前模式（向下兼容）。
-          //
-          // 必须校验 completed_mode 的原因：quick_name 与 full 的终态 stage 都是 4，
-          // 但 quick_name 跳过了质量评分。若只看 stage，会把「用快速命名分析过」的文件
-          // 误判为「已完成全面分析」，导致切到全面分析后不补跑质量评分。
-          // 反之，高级模式（如 full）的产物对低级模式（quick_name / simple）天然有效，
-          // 切回低级模式时无需重跑。
-          const analyzed =
-            row.is_analyzed === 1 &&
-            isAnalyzedForMode({ stage: stageValue, completedMode, mode: analysisMode })
-
-          // 已产生过分析痕迹但未达到当前模式要求
-          const insufficient = !analyzed && (row.is_analyzed === 1 || stageValue > 0)
-
-          // 完全无分析记录的文件不返回，由调用方直接入队
-          if (!analyzed && !insufficient) continue
-
-          result.push({
-            path: row.path,
-            name: row.name,
-            smartName: row.smart_name || undefined,
-            qualityScore: row.quality_score ?? undefined,
-            description: row.description || undefined,
-            author: row.author || undefined,
-            language: row.language || undefined,
-            tags: row.tags_str
-              ? row.tags_str
-                  .split(',')
-                  .map(
-                    item =>
-                      resolvedNames[item] || (item.includes('.') ? item.split('.').pop()! : item)
-                  )
-              : undefined,
-            isAnalyzed: analyzed,
-            /** 相对当前模式的完成程度：analyzed=可跳过；insufficient=需要补全 */
-            status: analyzed ? 'analyzed' : 'insufficient',
-            /** 该文件已完成的阶段，便于前端展示「已完成阶段 X/Y」 */
-            analysisStage: stageValue,
-            /** 该文件实际完成分析所用的模式（缺失表示旧数据或未记录） */
-            completedMode
-          })
-        }
-      }
-    } catch (error) {
-      logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 检查已分析文件失败:', error)
-    }
-
-    logger.debug(
-      LogCategory.ANALYSIS_QUEUE,
-      `[分析队列] 检查已分析文件 (模式: ${analysisMode}, 目标Stage: ${getRequiredStage(analysisMode)}): 传入 ${filePaths.length} 个, 已完成 ${result.filter(r => r.status === 'analyzed').length} 个, 分析不完整 ${result.filter(r => r.status === 'insufficient').length} 个`
-    )
-
-    return result
+    return checkAlreadyAnalyzedFilesByPaths(filePaths)
   }
 
   // 兼容原有方法名

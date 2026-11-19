@@ -635,19 +635,8 @@ export const GENESIS_V1_SCHEMA = `
   -- #endregion
 
   -- #region FTS5 Projections
-  CREATE VIRTUAL TABLE IF NOT EXISTS files_body_fts USING fts5(
-    file_fingerprint UNINDEXED,
-    content,
-    tokenize='trigram'
-  );
-  CREATE VIRTUAL TABLE IF NOT EXISTS files_meta_fts USING fts5(
-    file_fingerprint UNINDEXED,
-    name,
-    smart_name,
-    description,
-    tags,
-    tokenize='trigram'
-  );
+  -- 注：V4 冷热双 FTS5（files_meta_fts / files_body_fts）须与模型 B（files.id 主键）及检索读侧
+  -- 同步单轨切换；在现网全仓仍消费 files_fts 期间，严禁保留零消费方双轨虚表与触发器导致写放大（融合方案 §7 红线 5）。
 
   -- 17.5 拼音正排索引（短字段；设计文档 docs/specs/pinyin-forward-index-redesign-spec.md §4.1）
   -- 索引侧把 name/smart_name/description/tags 的中文段转拼音串（全拼+首字母，多音字全变体），
@@ -754,47 +743,6 @@ export const GENESIS_V1_SCHEMA = `
     DELETE FROM files_fts WHERE rowid = old.rowid;
   END;
 
-  -- 工单08 · 冷热双 FTS5 投影（补写入方，使 files_meta_fts / files_body_fts 不再是死表）：
-  -- meta 表承载短字段（name/smart_name/description/tags），body 表承载长字段（content），
-  -- 支撑"标题类检索走 meta、正文类检索走 body"的冷热分离查询。触发器时机与上方 files_fts 完全一致，
-  -- 同一套 INSERT/UPDATE/DELETE 驱动，避免双轨写入。tags 列由应用层 syncFTSTags 聚合（需访问动态语言分表，
-  -- SQL 触发器无法表达），故此处 tags 恒为 ''，与 files_fts.tags 同款限制。
-  CREATE TRIGGER trg_files_meta_fts_insert AFTER INSERT ON files BEGIN
-    INSERT INTO files_meta_fts(rowid, file_fingerprint, name, smart_name, description, tags)
-    SELECT new.rowid, new.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
-      COALESCE(new.smart_name, ''), COALESCE(new.description, ''), '';
-  END;
-
-  CREATE TRIGGER trg_files_meta_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
-    DELETE FROM files_meta_fts WHERE rowid = old.rowid;
-    INSERT INTO files_meta_fts(rowid, file_fingerprint, name, smart_name, description, tags)
-    SELECT new.rowid, new.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
-      COALESCE(new.smart_name, ''), COALESCE(new.description, ''), '';
-  END;
-
-  CREATE TRIGGER trg_files_meta_fts_delete AFTER DELETE ON files BEGIN
-    DELETE FROM files_meta_fts WHERE rowid = old.rowid;
-  END;
-
-  CREATE TRIGGER trg_files_body_fts_insert AFTER INSERT ON files BEGIN
-    INSERT INTO files_body_fts(rowid, file_fingerprint, content)
-    SELECT new.rowid, new.file_fingerprint,
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), '');
-  END;
-
-  CREATE TRIGGER trg_files_body_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
-    DELETE FROM files_body_fts WHERE rowid = old.rowid;
-    INSERT INTO files_body_fts(rowid, file_fingerprint, content)
-    SELECT new.rowid, new.file_fingerprint,
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), '');
-  END;
-
-  CREATE TRIGGER trg_files_body_fts_delete AFTER DELETE ON files BEGIN
-    DELETE FROM files_body_fts WHERE rowid = old.rowid;
-  END;
-
   -- 拼音索引删除一致性（纯 SQL 方向）：files 删除即清拼音行，防孤儿行被搜索召回。
   -- 写入/更新方向由 JS 计算拼音（pinyin-text.ts），走 FileDao write-through + reconciler，无法用触发器表达。
   -- rowid 对齐（R1 盲审 A-H1）：拼音行 rowid = files.rowid，删除/寻址走 rowid（O(log n)）；
@@ -825,26 +773,6 @@ export const GENESIS_V1_SCHEMA = `
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
-  -- 工单08 · file_contents 变更驱动的冷热 FTS 同步：
-  -- body 表承载正文（content），file_contents INSERT/UPDATE 时须刷新；meta 表不含 content，无需跟随。
-  CREATE TRIGGER trg_file_contents_body_fts_upsert AFTER INSERT ON file_contents BEGIN
-    DELETE FROM files_body_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_body_fts(rowid, file_fingerprint, content)
-    SELECT f.rowid, f.file_fingerprint, COALESCE(decompress_text(new.content), '')
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  CREATE TRIGGER trg_file_contents_body_fts_update AFTER UPDATE OF content ON file_contents BEGIN
-    DELETE FROM files_body_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_body_fts(rowid, file_fingerprint, content)
-    SELECT f.rowid, f.file_fingerprint, COALESCE(decompress_text(new.content), '')
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  CREATE TRIGGER trg_file_contents_body_fts_delete AFTER DELETE ON file_contents BEGIN
-    DELETE FROM files_body_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = old.file_fingerprint);
-  END;
-
   CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
     DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
@@ -872,27 +800,6 @@ export const GENESIS_V1_SCHEMA = `
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
-
-  -- 工单08 · workspace_files 变更驱动的冷热 meta FTS 同步：
-  -- meta 表 name 列来自 workspace_files.name，故 INSERT/UPDATE 时须刷新（body 表不含 name，无需跟随）。
-  CREATE TRIGGER trg_workspace_files_meta_fts_insert AFTER INSERT ON workspace_files BEGIN
-    DELETE FROM files_meta_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_meta_fts(rowid, file_fingerprint, name, smart_name, description, tags)
-    SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''), ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  CREATE TRIGGER trg_workspace_files_meta_fts_update AFTER UPDATE OF name, file_fingerprint ON workspace_files BEGIN
-    DELETE FROM files_meta_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_meta_fts(rowid, file_fingerprint, name, smart_name, description, tags)
-    SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''), ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  -- 注：workspace_files DELETE 不单独重建 meta——name 置空会导致该文件从 meta 检索漏召回，
-  -- 该场景由 files 删除触发器统一清理，或由 syncFTSTags 在文件仍存在时重建，避免双轨。
 
   DROP TRIGGER IF EXISTS trg_file_contents_update_modified_at;
   CREATE TRIGGER trg_file_contents_update_modified_at AFTER UPDATE ON file_contents BEGIN
@@ -955,6 +862,8 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS fs_operation_journal;
       DROP TABLE IF EXISTS files_fts;
       DROP TABLE IF EXISTS files_pinyin_fts;
+      DROP TABLE IF EXISTS tag_path_ancestors;
+      DROP TABLE IF EXISTS tag_paths;
     `
   }
 ]

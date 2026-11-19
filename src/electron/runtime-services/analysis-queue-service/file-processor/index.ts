@@ -3126,7 +3126,7 @@ export class FileProcessor {
           return
         }
 
-        this.updateItemStatus(item.id, 'failed', 100, errorMsg)
+        this.updateItemStatus(item.id, 'failed', 100, errorMsg, { isTimeout })
       }
     }
   }

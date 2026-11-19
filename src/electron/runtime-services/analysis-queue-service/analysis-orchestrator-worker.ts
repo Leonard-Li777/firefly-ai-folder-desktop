@@ -1,4 +1,4 @@
-import { AnalysisQueueItem, AnalysisStats } from '@firefly/types'
+import { AnalysisQueueItem } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
 import { StageNotifier, Stage2TimeoutError } from './stage-notifier'
 import { AIServiceManager } from './ai-service-manager'
@@ -12,27 +12,86 @@ import {
 } from './file-processor'
 import { databaseService } from '../database/database-service'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
-import { engineBridgeService } from '../engine-bridge'
-import { isTransientInfraError } from './file-processor/analysis-error-classifier'
+import { isTimeoutError, isTransientInfraError } from './file-processor/analysis-error-classifier'
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { moduleHibernationCoordinator } from '../hibernation/module-hibernation-coordinator'
-import { FtsProjectionService } from '../database/fts-projection'
+import { queueFtsSync } from './fts-sync-hooks'
+import type { OmniHttpAdapter } from './omni-http-adapter'
+import type { AnalysisItemStatusExtra } from './analysis-write-dispatcher'
 
+/**
+ * 分析队列流水线调度 Worker：承载并行 CPU/GPU 双通道与串行单项分发。
+ *
+ * 通过 Getter 延迟读取 QueueManager，避免服务构造阶段未 initialize 导致绑定 `undefined`。
+ */
 export class AnalysisOrchestratorWorker {
+  /** 并行模式双通道正在处理的队列项引用计数（防 OrphanWatchdog 误杀长耗时在跑项） */
+  private activeItemCounts = new Map<number, number>()
+  /** 当前并行批次所属工作空间 ID（供 pause() 精确中止并行双通道） */
+  private activeParallelWorkspaceId: number | null = null
+
   constructor(
-    private queueManager: QueueManager,
+    private getQueueManager: () => QueueManager | undefined,
     private aiServiceManager: AIServiceManager,
     private directoryProcessor: DirectoryProcessor,
     private fileProcessor: FileProcessor,
-    private ftsProjectionService: FtsProjectionService,
     private updateItemStatus: (
       itemId: number,
       status: 'pending' | 'analyzing' | 'completed' | 'failed',
       progress: number,
       error?: string,
-      extra?: any
+      extra?: AnalysisItemStatusExtra
     ) => void
   ) {}
+
+  /** 判断指定队列项是否正在并行双通道中运行 */
+  isItemActive(itemId: number): boolean {
+    return (this.activeItemCounts.get(itemId) ?? 0) > 0
+  }
+
+  /** 判断并行双通道是否有活跃任务（可选按 workspaceId 过滤） */
+  hasActiveItems(workspaceId?: number): boolean {
+    if (this.activeItemCounts.size === 0) return false
+    if (workspaceId === undefined) return true
+    return this.activeParallelWorkspaceId === workspaceId
+  }
+
+  private markActive(itemId: number): void {
+    this.activeItemCounts.set(itemId, (this.activeItemCounts.get(itemId) ?? 0) + 1)
+  }
+
+  private unmarkActive(itemId: number): void {
+    const next = (this.activeItemCounts.get(itemId) ?? 0) - 1
+    if (next <= 0) {
+      this.activeItemCounts.delete(itemId)
+    } else {
+      this.activeItemCounts.set(itemId, next)
+    }
+  }
+
+  async runSerialItem(
+    next: AnalysisQueueItem,
+    signal: AbortSignal,
+    aiStageEnabled: boolean,
+    omniAdapter: OmniHttpAdapter,
+    logWarning: (message: string, error?: unknown) => void
+  ): Promise<void> {
+    this.updateItemStatus(next.id, 'analyzing', 0)
+
+    // 普通分析任务：仅在启用 AI 阶段时确保引擎处于主语言模型模式；标准分析模式无需语言模型
+    if (aiStageEnabled) {
+      const modeRes = await omniAdapter.ensureMode('language')
+      if (modeRes && !modeRes.ok) {
+        logWarning('[普通分析] 切换主语言模型告警:', modeRes.error)
+      }
+    }
+    if (next.itemType === 'directory') {
+      await this.directoryProcessor.processDirectory(next)
+    } else {
+      await this.fileProcessor.processFile(next, signal)
+      cloudSyncWorker.triggerSync(2000)
+    }
+  }
 
   async runParallel(
     pendingItems: AnalysisQueueItem[],
@@ -52,7 +111,7 @@ export class AnalysisOrchestratorWorker {
     const runCPUProducer = async () => {
       for (const item of pendingItems) {
         if (signal.aborted) break
-        if (!this.queueManager.hasItem(item.id)) {
+        if (!this.getQueueManager()?.hasItem(item.id)) {
           notifier.notify(item.id)
           continue
         }
@@ -74,16 +133,13 @@ export class AnalysisOrchestratorWorker {
                 !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path)
                   .isAnalyzed
             } else {
-              const wf = databaseService
-                .db!.prepare(
-                  'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-                )
-                .get(item.workspaceId!, item.path) as { file_fingerprint?: string } | undefined
+              const fileFingerprint =
+                databaseService.getFileFingerprintByPath(item.path) ?? undefined
               const completeness = await checkBasicDataCompleteness(
                 databaseService.db!,
                 item.workspaceId!,
                 item.path,
-                wf?.file_fingerprint
+                fileFingerprint
               )
               if (completeness.isComplete) {
                 shouldSkipCpu = true
@@ -105,18 +161,22 @@ export class AnalysisOrchestratorWorker {
           continue
         }
 
+        this.markActive(item.id)
         try {
           this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
           await this.fileProcessor.processFile(item, signal, 'cpu')
           notifier.notify(item.id)
-        } catch (err) {
+        } catch (err: unknown) {
           this.updateItemStatus(
             item.id,
             'failed',
             100,
-            err instanceof Error ? err.message : String(err)
+            err instanceof Error ? err.message : String(err),
+            { isTimeout: isTimeoutError(err) }
           )
           notifier.notify(item.id)
+        } finally {
+          this.unmarkActive(item.id)
         }
       }
     }
@@ -124,14 +184,20 @@ export class AnalysisOrchestratorWorker {
     const runGPUConsumer = async () => {
       for (const item of pendingItems) {
         if (signal.aborted) break
-        if (!this.queueManager.hasItem(item.id)) continue
+        if (!this.getQueueManager()?.hasItem(item.id)) continue
 
         if (item.itemType === 'directory') {
-          this.updateItemStatus(item.id, 'analyzing', 0)
-          await this.directoryProcessor.processDirectory(item)
+          this.markActive(item.id)
+          try {
+            this.updateItemStatus(item.id, 'analyzing', 0)
+            await this.directoryProcessor.processDirectory(item)
+          } finally {
+            this.unmarkActive(item.id)
+          }
           continue
         }
 
+        this.markActive(item.id)
         try {
           await notifier.waitForStage2(
             item.id,
@@ -140,26 +206,24 @@ export class AnalysisOrchestratorWorker {
             stage2WaitTimeoutMs
           )
 
-          if (!this.queueManager.hasItem(item.id)) continue
+          if (!this.getQueueManager()?.hasItem(item.id)) continue
           if (item.status === 'failed') continue
 
           this.updateItemStatus(item.id, 'analyzing', 51, undefined, { analysisStage: 3 })
           await this.fileProcessor.processFile(item, signal, 'gpu', cpuSkippedIds.has(item.id))
-          // 强制接入同步逻辑：确保 rowid 在 files_fts 和 files_pinyin_fts 同步
-          // 修正：syncFTSTags 接收的是 fingerprint
-          const wf = databaseService
-            .db!.prepare(
-              'SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ? AND path = ?'
-            )
-            .get(item.workspaceId!, item.path) as { file_fingerprint?: string } | undefined
-          if (wf?.file_fingerprint) {
-            await this.ftsProjectionService.syncFTSTags(wf.file_fingerprint)
+          // 收口 FTS 同步至防抖 Hook，避免绕过窗口聚合高频写盘
+          const fileFingerprint = databaseService.getFileFingerprintByPath(item.path)
+          if (fileFingerprint) {
+            queueFtsSync(fileFingerprint)
           }
           cloudSyncWorker.triggerSync(2000)
-        } catch (err: any) {
-          const isAbort = err && (err.name === 'AbortError' || err.message === 'Aborted')
+        } catch (err: unknown) {
+          const errObj = err as { name?: string; message?: string } | null
+          const isAbort = Boolean(
+            errObj && (errObj.name === 'AbortError' || errObj.message === 'Aborted')
+          )
           const isStage2Timeout =
-            err instanceof Stage2TimeoutError || err?.name === 'Stage2TimeoutError'
+            err instanceof Stage2TimeoutError || errObj?.name === 'Stage2TimeoutError'
 
           if (isStage2Timeout || isAbort) {
             this.updateItemStatus(item.id, 'pending', 0)
@@ -167,14 +231,42 @@ export class AnalysisOrchestratorWorker {
             this.updateItemStatus(item.id, 'pending', 0)
             const isReady = await this.aiServiceManager.waitForAIServiceReady()
             if (isReady && !signal.aborted) {
-              // Retry logic...
-              await this.fileProcessor.processFile(item, signal, 'gpu', cpuSkippedIds.has(item.id))
-            } else {
+              try {
+                await this.fileProcessor.processFile(
+                  item,
+                  signal,
+                  'gpu',
+                  cpuSkippedIds.has(item.id)
+                )
+                const retryFingerprint = databaseService.getFileFingerprintByPath(item.path)
+                if (retryFingerprint) {
+                  queueFtsSync(retryFingerprint)
+                }
+                cloudSyncWorker.triggerSync(2000)
+              } catch (retryErr: unknown) {
+                const retryObj = retryErr as { name?: string; message?: string } | null
+                const isRetryAbort = Boolean(
+                  retryObj && (retryObj.name === 'AbortError' || retryObj.message === 'Aborted')
+                )
+                if (isRetryAbort) {
+                  this.updateItemStatus(item.id, 'pending', 0)
+                } else {
+                  this.updateItemStatus(
+                    item.id,
+                    'failed',
+                    100,
+                    retryErr instanceof Error ? retryErr.message : String(retryErr),
+                    { isTimeout: isTimeoutError(retryErr) }
+                  )
+                }
+              }
+            } else if (!signal.aborted) {
               this.updateItemStatus(
                 item.id,
                 'failed',
                 100,
-                err instanceof Error ? err.message : String(err)
+                err instanceof Error ? err.message : String(err),
+                { isTimeout: isTimeoutError(err) }
               )
             }
           } else {
@@ -182,14 +274,22 @@ export class AnalysisOrchestratorWorker {
               item.id,
               'failed',
               100,
-              err instanceof Error ? err.message : String(err)
+              err instanceof Error ? err.message : String(err),
+              { isTimeout: isTimeoutError(err) }
             )
           }
+        } finally {
+          this.unmarkActive(item.id)
         }
       }
     }
 
     moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
-    await Promise.all([runCPUProducer(), runGPUConsumer()])
+    this.activeParallelWorkspaceId = pendingItems[0]?.workspaceId ?? null
+    try {
+      await Promise.all([runCPUProducer(), runGPUConsumer()])
+    } finally {
+      this.activeParallelWorkspaceId = null
+    }
   }
 }

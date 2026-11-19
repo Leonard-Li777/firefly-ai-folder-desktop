@@ -15,15 +15,9 @@ import { MaterialIcon, cn } from '../../lib/utils'
 import FileList from '../file-explorer/FileList'
 
 /**
- * 分析模式的展示名称，与设置页 analysis-settings 保持一致。
- * t() 是构建期字符串提取宏、只接受静态字面量，故此处保留纯静态原文键，
- * 展示时经 modeLabelOf() 在组件内用静态 t('...') 动态翻译（切换语言可刷新）。
+ * 已记录的合法分析模式键集合，仅用于键名校验，绝不含顶层 t()（避免切换语言失效）。
  */
-const ANALYSIS_MODE_LABEL: Record<string, string> = {
-  simple: t('标准分析'),
-  quick_name: t('增强分析'),
-  full: t('全面分析')
-}
+const KNOWN_ANALYSIS_MODES = new Set(['simple', 'quick_name', 'full'])
 
 /**
  * analysis_stage 的权威语义：
@@ -162,7 +156,7 @@ export function AnalysisConfirmModal() {
     let stageOnlyCount = 0
     for (const f of confirmModalInsufficientFiles) {
       const mode = String((f as any).completedMode ?? '')
-      if (ANALYSIS_MODE_LABEL[mode]) {
+      if (KNOWN_ANALYSIS_MODES.has(mode)) {
         modeCounts.set(mode, (modeCounts.get(mode) ?? 0) + 1)
       } else {
         stageOnlyCount++
@@ -179,7 +173,7 @@ export function AnalysisConfirmModal() {
       const stages = new Set<number>()
       for (const f of confirmModalInsufficientFiles) {
         const mode = String((f as any).completedMode ?? '')
-        if (ANALYSIS_MODE_LABEL[mode]) continue
+        if (KNOWN_ANALYSIS_MODES.has(mode)) continue
         const stage = Number((f as any).analysisStage ?? 0)
         if (stage > 0) stages.add(stage)
       }
@@ -225,7 +219,7 @@ export function AnalysisConfirmModal() {
                     className="text-sm mt-0.5 shrink-0 text-primary/70"
                   />
                   <span>
-                    {ANALYSIS_MODE_LABEL[group.mode]
+                    {KNOWN_ANALYSIS_MODES.has(group.mode)
                       ? t('{count} 个已完成【{mode}】分析，无需重复分析。', {
                           count: group.count,
                           mode: modeLabelOf(group.mode)
@@ -265,7 +259,8 @@ export function AnalysisConfirmModal() {
             <div className="flex items-center justify-between text-xs shrink-0">
               {/* 单一模式且模式已记录时直接写明模式；多模式混合时用中性表述，避免误导 */}
               <span className="font-medium text-foreground">
-                {analyzedModeGroups.length === 1 && ANALYSIS_MODE_LABEL[analyzedModeGroups[0].mode]
+                {analyzedModeGroups.length === 1 &&
+                KNOWN_ANALYSIS_MODES.has(analyzedModeGroups[0].mode)
                   ? t('已完成【{mode}】分析的文件，本次将跳过', {
                       mode: modeLabelOf(analyzedModeGroups[0].mode)
                     })

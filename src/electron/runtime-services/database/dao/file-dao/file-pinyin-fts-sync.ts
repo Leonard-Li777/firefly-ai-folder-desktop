@@ -21,70 +21,17 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
   }
 
   /**
-   * 聚合某文件指纹的标签展示名文本（files_fts.tags 列与 files_pinyin_fts.tags_py 列共用）。
-   * 受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），故在 JS 侧聚合。
+   * 聚合某文件指纹的标签展示名文本（唯一实现收口于 FtsProjectionService）。
    */
   private collectTagsText(fingerprint: string): string {
-    try {
-      const relationRows = this.db
-        .prepare(
-          `
-          SELECT ftr.tag_code as id, ft.name as ft_name
-          FROM file_tag_relations ftr
-          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-          WHERE ftr.file_fingerprint = ?
-        `
-        )
-        .all(fingerprint) as Array<{ id: string; ft_name: string | null }>
-      return relationRows.map(r => this.resolveDisplayName(r.id, r.ft_name)).join(' ')
-    } catch {
-      return ''
-    }
+    return this.ftsProjection.collectTagsText(fingerprint)
   }
 
   /**
-   * 批量版 collectTagsText（人工裁定项①：reconciler 逐行 2 次 SQL → 一次窗口一次 SQL）。
-   *
-   * 与逐行版同口径：受控标签展示名在主库语言分表 resolveDisplayName 解析（SQL 层无法访问
-   * 该动态分表），故只把 `(file_fingerprint, tag_code, file_tags_private.name)` 原始对
-   * 一次性预取，JS 侧按指纹分组后解析展示名。每个指纹的标签顺序与逐行版一致
-   * （同一 rowid 扫描序），故 src_hash 与逐行写入逐位相同。
-   *
-   * 返回 **null 表示批量失败**：调用方必须回退逐行 collectTagsText。若把失败当空串使用，
-   * 标签会从拼音列静默消失、src_hash 恒不命中 ⇒ reconciler 每窗口重写全表（正确性事故）。
+   * 批量版 collectTagsText（唯一实现收口于 FtsProjectionService；返回 null 时回退逐行）。
    */
   private collectTagsTextBatch(fingerprints: string[]): Map<string, string> | null {
-    if (fingerprints.length === 0) return new Map()
-    // 分片防 SQLite 变量数上限（旧构建默认 999；现代构建 32766）
-    const CHUNK = 400
-    const grouped = new Map<string, string[]>()
-    try {
-      for (let i = 0; i < fingerprints.length; i += CHUNK) {
-        const chunk = fingerprints.slice(i, i + CHUNK)
-        const placeholders = chunk.map(() => '?').join(',')
-        const rows = this.db
-          .prepare(
-            `
-            SELECT ftr.file_fingerprint AS fp, ftr.tag_code AS id, ft.name AS ft_name
-            FROM file_tag_relations ftr
-            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
-            WHERE ftr.file_fingerprint IN (${placeholders})
-          `
-          )
-          .all(...chunk) as Array<{ fp: string; id: string; ft_name: string | null }>
-        for (const r of rows) {
-          const display = this.resolveDisplayName(r.id, r.ft_name)
-          const arr = grouped.get(r.fp)
-          if (arr) arr.push(display)
-          else grouped.set(r.fp, [display])
-        }
-      }
-      const out = new Map<string, string>()
-      for (const [fp, arr] of grouped) out.set(fp, arr.join(' '))
-      return out
-    } catch {
-      return null
-    }
+    return this.ftsProjection.collectTagsTextBatch(fingerprints)
   }
 
   /**

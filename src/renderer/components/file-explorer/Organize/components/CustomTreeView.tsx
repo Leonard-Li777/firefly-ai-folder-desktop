@@ -30,7 +30,29 @@ interface CustomTreeViewProps {
   onCanSubmitChange?: (canSubmit: boolean) => void
 }
 
-const DEFAULT_STRATEGY = t('organize-office-strategy')
+/** 构造办公文员视角默认整理策略（按行静态 t() 包裹，确保构建期可提取且语言切换可实时生效） */
+const getDefaultOfficeStrategy = (): string =>
+  [
+    t('以办公文员视角，按以下目录结构整理文档：'),
+    '',
+    `- ${t('办公文档')}`,
+    `  - ${t('行政人事')}`,
+    `    - ${t('考勤记录')}`,
+    `    - ${t('请假审批')}`,
+    `    - ${t('员工档案')}`,
+    `  - ${t('财务报表')}`,
+    `    - ${t('月度报表')}`,
+    `    - ${t('预算审批')}`,
+    `    - ${t('发票管理')}`,
+    `  - ${t('合同协议')}`,
+    `    - ${t('采购合同')}`,
+    `    - ${t('服务协议')}`,
+    `    - ${t('保密协议')}`,
+    `  - ${t('会议纪要')}`,
+    `    - ${t('周会记录')}`,
+    `    - ${t('项目评审')}`,
+    `    - ${t('年度总结')}`
+  ].join('\n')
 
 /** 递归统计目录树中总目录数量 */
 function countDirectories(nodes: VirtualDirectoryNode[]): number {
@@ -138,6 +160,7 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
     },
     ref
   ) => {
+    const defaultStrategy = getDefaultOfficeStrategy()
     const defaultFallbackName = workspaceDirectoryPath
       ? `${
           workspaceDirectoryPath
@@ -162,13 +185,13 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
         const cached = getDraftStrategy(workspaceDirectoryPath)
         if (cached) return cached
       }
-      return DEFAULT_STRATEGY
+      return defaultStrategy
     })
     const [isDirty, setIsDirty] = useState(() => {
       if (initialStrategy) return true
       if (!isExternalAi && workspaceDirectoryPath) {
         const cached = getDraftStrategy(workspaceDirectoryPath)
-        if (cached && cached !== DEFAULT_STRATEGY) return true
+        if (cached && cached !== defaultStrategy) return true
       }
       return false
     })
@@ -218,7 +241,7 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
         ? deferredStrategy.trim()
         : isDirty
           ? deferredStrategy.trim()
-          : DEFAULT_STRATEGY.trim()
+          : defaultStrategy.trim()
 
       if (!rawText) return []
       try {
@@ -227,7 +250,7 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
       } catch {
         return []
       }
-    }, [deferredStrategy, isExternalAi, isDirty, name])
+    }, [deferredStrategy, isExternalAi, isDirty, name, defaultStrategy])
 
     const dirCount = useMemo(() => countDirectories(parsedTree), [parsedTree])
     const canSubmit = parsedTree.length > 0
@@ -239,7 +262,7 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
 
     const handleResetSample = () => {
       setName(initialName || defaultFallbackName)
-      setStrategy(DEFAULT_STRATEGY)
+      setStrategy(defaultStrategy)
       setIsDirty(false)
       if (!isExternalAi && workspaceDirectoryPath) {
         clearDraft(workspaceDirectoryPath)
@@ -263,7 +286,7 @@ export const CustomTreeView = forwardRef<CustomTreeViewHandle, CustomTreeViewPro
         ? strategy.trim()
         : isDirty
           ? strategy.trim()
-          : DEFAULT_STRATEGY.trim()
+          : defaultStrategy.trim()
 
       const { name: extractedName, cleanStrategy } = extractVirtualDirName(finalStrategy)
       if (cleanStrategy) {
