@@ -8,8 +8,10 @@
  *  - C8-1：HybridSearchArbiter 视频分段检索 SQL（WHERE file_fingerprint IN (...) AND start_sec < ?）
  *          EXPLAIN QUERY PLAN 命中 idx_fvc_fp_start Index Scan（零全表扫），且边界过滤结果正确。
  *  - C8-2：TagUnitDao 逻辑单元正向关联查询（JOIN file_unit_relations r ON r.unit_id = u.id WHERE r.file_id = ?）
- *          EXPLAIN QUERY PLAN 两表均走索引（主键覆盖索引 + INTEGER PRIMARY KEY），零全表扫；
- *          （注：反向查询依赖的 idx_fur_unit_id 等 3 个索引误落未引用常量，已另立 Ticket 17 追踪）。
+ *          EXPLAIN QUERY PLAN 两表均走索引（主键覆盖索引 + INTEGER PRIMARY KEY），零全表扫。
+ *  - C8-3（Ticket 17）：GENESIS_V1_SCHEMA 建库后 sqlite_master 含 idx_file_units_ws / idx_file_units_path /
+ *          idx_fur_unit_id，且反向关联查询（WHERE r.unit_id = ?）、按 path / workspace_id 查 file_units
+ *          的 EXPLAIN QUERY PLAN 均走 SEARCH ... USING INDEX，零全表扫。
  */
 import * as fs from 'fs'
 import * as path from 'path'
@@ -182,9 +184,15 @@ describe('Ticket 14 · C8：video 分段检索 idx_fvc_fp_start 与 file_unit_re
     registerDatabaseFunctions(db)
 
     // 铺设基础外键依赖：files / workspaces / workspace_directories / workspace_files
-    db.prepare(`INSERT INTO files (file_fingerprint, extension, file_group) VALUES ('fp_vid_1', '.mp4', 'video')`).run()
-    db.prepare(`INSERT INTO files (file_fingerprint, extension, file_group) VALUES ('fp_vid_2', '.mp4', 'video')`).run()
-    db.prepare(`INSERT INTO workspaces (workspace_id, name, path) VALUES (1, 'ws', 'C:/root')`).run()
+    db.prepare(
+      `INSERT INTO files (file_fingerprint, extension, file_group) VALUES ('fp_vid_1', '.mp4', 'video')`
+    ).run()
+    db.prepare(
+      `INSERT INTO files (file_fingerprint, extension, file_group) VALUES ('fp_vid_2', '.mp4', 'video')`
+    ).run()
+    db.prepare(
+      `INSERT INTO workspaces (workspace_id, name, path) VALUES (1, 'ws', 'C:/root')`
+    ).run()
     db.prepare(
       `INSERT INTO workspace_directories (id, workspace_id, path, name) VALUES (10, 1, 'C:/root/vids', 'vids')`
     ).run()
@@ -270,9 +278,67 @@ describe('Ticket 14 · C8：video 分段检索 idx_fvc_fp_start 与 file_unit_re
     expect(units).toHaveLength(1)
     expect(units[0].id).toBe(unit.id)
     expect(units[0].name).toBe('demo-unit')
+  })
 
-    // 注：反向按 unit_id 查关联文件所需的 idx_fur_unit_id（及 idx_file_units_ws / idx_file_units_path）
-    // 在补证据时发现被误写在未引用的 GENESIS_FILE_VIDEO_SEGMENTS_DDL（database.ts:1250-1253）而非 GENESIS_V1_SCHEMA，
-    // 已按 Ticket 14「不改生产代码、另开工单」纪律单独立项 Ticket 17 追踪修复。
+  it('C8-3（Ticket 17）. GENESIS_V1_SCHEMA 包含 3 个逻辑单元治理索引且反向关联 / path / workspace_id 查询均走索引', async () => {
+    // 1. 校验 sqlite_master 存在 3 个索引
+    const idxRows = db
+      .prepare(
+        `SELECT name FROM sqlite_master
+         WHERE type = 'index' AND name IN ('idx_file_units_ws', 'idx_file_units_path', 'idx_fur_unit_id')`
+      )
+      .all() as Array<{ name: string }>
+    const idxNames = idxRows.map(r => r.name).sort()
+    expect(idxNames).toEqual(['idx_file_units_path', 'idx_file_units_ws', 'idx_fur_unit_id'])
+
+    const dao = new TagUnitDao(db)
+    const unit = await dao.createUnit({
+      name: 'demo-unit',
+      type: 'folder',
+      path: 'C:/root/vids',
+      workspaceId: 1
+    })
+    await dao.createFileUnitRelation(100, unit.id)
+
+    // 2. 反向关联查询（WHERE r.unit_id = ?）命中 idx_fur_unit_id，零全表 SCAN
+    const reverseSql = `
+      SELECT wf.id FROM workspace_files wf
+      JOIN file_unit_relations r ON r.file_id = wf.id
+      WHERE r.unit_id = ?
+    `
+    const reversePlan = db.prepare(`EXPLAIN QUERY PLAN ${reverseSql}`).all(unit.id) as Array<{
+      detail: string
+    }>
+    const reverseDetail = reversePlan.map(p => p.detail).join(' | ')
+    expect(reverseDetail).toMatch(/SEARCH\s+r\s+USING\s+(?:COVERING\s+)?INDEX\s+idx_fur_unit_id/)
+    expect(reverseDetail).toMatch(/SEARCH\s+wf\s+USING\s+INTEGER\s+PRIMARY\s+KEY/)
+    expect(reverseDetail).not.toMatch(/\bSCAN\b/)
+
+    const reverseRows = db.prepare(reverseSql).all(unit.id) as Array<{ id: number }>
+    expect(reverseRows).toEqual([{ id: 100 }])
+
+    // 3. 按 path 查询 file_units（TagUnitDao.getUnitsForPath:159 生产 SQL）命中 idx_file_units_path
+    const byPathSql = `SELECT * FROM file_units WHERE path = ?`
+    const byPathPlan = db.prepare(`EXPLAIN QUERY PLAN ${byPathSql}`).all('C:/root/vids') as Array<{
+      detail: string
+    }>
+    const byPathDetail = byPathPlan.map(p => p.detail).join(' | ')
+    expect(byPathDetail).toMatch(/SEARCH\s+file_units\s+USING\s+INDEX\s+idx_file_units_path/)
+    expect(byPathDetail).not.toMatch(/\bSCAN\b/)
+
+    const unitsByPath = await dao.getUnitsForPath('C:/root/vids/new-file.mp4')
+    expect(unitsByPath).toHaveLength(1)
+    expect(unitsByPath[0].id).toBe(unit.id)
+
+    // 4. 按 workspace_id 查询 file_units 命中 idx_file_units_ws
+    const byWsSql = `SELECT * FROM file_units WHERE workspace_id = ?`
+    const byWsPlan = db.prepare(`EXPLAIN QUERY PLAN ${byWsSql}`).all(1) as Array<{ detail: string }>
+    const byWsDetail = byWsPlan.map(p => p.detail).join(' | ')
+    expect(byWsDetail).toMatch(/SEARCH\s+file_units\s+USING\s+INDEX\s+idx_file_units_ws/)
+    expect(byWsDetail).not.toMatch(/\bSCAN\b/)
+
+    const unitsByWs = db.prepare(byWsSql).all(1) as Array<{ id: number }>
+    expect(unitsByWs).toHaveLength(1)
+    expect(unitsByWs[0].id).toBe(unit.id)
   })
 })

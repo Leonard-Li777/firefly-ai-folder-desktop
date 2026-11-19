@@ -789,6 +789,10 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
+  -- [Issue 04 Step 5 / Ticket 17 / Spec §3.1.C.4] 逻辑单元治理索引：按工作区/路径查单元、按单元 ID 查关联文件。
+  CREATE INDEX IF NOT EXISTS idx_file_units_ws ON file_units(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_file_units_path ON file_units(path);
+  CREATE INDEX IF NOT EXISTS idx_fur_unit_id ON file_unit_relations(unit_id);
   -- Issue 05 Step 1：离线消费队列索引（状态+金额覆盖索引，加速 SUM(amount_delta) WHERE status='pending'）
   CREATE INDEX IF NOT EXISTS idx_pfo_status_delta
     ON pending_firecore_operations(status, amount_delta);
@@ -1246,11 +1250,6 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
   CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq ON file_video_segments(file_id, segment_index);
   CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
-
-  -- [Issue 04 Step 5 / Spec §3.1.C.4] 逻辑单元治理索引：按工作区/路径查单元、按单元 ID 查关联文件。
-  CREATE INDEX IF NOT EXISTS idx_file_units_ws ON file_units(workspace_id);
-  CREATE INDEX IF NOT EXISTS idx_file_units_path ON file_units(path);
-  CREATE INDEX IF NOT EXISTS idx_fur_unit_id ON file_unit_relations(unit_id);
 `
 
 /**
