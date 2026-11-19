@@ -345,41 +345,35 @@ export class CloudSyncWorker {
         )
         .all(...fileIds) as any[]
 
-      if (relatedTags.length > 0) {
-        // 直接以完整标签树节点对象推送，云端按 code UPSERT，无需任何 ID 映射
-        const tagsPayload = relatedTags.map(t => ({
-          code: t.code,
-          name: t.name,
-          parent_codes: this.safeJsonParse(t.parent_codes, []),
-          file_groups: this.safeJsonParse(t.file_groups, []),
-          source: t.source || 'expanded',
-          meta: this.safeJsonParse(t.meta, {})
-        }))
-        await cloudAnalysisService.batchSync({ tags: sanitizeObject(tagsPayload) }, language)
-
-        // 按 code 原子更新本地标签定义同步状态
-        const allTagCodes = relatedTags.map(t => t.code)
-        db.prepare(
-          `UPDATE file_tags_private SET sync_status = 2 WHERE code IN (${allTagCodes.map(() => '?').join(',')})`
-        ).run(...allTagCodes)
-      }
+      const tagsPayload =
+        relatedTags.length > 0
+          ? relatedTags.map(t => ({
+              code: t.code,
+              locale: language,
+              name: t.name,
+              parent_codes: this.safeJsonParse(t.parent_codes, []),
+              file_groups: this.safeJsonParse(t.file_groups, []),
+              source: t.source || 'expanded',
+              meta: this.safeJsonParse(t.meta, {})
+            }))
+          : []
 
       // 2.3 构建文件 Payload - 云端 ID 使用本地 file_fingerprint
       // 💡 端云字段设计说明：
       //    - 本地 files 表使用 is_hit (布尔值)：仅需标识文件是否命中云端标准库
-      //    - 云端 zh_cn_files 表使用 hit_count (计数器)：需要统计文件被命中的总次数，用于数据分析
-      //    - 这是故意的设计差异，不是 Bug。本地只需标识状态，云端需要聚合统计。
-      // MAX_TEXT_LENGTH 以 UTF-8 「字节」为口径：同样 30000 的上限，中文约 90 KB、英文约 30 KB，
-      // 按字符截断会让云端单行体积随语言漂移 3 倍；而 TOAST 阈值与存储/传输成本都是字节域。
+      //    - 云端 files 表使用 hit_count (计数器)：由端侧 60s 节流 rpc_report_cache_hits 异步汇总
+      // MAX_TEXT_LENGTH 以 UTF-8 「字节」为口径，对 content/ocr/asr/lrc/multimodal_content 统一安全截断
       const maxTextBytes =
         ConfigOrchestrator.getInstance().getValue<number>('MAX_TEXT_LENGTH') ?? 30000
 
       const cloudFiles = pendingFiles.map(f => {
-        // 本地大文本字段为压缩 BLOB，上行同步前需透明解压还原为明文
         const plainContent = decompressText(f.content)
         const cloudContent = safeTruncateUtf8Bytes(plainContent, maxTextBytes)
-        // OCR 全文是单行膨胀的唯一失控入口（数百页 PDF 的 OCR 可达数 MB），与大文本同口径截断
         const cloudOcr = safeTruncateUtf8Bytes(decompressText(f.ocr), maxTextBytes) || null
+        const cloudAsr = safeTruncateUtf8Bytes(decompressText(f.asr), maxTextBytes) || null
+        const cloudLrc = safeTruncateUtf8Bytes(decompressText(f.lrc), maxTextBytes) || null
+        const cloudMultimodal =
+          safeTruncateUtf8Bytes(decompressText(f.multimodal_content), maxTextBytes) || null
 
         // ADR-0054：本地 SQLite 与云端双端零向量对齐（向量仅驻留端侧 zvec），
         // 上行云端时防御性剥离可能残留的任何向量字段
@@ -392,45 +386,46 @@ export class CloudSyncWorker {
         }
 
         return {
-          file_fingerprint: f.file_fingerprint, // V2 架构：对齐云端 RPC 字段名
+          file_fingerprint: f.file_fingerprint,
           smart_name: f.smart_name,
           raw_smart_name: f.raw_smart_name || null,
-          // 智能名称双字段来源语义（与本地 GENESIS 列对齐，NULL 需如实上传以传播重置）
           smart_name_source: f.smart_name_source ?? null,
           smart_name_template_source: f.smart_name_template_source ?? null,
           size: f.size,
           extension: f.extension,
-          type: f.extension,
           file_group: f.file_group,
-          // 云端 RPC 历史字段名 mime_type 与本地 file_group 对齐（ADR-0037 / #658 V4 契约）
-          mime_type: f.file_group,
           author: f.author,
           description: f.description,
           content: cloudContent,
           ocr: cloudOcr,
-          lrc: decompressText(f.lrc) || null,
+          asr: cloudAsr,
+          lrc: cloudLrc,
           language: f.language,
-          quality_score: this.ensureReal(f.quality_score, 0),
-          quality_confidence: this.ensureReal(f.quality_confidence, 0.5),
+          // [R2-5 ②] 本地未评估时严禁伪造 0 / 0.5 覆盖云端已有高分评分，必须原样透传 null
+          quality_score: f.quality_score != null ? this.ensureReal(f.quality_score, 0) : null,
+          quality_confidence:
+            f.quality_confidence != null ? this.ensureReal(f.quality_confidence, 0.5) : null,
           quality_criteria: this.safeJsonParse(f.quality_criteria, null),
           quality_reasoning: f.quality_reasoning,
           grouping_reason: f.grouping_reason,
-          grouping_confidence: this.ensureReal(f.grouping_confidence, 0.5),
-          metadata: rawMeta,
+          grouping_confidence:
+            f.grouping_confidence != null ? this.ensureReal(f.grouping_confidence, 0.5) : null,
+          exif: rawMeta,
           analysis_stats: this.safeJsonParse(f.analysis_stats, null),
-          multimodal_content: decompressText(f.multimodal_content) || null,
+          multimodal_content: cloudMultimodal,
           last_analyzed_at: toUTCString(f.last_analyzed_at)
         }
       })
 
-      // 2.4 建立关系 Payload（V4 自然主键直通：直接推送 file_fingerprint + tag_code + via_parent_code）
-      //     彻底废除 cloudTagMap / cloudTagNameMap 自增 ID 反查与映射字典
-      //     tag_group 必须随行上行：否则云端无分组，缓存命中回灌时面板退回未分组状态（票据 04）
+      // 2.4 建立关系 Payload（V4 模型 B：JOIN tag_paths 获取规范 code_path 与 depth）
       const relationsPayload = db
         .prepare(
           `
-        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.via_parent_code, ftr.tag_group, ftr.confidence, ftr.source, ftr.meta
+        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.via_parent_code,
+               tp.code_path, tp.depth,
+               ftr.tag_group, ftr.confidence, ftr.source, ftr.meta
         FROM file_tag_relations ftr
+        LEFT JOIN tag_paths tp ON tp.path_id = ftr.path_id
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
         )
@@ -439,22 +434,33 @@ export class CloudSyncWorker {
           file_fingerprint: link.file_fingerprint,
           tag_code: link.tag_code,
           via_parent_code: link.via_parent_code || '',
+          code_path:
+            link.code_path ||
+            (link.via_parent_code ? `/${link.via_parent_code}/${link.tag_code}` : `/${link.tag_code}`),
+          depth: link.depth ?? 1,
           tag_group: link.tag_group || '',
           confidence: this.ensureReal(link.confidence, 1.0),
           source: link.source || 'rule',
           meta: this.safeJsonParse(link.meta, {})
         }))
 
-      // 2.5 执行同步提交
+      // 2.5 V4 单 RTT 原子合并提交（files + file_contents + file_localizations + file_tags_private + file_tag_relations）
       await cloudAnalysisService.batchSync(
         {
           files: sanitizeObject(cloudFiles),
+          tags: sanitizeObject(tagsPayload),
           tag_relations: sanitizeObject(relationsPayload)
         },
         language
       )
 
-      // 2.6 更新本地同步状态（按 file_fingerprint 原子更新关系同步状态）
+      // 2.6 更新本地同步状态（按 file_fingerprint 与 code 原子更新）
+      if (relatedTags.length > 0) {
+        const allTagCodes = relatedTags.map(t => t.code)
+        db.prepare(
+          `UPDATE file_tags_private SET sync_status = 2 WHERE code IN (${allTagCodes.map(() => '?').join(',')})`
+        ).run(...allTagCodes)
+      }
       db.prepare(
         `UPDATE files SET sync_status = 2 WHERE file_fingerprint IN (${fileIds.map(() => '?').join(',')})`
       ).run(...fileIds)

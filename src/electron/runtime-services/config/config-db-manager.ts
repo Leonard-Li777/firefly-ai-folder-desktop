@@ -1124,89 +1124,127 @@ export class ConfigDbManager {
     const db = databaseService.db
     if (!db) return
 
-    // ADR-0037 / #659：app_config 与 system_config 均落全局 Schema，不得按语言选 Schema
-    const appSchema = getSharedSchemaName()
-    const systemSchema = getSharedSchemaName()
+    // V4 创世架构：云端统一收口为 app_configs(namespace, key, locale, value, config_version, is_deleted)
+    // 本地 SQLite 严格保留 app_config / system_config / file_constants 三表与 D1-D4 离线首启种子不变
+    const sharedSchema = getSharedSchemaName()
+    const syncVersionKey = `_CLOUD_APP_CONFIGS_SYNC_VERSION_${this.currentLanguage}`
 
-    logger.debug(LogCategory.CONFIG, 'ConfigDbManager: 开始从云端拉取配置...')
+    let lastSyncVersion = 0
+    try {
+      const verRow = db
+        .prepare('SELECT value FROM system_config WHERE key = ?')
+        .get(syncVersionKey) as { value: string } | undefined
+      if (verRow?.value !== undefined) {
+        const parsed = Number(JSON.parse(verRow.value))
+        if (Number.isFinite(parsed) && parsed > 0) lastSyncVersion = parsed
+      }
+    } catch {
+      lastSyncVersion = 0
+    }
+
+    logger.debug(
+      LogCategory.CONFIG,
+      `ConfigDbManager: 开始按 locale=${this.currentLanguage} + config_version>${lastSyncVersion} 增量拉取云端 app_configs...`
+    )
 
     const maxRetries = 3
     let lastError: any = null
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        // 1. 从云端拉取 app_config
-        let appData: Array<{ key: string; value: any }> = []
-        try {
-          const { data: freshAppData, error: fetchError } = await supabase
-            .schema(appSchema)
-            .from('app_config')
-            .select('key, value')
-            .not('key', 'is', null)
+        let query = supabase
+          .schema(sharedSchema)
+          .from('app_configs')
+          .select('namespace, key, locale, value, config_version, is_deleted')
+          .in('namespace', ['app', 'system'])
+          .in('locale', ['*', this.currentLanguage])
+          .order('config_version', { ascending: true })
 
-          if (!fetchError && freshAppData) {
-            appData = freshAppData
-          }
-        } catch (err: any) {
-          logger.warn(LogCategory.CONFIG, `ConfigDbManager: 拉取 app_config 失败: ${err.message}`)
+        if (lastSyncVersion > 0) {
+          query = query.gt('config_version', lastSyncVersion)
         }
 
-        // 2. 从云端拉取 system_config
-        let systemData: Array<{ key: string; value: any }> = []
-        try {
-          const { data: freshSystemData, error: fetchError } = await supabase
-            .schema(systemSchema)
-            .from('system_config')
-            .select('key, value')
-            .not('key', 'is', null)
-
-          if (!fetchError && freshSystemData) {
-            systemData = freshSystemData
-          }
-        } catch (err: any) {
-          logger.warn(
-            LogCategory.CONFIG,
-            `ConfigDbManager: 拉取 system_config 失败: ${err.message}`
-          )
+        const { data: rows, error: fetchError } = await query
+        if (fetchError) {
+          throw new Error(fetchError.message || '拉取云端 app_configs 失败')
         }
 
-        // 3. 在事务中一次性写入（失败则回滚）
-        // 注：此 INSERT OR REPLACE 是「云端 SSOT 下行落地」，不是客户端发起的配置变更写库；
-        // 客户端配置变更统一走云端 RPC/更新，成功后由本方法采纳云端返回刷新本地缓存与内存。
+        const deltaRows = (rows || []) as Array<{
+          namespace: string
+          key: string
+          locale: string
+          value: any
+          config_version: number
+          is_deleted: boolean
+        }>
+
+        if (deltaRows.length === 0) {
+          logger.debug(LogCategory.CONFIG, 'ConfigDbManager: 云端 app_configs 无增量变更')
+          return
+        }
+
+        // 同一 (namespace, key) 语言特化行优先于 '*' 通配行
+        const sortedRows = [...deltaRows].sort((a, b) => {
+          const prioA = a.locale === '*' ? 0 : 1
+          const prioB = b.locale === '*' ? 0 : 1
+          if (prioA !== prioB) return prioA - prioB
+          return Number(a.config_version || 0) - Number(b.config_version || 0)
+        })
+
+        let maxVersion = lastSyncVersion
+        for (const r of deltaRows) {
+          const v = Number(r.config_version || 0)
+          if (Number.isFinite(v) && v > maxVersion) maxVersion = v
+        }
+
+        // 在单个本地事务中按 namespace 分发落地并传播 is_deleted 软删墓碑 + 持久化最新水位
         db.transaction(() => {
-          // 合并导入 app_config（云端数据覆盖本地，保留本地独有 key）
-          if (appData.length > 0) {
-            const appInsert = db.prepare(
-              `INSERT OR REPLACE INTO app_config (key, value, updated_at) VALUES (?, ?, ?)`
-            )
-            const now = new Date().toISOString()
-            appData.forEach(row => {
-              appInsert.run(row.key.toUpperCase(), JSON.stringify(row.value), now)
-            })
+          const now = new Date().toISOString()
+          const appInsert = db.prepare(
+            `INSERT OR REPLACE INTO app_config (key, value, updated_at) VALUES (?, ?, ?)`
+          )
+          const appDelete = db.prepare(`DELETE FROM app_config WHERE key = ?`)
+          const systemInsert = db.prepare(
+            `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES (?, ?, ?)`
+          )
+          const systemDelete = db.prepare(`DELETE FROM system_config WHERE key = ?`)
+
+          for (const row of sortedRows) {
+            if (!row.key) continue
+            const normalizedKey = row.key.toUpperCase()
+            if (row.namespace === 'app') {
+              if (row.is_deleted) {
+                appDelete.run(normalizedKey)
+              } else {
+                appInsert.run(normalizedKey, JSON.stringify(row.value), now)
+              }
+            } else if (row.namespace === 'system') {
+              if (row.is_deleted) {
+                systemDelete.run(normalizedKey)
+              } else {
+                let finalValue = row.value
+                if (normalizedKey === 'NEXT_VERSION' && finalValue && typeof finalValue === 'object') {
+                  finalValue = { ...finalValue, language: this.currentLanguage }
+                }
+                systemInsert.run(normalizedKey, JSON.stringify(finalValue), now)
+              }
+            }
           }
 
-          // 合并导入 system_config（云端数据覆盖本地，保留本地独有 key）
-          if (systemData.length > 0) {
-            const systemInsert = db.prepare(
-              `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES (?, ?, ?)`
-            )
-            const now = new Date().toISOString()
-            systemData.forEach(row => {
-              let finalValue = row.value
-              if (row.key.toUpperCase() === 'NEXT_VERSION' && finalValue) {
-                finalValue = { ...finalValue, language: this.currentLanguage }
-              }
-              systemInsert.run(row.key.toUpperCase(), JSON.stringify(finalValue), now)
-            })
+          if (maxVersion > lastSyncVersion) {
+            systemInsert.run(syncVersionKey, JSON.stringify(maxVersion), now)
           }
         })()
 
-        // 4. 重新加载至内存并广播
+        // 重新加载至内存并广播
         this.loadAllConfigsFromDb(db)
-        logger.info(LogCategory.CONFIG, 'ConfigDbManager: 云端配置拉取与覆盖写入本地成功')
+        logger.info(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 云端 app_configs 增量同步成功 (${deltaRows.length} 条, version=${maxVersion})`
+        )
         this.broadcastConfigUpdate()
 
-        // 5. 触发 Omni 维度执行策略热重载 (DEC-04)
+        // 触发 Omni 维度执行策略热重载 (DEC-04)
         void omniClient.reloadDimensionPolicies().catch(err => {
           logger.debug(
             LogCategory.CONFIG,
