@@ -141,39 +141,6 @@ interface DirectoryAnalysisResult {
   quality?: number
 }
 
-// 虚拟目录生成参数接口
-interface VirtualDirectoryGenerateParams {
-  workspaceDirectoryPath: string
-  directoryTree: DirectoryTreeNode[]
-  tagFileMap: Record<string, FileReference[]>
-  options: {
-    flattenToRoot: boolean
-    skipEmptyDirectories: boolean
-    enableNestedClassification: boolean
-  }
-}
-
-// 目录树节点接口
-interface DirectoryTreeNode {
-  name: string
-  path: string[]
-  parent?: string
-  description?: string
-  files: FileReference[]
-  children: DirectoryTreeNode[]
-  fileCount?: number
-  dimensionId?: number
-  dimensionName?: string
-  tagValue?: string
-}
-
-// 文件引用接口
-interface FileReference {
-  name: string
-  smartName?: string
-  path?: string
-}
-
 // 虚拟目录批量保存参数接口
 interface VirtualDirectoryBatchSaveParams {
   name: string
@@ -791,9 +758,6 @@ declare global {
           directories: VirtualDirectoryBatchSaveParams[],
           workspaceDirectoryPath: string
         ) => Promise<VirtualDirectoryBatchSaveResult[]>
-        generateFromPreviewTree: (
-          params: VirtualDirectoryGenerateParams
-        ) => Promise<SavedVirtualDirectory[]>
         getSavedDirectories: (workspaceDirectoryPath?: string) => Promise<SavedVirtualDirectory[]>
         deleteDirectory: (id: string, workspaceDirectoryPath?: string) => Promise<void>
         renameDirectory: (id: string, newName: string) => Promise<void>

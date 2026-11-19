@@ -371,28 +371,9 @@ export class WorkspaceDao {
       .all(workspaceId, workspaceId)
       .map((r: any) => r.file_fingerprint)
 
-    // 收集所有需要通知 Omni 向量引擎物理清理的指纹（主指纹 + 视频切片指纹）
-    const allFingerprintsToDelete: string[] = []
-    if (orphanFingerprints.length > 0) {
-      allFingerprintsToDelete.push(...orphanFingerprints)
-      // 分批查出孤儿切片指纹
-      const batchSize = 500
-      for (let i = 0; i < orphanFingerprints.length; i += batchSize) {
-        const batch = orphanFingerprints.slice(i, i + batchSize)
-        const placeholders = batch.map(() => '?').join(',')
-        try {
-          const chunkRows = this.db
-            .prepare(
-              `SELECT file_fingerprint, chunk_index FROM file_video_chunks WHERE file_fingerprint IN (${placeholders})`
-            )
-            .all(...batch) as Array<{ file_fingerprint: string; chunk_index: number }>
-          const chunkFingerprints = chunkRows.map(r => `${r.file_fingerprint}:c${r.chunk_index}`)
-          allFingerprintsToDelete.push(...chunkFingerprints)
-        } catch (chunkErr) {
-          logger.warn(LogCategory.DATABASE_SERVICE, '查询孤儿切片指纹失败:', chunkErr)
-        }
-      }
-    }
+    // [Issue 04 Step 1] 孤儿指纹（含视频切片指纹）不再在此直连 Omni，
+    // 统一由 workspace_files 删除触发器入队 orphan_gc_queue + FileCleanupService 两阶段对账处理。
+    // orphanFingerprints 仅保留用于日志统计与断言。
 
     // 2. 单次事务原子物理清除数据库记录
     this.db.transaction(() => {
@@ -405,47 +386,34 @@ export class WorkspaceDao {
         )
         .run(workspaceId)
 
-      // 2.2 清理孤儿 files 主表（级联触发 file_contents, file_tag_relations, file_video_chunks）
-      if (orphanFingerprints.length > 0) {
-        const batchSize = 500
-        for (let i = 0; i < orphanFingerprints.length; i += batchSize) {
-          const batch = orphanFingerprints.slice(i, i + batchSize)
-          const placeholders = batch.map(() => '?').join(',')
-          this.db
-            .prepare(`DELETE FROM files WHERE file_fingerprint IN (${placeholders})`)
-            .run(...batch)
-        }
-      }
-
-      // 2.3 删除工作区相关记录
+      // 2.2 [Issue 04 Step 1] 统一只删 workspace_files，由 trg_wf_enqueue_orphan_gc 触发器
+      //     在指纹全库零引用时自动入队 orphan_gc_queue；files 主表与其级联、FTS、zvec 向量
+      //     改由 FileCleanupService.reconcileOrphanFingerprints 两阶段对账统一处理（真自愈）。
+      //     严禁在此手写 DELETE FROM files（会绕过 outbox 导致向量泄漏/与触发器竞态）。
       this.db.prepare(`DELETE FROM workspace_files WHERE workspace_id = ?`).run(workspaceId)
       this.db.prepare(`DELETE FROM workspace_directories WHERE workspace_id = ?`).run(workspaceId)
       this.db.prepare(`DELETE FROM virtual_directories WHERE workspace_id = ?`).run(workspaceId)
       this.db.prepare(`DELETE FROM workspaces WHERE workspace_id = ?`).run(workspaceId)
 
-      logger.info(LogCategory.DATABASE_SERVICE, `工作区及其关联文件已彻底清空`, {
-        workspaceId,
-        path: directoryPath,
-        orphanCount: orphanFingerprints.length
-      })
+      logger.info(
+        LogCategory.DATABASE_SERVICE,
+        `工作区及其关联文件已彻底清空（孤儿指纹交由 GC 对账）`,
+        {
+          workspaceId,
+          path: directoryPath,
+          orphanCount: orphanFingerprints.length
+        }
+      )
     })()
 
-    // 3. 严格在 SQLite 事务提交成功后，再在事务外部触发异步网络物理清理，杜绝单向脏数据
-    if (allFingerprintsToDelete.length > 0) {
-      import('../../../services/omni-client')
-        .then(({ omniClient }) => {
-          return omniClient.deleteVectors(allFingerprintsToDelete)
-        })
-        .catch(err => {
-          logger.warn(
-            LogCategory.DATABASE_SERVICE,
-            '级联清理 Omni 孤儿向量失败（将在下一次重启时自愈）',
-            { count: allFingerprintsToDelete.length, err }
-          )
-        })
-    }
+    // 3. [Issue 04 Step 1] 删除产生的孤儿指纹已由 trg_wf_enqueue_orphan_gc 触发器入队 orphan_gc_queue。
+    //    两阶段对账（删 files + 删向量）由全局单例 FileCleanupService.reconcileOrphanFingerprints
+    //    在启动与定时/删后防抖时机统一调度，此处不反向依赖，避免 dao → filesystem 循环耦合。
+    //    Omni 离线时 vector_delete_outbox 保留，下次 reconcile 自愈。
 
-    logger.info(LogCategory.DATABASE_SERVICE, '工作目录删除完成', { path: directoryPath })
+    logger.info(LogCategory.DATABASE_SERVICE, '工作目录删除完成（孤儿指纹待 GC 对账）', {
+      path: directoryPath
+    })
   }
 
   async updateAutoWatch(workspaceId: number, autoWatch: boolean): Promise<void> {

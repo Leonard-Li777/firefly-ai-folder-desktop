@@ -173,7 +173,7 @@ export interface ModuleRuntimeSnapshotRecord {
   unload_fail_streak: number
   blocked_unload_no_handle: number
   blocked_unload_identity: string | null
-  updated_at: string
+  updated_at_ms: number
 }
 
 // ==========================================

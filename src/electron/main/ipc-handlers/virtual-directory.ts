@@ -52,7 +52,6 @@ import { isGemmaMrlDim, resolveGemmaDim } from '../../utils/embedding-dim'
 /** 批量整理会话级文本特征向量缓存 (fileId -> number[])，防投毒且杜绝重复推理 */
 const organizeSessionVectorCache = new Map<number, number[]>()
 
-
 async function exportTreeToDirectory(
   tree: any[],
   targetDir: string
@@ -152,10 +151,14 @@ async function moveTreeToDirectory(tree: any[], targetDir: string): Promise<Phys
 
         // 物理整理落盘多归属保护：同一物理文件仅对 Top-1 路径执行物理移动，跳过后续多归属路径移动
         if (movedSourcePaths.has(sourcePath)) {
-          logger.debug(LogCategory.FILE_ORGANIZATION, '[moveTreeToDirectory] 多归属文件已在首选路径移动，跳过重复物理移动', {
-            sourcePath,
-            targetDir: dirPath
-          })
+          logger.debug(
+            LogCategory.FILE_ORGANIZATION,
+            '[moveTreeToDirectory] 多归属文件已在首选路径移动，跳过重复物理移动',
+            {
+              sourcePath,
+              targetDir: dirPath
+            }
+          )
           continue
         }
 
@@ -578,16 +581,27 @@ export function registerVirtualDirectoryIPCHandlers() {
       }
       // 整理容量：记录大文件数日志，遵从用户选择权继续执行整理
       if (!options?.isRescue) {
-        let fileCount = options?.fileIds?.length ?? (options?.selectedFileIds?.length ?? (options?.files?.length ?? undefined))
+        let fileCount =
+          options?.fileIds?.length ??
+          options?.selectedFileIds?.length ??
+          options?.files?.length ??
+          undefined
         if (fileCount === undefined) {
           if (options?.workspaceDirectoryPath && organizeRealDirectoryService) {
-            fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(options.workspaceDirectoryPath)
+            fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(
+              options.workspaceDirectoryPath
+            )
           } else if (virtualDirectoryId > 0 && virtualDirectoryService) {
-            fileCount = await virtualDirectoryService.getVirtualDirectoryFileCount(virtualDirectoryId)
+            fileCount =
+              await virtualDirectoryService.getVirtualDirectoryFileCount(virtualDirectoryId)
           }
         }
         if (fileCount !== undefined && fileCount > 500) {
-          logger.warn(LogCategory.MAIN, '[IPC] virtual-directory/reorganize: 待推导文件数较大，遵从用户选择继续执行整理', { fileCount })
+          logger.warn(
+            LogCategory.MAIN,
+            '[IPC] virtual-directory/reorganize: 待推导文件数较大，遵从用户选择继续执行整理',
+            { fileCount }
+          )
         }
       }
 
@@ -696,10 +710,7 @@ export function registerVirtualDirectoryIPCHandlers() {
     'analyzed-directory/batch-save-directories',
     async (event, directories: any[], workspaceDirectoryPath: string) => {
       if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await virtualDirectoryService.batchSaveDirectories(
-        directories,
-        workspaceDirectoryPath
-      )
+      return await virtualDirectoryService.batchSaveDirectories(directories, workspaceDirectoryPath)
     }
   )
   ipcMain.handle(
@@ -749,24 +760,6 @@ export function registerVirtualDirectoryIPCHandlers() {
     const workspacePath = workspaceDir?.path
     if (!workspacePath) throw new Error(t('未设置工作目录'))
     return await virtualDirectoryService.findFirstHardlink(filePath, workspacePath)
-  })
-  ipcMain.handle('analyzed-directory/generate-from-preview-tree', async (event, params: any) => {
-    const license = await checkLicenseAndNotify(true)
-    if (license.status !== LicenseStatus.AUTHORIZED) {
-      return {
-        success: false,
-        status: license.status,
-        message: license.error || t('授权校验失败，请联网或激活企业版后再执行此操作')
-      }
-    }
-    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-    const tagFileMapConverted = new Map<string, any>(Object.entries(params.tagFileMap))
-    return await virtualDirectoryService.generateFromPreviewTree(
-      params.workspaceDirectoryPath,
-      params.directoryTree,
-      tagFileMapConverted,
-      params.options
-    )
   })
 
   // 整理真实目录相关
@@ -897,18 +890,22 @@ export function registerVirtualDirectoryIPCHandlers() {
   )
 
   /** 整理会话文件特征池化缓存 (避免搜索交互时反复扫 SQLite，容量 10 条工作区记录) */
-  const fileTagsSessionCache = new Map<string, Record<number, Array<{ code: string; weight: number }>>>()
+  const fileTagsSessionCache = new Map<
+    string,
+    Record<number, Array<{ code: string; weight: number }>>
+  >()
 
   ipcMain.handle(
     'organize-real-directory/match-perspectives-and-structures',
     async (event, request: MatchPerspectivesRequest) => {
-      const rawProfile =
-        ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE')
+      const rawProfile = ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE')
       const activeProfile: 'bekko_384' | 'gemma_512' =
         request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
 
       let fileTags: Record<number, Array<{ code: string; weight: number }>> | undefined =
-        request.injectedFileTags as Record<number, Array<{ code: string; weight: number }>> | undefined
+        request.injectedFileTags as
+          | Record<number, Array<{ code: string; weight: number }>>
+          | undefined
       const cacheKey =
         request.fileIds && request.fileIds.length > 0
           ? `${request.workspaceId || 0}:${request.fileIds.length}:${request.fileIds[0]}:${request.fileIds[request.fileIds.length - 1]}`
@@ -986,15 +983,22 @@ export function registerVirtualDirectoryIPCHandlers() {
       // 整理容量：记录大文件数日志，遵从用户选择权继续执行余弦打分计算（不硬阻断用户）
       let candidateCount = request.fileIds?.length
       if (candidateCount === undefined && request.workspaceId && organizeRealDirectoryService) {
-        candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(request.workspaceId)
+        candidateCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(
+          request.workspaceId
+        )
       }
-      const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
+      const capacityLimit =
+        ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
       if (candidateCount !== undefined && candidateCount > capacityLimit) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] calculate-file-paths-cosine: 待计算文件数超出推荐上限，遵从用户选择继续执行余弦打分', {
-          candidateCount,
-          limit: capacityLimit,
-          force: request.force
-        })
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          '[IPC] calculate-file-paths-cosine: 待计算文件数超出推荐上限，遵从用户选择继续执行余弦打分',
+          {
+            candidateCount,
+            limit: capacityLimit,
+            force: request.force
+          }
+        )
       }
 
       let activeProfile: string = rawProfile
@@ -1033,9 +1037,15 @@ export function registerVirtualDirectoryIPCHandlers() {
 
       const cosineService = PathCosineService.getInstance()
       const paths = request.paths || request.candidatePaths || []
-      const injectedFileVectors: Record<number, number[]> = request.injectedFileVectors ? { ...request.injectedFileVectors } : {}
-      const injectedPathVectors: Record<string, number[]> = request.injectedPathVectors ? { ...request.injectedPathVectors } : {}
-      const injectedFileMeta: Record<number, FileMetaItem> = request.injectedFileMeta ? { ...request.injectedFileMeta } : {}
+      const injectedFileVectors: Record<number, number[]> = request.injectedFileVectors
+        ? { ...request.injectedFileVectors }
+        : {}
+      const injectedPathVectors: Record<string, number[]> = request.injectedPathVectors
+        ? { ...request.injectedPathVectors }
+        : {}
+      const injectedFileMeta: Record<number, FileMetaItem> = request.injectedFileMeta
+        ? { ...request.injectedFileMeta }
+        : {}
       // 1. 从 SQLite 批量拉取全字段文件元数据 (若调用方未提供 injectedFileMeta)
       if (request.fileIds && request.fileIds.length > 0) {
         try {
@@ -1262,14 +1272,19 @@ export function registerVirtualDirectoryIPCHandlers() {
       if (fileCount === undefined && organizeRealDirectoryService) {
         fileCount = organizeRealDirectoryService.getWorkspaceAnalyzedFileCount(wsId)
       }
-      const capacityLimit = ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
+      const capacityLimit =
+        ConfigOrchestrator.getInstance().getValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
       if (fileCount !== undefined && fileCount > capacityLimit) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] smart-cluster-hac: 待整理文件数超出推荐上限，遵从用户选择继续执行智能聚类', {
-          wsId,
-          fileCount,
-          limit: capacityLimit,
-          force: params.force
-        })
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          '[IPC] smart-cluster-hac: 待整理文件数超出推荐上限，遵从用户选择继续执行智能聚类',
+          {
+            wsId,
+            fileCount,
+            limit: capacityLimit,
+            force: params.force
+          }
+        )
       }
 
       const scheme = await virtualDirectoryService.generateHACClusterScheme(
@@ -1516,9 +1531,8 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   // ─── 批量查重与安全清理 IPC ───────────────────────────────────────────────
   ipcMain.handle('duplicate:scan', async (event, options: any) => {
-    const { duplicateDetectionService } = await import(
-      '../../runtime-services/filesystem/duplicate-detection-service'
-    )
+    const { duplicateDetectionService } =
+      await import('../../runtime-services/filesystem/duplicate-detection-service')
     return await duplicateDetectionService.scanDuplicates(options, progressData => {
       try {
         if (!event.sender.isDestroyed()) {
@@ -1529,18 +1543,16 @@ export function registerVirtualDirectoryIPCHandlers() {
   })
 
   ipcMain.handle('duplicate:trash', async (event, filePaths: string[]) => {
-    const { duplicateDetectionService } = await import(
-      '../../runtime-services/filesystem/duplicate-detection-service'
-    )
+    const { duplicateDetectionService } =
+      await import('../../runtime-services/filesystem/duplicate-detection-service')
     return await duplicateDetectionService.trashDuplicateFiles(filePaths)
   })
 
   ipcMain.handle(
     'duplicate:execute-fix',
     async (event, action: any, filePaths: string[], workspaceDirectoryPath?: string) => {
-      const { duplicateDetectionService } = await import(
-        '../../runtime-services/filesystem/duplicate-detection-service'
-      )
+      const { duplicateDetectionService } =
+        await import('../../runtime-services/filesystem/duplicate-detection-service')
       return await duplicateDetectionService.executeStrategyFix(
         action,
         filePaths,
@@ -1550,9 +1562,8 @@ export function registerVirtualDirectoryIPCHandlers() {
   )
 
   ipcMain.handle('duplicate:apply-keep-rule', async (event, groups: any[], rule: any) => {
-    const { duplicateDetectionService } = await import(
-      '../../runtime-services/filesystem/duplicate-detection-service'
-    )
+    const { duplicateDetectionService } =
+      await import('../../runtime-services/filesystem/duplicate-detection-service')
     duplicateDetectionService.applySmartRecommendKeep(groups, rule)
     return groups
   })

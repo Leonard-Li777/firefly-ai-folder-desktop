@@ -184,7 +184,8 @@ export class DatabaseHelper {
 
     for (let i = 0; i < selectedTags.length; i++) {
       const tag = selectedTags[i]
-      const conceptCode = (CONTROLLED_CONCEPTS as Record<string, string>)[tag.tagValue] || tag.tagValue
+      const conceptCode =
+        (CONTROLLED_CONCEPTS as Record<string, string>)[tag.tagValue] || tag.tagValue
       // 维度归属统一走经由父 code（票 02 终稿口径，与上方 getBatchedVirtualDirectoryFiles 同源）：
       // 只认 ftr.via_parent_code，为空即真根/无父退自身 ftr.tag_code；严禁退读 parent_codes[0]。
       const targetDimCode =
@@ -244,9 +245,7 @@ export class DatabaseHelper {
     let files: LightweightFileItem[] = []
 
     if (selectedFileIds && selectedFileIds.length > 0) {
-      const cleanIds = selectedFileIds
-        .map(id => Number(id))
-        .filter(id => !Number.isNaN(id))
+      const cleanIds = selectedFileIds.map(id => Number(id)).filter(id => !Number.isNaN(id))
 
       if (cleanIds.length > 0) {
         if (workspaceId !== undefined) {
@@ -273,7 +272,11 @@ export class DatabaseHelper {
             ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
           `
             )
-            .all(...(limit && limit > 0 ? [workspaceId, JSON.stringify(cleanIds), limit] : [workspaceId, JSON.stringify(cleanIds)])) as LightweightFileItem[]
+            .all(
+              ...(limit && limit > 0
+                ? [workspaceId, JSON.stringify(cleanIds), limit]
+                : [workspaceId, JSON.stringify(cleanIds)])
+            ) as LightweightFileItem[]
         } else {
           // workspaceId 无法从路径匹配时，直接基于全局唯一主键 cleanIds 查询，避免反斜杠 LIKE 导致查空
           files = this.db
@@ -298,7 +301,11 @@ export class DatabaseHelper {
             ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
           `
             )
-            .all(...(limit && limit > 0 ? [JSON.stringify(cleanIds), limit] : [JSON.stringify(cleanIds)])) as LightweightFileItem[]
+            .all(
+              ...(limit && limit > 0
+                ? [JSON.stringify(cleanIds), limit]
+                : [JSON.stringify(cleanIds)])
+            ) as LightweightFileItem[]
         }
       }
     } else if (workspaceId !== undefined) {
@@ -324,7 +331,9 @@ export class DatabaseHelper {
         ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
       `
         )
-        .all(...(limit && limit > 0 ? [workspaceId, limit] : [workspaceId])) as LightweightFileItem[]
+        .all(
+          ...(limit && limit > 0 ? [workspaceId, limit] : [workspaceId])
+        ) as LightweightFileItem[]
     } else {
       const sep = path.sep
       const prefix = workspacePath.endsWith(sep) ? workspacePath : workspacePath + sep
@@ -350,7 +359,11 @@ export class DatabaseHelper {
         ORDER BY wf.path ASC${limit && limit > 0 ? ' LIMIT ?' : ''}
       `
         )
-        .all(...(limit && limit > 0 ? [`${prefix}%`, workspacePath, limit] : [`${prefix}%`, workspacePath])) as LightweightFileItem[]
+        .all(
+          ...(limit && limit > 0
+            ? [`${prefix}%`, workspacePath, limit]
+            : [`${prefix}%`, workspacePath])
+        ) as LightweightFileItem[]
     }
 
     // 附加 dimensionTags：批量读取这批文件的标签，用于批量标签页 tagFileCounts 计数
@@ -392,24 +405,27 @@ export class DatabaseHelper {
         `
         )
         .all(JSON.stringify(fileIds)) as Array<{
-          file_id: number
-          tag_code: string
-          via_parent_code: string
-          code_path: string
-          tag_name: string | null
-        }>
+        file_id: number
+        tag_code: string
+        via_parent_code: string
+        code_path: string
+        tag_name: string | null
+      }>
 
       // 按 file_id 分组，构建 dimensionTags
-      const tagsByFileId = new Map<number, Array<{
-        dimensionId: number | null
-        dimensionCode: string | null
-        rootDimensionCode?: string | null
-        pathCodes?: string[]
-        dimensionName?: string
-        tagValue: string
-        tag: string
-        tagName: string
-      }>>()
+      const tagsByFileId = new Map<
+        number,
+        Array<{
+          dimensionId: number | null
+          dimensionCode: string | null
+          rootDimensionCode?: string | null
+          pathCodes?: string[]
+          dimensionName?: string
+          tagValue: string
+          tag: string
+          tagName: string
+        }>
+      >()
       for (const row of tagRows) {
         if (!tagsByFileId.has(row.file_id)) {
           tagsByFileId.set(row.file_id, [])
@@ -420,7 +436,9 @@ export class DatabaseHelper {
           const rootDimCode = pathCodes[0] || row.via_parent_code || row.tag_code || null
           // 标签直属维度必须优先取 via_parent_code，严禁将视觉等细分维度全部错误回溯到首段根维度（文件类型）
           // [ISS-01] 坚决剔除 row.tag_code 与 tagDimName，严禁让标签值自身反客为主充当维度名与维度码
-          const viaParentDimName = row.via_parent_code ? getCanonicalConceptName(row.via_parent_code) : ''
+          const viaParentDimName = row.via_parent_code
+            ? getCanonicalConceptName(row.via_parent_code)
+            : ''
           const rootDimName = rootDimCode ? getCanonicalConceptName(rootDimCode) : ''
           const canonicalDimName = viaParentDimName || rootDimName || ''
           tagsByFileId.get(row.file_id)!.push({
@@ -504,7 +522,7 @@ export class DatabaseHelper {
         .prepare(
           `
         SELECT id, name, description, filters, parent_id, workspace_id, created_at, updated_at
-        FROM analyzed_directories
+        FROM virtual_directories
         WHERE workspace_id = (SELECT workspace_id FROM workspaces WHERE path = ?)
         ORDER BY created_at DESC
       `

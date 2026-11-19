@@ -272,7 +272,11 @@ export class OrganizeRealDirectoryService {
     selectedFileIds?: number[],
     limit?: number
   ): Promise<LightweightFileItem[]> {
-    return this.databaseHelper.getLightweightWorkspaceFiles(workspaceDirectoryPathOrId, selectedFileIds, limit)
+    return this.databaseHelper.getLightweightWorkspaceFiles(
+      workspaceDirectoryPathOrId,
+      selectedFileIds,
+      limit
+    )
   }
 
   /**
@@ -309,9 +313,10 @@ export class OrganizeRealDirectoryService {
     const virtualDirRoot = path.join(p, '.VirtualDirectory')
     const { existsSync, rmSync } = await import('node:fs')
     if (existsSync(virtualDirRoot)) rmSync(virtualDirRoot, { recursive: true, force: true })
+    // [Issue 04 Step 2] 退役死表 analyzed_directories，统一走创世基线 virtual_directories。
     this.db
       .prepare(
-        'DELETE FROM analyzed_directories WHERE workspace_id = (SELECT workspace_id FROM workspaces WHERE path = ?)'
+        'DELETE FROM virtual_directories WHERE workspace_id = (SELECT workspace_id FROM workspaces WHERE path = ?)'
       )
       .run(p)
   }

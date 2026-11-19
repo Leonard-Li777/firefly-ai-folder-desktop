@@ -25,7 +25,7 @@ import { invitationService } from '../../runtime-services/invitation/invitation-
 import { libreOfficeDetector } from '../../runtime-services/system/libreoffice-detector'
 import { registerFfmpegIpcHandlers } from '../../runtime-services/ipc'
 import { t } from '@app/languages'
-import { coreEngine, fileCleanupService } from '../state'
+import { coreEngine, fileCleanupService, orphanGcScheduler } from '../state'
 import { initializeHardwareDetection as initializeHardwareDetectionFn } from '../initialization'
 import { loadIgnoreRules } from '../../runtime-services/analysis/analysis-ignore-service'
 import {
@@ -397,11 +397,16 @@ export function registerMiscIPCHandlers() {
   // 文件清理相关
   ipcMain.handle('file-cleanup/delete-file', async (event, fileId: string) => {
     if (!fileCleanupService) throw new Error(t('文件清理服务未初始化'))
-    return await fileCleanupService.deleteFileAndCleanup(Number(fileId))
+    const res = await fileCleanupService.deleteFileAndCleanup(Number(fileId))
+    // [Issue 04 Step 1] 删除后防抖触发孤儿指纹两阶段对账（合并连续删除为一次）
+    orphanGcScheduler?.scheduleAfterDelete()
+    return res
   })
   ipcMain.handle('file-cleanup/batch-delete-files', async (event, fileIds: string[]) => {
     if (!fileCleanupService) throw new Error(t('文件清理服务未初始化'))
-    return await fileCleanupService.batchDeleteFiles(fileIds.map(id => Number(id)))
+    const res = await fileCleanupService.batchDeleteFiles(fileIds.map(id => Number(id)))
+    orphanGcScheduler?.scheduleAfterDelete()
+    return res
   })
 
   ipcMain.handle('empty-folder/scan', async (event, workspaceDirectoryPath: string) => {

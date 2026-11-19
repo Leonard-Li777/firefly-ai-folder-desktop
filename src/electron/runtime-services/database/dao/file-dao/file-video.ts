@@ -42,19 +42,70 @@ import { MAX_SEGMENT_ATTEMPTS, type VideoCoverageStats } from './shared'
  * 全部代码自 `file-dao.ts` 原样搬移，未改动任何逻辑、命名或注释措辞。
  */
 export class FileVideoMixin extends FileQueryMixin {
+  /**
+   * [Issue 04 Step 3] 幂等 upsert 写入视频切片元数据。
+   *
+   * 旧实现按指纹「整表 DELETE 后重插」，分段续跑时本次仅携带新段 chunks，
+   * 整表 DELETE 会把 DB 中幸存的前序段 chunks 一并抹掉（FIN-12 / Spec §3.1.C.3）。
+   * 现改为按 (file_fingerprint, chunk_index) 唯一键 upsert：已存在则原地更新，
+   * 不存在的段保持不动，彻底杜绝续跑丢前序 chunks。
+   */
   insertVideoChunks(chunks: VideoChunkRecord[]): void {
     if (!chunks || chunks.length === 0) return
-    const deleteStmt = this.db.prepare(`DELETE FROM file_video_chunks WHERE file_fingerprint = ?`)
+    const upsertStmt = this.db.prepare(`
+      INSERT INTO file_video_chunks (file_fingerprint, chunk_index, start_sec, end_sec, rep_pts_sec, meta, sampling_interval_seconds)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(file_fingerprint, chunk_index) DO UPDATE SET
+        start_sec = excluded.start_sec,
+        end_sec = excluded.end_sec,
+        rep_pts_sec = excluded.rep_pts_sec,
+        meta = excluded.meta,
+        sampling_interval_seconds = excluded.sampling_interval_seconds
+    `)
+    this.db.transaction(() => {
+      for (const c of chunks) {
+        upsertStmt.run(
+          c.fileFingerprint,
+          c.chunkIndex,
+          c.startSec,
+          c.endSec,
+          c.repPtsSec ?? null,
+          typeof c.meta === 'string' ? c.meta : JSON.stringify(c.meta || {}),
+          c.samplingIntervalSeconds ?? 1.0
+        )
+      }
+    })()
+  }
+
+  /**
+   * [Issue 04 Step 3 / FIN-12] 每完成一段，单事务内仅按该段 [startSec, endSec) 区间替换 chunks。
+   *
+   * 先删除落在该段时间窗内的旧切片，再插入本段最新切片，使「分段续跑」在崩溃重启后
+   * 只需重算未完成段，已完成段的 chunks 在 DB 中稳定留存。
+   */
+  replaceVideoChunksInRange(
+    fileFingerprint: string,
+    chunks: VideoChunkRecord[],
+    startSec: number,
+    endSec: number
+  ): void {
+    if (!fileFingerprint) return
+    const deleteStmt = this.db.prepare(
+      `DELETE FROM file_video_chunks
+       WHERE file_fingerprint = ? AND start_sec >= ? AND start_sec < ?`
+    )
     const insertStmt = this.db.prepare(`
       INSERT INTO file_video_chunks (file_fingerprint, chunk_index, start_sec, end_sec, rep_pts_sec, meta, sampling_interval_seconds)
       VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(file_fingerprint, chunk_index) DO UPDATE SET
+        start_sec = excluded.start_sec,
+        end_sec = excluded.end_sec,
+        rep_pts_sec = excluded.rep_pts_sec,
+        meta = excluded.meta,
+        sampling_interval_seconds = excluded.sampling_interval_seconds
     `)
-    // 提取所有涉及的文件指纹
-    const fingerprints = Array.from(new Set(chunks.map(c => c.fileFingerprint)))
     this.db.transaction(() => {
-      for (const fp of fingerprints) {
-        deleteStmt.run(fp)
-      }
+      deleteStmt.run(fileFingerprint, startSec, endSec)
       for (const c of chunks) {
         insertStmt.run(
           c.fileFingerprint,

@@ -116,7 +116,7 @@ export class TagUnitDao {
       .prepare(
         `
       SELECT u.* FROM file_units u
-      JOIN file_unit_relations r ON r.file_id = u.id
+      JOIN file_unit_relations r ON r.unit_id = u.id
       WHERE r.file_id = ?
     `
       )
@@ -205,7 +205,9 @@ export class TagUnitDao {
         WHERE ftr.file_fingerprint = ?
       `
         )
-        .all(fileFingerprint) as Array<{ name: string | null; code: string; parent_codes: string | null } & Record<string, unknown>>
+        .all(fileFingerprint) as Array<
+        { name: string | null; code: string; parent_codes: string | null } & Record<string, unknown>
+      >
       // 云端 `file_tags_private.parent_codes` 为 JSONB（数组），本地列是 TEXT（JSON 字符串）。
       // 为兑现「与云端 RPC 同形」契约，此处统一解析为数组；解析失败退回 `[]`（与列默认值一致）。
       const targetLocale =

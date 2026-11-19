@@ -8,7 +8,14 @@ import {
   DirectoryReorganizeResult,
   AIDirectoryStructure
 } from '@firefly/types'
-import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, SENTINEL_NAMES, getCanonicalConceptName } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  sanitizeDirectoryName,
+  HAC_FEATURE_FLAGS,
+  SENTINEL_NAMES,
+  getCanonicalConceptName
+} from '@firefly/shared'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 import { t } from '@app/languages'
@@ -25,7 +32,6 @@ import { TreeBuilder } from './TreeBuilder'
 import { Exporter } from './Exporter'
 import { AISchemeGenerator } from './AISchemeGenerator'
 import { ClusteringMode } from '../../system/omni-service'
-import { PreviewTreeExporter } from './PreviewTreeExporter'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 
 export class VirtualDirectoryService {
@@ -39,7 +45,6 @@ export class VirtualDirectoryService {
   private _treeBuilder: TreeBuilder | null = null
   private _exporter: Exporter | null = null
   private _aiSchemeGenerator: AISchemeGenerator | null = null
-  private _previewTreeExporter: PreviewTreeExporter | null = null
 
   private _customDb = false
 
@@ -75,7 +80,6 @@ export class VirtualDirectoryService {
     this._treeBuilder = new TreeBuilder(this)
     this._exporter = new Exporter(this)
     this._aiSchemeGenerator = new AISchemeGenerator(this)
-    this._previewTreeExporter = new PreviewTreeExporter(this)
   }
 
   public get db(): Database.Database {
@@ -110,7 +114,6 @@ export class VirtualDirectoryService {
     this._treeBuilder = null
     this._exporter = null
     this._aiSchemeGenerator = null
-    this._previewTreeExporter = null
     this._initialized = false
   }
 
@@ -134,7 +137,7 @@ export class VirtualDirectoryService {
       vd.created_at AS createdAt, 
       vd.updated_at AS updatedAt,
       (SELECT COUNT(1) FROM virtual_directory_files vdf WHERE vdf.virtual_directory_id = vd.id AND vdf.relative_path NOT LIKE '%.keep') AS fileCount,
-      (SELECT COUNT(1) FROM virtual_directory_files vdf WHERE vdf.virtual_directory_id = vd.id AND vdf.relative_path NOT LIKE '%.keep' AND (vdf.relative_path = '未归类' OR vdf.relative_path LIKE '未归类/%' OR vdf.relative_path LIKE '未归类\\%')) AS unclassifiedCount
+      (SELECT COUNT(1) FROM virtual_directory_files vdf WHERE vdf.virtual_directory_id = vd.id AND vdf.relative_path NOT LIKE '%.keep' AND (vdf.relative_path = '${UNCLASSIFIED_NAME}' OR vdf.relative_path LIKE '${UNCLASSIFIED_NAME}/%' OR vdf.relative_path LIKE '${UNCLASSIFIED_NAME}\\%')) AS unclassifiedCount
     `
 
     const draftFilter = options?.includeDrafts ? '' : "(vd.source IS NULL OR vd.source != 'draft')"
@@ -254,7 +257,7 @@ export class VirtualDirectoryService {
       vd.created_at AS createdAt, 
       vd.updated_at AS updatedAt,
       (SELECT COUNT(1) FROM virtual_directory_files vdf WHERE vdf.virtual_directory_id = vd.id AND vdf.relative_path NOT LIKE '%.keep') AS fileCount,
-      (SELECT COUNT(1) FROM virtual_directory_files vdf WHERE vdf.virtual_directory_id = vd.id AND vdf.relative_path NOT LIKE '%.keep' AND (vdf.relative_path = '未归类' OR vdf.relative_path LIKE '未归类/%' OR vdf.relative_path LIKE '未归类\\%')) AS unclassifiedCount
+      (SELECT COUNT(1) FROM virtual_directory_files vdf WHERE vdf.virtual_directory_id = vd.id AND vdf.relative_path NOT LIKE '%.keep' AND (vdf.relative_path = '${UNCLASSIFIED_NAME}' OR vdf.relative_path LIKE '${UNCLASSIFIED_NAME}/%' OR vdf.relative_path LIKE '${UNCLASSIFIED_NAME}\\%')) AS unclassifiedCount
     `
     return (
       (this.db
@@ -474,11 +477,17 @@ export class VirtualDirectoryService {
   async getVirtualDirectoryFileCount(virtualDirectoryId: number | string): Promise<number> {
     try {
       const row = this.db
-        .prepare('SELECT COUNT(*) as count FROM virtual_directory_files WHERE virtual_directory_id = ?')
+        .prepare(
+          'SELECT COUNT(*) as count FROM virtual_directory_files WHERE virtual_directory_id = ?'
+        )
         .get(virtualDirectoryId) as { count: number } | undefined
       return row?.count ?? 0
     } catch (error) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, 'Failed to get virtual directory file count:', error)
+      logger.error(
+        LogCategory.VIRTUAL_DIRECTORY,
+        'Failed to get virtual directory file count:',
+        error
+      )
       return 0
     }
   }
@@ -576,7 +585,7 @@ export class VirtualDirectoryService {
               normalizedTags = JSON.stringify(
                 arr.map(item => {
                   if (item && item.includes('.')) {
-                    return getCanonicalConceptName(item) || (item.split('.').pop() || item)
+                    return getCanonicalConceptName(item) || item.split('.').pop() || item
                   }
                   return item
                 })
@@ -760,9 +769,7 @@ export class VirtualDirectoryService {
         }
 
         const isUnclassNode =
-          nodeName === UNCLASSIFIED_NAME ||
-          nodeName === '未归类' ||
-          Boolean((node as any).isUnclassified)
+          nodeName === UNCLASSIFIED_NAME || Boolean((node as any).isUnclassified)
 
         if (!hasFiles && !hasSubs && anyFile && !isUnclassNode) {
           const relPath = `${dirPath}/.keep`
@@ -795,7 +802,7 @@ export class VirtualDirectoryService {
       if (!fid || retainedFileIds.has(fid)) continue
       const fileName = row.relative_path ? path.basename(row.relative_path) : ''
       if (!fileName || fileName === '.keep') continue
-      const relPath = `未归类/${fileName}`
+      const relPath = `${UNCLASSIFIED_NAME}/${fileName}`
       const key = `${fid}::${relPath}`
       if (!seenMap.has(key)) {
         seenMap.add(key)
@@ -950,7 +957,7 @@ export class VirtualDirectoryService {
     return this._aiSchemeGenerator!.checkIsLimitPredict()
   }
 
-  /** 
+  /**
    * 基于端侧 384d 密集向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633)
    */
   async generateHACClusterScheme(
@@ -1000,22 +1007,6 @@ export class VirtualDirectoryService {
     return this._aiSchemeGenerator!.estimateReorganizeBatches(virtualDirectoryId, options)
   }
 
-  // ─── 预览树导出 (兼容旧集成测试) ────────────────────────────────────────────────────
-  async generateFromPreviewTree(
-    workspaceDirectoryPath: string,
-    directoryTree: any[],
-    tagFileMap: Map<string, any[]>,
-    options: any
-  ): Promise<any> {
-    this.ensureInitialized()
-    return this._previewTreeExporter!.generateFromPreviewTree(
-      workspaceDirectoryPath,
-      directoryTree,
-      tagFileMap,
-      options
-    )
-  }
-
   public async copyReadmeFile(virtualDirPath: string): Promise<void> {
     return copyReadmeFile(virtualDirPath)
   }
@@ -1035,7 +1026,9 @@ export class VirtualDirectoryService {
     return this._tagTreeQuery!.getFilteredFiles(params)
   }
 
-  async getFilteredFilesPaged(params: any): Promise<import('@firefly/types').FilteredFilesResponse> {
+  async getFilteredFilesPaged(
+    params: any
+  ): Promise<import('@firefly/types').FilteredFilesResponse> {
     this.ensureInitialized()
     return this._tagTreeQuery!.getFilteredFilesPaged(params)
   }
@@ -1059,10 +1052,8 @@ export class VirtualDirectoryService {
 
   async batchSaveDirectories(directories: any[], workspaceDirectoryPath: string) {
     this.ensureInitialized()
-    return this._persistenceManager!.batchSaveDirectories(
-      directories,
-      workspaceDirectoryPath,
-      d => this._persistenceManager!.saveDirectory(d, workspaceDirectoryPath)
+    return this._persistenceManager!.batchSaveDirectories(directories, workspaceDirectoryPath, d =>
+      this._persistenceManager!.saveDirectory(d, workspaceDirectoryPath)
     )
   }
 

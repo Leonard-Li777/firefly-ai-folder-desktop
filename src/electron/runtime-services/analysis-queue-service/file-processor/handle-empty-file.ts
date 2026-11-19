@@ -6,6 +6,7 @@ import { t } from '@app/languages'
 import { SYSTEM_TAG_NAMES } from '../../../adapters/tag-tree-view-adapter'
 import fs from 'node:fs'
 import path from 'node:path'
+import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 
 /**
  * 处理空文件
@@ -48,7 +49,7 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
     new Date(stats.atime).toISOString()
   )
   db.prepare(
-    `INSERT OR IGNORE INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at, is_analyzed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT OR IGNORE INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at, is_analyzed, file_size, mtime_ms, is_ignored) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     emptyHash,
     workspaceId,
@@ -58,7 +59,10 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
     new Date(stats.birthtime).toISOString(),
     new Date(stats.mtime).toISOString(),
     new Date(stats.atime).toISOString(),
-    0
+    0,
+    stats?.size ?? 0,
+    Math.trunc(stats?.mtimeMs ?? Date.now()),
+    shouldIgnoreFile(filePath, fileName, loadIgnoreRules()) ? 1 : 0
   )
 
   const wf = db

@@ -98,16 +98,6 @@ export const organizeApi = {
     }) => ipcRenderer.invoke('virtual-directory/export-by-preview-tree', params),
     retryFailedExport: (params: { failedOperations: Array<{ source: string; target: string }> }) =>
       ipcRenderer.invoke('virtual-directory/retry-failed-export', params),
-    generateFromPreviewTree: (params: {
-      workspaceDirectoryPath: string
-      directoryTree: any[]
-      tagFileMap: any
-      options: {
-        flattenToRoot: boolean
-        skipEmptyDirectories: boolean
-        enableNestedClassification: boolean
-      }
-    }) => ipcRenderer.invoke('analyzed-directory/generate-from-preview-tree', params),
     generateNameAndStrategyCandidates: (
       workspaceId: number,
       count?: number,
@@ -293,16 +283,6 @@ export const organizeApi = {
         directories,
         workspaceDirectoryPath
       ),
-    generateFromPreviewTree: (params: {
-      workspaceDirectoryPath: string
-      directoryTree: any[]
-      tagFileMap: any
-      options: {
-        flattenToRoot: boolean
-        skipEmptyDirectories: boolean
-        enableNestedClassification: boolean
-      }
-    }) => ipcRenderer.invoke('analyzed-directory/generate-from-preview-tree', params),
     getSavedDirectories: (workspaceDirectoryPath?: string) =>
       ipcRenderer.invoke('analyzed-directory/get-saved-directories', workspaceDirectoryPath),
     deleteDirectory: (id: string, workspaceDirectoryPath?: string) =>

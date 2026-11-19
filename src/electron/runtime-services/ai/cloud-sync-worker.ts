@@ -1,4 +1,10 @@
-import { LogCategory, logger, safeTruncateUtf8Bytes, sanitizeObject, toUTCString } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  safeTruncateUtf8Bytes,
+  sanitizeObject,
+  toUTCString
+} from '@firefly/shared'
 import { net, powerMonitor } from 'electron'
 
 import { cloudAnalysisService } from '@firefly/server'
@@ -273,7 +279,7 @@ export class CloudSyncWorker {
             provider: c.provider,
             latency_ms: c.latency_ms,
             file_fingerprint: c.file_fingerprint,
-            created_at: toUTCString(c.created_at)
+            created_at: new Date(c.created_at_ms).toISOString()
           }))
 
           await cloudAnalysisService.batchSync({ memory_cache: sanitizeObject(payload) }, language)
@@ -286,6 +292,18 @@ export class CloudSyncWorker {
           logger.info(
             LogCategory.SUPABASE,
             `CloudSyncWorker: 已同步并清理 ${pendingMemoryCache.length} 条微调数据`
+          )
+        }
+
+        // Issue 05 Step 4：memory_cache 7 天 TTL 清理（同步失败残留的过期缓存）
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+        const ttlResult = db
+          .prepare('DELETE FROM memory_cache WHERE created_at_ms < ? AND sync_status != 1')
+          .run(sevenDaysAgo)
+        if (ttlResult.changes > 0) {
+          logger.info(
+            LogCategory.SUPABASE,
+            `CloudSyncWorker: 已清理 ${ttlResult.changes} 条 7 天过期微调缓存（TTL）`
           )
         }
       } catch (cacheError) {
@@ -436,7 +454,9 @@ export class CloudSyncWorker {
           via_parent_code: link.via_parent_code || '',
           code_path:
             link.code_path ||
-            (link.via_parent_code ? `/${link.via_parent_code}/${link.tag_code}` : `/${link.tag_code}`),
+            (link.via_parent_code
+              ? `/${link.via_parent_code}/${link.tag_code}`
+              : `/${link.tag_code}`),
           depth: link.depth ?? 1,
           tag_group: link.tag_group || '',
           confidence: this.ensureReal(link.confidence, 1.0),

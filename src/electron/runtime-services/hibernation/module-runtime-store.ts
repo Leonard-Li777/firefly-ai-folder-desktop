@@ -205,17 +205,18 @@ export class ModuleRuntimeStore implements IModuleRuntimeStore {
       throw new Error('Database not initialized for persistBlockedUnloadGate')
     }
 
+    const nowMs = Date.now()
     const identityJson = identity ? JSON.stringify(identity) : null
     const stmt = this.db.prepare(`
       INSERT INTO module_runtime_snapshots (
-        target_id, state, blocked_unload_no_handle, blocked_unload_identity, updated_at
-      ) VALUES (?, 'hibernated', ?, ?, CURRENT_TIMESTAMP)
+        target_id, state, blocked_unload_no_handle, blocked_unload_identity, updated_at_ms
+      ) VALUES (?, 'hibernated', ?, ?, ?)
       ON CONFLICT(target_id) DO UPDATE SET
         blocked_unload_no_handle = excluded.blocked_unload_no_handle,
         blocked_unload_identity = excluded.blocked_unload_identity,
-        updated_at = CURRENT_TIMESTAMP
+        updated_at_ms = excluded.updated_at_ms
     `)
-    stmt.run(targetId, blocked, identityJson)
+    stmt.run(targetId, blocked, identityJson, nowMs)
 
     // SQLite 事务成功后，方才同步更新内存缓存（SSOT 对称原则）
     const entry = this.get(targetId)
@@ -235,8 +236,8 @@ export class ModuleRuntimeStore implements IModuleRuntimeStore {
     const stmt = this.db.prepare(`
       INSERT INTO module_runtime_snapshots (
         target_id, state, model_generation, resident_bytes, last_released_bytes,
-        crash_streak, unload_fail_streak, blocked_unload_no_handle, blocked_unload_identity, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        crash_streak, unload_fail_streak, blocked_unload_no_handle, blocked_unload_identity, updated_at_ms
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(target_id) DO UPDATE SET
         state = excluded.state,
         model_generation = excluded.model_generation,
@@ -246,7 +247,7 @@ export class ModuleRuntimeStore implements IModuleRuntimeStore {
         unload_fail_streak = excluded.unload_fail_streak,
         blocked_unload_no_handle = excluded.blocked_unload_no_handle,
         blocked_unload_identity = excluded.blocked_unload_identity,
-        updated_at = CURRENT_TIMESTAMP
+        updated_at_ms = excluded.updated_at_ms
     `)
 
     stmt.run(
@@ -258,7 +259,8 @@ export class ModuleRuntimeStore implements IModuleRuntimeStore {
       entry.crashStreak,
       entry.unloadFailStreak,
       entry.blockedUnloadNoHandle,
-      identityJson
+      identityJson,
+      Date.now()
     )
   }
 

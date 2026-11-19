@@ -989,9 +989,10 @@ export class LocalWorkflowDao implements ILocalWorkflowDAO {
   }
 
   getAll(): LocalWorkflowRecord[] {
+    // Issue 05 Step 4：列表查剥离 icon_svg / preview_tree 大字段（仅详情 getById 读取完整记录）
     const rows = this.db
       .prepare(
-        'SELECT id, user_id, author, name, version, persona, category, summary, source, status, workspace_config, naming_pattern, naming_template, preset_directory_tree, preview_tree, icon_svg, created_at, modified_at FROM local_workflows ORDER BY created_at DESC'
+        'SELECT id, user_id, author, name, version, persona, category, summary, source, status, workspace_config, naming_pattern, naming_template, preset_directory_tree, created_at, modified_at FROM local_workflows ORDER BY created_at DESC'
       )
       .all() as LocalWorkflowRecord[]
 

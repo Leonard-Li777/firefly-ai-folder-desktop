@@ -20,6 +20,7 @@ import { engineBridgeService } from '../../engine-bridge'
 import { databaseService } from '../../database/database-service'
 import fs from 'node:fs'
 import path from 'node:path'
+import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 
 /**
  * 将本地分析结果持久化到数据库
@@ -130,13 +131,16 @@ export async function saveLocalAnalysisResult(
     `
     INSERT INTO workspace_files (
       file_fingerprint, workspace_id, directory_id, path, name,
-      created_at, modified_at, accessed_at, is_analyzed
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      created_at, modified_at, accessed_at, is_analyzed,
+      file_size, mtime_ms, is_ignored
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(workspace_id, path) DO UPDATE SET
       file_fingerprint = excluded.file_fingerprint,
       is_analyzed = excluded.is_analyzed,
       modified_at = excluded.modified_at,
-      accessed_at = ?
+      accessed_at = ?,
+      file_size = CASE WHEN excluded.file_size = 0 THEN workspace_files.file_size ELSE excluded.file_size END,
+      mtime_ms = CASE WHEN excluded.mtime_ms = 0 THEN workspace_files.mtime_ms ELSE excluded.mtime_ms END
   `
   ).run(
     fileFingerprint,
@@ -148,7 +152,10 @@ export async function saveLocalAnalysisResult(
     new Date(stats.mtime).toISOString(),
     new Date(stats.atime).toISOString(),
     isAnalyzed ? 1 : 0,
-    new Date().toISOString()
+    new Date().toISOString(),
+    stats?.size ?? 0,
+    Math.trunc(stats?.mtimeMs ?? Date.now()),
+    shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0
   )
 
   const workspaceFile = db

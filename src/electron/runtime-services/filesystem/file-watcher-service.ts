@@ -390,7 +390,11 @@ class FileWatcherService {
       )
 
       // 3. 读取数据库记录（仅当前层级，不获取子目录文件）
-      const dbFiles = await databaseService.getFilesByParentPath(dirPath, workspace.id)
+      // SC-2：改走零 LEFT JOIN files 的专用覆盖索引查询（idx_wf_diff_cover），
+      //       根治未分析文件（file_fingerprint IS NULL）因 files.size 为空而恒误判重扫的 Bug。
+      //       先幂等解析当前目录 directory_id（addDirectory 已存在则复用）。
+      const dirRecordId = await databaseService.addDirectory(dirPath, workspace.id)
+      const dbFiles = await databaseService.getWorkspaceFilesForDiffScan(workspace.id, dirRecordId)
       const dbFileMap = new Map<string, any>()
       for (const file of dbFiles) {
         dbFileMap.set(file.path, file)
@@ -410,11 +414,20 @@ class FileWatcherService {
           filesToAdd.push({ filePath, stats })
           added++
         } else {
-          // 检查修改
-          const timeDiff = Math.abs(
-            new Date(dbFile.modifiedAt || 0).getTime() - stats.mtime.getTime()
-          )
-          if (timeDiff > 1000 || dbFile.size !== stats.size) {
+          // SC-2：增量 diff 改用预计算列 wf.file_size + wf.mtime_ms（零依赖 files 表）。
+          // 仅当老行 mtime_ms === 0（切片A 前遗留）时回退 modified_at 比对，杜绝未分析文件恒重扫。
+          let changed: boolean
+          if (dbFile.mtime_ms === 0) {
+            const timeDiff = Math.abs(
+              new Date(dbFile.modified_at || 0).getTime() - stats.mtime.getTime()
+            )
+            changed = timeDiff > 1000 || dbFile.file_size !== stats.size
+          } else {
+            changed =
+              dbFile.file_size !== stats.size ||
+              Math.abs(dbFile.mtime_ms - Math.trunc(stats.mtimeMs)) > 1000
+          }
+          if (changed) {
             await this.handleFileChanged(
               workspace.id,
               dirPath,
@@ -429,7 +442,10 @@ class FileWatcherService {
 
       // 批量将新增文件写入数据库
       if (filesToAdd.length > 0) {
-        logger.debug(LogCategory.FILE_WATCHER, `开始批量将 ${filesToAdd.length} 个文件写入数据库...`)
+        logger.debug(
+          LogCategory.FILE_WATCHER,
+          `开始批量将 ${filesToAdd.length} 个文件写入数据库...`
+        )
         await databaseService.addFilesFromPathsBatch(filesToAdd, workspace.id)
         logger.debug(LogCategory.FILE_WATCHER, `批量写入数据库完成`)
       }
@@ -542,7 +558,10 @@ class FileWatcherService {
       const isAutoWatchActive = (autoWatchEnabled ?? true) && !this.isAutoWatchMuted(workspaceId)
       if (isAutoWatchActive) {
         if (!workspaceAdmissionService.shouldAdmitFile(workspaceId, filePath, false)) {
-          logger.debug(LogCategory.FILE_WATCHER, `新增文件未通过准入规则，跳过分析队列: ${filePath}`)
+          logger.debug(
+            LogCategory.FILE_WATCHER,
+            `新增文件未通过准入规则，跳过分析队列: ${filePath}`
+          )
         } else {
           const fileRecord = await databaseService.getFileByPath(filePath)
           if (fileRecord && fileRecord.isAnalyzed) {
@@ -563,7 +582,10 @@ class FileWatcherService {
               false
             )
 
-            logger.debug(LogCategory.FILE_WATCHER, `[自动监听] 实时新增文件已加入分析队列: ${filePath}`)
+            logger.debug(
+              LogCategory.FILE_WATCHER,
+              `[自动监听] 实时新增文件已加入分析队列: ${filePath}`
+            )
           }
         }
       }
@@ -674,7 +696,10 @@ class FileWatcherService {
               true
             )
 
-            logger.debug(LogCategory.FILE_WATCHER, `[自动监听] 实时修改文件已重新加入分析队列: ${filePath}`)
+            logger.debug(
+              LogCategory.FILE_WATCHER,
+              `[自动监听] 实时修改文件已重新加入分析队列: ${filePath}`
+            )
           }
         }
       }

@@ -36,8 +36,7 @@ import {
   findTagCodeTwoStage,
   getDatabaseConfig,
   migrations,
-  registerDatabaseFunctions,
-  resolveTagAliasesLangTable
+  registerDatabaseFunctions
 } from '.././database'
 import { omniClient } from '../../../services/omni-client'
 
@@ -54,7 +53,6 @@ import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { ConfigDbManager } from '../../config/config-db-manager'
-
 
 /**
  * DatabaseService 迁移执行 mixin（Ticket 07）。
@@ -102,7 +100,6 @@ export class DatabaseMigrationMixin extends DatabaseSharedBase {
       throw error
     }
   }
-
 
   /**
    * 带备份的迁移流程
@@ -363,5 +360,4 @@ export class DatabaseMigrationMixin extends DatabaseSharedBase {
       app.exit(1)
     }
   }
-
 }

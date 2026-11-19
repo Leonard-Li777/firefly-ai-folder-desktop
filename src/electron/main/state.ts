@@ -5,6 +5,7 @@ import { VirtualDirectoryService } from '../runtime-services/filesystem/virtual-
 import { DirectoryContextService } from '../runtime-services/filesystem/directory-context-service'
 import { OrganizeRealDirectoryService } from '../runtime-services/filesystem/organize-real-directory-service/index'
 import { FileCleanupService } from '../runtime-services/filesystem/file-cleanup-service'
+import type { OrphanGcScheduler } from './orphan-gc-scheduler'
 
 // Global service instances
 export let globalLlamaIndexService: ILlamaIndexAIService | null = null
@@ -33,6 +34,12 @@ export function setOrganizeRealDirectoryService(service: OrganizeRealDirectorySe
 export let fileCleanupService: FileCleanupService | null = null
 export function setFileCleanupService(service: FileCleanupService | null) {
   fileCleanupService = service
+}
+
+// [Issue 04 Step 1] 孤儿指纹 GC 调度器（两阶段对账触发时机编排）
+export let orphanGcScheduler: OrphanGcScheduler | null = null
+export function setOrphanGcScheduler(scheduler: OrphanGcScheduler | null) {
+  orphanGcScheduler = scheduler
 }
 
 // State and caches
