@@ -209,6 +209,9 @@ export class UserTierService {
     const tierConstants = this.getTierConstants()
     const isCloudFirst = tierConstants.firecoreCloudFirstConfirm?.[type] === true
 
+    // 防重键在确定性拒绝时立即释放，避免 5 秒内重试被误判为「操作已完成」
+    const releaseDedup = () => this.recentSpendTxIds.delete(dedupKey)
+
     if (isCloudFirst && this.getDataManager().isOnline()) {
       try {
         logger.debug(LogCategory.SYSTEM, '[DEBUG-SPEND]云优先路径: 调用RPC, txId=%s', txId)
@@ -236,13 +239,14 @@ export class UserTierService {
               id: txId,
               metadata: { ...metadata, workspaceId: scope, __rollback: true }
             })
+            releaseDedup()
             return localResult
           }
           const db = databaseService.db
           if (db) {
             db.prepare(
-              `UPDATE pending_firecore_operations SET status = 'completed', synced_at = ? WHERE id = ?`
-            ).run(new Date().toISOString(), txId)
+              `UPDATE pending_firecore_operations SET status = 'completed', updated_at = ? WHERE id = ?`
+            ).run(Date.now(), txId)
             logger.debug(
               LogCategory.SYSTEM,
               '[DEBUG-SPEND]云优先路径: pending已更新为completed, txId=%s',
@@ -253,82 +257,65 @@ export class UserTierService {
             logger.error(LogCategory.SYSTEM, '[UserTierService] 后台同步失败:', err)
           })
           return { success: true }
-        } else {
-          return { success: false, message: result.message || t('云端执行失败') }
         }
-      } catch (error) {
-        logger.error(
-          LogCategory.SYSTEM,
-          'spendFirecores 云端执行网络异常，回退本地乐观更新:',
-          error
-        )
-        // 网络异常时，直接走本地优先路径
-        // 注意：不要 return，继续执行下面的本地优先路径
-      }
-    }
-
-    // 1. 本地扣减与暂存
-    logger.debug(
-      LogCategory.SYSTEM,
-      '[DEBUG-SPEND]本地优先路径: spendFirecoresLocal, txId=%s, firecores=%d',
-      txId,
-      firecores
-    )
-    const localResult = await this.getDataManager().spendFirecoresLocal(
-      firecores,
-      type,
-      metadata,
-      txId
-    )
-    if (!localResult.success) {
-      logger.warn(LogCategory.SYSTEM, '[DEBUG-SPEND]本地扣减失败: %s', localResult.message)
-      return localResult
-    }
-    logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]本地扣减成功')
-
-    // 2. 异步上报云端 (如果在线)
-    if (this.getDataManager().isOnline()) {
-      try {
-        logger.debug(LogCategory.SYSTEM, '[DEBUG-SPEND]调用云端RPC, txId=%s', txId)
-        const result = await this.getTierService().spendFirecores(machineId, {
-          type,
-          id: txId,
-          metadata: { ...metadata, workspaceId: scope }
-        })
-        logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]云端RPC结果: success=%s', result.success)
-        if (result.success) {
-          // 云端成功，直接将本地 pending 转为 completed
-          const db = databaseService.db
-          if (db) {
-            db.prepare(
-              `UPDATE pending_firecore_operations SET status = 'completed', synced_at = ? WHERE id = ?`
-            ).run(new Date().toISOString(), txId)
-            logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]pending已更新为completed, txId=%s', txId)
-          }
-          // 异步刷新缓存并通知
-          this.syncLocalCacheAndNotify(machineId).catch(err => {
-            logger.error(LogCategory.SYSTEM, '[UserTierService] 后台同步失败:', err)
-          })
-          return { success: true }
-        } else {
-          // 云端业务失败 (例如余额不足)，本地回滚
+        if (result.errorCode) {
+          // 确定性业务拒绝（INSUFFICIENT_FIRECORES / ACCOUNT_LOCKED 等）：
+          // 不入离线队列、不重试，本地回滚置终态，明确返回失败。
           logger.warn(
             LogCategory.SYSTEM,
-            '[DEBUG-SPEND]云端RPC业务失败，回滚本地: %s',
+            '[DEBUG-SPEND]云端业务拒绝(%s)，不入队并回滚本地, txId=%s: %s',
+            result.errorCode,
+            txId,
             result.message
           )
           await this.rollbackLocal(txId)
+          releaseDedup()
           return { success: false, message: result.message || t('云端执行失败') }
         }
+        // 云端响应失败但无 errorCode：传输层瞬态，按原 txId 入队并允许立即二次上报
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DEBUG-SPEND]云端瞬态失败（无 errorCode），转离线入队, txId=%s: %s',
+          txId,
+          result.message
+        )
       } catch (error) {
-        logger.error(LogCategory.SYSTEM, 'spendFirecores 云端执行网络异常，转为离线模式:', error)
-        // 网络异常，本地保持 pending，但直接返回成功允许使用！
-        return { success: true }
+        // 错误三分类：超时(结果未知)/明确未送达一律保留原 txId 入 pending，绝不新建 UUID；
+        // 结果未知场景不立即二次上报，交 replayOfflineQueue 幂等重放（云端按 p_client_op_id 去重）。
+        const category = this.classifyNetworkError(error)
+        logger.warn(
+          LogCategory.SYSTEM,
+          'spendFirecores 云优先上报异常(%s)，原 txId 入 pending, txId=%s:',
+          category,
+          txId,
+          error
+        )
+        const queued = await this.enqueueOfflineSpend({
+          firecores,
+          type,
+          metadata,
+          txId,
+          machineId,
+          scope,
+          immediateReport: false
+        })
+        if (!queued.success) releaseDedup()
+        return queued
       }
     }
 
-    // 离线模式：由于本地已成功写入 pending，直接返回 success: true 允许进入离线流程！
-    return { success: true }
+    // 本地优先 / 离线路径：始终复用方法开头生成的原 txId，绝不新建 UUID。
+    const queued = await this.enqueueOfflineSpend({
+      firecores,
+      type,
+      metadata,
+      txId,
+      machineId,
+      scope,
+      immediateReport: true
+    })
+    if (!queued.success) releaseDedup()
+    return queued
   }
 
   async rollbackLocal(operationId: string): Promise<void> {
@@ -391,6 +378,122 @@ export class UserTierService {
 
   private getDeterministicUUID(): string {
     return require('crypto').randomUUID()
+  }
+
+  /**
+   * 传输层错误三分类（严禁按中文 message 匹配，只读结构化 code / name / HTTP status）：
+   * - timeout：请求已发出、结果未知（超时 / 连接中断 / 管道破裂）。必须保留原 txId 入 pending，
+   *   绝不新建 UUID 重复扣减，交 replayOfflineQueue 幂等重放；
+   * - offline：明确未送达（DNS 失败 / 连接拒绝 / 网关 502/503/504），同样原 txId 入 pending 乐观放行；
+   * - unknown：其余异常，按「结果未知」保守处理，不立即二次上报。
+   */
+  private classifyNetworkError(err: any): 'timeout' | 'offline' | 'unknown' {
+    const code = String(err?.code ?? err?.name ?? '').toUpperCase()
+    const status = Number(err?.status ?? err?.response?.status ?? err?.statusCode ?? 0)
+    if (
+      code === 'ETIMEDOUT' ||
+      code === 'ABORTERROR' ||
+      code === 'ECONNRESET' ||
+      code === 'EPIPE'
+    ) {
+      return 'timeout'
+    }
+    if (
+      code === 'ENOTFOUND' ||
+      code === 'ECONNREFUSED' ||
+      code === 'EAI_AGAIN' ||
+      status === 502 ||
+      status === 503 ||
+      status === 504
+    ) {
+      return 'offline'
+    }
+    return 'unknown'
+  }
+
+  /**
+   * 离线乐观入队：以原 txId 走 core-engine spendFirecoresLocal 写入 pending（amount_delta<0），
+   * 严禁在 desktop 侧另写 INSERT 绕过 core-engine。
+   * - immediateReport=true：联网时以同一 txId 立即二次上报（云端按 p_client_op_id 幂等去重）；
+   * - immediateReport=false：结果未知（超时/断网）场景不立即重发，保留 pending 交回放链。
+   */
+  private async enqueueOfflineSpend(params: {
+    firecores: number
+    type: FirecoreOperationType
+    metadata?: Record<string, any>
+    txId: string
+    machineId: string
+    scope: number | null
+    immediateReport: boolean
+  }): Promise<{ success: boolean; message?: string }> {
+    const { firecores, type, metadata, txId, machineId, scope, immediateReport } = params
+    const localResult = await this.getDataManager().spendFirecoresLocal(
+      firecores,
+      type,
+      metadata,
+      txId
+    )
+    if (!localResult.success) {
+      logger.warn(LogCategory.SYSTEM, '[DEBUG-SPEND]本地扣减失败: %s', localResult.message)
+      return localResult
+    }
+    logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]本地扣减成功，已入 pending, txId=%s', txId)
+
+    if (!immediateReport || !this.getDataManager().isOnline()) {
+      // 离线或结果未知：pending 保留，乐观放行，不阻塞分析/整理操作
+      return { success: true }
+    }
+
+    try {
+      const result = await this.getTierService().spendFirecores(machineId, {
+        type,
+        id: txId,
+        metadata: { ...metadata, workspaceId: scope }
+      })
+      if (result.success) {
+        const db = databaseService.db
+        if (db) {
+          db.prepare(
+            `UPDATE pending_firecore_operations SET status = 'completed', updated_at = ? WHERE id = ?`
+          ).run(Date.now(), txId)
+          logger.info(LogCategory.SYSTEM, '[DEBUG-SPEND]pending已更新为completed, txId=%s', txId)
+        }
+        this.syncLocalCacheAndNotify(machineId).catch(err => {
+          logger.error(LogCategory.SYSTEM, '[UserTierService] 后台同步失败:', err)
+        })
+        return { success: true }
+      }
+      if (result.errorCode) {
+        // 确定性业务拒绝：不入离线队列，本地回滚置终态，明确返回失败
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[DEBUG-SPEND]云端业务拒绝(%s)，回滚本地: %s',
+          result.errorCode,
+          result.message
+        )
+        await this.rollbackLocal(txId)
+        return { success: false, message: result.message || t('云端执行失败') }
+      }
+      // 无 errorCode：传输层瞬态，pending 保留，乐观放行等待回放
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[DEBUG-SPEND]云端瞬态失败（无 errorCode），保留 pending, txId=%s: %s',
+        txId,
+        result.message
+      )
+      return { success: true }
+    } catch (error) {
+      // 二次上报网络异常：分类上报日志，pending 保留交 replayOfflineQueue 幂等重放
+      const category = this.classifyNetworkError(error)
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[DEBUG-SPEND]二次上报网络异常(%s)，保留 pending, txId=%s:',
+        category,
+        txId,
+        error
+      )
+      return { success: true }
+    }
   }
 
   async fetchAndPushCloudTransactions(machineId: string): Promise<any[]> {
