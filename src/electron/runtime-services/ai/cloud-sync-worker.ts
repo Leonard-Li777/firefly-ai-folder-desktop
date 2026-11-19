@@ -295,10 +295,10 @@ export class CloudSyncWorker {
           )
         }
 
-        // Issue 05 Step 4：memory_cache 7 天 TTL 清理（同步失败残留的过期缓存）
+        // Issue 05 Step 4：memory_cache 7 天 TTL 清理（清理 sync_status IN (2, 3) 已同步/失败残留行，保护 0-待同步 与 1-同步中）
         const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
         const ttlResult = db
-          .prepare('DELETE FROM memory_cache WHERE created_at_ms < ? AND sync_status != 1')
+          .prepare('DELETE FROM memory_cache WHERE sync_status IN (2, 3) AND created_at_ms < ?')
           .run(sevenDaysAgo)
         if (ttlResult.changes > 0) {
           logger.info(

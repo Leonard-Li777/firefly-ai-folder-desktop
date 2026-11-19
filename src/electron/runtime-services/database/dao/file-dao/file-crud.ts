@@ -74,9 +74,8 @@ export class FileCrudMixin extends FileDaoSharedBase {
         )
         .get(Number(idOrPath)) as any
     } else {
-      const p = String(idOrPath)
-      const pSlash = p.replace(/\\/g, '/')
-      const pBackslash = p.replace(/\//g, '\\')
+      // AGENTS.md §2.5：比较层严禁路径分隔符转换，使用原生路径直查
+      const nativePath = String(idOrPath)
       workspaceFile = this.db
         .prepare(
           `
@@ -84,9 +83,9 @@ export class FileCrudMixin extends FileDaoSharedBase {
           wf.id, wf.file_fingerprint, wf.path, wf.name, wf.is_analyzed, wf.last_analyzed_at, wf.thumbnail_path,
           wf.created_at, wf.modified_at, wf.accessed_at
         FROM workspace_files wf
-        WHERE wf.path = ? OR wf.path = ?`
+        WHERE wf.path = ?`
         )
-        .get(pSlash, pBackslash) as any
+        .get(nativePath) as any
     }
 
     if (!workspaceFile) {
@@ -1058,5 +1057,4 @@ export class FileCrudMixin extends FileDaoSharedBase {
         )
     })()
   }
-
 }

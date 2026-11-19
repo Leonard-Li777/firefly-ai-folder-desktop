@@ -355,11 +355,9 @@ export class DeviceBindService {
 
       const client = this.getClient()
       const schema = getSharedSchemaName()
-      const { data, error } = await (client as any)
-        .schema(schema)
-        .rpc('rpc_get_device_bind_status', {
-          p_machine_id: machineId
-        })
+      const { data, error } = await (client as any).schema(schema).rpc('rpc_get_device_snapshot', {
+        p_machine_id: machineId
+      })
 
       if (error) {
         logger.warn(LogCategory.SYSTEM, '[DeviceBindService] 查询设备绑定状态失败:', error)
@@ -370,8 +368,8 @@ export class DeviceBindService {
         success: true,
         bound: !!data?.bound,
         slot_index: data?.slot_index,
-        account_tier: data?.account_tier,
-        device_tier: data?.device_tier,
+        account_tier: data?.account_tier ?? data?.effective_tier,
+        device_tier: data?.device_tier ?? data?.effective_tier,
         status: data?.status,
         device_consumed_invitation: !!data?.device_consumed_invitation
       }
@@ -561,11 +559,7 @@ export class DeviceBindService {
       }
 
       // 分支 C: bound / claimed / consumed (手机端已确认且已完成邮箱验证，或老用户扫码直接转正)
-      if (
-        data?.status === 'bound' ||
-        data?.status === 'claimed' ||
-        data?.status === 'consumed'
-      ) {
+      if (data?.status === 'bound' || data?.status === 'claimed' || data?.status === 'consumed') {
         const sessionToken = data.device_token || data.session_token
         const sessionId = data.session_id
         if (sessionToken) {

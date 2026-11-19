@@ -436,8 +436,8 @@ export const GENESIS_V1_SCHEMA = `
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at_ms INTEGER NOT NULL DEFAULT 0      -- Unix 毫秒时间戳（Date.now()），供 7 天 TTL 清理
   );
-  -- 7 天 TTL 清理索引（cloud-sync-worker 定期 DELETE WHERE created_at_ms < ?）
-  CREATE INDEX IF NOT EXISTS idx_memory_cache_ttl ON memory_cache (created_at_ms);
+  -- 7 天 TTL 清理与同步状态复合索引（Issue 05 Step 4：支撑 WHERE sync_status IN (2, 3) AND created_at_ms < ?）
+  CREATE INDEX IF NOT EXISTS idx_memory_cache_sync ON memory_cache (sync_status, created_at_ms);
 
   -- 16.2 孤儿指纹 GC 队列（Issue 04 Step 1 / Spec §3.1.C.2：SQLite↔FTS5↔zvec 两阶段真自愈）
   -- workspace_files 删除触发器在指纹全库零引用时入队；FileCleanupService.reconcileOrphanFingerprints 统一调度。
@@ -494,9 +494,6 @@ export const GENESIS_V1_SCHEMA = `
     UNIQUE(file_id, segment_index),
     FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
-
-  CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq 
-  ON file_video_segments(file_id, segment_index);
 
   CREATE INDEX IF NOT EXISTS idx_fvs_file_status 
   ON file_video_segments(file_id, status);
@@ -802,7 +799,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_ftc_user_time
     ON firecore_transactions_cache(user_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  CREATE INDEX IF NOT EXISTS idx_file_video_chunks_fp ON file_video_chunks(file_fingerprint);
+  -- 注：file_video_chunks(file_fingerprint) 单列索引已由 L475 idx_fvc_fp_start(file_fingerprint, start_sec) 左前缀覆盖，不再建冗余索引。
 
   -- 19. FTS 同步触发器：废除 6 个内联 decompress_text 写触发器，
   -- 仅保留按不可变 files.id（rowid）删除三张虚表的唯一删除触发器。
@@ -1247,7 +1244,6 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
     UNIQUE(file_id, segment_index),
     FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
-  CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq ON file_video_segments(file_id, segment_index);
   CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
 `
