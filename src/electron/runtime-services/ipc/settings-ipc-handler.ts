@@ -147,6 +147,17 @@ export function registerSettingsIPCHandlers(): void {
             await fileWatcherService.reloadIgnoreRules()
           }
 
+          // SC-4：规则变更后异步分批重算 workspace_files.is_ignored 预计算列，
+          //       使 TagTreeQuery（wf.is_ignored = 0）即刻生效，无需等下次全量扫描。
+          if (
+            databaseService &&
+            typeof databaseService.refreshWorkspaceFilesIgnoredState === 'function'
+          ) {
+            databaseService.refreshWorkspaceFilesIgnoredState(rules).catch(err => {
+              logger.warn(LogCategory.SETTING, '刷新 workspace_files.is_ignored 失败:', err)
+            })
+          }
+
           // 向 Omni 服务同步最新排除保护清单
           const { omniService } = await import('../system')
           if (omniService && typeof omniService.syncConfigFromDesktop === 'function') {

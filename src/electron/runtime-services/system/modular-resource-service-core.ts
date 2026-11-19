@@ -49,7 +49,8 @@ import {
   type PluginCapabilitySlot,
   type SlotPolicy,
   type BackendType,
-  type EmbeddingEpochRecord
+  type EmbeddingEpochRecord,
+  type DownloadState
 } from '../database/dao/modular-resource-dao'
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
@@ -384,6 +385,21 @@ export class ModularResourceService implements IModularResourceService {
     string,
     { percentage: number; speed_bytes_per_sec: number; is_resumed: boolean }
   >()
+  /** [Issue 04 收尾] 进度落盘节流间隔：高频回调只更内存，DB 至少间隔 3000ms 才写（状态跃迁不受限） */
+  private static readonly PROGRESS_PERSIST_INTERVAL_MS = 3000
+  /** 距上次真正落盘的时间戳（按 resourceId） */
+  private lastProgressPersistAt = new Map<string, number>()
+  /** 最近一次已落盘状态（按 resourceId），用于识别状态跃迁 */
+  private lastPersistedDownloadState = new Map<string, DownloadState>()
+  /** 最近一次已落盘字节数（按 resourceId），防乱序回调让进度回退 */
+  private lastPersistedBytes = new Map<string, number>()
+  /** 按 resourceId 记录的历史最大 UI 百分比，防乱序/跨节流窗口进度条回退 */
+  private lastLivePercentage = new Map<string, number>()
+  /** 尚未落盘的最新进度（按 resourceId），供 flushProgress 强制落盘 */
+  private pendingProgressPersist = new Map<
+    string,
+    { bytes: number; state: DownloadState; errorMessage?: string }
+  >()
   private seeded = false
   private corruptedPresetCache = new Map<string, boolean>()
   private resourceBomOverrides = new Map<
@@ -537,6 +553,99 @@ export class ModularResourceService implements IModularResourceService {
 
   public getDao(): ModularResourceDao {
     return new ModularResourceDao(this.getDb())
+  }
+
+  /**
+   * [Issue 04 收尾] 高频下载进度回调的节流包装（不改底层 SQL）。
+   * 内存 liveProgress 始终即时更新，保证 UI 进度平滑；DB 仅在两种情况落盘：
+   * ① 状态跃迁（由显式 flushProgress 调用负责，立即写）；
+   * ② 距上次落盘 >= 3000ms 且进度字节有实质变化。
+   * 并发分块回调可能乱序，取历史最大值防止进度回退。
+   */
+  private recordDownloadProgress(
+    moduleId: string,
+    resourceId: string,
+    downloadedBytes: number,
+    percentage: number,
+    speedBytesPerSec: number,
+    isResumed: boolean
+  ): void {
+    // 终态闸：资源已进入 completed/failed/cancelled 后，并发分块的迟到回调
+    // 不得再把 DB 状态写回 downloading（否则状态跃迁被覆盖、终端节流状态泄漏）。
+    const recordedState = this.lastPersistedDownloadState.get(resourceId)
+    if (
+      recordedState === 'completed' ||
+      recordedState === 'failed' ||
+      recordedState === 'cancelled' ||
+      recordedState === 'pending_delete'
+    ) {
+      return
+    }
+
+    const effectivePercentage = Math.max(percentage, this.lastLivePercentage.get(resourceId) ?? 0)
+    this.lastLivePercentage.set(resourceId, effectivePercentage)
+    this.liveProgress.set(moduleId, {
+      percentage: effectivePercentage,
+      speed_bytes_per_sec: speedBytesPerSec,
+      is_resumed: isResumed
+    })
+    const state: DownloadState = 'downloading'
+    const prev = this.pendingProgressPersist.get(resourceId)
+    const effectiveBytes = Math.max(
+      downloadedBytes,
+      prev?.bytes ?? 0,
+      this.lastPersistedBytes.get(resourceId) ?? 0
+    )
+    this.pendingProgressPersist.set(resourceId, { bytes: effectiveBytes, state })
+
+    const lastAt = this.lastProgressPersistAt.get(resourceId) ?? 0
+    const lastState = this.lastPersistedDownloadState.get(resourceId)
+    const intervalElapsed =
+      Date.now() - lastAt >= ModularResourceService.PROGRESS_PERSIST_INTERVAL_MS
+    // 状态跃迁必须立即落盘，避免崩溃丢状态；稳态进度按 3000ms 节流。
+    const stateChanged = lastState !== undefined && lastState !== state
+    // 用「已落盘字节」而非 pending 判据：flush 后 pending 被清空，若仅判 prev===undefined，
+    // 满 3000ms 但进度未变也会重复写盘，违背「>=3000ms 且字节有实质变化」契约。
+    const bytesChanged = this.lastPersistedBytes.get(resourceId) !== effectiveBytes
+    if (stateChanged || (intervalElapsed && bytesChanged)) {
+      this.flushProgress(resourceId)
+    }
+  }
+
+  /**
+   * 强制把某资源最新进度立即落盘（暂停/完成/状态跃迁前调用，不节流）。
+   * @param resourceId 资源 ID
+   * @param state 显式状态；省略时取 pending 中状态（默认 downloading）
+   * @param downloadedBytes 显式字节数；省略时取 pending 中最新值
+   */
+  flushProgress(
+    resourceId: string,
+    state?: DownloadState,
+    downloadedBytes?: number,
+    errorMessage?: string
+  ): void {
+    const pending = this.pendingProgressPersist.get(resourceId)
+    const finalState: DownloadState = state ?? pending?.state ?? 'downloading'
+    const bytes = downloadedBytes ?? pending?.bytes ?? 0
+    this.getDao().resources.updateProgressSync(resourceId, bytes, finalState, errorMessage)
+    this.lastProgressPersistAt.set(resourceId, Date.now())
+    this.lastPersistedDownloadState.set(resourceId, finalState)
+    this.lastPersistedBytes.set(resourceId, bytes)
+    this.pendingProgressPersist.delete(resourceId)
+
+    // 终态回收：资源完成后节流状态不再有用途，避免随资源数量长期驻留（对齐 liveProgress 的 delete 纪律）
+    const terminal =
+      finalState === 'completed' ||
+      finalState === 'failed' ||
+      finalState === 'cancelled' ||
+      finalState === 'pending_delete'
+    if (terminal) {
+      this.lastProgressPersistAt.delete(resourceId)
+      // lastPersistedDownloadState 必须保留为终态哨兵，供 recordDownloadProgress 的终态闸拦截迟到回调；
+      // 下次下载开始时显式 flushProgress('downloading') 会自然解除该哨兵。
+      this.lastPersistedBytes.delete(resourceId)
+      this.lastLivePercentage.delete(resourceId)
+    }
   }
 
   public getBaseDir(): string {
@@ -1618,7 +1727,7 @@ export class ModularResourceService implements IModularResourceService {
               download_state: initialState
             })
             if (physicallyReady && task.download_state !== 'completed') {
-              dao.resources.updateProgressSync(resId, spec.expected_bytes, 'completed')
+              this.flushProgress(resId, 'completed', spec.expected_bytes)
               dao.resources.markVerifiedSync(resId, true, spec.expected_sha256)
             }
             dao.resources.bindResourceToModuleSync(modId, resId)
@@ -1877,9 +1986,9 @@ export class ModularResourceService implements IModularResourceService {
             const partPath = `${archivePath}.part`
             if (fs.existsSync(partPath)) {
               const partSize = fs.statSync(partPath).size
-              dao.resources.updateProgressSync(res.resource_id, partSize, 'paused')
+              this.flushProgress(res.resource_id, 'paused', partSize)
             } else {
-              dao.resources.updateProgressSync(res.resource_id, 0, 'pending')
+              this.flushProgress(res.resource_id, 'pending', 0)
             }
             resetDownloads.push(res.resource_id)
           }
@@ -3055,7 +3164,7 @@ export class ModularResourceService implements IModularResourceService {
           const l1Result = await this.checkL1TargetDirPreflight(targetAbsDir, spec)
           if (l1Result === 'fast_hit' || l1Result === 'slow_healed') {
             dao.resources.markVerifiedSync(spec.resource_id, true)
-            dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
+            this.flushProgress(spec.resource_id, 'completed', spec.expected_bytes)
             this.repairPendingResources.delete(spec.resource_id)
             this.fastReadySnapshot.set(spec.resource_id, {
               resourceId: spec.resource_id,
@@ -3131,7 +3240,7 @@ export class ModularResourceService implements IModularResourceService {
               : await this.checkL2LocalPresetPreflight(spec, targetAbsDir)
           if (l2Hit) {
             dao.resources.markVerifiedSync(spec.resource_id, true)
-            dao.resources.updateProgressSync(spec.resource_id, spec.expected_bytes, 'completed')
+            this.flushProgress(spec.resource_id, 'completed', spec.expected_bytes)
             this.repairPendingResources.delete(spec.resource_id)
             this.fastReadySnapshot.set(spec.resource_id, {
               resourceId: spec.resource_id,
@@ -3471,7 +3580,7 @@ export class ModularResourceService implements IModularResourceService {
       throw new Error(errMsg)
     }
 
-    dao.resources.updateProgressSync(task.resource_id, task.downloaded_bytes || 0, 'downloading')
+    this.flushProgress(task.resource_id, 'downloading', task.downloaded_bytes || 0)
 
     // 大文件（>4MiB）且存在可用 URL 时，默认优先启用固定 4MiB 块网格并发断点续传下载器
     const canUseFixedBlocks =
@@ -3502,12 +3611,14 @@ export class ModularResourceService implements IModularResourceService {
             // ISS-13: 字节加权下载阶段 0 ~ 92%
             const total = prog.totalBytes || task.expected_bytes || 1
             const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
-            dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
-            this.liveProgress.set(moduleId, {
-              percentage: pct,
-              speed_bytes_per_sec: prog.speed,
-              is_resumed: hadPartBefore
-            })
+            this.recordDownloadProgress(
+              moduleId,
+              task.resource_id,
+              prog.receivedBytes,
+              pct,
+              prog.speed,
+              hadPartBefore
+            )
             onProgress?.({
               moduleId,
               resourceId: task.resource_id,
@@ -3558,12 +3669,14 @@ export class ModularResourceService implements IModularResourceService {
             onProgress: prog => {
               const total = prog.totalBytes || task.expected_bytes || 1
               const pct = Math.min(92, Math.round((prog.receivedBytes / total) * 92))
-              dao.resources.updateProgressSync(task.resource_id, prog.receivedBytes, 'downloading')
-              this.liveProgress.set(moduleId, {
-                percentage: pct,
-                speed_bytes_per_sec: prog.speed,
-                is_resumed: hadPartBefore
-              })
+              this.recordDownloadProgress(
+                moduleId,
+                task.resource_id,
+                prog.receivedBytes,
+                pct,
+                prog.speed,
+                hadPartBefore
+              )
               onProgress?.({
                 moduleId,
                 resourceId: task.resource_id,
@@ -3609,6 +3722,9 @@ export class ModularResourceService implements IModularResourceService {
 
     if (!result.success) {
       const errMsg = result.errorMessage || result.errorCode || '资源下载或校验失败'
+      // 失败即状态跃迁：必须先经节流镜像立即落盘 failed 并树终态哨兵，
+      // 否则 in-flight 迟到回调会把 DB 状态覆盖回 downloading。
+      this.flushProgress(task.resource_id, 'failed', result.finalBytes, errMsg)
       dao.resources.markVerifiedSync(
         task.resource_id,
         false,
@@ -3685,6 +3801,7 @@ export class ModularResourceService implements IModularResourceService {
       })
     } catch (extractErr: any) {
       const errMsg = extractErr?.message || String(extractErr)
+      this.flushProgress(task.resource_id, 'failed', result.finalBytes, errMsg)
       dao.resources.markVerifiedSync(task.resource_id, false, result.actualSha256, errMsg)
       if (fs.existsSync(archivePath)) {
         try {
@@ -3701,7 +3818,7 @@ export class ModularResourceService implements IModularResourceService {
     if (!finalSha256 && task.expected_sha256) {
       finalSha256 = task.expected_sha256
     }
-    dao.resources.updateProgressSync(task.resource_id, result.finalBytes, 'completed')
+    this.flushProgress(task.resource_id, 'completed', result.finalBytes)
     dao.resources.markVerifiedSync(task.resource_id, true, finalSha256)
 
     onProgress?.({

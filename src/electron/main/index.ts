@@ -713,11 +713,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
               `[LanguageSwitch] 已按 ${newLanguage} 重建调试视图 v_tag_paths_readable / v_file_tags_readable`
             )
           } catch (rebuildErr) {
-            logger.error(
-              LogCategory.MAIN,
-              '[LanguageSwitch] 重建调试视图失败:',
-              rebuildErr
-            )
+            logger.error(LogCategory.MAIN, '[LanguageSwitch] 重建调试视图失败:', rebuildErr)
           }
         }
 
@@ -1042,36 +1038,62 @@ app.on('ready', async () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    databaseService.close()
+    // [R2-8] 严禁在此提前关库：before-quit 才按「Omni 先停 → busy_timeout=1500 →
+    // PRAGMA optimize + wal_checkpoint(PASSIVE) → 关库」顺序收口。若此处先 close，
+    // checkpointBeforeClose() 会因 _db 已空直接空转，退出时序形同虚设。
     app.quit()
   }
 })
 
-app.on('before-quit', async () => {
+let quitCleanupStarted = false
+app.on('before-quit', event => {
   trayService.setQuitting(true)
+  if (quitCleanupStarted) return
+  // 同步门闩：必须在任何 await 之前置位，防清理未完成时二次 before-quit 重入
+  quitCleanupStarted = true
+  // Electron 不等待 async before-quit 监听器的 Promise；必须先阻止默认退出，
+  // 待 R2-8 时序全部 await 完成后再显式 app.exit，否则 checkpoint/close 会被跳过。
+  event.preventDefault()
   logger.info(LogCategory.MAIN, '应用正在退出，清理资源...')
 
-  try {
-    await omniService.stop()
-    const { engineBridgeService } = await import('../runtime-services/engine-bridge')
-    engineBridgeService.stop()
-    // 关闭图标提取子进程，避免遗留孤儿子进程
-    iconExtractorClient.dispose()
-    await fileWatcherService.cleanup()
-    await systemHealthService.stop()
-    databaseService.close()
-    if (LlamaIndexAIService.hasInstance()) {
-      const aiService = LlamaIndexAIService.getInstance()
-      if (aiService && aiService.isInitialized()) await aiService.stop()
+  // 兜底超时：任一 await（如 omniService.stop）挂起时不能让应用永不退出
+  const forceExitTimer = setTimeout(() => {
+    logger.warn(LogCategory.MAIN, '[R2-8] 退出清理超时(10s)，强制退出以免遗留孤儿进程')
+    app.exit(1)
+  }, 10_000)
+  forceExitTimer.unref?.()
+  let cleanupFailed = false
+
+  void (async () => {
+    try {
+      await omniService.stop()
+      const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+      engineBridgeService.stop()
+      // 关闭图标提取子进程，避免遗留孤儿子进程
+      iconExtractorClient.dispose()
+      await fileWatcherService.cleanup()
+      await systemHealthService.stop()
+      // [R2-8] Omni 已停止（释放只读池）后再对主库做安全 checkpoint，再真正关闭连接
+      await databaseService.checkpointBeforeClose()
+      databaseService.close()
+      if (LlamaIndexAIService.hasInstance()) {
+        const aiService = LlamaIndexAIService.getInstance()
+        if (aiService && aiService.isInitialized()) await aiService.stop()
+      }
+      // 确保 PostHog 挂起事件在退出前全部发送
+      await postHogMain.shutdown()
+      // 精准清理所有名下登记的子进程
+      processReaper.cleanup()
+      logger.info(LogCategory.MAIN, '资源清理完成')
+    } catch (error) {
+      cleanupFailed = true
+      logger.error(LogCategory.MAIN, '资源清理失败:', error)
+    } finally {
+      clearTimeout(forceExitTimer)
+      // 清理失败以非零码退出，禁止用 exit(0) 掩盖 R2-8 时序故障
+      app.exit(cleanupFailed ? 1 : 0)
     }
-    // 确保 PostHog 挂起事件在退出前全部发送
-    await postHogMain.shutdown()
-    // 精准清理所有名下登记的子进程
-    processReaper.cleanup()
-    logger.info(LogCategory.MAIN, '资源清理完成')
-  } catch (error) {
-    logger.error(LogCategory.MAIN, '资源清理失败:', error)
-  }
+  })()
 })
 
 app.on('activate', () => {

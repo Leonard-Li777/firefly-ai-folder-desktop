@@ -100,10 +100,14 @@ import {
   setDirectoryContextService,
   setOrganizeRealDirectoryService,
   setFileCleanupService,
+  setOrphanGcScheduler,
+  orphanGcScheduler,
   initializationPhaseStarted,
   setInitializationPhaseStarted,
   virtualDirectoryService
 } from './state'
+import { OrphanGcScheduler } from './orphan-gc-scheduler'
+import { recoverPendingFsJournals } from '../runtime-services/filesystem/fs-journal-recovery'
 import { enrichAIStatus, clearEnrichCache } from './utils'
 import { t, changeLanguage } from '@app/languages'
 
@@ -328,7 +332,25 @@ export async function initDatabaseAndDependentServices(
       }
 
       setOrganizeRealDirectoryService(new OrganizeRealDirectoryService(databaseService.db as any))
-      setFileCleanupService(new FileCleanupService(databaseService.db))
+      const cleanupService = new FileCleanupService(databaseService.db)
+      setFileCleanupService(cleanupService)
+
+      // [Issue 04 Step 1] 启动孤儿指纹 GC 两阶段对账调度器（启动自愈 + 定时兜底）。
+      //   幂等：重复初始化时先 stop 旧调度器再新建，防定时器泄漏。
+      orphanGcScheduler?.stop()
+      const gcScheduler = new OrphanGcScheduler(cleanupService)
+      setOrphanGcScheduler(gcScheduler)
+      gcScheduler.start()
+
+      // [Issue 04 收尾] 启动期 fs_operation_journal 挂起意图自愈：
+      // 上次整理崩溃遗留的 intent 必须在文件监听等业务开放前从 journal 补偿/重放，
+      // 否则 watcher 会先扫到中间态并二次入队，workspace_files 与物理磁盘永久分叉。
+      // 此处必须 await（禁止 setImmediate 异步甩锅），保证两阶段闭环先于业务放行。
+      try {
+        await recoverPendingFsJournals(databaseService.db!)
+      } catch (err) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '启动期 fs_operation_journal 自愈异常:', err)
+      }
 
       await analysisQueueService.reloadDatabase()
       await fileWatcherService.startAllAutoWatchers().catch(err => {
@@ -750,8 +772,8 @@ export async function initializeFullServices(): Promise<void> {
             .prepare(
               `
             INSERT INTO memory_cache (
-              id, request_data, response_data, model, provider, latency_ms, 
-              file_fingerprint, sync_status, created_at
+              id, request_data, response_data, model, provider, latency_ms,
+              file_fingerprint, sync_status, created_at_ms
             ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
           `
             )
@@ -763,7 +785,7 @@ export async function initializeFullServices(): Promise<void> {
               data.provider || 'unknown',
               data.latencyMs,
               data.fileFingerprint,
-              new Date().toISOString()
+              Date.now()
             )
           logger.debug(
             LogCategory.AI_SERVICE,

@@ -9,8 +9,187 @@ import path from 'node:path'
 import { logger, LogCategory } from '@firefly/shared'
 import { t } from '@app/languages'
 
+/** 两阶段孤儿对账结果（Issue 04 Step 1） */
+export interface ReconcileOrphanResult {
+  checked: number // 本轮从 orphan_gc_queue 取出的候选指纹数
+  skippedInFlight: number // R2-2a 在途分析跳过数（保留队列）
+  deletedFiles: number // 阶段一实际删除的 files 行数
+  vectorsDeleted: number // 阶段二成功删除的向量数
+  vectorsPending: number // 阶段二待删/失败保留在 outbox 的数（Omni 离线自愈）
+}
+
+/** vector_delete_outbox 阶段二重试上限（连续 ≥5 次置 failed 并告警） */
+const VECTOR_DELETE_MAX_RETRY = 5
+/** 阶段一批处理大小 */
+const GC_BATCH_SIZE = 500
+
 export class FileCleanupService {
   constructor(private db: Database.Database) {}
+
+  /**
+   * [R2-2a] 判定某指纹是否正在分析队列中（pending/analyzing）。
+   * 用 SQL 判定（非内存单例依赖）：analysis_queue.item_type='file' 经 workspace_files 关联指纹，
+   * 避免跨单例脆弱引用；被删除文件已无 workspace_files 行，其残留在途队列项自然不参与判定。
+   */
+  private isFingerprintInFlight(fp: string): boolean {
+    const row = this.db
+      .prepare(
+        `SELECT 1
+           FROM analysis_queue q
+           JOIN workspace_files wf ON q.item_type = 'file' AND q.item_id = wf.id
+          WHERE wf.file_fingerprint = ?
+            AND q.status IN ('pending', 'analyzing')
+          LIMIT 1`
+      )
+      .get(fp)
+    return !!row
+  }
+
+  /**
+   * Issue 04 Step 1：两阶段孤儿指纹对账（SQLite ↔ FTS5 ↔ zvec 真自愈）。
+   *
+   * 阶段一（单事务原子）：取 orphan_gc_queue 批次 → 前置跳过在途分析（R2-2a，保留队列）
+   *   → SQL 守卫 NOT EXISTS workspace_files（触发器已保证，防御性二次校验）
+   *   → DELETE FROM files（外键级联清 file_contents/file_tag_relations/file_video_*；
+   *     trg_files_fts_delete 清三张 FTS 虚表）
+   *   → 写 vector_delete_outbox + 移除 orphan_gc_queue。
+   * 阶段二（异步）：扫 vector_delete_outbox(pending) → 二次校验 NOT EXISTS files
+   *   → omniClient.deleteVectors(fps) 成功后删行；失败递增 retry_count，≥5 置 failed；
+   *   Omni 离线（返回 null / 抛错）保留待下次自愈。
+   *
+   * @param options.runVectorPhase 是否执行阶段二（默认 true；启动自愈/测试可关）
+   */
+  async reconcileOrphanFingerprints(
+    options: { runVectorPhase?: boolean } = {}
+  ): Promise<ReconcileOrphanResult> {
+    const runVectorPhase = options.runVectorPhase !== false
+    const result: ReconcileOrphanResult = {
+      checked: 0,
+      skippedInFlight: 0,
+      deletedFiles: 0,
+      vectorsDeleted: 0,
+      vectorsPending: 0
+    }
+
+    // ===== 阶段一：单事务原子删 files + 写 outbox + 移除 queue =====
+    const candidates = this.db
+      .prepare(`SELECT file_fingerprint FROM orphan_gc_queue LIMIT ?`)
+      .all(GC_BATCH_SIZE) as Array<{ file_fingerprint: string }>
+
+    if (candidates.length > 0) {
+      const toVector: string[] = []
+      this.db.transaction(() => {
+        const deleteFilesStmt = this.db.prepare(
+          'DELETE FROM files WHERE file_fingerprint = ? AND NOT EXISTS (SELECT 1 FROM workspace_files WHERE file_fingerprint = files.file_fingerprint)'
+        )
+        const insertOutboxStmt = this.db.prepare(
+          `INSERT OR IGNORE INTO vector_delete_outbox (file_fingerprint, state, retry_count, enqueued_at)
+           VALUES (?, 'pending', 0, CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER))`
+        )
+        const removeQueueStmt = this.db.prepare(
+          'DELETE FROM orphan_gc_queue WHERE file_fingerprint = ?'
+        )
+
+        for (const { file_fingerprint: fp } of candidates) {
+          result.checked++
+          // [R2-2a] 在途分析直接跳过并保留队列，等分析完成后再对账
+          if (this.isFingerprintInFlight(fp)) {
+            result.skippedInFlight++
+            continue
+          }
+          const changes = deleteFilesStmt.run(fp).changes
+          if (changes > 0) {
+            // 删除成功 → 标记待删向量 + 移出待回收队列
+            insertOutboxStmt.run(fp)
+            result.deletedFiles++
+          }
+          // 无论是否真删（触发器守卫已保证零引用，此处 deletes>0 必然成立），
+          // 只要 files 已不存在即可移出队列；若仍被引用（防御分支）保留队列下次再查。
+          const stillReferenced = this.db
+            .prepare('SELECT 1 FROM workspace_files WHERE file_fingerprint = ? LIMIT 1')
+            .get(fp)
+          if (!stillReferenced) {
+            removeQueueStmt.run(fp)
+            if (changes > 0) toVector.push(fp)
+          }
+        }
+      })()
+    }
+
+    // ===== 阶段二：异步删向量（Omni 离线保留待自愈） =====
+    if (runVectorPhase) {
+      await this.processVectorDeleteOutbox(result)
+    }
+
+    if (result.checked > 0 || result.vectorsDeleted > 0) {
+      logger.info(LogCategory.DATABASE_SERVICE, '[GC] 两阶段孤儿对账完成', { ...result })
+    }
+    return result
+  }
+
+  /**
+   * 阶段二：处理 vector_delete_outbox —— 二次校验 NOT EXISTS files 后调 Omni 删向量。
+   * Omni 离线（返回 null）或失败：递增 retry_count，连续 ≥5 次置 failed 并告警，保留待重启自愈。
+   */
+  private async processVectorDeleteOutbox(result: ReconcileOrphanResult): Promise<void> {
+    const pending = this.db
+      .prepare(
+        `SELECT file_fingerprint, retry_count FROM vector_delete_outbox WHERE state = 'pending' LIMIT ?`
+      )
+      .all(GC_BATCH_SIZE) as Array<{ file_fingerprint: string; retry_count: number }>
+
+    if (pending.length === 0) return
+
+    // 二次校验：仅删当前 files 中已不存在的指纹（防延迟 outbox 误删重建向量）
+    const stillExists = new Set(
+      (
+        this.db
+          .prepare(
+            `SELECT file_fingerprint FROM files WHERE file_fingerprint IN (${pending
+              .map(() => '?')
+              .join(',')})`
+          )
+          .all(...pending.map(p => p.file_fingerprint)) as Array<{ file_fingerprint: string }>
+      ).map(r => r.file_fingerprint)
+    )
+    const toDelete = pending.filter(p => !stillExists.has(p.file_fingerprint))
+    if (toDelete.length === 0) return
+
+    const fps = toDelete.map(p => p.file_fingerprint)
+    const deleteOutboxStmt = this.db.prepare(
+      'DELETE FROM vector_delete_outbox WHERE file_fingerprint = ?'
+    )
+    const bumpRetryStmt = this.db.prepare(
+      `UPDATE vector_delete_outbox
+         SET retry_count = retry_count + 1,
+             state = CASE WHEN retry_count + 1 >= ? THEN 'failed' ELSE 'pending' END
+       WHERE file_fingerprint = ?`
+    )
+
+    try {
+      // 动态 import 打断 FileCleanupService ↔ omni-client 的静态环（与 WorkspaceDao 一致）
+      const { omniClient } = await import('../../services/omni-client')
+      const resp = await omniClient.deleteVectors(fps)
+      if (resp && resp.success) {
+        for (const fp of fps) deleteOutboxStmt.run(fp)
+        result.vectorsDeleted += fps.length
+      } else {
+        // Omni 返回 null（离线）或 success=false：保留待自愈，递增重试
+        for (const p of toDelete) bumpRetryStmt.run(VECTOR_DELETE_MAX_RETRY, p.file_fingerprint)
+        result.vectorsPending += toDelete.length
+        logger.warn(LogCategory.DATABASE_SERVICE, '[GC] Omni 删向量未成功，保留 outbox 待自愈', {
+          count: toDelete.length
+        })
+      }
+    } catch (err) {
+      for (const p of toDelete) bumpRetryStmt.run(VECTOR_DELETE_MAX_RETRY, p.file_fingerprint)
+      result.vectorsPending += toDelete.length
+      logger.warn(LogCategory.DATABASE_SERVICE, '[GC] 调用 Omni 删向量异常，保留 outbox 待自愈', {
+        count: toDelete.length,
+        err
+      })
+    }
+  }
 
   /**
    * 删除文件并清理所有关联信息

@@ -8,7 +8,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import type { Database } from 'better-sqlite3'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, isPathEqual } from '@firefly/shared'
 import { FaultInjectorService } from '../e2e/fault-injector'
 
 export type JournalActiveStatus = 'intent' | 'manual_recovery'
@@ -159,18 +159,76 @@ export function observeFs(
 
   if (toExists) {
     try {
-      // 简单高保真计算 SHA256 前缀或整体 hash 作为指纹
-      const buf = fs.readFileSync(toPath)
-      const hash = crypto.createHash('sha256').update(buf).digest('hex')
-      sameIdentity =
-        expectedIdentity.startsWith(hash.slice(0, 8)) ||
-        hash.startsWith(expectedIdentity.slice(0, 8))
-    } catch {
+      // [Issue 04 Step 2] 根治大视频 OOM：旧实现 readFileSync 全量读入 Buffer（GB 级视频直接 OOM），
+      // 改为头 64KB + 尾 64KB 采样 + size + mtime_ms 构建轻量指纹。
+      // 判定口径与旧实现一致：采样指纹与 expectedIdentity 的前 8 位前缀/后缀互含即认同一身份。
+      const sampledHash = sampleFileIdentity(toPath)
+      if (sampledHash) {
+        sameIdentity =
+          expectedIdentity.startsWith(sampledHash.slice(0, 8)) ||
+          sampledHash.startsWith(expectedIdentity.slice(0, 8))
+      }
+    } catch (err) {
+      logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 采样目标文件身份失败', {
+        toPath,
+        err
+      })
       sameIdentity = false
     }
   }
 
   return { fromExists, toExists, sameIdentity }
+}
+
+/** 采样指纹读取窗口（头/尾各 64KB），覆盖足够区分度且免全量载入 */
+const IDENTITY_SAMPLE_BYTES = 64 * 1024
+
+/**
+ * 头尾采样文件身份指纹（Issue 04 Step 2）。
+ * 用 openSync + read 流式采样，绝不 readFileSync 全量载入，杜绝 GB 级视频恢复 OOM。
+ * 指纹输入 = size + Math.trunc(mtimeMs) + 头 64KB + 尾 64KB，轻量且区分度高。
+ * 文件小于窗口时头尾重叠按实际长度读，不重复计算。
+ */
+export function sampleFileIdentity(filePath: string): string | null {
+  let fd: number | null = null
+  try {
+    fd = fs.openSync(filePath, 'r')
+    const stats = fs.fstatSync(fd)
+    const size = stats.size
+    const mtimeMs = Math.trunc(stats.mtimeMs)
+    const hash = crypto.createHash('sha256')
+    // 先混入 size 与 mtime_ms，使「同内容但不同修改时刻」也可区分，且对空文件仍有稳定指纹
+    hash.update(`size:${size};mtime:${mtimeMs};`)
+
+    const buf = Buffer.alloc(IDENTITY_SAMPLE_BYTES)
+    // 头部采样
+    const headBytes = fs.readSync(fd, buf, 0, IDENTITY_SAMPLE_BYTES, 0)
+    if (headBytes > 0) hash.update(buf.subarray(0, headBytes))
+    // 尾部采样（size>窗口 时才有独立尾部，否则已由头部覆盖）
+    if (size > IDENTITY_SAMPLE_BYTES) {
+      const tailStart = size - IDENTITY_SAMPLE_BYTES
+      const tailBytes = fs.readSync(fd, buf, 0, IDENTITY_SAMPLE_BYTES, tailStart)
+      if (tailBytes > 0) hash.update(buf.subarray(0, tailBytes))
+    }
+    return hash.digest('hex')
+  } catch (err) {
+    logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 头尾采样文件身份失败', {
+      filePath,
+      err
+    })
+    return null
+  } finally {
+    if (fd !== null) {
+      try {
+        fs.closeSync(fd)
+      } catch (err) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 关闭采样文件描述符失败', {
+          filePath,
+          err
+        })
+      }
+    }
+  }
 }
 
 /** 观察数据库的记录状态 */
@@ -283,6 +341,50 @@ export async function executeRecoveryForEntry(
 }
 
 /**
+ * [Issue 04 收尾] 启动期批量自愈：扫描 fs_operation_journal 挂起意图并逐条决策补偿/重放。
+ * 生产启动链路唯一入口；单条失败不阻断其余条目，所有异常显式 logger.warn 上报（禁静默吞异常）。
+ */
+export async function recoverPendingFsJournals(db: Database): Promise<{
+  scanned: number
+  recovered: number
+  stuck: number
+}> {
+  const entries = probePendingIntents(db)
+  let recovered = 0
+  let stuck = 0
+
+  for (const entry of entries) {
+    try {
+      const result = await executeRecoveryForEntry(db, entry)
+      if (result.action === 'mark-stuck') {
+        stuck++
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 挂起意图进入人工恢复队列', {
+          id: entry.id,
+          reason: result.reason
+        })
+      } else {
+        recovered++
+      }
+    } catch (err) {
+      stuck++
+      logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 单条挂起意图自愈失败', {
+        id: entry.id,
+        err
+      })
+    }
+  }
+
+  if (entries.length > 0) {
+    logger.info(LogCategory.FILE_ORGANIZATION, '[FsJournal] 启动期挂起意图自愈完成', {
+      scanned: entries.length,
+      recovered,
+      stuck
+    })
+  }
+  return { scanned: entries.length, recovered, stuck }
+}
+
+/**
  * 批量操作项接口
  */
 export interface BatchOperationItem {
@@ -313,6 +415,12 @@ export class TwoPhaseBatchCoordinator {
       onIntentCommitted?: () => void
       onFsMoved?: () => void
       onBeforeDbCommit?: () => void
+      /**
+       * 业务提交回调（Issue 04 收尾）：由调用方注入权威 DB 写入（如 FileSystemMutationDao）。
+       * 在阶段 3 的单一事务内对每条 item 调用，与 journal 的 committed 状态原子提交；
+       * 未提供时回退旧版 workspace_files 直写语义。回调抛错即触发物理逆向补偿。
+       */
+      commitDb?: (item: BatchOperationItem) => void
     }
   ): Promise<{ success: boolean; committedCount: number; compensatedCount: number; error?: any }> {
     if (items.length === 0) {
@@ -347,7 +455,7 @@ export class TwoPhaseBatchCoordinator {
     const movedItems: BatchOperationItem[] = []
     try {
       for (const item of items) {
-        if (item.fromPath !== item.toPath) {
+        if (!isPathEqual(item.fromPath, item.toPath)) {
           const targetDir = path.dirname(item.toPath)
           if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true })
@@ -362,7 +470,14 @@ export class TwoPhaseBatchCoordinator {
       for (const item of movedItems.reverse()) {
         try {
           fs.renameSync(item.toPath, item.fromPath)
-        } catch {}
+        } catch (rollbackErr) {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 物理阶段逆向恢复失败', {
+            itemId: item.id,
+            fromPath: item.fromPath,
+            toPath: item.toPath,
+            err: rollbackErr
+          })
+        }
       }
       this.db
         .prepare(`UPDATE fs_operation_journal SET status = 'undone' WHERE batch_id = ?`)
@@ -380,11 +495,16 @@ export class TwoPhaseBatchCoordinator {
 
     // 阶段 3：业务事务与 committed 状态原子提交
     try {
-      const updateWsFileStmt = this.db.prepare(`
-        UPDATE workspace_files
-        SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP
-        WHERE path = ?
-      `)
+      // 旧直写分支为不可删的兼容通道：E2E 崩溃注入（l2a/l2b）直接调用本协调器且不传 commitDb，
+      // 依赖此分支完成 workspace_files 路径改写；生产整理链路则注入 FileSystemMutationDao。
+      const commitDb = options?.commitDb
+      const updateWsFileStmt = commitDb
+        ? null
+        : this.db.prepare(`
+            UPDATE workspace_files
+            SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP
+            WHERE path = ?
+          `)
 
       const commitJournalStmt = this.db.prepare(`
         UPDATE fs_operation_journal
@@ -408,8 +528,13 @@ export class TwoPhaseBatchCoordinator {
             throw err
           }
 
-          const newName = path.basename(item.toPath)
-          updateWsFileStmt.run(item.toPath, newName, item.fromPath)
+          if (commitDb) {
+            // 权威提交：FileSystemMutationDao 单事务内更新 workspace_files 路径 + FTS
+            commitDb(item)
+          } else {
+            const newName = path.basename(item.toPath)
+            updateWsFileStmt!.run(item.toPath, newName, item.fromPath)
+          }
           commitJournalStmt.run(item.id)
         }
       })()
@@ -500,7 +625,14 @@ export class TwoPhaseBatchCoordinator {
       for (const item of movedItems.reverse()) {
         try {
           fs.renameSync(item.from_path, item.to_path)
-        } catch {}
+        } catch (rollbackErr) {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 撤销批次逆向恢复失败', {
+            itemId: item.id,
+            fromPath: item.from_path,
+            toPath: item.to_path,
+            err: rollbackErr
+          })
+        }
       }
       return { success: false, undoneCount: 0, compensationBatchId: '' }
     }

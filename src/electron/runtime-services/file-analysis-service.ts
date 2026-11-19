@@ -9,6 +9,8 @@
  */
 
 import { stat } from 'fs/promises'
+import nodeFs from 'node:fs'
+import { loadIgnoreRules, shouldIgnoreFile } from './analysis/analysis-ignore-service'
 
 /** 文件分析结果响应 */
 export interface FileAnalysisResponse {
@@ -129,11 +131,18 @@ export async function getFileAnalysisData(
       const fileName = nodePath.basename(resolvedPath)
 
       // 插入 workspace_files 记录
+      // SC-1：同步维护 file_size/mtime_ms/is_ignored 预计算列；statSync 失败安全回退 0 值
+      let insertStats: nodeFs.Stats | null = null
+      try {
+        insertStats = nodeFs.statSync(resolvedPath)
+      } catch {
+        insertStats = null
+      }
       const insertResult = db
         .prepare(
-          `INSERT OR IGNORE INTO workspace_files 
-         (file_fingerprint, workspace_id, directory_id, path, name, is_analyzed, created_at, modified_at, accessed_at)
-         VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)`
+          `INSERT OR IGNORE INTO workspace_files
+         (file_fingerprint, workspace_id, directory_id, path, name, is_analyzed, created_at, modified_at, accessed_at, file_size, mtime_ms, is_ignored)
+         VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)`
         )
         .run(
           fingerprint,
@@ -143,7 +152,10 @@ export async function getFileAnalysisData(
           fileName,
           new Date().toISOString(),
           new Date().toISOString(),
-          new Date().toISOString()
+          new Date().toISOString(),
+          insertStats?.size ?? 0,
+          Math.trunc(insertStats?.mtimeMs ?? Date.now()),
+          shouldIgnoreFile(resolvedPath, fileName, loadIgnoreRules()) ? 1 : 0
         )
 
       // 获取插入的记录
