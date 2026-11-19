@@ -8,7 +8,8 @@ import {
   DialogTitle
 } from '../ui/dialog'
 import { Button } from '../ui/button'
-import { t } from '@app/languages'
+import i18nScope from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { MaterialIcon, cn } from '../../lib/utils'
@@ -47,6 +48,7 @@ const KNOWN_ANALYSIS_MODES = new Set(['simple', 'quick_name', 'full'])
  * 同样可跳过，但不能声称它们「已完成【增强分析】分析」。
  */
 export function AnalysisConfirmModal() {
+  const { t } = useVoerkaI18n(i18nScope)
   const {
     showConfirmModal,
     setShowConfirmModal,
@@ -107,14 +109,17 @@ export function AnalysisConfirmModal() {
    * 把 completed_mode 取值转为展示文案，历史数据（null）退回按 stage 推断的通用表述。
    * t() 为构建期提取宏，键须为静态字面量，故在此用 record 显式映射到静态 t('...')。
    */
-  const modeLabelOf = (mode: string): string => {
-    const localized: Record<string, string> = {
-      simple: t('标准分析'),
-      quick_name: t('增强分析'),
-      full: t('全面分析')
-    }
-    return localized[mode] || t('分析')
-  }
+  const modeLabelOf = React.useCallback(
+    (mode: string): string => {
+      const localized: Record<string, string> = {
+        simple: t('标准分析'),
+        quick_name: t('增强分析'),
+        full: t('全面分析')
+      }
+      return localized[mode] || t('分析')
+    },
+    [t]
+  )
 
   const mappedFiles = React.useMemo(() => {
     return confirmModalFiles.map((file, index) => {

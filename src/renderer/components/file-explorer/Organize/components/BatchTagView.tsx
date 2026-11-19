@@ -756,7 +756,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     setInputVal('')
     setActiveInputDimId(null)
     toast.info(t('已重置所有未保存的标签变更'))
-  }, [])
+  }, [t])
 
   // 快速全选某维度下的全部标签为全部附加
   const handleBatchSetDimensionTags = useCallback(
@@ -781,7 +781,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         return next
       })
     },
-    []
+    [t]
   )
 
   // 提交新建标签
@@ -873,7 +873,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         setIsInspectingTag(false)
       }
     },
-    [inputVal, effectiveDimensionGroups, rootCategoryNamesSet, isInspectingTag]
+    [inputVal, effectiveDimensionGroups, rootCategoryNamesSet, isInspectingTag, t]
   )
 
   // 删除新建标签
@@ -917,7 +917,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
       toast.info(t('已将标签「{name}」标记为待移除，点击保存后生效', { name: tagName }))
     },
-    []
+    [t]
   )
 
   // 汇总变更并提交
@@ -1028,7 +1028,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimCode =
         group?.code ||
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
-        (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
+        (group?.name && isControlledConcept(group.name) ? concept(group.name) : CONTENT_TAGS_CODE)
       const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
       const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
       const tagCode = controlledCode || (matchedTag as any)?.tagCode || (matchedTag as any)?.code
@@ -1069,7 +1069,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         const dimCode =
           group?.code ||
           CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
-          (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
+          (group?.name && isControlledConcept(group.name) ? concept(group.name) : CONTENT_TAGS_CODE)
         const matchedTag = (group?.tags || []).find(t => t.tagValue === tagValue)
         const controlledCode = isControlledConcept(tagValue) ? concept(tagValue) : undefined
         const tagCode = controlledCode || (matchedTag as any)?.tagCode || (matchedTag as any)?.code
@@ -1092,7 +1092,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       const dimCode =
         group?.code ||
         CONTROLLED_DIMENSION_ROOT_CODES[dimId] ||
-        (dimName && isControlledConcept(dimName) ? concept(dimName) : undefined)
+        (group?.name && isControlledConcept(group.name) ? concept(group.name) : CONTENT_TAGS_CODE)
       for (const name of names) {
         if (name && name.trim()) {
           const trimmedName = name.trim()

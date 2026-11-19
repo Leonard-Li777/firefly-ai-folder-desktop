@@ -31,7 +31,8 @@ import {
   installCanonicalMaintenanceListener
 } from './canonical-maintenance-service'
 
-import { STAGE2_WAIT_TIMEOUT_MS } from './stage-notifier'
+import { StageNotifier, Stage2TimeoutError, STAGE2_WAIT_TIMEOUT_MS } from './stage-notifier'
+export { StageNotifier, Stage2TimeoutError }
 import { AnalysisWriteDispatcher } from './analysis-write-dispatcher'
 import { AnalysisOrchestratorWorker } from './analysis-orchestrator-worker'
 import { OmniHttpAdapter } from './omni-http-adapter'
@@ -93,9 +94,6 @@ export class AnalysisQueueService {
   private engineHealth: EngineHealthTier
   private orphanWatchdog: OrphanWatchdog
   private currentAbortController: AbortController | null = null
-
-  private wakeUpResolver?: () => void
-  private wakeUpPromise?: Promise<void>
 
   /** 工单 06：canonical 档位切换维护监听的取消订阅句柄 */
   private canonicalMaintenanceUnsubscribe?: () => void
@@ -183,15 +181,8 @@ export class AnalysisQueueService {
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return
-    if (this.initializePromise) {
-      await this.initializePromise
-      // 上一次尝试若因适配器未就绪而失败，initializePromise 不可继续复用
-      // （否则后续 ensureInitialized() 会被旧 Promise 短路，重试永不可能发生）
-      if (!this.isInitialized) {
-        this.initializePromise = undefined
-      }
-      return this.initializePromise
-    }
+    // 并发入口共享同一个在途 Promise；失败清理只由发起者负责，避免并发重跑与监听泄漏
+    if (this.initializePromise) return this.initializePromise
 
     const initPromise = (async () => {
       logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 开始初始化服务...')
@@ -245,9 +236,7 @@ export class AnalysisQueueService {
       }
 
       this.queueManager = new QueueManager(this.ignoreRules, {
-        onUpdate: () => this.writeDispatcher.emitUpdate(),
-        onPersist: () => this.persist(),
-        onWakeUp: () => this.wakeUp()
+        onUpdate: () => this.writeDispatcher.emitUpdate()
       })
 
       await this.queueManager.loadFromDB()
@@ -276,7 +265,14 @@ export class AnalysisQueueService {
     })()
     this.initializePromise = initPromise
 
-    await initPromise
+    try {
+      await initPromise
+    } finally {
+      // 未成功初始化（适配器未就绪或装配抛错）时清空，允许后续入口重新装配
+      if (!this.isInitialized && this.initializePromise === initPromise) {
+        this.initializePromise = undefined
+      }
+    }
   }
 
   /**
@@ -435,7 +431,6 @@ export class AnalysisQueueService {
     this.syncHibernationState(true)
 
     if (this.isProcessingLoopActive) {
-      this.wakeUp()
       this.writeDispatcher.emitUpdate()
       return
     }
@@ -653,7 +648,6 @@ export class AnalysisQueueService {
       flushFtsSync()
     }
 
-    this.wakeUp()
     this.writeDispatcher.emitUpdate()
   }
 
@@ -714,11 +708,14 @@ export class AnalysisQueueService {
       return isPathEqual(filePath, directoryPath) || isSubPath(directoryPath, filePath)
     }
 
-    if (this.current && belongsToDirectory(this.current.path)) {
+    const shouldAbortDirectoryTask =
+      (this.current && belongsToDirectory(this.current.path)) ||
+      this.orchestratorWorker.hasActiveItemMatching(belongsToDirectory)
+    if (shouldAbortDirectoryTask) {
       logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         '[分析队列] 删除工作目录前中止在途任务，释放 .VirtualDirectory 句柄:',
-        this.current.path
+        this.current?.path || directoryPath
       )
       if (this.currentAbortController) {
         this.currentAbortController.abort()
@@ -932,24 +929,6 @@ export class AnalysisQueueService {
       'local-model-busy',
       5000
     )
-  }
-
-  private persist(): void {}
-
-  private wakeUp(forceStart = false): void {
-    if (this.wakeUpResolver) {
-      this.wakeUpResolver()
-      this.wakeUpResolver = undefined
-      this.wakeUpPromise = undefined
-    }
-  }
-
-  private createWakeUpPromise(timeout: number): Promise<void> {
-    const timeoutPromise = new Promise<void>(resolve => setTimeout(resolve, timeout))
-    this.wakeUpPromise = new Promise<void>(resolve => {
-      this.wakeUpResolver = resolve
-    })
-    return Promise.race([timeoutPromise, this.wakeUpPromise])
   }
 
   /**

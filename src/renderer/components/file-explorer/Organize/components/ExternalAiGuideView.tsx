@@ -13,7 +13,7 @@ interface ExternalAiGuideViewProps {
   onBack: () => void
 }
 
-const AI_PLATFORMS = [
+const getAiPlatforms = () => [
   {
     name: t('字节跳动 · 豆包'),
     desc: t('国内响应迅速，上下文丰富'),
@@ -259,7 +259,7 @@ export const ExternalAiGuideView: React.FC<ExternalAiGuideViewProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {AI_PLATFORMS.map(p => (
+              {getAiPlatforms().map(p => (
                 <div
                   key={p.name}
                   onClick={() => openExternalLink(p.url)}

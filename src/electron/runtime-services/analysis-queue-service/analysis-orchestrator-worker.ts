@@ -27,6 +27,10 @@ import type { AnalysisItemStatusExtra } from './analysis-write-dispatcher'
 export class AnalysisOrchestratorWorker {
   /** 并行模式双通道正在处理的队列项引用计数（防 OrphanWatchdog 误杀长耗时在跑项） */
   private activeItemCounts = new Map<number, number>()
+  /** CPU 提取开始至 GPU 消费者完结（含交接排队窗口）的受保护队列 ID（防 10m+ 长队列交接期误杀） */
+  private handoverPendingIds = new Set<number>()
+  /** 当前并行批次项的路径索引（供 abortAndDeleteItemsByDirectory 精确匹配目录） */
+  private parallelItemPaths = new Map<number, string>()
   /** 当前并行批次所属工作空间 ID（供 pause() 精确中止并行双通道） */
   private activeParallelWorkspaceId: number | null = null
 
@@ -44,9 +48,22 @@ export class AnalysisOrchestratorWorker {
     ) => void
   ) {}
 
-  /** 判断指定队列项是否正在并行双通道中运行 */
+  /** 判断指定队列项是否处于并行双通道执行中或 CPU→GPU 交接等待窗口 */
   isItemActive(itemId: number): boolean {
-    return (this.activeItemCounts.get(itemId) ?? 0) > 0
+    return (this.activeItemCounts.get(itemId) ?? 0) > 0 || this.handoverPendingIds.has(itemId)
+  }
+
+  /** 判断并行双通道活跃/交接项中是否存在路径匹配谓词的任务 */
+  hasActiveItemMatching(predicate: (filePath: string) => boolean): boolean {
+    for (const itemId of this.activeItemCounts.keys()) {
+      const p = this.parallelItemPaths.get(itemId)
+      if (p && predicate(p)) return true
+    }
+    for (const itemId of this.handoverPendingIds) {
+      const p = this.parallelItemPaths.get(itemId)
+      if (p && predicate(p)) return true
+    }
+    return false
   }
 
   /** 判断并行双通道是否有活跃任务（可选按 workspaceId 过滤） */
@@ -100,6 +117,10 @@ export class AnalysisOrchestratorWorker {
   ) {
     const notifier = new StageNotifier()
     const cpuSkippedIds = new Set<number>()
+    this.parallelItemPaths.clear()
+    for (const item of pendingItems) {
+      if (item.path) this.parallelItemPaths.set(item.id, item.path)
+    }
 
     const isAlreadyStage2 = (item: AnalysisQueueItem): boolean => {
       const db = databaseService.db
@@ -162,11 +183,13 @@ export class AnalysisOrchestratorWorker {
         }
 
         this.markActive(item.id)
+        this.handoverPendingIds.add(item.id)
         try {
           this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
           await this.fileProcessor.processFile(item, signal, 'cpu')
           notifier.notify(item.id)
         } catch (err: unknown) {
+          this.handoverPendingIds.delete(item.id)
           this.updateItemStatus(
             item.id,
             'failed',
@@ -184,7 +207,11 @@ export class AnalysisOrchestratorWorker {
     const runGPUConsumer = async () => {
       for (const item of pendingItems) {
         if (signal.aborted) break
-        if (!this.getQueueManager()?.hasItem(item.id)) continue
+        if (!this.getQueueManager()?.hasItem(item.id)) {
+          // 已被删除的项不得滞留交接保护集合，否则 isItemActive / 目录中止判定会持续误判
+          this.handoverPendingIds.delete(item.id)
+          continue
+        }
 
         if (item.itemType === 'directory') {
           this.markActive(item.id)
@@ -280,6 +307,7 @@ export class AnalysisOrchestratorWorker {
           }
         } finally {
           this.unmarkActive(item.id)
+          this.handoverPendingIds.delete(item.id)
         }
       }
     }
@@ -290,6 +318,8 @@ export class AnalysisOrchestratorWorker {
       await Promise.all([runCPUProducer(), runGPUConsumer()])
     } finally {
       this.activeParallelWorkspaceId = null
+      this.handoverPendingIds.clear()
+      this.parallelItemPaths.clear()
     }
   }
 }

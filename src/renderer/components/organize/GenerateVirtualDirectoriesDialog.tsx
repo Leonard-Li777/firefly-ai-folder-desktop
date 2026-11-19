@@ -1,18 +1,10 @@
 import { DimensionGroup, SelectedTag } from '@firefly/types'
 import { MaterialIcon, cn } from '../../lib/utils'
 import React, { useEffect, useState } from 'react'
-import { CATEGORY_EXT_MAP } from '@firefly/shared'
+import { CATEGORY_EXT_MAP, concept, getCanonicalConceptName } from '@firefly/shared'
 
 import { DirectoryNode } from '@firefly/types/organize-types'
 import { t } from '@app/languages'
-
-const THEME_DIM_NAME = t('题材')
-const GAME_TYPE_DIM_NAME = t('游戏类型')
-const VIDEO_TAG_NAME = t('视频')
-const MOVIE_TAG_NAME = t('影视')
-const EBOOK_TAG_NAME = t('电子书')
-const NOVEL_TAG_NAME = t('小说')
-const GAME_ENTERTAINMENT_TAG_NAME = t('游戏娱乐')
 
 interface DirectoryPreviewNode {
   name: string
@@ -203,6 +195,8 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
 
     // 树状模式
     const tagNodes = new Map<string, DirectoryNode>()
+    // 并行保存维度与标签受控 code，确保扩展名过滤在 10 种界面语言下均不依赖展示名文本
+    const tagCodeMetaMap = new Map<string, { dimCode?: string; tagCode?: string }>()
 
     // 第一步：为每个选中的标签创建节点
     selectedTags.forEach(tag => {
@@ -211,6 +205,11 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
 
       const tagKey = `${tag.dimensionId}-${tag.tagValue}`
       const files = tagFileMap.get(tagKey) || []
+      const matchedGroupTag = group.tags?.find(dt => dt.tagValue === tag.tagValue)
+      tagCodeMetaMap.set(tagKey, {
+        dimCode: group.code,
+        tagCode: (tag as { code?: string }).code || matchedGroupTag?.code
+      })
 
       const node: DirectoryNode = {
         id: tagKey, // 新增：保存唯一标识
@@ -279,40 +278,64 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
     }
 
     // 第二点半：如果存在父节点，且该节点是“题材”维度，需要根据其父级节点的标签，过滤文件类型
+    const themeCode = concept('题材')
+    const gameTypeCode = concept('游戏类型')
+    const videoCode = concept('视频')
+    const movieCode = concept('影视')
+    const ebookCode = concept('电子书')
+    const novelCode = concept('小说')
+    const gameEntertainmentCode = concept('游戏娱乐')
+    const themeCanonical = getCanonicalConceptName(themeCode)
+    const gameTypeCanonical = getCanonicalConceptName(gameTypeCode)
+    const videoCanonical = getCanonicalConceptName(videoCode)
+    const movieCanonical = getCanonicalConceptName(movieCode)
+    const ebookCanonical = getCanonicalConceptName(ebookCode)
+    const novelCanonical = getCanonicalConceptName(novelCode)
+    const gameEntertainmentCanonical = getCanonicalConceptName(gameEntertainmentCode)
+
     tagNodes.forEach((node, tagKey) => {
       if (!node.files) return
 
+      const nodeCodeMeta = tagCodeMetaMap.get(tagKey)
       const isThemeNode =
+        nodeCodeMeta?.dimCode === themeCode ||
+        nodeCodeMeta?.dimCode === gameTypeCode ||
         node.dimensionId === 3 ||
         node.dimensionId === 4 ||
-        node.dimensionName === THEME_DIM_NAME ||
-        node.dimensionName === GAME_TYPE_DIM_NAME ||
+        node.dimensionName === themeCanonical ||
+        node.dimensionName === gameTypeCanonical ||
         (node.dimensionName &&
           (node.dimensionName.toLowerCase().includes('theme') ||
             node.dimensionName.toLowerCase().includes('genre') ||
             node.dimensionName.toLowerCase().includes('game')))
       if (!isThemeNode) return
 
-      // 向上寻找父级或祖先节点的标签值，确定对应的物理文件分类
+      // 向上寻找父级或祖先节点的受控 code / 标签值，确定对应的物理文件分类
       let parentKey = tagParentKeys.get(tagKey)
       const allowedExtensions: string[] = []
 
       while (parentKey) {
         const parentNode = tagNodes.get(parentKey)
         if (parentNode) {
+          const parentCode = tagCodeMetaMap.get(parentKey)?.tagCode
           const parentTagValue = parentNode.name
           const isVideoTag =
-            parentTagValue === VIDEO_TAG_NAME ||
-            parentTagValue === MOVIE_TAG_NAME ||
+            parentCode === videoCode ||
+            parentCode === movieCode ||
+            parentTagValue === videoCanonical ||
+            parentTagValue === movieCanonical ||
             parentTagValue.toLowerCase().includes('video') ||
             parentTagValue.toLowerCase().includes('movie')
           const isEbookTag =
-            parentTagValue === EBOOK_TAG_NAME ||
-            parentTagValue === NOVEL_TAG_NAME ||
+            parentCode === ebookCode ||
+            parentCode === novelCode ||
+            parentTagValue === ebookCanonical ||
+            parentTagValue === novelCanonical ||
             parentTagValue.toLowerCase().includes('ebook') ||
             parentTagValue.toLowerCase().includes('novel')
           const isGameTag =
-            parentTagValue === GAME_ENTERTAINMENT_TAG_NAME ||
+            parentCode === gameEntertainmentCode ||
+            parentTagValue === gameEntertainmentCanonical ||
             parentTagValue.toLowerCase().includes('game')
 
           if (isEbookTag) {

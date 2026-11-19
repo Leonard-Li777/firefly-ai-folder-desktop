@@ -5,15 +5,6 @@ import { Check } from 'lucide-react'
 
 export type WelcomeStepNumber = 1 | 2 | 3 | 4 | 5
 
-/** 与 5 步向导一一对应的短标签，保持大白话、避免技术黑话 */
-const STEP_LABELS = [
-  t('选择语言'),
-  t('能力装配'),
-  t('安装目录'),
-  t('插件安装方式'),
-  t('安装完成')
-] as const
-
 interface WelcomeStepperProps {
   currentStep: WelcomeStepNumber
 }
@@ -27,6 +18,14 @@ interface WelcomeStepperProps {
  */
 export function WelcomeStepper({ currentStep }: WelcomeStepperProps) {
   const { t } = useVoerkaI18n(i18nScope)
+  /** 与 5 步向导一一对应的短标签，保持大白话、避免技术黑话；放组件内随语言切换动态刷新 */
+  const stepLabels = [
+    t('选择语言'),
+    t('能力装配'),
+    t('安装目录'),
+    t('插件安装方式'),
+    t('安装完成')
+  ] as const
 
   return (
     <div
@@ -41,7 +40,7 @@ export function WelcomeStepper({ currentStep }: WelcomeStepperProps) {
           {t('第 {step} 步 / 共 5 步', { step: currentStep })}
         </div>
         <div className="flex items-center justify-between">
-          {STEP_LABELS.map((label, index) => {
+          {stepLabels.map((label, index) => {
             const step = (index + 1) as WelcomeStepNumber
             const isDone = step < currentStep
             const isCurrent = step === currentStep
@@ -59,7 +58,7 @@ export function WelcomeStepper({ currentStep }: WelcomeStepperProps) {
                 : 'text-muted-foreground'
 
             return (
-              <React.Fragment key={label}>
+              <React.Fragment key={step}>
                 <div
                   data-testid={`welcome-stepper-item-${step}`}
                   aria-current={isCurrent ? 'step' : undefined}
@@ -74,10 +73,10 @@ export function WelcomeStepper({ currentStep }: WelcomeStepperProps) {
                   <span
                     className={`text-xs whitespace-nowrap ${isCurrent ? '' : 'hidden sm:inline'} ${labelClass}`}
                   >
-                    {t(label)}
+                    {label}
                   </span>
                 </div>
-                {index < STEP_LABELS.length - 1 && (
+                {index < stepLabels.length - 1 && (
                   <div
                     className={`flex-1 h-0.5 mx-1 mb-5 rounded-full ${
                       isDone ? 'bg-emerald-500/50' : 'bg-border'

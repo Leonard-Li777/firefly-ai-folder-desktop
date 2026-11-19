@@ -43,6 +43,7 @@ import { DoneView } from './components/DoneView'
 import { SplitPane } from '../../common/SplitPane'
 import { OrganizeMode } from './types'
 import { HintBanner } from '../../ui/hint-banner'
+import { getDefaultGuidancePrompt } from './hooks/organize-state/guidance-prompt'
 import { isUnclassifiedNodeName } from './utils/helpers'
 import { pathsToDirectoryNodes, directoryTreeNodesToVirtualNodes } from './utils/treeFromPaths'
 
@@ -245,11 +246,10 @@ export const Organize: React.FC = () => {
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
     if (!Array.isArray(tree) || tree.length === 0) return false
-    const UNCLASSIFIED_ALIAS = t('未分类')
 
     const checkNode = (nodes: any[]): boolean => {
       for (const node of nodes) {
-        const isUnclass = isUnclassifiedNodeName(node.name) || node.name === UNCLASSIFIED_ALIAS
+        const isUnclass = isUnclassifiedNodeName(node.name)
         if (
           !isUnclass &&
           ((node.files && node.files.length > 0) || (node.fileCount && node.fileCount > 0))
@@ -1250,32 +1250,7 @@ export const Organize: React.FC = () => {
             <textarea
               className="w-full min-h-[200px] p-3 rounded-xl border border-border bg-background text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary/50 placeholder:text-muted-foreground/60"
               placeholder={t('请描述您的整理需求，例如：以设计师视角整理素材文件')}
-              value={
-                guidancePrompt ||
-                t(`以设计师视角，按以下目录结构整理素材文件：
-
-- 设计素材库
-  - UI设计
-    - 组件库
-    - 页面模板
-    - 图标素材
-  - 插画素材
-    - 扁平插画
-    - 3D插画
-    - 手绘风格
-  - 字体资源
-    - 中文字体
-    - 英文字体
-    - 特殊字体
-  - 图片素材
-    - 背景图片
-    - 照片素材
-    - 纹理贴图
-  - 动效资源
-    - Lottie动画
-    - GIF动图
-    - 视频素材`)
-              }
+              value={guidancePrompt || getDefaultGuidancePrompt()}
               onChange={e => setGuidancePrompt(e.target.value)}
             />
             <DialogFooter className="gap-2">

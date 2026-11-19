@@ -37,6 +37,7 @@ import path from 'node:path'
 import { compressText, compressJson } from '../../../utils/text-compressor'
 // 工单 05 终态 D（缓存命中）：与 file-processor 五终态共用同一 canonical 固化入口
 import { solidifyCanonicalForTerminal } from '../canonical-text-service'
+import { queueFtsSync } from '../fts-sync-hooks'
 
 /**
  * 保存云端分析结果到数据库
@@ -531,7 +532,7 @@ export async function saveCloudResult(
     })
 
     runTransaction()
-    databaseService.syncFTSTags(fileFingerprint)
+    queueFtsSync(fileFingerprint)
     // 工单 05 终态 D（缓存命中）：本地缓存与云端缓存共用本入口，标签落库 + FTS 同步后
     // 固化 canonical 语义文本/向量；canonical 失败不阻断 completed。
     await solidifyCanonicalForTerminal('cache_hit', fileFingerprint)

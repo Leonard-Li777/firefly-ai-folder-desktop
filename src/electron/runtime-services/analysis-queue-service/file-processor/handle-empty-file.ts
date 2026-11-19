@@ -1,5 +1,6 @@
 import { AnalysisQueueItem } from '@firefly/types'
 import { databaseService } from '../../database/database-service'
+import { queueFtsSync } from '../fts-sync-hooks'
 import { LogCategory, logger, insertTagToDb, normalizeFileExtension } from '@firefly/shared'
 import { t } from '@app/languages'
 import { SYSTEM_TAG_NAMES } from '../../../adapters/tag-tree-view-adapter'
@@ -125,7 +126,7 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
       // 语义更诚实：basicAttrCode 是稳定 code 而非数字维度 id。syncStatus=2 保留。
       insertTagToDb(db, emptyHash, emptyTagLabel, undefined, 2, basicAttrCode)
     })()
-    databaseService.syncFTSTags(emptyHash)
+    queueFtsSync(emptyHash)
   } catch (e) {
     logger.warn(LogCategory.FILE_ANALYSIS, '[空文件处理] 添加默认标签失败:', e)
   }

@@ -14,7 +14,7 @@ import { SettingsCategory } from '@firefly/types'
 /**
  * 常用外部 AI 平台快捷入口（与批量整理「外部 AI 生成目录结构」页保持一致，点击直达官网）
  */
-const EXTERNAL_AI_PLATFORMS = [
+const getExternalAiPlatforms = () => [
   {
     name: t('豆包'),
     url: 'https://www.doubao.com/chat/',
@@ -112,10 +112,8 @@ const DirectoryProfileSectionComponent: React.FC<{
   const isAiGenerationMode = currentAnalysisMode === 'quick_name' || currentAnalysisMode === 'full'
   const openSettings = useSettingsStore(s => s.openSettings)
 
-  if (!analysisResult || !isDirAnalysis(analysisResult)) return null
-
-  const ctx = analysisResult.contextAnalysis
-  const dirPath = analysisResult.path
+  const ctx = analysisResult?.contextAnalysis
+  const dirPath = analysisResult?.path
   const presetTemplates = getPresetNamingTemplates()
 
   const isPathEqual =
@@ -218,6 +216,9 @@ const DirectoryProfileSectionComponent: React.FC<{
     setAnalysisStrategyValue(ctx?.analysisStrategy || '')
     setNamingTemplateValue(ctx?.namingTemplate || '')
   }, [ctx?.namingPattern, ctx?.analysisStrategy, ctx?.namingTemplate])
+
+  // 必须在全部 React Hooks 之后早退，避免组件条件渲染切换时触发 Hooks 数量不一致崩溃
+  if (!analysisResult || !isDirAnalysis(analysisResult)) return null
 
   // 保存智能文件名格式
   const handleSaveNamingPattern = async () => {
@@ -679,7 +680,7 @@ const DirectoryProfileSectionComponent: React.FC<{
                       </div>
                       {/* 常用外部 AI 官网快捷入口（与批量整理「外部 AI 生成目录结构」页一致） */}
                       <div className="grid grid-cols-2 gap-1.5">
-                        {EXTERNAL_AI_PLATFORMS.map(p => (
+                        {getExternalAiPlatforms().map(p => (
                           <div
                             key={p.name}
                             onClick={() => openExternalLink(p.url)}

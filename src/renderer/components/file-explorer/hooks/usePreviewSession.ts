@@ -43,7 +43,7 @@ export interface UsePreviewSessionReturn {
   resetAndRetry: () => void
 }
 
-const FALLBACK_ICON_CANDIDATE: PreviewCandidate = {
+const createFallbackIconCandidate = (): PreviewCandidate => ({
   id: 'system_icon_fallback',
   name: t('系统图标与元数据'),
   kind: 'system_icon',
@@ -52,7 +52,7 @@ const FALLBACK_ICON_CANDIDATE: PreviewCandidate = {
   effectivePriority: 0,
   isOfficialCertified: true,
   isTrustedForPrivate: true
-}
+})
 
 let globalGenerationCounter = 0
 
@@ -120,7 +120,7 @@ export function usePreviewSession(props: UsePreviewSessionProps): UsePreviewSess
   )
 
   const context = buildContext(generation, cursor, abortControllerRef.current.signal)
-  const currentCandidate = candidates[cursor] || candidates[0] || FALLBACK_ICON_CANDIDATE
+  const currentCandidate = candidates[cursor] || candidates[0] || createFallbackIconCandidate()
 
   // 当文件路径或隐私属性改变时，初始化新 Session
   useEffect(() => {

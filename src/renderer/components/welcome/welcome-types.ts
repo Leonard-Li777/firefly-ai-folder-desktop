@@ -47,7 +47,8 @@ export const DEFAULT_WELCOME_SELECTION: WelcomeSelection = {
 export const DEFAULT_HARDWARE: HardwareProbeResult = {
   totalMemGB: 16,
   totalMemMB: 16384,
-  gpuName: t('检测中...'),
+  // 渲染层 WelcomeStep2PluginSetup 在探测中/空串时会展示本地化文案，避免模块顶层引用 t()
+  gpuName: '',
   vramGB: 0,
   isGpuSupported: false,
   storageFreeGB: 50

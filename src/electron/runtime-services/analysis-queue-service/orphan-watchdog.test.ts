@@ -151,4 +151,33 @@ describe('OrphanWatchdog.reclaimOrphanedQueueRows', () => {
     expect(onReclaimed).not.toHaveBeenCalled()
     expect(runCalls.filter(c => c.sql.includes('UPDATE workspace_files'))).toHaveLength(0)
   })
+
+  it('处于 CPU→GPU 交接等待窗的活跃项（isItemActive === true）即便 claimed_at 超阈值也不得被误回收', () => {
+    const now = Date.now()
+    const handoverWaitingRow = {
+      id: 77,
+      item_id: 770,
+      item_type: 'file',
+      claimed_at: toSqliteUtcTimestamp(now - ORPHAN_STALE_THRESHOLD_MS - 15 * 60 * 1000)
+    }
+    const fakeDb = {
+      prepare: (sql: string) => ({
+        all: () => {
+          if (sql.includes('PRAGMA table_info')) {
+            return [{ name: 'id' }, { name: 'claimed_at' }]
+          }
+          return [handoverWaitingRow]
+        },
+        run: vi.fn()
+      }),
+      transaction: (fn: () => void) => () => fn()
+    }
+    ;(databaseService as any).db = fakeDb
+
+    const onReclaimed = vi.fn()
+    const watchdog = new OrphanWatchdog(itemId => itemId === handoverWaitingRow.id, onReclaimed)
+    watchdog.reclaimOrphanedQueueRows()
+
+    expect(onReclaimed).not.toHaveBeenCalled()
+  })
 })
