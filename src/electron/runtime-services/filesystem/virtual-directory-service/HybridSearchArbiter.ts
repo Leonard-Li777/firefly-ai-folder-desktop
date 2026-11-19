@@ -1122,7 +1122,7 @@ export class HybridSearchArbiter {
               `
               SELECT f.file_fingerprint AS file_fingerprint
               FROM files_fts
-              JOIN files f ON f.rowid = files_fts.rowid
+              JOIN files f ON f.id = files_fts.rowid
               JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
               WHERE files_fts MATCH ?
                 ${extraWhere}
@@ -1306,7 +1306,7 @@ export class HybridSearchArbiter {
                 `
                 SELECT f.file_fingerprint AS file_fingerprint
                 FROM files_fts
-                JOIN files f ON f.rowid = files_fts.rowid
+                JOIN files f ON f.id = files_fts.rowid
                 JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
                 WHERE files_fts MATCH ?
                   ${extraWhere}
@@ -1386,7 +1386,7 @@ export class HybridSearchArbiter {
           const fallbackSql = `
             SELECT f.file_fingerprint AS file_fingerprint
             FROM files_fts
-            JOIN files f ON f.rowid = files_fts.rowid
+            JOIN files f ON f.id = files_fts.rowid
             JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
             WHERE ${likeConditions.join(' AND ')}
               ${extraWhere}

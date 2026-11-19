@@ -130,8 +130,12 @@ export const GENESIS_V1_SCHEMA = `
   );
 
   -- 3. 文件基础信息表（内容中心化，基于指纹去重，以 FileGroup file_group 分类）
+  -- V4 创世模型 B（Issue 01）：代理主键 id INTEGER AUTOINCREMENT，杜绝 VACUUM 重排隐式 rowid
+  -- 造成 FTS5 张冠李戴（v4-genesis spec §2.3 / [VERIFY-04]）。file_fingerprint 降为 UNIQUE 业务键，
+  -- 全部读写 / 外键仍按 file_fingerprint 寻址，无需改写调用方 SQL。
   CREATE TABLE IF NOT EXISTS files (
-    file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹 (Base62/32位)，作为全局唯一标识
+    id INTEGER PRIMARY KEY AUTOINCREMENT,        -- 代理主键（VACUUM 免疫，FTS rowid 锚点）
+    file_fingerprint TEXT NOT NULL UNIQUE,       -- 文件内容指纹 (Base62/32位)，业务唯一标识
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
     raw_smart_name TEXT,                         -- 原始智能文件名（不带扩展名，未经模板包裹的 AI 核心名称）
     smart_name_source TEXT,                      -- 智能名称「核心名来源」：'ai'=stage3 高级AI引擎语言模型(LLM)生成 | 'machine'=Omni 5W SlotEngine 造句生成 | NULL=原名/占位/重置
@@ -197,6 +201,12 @@ export const GENESIS_V1_SCHEMA = `
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录修改时间
     accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录最后访问时间
+    -- V4 切片A（Issue 01 §2）：增量扫描优化列——FileGuard 两层验证依赖 mtime_ms 快速判过期，
+    -- file_size 辅助零成本比对，is_ignored 物化排除规则避免扫描期反复过滤。
+    file_size INTEGER NOT NULL DEFAULT 0,        -- 该路径下文件实际大小（字节，扫描期 stat 取得）
+    mtime_ms INTEGER NOT NULL DEFAULT 0,         -- 文件最后修改时间戳（毫秒，FileGuard 过期围栏锚点）
+    is_ignored INTEGER NOT NULL DEFAULT 0        -- 排除规则命中标记（0=正常，1=忽略）；规则变更批刷新
+                   CHECK (is_ignored IN (0, 1)),
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE SET NULL,
     FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE,
     FOREIGN KEY (directory_id) REFERENCES workspace_directories(id) ON DELETE CASCADE,
@@ -682,6 +692,12 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspace_files_path_nocase ON workspace_files(path COLLATE NOCASE);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_lightweight ON workspace_files(workspace_id, is_analyzed, path);
+  -- V4 切片A（Issue 01 §2）：增量扫描覆盖索引——diff 扫描单表命中，免回表
+  CREATE INDEX IF NOT EXISTS idx_wf_diff_cover    ON workspace_files(workspace_id, directory_id, is_ignored, path, file_size, mtime_ms);
+  -- 活跃目录快速过滤（部分索引，排除 is_ignored=1）
+  CREATE INDEX IF NOT EXISTS idx_wf_ws_active_dir ON workspace_files(workspace_id, directory_id) WHERE is_ignored = 0;
+  -- 指纹反查（部分索引，覆盖 fk 路径）
+  CREATE INDEX IF NOT EXISTS idx_wf_fp            ON workspace_files(file_fingerprint) WHERE file_fingerprint IS NOT NULL;
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
   CREATE INDEX IF NOT EXISTS idx_workspaces_bound_wf ON workspaces(bound_workflow_id);
@@ -714,7 +730,7 @@ export const GENESIS_V1_SCHEMA = `
 
   CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT new.rowid, new.file_fingerprint,
+    SELECT new.id, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
       COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
       COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
@@ -726,9 +742,9 @@ export const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
-    DELETE FROM files_fts WHERE rowid = old.rowid;
+    DELETE FROM files_fts WHERE rowid = old.id;
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT new.rowid, new.file_fingerprint,
+    SELECT new.id, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
       COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
       COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
@@ -740,21 +756,21 @@ export const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
-    DELETE FROM files_fts WHERE rowid = old.rowid;
+    DELETE FROM files_fts WHERE rowid = old.id;
   END;
 
   -- 拼音索引删除一致性（纯 SQL 方向）：files 删除即清拼音行，防孤儿行被搜索召回。
   -- 写入/更新方向由 JS 计算拼音（pinyin-text.ts），走 FileDao write-through + reconciler，无法用触发器表达。
-  -- rowid 对齐（R1 盲审 A-H1）：拼音行 rowid = files.rowid，删除/寻址走 rowid（O(log n)）；
+  -- rowid 对齐（R1 盲审 A-H1）：拼音行 rowid = files.id，删除/寻址走 rowid（O(log n)）；
   -- 按 file_fingerprint（UNINDEXED 列）删除对 FTS5 是全表扫描，批量删除 M 个文件 = M 次全表扫描。
   CREATE TRIGGER trg_files_pinyin_fts_delete AFTER DELETE ON files BEGIN
-    DELETE FROM files_pinyin_fts WHERE rowid = old.rowid;
+    DELETE FROM files_pinyin_fts WHERE rowid = old.id;
   END;
 
   CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
+    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.rowid, f.file_fingerprint,
+    SELECT f.id, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
@@ -763,9 +779,9 @@ export const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc, asr ON file_contents BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
+    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.rowid, f.file_fingerprint,
+    SELECT f.id, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
@@ -774,9 +790,9 @@ export const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
+    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
+    SELECT f.id, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
@@ -788,9 +804,9 @@ export const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name, file_fingerprint ON workspace_files BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
+    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
+    SELECT f.id, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
@@ -1160,3 +1176,154 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
   CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
 `
+
+/**
+ * 校验 tag_paths.code_path 格式（写入端闸口，比建表 CHECK 更严）：
+ * 以 '/' 开头、不以 '/' 结尾、无 '//'、每段为非空可打印 ASCII（受控 code 不含中文/乱码/空格）。
+ *
+ * 与建表 CHECK 的关系：tag_paths.code_path 的 CHECK 只覆盖首尾斜杠与 '//'（较宽），
+ * 本函数在其之上额外拒绝空格与不可打印字符 [^ -~]。方向是「CHECK 宽 / parse 严」——
+ * 保证不会出现「CHECK 拒绝但 parse 放行」的插入报错；严闸口在写入端提前拦截脏路径。
+ * @returns 合法返回分段数组（去除首尾空段），非法返回 null
+ */
+function parseCodePath(codePath: string): string[] | null {
+  if (
+    typeof codePath !== 'string' ||
+    !codePath.startsWith('/') ||
+    codePath.length <= 1 ||
+    codePath.endsWith('/') ||
+    codePath.includes('//') ||
+    codePath.includes(' ') ||
+    /[^ -~]/.test(codePath)
+  ) {
+    return null
+  }
+  const segs = codePath
+    .slice(1)
+    .split('/')
+    .map(s => s.trim())
+    .filter(Boolean)
+  if (segs.length === 0) return null
+  return segs
+}
+
+/**
+ * 单源原子函数：ensureTagPath(db, codePath)（Issue 01 §3 / v4-genesis spec §B）
+ *
+ * 唯一合法的 tag_paths 写入收口（严禁业务代码裸 INSERT INTO tag_paths）。
+ * 单事务内：① 幂等插入 tag_paths（code_path UNIQUE，已存在直接复用 path_id）；
+ * ② 写入含自身在内的全量祖先闭包行到 tag_path_ancestors（供子树筛选与切语言补译）。
+ *
+ * 返回该 code_path 对应的 path_id；code_path 非法时抛错（调用方据契约记录 CONSTRAINT 后 CONTINUE）。
+ *
+ * @param db        better-sqlite3 连接
+ * @param codePath  完整物化代码路径（如 "/omw.100.n/omw.200.n"，语言无关）
+ * @returns path_id（已落库或已存在的稳定主键）
+ */
+export function ensureTagPath(db: Database, codePath: string): number {
+  const segs = parseCodePath(codePath)
+  if (!segs) {
+    throw new Error(
+      `ensureTagPath: 非法 code_path "${codePath}"（须以 / 开头、不以 / 结尾、无 //、纯可打印 ASCII）`
+    )
+  }
+
+  const leafCode = segs[segs.length - 1]
+  const viaParentCode = segs.length >= 2 ? segs[segs.length - 2] : ''
+  const depth = segs.length
+
+  const tx = db.transaction((): number => {
+    // ① 幂等插入 tag_paths：命中 UNIQUE(code_path) 冲突则忽略，随后统一查回 path_id
+    db.prepare(
+      `INSERT OR IGNORE INTO tag_paths (leaf_code, via_parent_code, code_path, depth)
+       VALUES (?, ?, ?, ?)`
+    ).run(leafCode, viaParentCode, codePath, depth)
+
+    const row = db.prepare(`SELECT path_id FROM tag_paths WHERE code_path = ?`).get(codePath) as
+      | { path_id: number }
+      | undefined
+    if (!row) {
+      throw new Error(`ensureTagPath: 插入 tag_paths 后未取回 path_id（code_path="${codePath}"）`)
+    }
+    const pathId = row.path_id
+
+    // ② 含自身在内的全量祖先闭包：ancestor_code 遍历全部段（含 leaf 自身），OR IGNORE 幂等
+    const insertAncestor = db.prepare(
+      `INSERT OR IGNORE INTO tag_path_ancestors (ancestor_code, path_id) VALUES (?, ?)`
+    )
+    for (const ancestorCode of segs) {
+      insertAncestor.run(ancestorCode, pathId)
+    }
+
+    return pathId
+  })
+
+  return tx()
+}
+
+/**
+ * 动态调试视图重建（Issue 01 §4）：按目标语言 DROP + CREATE VIEW
+ *   v_tag_paths_readable  —— tag_paths 每行追加当前语言的物化展示名路径 name_path_readable
+ *   v_file_tags_readable  —— file_tag_relations(模型A) JOIN tag_paths 后的可读视图
+ *
+ * 安全铁律：
+ * - locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（复用 resolveTagAliasesLangTable 同源校验）；
+ * - 视图按语言动态拼名，严禁写入静态 GENESIS_V1_SCHEMA；
+ * - 仅供开发期调试直查，全仓业务代码零引用 v_*（业务读侧仍走物化列）。
+ *
+ * name_path_readable 拼装：用 json_each 把 code_path（如 "/omw.100.n/omw.200.n"）拆成段，
+ * 左连 tag_aliases_{lang} 取各段规范展示名，再按原顺序 group_concat 回 '/' 分隔路径。
+ * 任一段在当前语言缺译时回退该段 code（COALESCE），保证视图永不因个别缺译而断链。
+ *
+ * @param db     better-sqlite3 连接
+ * @param locale 目标语言（如 zh-CN）
+ */
+export function rebuildDebugTagViews(db: Database, locale: string): void {
+  // 安全表名（内含白名单校验 + 回退 en-US）：形如 tag_aliases_zh_CN。
+  // 视图 SQL 必须从此 table 名派生后缀，严禁再用原始 locale 二次拼接——否则非法 locale
+  // 会绕过回退、拼出不存在的分表抛 no such table（Fix-09 表名注入防护 + 禁止静默降级）。
+  const table = resolveTagAliasesLangTable(locale)
+  const suffix = table.slice('tag_aliases_'.length)
+  db.exec(`
+    DROP VIEW IF EXISTS v_tag_paths_readable;
+    CREATE VIEW v_tag_paths_readable AS
+    SELECT
+      tp.path_id,
+      tp.leaf_code,
+      tp.via_parent_code,
+      tp.code_path,
+      tp.depth,
+      '/' || (
+        -- group_concat 聚合顺序不保证，须按 je.key 显式 ORDER BY 锁定段序，
+        -- 否则多段/缺译时 name_path_readable 段序可能错乱（调试视图直接误导定位）。
+        SELECT group_concat(x, '/')
+        FROM (
+          SELECT COALESCE(a.lemma, je.value) AS x
+          FROM json_each(substr(tp.code_path, 2)) je
+          LEFT JOIN tag_aliases_${suffix} a ON a.tag_code = je.value
+          ORDER BY je.key
+        ) seg
+      ) AS name_path_readable
+    FROM tag_paths tp;
+
+    DROP VIEW IF EXISTS v_file_tags_readable;
+    -- 模型A 直出调试视图（file_tag_relations 直存 code_path/name_path）。
+    -- 待模型B 切换（file_tag_relations.path_id）后改为 JOIN tag_paths 带出 name_path_readable。
+    CREATE VIEW v_file_tags_readable AS
+    SELECT
+      ftr.file_fingerprint,
+      ftr.tag_code,
+      ftr.via_parent_code,
+      ftr.code_path,
+      ftr.name_path,
+      ftr.depth,
+      ftr.tag_group,
+      ftr.confidence,
+      ftr.source
+    FROM file_tag_relations ftr;
+  `)
+  logger.debug(
+    LogCategory.DATABASE,
+    `已按 ${table} 重建调试视图 v_tag_paths_readable / v_file_tags_readable`
+  )
+}

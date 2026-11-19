@@ -50,14 +50,14 @@ export function queryPinyinCandidates(
     // 子查询按 fp 去重（MIN(rowid) 定代表行）后回连做 bm25 排序（R1 盲审 B-M3）。
     // 约束：SQLite 禁止 bm25 辅助函数进入聚合上下文——MIN(bm25(...)) 与 GROUP BY + ORDER BY bm25
     // 均实测报 "unable to use function bm25 in the requested context"，故采用两段式。
-    // files 按 rowid 连接（拼音行 rowid = files.rowid，A-H1 对齐，与 files_fts 路径同构）。
+    // files 按 rowid 连接（拼音行 rowid = files.id，A-H1 对齐，与 files_fts 路径同构）。
     const rows = db
       .prepare(
         `
         SELECT fp AS file_fingerprint FROM (
           SELECT f.file_fingerprint AS fp, MIN(files_pinyin_fts.rowid) AS rid
           FROM files_pinyin_fts
-          JOIN files f ON f.rowid = files_pinyin_fts.rowid
+          JOIN files f ON f.id = files_pinyin_fts.rowid
           JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           WHERE files_pinyin_fts MATCH ?
             ${extraWhere}

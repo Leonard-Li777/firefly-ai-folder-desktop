@@ -1,4 +1,3 @@
-import { decompressText, decompressJson } from '../../utils/text-compressor'
 import { buildPinyinIndexRow } from '../utils/pinyin-text'
 import { LogCategory, logger, getCanonicalConceptName } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
@@ -17,37 +16,14 @@ function readableCode(code: string): string {
 }
 
 /**
- * FTS Projection Service (Ticket 10 · 冷热双投影与拼音融合).
-
+ * FTS Projection Service (Ticket 10 · 全文检索与拼音正排联合投影).
+ *
  * 统一承载：
- * 1. meta/body 冷热数据投影与解压（deprecate inline decompress triggers）。
- * 2. 拼音索引正排投影（write-through/reconciler 唯一归属）。
- * 3. 标签变更触发的 FTS 倒排重建（contentless FTS：DELETE+INSERT，含 tags 列与拼音 write-through）。
+ * 1. 拼音索引正排投影（write-through/reconciler 唯一归属）。
+ * 2. 标签变更触发的 `files_fts` 倒排重建（contentless FTS：DELETE+INSERT，含 tags 列与拼音 write-through）。
  */
 export class FtsProjectionService {
   constructor(private db: any) {}
-
-  /**
-   * 解压并投影 FTS 内容。
-   * 集中处理 decompress 逻辑。
-   */
-  projectContent(row: any): {
-    content: string
-    multimodalContent: string
-    ocr: string
-    lrc: string
-    asr: string
-    metadata: Record<string, any>
-  } {
-    return {
-      content: decompressText(row.content) || '',
-      multimodalContent: decompressText(row.multimodal_content) || '',
-      ocr: decompressText(row.ocr) || '',
-      lrc: decompressText(row.lrc) || '',
-      asr: decompressText(row.asr) || '',
-      metadata: decompressJson(row.exif) || {}
-    }
-  }
 
   /**
    * 构建并写入拼音索引行（原 file-pinyin-fts-sync.ts 逻辑）。
@@ -120,8 +96,13 @@ export class FtsProjectionService {
         )
         .get(code) as { lemma?: string } | undefined
       if (row?.lemma) return row.lemma
-    } catch {
-      // 分表不可用时降级，走下方 canonical / slug 兜底，不影响主流程
+    } catch (error) {
+      // 分表不可用时降级，记录告警并走下方 canonical / slug 兜底，严禁静默吞错
+      logger.warn(
+        LogCategory.DATABASE_SERVICE,
+        `[FtsProjection] 查询语言分表解析标签名失败 (code=${code}):`,
+        error
+      )
     }
 
     // 4. 非中文环境或分表未收录时的 AOT 规范名兜底
@@ -135,7 +116,7 @@ export class FtsProjectionService {
    * 聚合某文件指纹的标签展示名文本（files_fts.tags 列与 files_pinyin_fts.tags_py 列共用）。
    * 受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），故在 JS 侧聚合。
    */
-  private collectTagsText(fingerprint: string): string {
+  collectTagsText(fingerprint: string): string {
     try {
       const relationRows = this.db
         .prepare(
@@ -148,15 +129,57 @@ export class FtsProjectionService {
         )
         .all(fingerprint) as Array<{ id: string; ft_name: string | null }>
       return relationRows.map(r => this.resolveDisplayName(r.id, r.ft_name)).join(' ')
-    } catch {
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '聚合文件标签展示名失败', { error, fingerprint })
       return ''
+    }
+  }
+
+  /**
+   * 批量版 collectTagsText（reconciler 一次窗口一次 SQL）。
+   * 返回 null 表示批量失败：调用方必须回退逐行 collectTagsText，绝不把失败当空串处理。
+   */
+  collectTagsTextBatch(fingerprints: string[]): Map<string, string> | null {
+    if (fingerprints.length === 0) return new Map()
+    const CHUNK = 400
+    const grouped = new Map<string, string[]>()
+    try {
+      for (let i = 0; i < fingerprints.length; i += CHUNK) {
+        const chunk = fingerprints.slice(i, i + CHUNK)
+        const placeholders = chunk.map(() => '?').join(',')
+        const rows = this.db
+          .prepare(
+            `
+            SELECT ftr.file_fingerprint AS fp, ftr.tag_code AS id, ft.name AS ft_name
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint IN (${placeholders})
+          `
+          )
+          .all(...chunk) as Array<{ fp: string; id: string; ft_name: string | null }>
+        for (const r of rows) {
+          const display = this.resolveDisplayName(r.id, r.ft_name)
+          const arr = grouped.get(r.fp)
+          if (arr) arr.push(display)
+          else grouped.set(r.fp, [display])
+        }
+      }
+      const out = new Map<string, string>()
+      for (const [fp, arr] of grouped) out.set(fp, arr.join(' '))
+      return out
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '批量聚合文件标签展示名失败，回退逐行查询', {
+        error,
+        count: fingerprints.length
+      })
+      return null
     }
   }
 
   /**
    * 写入/刷新一行拼音正排索引（委托 projectPinyin，保证拼音投影唯一归属本服务）。
    * 与 files_fts 同源四字段（name/smart_name/description/tags），由调用方保证同事务。
-   * rowid 对齐 files.rowid（R1 盲审 A-H1），寻址/删除 O(log n)。
+   * rowid 对齐 files.id（R1 盲审 A-H1），寻址/删除 O(log n)。
    */
   private writePinyinIndexRow(
     fingerprint: string,
@@ -181,7 +204,7 @@ export class FtsProjectionService {
       const row = this.db
         .prepare(
           `
-          SELECT f.rowid AS rid, f.file_fingerprint,
+          SELECT f.id AS rid, f.file_fingerprint,
             COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
             COALESCE(f.smart_name, '') AS smart_name,
             COALESCE(f.description, '') AS description,
@@ -224,7 +247,7 @@ export class FtsProjectionService {
             tagsText
           )
         // 拼音正排索引 write-through（设计文档 §4.3）：与 files_fts 同事务，两端字段严格同源；
-        // rowid 与 files.rowid 对齐（A-H1），寻址/删除 O(log n)
+        // rowid 与 files.id 对齐（A-H1），寻址/删除 O(log n)
         this.writePinyinIndexRow(fingerprint, row.rid, {
           name: row.name,
           smartName: row.smart_name,

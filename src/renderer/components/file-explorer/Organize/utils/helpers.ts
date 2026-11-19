@@ -5,8 +5,17 @@ import { SENTINEL_NAMES } from '@firefly/shared'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 const UNKNOWN_NAME = SENTINEL_NAMES.UNKNOWN
-const PROJECT_CORE_NAME = t('项目核心')
-const CORE_PROJECT_NAME = t('核心项目')
+
+/** 判断标题是否属于整理方案模板的占位根节点名 */
+function isTemplatePlaceholderHeading(name: string): boolean {
+  const lower = name.trim().toLowerCase()
+  return (
+    name === '项目核心' || // locale-invariant-ok: 策略大纲模板占位标题过滤
+    name === '核心项目' || // locale-invariant-ok: 策略大纲模板占位标题过滤
+    lower === 'project core' ||
+    lower === 'core project'
+  )
+}
 
 /**
  * 富化整理树中的文件名称字段。
@@ -92,8 +101,10 @@ export function isUnclassifiedNodeName(name?: string): boolean {
   const trimmed = String(name).trim().toLowerCase()
   return (
     trimmed === UNCLASSIFIED_NAME.toLowerCase() ||
+    trimmed === '未分类' || // locale-invariant-ok: 兼容历史未分类节点别名
     trimmed === t('未归类').trim().toLowerCase() || // locale-invariant-ok: 容错用户界面输入的本地化未归类别名
-    trimmed === 'unclassified'
+    trimmed === 'unclassified' ||
+    trimmed === 'uncategorized'
   )
 }
 
@@ -791,8 +802,7 @@ export function parseStrategyToTree(
       isPlaceholderDirectoryName(content) ||
       isLikelyFileName(content) ||
       content === UNCLASSIFIED_NAME ||
-      content === PROJECT_CORE_NAME ||
-      content === CORE_PROJECT_NAME
+      isTemplatePlaceholderHeading(content)
     )
       continue
 
@@ -1123,10 +1133,7 @@ export function parseStrategyToNodes(strategy: string): VirtualDirectoryNode[] {
       isPlaceholderDirectoryName(cleanName) ||
       isLikelyFileName(cleanName) ||
       isUnclassifiedNodeName(cleanName) ||
-      cleanName === PROJECT_CORE_NAME ||
-      cleanName === CORE_PROJECT_NAME ||
-      cleanName === t('项目核心') || // locale-invariant-ok: 策略大纲解析过滤
-      cleanName === t('核心项目') // locale-invariant-ok: 策略大纲解析过滤
+      isTemplatePlaceholderHeading(cleanName)
     )
       continue
     if (!rootNodes.some(n => n.name === cleanName)) {

@@ -156,7 +156,7 @@ export abstract class FileDaoSharedBase {
             fc.quality_score,
             bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
           FROM files_fts
-          JOIN files f ON f.rowid = files_fts.rowid
+          JOIN files f ON f.id = files_fts.rowid
           JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
           WHERE files_fts MATCH ? AND wf.workspace_id = ?
@@ -175,7 +175,7 @@ export abstract class FileDaoSharedBase {
             fc.quality_score,
             bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
           FROM files_fts
-          JOIN files f ON f.rowid = files_fts.rowid
+          JOIN files f ON f.id = files_fts.rowid
           JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
           WHERE files_fts MATCH ?
@@ -197,7 +197,7 @@ export abstract class FileDaoSharedBase {
           fc.quality_score, vdf.relative_path, vdf.virtual_directory_id,
           bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
         FROM files_fts
-        JOIN files f ON f.rowid = files_fts.rowid
+        JOIN files f ON f.id = files_fts.rowid
         JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
         JOIN virtual_directory_files vdf ON vdf.file_id = wf.id
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -208,5 +208,4 @@ export abstract class FileDaoSharedBase {
     }
     return this.ftsVirtualSearchStmt
   }
-
 }

@@ -114,7 +114,7 @@ export const tagTreeQueryFilterMixin = {
           ftsClause = `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
                SELECT f.file_fingerprint
                FROM files_fts
-               JOIN files f ON f.rowid = files_fts.rowid
+               JOIN files f ON f.id = files_fts.rowid
                WHERE files_fts MATCH ?
              )) OR `
         }
@@ -131,7 +131,7 @@ export const tagTreeQueryFilterMixin = {
         pinyinClause = `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
              SELECT f.file_fingerprint
              FROM files_pinyin_fts
-             JOIN files f ON f.rowid = files_pinyin_fts.rowid
+             JOIN files f ON f.id = files_pinyin_fts.rowid
              WHERE files_pinyin_fts MATCH ?
            )) OR `
       }

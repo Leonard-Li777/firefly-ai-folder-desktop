@@ -68,7 +68,8 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
         description: row.description,
         tagsText: this.collectTagsText(fingerprint)
       }
-    } catch {
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '[PinyinIndex] 读取文件拼音源字段失败:', error)
       return null
     }
   }
@@ -77,7 +78,7 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
    * 写入/刷新一行拼音正排索引（files_pinyin_fts，设计文档 §4.3）。
    * 与 files_fts 同源四字段（name/smart_name/description/tags），由调用方保证同事务。
    *
-   * **rowid 对齐**（R1 盲审 A-H1）：拼音行 rowid = files.rowid（与 files_fts 完全同构），
+   * **rowid 对齐**（R1 盲审 A-H1）：拼音行 rowid = files.id（与 files_fts 完全同构），
    * 寻址/删除走 rowid（O(log n)）；早期按 file_fingerprint（UNINDEXED 列）寻址对 FTS5
    * 是全表扫描，批量写入 N 个文件累计 O(N²)，万级库上写入热路径不可用。
    * 单语句 `INSERT OR REPLACE`（FTS5 支持显式 rowid 的冲突替换，实测验证）替代 DELETE+INSERT。
@@ -126,7 +127,12 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
         | { n: number }
         | undefined
       return r?.n ?? 0
-    } catch {
+    } catch (error) {
+      logger.warn(
+        LogCategory.DATABASE_SERVICE,
+        '[PinyinIndex] 读取 files_pinyin_fts 行数失败:',
+        error
+      )
       return 0
     }
   }
@@ -145,13 +151,13 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
         const rows = this.db
           .prepare(
             `
-            SELECT f.rowid AS rid, f.file_fingerprint,
+            SELECT f.id AS rid, f.file_fingerprint,
               COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
               COALESCE(f.smart_name, '') AS smart_name,
               COALESCE(f.description, '') AS description
             FROM files f
-            WHERE f.rowid > ?
-            ORDER BY f.rowid
+            WHERE f.id > ?
+            ORDER BY f.id
             LIMIT ?
           `
           )
