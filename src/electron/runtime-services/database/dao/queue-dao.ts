@@ -1,4 +1,5 @@
 import type { Database } from 'better-sqlite3'
+import { LogCategory, logger } from '@firefly/shared'
 
 /** 队列任务类型（单一队列表复用） */
 export type AnalysisTaskType = 'analysis'
@@ -132,29 +133,22 @@ export class QueueDao {
     taskType?: AnalysisTaskType
   }): void {
     try {
-      // 首先检测表结构：检查是否有 item_id 列（V2.2 架构）
-      const columns = this.db.prepare('PRAGMA table_info(analysis_queue)').all() as any[]
-      const hasItemIdColumn = columns.some((col: any) => col.name === 'item_id')
+      // 创世 V4 单基线：analysis_queue 固定含 id (自增)、item_id、claimed_at 列，无需 PRAGMA 探活或旧表兼容
+      const row = this.db
+        .prepare('SELECT id, item_id FROM analysis_queue WHERE id = ?')
+        .get(item.id) as any
+      if (!row) {
+        return
+      }
 
-      if (hasItemIdColumn) {
-        // V2.2 架构：analysis_queue 有 id (自增) 和 item_id (关联ID) 两列
-        // 传入的 item.id 应该是队列的自增 ID，直接使用
-        const row = this.db
-          .prepare('SELECT id, item_id FROM analysis_queue WHERE id = ?')
-          .get(item.id) as any
-        if (!row) {
-          // 找不到记录，直接返回
-          return
-        }
+      const filter = item.filterTaskType
+      const typeFilter = filter ? ` AND task_type = ?` : ''
+      const tailParams = filter ? [filter] : []
+      const nextTaskType = item.task_type ?? item.taskType
 
-        const filter = item.filterTaskType
-        const typeFilter = filter ? ` AND task_type = ?` : ''
-        const tailParams = filter ? [filter] : []
-        const nextTaskType = item.task_type ?? item.taskType
-
-        this.db
-          .prepare(
-            `UPDATE analysis_queue SET
+      this.db
+        .prepare(
+          `UPDATE analysis_queue SET
           status = COALESCE(?, status),
           progress = COALESCE(?, progress),
           error = COALESCE(?, error),
@@ -168,51 +162,23 @@ export class QueueDao {
           END,
           updated_at = ?
           WHERE id = ?${typeFilter}`
-          )
-          .run(
-            item.status,
-            item.progress,
-            item.error,
-            item.result,
-            nextTaskType,
-            item.status,
-            item.status,
-            new Date().toISOString(),
-            item.id,
-            ...tailParams
-          )
-      } else {
-        // V1 架构：只有 id 列（TEXT 类型）
-        const row = this.db
-          .prepare('SELECT id FROM analysis_queue WHERE id = ?')
-          .get(item.id) as any
-        if (!row) return
-
-        this.db
-          .prepare(
-            `UPDATE analysis_queue SET
-          status = COALESCE(?, status),
-          progress = COALESCE(?, progress),
-          error = COALESCE(?, error),
-          result = COALESCE(?, result),
-          updated_at = ?
-          WHERE id = ?`
-          )
-          .run(
-            item.status,
-            item.progress,
-            item.error,
-            item.result,
-            new Date().toISOString(),
-            item.id
-          )
-      }
+        )
+        .run(
+          item.status,
+          item.progress,
+          item.error,
+          item.result,
+          nextTaskType,
+          item.status,
+          item.status,
+          new Date().toISOString(),
+          item.id,
+          ...tailParams
+        )
     } catch (error: any) {
-      // 如果仍然出错，记录详细错误信息
-      console.error('[QueueDao] 更新分析队列失败:', {
-        message: error.message,
-        itemId: item.id,
-        stack: error.stack
+      logger.warn(LogCategory.DATABASE_SERVICE, '[QueueDao] 更新分析队列失败:', {
+        message: error?.message ?? String(error),
+        itemId: item.id
       })
     }
   }
@@ -256,14 +222,14 @@ export class QueueDao {
     if (taskType) {
       this.db
         .prepare(
-          `UPDATE analysis_queue SET status = 'pending', retry_count = retry_count + 1, updated_at = ? WHERE status = 'failed' AND task_type = ?`
+          `UPDATE analysis_queue SET status = 'pending', claimed_at = NULL, retry_count = retry_count + 1, updated_at = ? WHERE status = 'failed' AND task_type = ?`
         )
         .run(now, taskType)
       return
     }
     this.db
       .prepare(
-        `UPDATE analysis_queue SET status = 'pending', retry_count = retry_count + 1, updated_at = ? WHERE status = 'failed'`
+        `UPDATE analysis_queue SET status = 'pending', claimed_at = NULL, retry_count = retry_count + 1, updated_at = ? WHERE status = 'failed'`
       )
       .run(now)
   }

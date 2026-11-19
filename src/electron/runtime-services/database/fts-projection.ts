@@ -28,22 +28,28 @@ export class FtsProjectionService {
 
   /**
    * 构建并写入拼音索引行（原 file-pinyin-fts-sync.ts 逻辑）。
+   * 返回 true 表示写入了中文拼音行，false 表示无中文并已清理旧行；
+   * 支持透传 prebuiltRow 避免调用方判空与写入重复计算。
    */
   projectPinyin(
     fingerprint: string,
     rid: number,
-    fields: { name: string; smartName: string; description: string; tagsText: string }
-  ): void {
-    const row = buildPinyinIndexRow({
-      name: fields.name,
-      smartName: fields.smartName,
-      description: fields.description,
-      tags: fields.tagsText
-    })
+    fields: { name: string; smartName: string; description: string; tagsText: string },
+    prebuiltRow?: ReturnType<typeof buildPinyinIndexRow>
+  ): boolean {
+    const row =
+      prebuiltRow !== undefined
+        ? prebuiltRow
+        : buildPinyinIndexRow({
+            name: fields.name,
+            smartName: fields.smartName,
+            description: fields.description,
+            tags: fields.tagsText
+          })
 
     if (!row) {
       this.db.prepare(`DELETE FROM files_pinyin_fts WHERE rowid = ?`).run(rid)
-      return
+      return false
     }
 
     this.db
@@ -60,6 +66,7 @@ export class FtsProjectionService {
         row.tagsPy,
         row.srcHash
       )
+    return true
   }
 
   /**
@@ -308,5 +315,4 @@ export class FtsProjectionService {
       logger.error(LogCategory.DATABASE_SERVICE, '同步冷热 FTS 热路失败', { error, fingerprint })
     }
   }
-
 }

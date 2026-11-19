@@ -1,3 +1,4 @@
+import * as path from 'node:path'
 import { AnalysisStats } from '@firefly/types'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { LogCategory, logger, PerformanceTimer } from '@firefly/shared'
@@ -30,7 +31,7 @@ export function isModelPhysicalPath(identifier: string): boolean {
 export function isPathDerivedModelName(identifier: string, candidate: string): boolean {
   if (!identifier || !candidate) return false
   if (candidate === identifier) return true
-  const stem = identifier.replace(/\\/g, '/').split('/').pop()?.replace(/\.[^.]+$/, '') ?? ''
+  const stem = path.win32.basename(identifier, path.win32.extname(identifier))
   return stem.length > 0 && candidate === stem
 }
 
@@ -74,8 +75,7 @@ export class AnalysisStatsCollector {
         isPathDerivedModelName(engineSnapshot.model || '', engineSnapshot.modelName)
           ? null
           : engineSnapshot.modelName
-      const resolvedModelName =
-        engineModelName || this.getModelName(modelId || '', mode || 'local')
+      const resolvedModelName = engineModelName || this.getModelName(modelId || '', mode || 'local')
       const modelObj =
         aiStageEnabled && resolvedModelName && resolvedModelName !== 'unknown'
           ? {

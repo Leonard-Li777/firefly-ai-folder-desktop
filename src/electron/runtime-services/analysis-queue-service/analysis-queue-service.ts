@@ -16,7 +16,6 @@ import { AIServiceStatus, ILlamaIndexAIService } from '@firefly/types'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { resolveEffectiveAnalysisMode, isAiStageEnabled } from '@app/electron/config/analysis-mode'
 import { DirectoryContextService } from '../filesystem/directory-context-service'
-import { ErrorHandler } from './error-handler'
 import { QueueManager, pickNextPending, type EnqueueResult } from './queue-manager'
 export type { EnqueueResult }
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
@@ -40,6 +39,10 @@ import { EngineHealthTier } from './engine-health-tier'
 import { OrphanWatchdog } from './orphan-watchdog'
 import { flushFtsSync } from './fts-sync-hooks'
 import {
+  WorkerOrchestratorBridge,
+  WriteSetBatchDispatcher
+} from './worker-orchestrator'
+import {
   checkExtensionMismatchFiles,
   batchFixFileExtensions,
   checkAlreadyAnalyzedFilesByPaths,
@@ -54,7 +57,6 @@ import {
  */
 export class AnalysisQueueService {
   private queueManager!: QueueManager
-  private errorHandler!: ErrorHandler
   private fileProcessorService!: FileProcessorService
 
   private dimensionAnalyzer!: DimensionAnalyzer
@@ -93,19 +95,48 @@ export class AnalysisQueueService {
   private omniAdapter: OmniHttpAdapter
   private engineHealth: EngineHealthTier
   private orphanWatchdog: OrphanWatchdog
+  private writeSetBatchDispatcher: WriteSetBatchDispatcher
+  private workerBridge: WorkerOrchestratorBridge
   private currentAbortController: AbortController | null = null
 
   /** 工单 06：canonical 档位切换维护监听的取消订阅句柄 */
   private canonicalMaintenanceUnsubscribe?: () => void
 
   constructor() {
-    this.errorHandler = new ErrorHandler()
-
     // 初始化委托组件
     this.writeDispatcher = new AnalysisWriteDispatcher(
       () => this.queueManager,
       () => this.getSnapshot()
     )
+
+    // Stage 2 Worker 写微事务执行器 + 独立 worker_threads 托管桥（B1~B7 全链路接线）
+    this.writeSetBatchDispatcher = new WriteSetBatchDispatcher({
+      getDb: () => databaseService.db,
+      onWriteAck: ack => this.workerBridge.sendWriteAck(ack),
+      onWakeCanonicalMaintenance: () => {
+        void canonicalMaintenanceService.runMaintenance('stage2_write_set')
+      },
+      onTriggerCloudSync: delayMs => {
+        cloudSyncWorker.triggerSync(delayMs)
+      }
+    })
+    this.workerBridge = new WorkerOrchestratorBridge({
+      getDb: () => databaseService.db,
+      writeDispatcher: this.writeSetBatchDispatcher,
+      onProgress: (queueId, stage, pct) => {
+        this.writeDispatcher.updateItemStatus(queueId, 'analyzing', pct, undefined, {
+          analysisStage: stage
+        })
+      },
+      onItemFailed: (queueId, errorMessage, retryable) => {
+        this.writeDispatcher.updateItemStatus(
+          queueId,
+          retryable ? 'pending' : 'failed',
+          retryable ? 0 : 100,
+          errorMessage
+        )
+      }
+    })
 
     this.aiServiceManager = new AIServiceManager(
       () => this.aiService,
@@ -119,7 +150,10 @@ export class AnalysisQueueService {
 
     this.statsCollector = new AnalysisStatsCollector()
     this.orphanWatchdog = new OrphanWatchdog(
-      itemId => this.current?.id === itemId || this.orchestratorWorker.isItemActive(itemId),
+      itemId =>
+        this.current?.id === itemId ||
+        this.orchestratorWorker.isItemActive(itemId) ||
+        this.workerBridge.getInflightQueueIds().includes(itemId),
       reclaimedIds => {
         // 同步 queueManager 内存态，避免前端快照残留 analyzing 状态
         const idSet = new Set(reclaimedIds)
@@ -208,8 +242,6 @@ export class AnalysisQueueService {
         adapters = null
       }
 
-      this.errorHandler = new ErrorHandler(this.errorRecoveryConfig)
-
       if (adapters) {
         this.reinitFromAdapters(adapters)
       }
@@ -232,6 +264,11 @@ export class AnalysisQueueService {
       try {
         this.ignoreRules = loadIgnoreRules()
       } catch (error) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          '[分析队列] 加载忽略规则失败，降级为空规则集:',
+          error
+        )
         this.ignoreRules = []
       }
 
@@ -606,8 +643,8 @@ export class AnalysisQueueService {
       } else {
         moduleHibernationCoordinator.scheduleIdleHibernation('analysis_suite')
       }
-    } catch {
-      // 容错隔离
+    } catch (error) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 同步休眠协调器状态失败:', error)
     }
   }
 
@@ -680,7 +717,7 @@ export class AnalysisQueueService {
 
   async deleteItemByPath(filePath: string): Promise<void> {
     await this.ensureInitialized()
-    if (this.current?.path === filePath && this.currentAbortController) {
+    if (this.current?.path && isPathEqual(this.current.path, filePath) && this.currentAbortController) {
       this.currentAbortController.abort()
       this.currentAbortController = null
     }
@@ -767,12 +804,72 @@ export class AnalysisQueueService {
     }
   }
 
-  classifyError(error: Error, context: string): string {
-    return this.errorHandler.classifyError(error, context)
+  /** Spec §8.3.2 / B7：前端交互优先让路（Worker + 主进程写分发器双端联动暂停） */
+  public yieldForUi(timeoutMs = 2000): void {
+    this.workerBridge.yieldForUi(timeoutMs)
   }
 
-  shouldRetry(errorType: string, retryCount: number): boolean {
-    return this.errorHandler.shouldRetry(errorType as any, retryCount)
+  /** 恢复双端让路状态 */
+  public resumeFromUi(): void {
+    this.workerBridge.resumeFromUi()
+  }
+
+  /** Spec §10.2 (N-1) / B6：用户主动取消任务，状态落库 failed + error='canceled_by_user' */
+  public async cancelItemByUser(id: number): Promise<void> {
+    await this.ensureInitialized()
+    if (this.current?.id === id && this.currentAbortController) {
+      this.currentAbortController.abort()
+      this.currentAbortController = null
+    }
+    this.workerBridge.cancelItem(id, true)
+    this.writeDispatcher.updateItemStatus(id, 'failed', 0, 'canceled_by_user')
+  }
+
+  /** 获取 Stage 2 独立 Worker 托管桥（供调度与可观测性检查） */
+  public getWorkerBridge(): WorkerOrchestratorBridge {
+    return this.workerBridge
+  }
+
+  /** 获取主进程写微事务执行器（供调度与可观测性检查） */
+  public getWriteSetBatchDispatcher(): WriteSetBatchDispatcher {
+    return this.writeSetBatchDispatcher
+  }
+
+  /**
+   * 优雅销毁分析队列服务（应用退出前由 main/index.ts 调用，必须在关库前完成）。
+   * 闭环停止循环、孤儿 watchdog、Worker 线程，冲刷防抖 FTS/写集/尾钩子并解绑配置监听。
+   */
+  public async dispose(): Promise<void> {
+    this.running = false
+    this.runningWorkspaceStack = []
+    if (this.currentAbortController) {
+      this.currentAbortController.abort()
+      this.currentAbortController = null
+    }
+    this.orphanWatchdog.stop()
+    try {
+      await this.workerBridge.dispose()
+    } catch (err) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出销毁 WorkerBridge 失败:', err)
+    }
+    try {
+      this.writeSetBatchDispatcher.resumeFromUi()
+      await this.writeSetBatchDispatcher.flush()
+      this.writeSetBatchDispatcher.flushTailHooks()
+    } catch (err) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出冲刷 WriteSetBatchDispatcher 失败:', err)
+    } finally {
+      this.writeSetBatchDispatcher.dispose()
+    }
+    flushFtsSync()
+    if (this.canonicalMaintenanceUnsubscribe) {
+      try {
+        this.canonicalMaintenanceUnsubscribe()
+      } catch (err) {
+        logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 取消 canonicalMaintenance 监听失败:', err)
+      }
+      this.canonicalMaintenanceUnsubscribe = undefined
+    }
   }
 
   /**
@@ -800,14 +897,6 @@ export class AnalysisQueueService {
     if (inputs.length === 0) return 0
     await this.addItems(inputs, true)
     return inputs.length
-  }
-
-  getMaxRetries(): number {
-    return this.errorHandler.getErrorRecoveryConfig().maxRetries
-  }
-
-  getErrorStats() {
-    return this.errorHandler.getErrorStatistics()
   }
 
   getSnapshot(workspaceId?: number): AnalysisQueueSnapshot {

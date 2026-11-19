@@ -87,11 +87,12 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
   private writePinyinIndexRow(
     fingerprint: string,
     rid: number,
-    fields: { name: string; smartName: string; description: string; tagsText: string }
-  ): void {
+    fields: { name: string; smartName: string; description: string; tagsText: string },
+    prebuiltRow?: ReturnType<typeof buildPinyinIndexRow>
+  ): boolean {
     // 薄委托：拼音行构建与写入唯一归属 FtsProjectionService.projectPinyin（工单 08 §8.2），
     // 消除本 mixin 内联 SQL 与投影服务的双轨。rowid 对齐 / 纯 ASCII 删行等语义均在投影侧实现。
-    this.ftsProjection.projectPinyin(fingerprint, rid, fields)
+    return this.ftsProjection.projectPinyin(fingerprint, rid, fields, prebuiltRow)
   }
 
   syncFTSTags(fingerprint: string): void {
@@ -155,13 +156,7 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
           const tagsText = tagsBatch
             ? (tagsBatch.get(r.file_fingerprint) ?? '')
             : this.collectTagsText(r.file_fingerprint)
-          const row = buildPinyinIndexRow({
-            name: r.name,
-            smartName: r.smart_name,
-            description: r.description,
-            tags: tagsText
-          })
-          this.ftsProjection.projectPinyin(r.file_fingerprint, r.rid, {
+          const hasChinese = this.ftsProjection.projectPinyin(r.file_fingerprint, r.rid, {
             name: r.name,
             smartName: r.smart_name,
             description: r.description,
@@ -169,7 +164,7 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
           })
           this.db
             .prepare('UPDATE files SET pinyin_state = ? WHERE id = ?')
-            .run(row ? 1 : 2, r.rid)
+            .run(hasChinese ? 1 : 2, r.rid)
           refreshed++
         }
       })()
@@ -256,12 +251,17 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
             tags: tagsText
           })
           if (!row && !existing) continue // 无中文且无既有行：无需操作
-          this.writePinyinIndexRow(r.file_fingerprint, r.rid, {
-            name: r.name,
-            smartName: r.smart_name,
-            description: r.description,
-            tagsText
-          })
+          this.writePinyinIndexRow(
+            r.file_fingerprint,
+            r.rid,
+            {
+              name: r.name,
+              smartName: r.smart_name,
+              description: r.description,
+              tagsText
+            },
+            row
+          )
           rewritten++
         }
       })()

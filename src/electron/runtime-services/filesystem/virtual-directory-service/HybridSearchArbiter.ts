@@ -1150,7 +1150,9 @@ export class HybridSearchArbiter {
               LIMIT ?
             `
             )
-            .all(phraseQuery, phraseQuery, phraseQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+            .all(phraseQuery, phraseQuery, phraseQuery, ...queryParams, poolSize) as Array<{
+            file_fingerprint: string
+          }>
           for (const r of rows) {
             if (!seen.has(r.file_fingerprint)) {
               seen.add(r.file_fingerprint)
@@ -1355,7 +1357,12 @@ export class HybridSearchArbiter {
         aliasLocale = normalizeSupportedLocale(
           ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
         )
-      } catch {
+      } catch (error) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearch] 读取 DEFAULT_LANGUAGE 失败，回退 zh-CN:',
+          error
+        )
         aliasLocale = normalizeSupportedLocale('zh-CN')
       }
 
@@ -1494,7 +1501,12 @@ export class HybridSearchArbiter {
         aliasLocale = normalizeSupportedLocale(
           ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
         )
-      } catch {
+      } catch (error) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearch] 读取 DEFAULT_LANGUAGE 失败，回退 zh-CN:',
+          error
+        )
         aliasLocale = normalizeSupportedLocale('zh-CN')
       }
       const rows = this.db
@@ -1763,8 +1775,13 @@ export class HybridSearchArbiter {
             })
             const vec = resp?.vectors?.[0]
             return vec && vec.length > 0 ? vec : undefined
-          } catch {
-            // 编码失败由外层统一记熔断；此处仅中止本次尝试（与 analyzeText 返回 null 的旧行为一致）
+          } catch (error) {
+            // 编码失败由外层统一记熔断；此处显式告警并中止本次尝试（与 analyzeText 返回 null 的旧行为一致）
+            logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearch] 查询向量编码失败:', {
+              profile,
+              dim,
+              error
+            })
             return undefined
           }
         }

@@ -20,10 +20,7 @@ import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { SystemIdentityService } from '../system/system-identity-service'
 import { databaseService } from '../database/database-service'
-import {
-  normalizeSupportedLocale,
-  seedTagAliasesSingleTable
-} from '../database/database'
+import { normalizeSupportedLocale, seedTagAliasesSingleTable } from '../database/database'
 import { omniClient, OmniTagAliasRow } from '../../services/omni-client'
 
 import { userTierService } from '../user-tier/user-tier-service'
@@ -118,9 +115,11 @@ export class ConfigDbManager {
     const safeLocale = normalizeSupportedLocale(language)
     const existingCnt =
       (
-        db.prepare(`SELECT COUNT(*) AS cnt FROM tag_aliases WHERE locale = ?`).get(safeLocale) as {
-          cnt: number
-        } | undefined
+        db.prepare(`SELECT COUNT(*) AS cnt FROM tag_aliases WHERE locale = ?`).get(safeLocale) as
+          | {
+              cnt: number
+            }
+          | undefined
       )?.cnt ?? 0
 
     // 首次灌入该 locale 才拉全集；已有数据一律幂等跳过，不回源（防启动重复请求 Omni）。
@@ -933,7 +932,13 @@ export class ConfigDbManager {
       if (presetPolicyPath && fs.existsSync(presetPolicyPath)) {
         try {
           policies = JSON.parse(fs.readFileSync(presetPolicyPath, 'utf-8'))
-        } catch {}
+        } catch (error) {
+          logger.warn(
+            LogCategory.CONFIG,
+            'ConfigDbManager: 解析预置 DIMENSION_POLICIES 失败:',
+            error
+          )
+        }
       }
     }
 
@@ -1325,7 +1330,11 @@ export class ConfigDbManager {
                 systemDelete.run(normalizedKey)
               } else {
                 let finalValue = row.value
-                if (normalizedKey === 'NEXT_VERSION' && finalValue && typeof finalValue === 'object') {
+                if (
+                  normalizedKey === 'NEXT_VERSION' &&
+                  finalValue &&
+                  typeof finalValue === 'object'
+                ) {
                   finalValue = { ...finalValue, language: this.currentLanguage }
                 }
                 systemInsert.run(normalizedKey, JSON.stringify(finalValue), now)
@@ -1395,8 +1404,8 @@ export class ConfigDbManager {
           return parsed
         }
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 读取 app_config(${key}) 失败:`, error)
     }
     return undefined
   }
@@ -1450,8 +1459,13 @@ export class ConfigDbManager {
           win.webContents.send('config:change', flattened)
         }
       })
-    } catch {
-      // ConfigOrchestrator 未就绪时静默失败
+    } catch (error) {
+      // ConfigOrchestrator 未就绪时记录告警，避免静默吞错
+      logger.warn(
+        LogCategory.CONFIG,
+        'ConfigDbManager: 广播 config:change 失败（ConfigOrchestrator 可能未就绪）:',
+        error
+      )
     }
   }
 }

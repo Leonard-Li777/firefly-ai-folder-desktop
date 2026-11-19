@@ -540,7 +540,15 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         `
           )
           .all(row.id) as any[]
-      } catch {
+      } catch (error) {
+        logger.warn(
+          LogCategory.DATABASE_SERVICE,
+          '[FileQuery] 查询文件标签关系失败，降级为空数组:',
+          {
+            fileId: row.id,
+            error
+          }
+        )
         tags = []
       }
       const dimensionTags = tags.map(t => ({
