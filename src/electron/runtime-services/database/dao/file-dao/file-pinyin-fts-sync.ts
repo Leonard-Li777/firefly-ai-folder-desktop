@@ -76,9 +76,9 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
 
   /**
    * 写入/刷新一行拼音正排索引（files_pinyin_fts，设计文档 §4.3）。
-   * 与 files_fts 同源四字段（name/smart_name/description/tags），由调用方保证同事务。
+   * 与热元数据 FTS 同源短字段（name/smart_name/description/tags），由调用方保证同事务。
    *
-   * **rowid 对齐**（R1 盲审 A-H1）：拼音行 rowid = files.id（与 files_fts 完全同构），
+   * **rowid 对齐**（R1 盲审 A-H1）：拼音行 rowid = files.id（与 files_meta_fts / files_body_fts 完全同构），
    * 寻址/删除走 rowid（O(log n)）；早期按 file_fingerprint（UNINDEXED 列）寻址对 FTS5
    * 是全表扫描，批量写入 N 个文件累计 O(N²)，万级库上写入热路径不可用。
    * 单语句 `INSERT OR REPLACE`（FTS5 支持显式 rowid 的冲突替换，实测验证）替代 DELETE+INSERT。
@@ -118,6 +118,65 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '批量同步FTS标签失败', error)
     }
+  }
+
+  /**
+   * Issue 03 Step 2 / P1-D 方案 B：按 pinyin_state=0 部分索引分批异步回填，
+   * 有汉字置 1、纯 ASCII 置 2（永久免重扫），彻底替代冷启动全库同步扫描。
+   * @returns 本次刷新行数
+   */
+  syncPinyinPendingBatch(limit = 200): number {
+    if (limit <= 0) return 0
+    let refreshed = 0
+    try {
+      this.db.transaction(() => {
+        const rows = this.db
+          .prepare(
+            `SELECT f.id AS rid, f.file_fingerprint,
+               COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
+               COALESCE(f.smart_name, '') AS smart_name,
+               COALESCE(f.description, '') AS description,
+               f.pinyin_state
+             FROM files f
+             WHERE f.pinyin_state = 0
+             ORDER BY f.id
+             LIMIT ?`
+          )
+          .all(limit) as Array<{
+          rid: number
+          file_fingerprint: string
+          name: string
+          smart_name: string
+          description: string
+        }>
+        if (rows.length === 0) return
+        const tagsBatch = this.collectTagsTextBatch(rows.map(r => r.file_fingerprint))
+        for (const r of rows) {
+          const tagsText = tagsBatch
+            ? (tagsBatch.get(r.file_fingerprint) ?? '')
+            : this.collectTagsText(r.file_fingerprint)
+          const row = buildPinyinIndexRow({
+            name: r.name,
+            smartName: r.smart_name,
+            description: r.description,
+            tags: tagsText
+          })
+          this.ftsProjection.projectPinyin(r.file_fingerprint, r.rid, {
+            name: r.name,
+            smartName: r.smart_name,
+            description: r.description,
+            tagsText
+          })
+          this.db
+            .prepare('UPDATE files SET pinyin_state = ? WHERE id = ?')
+            .run(row ? 1 : 2, r.rid)
+          refreshed++
+        }
+      })()
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '[P1-D] 拼音 pending 分批回填失败:', error)
+    }
+    return refreshed
   }
 
   /** 拼音索引当前行数（启动回填判定用：行数 < files 行数即存在缺口） */

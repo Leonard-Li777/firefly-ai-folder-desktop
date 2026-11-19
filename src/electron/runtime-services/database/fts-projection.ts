@@ -20,7 +20,7 @@ function readableCode(code: string): string {
  *
  * 统一承载：
  * 1. 拼音索引正排投影（write-through/reconciler 唯一归属）。
- * 2. 标签变更触发的 `files_fts` 倒排重建（contentless FTS：DELETE+INSERT，含 tags 列与拼音 write-through）。
+ * 2. 冷热双 FTS5 投影：热元数据 syncMetaFts / 冷正文 syncBodyFts 同事务直写，拼音 write-through。
  */
 export class FtsProjectionService {
   constructor(private db: any) {}
@@ -113,7 +113,7 @@ export class FtsProjectionService {
   }
 
   /**
-   * 聚合某文件指纹的标签展示名文本（files_fts.tags 列与 files_pinyin_fts.tags_py 列共用）。
+   * 聚合某文件指纹的标签展示名文本（files_pinyin_fts.tags_py 列，热元数据 FTS 不再存 tags 裸码列）。
    * 受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），故在 JS 侧聚合。
    */
   collectTagsText(fingerprint: string): string {
@@ -177,78 +177,98 @@ export class FtsProjectionService {
   }
 
   /**
-   * 写入/刷新一行拼音正排索引（委托 projectPinyin，保证拼音投影唯一归属本服务）。
-   * 与 files_fts 同源四字段（name/smart_name/description/tags），由调用方保证同事务。
-   * rowid 对齐 files.id（R1 盲审 A-H1），寻址/删除 O(log n)。
+   * Issue 03 Step 2：热元数据同事务直写（零 BLOB 解压、零 tags 裸码列）。
+   * rowid 显式锚定 files.id（VACUUM 免疫），标签变更时置 pinyin_state=0 供 P1-D 回填。
    */
-  private writePinyinIndexRow(
-    fingerprint: string,
-    rid: number,
-    fields: { name: string; smartName: string; description: string; tagsText: string }
+  syncMetaFts(
+    fileId: number,
+    meta: {
+      fileFingerprint: string
+      name: string
+      smartName?: string
+      description?: string
+      author?: string
+    }
   ): void {
-    this.projectPinyin(fingerprint, rid, fields)
+    if (!fileId) return
+    this.db.prepare(`DELETE FROM files_meta_fts WHERE rowid = ?`).run(fileId)
+    this.db
+      .prepare(
+        `INSERT INTO files_meta_fts(rowid, file_fingerprint, name, smart_name, description, author)
+         VALUES (?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        fileId,
+        meta.fileFingerprint,
+        meta.name ?? '',
+        meta.smartName ?? '',
+        meta.description ?? '',
+        meta.author ?? ''
+      )
+    // 元数据文本变化 → 拼音投影陈旧；纯 ASCII（state=2）永久免重扫
+    this.db
+      .prepare(`UPDATE files SET pinyin_state = 0 WHERE id = ? AND pinyin_state <> 2`)
+      .run(fileId)
+  }
+
+  /** Issue 03 Step 2：冷正文同事务直写明文，禁止从 file_contents 反读解压 */
+  syncBodyFts(
+    fileId: number,
+    body: {
+      fileFingerprint: string
+      content?: string
+      multimodalContent?: string
+      ocr?: string
+      lrc?: string
+      asr?: string
+    }
+  ): void {
+    if (!fileId) return
+    this.db.prepare(`DELETE FROM files_body_fts WHERE rowid = ?`).run(fileId)
+    this.db
+      .prepare(
+        `INSERT INTO files_body_fts(rowid, file_fingerprint, content, multimodal_content, ocr, lrc, asr)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        fileId,
+        body.fileFingerprint,
+        body.content ?? '',
+        body.multimodalContent ?? '',
+        body.ocr ?? '',
+        body.lrc ?? '',
+        body.asr ?? ''
+      )
   }
 
   /**
-   * 标签变更后按业务表重建 FTS 倒排（含 tags 列）+ 拼音 write-through。
-   *
-   * Issue #661 contentless FTS：不能 UPDATE FTS 列，需按业务表 DELETE+INSERT 重建倒排。
-   * 原体自 file-pinyin-fts-sync.ts 迁入，逻辑零改动；mixin 侧保留薄委托防双轨。
-   *
-   * 四源字段（name/smart_name/description + tagsText）与拼音列严格同源；
-   * 拼音行与 files_fts 同事务写入、rowid 对齐（设计文档 §4.3）。
+   * 兼容入口（标签变更 / 手动改标）：仅重建热元数据 + 拼音行。
+   * 冷正文由持有明文的写入方调 syncBodyFts，严禁在此解压 BLOB。
    */
   syncFTSTags(fingerprint: string): void {
     if (!fingerprint) return
     try {
       const row = this.db
         .prepare(
-          `
-          SELECT f.id AS rid, f.file_fingerprint,
+          `SELECT f.id AS rid, f.file_fingerprint,
             COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
             COALESCE(f.smart_name, '') AS smart_name,
             COALESCE(f.description, '') AS description,
-            COALESCE(decompress_text(fc.content), '') AS content,
-            COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
-            COALESCE(decompress_text(fc.ocr), '') AS ocr,
-            COALESCE(decompress_text(fc.lrc), '') AS lrc,
-            COALESCE(decompress_text(fc.asr), '') AS asr
-          FROM files f
-          LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
-          WHERE f.file_fingerprint = ?
-        `
+            COALESCE(f.author, '') AS author
+          FROM files f WHERE f.file_fingerprint = ?`
         )
         .get(fingerprint) as any
       if (!row) return
-
-      // FTS 倒排的 tags 列：受控标签展示名经主库语言分表 resolveDisplayName 解析
-      //（SQL 层无法访问该动态分表），故在 JS 侧聚合，保证"设计稿/如云西点"等感知标签
-      // 展示名可被全文搜索命中。
       const tagsText = this.collectTagsText(fingerprint)
-
       this.db.transaction(() => {
-        this.db.prepare(`DELETE FROM files_fts WHERE rowid = ?`).run(row.rid)
-        this.db
-          .prepare(
-            `INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-          )
-          .run(
-            row.rid,
-            row.file_fingerprint,
-            row.name,
-            row.smart_name,
-            row.description,
-            row.content,
-            row.multimodal_content,
-            row.ocr,
-            row.lrc,
-            row.asr,
-            tagsText
-          )
-        // 拼音正排索引 write-through（设计文档 §4.3）：与 files_fts 同事务，两端字段严格同源；
-        // rowid 与 files.id 对齐（A-H1），寻址/删除 O(log n)
-        this.writePinyinIndexRow(fingerprint, row.rid, {
+        this.syncMetaFts(row.rid, {
+          fileFingerprint: row.file_fingerprint,
+          name: row.name,
+          smartName: row.smart_name,
+          description: row.description,
+          author: row.author
+        })
+        this.projectPinyin(row.rid ? row.file_fingerprint : fingerprint, row.rid, {
           name: row.name,
           smartName: row.smart_name,
           description: row.description,
@@ -256,7 +276,8 @@ export class FtsProjectionService {
         })
       })()
     } catch (error) {
-      logger.error(LogCategory.DATABASE_SERVICE, '同步FTS标签失败', { error, fingerprint })
+      logger.error(LogCategory.DATABASE_SERVICE, '同步冷热 FTS 热路失败', { error, fingerprint })
     }
   }
+
 }

@@ -151,7 +151,7 @@ export const GENESIS_V1_SCHEMA = `
     sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态: 0-待同步, 1-同步中, 2-已同步
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     -- canonical 语义文本三列（vector-semantic-text-unified-scheme §3.2，应用未上线直接进创世基线，禁止 ALTER TABLE）
-    -- 本地派生数据，不参与云端同步（AC12）；canonical_text 亦不写入 files_fts
+    -- 本地派生数据，不参与云端同步（AC12）；canonical_text 亦不写入 FTS 投影
     canonical_text TEXT,                         -- 统一语义文本（embedding 唯一输入）；NULL=未计算
     canonical_text_hash TEXT,                    -- sha256(profile|dim|ver|text)；skipped 行为 NULL
     canonical_vector_state TEXT,                 -- pending/ready/visual_only/skipped/failed；NULL=未计算
@@ -678,8 +678,8 @@ export const GENESIS_V1_SCHEMA = `
   -- #endregion
 
   -- #region FTS5 Projections
-  -- 注：V4 冷热双 FTS5（files_meta_fts / files_body_fts）须与模型 B（files.id 主键）及检索读侧
-  -- 同步单轨切换；在现网全仓仍消费 files_fts 期间，严禁保留零消费方双轨虚表与触发器导致写放大（融合方案 §7 红线 5）。
+  -- 注：V4 冷热双 FTS5（files_meta_fts / files_body_fts）与模型 B（files.id 主键）及检索读侧
+  -- 已单轨同步切换；DROP IF EXISTS 仅为清理历史虚表/触发器的幂等守卫，绝非保留消费方。
 
   -- 17.5 拼音正排索引（短字段；设计文档 docs/specs/pinyin-forward-index-redesign-spec.md §4.1）
   -- 索引侧把 name/smart_name/description/tags 的中文段转拼音串（全拼+首字母，多音字全变体），
@@ -694,166 +694,48 @@ export const GENESIS_V1_SCHEMA = `
     description_py,                              -- 描述拼音串
     tags_py,                                     -- 标签聚合文本拼音串
     src_hash UNINDEXED,                          -- sha256(name|smartName|description|tags)，reconciler 陈旧检测
-    tokenize='trigram'                           -- 与 files_fts 同构：>=3 字符串子串匹配
+    tokenize='trigram'                           -- 三路统一 trigram：>=3 字符串子串匹配
   );
   -- #endregion
 
-  CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
-    file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
-    name,                                        -- 物理文件名
-    smart_name,                                  -- 智能名称
-    description,                                 -- 描述信息
-    content,                                     -- 文本内容
-    multimodal_content,                          -- 多模态描述
-    ocr,                                         -- OCR 文字识别内容
-    lrc,                                         -- 歌词/字幕
-    asr,                                         -- ASR 语音转录内容 (Issue 0046)
-    tags,                                        -- 聚合后的标签文本
-    tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
+  -- 17.6 热元数据 FTS5（短字段）：仅 name/smart_name/description/author，
+  -- 剥离裸受控码 tags 与全部长正文列，杜绝写放大与冷启动全库解压（Issue 03 Step 1）。
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_meta_fts USING fts5(
+    file_fingerprint UNINDEXED,
+    name,
+    smart_name,
+    description,
+    author,
+    tokenize='trigram'
   );
 
-  -- 18. 高频索引
-  CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
-  CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
-  -- [P1-D] 拼音回填待办部分索引：仅扫 pinyin_state=0 的脏文件，空库/全就绪零成本
-  CREATE INDEX IF NOT EXISTS idx_files_pinyin_pending ON files(pinyin_state) WHERE pinyin_state = 0;
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_ws_fp ON workspace_files(workspace_id, file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_fp_ws ON workspace_files(file_fingerprint, workspace_id);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_dir_id ON workspace_files(directory_id);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint ON workspace_files(file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint_analyzed ON workspace_files(file_fingerprint, is_analyzed);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_path ON workspace_files(path);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_path_nocase ON workspace_files(path COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_lightweight ON workspace_files(workspace_id, is_analyzed, path);
-  -- V4 切片A（Issue 01 §2）：增量扫描覆盖索引——diff 扫描单表命中，免回表
-  -- 切片C（SC-2/SC-5）：纳入 status 列，使 workspace_id + directory_id + status 三条件
-  --   在任意数据量（含单行）下优化器稳定选中本覆盖索引，避免退化到单列 idx_workspace_files_status。
-  CREATE INDEX IF NOT EXISTS idx_wf_diff_cover    ON workspace_files(workspace_id, directory_id, status, is_ignored, path, file_size, mtime_ms);
-  -- 活跃目录快速过滤（部分索引，排除 is_ignored=1）
-  CREATE INDEX IF NOT EXISTS idx_wf_ws_active_dir ON workspace_files(workspace_id, directory_id) WHERE is_ignored = 0;
-  -- 指纹反查（部分索引，覆盖 fk 路径）
-  CREATE INDEX IF NOT EXISTS idx_wf_fp            ON workspace_files(file_fingerprint) WHERE file_fingerprint IS NOT NULL;
-  CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
-  CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_workspaces_bound_wf ON workspaces(bound_workflow_id);
-  CREATE INDEX IF NOT EXISTS idx_workspace_directories_bound_wf ON workspace_directories(bound_workflow_id);
-  CREATE INDEX IF NOT EXISTS idx_local_workflows_persona ON local_workflows(persona);
-  CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
-  CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
+  -- 17.7 冷正文 FTS5（长字段）：由 FtsProjectionService.syncBodyFts 直接写明文，
+  -- 任何路径不得从 BLOB 反读解压（Issue 03 Step 2）。
+  CREATE VIRTUAL TABLE IF NOT EXISTS files_body_fts USING fts5(
+    file_fingerprint UNINDEXED,
+    content,
+    multimodal_content,
+    ocr,
+    lrc,
+    asr,
+    tokenize='trigram'
+  );
 
-  -- 模型 B 覆盖索引（Spec §B L320-323）：path_id 前导命中子树闭包，tag_code 前导命中标签反查，
-  -- via_parent_code 前导命中父级互斥，sync_status 部分索引支撑增量同步水位。
-  CREATE INDEX IF NOT EXISTS idx_ftr_path_fp ON file_tag_relations(path_id, file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_ftr_tag_fp ON file_tag_relations(tag_code, file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_ftr_parent ON file_tag_relations(via_parent_code, tag_code);
-  CREATE INDEX IF NOT EXISTS idx_ftr_sync ON file_tag_relations(sync_status, file_fingerprint, updated_at) WHERE sync_status != 2;
-  CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
-  CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
-  CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
-  CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  CREATE INDEX IF NOT EXISTS idx_file_video_chunks_fp ON file_video_chunks(file_fingerprint);
-
-  -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）
-  DROP TRIGGER IF EXISTS trg_files_fts_update;
-  DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
-  DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
+  -- 19. FTS 同步触发器：废除 6 个内联 decompress_text 写触发器，
+  -- 仅保留按不可变 files.id（rowid）删除三张虚表的唯一删除触发器。
   DROP TRIGGER IF EXISTS trg_files_fts_insert;
+  DROP TRIGGER IF EXISTS trg_files_fts_update;
   DROP TRIGGER IF EXISTS trg_files_fts_delete;
-  DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
   DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
+  DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
+  DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
+  DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
   DROP TRIGGER IF EXISTS trg_files_pinyin_fts_delete;
 
-  CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT new.id, new.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
-      COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      '';
-  END;
-
-  CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
-    DELETE FROM files_fts WHERE rowid = old.id;
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT new.id, new.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
-      COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      '';
-  END;
-
   CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
-    DELETE FROM files_fts WHERE rowid = old.id;
-  END;
-
-  -- 拼音索引删除一致性（纯 SQL 方向）：files 删除即清拼音行，防孤儿行被搜索召回。
-  -- 写入/更新方向由 JS 计算拼音（pinyin-text.ts），走 FileDao write-through + reconciler，无法用触发器表达。
-  -- rowid 对齐（R1 盲审 A-H1）：拼音行 rowid = files.id，删除/寻址走 rowid（O(log n)）；
-  -- 按 file_fingerprint（UNINDEXED 列）删除对 FTS5 是全表扫描，批量删除 M 个文件 = M 次全表扫描。
-  CREATE TRIGGER trg_files_pinyin_fts_delete AFTER DELETE ON files BEGIN
+    DELETE FROM files_meta_fts WHERE rowid = old.id;
+    DELETE FROM files_body_fts WHERE rowid = old.id;
     DELETE FROM files_pinyin_fts WHERE rowid = old.id;
-  END;
-
-  CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.id, f.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
-      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), COALESCE(decompress_text(new.asr), ''), ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc, asr ON file_contents BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.id, f.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
-      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), COALESCE(decompress_text(new.asr), ''), ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.id, f.file_fingerprint, COALESCE(new.name, ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-  END;
-
-  CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name, file_fingerprint ON workspace_files BEGIN
-    DELETE FROM files_fts WHERE rowid = (SELECT id FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
-    SELECT f.id, f.file_fingerprint, COALESCE(new.name, ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
   DROP TRIGGER IF EXISTS trg_file_contents_update_modified_at;
@@ -957,7 +839,8 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS builtin_modules;
       DROP TABLE IF EXISTS offline_package_jobs;
       DROP TABLE IF EXISTS fs_operation_journal;
-      DROP TABLE IF EXISTS files_fts;
+      DROP TABLE IF EXISTS files_meta_fts;
+      DROP TABLE IF EXISTS files_body_fts;
       DROP TABLE IF EXISTS files_pinyin_fts;
       DROP TABLE IF EXISTS tag_path_ancestors;
       DROP TABLE IF EXISTS tag_paths;

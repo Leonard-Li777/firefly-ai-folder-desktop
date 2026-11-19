@@ -144,42 +144,56 @@ export abstract class FileDaoSharedBase {
     this.dimensionsCache = null
   }
 
+  /** Issue 03：冷热双 FTS 分层归一分（1/(1+|bm25|) × 层权），禁止跨表裸比原始 bm25 */
+  private static readonly FTS_HITS_CTE = `
+    WITH fts_hits(rid, score) AS (
+      SELECT rowid, ${1.0} / (1 + ABS(bm25(files_meta_fts, 0.0, 10.0, 8.0, 3.0, 4.0)))
+      FROM files_meta_fts WHERE files_meta_fts MATCH ?
+      UNION ALL
+      SELECT rowid, 0.6 / (1 + ABS(bm25(files_body_fts, 0.0, 1.0, 1.5, 1.2, 1.0, 1.2)))
+      FROM files_body_fts WHERE files_body_fts MATCH ?
+    )
+  `
+
   protected getFtsSearchStmt(workspaceId?: number): { stmt: Statement; extraParams: any[] } {
     if (workspaceId) {
       if (!this.ftsSearchStmtWithWorkspace) {
         this.ftsSearchStmtWithWorkspace = this.db.prepare(`
+          ${FileDaoSharedBase.FTS_HITS_CTE}
           SELECT
             COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
             COALESCE(f.smart_name, wf.name) as smart_name,
             f.size, f.extension, f.file_group, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
             wf.id, wf.path, wf.name, wf.is_analyzed, wf.modified_at as wf_mod,
             fc.quality_score,
-            bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
-          FROM files_fts
-          JOIN files f ON f.id = files_fts.rowid
+            MAX(fts_hits.score) as rank
+          FROM fts_hits
+          JOIN files f ON f.id = fts_hits.rid
           JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-          WHERE files_fts MATCH ? AND wf.workspace_id = ?
-          ORDER BY rank ASC LIMIT 100
+          WHERE wf.workspace_id = ?
+          GROUP BY wf.id
+          ORDER BY rank DESC LIMIT 100
         `)
       }
       return { stmt: this.ftsSearchStmtWithWorkspace, extraParams: [workspaceId] }
     } else {
       if (!this.ftsSearchStmtGlobal) {
         this.ftsSearchStmtGlobal = this.db.prepare(`
+          ${FileDaoSharedBase.FTS_HITS_CTE}
           SELECT
             COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
             COALESCE(f.smart_name, wf.name) as smart_name,
             f.size, f.extension, f.file_group, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
             wf.id, wf.path, wf.name, wf.is_analyzed, wf.modified_at as wf_mod,
             fc.quality_score,
-            bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
-          FROM files_fts
-          JOIN files f ON f.id = files_fts.rowid
+            MAX(fts_hits.score) as rank
+          FROM fts_hits
+          JOIN files f ON f.id = fts_hits.rid
           JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-          WHERE files_fts MATCH ?
-          ORDER BY rank ASC LIMIT 100
+          GROUP BY wf.id
+          ORDER BY rank DESC LIMIT 100
         `)
       }
       return { stmt: this.ftsSearchStmtGlobal, extraParams: [] }
@@ -189,21 +203,22 @@ export abstract class FileDaoSharedBase {
   protected getFtsVirtualSearchStmt(): Statement {
     if (!this.ftsVirtualSearchStmt) {
       this.ftsVirtualSearchStmt = this.db.prepare(`
+        ${FileDaoSharedBase.FTS_HITS_CTE}
         SELECT
           COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
           COALESCE(f.smart_name, wf.name) as smart_name,
           f.size, f.extension, f.file_group, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
           wf.id, wf.path, wf.name, wf.is_analyzed, wf.modified_at as wf_mod,
           fc.quality_score, vdf.relative_path, vdf.virtual_directory_id,
-          bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
-        FROM files_fts
-        JOIN files f ON f.id = files_fts.rowid
+          MAX(fts_hits.score) as rank
+        FROM fts_hits
+        JOIN files f ON f.id = fts_hits.rid
         JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
         JOIN virtual_directory_files vdf ON vdf.file_id = wf.id
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE files_fts MATCH ?
-          AND (? IS NULL OR vdf.virtual_directory_id = ?)
-        ORDER BY rank ASC LIMIT 100
+        WHERE (? IS NULL OR vdf.virtual_directory_id = ?)
+        GROUP BY wf.id, vdf.file_id
+        ORDER BY rank DESC LIMIT 100
       `)
     }
     return this.ftsVirtualSearchStmt

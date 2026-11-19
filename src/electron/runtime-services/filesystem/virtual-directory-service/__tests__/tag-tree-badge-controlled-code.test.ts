@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import '../../../../../../pro/tests/mocks/electron-mock'
 import { TagTreeQuery } from '../TagTreeQuery'
 import { omniClient } from '../../../../services/omni-client'
+import { createModelBTagTreeMockDb } from './helpers/model-b-tag-tree-mock'
 
 vi.mock('../../../../services/omni-client', () => ({
   omniClient: {
@@ -60,42 +61,26 @@ describe('TagTreeQuery: 严格遵从受控 Code 徽标统计，杜绝同名同�
     // 模拟数据库关系：
     // - omw.02378347.s 命中 2 个文件 (fp_cloud_1, fp_cloud_2)
     // - omw.00447472.s 命中 1 个文件 (fp_calligraphy_3)
-    const mockDb: any = {
-      name: ':memory:',
-      function: vi.fn(),
-      prepare: vi.fn((sql: string) => {
-        if (sql.includes('FROM file_tags_private')) {
-          return {
-            all: () => []
-          }
-        }
-        if (sql.includes('FROM file_tag_relations')) {
-          return {
-            all: () => [
-              {
-                tag_code: 'omw.02378347.s',
-                via_parent_code: 'builtin.content_tags',
-                file_fingerprint: 'fp_cloud_1'
-              },
-              {
-                tag_code: 'omw.02378347.s',
-                via_parent_code: 'builtin.content_tags',
-                file_fingerprint: 'fp_cloud_2'
-              },
-              {
-                tag_code: 'omw.00447472.s',
-                via_parent_code: 'builtin.content_tags',
-                file_fingerprint: 'fp_calligraphy_3'
-              }
-            ]
-          }
-        }
-        return {
-          all: () => [],
-          get: () => null
-        }
-      })
-    }
+    const mockDb = createModelBTagTreeMockDb([
+      {
+        tagCode: 'omw.02378347.s',
+        viaParentCode: 'builtin.content_tags',
+        fileFingerprint: 'fp_cloud_1',
+        codePath: '/builtin.content_tags/omw.02378347.s'
+      },
+      {
+        tagCode: 'omw.02378347.s',
+        viaParentCode: 'builtin.content_tags',
+        fileFingerprint: 'fp_cloud_2',
+        codePath: '/builtin.content_tags/omw.02378347.s'
+      },
+      {
+        tagCode: 'omw.00447472.s',
+        viaParentCode: 'builtin.content_tags',
+        fileFingerprint: 'fp_calligraphy_3',
+        codePath: '/builtin.content_tags/omw.00447472.s'
+      }
+    ])
 
     const query = new TagTreeQuery(mockDb)
     const res = await query.getDimensionGroups({ language: 'zh-CN' })

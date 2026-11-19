@@ -115,10 +115,11 @@ export const tagTreeQueryFilterMixin = {
         if (safeTerms.length > 0) {
           sanitizedQuery = safeTerms.join(' OR ')
           ftsClause = `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
-               SELECT f.file_fingerprint
-               FROM files_fts
-               JOIN files f ON f.id = files_fts.rowid
-               WHERE files_fts MATCH ?
+               SELECT f.file_fingerprint FROM files_meta_fts m
+               JOIN files f ON f.id = m.rowid WHERE files_meta_fts MATCH ?
+               UNION
+               SELECT f.file_fingerprint FROM files_body_fts b
+               JOIN files f ON f.id = b.rowid WHERE files_body_fts MATCH ?
              )) OR `
         }
       }
@@ -185,7 +186,7 @@ export const tagTreeQueryFilterMixin = {
       whereClauses.push(`(${ftsClause}${pinyinClause}${patternClauses.join(' OR ')})`)
 
       // 占位符顺序必须与 SQL 文本同序：fts MATCH → pinyin MATCH → LIKE 模式们
-      if (ftsClause) queryParams.push(sanitizedQuery)
+      if (ftsClause) queryParams.push(sanitizedQuery, sanitizedQuery)
       if (pinyinClause) queryParams.push(pinyinMatchExpr)
       queryParams.push(...likeParams)
     }

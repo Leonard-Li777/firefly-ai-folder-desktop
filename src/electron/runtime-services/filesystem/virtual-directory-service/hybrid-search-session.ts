@@ -27,7 +27,7 @@ export interface HybridSearchCollaborators {
   /** 仲裁融合：FTS5 BM25 + Omni 向量 + 文件名提升（+FS 未分析命中） */
   searchHybrid: HybridSearchArbiter['searchHybrid']
   /**
-   * 字段覆盖补充候选源（LIKE 兜底，非历史遗留）：覆盖 `files_fts` 未索引字段
+   * 字段覆盖补充候选源（LIKE 兜底，非历史遗留）：覆盖 file_contents 压缩 BLOB 与三张 FTS 虚表未索引字段
    * （路径 / 扩展名 / 作者 / 语言 / 文件分类 / 标签物化路径）、trigram 短查询
    * （<3 字符，如中文双字）以及主库未分析行。
    * `failure` 非空表示本次补充查询失败（已降级为空补充集），由本模块按「检索降级」上报。

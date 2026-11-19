@@ -246,14 +246,16 @@ export const tagTreeQueryAdjacencyMixin = {
     if (this._ftsAvailable !== null) return this._ftsAvailable
     try {
       const row = this.db
-        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_fts'")
-        .get()
-      this._ftsAvailable = !!row
+        .prepare(
+          "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name IN ('files_meta_fts','files_body_fts')"
+        )
+        .get() as { c: number } | undefined
+      this._ftsAvailable = (row?.c ?? 0) === 2
     } catch (err) {
       // FTS 探针失败属可容忍降级：回退 LIKE 检索路径
       logger.debug(
         LogCategory.VIRTUAL_DIRECTORY,
-        '[TagTreeQuery] files_fts 探针失败，按 FTS 不可用处理:',
+        '[TagTreeQuery] 冷热双 FTS 探针失败，按 FTS 不可用处理:',
         err
       )
       this._ftsAvailable = false

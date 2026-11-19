@@ -123,7 +123,21 @@ export const ENCODER_FILTER_MOBILE_CLIP = [3] as const
  * 保留开关是为了让 14 能用同一份夹具跑 A/B 并回填结论，而不是把猜测写死。
  */
 export const CLIP_TEXT_STRIP_PARTICLES = false
-/** BM25 完整 10 列列权（第 0 列为 file_fingerprint UNINDEXED 赋 0.0，随后 9 列对齐 files_fts 架构：name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags） */
+/** Issue 03：冷热双 FTS5 + 拼音三路独立列权（第 0 列均为 UNINDEXED 指纹） */
+export const FILES_META_FTS_BM25_WEIGHTS = [0.0, 10.0, 8.0, 3.0, 4.0] as const
+export const FILES_BODY_FTS_BM25_WEIGHTS = [0.0, 1.0, 1.5, 1.2, 1.0, 1.2] as const
+export const FILES_PINYIN_FTS_BM25_WEIGHTS = [0.0, 4.0, 4.0, 3.0, 3.5, 0.0] as const
+
+/** 三路分层归一权重：热元数据 > 拼音 > 长正文（严禁跨表裸比 raw bm25） */
+export const FTS_LAYER_WEIGHTS = {
+  meta: 1.0,
+  pinyin: 0.85,
+  body: 0.6
+} as const
+
+/**
+ * @deprecated Issue 03 单轨切换后仅保留给旧夹具/迁移脚本；生产三路分别使用上面的独立权重。
+ */
 export const HYBRID_BM25_COLUMN_WEIGHTS = [
   0.0, 4.0, 4.0, 3.0, 3.0, 3.5, 3.5, 3.0, 3.5, 3.5
 ] as const

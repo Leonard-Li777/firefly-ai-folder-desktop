@@ -93,18 +93,21 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ? OR decompress_text(fc.asr) LIKE ?)
+        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ?
+          OR wf.file_fingerprint IN (
+            SELECT ftr.file_fingerprint
+            FROM file_tag_relations ftr
+            JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
+            WHERE tpa.ancestor_code IN (
+              SELECT tag_code FROM tag_aliases WHERE lemma LIKE ?
+              UNION
+              SELECT code FROM file_tags_private WHERE name LIKE ?
+            )
+          ))
       `
+      // Issue 03 Step 3：<3 字符短词跳过全部 BLOB 解压，仅走热字段 + 标签 B-tree 联合路由
       const likeQuery = `%${trimmedQuery}%`
-      const params: any[] = [
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery
-      ]
+      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
 
       if (workspaceId) {
         sql += ` AND wf.workspace_id = ?`
@@ -126,7 +129,7 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
 
     const sanitizedQuery = `"${trimmedQuery.replace(/["]/g, '""')}"`
     const { stmt, extraParams } = this.getFtsSearchStmt(workspaceId)
-    const rows = stmt.all(sanitizedQuery, ...extraParams) as any[]
+    const rows = stmt.all(sanitizedQuery, sanitizedQuery, ...extraParams) as any[]
     return rows.map(row => ({
       ...row,
       id: row.id,
@@ -151,18 +154,21 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         JOIN workspace_files wf ON vdf.file_id = wf.id
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ? OR decompress_text(fc.asr) LIKE ?)
+        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ?
+          OR wf.file_fingerprint IN (
+            SELECT ftr.file_fingerprint
+            FROM file_tag_relations ftr
+            JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
+            WHERE tpa.ancestor_code IN (
+              SELECT tag_code FROM tag_aliases WHERE lemma LIKE ?
+              UNION
+              SELECT code FROM file_tags_private WHERE name LIKE ?
+            )
+          ))
       `
+      // Issue 03 Step 3：<3 字符短词跳过全部 BLOB 解压，仅走热字段 + 标签 B-tree 联合路由
       const likeQuery = `%${trimmedQuery}%`
-      const params: any[] = [
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery,
-        likeQuery
-      ]
+      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
 
       if (virtualDirectoryId) {
         sql += ` AND vdf.virtual_directory_id = ?`
@@ -185,6 +191,7 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
     const sanitizedQuery = `"${trimmedQuery.replace(/["]/g, '""')}"`
     const stmt = this.getFtsVirtualSearchStmt()
     const rows = stmt.all(
+      sanitizedQuery,
       sanitizedQuery,
       virtualDirectoryId ?? null,
       virtualDirectoryId ?? null

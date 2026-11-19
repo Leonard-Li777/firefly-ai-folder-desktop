@@ -176,7 +176,8 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   /**
    * [Issue 04 Step 2] 物理文件移动后的数据库更新：改走 FileSystemMutationDao，
    * 单事务原子更新 workspace_files(path/name/directory_id/mtime_ms/modified_at)，
-   * name 变更由 trg_workspace_files_fts_update 触发器自动同步 files_fts。
+   * name 变更由 FileSystemMutationDao 在同一事务内显式调用 syncFTSTags 重建 files_meta_fts / files_pinyin_fts
+   * （创世基线已废除 trg_workspace_files_fts_update 内联写触发器）。
    * @param oldPath 原绝对路径
    * @param newPath 新绝对路径
    * @param statMtimeMs 移动后文件 mtime_ms（Math.trunc(stats.mtimeMs)，FileGuard 围栏锚点）
@@ -436,6 +437,11 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     if (this.fileDao) {
       this.fileDao.syncFTSTags(fingerprint)
     }
+  }
+
+  /** P1-D 方案 B：分批刷新 pinyin_state=0 的脏文件（后台调用，非冷启动全库同步） */
+  syncPinyinPendingBatch(limit = 200): number {
+    return this.fileDao ? this.fileDao.syncPinyinPendingBatch(limit) : 0
   }
 
   syncFTSTagsBatch(fingerprints: string[]): void {
@@ -2161,6 +2167,20 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   insertVideoChunks(chunks: VideoChunkRecord[]): void {
     this.ensureInitialized()
     this.fileDao!.insertVideoChunks(chunks)
+  }
+
+  /**
+   * [Issue 04 Step 3 / FIN-12] 每完成一段，单事务内按 [startSec, endSec) 区间替换 chunks。
+   * 分段续跑只重算未完成段，已完成段 chunks 在 DB 中稳定留存。
+   */
+  replaceVideoChunksInRange(
+    fileFingerprint: string,
+    chunks: VideoChunkRecord[],
+    startSec: number,
+    endSec: number
+  ): void {
+    this.ensureInitialized()
+    this.fileDao!.replaceVideoChunksInRange(fileFingerprint, chunks, startSec, endSec)
   }
 
   /**

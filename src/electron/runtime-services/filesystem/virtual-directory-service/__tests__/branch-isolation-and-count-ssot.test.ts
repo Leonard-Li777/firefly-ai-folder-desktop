@@ -3,6 +3,7 @@ import '../../../../../../pro/tests/mocks/electron-mock'
 import { normalizeCodePath, TagTreeQuery } from '../TagTreeQuery'
 import { SelectedTag } from '@firefly/types'
 import { omniClient } from '../../../../services/omni-client'
+import { createModelBTagTreeMockDb } from './helpers/model-b-tag-tree-mock'
 
 vi.mock('../../../../services/omni-client', () => ({
   omniClient: {
@@ -59,7 +60,9 @@ describe('TagTreeQuery - 路径归一化与排他前缀查询测试 (SSOT)', () 
     // 关键断言：绝对严禁出现 LIKE ('%/' || ?) 后缀模糊通配（消除跨介质误召回）
     expect(clause).not.toContain('%/')
     // 关键断言：必须且仅包含排他左前缀匹配
-    expect(clause).toBe("((ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\'))")
+    expect(clause).toBe(
+      "(EXISTS (\n            SELECT 1 FROM tag_paths tp\n            WHERE tp.path_id = ftr.path_id\n              AND (tp.code_path = ? OR tp.code_path LIKE (? || '/%') ESCAPE '\\')\n          ))"
+    )
     expect(params.length).toBe(2)
     expect(params[0]).toBe('/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n')
     // LIKE 前缀匹配转义下划线防通配
@@ -104,7 +107,11 @@ describe('TagTreeQuery - 路径归一化与排他前缀查询测试 (SSOT)', () 
 
     expect(clause).toBeDefined()
     expect(clause).toContain('ftr.tag_code IN (')
-    expect(clause).toContain('ftr_host.tag_code = ? OR ftr_host.code_path LIKE')
+    // 模型 B：宿主共现经 tag_path_ancestors 闭包，不再对 ftr.code_path 做 LIKE
+    expect(clause).toContain(
+      'JOIN tag_path_ancestors tpa_host ON tpa_host.path_id = ftr_host.path_id'
+    )
+    expect(clause).toContain('tpa_host.ancestor_code = ?')
     expect(params).toContain('hownet.000000207706.n')
   })
 
@@ -157,34 +164,20 @@ describe('TagTreeQuery - 路径归一化与排他前缀查询测试 (SSOT)', () 
     vi.mocked(omniClient.getTaxonomyTree).mockResolvedValue(mockOmniTree as any)
 
     // 模拟数据库关系：只有音频文件 hit 科幻 (audio.wav)
-    const mockDb: any = {
-      name: ':memory:',
-      function: vi.fn(),
-      prepare: vi.fn((sql: string) => {
-        if (sql.includes('FROM file_tags_private')) {
-          return { all: () => [] }
-        }
-        if (sql.includes('FROM file_tag_relations')) {
-          return {
-            all: () => [
-              {
-                tag_code: 'omw.00543233.n',
-                via_parent_code: 'builtin.file_type',
-                file_fingerprint: 'fp_audio_1',
-                code_path: '/builtin.file_type/omw.00543233.n'
-              },
-              {
-                tag_code: 'omw.06368628.n',
-                via_parent_code: 'builtin.theme',
-                file_fingerprint: 'fp_audio_1',
-                code_path: '/builtin.file_type/omw.00543233.n/builtin.theme/omw.06368628.n'
-              }
-            ]
-          }
-        }
-        return { all: () => [], get: () => null }
-      })
-    }
+    const mockDb = createModelBTagTreeMockDb([
+      {
+        tagCode: 'omw.00543233.n',
+        viaParentCode: 'builtin.file_type',
+        fileFingerprint: 'fp_audio_1',
+        codePath: '/builtin.file_type/omw.00543233.n'
+      },
+      {
+        tagCode: 'omw.06368628.n',
+        viaParentCode: 'builtin.theme',
+        fileFingerprint: 'fp_audio_1',
+        codePath: '/builtin.file_type/omw.00543233.n/builtin.theme/omw.06368628.n'
+      }
+    ])
 
     const query = new TagTreeQuery(mockDb)
 
@@ -267,34 +260,20 @@ describe('TagTreeQuery - 路径归一化与排他前缀查询测试 (SSOT)', () 
     }
     vi.mocked(omniClient.getTaxonomyTree).mockResolvedValue(mockOmniTree as any)
 
-    const mockDb: any = {
-      name: ':memory:',
-      function: vi.fn(),
-      prepare: vi.fn((sql: string) => {
-        if (sql.includes('FROM file_tags_private')) {
-          return { all: () => [] }
-        }
-        if (sql.includes('FROM file_tag_relations')) {
-          return {
-            all: () => [
-              {
-                tag_code: 'omw.06912865.n',
-                via_parent_code: 'builtin.language_segmentation',
-                file_fingerprint: 'fp_doc_1',
-                code_path: '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n'
-              },
-              {
-                tag_code: 'omw.06912865.n',
-                via_parent_code: 'builtin.language_segmentation',
-                file_fingerprint: 'fp_ebook_1',
-                code_path: '/builtin.file_type/hownet.000000207706.n/builtin.language_segmentation/omw.06912865.n'
-              }
-            ]
-          }
-        }
-        return { all: () => [], get: () => null }
-      })
-    }
+    const mockDb = createModelBTagTreeMockDb([
+      {
+        tagCode: 'omw.06912865.n',
+        viaParentCode: 'builtin.language_segmentation',
+        fileFingerprint: 'fp_doc_1',
+        codePath: '/builtin.file_type/builtin.document/builtin.language_segmentation/omw.06912865.n'
+      },
+      {
+        tagCode: 'omw.06912865.n',
+        viaParentCode: 'builtin.language_segmentation',
+        fileFingerprint: 'fp_ebook_1',
+        codePath: '/builtin.file_type/hownet.000000207706.n/builtin.language_segmentation/omw.06912865.n'
+      }
+    ])
 
     const query = new TagTreeQuery(mockDb)
     const res = await query.getDimensionGroups({ removeEmptyTags: false, language: 'zh-CN' })
@@ -327,56 +306,42 @@ describe('TagTreeQuery - 路径归一化与排他前缀查询测试 (SSOT)', () 
     // 标签 "omw.shared_tag" 同时属于两个维度：'builtin.theme' 和 'builtin.style'；
     // 在 'builtin.theme' 下该标签没有文件 (count = 0)；
     // 但在 'builtin.style' 下真实有 1 个文件命中！
-    const mockDb: any = {
-      name: ':memory:',
-      function: vi.fn(),
-      prepare: vi.fn((sql: string) => {
-        if (sql.includes('FROM file_tags_private')) {
-          return {
-            all: () => [
-              {
-                id: 1,
-                code: 'builtin.theme',
-                name: '题材',
-                parent_codes: '[]',
-                level: 0,
-                meta: '{}'
-              },
-              {
-                id: 2,
-                code: 'builtin.style',
-                name: '风格',
-                parent_codes: '[]',
-                level: 0,
-                meta: '{}'
-              },
-              {
-                id: 101,
-                code: 'omw.shared_tag',
-                name: '共享标签',
-                parent_codes: JSON.stringify(['builtin.theme', 'builtin.style']),
-                level: 1,
-                meta: '{}'
-              }
-            ]
-          }
+    const mockDb = createModelBTagTreeMockDb(
+      [
+        {
+          tagCode: 'omw.shared_tag',
+          viaParentCode: 'builtin.style',
+          fileFingerprint: 'fp_style_1',
+          codePath: '/builtin.style/omw.shared_tag'
         }
-        if (sql.includes('FROM file_tag_relations')) {
-          return {
-            all: () => [
-              // 该文件仅在风格维度拥有该标签
-              {
-                tag_code: 'omw.shared_tag',
-                via_parent_code: 'builtin.style',
-                file_fingerprint: 'fp_style_1',
-                code_path: '/builtin.style/omw.shared_tag'
-              }
-            ]
-          }
+      ],
+      [
+        {
+          id: 1,
+          code: 'builtin.theme',
+          name: '题材',
+          parent_codes: '[]',
+          level: 0,
+          meta: '{}'
+        },
+        {
+          id: 2,
+          code: 'builtin.style',
+          name: '风格',
+          parent_codes: '[]',
+          level: 0,
+          meta: '{}'
+        },
+        {
+          id: 101,
+          code: 'omw.shared_tag',
+          name: '共享标签',
+          parent_codes: JSON.stringify(['builtin.theme', 'builtin.style']),
+          level: 1,
+          meta: '{}'
         }
-        return { all: () => [], get: () => null }
-      })
-    }
+      ]
+    )
 
     const query = new TagTreeQuery(mockDb)
     // 开启剪枝

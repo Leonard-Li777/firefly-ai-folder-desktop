@@ -7,7 +7,7 @@
  *    Score(d) = W_FTS * RRF_fts(d) + W_VEC * RRF_vec(d) + W_NAME * NameMatch(d)
  *    RRF_x(d) = 1 / (K + rank_x(d))，rank 从 1 计
  * 2. 三重候选源（并行/近并行）：
- *    - 本地 FTS5 BM25（files_fts，bm25 列权对齐 file-dao.ts）
+ *    - 本地冷热双 FTS5 BM25（files_meta_fts / files_body_fts / files_pinyin_fts，层级归一加权融合）
  *    - Omni 向量检索（omniClient.searchVectors，embedding 来自 omniService.batchEmbedText，按当前嵌入档位编码）
  *    - 文件名提升（NameMatch：name/smart_name 全子串 = 1.0，否则 token 覆盖率）
  * 3. 真实目录实时 FS 快速文件名检索（searchFastFs）：未分析命中去重后追加至结果尾部
@@ -61,10 +61,12 @@ import {
   CLIP_BREAKER_BACKOFF_FACTOR,
   ENCODER_FILTER_CHINESE_CLIP,
   ENCODER_FILTER_MOBILE_CLIP,
-  HYBRID_BM25_COLUMN_WEIGHTS,
+  FILES_META_FTS_BM25_WEIGHTS,
+  FILES_BODY_FTS_BM25_WEIGHTS,
+  FILES_PINYIN_FTS_BM25_WEIGHTS,
+  FTS_LAYER_WEIGHTS,
   SHORT_HAN_INVERTED_MIN_HITS,
-  SHORT_HAN_TOKEN_PATTERN,
-  DEFAULT_COLUMN_WEIGHT_MAP
+  SHORT_HAN_TOKEN_PATTERN
 } from './hybrid-search-constants'
 import {
   EndpointCircuitBreaker,
@@ -1107,8 +1109,10 @@ export class HybridSearchArbiter {
     if (identifiers.length === 0) return []
     try {
       const ftsTable = this.db
-        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_fts'")
-        .get()
+        .prepare(
+          "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name IN ('files_meta_fts','files_body_fts')"
+        )
+        .get() as { c: number } | undefined
       const results: string[] = []
       const seen = new Set<string>()
 
@@ -1120,17 +1124,27 @@ export class HybridSearchArbiter {
           const rows = this.db
             .prepare(
               `
+              WITH fts_hits(rid, score) AS (
+                SELECT rowid, 1.0 / (1 + ABS(bm25(files_meta_fts, ${FILES_META_FTS_BM25_WEIGHTS.join(', ')})))
+                FROM files_meta_fts WHERE files_meta_fts MATCH ?
+                UNION ALL
+                SELECT rowid, ${FTS_LAYER_WEIGHTS.pinyin} / (1 + ABS(bm25(files_pinyin_fts, ${FILES_PINYIN_FTS_BM25_WEIGHTS.join(', ')})))
+                FROM files_pinyin_fts WHERE files_pinyin_fts MATCH ?
+                UNION ALL
+                SELECT rowid, ${FTS_LAYER_WEIGHTS.body} / (1 + ABS(bm25(files_body_fts, ${FILES_BODY_FTS_BM25_WEIGHTS.join(', ')})))
+                FROM files_body_fts WHERE files_body_fts MATCH ?
+              )
               SELECT f.file_fingerprint AS file_fingerprint
-              FROM files_fts
-              JOIN files f ON f.id = files_fts.rowid
+              FROM fts_hits h
+              JOIN files f ON f.id = h.rid
               JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
-              WHERE files_fts MATCH ?
-                ${extraWhere}
-              ORDER BY bm25(files_fts, ${HYBRID_BM25_COLUMN_WEIGHTS.join(', ')}) ASC
+              WHERE 1 = 1 ${extraWhere}
+              GROUP BY f.file_fingerprint
+              ORDER BY MAX(h.score) DESC
               LIMIT ?
             `
             )
-            .all(phraseQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+            .all(phraseQuery, phraseQuery, phraseQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
           for (const r of rows) {
             if (!seen.has(r.file_fingerprint)) {
               seen.add(r.file_fingerprint)
@@ -1254,7 +1268,7 @@ export class HybridSearchArbiter {
 
   /** FTS5 快速字面候选（按 bm25 权重升序 = 相关度降序），包含短词/多词智能 LIKE 安全降级召回，返回 null 表示该路失败 */
   /**
-   * 原生 FTS5 字面路（files_fts）。
+   * 原生 FTS5 字面路（files_meta_fts 热元数据 / files_body_fts 冷正文，各自归一化后按层权融合）。
    *
    * 正排索引架构下不再接收拼音展开词——纯字母/拼音查询由 queryPinyinCandidates
    * （files_pinyin_fts 第 6 路）承载，本路只处理原生字面检索（设计文档 §5.1 闸 1）。
@@ -1267,13 +1281,6 @@ export class HybridSearchArbiter {
     shortHanWorkspaceId?: number
   ): string[] | null {
     try {
-      const ftsCols = this.db.prepare('PRAGMA table_info(files_fts)').all() as Array<{
-        name: string
-      }>
-      if (!ftsCols || ftsCols.length === 0) return []
-
-      const indexedCols = ftsCols.filter(c => c.name !== 'file_fingerprint').map(c => c.name)
-      const colSet = new Set(indexedCols)
       const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
 
       const trimmed = (keyword || '').trim()
@@ -1286,7 +1293,6 @@ export class HybridSearchArbiter {
       // 1. 若存在 >=3 字符的有效 token，优先尝试 FTS5 trigram MATCH
       if (hasLongToken) {
         try {
-          // 安全分项清洗转义并安全组装 OR 查询表达式
           const safeTerms = [trimmed]
             .map(w => {
               const cleaned = w.replace(/[*^()"\\-]/g, ' ').trim()
@@ -1296,31 +1302,40 @@ export class HybridSearchArbiter {
           const safeQuery =
             safeTerms.length > 0 ? safeTerms.join(' OR ') : sanitizeFtsQuery(trimmed)
           if (safeQuery) {
-            // FTS5 bm25 严格按虚拟表物理声明列顺序（从 0 开始）赋值，包含 UNINDEXED 列
-            // 第 0 列 file_fingerprint UNINDEXED 必须赋予 0.0 占位，避免后续列权向左整体错位！
-            const weights = ftsCols.map(c =>
-              c.name === 'file_fingerprint' ? 0.0 : (DEFAULT_COLUMN_WEIGHT_MAP[c.name] ?? 1.0)
-            )
+            // Issue 03 Step 3：三路分层归一（热元数据 1.0 / 拼音 0.85 / 长正文 0.6），
+            // 每路先 1/(1+|bm25|) 归一再乘层权，按 files.id 去重取最高分；禁止跨表裸比 bm25。
             rows = this.db
               .prepare(
                 `
+                WITH fts_hits(rid, score) AS (
+                  SELECT rowid, 1.0 / (1 + ABS(bm25(files_meta_fts, ${FILES_META_FTS_BM25_WEIGHTS.join(', ')})))
+                  FROM files_meta_fts WHERE files_meta_fts MATCH ?
+                  UNION ALL
+                  SELECT rowid, ${FTS_LAYER_WEIGHTS.pinyin} / (1 + ABS(bm25(files_pinyin_fts, ${FILES_PINYIN_FTS_BM25_WEIGHTS.join(', ')})))
+                  FROM files_pinyin_fts WHERE files_pinyin_fts MATCH ?
+                  UNION ALL
+                  SELECT rowid, ${FTS_LAYER_WEIGHTS.body} / (1 + ABS(bm25(files_body_fts, ${FILES_BODY_FTS_BM25_WEIGHTS.join(', ')})))
+                  FROM files_body_fts WHERE files_body_fts MATCH ?
+                )
                 SELECT f.file_fingerprint AS file_fingerprint
-                FROM files_fts
-                JOIN files f ON f.id = files_fts.rowid
+                FROM fts_hits h
+                JOIN files f ON f.id = h.rid
                 JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
-                WHERE files_fts MATCH ?
-                  ${extraWhere}
-                ORDER BY bm25(files_fts, ${weights.join(', ')}) ASC
+                WHERE 1 = 1 ${extraWhere}
+                GROUP BY f.file_fingerprint
+                ORDER BY MAX(h.score) DESC
                 LIMIT ?
               `
               )
-              .all(safeQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+              .all(safeQuery, safeQuery, safeQuery, ...queryParams, poolSize) as Array<{
+              file_fingerprint: string
+            }>
           }
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : String(err)
           logger.warn(
             LogCategory.VIRTUAL_DIRECTORY,
-            '[HybridSearchArbiter] FTS MATCH 异常，降级进入多列 LIKE 召回: ',
+            '[HybridSearchArbiter] 冷热三路 FTS MATCH 异常，降级进入热字段 LIKE 召回: ',
             msg
           )
         }
@@ -1353,78 +1368,52 @@ export class HybridSearchArbiter {
       }
 
       if (rows.length === 0 && combinedTokens.length > 0) {
-        // 保守防 DoS 截断：最多取前 8 个有效词
+        // Issue 03 Step 3：取消 9 列 FTS %LIKE% 全表扫与 BLOB 解压，仅走热字段 + 标签 B-tree 联合路由。
+        // < 3 字符短词同样使用本快道（物理 trigram 无法索引短词）。
         const safeTokens = combinedTokens.slice(0, 8)
-        const targetSearchCols = [
-          'name',
-          'smart_name',
-          'description',
-          'content',
-          'multimodal_content',
-          'ocr',
-          'asr',
-          'lrc',
-          'tags'
-        ].filter(c => colSet.has(c))
-
-        if (targetSearchCols.length > 0) {
-          const likeConditions: string[] = []
-          const likeParams: any[] = []
-          for (const token of safeTokens) {
-            const colLikes = targetSearchCols
-              .map(c => `files_fts.${c} LIKE ? ESCAPE '\\'`)
-              .join(' OR ')
-            likeConditions.push(`(${colLikes})`)
-            const p = `%${token.replace(/([%_\\])/g, '\\$1')}%`
-            for (let i = 0; i < targetSearchCols.length; i++) {
-              likeParams.push(p)
-            }
-          }
-
-          const exactNameParam = `%${trimmed.replace(/([%_\\])/g, '\\$1')}%`
-          // GROUP BY f.file_fingerprint 防止多工作区/多路径文件重复占用 LIMIT 并干扰 RRF rank
-          const fallbackSql = `
-            SELECT f.file_fingerprint AS file_fingerprint
-            FROM files_fts
-            JOIN files f ON f.id = files_fts.rowid
-            JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
-            WHERE ${likeConditions.join(' AND ')}
-              ${extraWhere}
-            GROUP BY f.file_fingerprint
-            ORDER BY
-              MIN(
-                CASE
-                  WHEN wf.name LIKE ? ESCAPE '\\' THEN 0
-                  ${colSet.has('smart_name') ? "WHEN files_fts.smart_name LIKE ? ESCAPE '\\' THEN 0" : ''}
-                  ${colSet.has('tags') ? "WHEN files_fts.tags LIKE ? ESCAPE '\\' THEN 1" : ''}
-                  ${colSet.has('ocr') ? "WHEN files_fts.ocr LIKE ? ESCAPE '\\' THEN 1" : ''}
-                  ${colSet.has('asr') ? "WHEN files_fts.asr LIKE ? ESCAPE '\\' THEN 1" : ''}
-                  ${colSet.has('multimodal_content') ? "WHEN files_fts.multimodal_content LIKE ? ESCAPE '\\' THEN 1" : ''}
-                  ${colSet.has('content') ? "WHEN files_fts.content LIKE ? ESCAPE '\\' THEN 2" : ''}
-                  ${colSet.has('description') ? "WHEN files_fts.description LIKE ? ESCAPE '\\' THEN 2" : ''}
-                  ${colSet.has('lrc') ? "WHEN files_fts.lrc LIKE ? ESCAPE '\\' THEN 2" : ''}
-                  ELSE 3
-                END
-              ) ASC,
-              wf.id DESC
-            LIMIT ?
-          `
-          const orderParams = [exactNameParam]
-          if (colSet.has('smart_name')) orderParams.push(exactNameParam)
-          if (colSet.has('tags')) orderParams.push(exactNameParam)
-          if (colSet.has('ocr')) orderParams.push(exactNameParam)
-          if (colSet.has('asr')) orderParams.push(exactNameParam)
-          if (colSet.has('multimodal_content')) orderParams.push(exactNameParam)
-          if (colSet.has('content')) orderParams.push(exactNameParam)
-          if (colSet.has('description')) orderParams.push(exactNameParam)
-          if (colSet.has('lrc')) orderParams.push(exactNameParam)
-
-          rows = this.db
-            .prepare(fallbackSql)
-            .all(...likeParams, ...queryParams, ...orderParams, poolSize) as Array<{
-            file_fingerprint: string
-          }>
+        const likeConditions: string[] = []
+        const likeParams: any[] = []
+        for (const token of safeTokens) {
+          const p = `%${token.replace(/([%_\\])/g, '\\$1')}%`
+          likeConditions.push(`(
+            f.smart_name LIKE ? ESCAPE '\\'
+            OR f.description LIKE ? ESCAPE '\\'
+            OR wf.name LIKE ? ESCAPE '\\'
+            OR f.file_fingerprint IN (
+              SELECT ftr.file_fingerprint
+              FROM file_tag_relations ftr
+              JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
+              WHERE tpa.ancestor_code IN (
+                SELECT tag_code FROM tag_aliases WHERE lemma LIKE ? ESCAPE '\\'
+                UNION
+                SELECT code FROM file_tags_private WHERE name LIKE ? ESCAPE '\\'
+              )
+            )
+          )`)
+          likeParams.push(p, p, p, p, p)
         }
+        const fallbackSql = `
+          SELECT f.file_fingerprint AS file_fingerprint
+          FROM files f
+          JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
+          WHERE ${likeConditions.join(' AND ')}
+            ${extraWhere}
+          GROUP BY f.file_fingerprint
+          ORDER BY
+            MIN(CASE
+              WHEN f.smart_name LIKE ? ESCAPE '\\' THEN 0
+              WHEN wf.name LIKE ? ESCAPE '\\' THEN 0
+              ELSE 1
+            END) ASC,
+            wf.id DESC
+          LIMIT ?
+        `
+        const exactNameParam = `%${trimmed.replace(/([%_\\])/g, '\\$1')}%`
+        rows = this.db
+          .prepare(fallbackSql)
+          .all(...likeParams, ...queryParams, exactNameParam, exactNameParam, poolSize) as Array<{
+          file_fingerprint: string
+        }>
       }
 
       // 双字短词低频点查结果并入 LIKE 召回头部（保序去重，点查命中优先，绝不漏召回）
