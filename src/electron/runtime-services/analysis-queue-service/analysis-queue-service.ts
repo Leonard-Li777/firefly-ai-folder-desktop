@@ -40,7 +40,8 @@ import { OrphanWatchdog } from './orphan-watchdog'
 import { flushFtsSync } from './fts-sync-hooks'
 import {
   WorkerOrchestratorBridge,
-  WriteSetBatchDispatcher
+  WriteSetBatchDispatcher,
+  type WorkerQueueItem
 } from './worker-orchestrator'
 import {
   checkExtensionMismatchFiles,
@@ -466,6 +467,8 @@ export class AnalysisQueueService {
 
     this.running = true
     this.syncHibernationState(true)
+    // 启动/预热独立 Stage 2 worker_threads 编排线程（幂等）
+    this.workerBridge.start()
 
     if (this.isProcessingLoopActive) {
       this.writeDispatcher.emitUpdate()
@@ -712,12 +715,17 @@ export class AnalysisQueueService {
       this.currentAbortController.abort()
       this.currentAbortController = null
     }
+    this.workerBridge.cancelItem(id, false)
     this.queueManager.deleteItem(id)
   }
 
   async deleteItemByPath(filePath: string): Promise<void> {
     await this.ensureInitialized()
-    if (this.current?.path && isPathEqual(this.current.path, filePath) && this.currentAbortController) {
+    if (
+      this.current?.path &&
+      isPathEqual(this.current.path, filePath) &&
+      this.currentAbortController
+    ) {
       this.currentAbortController.abort()
       this.currentAbortController = null
     }
@@ -835,9 +843,15 @@ export class AnalysisQueueService {
     return this.writeSetBatchDispatcher
   }
 
+  /** 将文件任务投递至独立 Stage 2 worker_threads 编排线程（B1 生产入口） */
+  public enqueueToWorkerOrchestrator(items: WorkerQueueItem[]): boolean {
+    return this.workerBridge.enqueue(items)
+  }
+
   /**
    * 优雅销毁分析队列服务（应用退出前由 main/index.ts 调用，必须在关库前完成）。
-   * 闭环停止循环、孤儿 watchdog、Worker 线程，冲刷防抖 FTS/写集/尾钩子并解绑配置监听。
+   * 闭环停止循环、孤儿 watchdog、Worker 线程，同步冲刷待写微批与 FTS 并解绑配置监听。
+   * 注意：退出阶段严禁通过 setImmediate 异步触发后台维护/云同步尾钩子，避免撞上已关闭 DB。
    */
   public async dispose(): Promise<void> {
     this.running = false
@@ -855,9 +869,12 @@ export class AnalysisQueueService {
     try {
       this.writeSetBatchDispatcher.resumeFromUi()
       await this.writeSetBatchDispatcher.flush()
-      this.writeSetBatchDispatcher.flushTailHooks()
     } catch (err) {
-      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出冲刷 WriteSetBatchDispatcher 失败:', err)
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        '[分析队列] 退出冲刷 WriteSetBatchDispatcher 失败:',
+        err
+      )
     } finally {
       this.writeSetBatchDispatcher.dispose()
     }
@@ -866,7 +883,11 @@ export class AnalysisQueueService {
       try {
         this.canonicalMaintenanceUnsubscribe()
       } catch (err) {
-        logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 取消 canonicalMaintenance 监听失败:', err)
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          '[分析队列] 取消 canonicalMaintenance 监听失败:',
+          err
+        )
       }
       this.canonicalMaintenanceUnsubscribe = undefined
     }

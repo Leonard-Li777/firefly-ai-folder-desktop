@@ -54,21 +54,15 @@ export class QueueManager {
 
   // 回调函数
   private onUpdate?: () => void
-  private onPersist?: () => void
-  private onWakeUp?: () => void
 
   constructor(
     ignoreRules: IIgnoreRule[] = [],
     callbacks?: {
       onUpdate?: () => void
-      onPersist?: () => void
-      onWakeUp?: () => void
     }
   ) {
     this.ignoreRules = ignoreRules
     this.onUpdate = callbacks?.onUpdate
-    this.onPersist = callbacks?.onPersist
-    this.onWakeUp = callbacks?.onWakeUp
   }
 
   /**
@@ -126,6 +120,11 @@ export class QueueManager {
                 parsedStats = stats
               }
             } catch (e) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 解析 analysis_stats 失败 (id=${r.id}):`,
+                e
+              )
               parsedStats = undefined
             }
           }
@@ -142,7 +141,9 @@ export class QueueManager {
           if (r.meta) {
             try {
               parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
-            } catch {}
+            } catch (e) {
+              logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] 解析 meta 失败 (id=${r.id}):`, e)
+            }
           }
 
           return {
@@ -371,19 +372,21 @@ export class QueueManager {
       if (!dirSiblingsMap.has(dir)) {
         const set = new Set<string>()
         for (const r of resolvedInputs) {
-          if (r.type !== 'folder' && path.dirname(r.nativePath) === dir) {
+          if (r.type !== 'folder' && isPathEqual(path.dirname(r.nativePath), dir)) {
             set.add(r.name || path.basename(r.nativePath))
           }
         }
         for (const q of this.queue) {
-          if (q.itemType !== 'directory' && q.path && path.dirname(q.path) === dir) {
+          if (q.itemType !== 'directory' && q.path && isPathEqual(path.dirname(q.path), dir)) {
             set.add(q.name || path.basename(q.path))
           }
         }
         if (dir && dir !== '.' && fs.existsSync(dir)) {
           try {
             for (const entry of fs.readdirSync(dir)) set.add(entry)
-          } catch {}
+          } catch (e) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] 扫描同级目录失败 (${dir}):`, e)
+          }
         }
         dirSiblingsMap.set(dir, Array.from(set))
       }
@@ -408,8 +411,12 @@ export class QueueManager {
           ) {
             continue
           }
-        } catch {
-          // 数据库为轻量 Mock 或未包含策略表时安全回退
+        } catch (e) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] 工作区准入校验失败，回退放行 (${file.nativePath}):`,
+            e
+          )
         }
 
         const key = `${file.nativePath}|${file.workspaceId}`
@@ -447,7 +454,13 @@ export class QueueManager {
                   typeof existingDbRow.meta === 'string'
                     ? JSON.parse(existingDbRow.meta)
                     : existingDbRow.meta || {}
-              } catch {}
+              } catch (e) {
+                logger.warn(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[分析队列] 解析已有队列项 meta 失败 (id=${exists.id}):`,
+                  e
+                )
+              }
               if (isExplicitForce) {
                 existingMeta.force_reanalyze = true
               }
@@ -578,12 +591,7 @@ export class QueueManager {
       return { addedCount: 0, updatedCount: 0, blockedCount, blockedWorkspaces }
     }
 
-    this.persist()
     this.emitUpdate()
-
-    if (addedCount > 0 || updatedCount > 0) {
-      this.wakeUp()
-    }
 
     return {
       addedCount,
@@ -626,7 +634,6 @@ export class QueueManager {
           })
         }
       })
-      this.wakeUp()
     } catch (e) {
       logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 重试失败:', e)
     }
@@ -706,7 +713,7 @@ export class QueueManager {
             q.workspaceId === workspaceId &&
             q.itemType !== 'directory' &&
             q.path &&
-            path.dirname(q.path) === dir
+            isPathEqual(path.dirname(q.path), dir)
           ) {
             set.add(q.name || path.basename(q.path))
           }
@@ -714,7 +721,13 @@ export class QueueManager {
         if (dir && dir !== '.' && fs.existsSync(dir)) {
           try {
             for (const entry of fs.readdirSync(dir)) set.add(entry)
-          } catch {}
+          } catch (e) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] 取消过滤扫描同级目录失败 (${dir}):`,
+              e
+            )
+          }
         }
         dirSiblingsMap.set(dir, Array.from(set))
       }
@@ -987,11 +1000,5 @@ export class QueueManager {
   }
   private emitUpdate(): void {
     this.onUpdate?.()
-  }
-  private persist(): void {
-    this.onPersist?.()
-  }
-  private wakeUp(): void {
-    this.onWakeUp?.()
   }
 }

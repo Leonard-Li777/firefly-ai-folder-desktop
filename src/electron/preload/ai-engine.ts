@@ -105,8 +105,15 @@ export const aiEngineApi = {
       'analysis-queue/delete-item',
       typeof id === 'string' ? parseInt(id, 10) : id
     ),
+  cancelAnalysisItem: (id: number | string) =>
+    ipcRenderer.invoke(
+      'analysis-queue/cancel-item',
+      typeof id === 'string' ? parseInt(id, 10) : id
+    ),
   startAnalysis: (workspaceId?: number) => ipcRenderer.invoke('analysis-queue/start', workspaceId),
   pauseAnalysis: (workspaceId?: number) => ipcRenderer.invoke('analysis-queue/pause', workspaceId),
+  yieldAnalysisForUi: (timeoutMs = 2000) => ipcRenderer.send('analysis:yield-for-ui', timeoutMs),
+  resumeAnalysisFromUi: () => ipcRenderer.send('analysis:resume-from-ui'),
   checkExtensionMismatch: (
     workspaceId: number
   ): Promise<

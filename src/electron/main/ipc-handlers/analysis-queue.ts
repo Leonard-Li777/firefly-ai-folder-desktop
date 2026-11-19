@@ -77,6 +77,15 @@ export function registerAnalysisQueueIPCHandlers() {
       throw error
     }
   })
+  // Spec §10.2 (N-1) / B6：用户主动取消任务，状态落库 failed + error='canceled_by_user'
+  ipcMain.handle('analysis-queue/cancel-item', async (_event, id: number) => {
+    try {
+      await analysisQueueService.cancelItemByUser(id)
+    } catch (error) {
+      logger.error(LogCategory.MAIN, `[IPC] 取消队列项目失败: ${id}`, error)
+      throw error
+    }
+  })
   ipcMain.handle('analysis-queue/start', async (event, workspaceId?: number) => {
     try {
       await analysisQueueService.start(workspaceId)
@@ -92,6 +101,18 @@ export function registerAnalysisQueueIPCHandlers() {
       logger.error(LogCategory.MAIN, '[IPC] 暂停分析队列失败:', error)
       throw error
     }
+  })
+
+  // Spec §8.1 / B7：前端交互让路协议（YIELD_FOR_UI / RESUME 双端联动）
+  ipcMain.on('analysis:yield-for-ui', (_event, timeoutMs?: number) => {
+    const safeTimeout =
+      typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0
+        ? Math.min(timeoutMs, 10_000)
+        : 2000
+    analysisQueueService.yieldForUi(safeTimeout)
+  })
+  ipcMain.on('analysis:resume-from-ui', () => {
+    analysisQueueService.resumeFromUi()
   })
 
   ipcMain.handle('analysis-queue/check-extension-mismatch', async (event, workspaceId: number) => {

@@ -473,7 +473,9 @@ export default defineConfig(({ command, mode }) => {
         ),
         'process.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL || env.VITE_SUPABASE_URL || ''),
         // Spec §4.5：APP_SECRET_KEY 取值修正，优先读运行时环境变量，回退至 .env（防止测试包触发 FATAL: Missing APP_SECRET_KEY）
-        'process.env.APP_SECRET_KEY': JSON.stringify(process.env.APP_SECRET_KEY || env.APP_SECRET_KEY || ''),
+        'process.env.APP_SECRET_KEY': JSON.stringify(
+          process.env.APP_SECRET_KEY || env.APP_SECRET_KEY || ''
+        ),
         'process.env.SUPABASE_ANON_KEY': JSON.stringify(
           env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY || ''
         ),
@@ -566,7 +568,9 @@ export default defineConfig(({ command, mode }) => {
           // 供主进程通过 child_process.fork() 拉起，将 Windows Shell COM 调用隔离出主进程
           entry: {
             main: 'src/electron/main/index.ts',
-            'icon-extractor-worker': 'src/electron/main/icon-extractor-worker.ts'
+            'icon-extractor-worker': 'src/electron/main/icon-extractor-worker.ts',
+            'analysis-orchestrator-worker':
+              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/orchestrator-thread.ts'
           },
           formats: ['cjs']
         },

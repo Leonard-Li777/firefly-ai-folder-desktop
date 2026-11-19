@@ -52,10 +52,6 @@ export class OrphanWatchdog {
     const db = databaseService.db
     if (!db) return
     try {
-      // 表结构探活：claimed_at 列存在才扫描（兼容存量库）
-      const cols = db.prepare('PRAGMA table_info(analysis_queue)').all() as Array<{ name: string }>
-      if (!cols.some(c => c.name === 'claimed_at')) return
-
       const cutoffMs = Date.now() - ORPHAN_STALE_THRESHOLD_MS
       const rawRows = db
         .prepare(
@@ -90,7 +86,8 @@ export class OrphanWatchdog {
             .prepare(
               `UPDATE analysis_queue
                SET status = 'failed', error = 'orphaned_reclaimed',
-                   end_time = CURRENT_TIMESTAMP, claimed_at = NULL
+                   end_time = CURRENT_TIMESTAMP, claimed_at = NULL,
+                   updated_at = CURRENT_TIMESTAMP
                WHERE id = ? AND status = 'analyzing'`
             )
             .run(row.id)

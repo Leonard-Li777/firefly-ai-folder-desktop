@@ -52,7 +52,7 @@ export class AnalysisWriteDispatcher {
     if (status === 'failed' && extra?.isTimeout === true) {
       void this.notifyFrontend(
         'warning',
-        `${t('分析超时')}: ${item.name}。${t('建议切换低显存需求的AI模型')}`,
+        `${t('分析时间太长')}: ${item.name}。${t('建议在设置里换一个更轻巧的识别方案')}`,
         false,
         `timeout-${itemId}`,
         5000,

@@ -1073,6 +1073,8 @@ app.on('before-quit', event => {
       iconExtractorClient.dispose()
       await fileWatcherService.cleanup()
       await systemHealthService.stop()
+      // 退出关库前优雅关停分析队列、Worker 线程、孤儿 watchdog 并冲刷防抖 FTS 与尾钩子，防止末批漏索引
+      await analysisQueueService.dispose()
       // [R2-8] Omni 已停止（释放只读池）后再对主库做安全 checkpoint，再真正关闭连接
       await databaseService.checkpointBeforeClose()
       databaseService.close()

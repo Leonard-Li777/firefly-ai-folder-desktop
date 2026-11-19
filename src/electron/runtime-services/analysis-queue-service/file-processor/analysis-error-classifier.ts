@@ -160,6 +160,7 @@ export function isTransientInfraError(err: unknown): boolean {
       e.statusCode === 503 ||
       e.code === 'ECONNREFUSED' ||
       e.code === 'ECONNRESET' ||
+      e.code === 'EBUSY' ||
       e.code === 'engine_swapping' ||
       matchesElectronNetTransientCode(e.code)
     ) {
@@ -183,11 +184,17 @@ export function isTransientInfraError(err: unknown): boolean {
     msg.includes('AI 服务未就绪') ||
     msg.includes('AI服务未就绪') ||
     msg.includes('ECONNREFUSED') ||
+    msg.includes('EBUSY') ||
     msg.includes('服务器未运行') ||
     msg.includes('服务尚未初始化') ||
     matchesElectronNetTransientCode(msg)
   )
 }
+
+export {
+  classifyWorkerErrorKind,
+  type AnalysisErrorKind
+} from '../worker-orchestrator/worker-error-classifier'
 
 /** 分析错误分类结果 */
 export interface AnalysisErrorClassification {
