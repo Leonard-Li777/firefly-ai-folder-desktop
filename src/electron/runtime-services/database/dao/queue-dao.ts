@@ -160,6 +160,12 @@ export class QueueDao {
           error = COALESCE(?, error),
           result = COALESCE(?, result),
           task_type = COALESCE(?, task_type),
+          -- 工单 B6 · 孤儿 watchdog：进入 analyzing 即记认领时刻；离开 analyzing 置 NULL
+          claimed_at = CASE
+            WHEN ? = 'analyzing' THEN CURRENT_TIMESTAMP
+            WHEN ? IN ('completed','failed','pending') THEN NULL
+            ELSE claimed_at
+          END,
           updated_at = ?
           WHERE id = ?${typeFilter}`
           )
@@ -169,6 +175,8 @@ export class QueueDao {
             item.error,
             item.result,
             nextTaskType,
+            item.status,
+            item.status,
             new Date().toISOString(),
             item.id,
             ...tailParams
@@ -223,7 +231,9 @@ export class QueueDao {
 
   clearPendingAnalysis(taskType?: AnalysisTaskType): void {
     if (taskType) {
-      this.db.prepare(`DELETE FROM analysis_queue WHERE status = 'pending' AND task_type = ?`).run(taskType)
+      this.db
+        .prepare(`DELETE FROM analysis_queue WHERE status = 'pending' AND task_type = ?`)
+        .run(taskType)
       return
     }
     this.db.prepare(`DELETE FROM analysis_queue WHERE status = 'pending'`).run()

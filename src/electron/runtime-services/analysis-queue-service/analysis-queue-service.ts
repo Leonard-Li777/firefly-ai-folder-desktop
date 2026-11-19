@@ -96,6 +96,13 @@ export class AnalysisQueueService {
    */
   private stage2WaitTimeoutMs: number = STAGE2_WAIT_TIMEOUT_MS
 
+  // 工单 B6 · 孤儿 watchdog：扫描 status='analyzing' AND claimed_at 超时的孤儿行
+  private orphanWatchdogTimer: NodeJS.Timeout | null = null
+  /** 孤儿判定阈值：认领后超过此时长仍 analyzing 且无活动即判孤儿 */
+  private static readonly ORPHAN_STALE_THRESHOLD_MS = 10 * 60 * 1000
+  /** watchdog 扫描周期 */
+  private static readonly ORPHAN_SCAN_INTERVAL_MS = 60 * 1000
+
   private ignoreRules: IIgnoreRule[] = []
   private errorRecoveryConfig: IErrorRecoveryConfig = {
     maxRetries: 0,
@@ -436,6 +443,7 @@ export class AnalysisQueueService {
 
     systemHealthService.updateMonitoringInterval(30000)
     cloudSyncWorker.updateInterval(30000)
+    this.startOrphanWatchdog()
 
     this.emitUpdate()
 
@@ -625,7 +633,87 @@ export class AnalysisQueueService {
     }
     this.isProcessingLoopActive = false
     this.syncHibernationState(false)
+    this.stopOrphanWatchdog()
     this.emitUpdate()
+  }
+
+  /**
+   * 工单 B6 · 孤儿 watchdog 启动。
+   * 主进程定期扫描 `analysis_queue WHERE status='analyzing' AND claimed_at < now()-阈值`，
+   * 判定孤儿（主进程重启 / Worker 静默消失）→ 置 `failed + error='orphaned_reclaimed'` 可重试。
+   * 杜绝孤儿 'analyzing' 行永无 Worker 认领导致该文件分析永久卡死（用户侧"转圈不停"）。
+   */
+  private startOrphanWatchdog(): void {
+    if (this.orphanWatchdogTimer) return
+    this.orphanWatchdogTimer = setInterval(() => {
+      // 让路给事件循环，避免与主分析链路争抢
+      setImmediate(() => this.reclaimOrphanedQueueRows())
+    }, AnalysisQueueService.ORPHAN_SCAN_INTERVAL_MS)
+    // 不阻止进程退出
+    if (this.orphanWatchdogTimer.unref) this.orphanWatchdogTimer.unref()
+  }
+
+  /** 工单 B6 · 卸载孤儿 watchdog */
+  private stopOrphanWatchdog(): void {
+    if (this.orphanWatchdogTimer) {
+      clearInterval(this.orphanWatchdogTimer)
+      this.orphanWatchdogTimer = null
+    }
+  }
+
+  /**
+   * 工单 B6 · 回收孤儿 'analyzing' 队列行。
+   * 仅回收 claimed_at 超阈值且当前非本进程正在处理的行（this.current 排除，防误杀在跑任务）。
+   */
+  private reclaimOrphanedQueueRows(): void {
+    const db = databaseService.db
+    if (!db) return
+    try {
+      // 表结构探活：claimed_at 列存在才扫描（兼容存量库）
+      const cols = db.prepare('PRAGMA table_info(analysis_queue)').all() as Array<{ name: string }>
+      if (!cols.some(c => c.name === 'claimed_at')) return
+
+      const cutoff = new Date(Date.now() - AnalysisQueueService.ORPHAN_STALE_THRESHOLD_MS)
+      const staleRows = db
+        .prepare(
+          `SELECT id, item_id FROM analysis_queue
+           WHERE status = 'analyzing'
+             AND claimed_at IS NOT NULL
+             AND claimed_at < ?`
+        )
+        .all(cutoff.toISOString()) as Array<{ id: number; item_id: number }>
+
+      // 排除当前正在处理的行（内存真实在跑，非孤儿）
+      const currentId = this.current?.id
+      const orphans = staleRows.filter(r => r.id !== currentId)
+      if (orphans.length === 0) return
+
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[孤儿 watchdog] 回收 ${orphans.length} 个孤儿 analyzing 行`,
+        { ids: orphans.map(r => r.id) }
+      )
+
+      const tx = db.transaction(() => {
+        for (const row of orphans) {
+          db.prepare(
+            `UPDATE analysis_queue
+             SET status = 'failed', error = 'orphaned_reclaimed',
+                 end_time = CURRENT_TIMESTAMP, claimed_at = NULL
+             WHERE id = ? AND status = 'analyzing'`
+          ).run(row.id)
+          // 复位 workspace_files 未分析标记，允许重新入队认领
+          if (row.item_id != null) {
+            db.prepare(`UPDATE workspace_files SET is_analyzed = 0 WHERE id = ?`).run(row.item_id)
+          }
+        }
+      })
+      tx()
+      this.emitUpdate()
+    } catch (e) {
+      // watchdog 失败不阻断主分析链路，显式上报
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[孤儿 watchdog] 扫描回收失败:', e)
+    }
   }
 
   /**
