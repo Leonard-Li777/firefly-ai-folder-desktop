@@ -90,7 +90,13 @@ export const tagTreeQuerySubtreeMixin = {
                 parentToChildren.get(p)!.push(row.code)
               }
             }
-          } catch {}
+          } catch (err) {
+            logger.warn(
+              LogCategory.VIRTUAL_DIRECTORY,
+              `[TagTreeQuery] 解析标签 parent_codes 失败: code=${row.code}`,
+              err
+            )
+          }
         }
 
         const queue = [tagCode]
@@ -108,7 +114,13 @@ export const tagTreeQuerySubtreeMixin = {
             }
           }
         }
-      } catch {}
+      } catch (err) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[TagTreeQuery] 读取标签 DAG 邻接失败: ${tagCode}`,
+          err
+        )
+      }
     } catch (err) {
       logger.warn(
         LogCategory.VIRTUAL_DIRECTORY,

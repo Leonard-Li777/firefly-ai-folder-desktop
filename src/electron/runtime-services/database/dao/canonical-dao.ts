@@ -3,7 +3,17 @@ import { getCanonicalConceptName, type SemanticTagInput } from '@firefly/shared'
 import { decompressText } from '../../../utils/text-compressor'
 
 /**
- * canonical 固化状态机状态取值（vector-semantic-text-unified-scheme §3.3 状态表）
+ * 受控 code 的可读段回退：OMW/HowNet 末段是词性标记（n/v/a/r/s），
+ * `s.split('.').pop()` 会把 `omw.10332385.n` 截断成 'n'，必须退回词性前一段。
+ */
+export function readableCodeSegment(code: string): string {
+  const parts = code.split('.')
+  const last = parts[parts.length - 1] || code
+  if (parts.length >= 2 && /^[nvasr]$/.test(last)) return parts[parts.length - 2] || code
+  return last
+}
+
+/** canonical 固化状态机状态取值（vector-semantic-text-unified-scheme §3.3 状态表）
  * - pending     文本已固化、向量未完成（崩溃可恢复，立即重试）
  * - ready       canonical 向量已写入（幂等跳过）
  * - visual_only 仅 gemma 无字图片：保留阶段一视觉向量，不写 canonical 向量
@@ -456,7 +466,7 @@ export class CanonicalDao {
         // 模型 B：name_path 物化列已删除，按 code_path 拆段实时译名（禁物化）
         const segs = (t.code_path || '').split('/').filter(Boolean)
         const namePath = segs.length
-          ? '/' + segs.map(s => getCanonicalConceptName(s) || s.split('.').pop() || s).join('/')
+          ? '/' + segs.map(s => getCanonicalConceptName(s) || readableCodeSegment(s)).join('/')
           : ''
         return {
           name: t.name ?? undefined,

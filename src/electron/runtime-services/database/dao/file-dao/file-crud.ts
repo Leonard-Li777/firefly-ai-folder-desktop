@@ -31,6 +31,7 @@ import { buildPinyinIndexRow, computePinyinSrcHash } from '../../../utils/pinyin
 
 import { FileDaoSharedBase } from './shared'
 import { readableCode, dimensionForCode } from './shared'
+import { FtsProjectionService } from '../../fts-projection'
 
 /**
  * FileDao 基础 CRUD mixin（Ticket 10 · 大文件模块化拆分）。
@@ -41,6 +42,14 @@ import { readableCode, dimensionForCode } from './shared'
  * 全部代码自 `file-dao.ts` 原样搬移，未改动任何逻辑、命名或注释措辞。
  */
 export class FileCrudMixin extends FileDaoSharedBase {
+  /** Issue 03：冷正文 FTS 投影唯一入口（与拼音投影实例分离，避免继承链字段冲突） */
+  private readonly bodyFtsProjection: FtsProjectionService
+
+  constructor(db: Database) {
+    super(db)
+    this.bodyFtsProjection = new FtsProjectionService(db)
+  }
+
   async getFileAnalysisResult(idOrPath: string | number): Promise<any> {
     // 入参非空守卫：空 ID/路径（如渲染进程在路径就绪前发起查询）直接返回 null，
     // 避免触发无效数据库查询与 "未找到文件分析结果" 告警
@@ -989,6 +998,15 @@ export class FileCrudMixin extends FileDaoSharedBase {
           (result as any).meta ? JSON.stringify((result as any).meta) : null,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null)
         )
+
+      // Issue 03 Step 2：同事务冷正文投影（直写调用方持有的明文，绝不反读解压 BLOB）
+      this.bodyFtsProjection.syncBodyFtsByFingerprint(fileFingerprint, {
+        content: result.content ?? '',
+        multimodalContent: result.multimodalContent ?? '',
+        ocr: (result as any).ocr ?? '',
+        lrc: result.lrc ?? '',
+        asr: (result as any).asr ?? ''
+      })
 
       // 获取当前最新的 analysis_stage 与 completed_mode，判断是否达到目标阶段
       let currentStage = 0

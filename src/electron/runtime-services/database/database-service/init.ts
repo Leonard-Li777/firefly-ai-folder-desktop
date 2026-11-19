@@ -165,6 +165,13 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
           throw new Error(`SQLite 外键约束启用失败: PRAGMA foreign_keys = ${fkStatus}`)
         }
         this._db.pragma(`busy_timeout = ${config.pragma.busy_timeout ?? 5000}`)
+        // [Issue 04 Step 5 / R2-8] WAL 自动 checkpoint（页阈值）与文件大小上限，防主库 WAL 无界增长。
+        if (typeof config.pragma.wal_autocheckpoint === 'number') {
+          this._db.pragma(`wal_autocheckpoint = ${config.pragma.wal_autocheckpoint}`)
+        }
+        if (typeof config.pragma.journal_size_limit === 'number') {
+          this._db.pragma(`journal_size_limit = ${config.pragma.journal_size_limit}`)
+        }
 
         if (config.migrations) {
           await this.createTables()
@@ -176,11 +183,19 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
 
         this.cleanupOrphanQueueItems()
 
-        // 拼音正排索引启动回填（设计文档 §4.4）：幂等 hash 闸门扫描，新鲜行零成本跳过；
-        // 未完成部分由行内游标续扫（周期 reconciler 接入后从断点继续）；
-        // optimize 由回填内部按需触发（确有写入或未完成时才付段合并成本）
+        // P1-D 方案 B：按 idx_files_pinyin_pending 部分索引分批回填（pinyin_state=0 → 1/2），
+        // 取代冷启动全库同步扫描；单批 200、最多 50 批，剩余交给 HybridSearch 周期 tick。
+        // 历史库兼容：若无任何 pending 行则回退一次 hash 幂等扫描，避免存量缺口。
         try {
-          this.fileDao.syncPinyinIndexBackfill(3_000)
+          let pendingRefreshed = 0
+          for (let batch = 0; batch < 50; batch++) {
+            const n = this.fileDao.syncPinyinPendingBatch(200)
+            if (n <= 0) break
+            pendingRefreshed += n
+          }
+          if (pendingRefreshed === 0) {
+            this.fileDao.syncPinyinIndexBackfill(3_000)
+          }
         } catch (pinyinError) {
           logger.warn(LogCategory.DATABASE_SERVICE, '拼音索引启动回填失败（不影响启动）', {
             error: pinyinError

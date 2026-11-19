@@ -31,6 +31,7 @@ import { t } from '@app/languages'
 const CONTENT_TAGS_NAME = CANONICAL_NAMES.CONTENT_TAGS
 import { DeterministicCodeGenerator, stripXmlWrapperTags } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
+import { FtsProjectionService } from '../../database/fts-projection'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { magikaService } from '../../system/magika-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
@@ -304,6 +305,14 @@ export async function saveCloudResult(
         fileData.groupingReason,
         fileData.groupingConfidence
       )
+
+      // Issue 03 Step 2：冷正文同事务投影（content/multimodal/ocr/lrc 均为调用方持有的明文）
+      new FtsProjectionService(db).syncBodyFtsByFingerprint(fileFingerprint, {
+        content: content ?? '',
+        multimodalContent: multimodalContent ?? '',
+        ocr: data.ocr || '',
+        lrc: data.lrc || ''
+      })
 
       db.prepare(
         `

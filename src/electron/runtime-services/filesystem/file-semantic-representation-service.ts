@@ -12,7 +12,7 @@ import {
   type TagProvenanceGroup
 } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
-import { parseCreatedYear, inferQualityLevel } from '../database/dao/canonical-dao'
+import { parseCreatedYear, inferQualityLevel, readableCodeSegment } from '../database/dao/canonical-dao'
 import { omniClient, resolveQueryEncoderFilter } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
 import { canonicalTextService } from '../analysis-queue-service/canonical-text-service'
@@ -327,13 +327,13 @@ export class FileSemanticRepresentationService implements IFileSemanticRepresent
           const namePath = codeSegs.length
             ? '/' +
               codeSegs
-                .map(s => getCanonicalConceptName(s) || s.split('.').pop() || s)
+                .map(s => getCanonicalConceptName(s) || readableCodeSegment(s))
                 .join('/')
             : ''
 
           let name = rel.tag_name || rel.tag_code
           if (name && name.includes('.')) {
-            name = getCanonicalConceptName(name) || (name.split('.').pop() || name)
+            name = getCanonicalConceptName(name) || readableCodeSegment(name)
           }
           if (name && isCandidateWordAdmissible(name).admissible && !kwList.includes(name)) {
             kwList.push(name)

@@ -53,6 +53,7 @@ import {
 } from '../../../config/analysis-mode'
 import { engineBridgeService } from '../../engine-bridge'
 import { databaseService } from '../../database/database-service'
+import { FtsProjectionService } from '../../database/fts-projection'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
 import { userTierService } from '../../user-tier/user-tier-service'
@@ -1825,6 +1826,26 @@ export class FileProcessor {
           try {
             // 仅在提取成功后精确清理 0~300s 窗口范围的旧向量 (ISS-74)
             await cleanupOrphanedVideoChunks(db, fileFingerprint, omniClient, 0, 300)
+            // [Issue 04 Step 3 / FIN-12] 本段完成即区间替换 chunks，杜绝续跑丢前序段
+            const seg0Chunks = anydocResult.perception?.video_chunks || []
+            if (seg0Chunks.length > 0) {
+              const seg0SamplingInterval =
+                anydocResult.perception?.video_sampling_interval_seconds ?? 1.0
+              databaseService.replaceVideoChunksInRange(
+                fileFingerprint,
+                seg0Chunks.map(c => ({
+                  fileFingerprint,
+                  chunkIndex: c.chunk_index ?? 0,
+                  startSec: c.start_sec ?? 0,
+                  endSec: c.end_sec ?? 0,
+                  repPtsSec: c.rep_pts_sec ?? c.start_sec ?? 0,
+                  meta: c.meta || {},
+                  samplingIntervalSeconds: seg0SamplingInterval
+                })),
+                0,
+                300
+              )
+            }
             databaseService.markVideoSegmentCompleted(fileFingerprint, 0, {
               frameCount: anydocResult.perception?.video_chunks?.length || 0,
               visualEmbeddedCount: anydocResult.perception?.video_chunks?.length || 0,
@@ -1953,8 +1974,30 @@ export class FileProcessor {
               })
 
               const chunkFrames = chunkResult.perception?.video_chunks || []
+              // 保留累积：供文件级 persistOmniVectors 做态3切片向量回传（DB 落库已改幂等 upsert，push 不再触发整表删）
               if (anydocResult.perception?.video_chunks && chunkFrames.length > 0) {
                 anydocResult.perception.video_chunks.push(...chunkFrames)
+              }
+
+              // [Issue 04 Step 3 / FIN-12] 本段完成即按 [chunkStart, chunkEnd) 区间替换 chunks，
+              // 已完成段 chunks 在 DB 中稳定留存，杜绝续跑丢前序段（chunk_index 全局网格不跨段冲突）
+              if (chunkFrames.length > 0) {
+                const segSamplingInterval =
+                  chunkResult.perception?.video_sampling_interval_seconds ?? 1.0
+                databaseService.replaceVideoChunksInRange(
+                  fileFingerprint,
+                  chunkFrames.map(c => ({
+                    fileFingerprint,
+                    chunkIndex: c.chunk_index ?? 0,
+                    startSec: c.start_sec ?? 0,
+                    endSec: c.end_sec ?? 0,
+                    repPtsSec: c.rep_pts_sec ?? c.start_sec ?? 0,
+                    meta: c.meta || {},
+                    samplingIntervalSeconds: segSamplingInterval
+                  })),
+                  chunkStart,
+                  chunkEnd
+                )
               }
 
               // 仅在当前片段提取成功后，精确清理该片段 [chunkStart, chunkEnd) 区间内的旧切片向量 (FIN-12)
@@ -2558,6 +2601,14 @@ export class FileProcessor {
           compressText(detectedOcrText ?? null),
           compressText(detectedAudioTranscript ?? null)
         )
+
+        // Issue 03 Step 2：冷正文同事务投影（此处持有 CPU 提取阶段全部明文，零 BLOB 反读）
+        new FtsProjectionService(db).syncBodyFtsByFingerprint(fileFingerprint, {
+          content: contentResult.content ?? '',
+          lrc: finalLrc ?? '',
+          ocr: detectedOcrText ?? '',
+          asr: detectedAudioTranscript ?? ''
+        })
 
         await databaseService.updateAnalysisStage(fileFingerprint, cpuCompletionStage)
       } catch (dbError) {

@@ -36,6 +36,7 @@ import {
 } from '../../../services/omni-client'
 import { omniService } from '../../system/omni-service'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { normalizeSupportedLocale } from '../../database/database'
 import { normalizeGemmaMrlDim } from '../../../utils/embedding-dim'
 import { PinyinQueryPlanner, type PinyinQueryPlan } from './pinyin-query-expander'
 import type { PinyinMatchType } from '../../utils/pinyin-text'
@@ -794,6 +795,9 @@ export class HybridSearchArbiter {
     }
     HybridSearchArbiter.lastPinyinReconcileAt = now
     try {
+      // P1-D：优先消费 idx_files_pinyin_pending 标脏行（state=0 → 1/2），
+      // 再以 hash reconciler 兜底外部绕过闸口的 smart_name / description 变更。
+      this.getFileDao().syncPinyinPendingBatch(200)
       this.getFileDao().syncPinyinIndexDirty(300)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -1113,13 +1117,15 @@ export class HybridSearchArbiter {
           "SELECT COUNT(*) AS c FROM sqlite_master WHERE type='table' AND name IN ('files_meta_fts','files_body_fts')"
         )
         .get() as { c: number } | undefined
+      // 探针必须要求两张虚表都存在；{c:0}/{c:1} 仍走 FTS 会抛 no such table。
+      const ftsReady = (ftsTable?.c ?? 0) === 2
       const results: string[] = []
       const seen = new Set<string>()
 
       const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
 
       for (const id of identifiers) {
-        if (ftsTable) {
+        if (ftsReady) {
           const phraseQuery = sanitizeFtsQuery(formatExactPhraseQuery(id))
           const rows = this.db
             .prepare(
@@ -1343,6 +1349,36 @@ export class HybridSearchArbiter {
 
       // 2. 若 MATCH 未能召回任何候选（短词 <3 字符、空格分隔多词或未命中），执行多列 LIKE 安全降级召回
       const combinedTokens = Array.from(new Set(tokens))
+      // 索引首列约束：tag_aliases 主键以 locale 打头，缺 locale 会退化为全语言扫
+      let aliasLocale = 'zh-CN'
+      try {
+        aliasLocale = normalizeSupportedLocale(
+          ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+        )
+      } catch {
+        aliasLocale = normalizeSupportedLocale('zh-CN')
+      }
+
+      // Issue 03 Step 3：标签名 B-tree 联合路由与 FTS 命中取并集。
+      // 旧实现仅在 FTS 零命中时才进标签路由：若标签名恰好在某文件正文出现，
+      // 真正挂载该标签却未出现该词的文件会永远召回不到。
+      if (combinedTokens.length > 0) {
+        const tagHits = this.queryTagBTreeCandidates(
+          combinedTokens,
+          extraWhere,
+          queryParams,
+          poolSize
+        )
+        if (tagHits.length > 0) {
+          const seen = new Set(rows.map(r => r.file_fingerprint))
+          for (const fp of tagHits) {
+            if (!seen.has(fp)) {
+              rows.push({ file_fingerprint: fp })
+              seen.add(fp)
+            }
+          }
+        }
+      }
 
       // 1.5 中文双字受控概念倒排点查快道 (Ticket 09 / Spec §4.8)：
       // FTS5 trigram 物理上无法为 2 字符建索引，"合同/发票/图片/视频"等高频双字词在此前
@@ -1384,13 +1420,14 @@ export class HybridSearchArbiter {
               FROM file_tag_relations ftr
               JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
               WHERE tpa.ancestor_code IN (
-                SELECT tag_code FROM tag_aliases WHERE lemma LIKE ? ESCAPE '\\'
+                SELECT tag_code FROM tag_aliases WHERE locale = ? AND lemma LIKE ? ESCAPE '\\'
                 UNION
                 SELECT code FROM file_tags_private WHERE name LIKE ? ESCAPE '\\'
               )
             )
           )`)
-          likeParams.push(p, p, p, p, p)
+          // 占位符：3 个热字段 LIKE → locale → alias LIKE → 私有标签 LIKE
+          likeParams.push(p, p, p, aliasLocale, p, p)
         }
         const fallbackSql = `
           SELECT f.file_fingerprint AS file_fingerprint
@@ -1428,11 +1465,70 @@ export class HybridSearchArbiter {
         return invertedHeadHits.slice(0, poolSize)
       }
 
-      return rows.map(r => r.file_fingerprint)
+      return rows.map(r => r.file_fingerprint).slice(0, poolSize)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
       logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] FTS5 检索失败，降级: ', msg)
       return null
+    }
+  }
+
+  /**
+   * Issue 03 Step 3：受控/本地标签名 → tag_path_ancestors → file_tag_relations 的 B-tree 联合路由。
+   * 与三路 FTS 命中取并集，独立成路以便标签名被正文误命中时仍能召回真正挂载该标签的文件。
+   */
+  private queryTagBTreeCandidates(
+    tokens: string[],
+    extraWhere: string,
+    queryParams: any[],
+    poolSize: number
+  ): string[] {
+    try {
+      const safeTokens = Array.from(new Set(tokens)).slice(0, 8).filter(Boolean)
+      if (safeTokens.length === 0) return []
+      const aliasLike = safeTokens.map(() => "lemma LIKE ? ESCAPE '\\'").join(' OR ')
+      const privateLike = safeTokens.map(() => "name LIKE ? ESCAPE '\\'").join(' OR ')
+      const patterns = safeTokens.map(token => `%${token.replace(/([%_\\])/g, '\\$1')}%`)
+      let aliasLocale = 'zh-CN'
+      try {
+        aliasLocale = normalizeSupportedLocale(
+          ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+        )
+      } catch {
+        aliasLocale = normalizeSupportedLocale('zh-CN')
+      }
+      const rows = this.db
+        .prepare(
+          `
+          SELECT DISTINCT f.file_fingerprint AS file_fingerprint
+          FROM files f
+          JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
+          WHERE f.file_fingerprint IN (
+            SELECT ftr.file_fingerprint
+            FROM file_tag_relations ftr
+            JOIN tag_path_ancestors tpa ON tpa.path_id = ftr.path_id
+            WHERE tpa.ancestor_code IN (
+              SELECT tag_code FROM tag_aliases WHERE locale = ? AND (${aliasLike})
+              UNION
+              SELECT code FROM file_tags_private WHERE (${privateLike})
+            )
+          )
+          ${extraWhere}
+          LIMIT ?
+        `
+        )
+        .all(aliasLocale, ...patterns, ...patterns, ...queryParams, poolSize) as Array<{
+        file_fingerprint: string
+      }>
+      return rows.map(r => r.file_fingerprint)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearchArbiter] 标签 B-tree 联合路由失败，降级为纯 FTS 命中: ',
+        msg
+      )
+      return []
     }
   }
 
@@ -1794,13 +1890,21 @@ export class HybridSearchArbiter {
       if (parentsWithAnyChunks.length > 0) {
         try {
           const placeholders = parentsWithAnyChunks.map(() => '?').join(',')
+          // [Issue 04 Step 3 / Spec §3.1.C.3] 视频权益时限额下推到 SQL 层：
+          // WHERE file_fingerprint IN (...) AND start_sec < videoLimitSec，
+          // 命中 idx_fvc_fp_start 前缀 + start_sec 区间，消除单视频 7,200 行全量加载与逐行 JS 过滤。
+          const userLimits = userTierService.getCachedData()?.computed_limits
+          const videoLimitSec =
+            typeof userLimits?.video_max_duration_seconds === 'number'
+              ? userLimits.video_max_duration_seconds
+              : 300
           const rows = this.db
             .prepare(
               `SELECT file_fingerprint, chunk_index, start_sec, end_sec, COALESCE(rep_pts_sec, start_sec) AS rep_pts_sec, meta
                FROM file_video_chunks
-               WHERE file_fingerprint IN (${placeholders})`
+               WHERE file_fingerprint IN (${placeholders}) AND start_sec < ?`
             )
-            .all(...parentsWithAnyChunks.map(p => p.parentFp)) as Array<{
+            .all(...parentsWithAnyChunks.map(p => p.parentFp), videoLimitSec) as Array<{
             file_fingerprint: string
             chunk_index: number
             start_sec: number
@@ -1809,17 +1913,7 @@ export class HybridSearchArbiter {
             meta: string | Record<string, any>
           }>
 
-          const userLimits = userTierService.getCachedData()?.computed_limits
-          const videoLimitSec =
-            typeof userLimits?.video_max_duration_seconds === 'number'
-              ? userLimits.video_max_duration_seconds
-              : 300
-
           for (const r of rows) {
-            // 降级后读时限额过滤 (修正 2): 若切片起点已超出当前用户权益上限，读时不可见
-            if (r.start_sec >= videoLimitSec) {
-              continue
-            }
             const curMax = maxChunkIndexMap.get(r.file_fingerprint) ?? -1
             if (r.chunk_index > curMax) {
               maxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)

@@ -120,8 +120,9 @@ export abstract class FileDaoSharedBase {
     }
 
     // 3. 本地主库别名单表 tag_aliases 直查（Issue 02：locale 普通列，参数化零拼表）
+    let safeLocale = locale
     try {
-      const safeLocale = normalizeSupportedLocale(locale)
+      safeLocale = normalizeSupportedLocale(locale)
       const row = this.db
         .prepare(
           `SELECT lemma FROM tag_aliases
@@ -129,8 +130,13 @@ export abstract class FileDaoSharedBase {
         )
         .get(safeLocale, code) as { lemma?: string } | undefined
       if (row?.lemma) return row.lemma
-    } catch {
-      // 分表不可用时降级，不影响主查询
+    } catch (error) {
+      // 别名表不可用时降级到 AOT 规范名 / slug，但必须留痕，严禁静默吞异常
+      logger.warn(
+        LogCategory.DATABASE_SERVICE,
+        `[FileDao] tag_aliases 展示名解析失败 (locale=${safeLocale}, code=${code}):`,
+        error
+      )
     }
 
     // 4. 非中文环境或分表未收录时的 AOT 规范名兜底

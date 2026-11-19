@@ -24,6 +24,10 @@ export interface IDatabaseConfig {
     temp_store: string
     foreign_keys: boolean
     busy_timeout?: number
+    /** [Issue 04 Step 5 / R2-8] WAL 自动 checkpoint 页阈值（页），默认 1000 页避免 WAL 无界增长。 */
+    wal_autocheckpoint?: number
+    /** [Issue 04 Step 5 / R2-8] WAL 文件大小上限（字节），超过后 checkpoint 截断，防 WAL 膨胀。 */
+    journal_size_limit?: number
   }
 }
 
@@ -353,7 +357,7 @@ export const GENESIS_V1_SCHEMA = `
     PRIMARY KEY (virtual_directory_id, file_id, relative_path),
     FOREIGN KEY (virtual_directory_id) REFERENCES virtual_directories(id) ON DELETE CASCADE,
     FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE
-  );
+  ) WITHOUT ROWID;
 
   -- 15. 最小单元表（文件逻辑分组，如：一套漫画、一个项目的代码）
   CREATE TABLE IF NOT EXISTS file_units (
@@ -389,21 +393,37 @@ export const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (unit_id) REFERENCES file_units(id) ON DELETE CASCADE
   );
 
-  -- 17. 待同步操作表
+  -- 17. 离线消费容灾队列（Issue 05 Step 1 / Spec §3.1.C.4）
+  -- 仅存端侧乐观扣减（operation_type GLOB 'spend_*' 且 amount_delta <= 0），
+  -- 物理封锁端侧自铸萤火（正数入账 / 收入流水一律拒绝）。
+  -- 本地展示余额 = MAX(0, cloudSnapshotBalance + SUM(amount_delta) WHERE status='pending')。
   CREATE TABLE IF NOT EXISTS pending_firecore_operations (
-    id TEXT PRIMARY KEY,
-    operation_type TEXT NOT NULL,
-    payload TEXT NOT NULL,
-    local_state_before TEXT NOT NULL,
-    status TEXT DEFAULT 'pending',
-    retry_count INTEGER DEFAULT 0,
-    error_message TEXT,
-    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    synced_at DATETIME
-  );
+    id              TEXT PRIMARY KEY,              -- 客户端幂等键 p_client_op_id (UUID)
+    operation_type  TEXT NOT NULL CHECK (operation_type GLOB 'spend_*'),
+    amount_delta    INTEGER NOT NULL CHECK (amount_delta <= 0),
+    context_json    TEXT NOT NULL DEFAULT '{}',
+    status          TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'syncing', 'completed', 'rejected')),
+    reject_reason   TEXT,
+    created_at      INTEGER NOT NULL,
+    updated_at      INTEGER NOT NULL
+  ) WITHOUT ROWID;
 
-  -- 16. 内存响应缓存表
+  -- 17.1 云端流水只读镜像缓存（Issue 05 Step 1）
+  -- 仅供 UI 收支明细离线只读展示，零反向同步；由 upsertFirecoreTransactionsCache 单事务镜像。
+  CREATE TABLE IF NOT EXISTS firecore_transactions_cache (
+    id              TEXT PRIMARY KEY,
+    user_id         TEXT NOT NULL,
+    type            TEXT NOT NULL,
+    amount          INTEGER NOT NULL,
+    balance_after   INTEGER NOT NULL,
+    description     TEXT,
+    metadata_json   TEXT NOT NULL DEFAULT '{}',
+    created_at      INTEGER NOT NULL,
+    synced_at       INTEGER NOT NULL
+  ) WITHOUT ROWID;
+
+  -- 16. 内存响应缓存表（Issue 05 Step 4：时间列统一 Unix ms + 7 天 TTL 索引）
   CREATE TABLE IF NOT EXISTS memory_cache (
     id TEXT PRIMARY KEY,
     request_data TEXT,
@@ -414,8 +434,10 @@ export const GENESIS_V1_SCHEMA = `
     file_fingerprint TEXT,
     sync_status INTEGER NOT NULL DEFAULT 0,
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at_ms INTEGER NOT NULL DEFAULT 0      -- Unix 毫秒时间戳（Date.now()），供 7 天 TTL 清理
   );
+  -- 7 天 TTL 清理索引（cloud-sync-worker 定期 DELETE WHERE created_at_ms < ?）
+  CREATE INDEX IF NOT EXISTS idx_memory_cache_ttl ON memory_cache (created_at_ms);
 
   -- 16.2 孤儿指纹 GC 队列（Issue 04 Step 1 / Spec §3.1.C.2：SQLite↔FTS5↔zvec 两阶段真自愈）
   -- workspace_files 删除触发器在指纹全库零引用时入队；FileCleanupService.reconcileOrphanFingerprints 统一调度。
@@ -447,6 +469,11 @@ export const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
     UNIQUE(file_fingerprint, chunk_index)
   );
+
+  -- [Issue 04 Step 3 / Spec §3.1.C.3] 检索时序命中后按 (file_fingerprint, start_sec) 区间点查，
+  -- 配合 HybridSearchArbiter SQL 层下推 WHERE start_sec < videoLimitSec，避免全量加载 7,200 行 chunks。
+  CREATE INDEX IF NOT EXISTS idx_fvc_fp_start
+  ON file_video_chunks(file_fingerprint, start_sec);
 
   -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 - 读时派生升维版)
   CREATE TABLE IF NOT EXISTS file_video_segments (
@@ -721,6 +748,58 @@ export const GENESIS_V1_SCHEMA = `
     tokenize='trigram'
   );
 
+  -- 18. 高频索引
+  CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
+  CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
+  -- [P1-D] 拼音回填待办部分索引：仅扫 pinyin_state=0 的脏文件，空库/全就绪零成本
+  CREATE INDEX IF NOT EXISTS idx_files_pinyin_pending ON files(pinyin_state) WHERE pinyin_state = 0;
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_ws_fp ON workspace_files(workspace_id, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_fp_ws ON workspace_files(file_fingerprint, workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_dir_id ON workspace_files(directory_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint ON workspace_files(file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint_analyzed ON workspace_files(file_fingerprint, is_analyzed);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_path ON workspace_files(path);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_path_nocase ON workspace_files(path COLLATE NOCASE);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_lightweight ON workspace_files(workspace_id, is_analyzed, path);
+  -- V4 切片A（Issue 01 §2）：增量扫描覆盖索引——diff 扫描单表命中，免回表
+  -- 切片C（SC-2/SC-5）：纳入 status 列，使 workspace_id + directory_id + status 三条件
+  --   在任意数据量（含单行）下优化器稳定选中本覆盖索引，避免退化到单列 idx_workspace_files_status。
+  CREATE INDEX IF NOT EXISTS idx_wf_diff_cover    ON workspace_files(workspace_id, directory_id, status, is_ignored, path, file_size, mtime_ms);
+  -- 活跃目录快速过滤（部分索引，排除 is_ignored=1）
+  CREATE INDEX IF NOT EXISTS idx_wf_ws_active_dir ON workspace_files(workspace_id, directory_id) WHERE is_ignored = 0;
+  -- 指纹反查（部分索引，覆盖 fk 路径）
+  CREATE INDEX IF NOT EXISTS idx_wf_fp            ON workspace_files(file_fingerprint) WHERE file_fingerprint IS NOT NULL;
+  CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
+  CREATE INDEX IF NOT EXISTS idx_workspaces_bound_wf ON workspaces(bound_workflow_id);
+  CREATE INDEX IF NOT EXISTS idx_workspace_directories_bound_wf ON workspace_directories(bound_workflow_id);
+  CREATE INDEX IF NOT EXISTS idx_local_workflows_persona ON local_workflows(persona);
+  CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
+  CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
+
+  -- 模型 B 覆盖索引（Spec §B L320-323）：path_id 前导命中子树闭包，tag_code 前导命中标签反查，
+  -- via_parent_code 前导命中父级互斥，sync_status 部分索引支撑增量同步水位。
+  CREATE INDEX IF NOT EXISTS idx_ftr_path_fp ON file_tag_relations(path_id, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_ftr_tag_fp ON file_tag_relations(tag_code, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_ftr_parent ON file_tag_relations(via_parent_code, tag_code);
+  CREATE INDEX IF NOT EXISTS idx_ftr_sync ON file_tag_relations(sync_status, file_fingerprint, updated_at) WHERE sync_status != 2;
+  CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
+  -- Issue 05 Step 1：离线消费队列索引（状态+金额覆盖索引，加速 SUM(amount_delta) WHERE status='pending'）
+  CREATE INDEX IF NOT EXISTS idx_pfo_status_delta
+    ON pending_firecore_operations(status, amount_delta);
+  CREATE INDEX IF NOT EXISTS idx_pfo_cleanup
+    ON pending_firecore_operations(status, updated_at) WHERE status IN ('completed', 'rejected');
+  -- Issue 05 Step 1：云端流水镜像缓存索引（用户+时间倒序，加速收支明细查询）
+  CREATE INDEX IF NOT EXISTS idx_ftc_user_time
+    ON firecore_transactions_cache(user_id, created_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  CREATE INDEX IF NOT EXISTS idx_file_video_chunks_fp ON file_video_chunks(file_fingerprint);
+
   -- 19. FTS 同步触发器：废除 6 个内联 decompress_text 写触发器，
   -- 仅保留按不可变 files.id（rowid）删除三张虚表的唯一删除触发器。
   DROP TRIGGER IF EXISTS trg_files_fts_insert;
@@ -793,7 +872,7 @@ export const GENESIS_V1_SCHEMA = `
     unload_fail_streak          INTEGER NOT NULL DEFAULT 0,
     blocked_unload_no_handle    INTEGER NOT NULL DEFAULT 0,
     blocked_unload_identity     TEXT,
-    updated_at                  DATETIME DEFAULT CURRENT_TIMESTAMP
+    updated_at_ms               INTEGER NOT NULL DEFAULT 0  -- Unix 毫秒时间戳（Date.now()）
   );
 `
 
@@ -1108,7 +1187,10 @@ export function getDatabaseConfig(language?: string): IDatabaseConfig {
       mmap_size: 268435456,
       temp_store: 'MEMORY',
       foreign_keys: true,
-      busy_timeout: 5000
+      busy_timeout: 5000,
+      // [Issue 04 Step 5 / R2-8] WAL 自动 checkpoint（1000 页）+ 文件大小上限（64MB），防主库 WAL 无界增长。
+      wal_autocheckpoint: 1000,
+      journal_size_limit: 67108864
     }
   }
 }
@@ -1164,6 +1246,11 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
   CREATE INDEX IF NOT EXISTS idx_video_segments_file_seq ON file_video_segments(file_id, segment_index);
   CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
+
+  -- [Issue 04 Step 5 / Spec §3.1.C.4] 逻辑单元治理索引：按工作区/路径查单元、按单元 ID 查关联文件。
+  CREATE INDEX IF NOT EXISTS idx_file_units_ws ON file_units(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_file_units_path ON file_units(path);
+  CREATE INDEX IF NOT EXISTS idx_fur_unit_id ON file_unit_relations(unit_id);
 `
 
 /**

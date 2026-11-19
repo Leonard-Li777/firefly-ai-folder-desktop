@@ -2,6 +2,7 @@ import { buildPinyinIndexRow } from '../utils/pinyin-text'
 import { LogCategory, logger, getCanonicalConceptName } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { normalizeSupportedLocale } from './database'
+import * as path from 'node:path'
 
 /**
  * 从受控标签 code 提取可读 slug 作为展示名兜底（builtin.* / omw.* / dim.xxx）
@@ -242,6 +243,33 @@ export class FtsProjectionService {
   }
 
   /**
+   * 按指纹解析 files.id 后投影冷正文（写入方只有 fingerprint 时的薄适配）。
+   * rowid 依旧显式锚定 files.id；查不到文件时告警返回，绝不构造错位 FTS 行。
+   */
+  syncBodyFtsByFingerprint(
+    fingerprint: string,
+    body: {
+      content?: string
+      multimodalContent?: string
+      ocr?: string
+      lrc?: string
+      asr?: string
+    }
+  ): void {
+    if (!fingerprint) return
+    const row = this.db
+      .prepare('SELECT id FROM files WHERE file_fingerprint = ?')
+      .get(fingerprint) as { id: number } | undefined
+    if (!row) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '[FtsProjection] 冷正文投影跳过：文件不存在', {
+        fingerprint
+      })
+      return
+    }
+    this.syncBodyFts(row.id, { fileFingerprint: fingerprint, ...body })
+  }
+
+  /**
    * 兼容入口（标签变更 / 手动改标）：仅重建热元数据 + 拼音行。
    * 冷正文由持有明文的写入方调 syncBodyFts，严禁在此解压 BLOB。
    */
@@ -263,7 +291,8 @@ export class FtsProjectionService {
       this.db.transaction(() => {
         this.syncMetaFts(row.rid, {
           fileFingerprint: row.file_fingerprint,
-          name: row.name,
+          // Spec §Step2：热元数据 name 存去后缀基名（扩展名另有独立列，避免双写放大）
+          name: path.basename(row.name, path.extname(row.name)),
           smartName: row.smart_name,
           description: row.description,
           author: row.author

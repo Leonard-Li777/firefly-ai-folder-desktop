@@ -85,6 +85,41 @@ describe('冷热双 FTS5 + VACUUM 零错位', () => {
     }
   })
 
+  it('FileDao.updateFileAnalysisResult 同事务直写 files_body_fts（生产链路接线防回归）', async () => {
+    const db = makeDb()
+    try {
+      db.prepare('INSERT INTO files (file_fingerprint, extension) VALUES (?, ?)').run(
+        'fp-crud-body',
+        '.txt'
+      )
+      db.prepare(`INSERT INTO workspaces (workspace_id, path, name) VALUES (1, '/ws', 'ws')`).run()
+      db.prepare(
+        `INSERT INTO workspace_directories (id, workspace_id, path, name) VALUES (1, 1, '/ws', 'ws')`
+      ).run()
+      db.prepare(
+        `INSERT INTO workspace_files
+           (id, workspace_id, directory_id, path, name, file_fingerprint, is_analyzed, status)
+         VALUES (1, 1, 1, '/ws/fp-crud-body.txt', 'fp-crud-body.txt', 'fp-crud-body', 1, 1)`
+      ).run()
+      const dao = new FileDao(db)
+      await dao.updateFileAnalysisResult('1', {
+        fileFingerprint: 'fp-crud-body',
+        content: 'production-body-token',
+        ocr: 'production-ocr-token',
+        asr: 'production-asr-token'
+      } as any)
+
+      const hits = db
+        .prepare(
+          `SELECT file_fingerprint FROM files_body_fts WHERE files_body_fts MATCH '"production-body-token"'`
+        )
+        .all() as Array<{ file_fingerprint: string }>
+      expect(hits).toEqual([{ file_fingerprint: 'fp-crud-body' }])
+    } finally {
+      db.close()
+    }
+  })
+
   it('同事务热投影只写各 1 次且不擦除 tags_py；syncMetaFts 置 pinyin_state=0 后 P1-D 回填闭环', () => {
     const db = makeDb()
     try {

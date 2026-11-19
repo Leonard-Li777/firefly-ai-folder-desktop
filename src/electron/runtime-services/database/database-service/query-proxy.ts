@@ -52,7 +52,11 @@ import { t } from '@app/languages'
 
 import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao } from '.././dao'
 import type { AnalysisTaskType } from '.././dao'
-import { DeterministicCodeGenerator } from '@firefly/core-engine'
+import {
+  DeterministicCodeGenerator,
+  preResolveControlledCandidates,
+  isUnresolvedControlledLemma
+} from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
@@ -957,6 +961,23 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     }
   }
 
+  /**
+   * [Issue 04 Step 5 / R2-8] 退出时序：应用关闭前对主库执行安全 checkpoint。
+   * 须在 Omni 子进程已停止（释放只读连接池）之后调用；用 busy_timeout=1500 包裹，
+   * 并发只读游标未清空时 PASSIVE 立即安全放行，杜绝退出卡死。
+   */
+  async checkpointBeforeClose(): Promise<void> {
+    if (!this._db) return
+    try {
+      this._db.pragma('busy_timeout = 1500')
+      this._db.pragma('optimize')
+      this._db.pragma('wal_checkpoint(PASSIVE)')
+      logger.debug(LogCategory.DATABASE_SERVICE, '退出前 WAL checkpoint 完成 (PASSIVE)')
+    } catch (e) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '退出前 WAL checkpoint 失败(非致命，安全放行):', e)
+    }
+  }
+
 
   async resetAllAnalysisData(): Promise<void> {
     if (!this._db) throw new Error('数据库未初始化')
@@ -1177,6 +1198,12 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     }
 
     if (uninspectedItems.length > 0) {
+      // Issue 02 Fix-14：手动/批量打标与 AI saver 共用统一预解析闸口
+      // （本地覆盖索引 → 10k LRU 负缓存 → Omni inspectTags 回源 → unresolved 暂存）
+      await preResolveControlledCandidates(
+        uninspectedItems.map(u => u.tagName),
+        this.currentLanguage
+      )
       try {
         const { omniService } = await import('../../system/omni-service')
         const isTestEnv = process.env.NODE_ENV === 'test' || Boolean(process.env.VITEST)
@@ -1250,6 +1277,13 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
           if (item.isControlled && item.matchedParent && item.tagCode) {
             // ✅ 受控标签：复用受控 code，绝对不写 file_tags_private
             createdTagMap.set(`${dimCode}:${item.tagName}`, item.tagCode)
+          } else if (isUnresolvedControlledLemma(item.tagName, this.currentLanguage)) {
+            // P0-K：Omni 未决候选禁止派生 _ext.* 伪受控码，留待下一批预解析重试
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              `[Fix-14] 手动打标跳过未决受控候选：lemma="${item.tagName}", locale=${this.currentLanguage}`
+            )
+            continue
           } else {
             // ⚠️ 私有自定义标签：在 file_tags_private 中注册或复用
             let code: string | undefined
@@ -1513,15 +1547,18 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         // 覆盖删除必须写成「tag_code <> winner」而不是「清空该作用域」——否则 INSERT winner 失败时维度已被清空（P0-A）。
         const selectSiblingsStmt = this._db!.prepare(
           `SELECT ftr.tag_code FROM file_tag_relations ftr
-           JOIN tag_paths tp ON tp.path_id = ftr.path_id
            WHERE ftr.file_fingerprint = ?
-             AND (ftr.via_parent_code = ? OR tp.code_path LIKE ('%/' || ? || '/') OR ftr.tag_code LIKE (? || '.%'))
+             AND (ftr.via_parent_code = ?
+               OR ftr.path_id IN (SELECT tpa.path_id FROM tag_path_ancestors tpa WHERE tpa.ancestor_code = ?)
+               OR ftr.tag_code LIKE (? || '.%'))
              AND ftr.tag_code <> ?`
         )
         const overrideDeleteStmt = this._db!.prepare(
           `DELETE FROM file_tag_relations
            WHERE file_fingerprint = ?
-             AND (via_parent_code = ? OR path_id IN (SELECT tp.path_id FROM tag_paths tp WHERE tp.code_path LIKE ('%/' || ? || '/')) OR tag_code LIKE (? || '.%'))
+             AND (via_parent_code = ?
+               OR path_id IN (SELECT tpa.path_id FROM tag_path_ancestors tpa WHERE tpa.ancestor_code = ?)
+               OR tag_code LIKE (? || '.%'))
              AND tag_code <> ?`
         )
 
