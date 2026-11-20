@@ -1,7 +1,9 @@
 import { buildPinyinIndexRow } from '../utils/pinyin-text'
 import { LogCategory, logger, getCanonicalConceptName } from '@firefly/shared'
-import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { normalizeSupportedLocale } from './database'
+// Stage2 S-B：展示 locale 经纯缝读取（主进程由 ConfigOrchestrator 注册读取器，
+// 写进程子入口由 INIT 握手注入），严禁在本文件静态引入 electron-conf 依赖链
+import { readDisplayLocale } from './database-service/display-locale-seam'
+import { normalizeSupportedLocale } from './database-service/locale-whitelist'
 import * as path from 'node:path'
 
 /**
@@ -80,7 +82,8 @@ export class FtsProjectionService {
    */
   private resolveDisplayName(code: string, ftName: string | null): string {
     if (!code) return ftName || ''
-    const locale = ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    // Stage2 S-B：经纯缝读取展示 locale（主进程=ConfigOrchestrator 注册；子进程=INIT 握手注入）
+    const locale = readDisplayLocale()
     const isZh = locale.toLowerCase().startsWith('zh')
 
     // 1. 中文环境下，凡命中 AOT 受控权威概念字典的受控代码，强制采用规范中文展示名

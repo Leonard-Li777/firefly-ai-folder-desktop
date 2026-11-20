@@ -44,6 +44,11 @@ export interface WriteSetBatchDispatcherDeps {
   onWakeCanonicalMaintenance?: (fingerprints: string[]) => void
   onTriggerCloudSync?: (delayMs: number) => void
   onWorkspaceDeletes?: (workspaceFileIds: number[]) => void
+  /**
+   * 单批写微事务执行完成回调（含 Pre-step stat 全程耗时，工单 05 ≤10ms 量化验收采集点）。
+   * 主进程宿主与 utilityProcess 写进程子入口均经此钩子上报 BATCH_METRICS。
+   */
+  onBatchExecuted?: (batchSize: number, durationMs: number) => void
   /** 可注入自定义 stat（便于单测隔离文件系统） */
   statFile?: (filePath: string) => Promise<{ size: number; mtimeMs: number }>
   coalesceWindowMs?: number
@@ -140,7 +145,17 @@ export class WriteSetBatchDispatcher {
     try {
       while (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
         const batch = this.pendingWriteSets.splice(0, MAX_WRITE_BATCH_SIZE)
+        const batchStartMs = performance.now()
         const batchAcks = await this.executeBatch(batch)
+        try {
+          this.deps.onBatchExecuted?.(batch.length, performance.now() - batchStartMs)
+        } catch (metricErr) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            '[WriteSetDispatcher] onBatchExecuted 指标回调异常:',
+            metricErr
+          )
+        }
         allAcks.push(...batchAcks)
         for (const ack of batchAcks) {
           this.deps.onWriteAck?.(ack)

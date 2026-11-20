@@ -570,7 +570,15 @@ export default defineConfig(({ command, mode }) => {
             main: 'src/electron/main/index.ts',
             'icon-extractor-worker': 'src/electron/main/icon-extractor-worker.ts',
             'analysis-orchestrator-worker':
-              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/orchestrator-thread.ts'
+              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/orchestrator-thread.ts',
+            // Stage2 S-B（工单 05）：utilityProcess 独立写进程入口，
+            // 编译为 out_build/main/analysis-db-writer-process.js 供 AnalysisDbWriterProcess 拉起
+            'analysis-db-writer-process':
+              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/writer-process-entry.ts',
+            // Stage2 S-C（工单 06）：验收工具入口，编译为 out_build/main/analysis-db-writer-host.js
+            // 供真机验收探针以真实编译产物驱动宿主与写集执行器（混沌注入/量化对照）
+            'analysis-db-writer-host':
+              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/writer-process-host-export.ts'
           },
           formats: ['cjs']
         },

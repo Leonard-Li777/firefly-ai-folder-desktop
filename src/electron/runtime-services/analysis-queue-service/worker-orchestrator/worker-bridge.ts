@@ -23,13 +23,29 @@ import type {
   WorkerQueueItem
 } from './protocol'
 import { WriteSetBatchDispatcher, type WriteAckItem } from './write-set-batch-dispatcher'
+import type { AnalysisWriteSet, VideoSegmentWriteSet } from './protocol'
 
 const MAX_WORKER_RESTARTS = 5
 const WORKER_RESTART_BASE_DELAY_MS = 1000
 
+/**
+ * Worker 写集数据面最小接缝（Stage2 S-B）：
+ * - 主进程本地执行器 `WriteSetBatchDispatcher` 结构化满足本接缝；
+ * - 写进程宿主 `AnalysisDbWriterProcess`（utilityProcess）亦满足本接缝，
+ *   由 AnalysisQueueService 按 `ANALYSIS_USE_DB_WRITER_PROCESS` 特性开关路由；
+ * - `commitVideoSegment` 返回 null 表示回执将异步上抛（写进程路径），
+ *   bridge 侧不得重复 sendWriteAck。
+ */
+export interface WorkerWriteSink {
+  enqueue(writeSet: AnalysisWriteSet): void
+  commitVideoSegment(seg: VideoSegmentWriteSet): WriteAckItem | null
+  pauseForUi(timeoutMs: number): void
+  resumeFromUi(): void
+}
+
 export interface WorkerOrchestratorBridgeDeps {
   getDb: () => Database | null | undefined
-  writeDispatcher: WriteSetBatchDispatcher
+  writeDispatcher: WorkerWriteSink
   getInitialConfig?: () => WorkerConfigSnapshot
   /** 可覆盖 Worker 入口路径（便于单测与开发/生产双模式定位） */
   workerScriptPath?: string
@@ -250,8 +266,12 @@ export class WorkerOrchestratorBridge {
         break
       }
       case 'VIDEO_SEGMENT_WRITE_SET': {
-        const ack = this.deps.writeDispatcher.commitVideoSegment(msg.payload)
-        this.sendWriteAck(ack)
+        // Stage2 S-B：写进程路径回执异步上抛（返回 null），bridge 不重复 ACK；
+        // 本地执行器路径同步返回回执并立即闭环。
+        const segAck = this.deps.writeDispatcher.commitVideoSegment(msg.payload)
+        if (segAck) {
+          this.sendWriteAck(segAck)
+        }
         break
       }
       case 'ANALYSIS_FAILED': {
