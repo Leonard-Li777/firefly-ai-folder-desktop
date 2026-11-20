@@ -352,7 +352,13 @@ export class WorkspacePolicyCommitService {
       // 4. 使快照缓存失效并触发外部变更通知
       try {
         invalidateWorkspacePolicyCache(workspaceId)
-      } catch {}
+      } catch (cacheErr) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[WorkspacePolicyCommitService] 作废工作区 ${workspaceId} 策略缓存失败:`,
+          cacheErr
+        )
+      }
 
       if (this.deps.onPolicyCommitted && committedConfig) {
         try {

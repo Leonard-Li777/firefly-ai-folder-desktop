@@ -505,13 +505,31 @@ export class AnalysisQueueService {
         const isCpuEngine =
           aiServiceMode === 'cpu' || (aiServiceMode === 'local' && isCpuBackend(currentEngineAcc))
 
-        // 统一走 analysis-mode 模块解析，考虑底层本地引擎可用性
+        // 统一按当前活跃工作区解析有效分析模式（SLICE-04 旁路收口）
         const hasInstalledAiEngine =
           aiServiceMode === 'local'
             ? this.omniAdapter.hasInstalledEngines() &&
               Boolean(backendSnap.backend || backendSnap.model)
             : true
-        const analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
+        let analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
+        if (activeWorkspaceId != null) {
+          try {
+            const { resolveWorkspaceEffectiveConfig } = await import(
+              '../system/workspace-analysis-context'
+            )
+            const wsEff = await resolveWorkspaceEffectiveConfig(
+              activeWorkspaceId,
+              hasInstalledAiEngine
+            )
+            analysisMode = wsEff.effectiveParams.analysisMode
+          } catch (wsModeErr) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] 解析工作区 ${activeWorkspaceId} 有效模式失败，回退全局:`,
+              wsModeErr
+            )
+          }
+        }
 
         const decisionSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
         const hasAnalysisPending = decisionSnapshot.items.some(i => i.status === 'pending')

@@ -292,6 +292,14 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
       parsedConfig.status === 'ready'
         ? (parsedConfig.workflowId ?? workspace.bound_workflow_id ?? null)
         : (workspace.bound_workflow_id ?? null)
+    const prevOverrides =
+      parsedConfig.status === 'ready' && parsedConfig.overrides
+        ? { ...parsedConfig.overrides }
+        : undefined
+    const prevPluginOverrides =
+      parsedConfig.status === 'ready' && parsedConfig.pluginOverrides
+        ? { ...parsedConfig.pluginOverrides }
+        : undefined
     setIsUnbinding(true)
     try {
       {
@@ -324,7 +332,9 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
                 label: t('撤销'),
                 onClick: () => {
                   void submitWorkspacePolicyMutation(targetWorkspaceId, {
-                    workflowId: prevWorkflowId
+                    workflowId: prevWorkflowId,
+                    overrides: prevOverrides,
+                    pluginOverrides: prevPluginOverrides
                   })
                     .then(undoRes => {
                       if (undoRes.success) {

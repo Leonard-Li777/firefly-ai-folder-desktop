@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { LogCategory, logger, FileCategory, getFileCategory } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { omniClient } from '../../../services/omni-client'
@@ -223,10 +224,26 @@ export async function checkBasicDataCompleteness(
   const sameFingerprint = attemptedEmpty?.fileFingerprint === fingerprint
   const effectiveOcrValid =
     sameFingerprint && ocrRank(effectiveConfig.effectiveParams.ocrModelSize) <= ocrRank(attemptedEmpty?.ocrModelSize)
-  const targetAsrSec = effectiveConfig.effectiveParams.videoAsrDurationSec ||
-    effectiveConfig.effectiveParams.audioAnalysisDurationSec
+  const targetAsrSec =
+    category === FileCategory.VIDEO
+      ? effectiveConfig.effectiveParams.videoAsrDurationSec
+      : effectiveConfig.effectiveParams.audioAnalysisDurationSec
   const effectiveAsrValid =
     sameFingerprint && targetAsrSec <= (attemptedEmpty?.asrDurationSec ?? -1)
+  const OFFICE_COVER_EXTS = new Set([
+    '.doc',
+    '.docx',
+    '.xls',
+    '.xlsx',
+    '.ppt',
+    '.pptx',
+    '.odt',
+    '.ods',
+    '.odp',
+    '.wps',
+    '.et',
+    '.dps'
+  ])
 
   // 3. 针对不同类型文件的基础数据健全性检查
   if (
@@ -237,6 +254,25 @@ export async function checkBasicDataCompleteness(
     // 文档/代码/纯文本：必须存在内容/摘要
     if (!hasContent) {
       missingReasons.push('missing_document_content')
+    }
+    // Office 文档封面缺口：仅当工作区生效 enableOfficeCover === true 且缺失缩略图时判缺口
+    const ext = path.extname(filePath).toLowerCase()
+    if (effectiveConfig.effectiveParams.enableOfficeCover && OFFICE_COVER_EXTS.has(ext)) {
+      try {
+        const wsRow = db
+          .prepare('SELECT thumbnail_path FROM workspace_files WHERE workspace_id = ? AND path = ?')
+          .get(workspaceId, filePath) as { thumbnail_path?: string } | undefined
+        if (!wsRow?.thumbnail_path) {
+          missingReasons.push('missing_office_cover')
+        }
+      } catch (thumbErr) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列] 检查 Office 封面缩略图失败 (${filePath}):`,
+          thumbErr
+        )
+        missingReasons.push('missing_office_cover')
+      }
     }
   } else if (category === FileCategory.IMAGE) {
     // 图片：
@@ -262,8 +298,8 @@ export async function checkBasicDataCompleteness(
     ) {
       missingReasons.push('missing_image_ocr')
     }
-  } else if (category === FileCategory.AUDIO) {
-    // 音频：仅当 ASR 生效且时长 > 0 且无歌词/转录/内容时判缺口；attempted_empty.asrEmpty 有效则短路
+  } else if (category === FileCategory.AUDIO || category === FileCategory.VIDEO) {
+    // 音频 / 视频：仅当 ASR 生效且对应媒介时长 > 0 且无歌词/转录/内容时判缺口；attempted_empty.asrEmpty 有效则短路
     if (
       effectiveConfig.capabilities.asrEffectivelyEnabled &&
       targetAsrSec > 0 &&

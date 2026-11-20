@@ -173,7 +173,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
   const handleRequestClose = () => {
     if (parsedConfig.status === 'pending') {
-      ensureDefaultReadyConfig().catch(() => {})
+      ensureDefaultReadyConfig().catch(err => {
+        console.warn('[WorkspaceSettingsDialog] 关闭弹窗补齐默认就绪配置失败:', err)
+      })
     }
     requestLeaveAction(() => closeSettings())
   }
@@ -238,7 +240,10 @@ export const WorkspaceSettingsDialog: React.FC = () => {
       window.electronAPI
         .getHardwareInfo()
         .then(hw => setHardwareInfo(hw || null))
-        .catch(() => setHardwareInfo(null))
+        .catch(err => {
+          console.warn('[WorkspaceSettingsDialog] 读取硬件信息失败:', err)
+          setHardwareInfo(null)
+        })
     }
   }, [isOpen])
 
@@ -727,6 +732,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       hardwareInfo={hardwareInfo}
                       isActive={activeTab === 'basic_ai_engine'}
                       onConfigSaved={refreshWorkspaceData}
+                      resolvedFields={resolvedEffectiveConfig?.fields}
+                      hasBoundWorkflow={hasBoundWorkflow}
+                      onFixAction={handleDegradationFixAction}
                     />
                   </div>
                 )}
@@ -744,6 +752,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       hardwareInfo={hardwareInfo}
                       isActive={activeTab === 'content_extraction'}
                       onConfigSaved={refreshWorkspaceData}
+                      resolvedFields={resolvedEffectiveConfig?.fields}
+                      hasBoundWorkflow={hasBoundWorkflow}
+                      onFixAction={handleDegradationFixAction}
                     />
                   </div>
                 )}

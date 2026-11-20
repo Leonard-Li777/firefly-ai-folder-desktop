@@ -152,9 +152,13 @@ export const workspaceApi = {
   applyWorkspacePolicyMutation: (workspaceId: number, mutation: unknown) =>
     ipcRenderer.invoke('apply-workspace-policy-mutation', workspaceId, mutation),
 
-  // 只读运行时上下文桥接（通道注册由 Group C 在 WorkspaceRuntimeContextService 完成）
-  getWorkspaceRuntimeContextSnapshot: () =>
-    ipcRenderer.invoke('workspace-runtime-context:get-snapshot'),
+  // 只读运行时上下文桥接（通道注册由 WorkspaceRuntimeContextService 完成）
+  getWorkspaceRuntimeContextSnapshot: (workspaceId?: number | null) =>
+    ipcRenderer.invoke('workspace-runtime-context:get-snapshot', workspaceId),
+  triggerWorkspaceIncrementalRecovery: (
+    workspaceId: number
+  ): Promise<{ success: boolean; queued?: number; error?: string }> =>
+    ipcRenderer.invoke('trigger-workspace-incremental-recovery', workspaceId),
   onWorkspaceRuntimeContextUpdated: (callback: (data: unknown) => void) => {
     const listener = (_event: unknown, data: unknown) => callback(data)
     ipcRenderer.on('workspace-runtime-context-updated', listener as any)

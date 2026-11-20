@@ -1,38 +1,57 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
-import { LogCategory, logger } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  type GlobalPluginRuntimeState,
+  type WorkspaceRuntimeContext,
+  type WorkspaceRuntimeContextSnapshot as SharedRuntimeContextSnapshot
+} from '@firefly/shared'
+import type { HardwareInfo } from '@firefly/types'
+import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { databaseService } from '../database/database-service'
 import { libreOfficeDetector } from './libreoffice-detector'
 import type { LibreOfficeDetectionResult } from './libreoffice-detector'
 import { modularResourceService } from './modular-resource-service'
 import { llmGatewayService } from '../llm/llm-gateway-service'
 import { userTierService } from '../user-tier/user-tier-service'
 import { subscribeRuntimeContextChange } from './workspace-runtime-context-bus'
+import { countRecoverableFiles } from '../analysis-queue-service/file-processor/db-analysis-state'
 
 export const WORKSPACE_RUNTIME_CONTEXT_CHANNEL = 'workspace-runtime-context-updated'
 export const WORKSPACE_RUNTIME_CONTEXT_SNAPSHOT_CHANNEL = 'workspace-runtime-context:get-snapshot'
+export const WORKSPACE_INCREMENTAL_RECOVERY_CHANNEL = 'trigger-workspace-incremental-recovery'
 
-/** 主进程唯一权威快照：渲染侧只消费它并调用纯函数解析 effectiveConfig，绝不自研环境探测。 */
-export interface WorkspaceRuntimeContextSnapshot {
-  libreOfficeInstalled: boolean
-  embeddingProfile: string
-  generativeEngineMode: string
-  asrModuleActive: boolean
-  userTier: string
-  reason: string
-}
-
-export interface WorkspaceRuntimeContextSnapshotEnvelope {
-  contextEpoch: number
-  snapshot: WorkspaceRuntimeContextSnapshot
+/**
+ * 主进程权威运行时上下文信封：
+ * - `contextEpoch` + `snapshot` 严格对齐 `@firefly/shared` `WorkspaceRuntimeContextSnapshot`；
+ * - 可选 `recoverableCount` 在按 `workspaceId` 查询快照时由主进程基于真实 DB 计算回传。
+ */
+export interface WorkspaceRuntimeContextSnapshotEnvelope extends SharedRuntimeContextSnapshot {
+  workspaceId?: number | null
+  recoverableCount?: number
 }
 
 const FOCUS_RECHECK_INTERVAL_MS = 30_000
 const MERGE_WINDOW_MS = 100
 
+function mapModuleToGlobalState(mod: {
+  install_state?: string
+  is_active?: number | boolean
+  validation_status?: string
+}): GlobalPluginRuntimeState {
+  if (mod.install_state === 'downloading') return 'downloading'
+  if (mod.install_state === 'error' || mod.validation_status === 'pending_repair') return 'error'
+  if (mod.install_state === 'installed') {
+    return mod.is_active ? 'active' : 'installed_inactive'
+  }
+  return 'not_installed'
+}
+
 /**
  * 主进程运行时上下文服务（SLICE-04）：
- * - 全局单调递增 `contextEpoch`（冷启动 0，不落库）
- * - 100ms 合并窗口内多个环境事件只递增一次并广播，渲染侧仅接收 epoch 更大的快照
- * - 自注册 IPC 与 `browser-window-focus`，零触碰 Group B 独占的 settings-ipc-handler / main.ts
+ * - 统一聚合四大单例真实状态生成 `@firefly/shared` `WorkspaceRuntimeContext`
+ * - 全局单调递增 `contextEpoch`（冷启动 0，不落库），100ms 合并窗口防风暴
+ * - 自注册 IPC (`get-snapshot` / `trigger-workspace-incremental-recovery`) 与 `browser-window-focus`
  */
 export class WorkspaceRuntimeContextService {
   private static instance: WorkspaceRuntimeContextService | null = null
@@ -42,13 +61,16 @@ export class WorkspaceRuntimeContextService {
   private pendingReasons: string[] = []
   private lastFocusRecheckAt = 0
   private libreOfficeInstalled = false
-  private snapshot: WorkspaceRuntimeContextSnapshot = {
+  private libreOfficeCheckedOnce = false
+  private snapshot: WorkspaceRuntimeContext = {
+    isGenerativeAiEnabled: true,
+    globalEmbeddingProfile: 'classic_light',
+    globalPluginStates: {},
     libreOfficeInstalled: false,
-    embeddingProfile: 'classic_light',
-    generativeEngineMode: 'local',
-    asrModuleActive: false,
-    userTier: '',
-    reason: 'cold_start'
+    userTier: 'free',
+    tierReady: false,
+    videoInferenceBackend: 'unknown',
+    hardwareInfo: null
   }
 
   static getInstance(): WorkspaceRuntimeContextService {
@@ -67,8 +89,24 @@ export class WorkspaceRuntimeContextService {
     return this.contextEpoch
   }
 
-  getSnapshotEnvelope(): WorkspaceRuntimeContextSnapshotEnvelope {
-    return { contextEpoch: this.contextEpoch, snapshot: { ...this.snapshot } }
+  getRuntimeContext(): WorkspaceRuntimeContext {
+    return {
+      ...this.snapshot,
+      globalPluginStates: { ...this.snapshot.globalPluginStates }
+    }
+  }
+
+  getSnapshotEnvelope(workspaceId?: number | null): WorkspaceRuntimeContextSnapshotEnvelope {
+    let recoverableCount: number | undefined
+    if (workspaceId != null && databaseService.db) {
+      recoverableCount = countRecoverableFiles(databaseService.db, workspaceId)
+    }
+    return {
+      contextEpoch: this.contextEpoch,
+      workspaceId: workspaceId ?? null,
+      snapshot: this.getRuntimeContext(),
+      recoverableCount
+    }
   }
 
   /** 冷启动握手：注册 IPC 与窗口焦点事件，并订阅四大单例的变更通知。 */
@@ -76,10 +114,34 @@ export class WorkspaceRuntimeContextService {
     if (this.initialized) return
     this.initialized = true
 
-    ipcMain.handle(WORKSPACE_RUNTIME_CONTEXT_SNAPSHOT_CHANNEL, async () => {
-      await this.refresh()
-      return this.getSnapshotEnvelope()
-    })
+    ipcMain.handle(
+      WORKSPACE_RUNTIME_CONTEXT_SNAPSHOT_CHANNEL,
+      async (_event, workspaceId?: number | null) => {
+        await this.refresh()
+        return this.getSnapshotEnvelope(workspaceId)
+      }
+    )
+
+    ipcMain.handle(
+      WORKSPACE_INCREMENTAL_RECOVERY_CHANNEL,
+      async (_event, workspaceId: number): Promise<{ success: boolean; queued?: number; error?: string }> => {
+        try {
+          if (!databaseService.db || !Number.isFinite(workspaceId)) {
+            return { success: false, error: 'INVALID_WORKSPACE_OR_DB' }
+          }
+          const queued = await this.triggerIncrementalRecovery(workspaceId)
+          return { success: true, queued }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[WorkspaceRuntimeContext] 触发工作区 ${workspaceId} 增量补齐失败:`,
+            error
+          )
+          return { success: false, error: message }
+        }
+      }
+    )
 
     app.on('browser-window-focus', () => {
       const now = Date.now()
@@ -92,10 +154,40 @@ export class WorkspaceRuntimeContextService {
       this.notifyChanged(reason)
     })
 
-    void this.refresh()
+    void this.refresh('cold_start')
   }
 
-  /** 四大单例状态变更写出口调用：100ms 合并后递增 epoch 并广播。 */
+  /** 触发指定工作区的环境恢复存量缺口增量补齐入队（仅入队缺口文件，不推翻已提取阶段）。 */
+  async triggerIncrementalRecovery(workspaceId: number): Promise<number> {
+    const db = databaseService.db
+    if (!db) return 0
+    const pendingVideoRows = db
+      .prepare(
+        `SELECT wf.path, wf.name, wf.file_size
+         FROM workspace_files wf
+         WHERE wf.workspace_id = ?
+           AND EXISTS (
+             SELECT 1 FROM file_video_segments fvs
+             WHERE fvs.file_id = wf.file_fingerprint AND fvs.status = 'pending'
+           )`
+      )
+      .all(workspaceId) as Array<{ path: string; name: string; file_size?: number | null }>
+
+    if (pendingVideoRows.length === 0) return 0
+    const { analysisQueueService } = await import('../analysis-queue-service')
+    await analysisQueueService.addItems(
+      pendingVideoRows.map(r => ({
+        path: r.path,
+        name: r.name,
+        size: Number(r.file_size ?? 0),
+        type: 'file',
+        workspaceId
+      }))
+    )
+    return pendingVideoRows.length
+  }
+
+  /** 四大单例状态变更写出口调用：100ms 合并后刷新快照、递增 epoch 并广播。 */
   notifyChanged(reason: string): void {
     this.pendingReasons.push(reason)
     if (this.mergeTimer) return
@@ -104,8 +196,9 @@ export class WorkspaceRuntimeContextService {
       const reasons = Array.from(new Set(this.pendingReasons))
       this.pendingReasons = []
       this.contextEpoch += 1
-      void this.refresh(reasons.join(','))
-      this.broadcast()
+      void this.refresh(reasons.join(',')).then(() => {
+        this.broadcast()
+      })
     }, MERGE_WINDOW_MS)
   }
 
@@ -113,7 +206,8 @@ export class WorkspaceRuntimeContextService {
   async recheckLibreOffice(forceRefresh = true): Promise<boolean> {
     try {
       const result: LibreOfficeDetectionResult = await libreOfficeDetector.detectLibreOffice(forceRefresh)
-      const installed = Boolean((result as { installed?: boolean }).installed)
+      const installed = Boolean(result?.installed)
+      this.libreOfficeCheckedOnce = true
       if (installed !== this.libreOfficeInstalled) {
         this.libreOfficeInstalled = installed
         this.notifyChanged('libreoffice_installed_changed')
@@ -126,42 +220,88 @@ export class WorkspaceRuntimeContextService {
     }
   }
 
-  /** 重新读取四大单例的可观测状态；任何失败显式上报，绝不静默吞异常。 */
-  async refresh(reason = this.snapshot.reason): Promise<void> {
-    let generativeEngineMode = 'local'
-    let asrModuleActive = false
-    let userTier = ''
+  /** 读取四大单例真实可观测状态并生成 `@firefly/shared` 标准 `WorkspaceRuntimeContext`。 */
+  async refresh(reason = 'refresh'): Promise<void> {
+    let isGenerativeAiEnabled = this.snapshot.isGenerativeAiEnabled
+    let globalEmbeddingProfile: 'classic_light' | 'gemma_unified' = this.snapshot.globalEmbeddingProfile
+    const globalPluginStates: Record<string, GlobalPluginRuntimeState> = {}
+    let userTier: string | null = (this.snapshot.userTier as string) ?? 'free'
+    let tierReady = Boolean(this.snapshot.tierReady)
+    let hardwareInfo: HardwareInfo | null = this.snapshot.hardwareInfo ?? null
+
+    // 1. 生成式 AI 引擎状态（LlmGatewayService.getSnapshot）
     try {
-      const llmSnapshot = (llmGatewayService as unknown as { getSnapshot?: () => Record<string, unknown> }).getSnapshot?.()
-      if (llmSnapshot) {
-        generativeEngineMode = String(
-          llmSnapshot.mode ?? llmSnapshot.desiredMode ?? llmSnapshot.aiServiceMode ?? 'local'
-        )
-      }
-      const modularSnapshot = (
-        modularResourceService as unknown as { getSnapshot?: () => Record<string, unknown> }
-      ).getSnapshot?.()
-      if (modularSnapshot) {
-        asrModuleActive = JSON.stringify(modularSnapshot).includes('asr_sensevoice_onnx')
-      }
-      const tierSnapshot = (
-        userTierService as unknown as { getSnapshot?: () => Record<string, unknown> }
-      ).getSnapshot?.()
-      if (tierSnapshot) userTier = String(tierSnapshot.tier ?? '')
+      const llmSnapshot = llmGatewayService.getSnapshot()
+      isGenerativeAiEnabled = llmSnapshot.effectiveMode !== 'disabled'
     } catch (error) {
-      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 单例快照读取失败:', error)
+      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 LlmGatewayService 快照失败:', error)
+    }
+
+    // 2. 插件中心模块运行态与向量检索底座槽位（ModularResourceService）
+    try {
+      const modules = modularResourceService.listModules()
+      for (const mod of modules) {
+        globalPluginStates[mod.id] = mapModuleToGlobalState(mod)
+      }
+      const activeEmbedding = modularResourceService.getActiveModuleBySlot('base_embedding')
+      if (activeEmbedding?.id === 'engine_gemma_unified') {
+        globalEmbeddingProfile = 'gemma_unified'
+      } else if (activeEmbedding?.id === 'engine_classic_light') {
+        globalEmbeddingProfile = 'classic_light'
+      } else {
+        const cfgProfile = ConfigOrchestrator.getInstance().getValue<string>('EMBEDDING_PROFILE' as any)
+        globalEmbeddingProfile = cfgProfile === 'gemma_unified' ? 'gemma_unified' : 'classic_light'
+      }
+    } catch (error) {
+      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 ModularResourceService 模块态失败:', error)
+    }
+
+    // 3. 会员等级（UserTierService.getCachedData / getProfile）
+    try {
+      const cached = userTierService.getCachedData()
+      if (cached) {
+        userTier = cached.tier
+        tierReady = true
+      } else {
+        const profile = await userTierService.getProfile()
+        if (profile?.tier) {
+          userTier = profile.tier
+          tierReady = true
+        }
+      }
+    } catch (error) {
+      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 UserTierService 会员等级失败:', error)
+    }
+
+    // 4. LibreOffice 检测结果（首次冷启动或事件回调时同步真实缓存）
+    try {
+      if (!this.libreOfficeCheckedOnce || reason.includes('libreoffice')) {
+        const loRes = await libreOfficeDetector.detectLibreOffice(false)
+        this.libreOfficeInstalled = Boolean(loRes?.installed)
+        this.libreOfficeCheckedOnce = true
+      }
+    } catch (error) {
+      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 LibreOffice 检测态失败:', error)
+    }
+
+    // 5. 硬件探测快照（未知时保持 null 触发 unknown fail-open）
+    try {
+      const hw = ConfigOrchestrator.getInstance().getValue<HardwareInfo | null>('HARDWARE_INFO' as any)
+      if (hw && typeof hw === 'object') {
+        hardwareInfo = hw
+      }
+    } catch (error) {
+      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取硬件信息失败:', error)
     }
 
     this.snapshot = {
+      isGenerativeAiEnabled,
+      globalEmbeddingProfile,
+      globalPluginStates,
       libreOfficeInstalled: this.libreOfficeInstalled,
-      embeddingProfile: String(
-        (llmGatewayService as unknown as { getEmbeddingProfile?: () => string }).getEmbeddingProfile?.() ??
-          this.snapshot.embeddingProfile
-      ),
-      generativeEngineMode,
-      asrModuleActive,
       userTier,
-      reason
+      tierReady,
+      hardwareInfo
     }
   }
 
@@ -183,9 +323,4 @@ export const workspaceRuntimeContextService = WorkspaceRuntimeContextService.get
 /** 供 `workspace-analysis-context.ts` 读取当前 epoch（避免循环 import）。 */
 export function getWorkspaceRuntimeContextEpoch(): number {
   return workspaceRuntimeContextService.getContextEpoch()
-}
-
-// 自闭合初始化：仅在主进程生效，零触碰 Group B 独占的 settings-ipc-handler / main.ts。
-if (process.type === 'browser') {
-  workspaceRuntimeContextService.initialize()
 }

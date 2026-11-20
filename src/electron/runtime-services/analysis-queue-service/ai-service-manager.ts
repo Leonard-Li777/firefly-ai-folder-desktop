@@ -41,11 +41,11 @@ export class AIServiceManager {
   }
 
   /**
-   * 等待 AI 服务就绪
+   * 等待 AI 服务就绪（支持传入工作区级有效 analysisMode，无参时回退全局模式）
    */
-  async waitForAIServiceReady(): Promise<boolean> {
+  async waitForAIServiceReady(analysisMode?: import('../../config/analysis-mode').AnalysisMode): Promise<boolean> {
     // 标准分析模式无需 AI 模型阶段，直接跳过就绪检查
-    if (!isAiStageEnabled()) {
+    if (!isAiStageEnabled(analysisMode)) {
       return true
     }
 

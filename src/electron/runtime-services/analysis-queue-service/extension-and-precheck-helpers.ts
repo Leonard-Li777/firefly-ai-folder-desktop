@@ -195,7 +195,9 @@ export async function checkAlreadyAnalyzedFilesByPaths(filePaths: string[]): Pro
   const db = databaseService.db
   if (!db || !filePaths || filePaths.length === 0) return []
 
-  const analysisMode = resolveAnalysisMode()
+  const globalFallbackMode = resolveAnalysisMode()
+  const { resolveWorkspaceEffectiveConfig } = await import('../system/workspace-analysis-context')
+  const workspaceModeCache = new Map<number, AnalysisMode>()
   const result: any[] = []
   const chunkSize = 500
 
@@ -205,7 +207,7 @@ export async function checkAlreadyAnalyzedFilesByPaths(filePaths: string[]): Pro
       const placeholders = chunk.map(() => '?').join(',')
       const sql = `
         SELECT 
-          wf.path, wf.name, wf.is_analyzed,
+          wf.workspace_id, wf.path, wf.name, wf.is_analyzed,
           fc.quality_score, f.description, f.smart_name, f.author, f.language,
           fc.analysis_stats,
           (
@@ -220,6 +222,7 @@ export async function checkAlreadyAnalyzedFilesByPaths(filePaths: string[]): Pro
         WHERE wf.path IN (${placeholders})
       `
       const rows = db.prepare(sql).all(...chunk) as Array<{
+        workspace_id: number | null
         path: string
         name: string
         is_analyzed: number
@@ -248,6 +251,24 @@ export async function checkAlreadyAnalyzedFilesByPaths(filePaths: string[]): Pro
           : {}
 
       for (const row of rows) {
+        let rowAnalysisMode: AnalysisMode = globalFallbackMode
+        if (row.workspace_id != null) {
+          if (workspaceModeCache.has(row.workspace_id)) {
+            rowAnalysisMode = workspaceModeCache.get(row.workspace_id)!
+          } else {
+            try {
+              const eff = await resolveWorkspaceEffectiveConfig(row.workspace_id)
+              rowAnalysisMode = eff.effectiveParams.analysisMode
+              workspaceModeCache.set(row.workspace_id, rowAnalysisMode)
+            } catch (modeErr) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 解析工作区 ${row.workspace_id} 有效分析模式失败，回退全局:`,
+                modeErr
+              )
+            }
+          }
+        }
         let stageValue = 0
         let completedMode: AnalysisMode | undefined
         try {
@@ -264,10 +285,10 @@ export async function checkAlreadyAnalyzedFilesByPaths(filePaths: string[]): Pro
           completedMode = undefined
         }
 
-        // 口径：stage 达标且 completed_mode 不低于当前模式，防 quick_name 与 full 同为 stage 4 时误跳过评分
+        // 口径：stage 达标且 completed_mode 不低于该文件所属工作区的有效模式，防 quick_name 与 full 同为 stage 4 时误跳过评分
         const analyzed =
           row.is_analyzed === 1 &&
-          isAnalyzedForMode({ stage: stageValue, completedMode, mode: analysisMode })
+          isAnalyzedForMode({ stage: stageValue, completedMode, mode: rowAnalysisMode })
 
         const insufficient = !analyzed && (row.is_analyzed === 1 || stageValue > 0)
         if (!analyzed && !insufficient) continue
@@ -301,7 +322,7 @@ export async function checkAlreadyAnalyzedFilesByPaths(filePaths: string[]): Pro
 
   logger.debug(
     LogCategory.ANALYSIS_QUEUE,
-    `[分析队列] 检查已分析文件 (模式: ${analysisMode}, 目标Stage: ${getRequiredStage(analysisMode)}): 传入 ${filePaths.length} 个, 已完成 ${result.filter(r => r.status === 'analyzed').length} 个, 分析不完整 ${result.filter(r => r.status === 'insufficient').length} 个`
+    `[分析队列] 检查已分析文件 (默认回退模式: ${globalFallbackMode}, 目标Stage: ${getRequiredStage(globalFallbackMode)}): 传入 ${filePaths.length} 个, 已完成 ${result.filter(r => r.status === 'analyzed').length} 个, 分析不完整 ${result.filter(r => r.status === 'insufficient').length} 个`
   )
 
   return result

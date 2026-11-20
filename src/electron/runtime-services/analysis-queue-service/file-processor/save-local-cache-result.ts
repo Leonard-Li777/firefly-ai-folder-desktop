@@ -111,10 +111,11 @@ export async function saveLocalAnalysisResult(
           engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
         )
       : true
-  const effectiveMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
+  const prAny = processResult as any
+  const effectiveMode =
+    prAny?.effectiveAnalysisMode || resolveEffectiveAnalysisMode(hasInstalledAiEngine)
   initialStatsWithBenchmark.completed_mode = effectiveMode
   // [SLICE-06] 增量完整性能力履历与空尝试记录随同一次写入落库（保留由 file-crud 白名单保证）
-  const prAny = processResult as any
   if (prAny?.attemptedEmpty) (initialStatsWithBenchmark as any).attempted_empty = prAny.attemptedEmpty
   if (prAny?.appliedCapabilities)
     (initialStatsWithBenchmark as any).appliedCapabilities = prAny.appliedCapabilities

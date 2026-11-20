@@ -926,7 +926,7 @@ export class HybridSearchArbiter {
     // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
     const clipWarmAtStart = shouldRunClip ? this.isClipWarm() : false
     const clipPromise = shouldRunClip
-      ? this.queryClipVectorCandidates(keyword, whereClauses, queryParams, poolSize)
+      ? this.queryClipVectorCandidates(keyword, whereClauses, queryParams, poolSize, clipEnabled)
       : null
 
     // 拼音路校验回填（设计文档 §5.3；二轮 review 红线：Top-30 限量，主线程阻塞压在 10ms 内）。
@@ -1247,7 +1247,12 @@ export class HybridSearchArbiter {
         let cfg: any
         try {
           cfg = JSON.parse(row.workspace_config as string)
-        } catch {
+        } catch (parseErr) {
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            '[HybridSearch] 解析工作区 workspace_config 失败，保守按启用 CLIP 处理:',
+            parseErr
+          )
           return true
         }
         if (cfg?.status && cfg.status !== 'ready') continue
@@ -1630,7 +1635,8 @@ export class HybridSearchArbiter {
     keyword: string,
     whereClauses: string[],
     queryParams: any[],
-    poolSize: number
+    poolSize: number,
+    clipEnabledOverride?: boolean
   ): Promise<Array<{ fileFingerprint: string; rank: number; score: number }> | null> {
     if (this.clipBreaker.isOpen) {
       // AC：所有跳过都必须留痕。熔断跳过属真实故障态（不是「能力未启用」），用 warn 而非 debug，
@@ -1646,7 +1652,9 @@ export class HybridSearchArbiter {
       // ---- 门禁（六种不满足场景一律零请求）----
       const orchestrator = ConfigOrchestrator.getInstance()
       const profile = await omniService.getEmbeddingProfile()
-      const enabled = orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+      const enabled =
+        clipEnabledOverride ??
+        (orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true)
       const lang = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
 
       // 第一段：零成本前置。**必须在探活之前**——档位/开关/语言不满足时连 /health 都不该发。

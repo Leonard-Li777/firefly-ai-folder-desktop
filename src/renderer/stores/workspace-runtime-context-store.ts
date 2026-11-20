@@ -114,7 +114,7 @@ export const useWorkspaceRuntimeContext = create<
     const seq = ++_refreshSeq
     set({ loading: true, fetchError: null })
     try {
-      const next = await fetchWorkspaceRuntimeContext()
+      const next = await fetchWorkspaceRuntimeContext(get().activeWorkspaceId)
       // 竞态守卫：若期间发生更新的 refresh、dispose 或 reset（均已递增 _refreshSeq），则丢弃陈旧响应
       if (seq !== _refreshSeq) {
         return

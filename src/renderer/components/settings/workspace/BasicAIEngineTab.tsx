@@ -21,18 +21,10 @@ import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react'
 import { Button } from '../../ui/button'
 import { Card } from '../../ui/card'
 import { Switch } from '../../ui/switch'
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel
-} from '../../ui/alert-dialog'
 import { Label } from '../../ui/label'
+import { TriStateFieldFeedback } from './TriStateFieldFeedback'
 import {
+  BaseAIConfig,
   WorkspaceDirectory,
   WorkspaceConfig,
   TechnicalEngineParameters,
@@ -64,6 +56,9 @@ export interface BasicAIEngineTabProps {
   hardwareInfo?: HardwareInfo | null
   isActive?: boolean
   onConfigSaved?: () => void
+  resolvedFields?: Record<string, import('../../../lib/workspace-policy/workspace-ai-client').ResolvedTriStateField>
+  hasBoundWorkflow?: boolean
+  onFixAction?: (action: import('../../../lib/workspace-policy/workspace-ai-client').DegradationFixAction) => void
 }
 
 /** 待提交的补丁累积 */
@@ -72,17 +67,16 @@ interface PendingPolicyPatch {
   restore: Set<keyof TechnicalEngineParameters>
 }
 
-/** 属于基础AI引擎 Tab 专管的参数键列表 (与文件内容萃取隔离，防跨Tab全量抹杀) */
-const BASIC_AI_KEYS: (keyof TechnicalEngineParameters)[] = [
+/** 属于基础AI引擎 Tab 专管的参数键列表 (与文件内容萃取隔离，严格剥离全局向量底座键) */
+const BASIC_AI_KEYS: (keyof BaseAIConfig)[] = [
   'analysisMode',
-  'embeddingProfile',
-  'mrlDimension',
   'videoCutSensitivity',
   'videoSoftTokenBudget',
   'videoQuotaMax',
   'videoAsrDurationSec',
   'audioAnalysisDurationSec',
-  'clipTextEnabled'
+  'clipTextEnabled',
+  'reuseBasicAnalysisData'
 ]
 
 /**
@@ -113,7 +107,10 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   workspace,
   hardwareInfo,
   isActive = true,
-  onConfigSaved
+  onConfigSaved,
+  resolvedFields,
+  hasBoundWorkflow = false,
+  onFixAction
 }) => {
   const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
@@ -136,11 +133,11 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const currentIntent = isReady && parsedConfig.intent ? parsedConfig.intent : 'fast_archive'
 
   // 基线快照与工作目录 overrides
-  const baseDerived: TechnicalEngineParameters = useMemo(() => {
+  const baseDerived: BaseAIConfig = useMemo(() => {
     if (isReady && parsedConfig.baseAIConfig) {
       return parsedConfig.baseAIConfig
     }
-    return mapIntentToParameters(currentIntent, hardwareInfo)
+    return mapIntentToParameters(currentIntent, hardwareInfo) as BaseAIConfig
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
 
   const [overrides, setOverrides] = useState<Partial<TechnicalEngineParameters>>(() => {
@@ -159,7 +156,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     }
   }, [workspace.id, workspace.workspace_config])
 
-  const effectiveParams: TechnicalEngineParameters = useMemo(() => {
+  const effectiveParams: BaseAIConfig = useMemo(() => {
     return {
       ...baseDerived,
       ...overrides
@@ -286,23 +283,14 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     usePluginCenterStore.getState().setSelectedCategory('ai-engine')
   }, [])
 
-  // 嵌入画像与 MRL 维度（全局画像优先对齐，确保音视频展开态与底座一致）
+  // 全局向量检索底座（已按 D1 从工作区 BaseAIConfig 彻底剥离，仅只读消费全局槽位）
   const globalProfile = getConfigValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE')
   const embeddingProfile =
     (activeBaseEmbeddingModule?.id === 'engine_gemma_unified'
       ? 'gemma_unified'
       : activeBaseEmbeddingModule?.id === 'engine_classic_light'
         ? 'classic_light'
-        : globalProfile) ??
-    effectiveParams.embeddingProfile ??
-    'classic_light'
-  const mrlDimension = effectiveParams.mrlDimension ?? 512
-
-  const [pendingProfile, setPendingProfile] = useState<'classic_light' | 'gemma_unified' | null>(
-    null
-  )
-  const [pendingDimension, setPendingDimension] = useState<256 | 512 | 768 | null>(null)
-  const [pendingVideoRecommendation, setPendingVideoRecommendation] = useState(false)
+        : globalProfile) ?? 'classic_light'
 
   // 视频分析参数状态
   const [videoProfile, setVideoProfile] = useState<VideoAnalysisProfile>(() => {
@@ -337,12 +325,16 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   )
   const dirPluginOverrides =
     parsedConfig.status === 'ready'
-      ? (parsedConfig as unknown as { pluginOverrides?: Record<string, boolean> }).pluginOverrides
+      ? parsedConfig.pluginOverrides
+      : undefined
+  const wfPluginDefaults =
+    parsedConfig.status === 'ready'
+      ? parsedConfig.workflowPluginDefaults
       : undefined
   const isAsrEnabledForDir =
     dirPluginOverrides?.asr_sensevoice_onnx !== undefined
       ? dirPluginOverrides.asr_sensevoice_onnx
-      : currentIntent === 'footage_studio'
+      : Boolean(wfPluginDefaults?.includes('asr_sensevoice_onnx'))
   const isAsrCascadedOff = !asrPluginReady || !isAsrEnabledForDir
 
   const handleSelectVideoProfile = (profile: VideoAnalysisProfile) => {
@@ -435,8 +427,30 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           setRecommendedSettings(rec)
         }
       })
-      .catch(() => {})
+      .catch(err => {
+        console.warn('[BasicAIEngineTab] 获取推荐底座设置失败:', err)
+      })
   }, [])
+
+  const handleRestoreSingleField = useCallback(
+    async (fieldKey: keyof BaseAIConfig) => {
+      if (workspace.id == null) return
+      const res = await submitWorkspacePolicyMutation(workspace.id, {
+        restoreOverrideFields: [fieldKey]
+      })
+      if (res.success) {
+        setOverrides(prev => {
+          const next = { ...prev }
+          delete next[fieldKey]
+          return next
+        })
+        onConfigSaved?.()
+      } else {
+        toast.error(getMutationErrorText(res, t('恢复默认失败')))
+      }
+    },
+    [workspace.id, onConfigSaved]
+  )
 
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto overflow-y-auto max-h-full">
@@ -492,6 +506,29 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           )}
         </div>
       </div>
+
+      {/* SLICE-08：本 Tab 专管 AI 参数的三态反馈（用户自定义 / 环境降级 / 级联关闭） */}
+      {resolvedFields && (
+        <div className="space-y-1.5">
+          {BASIC_AI_KEYS.map(fieldKey => {
+            const field = resolvedFields[fieldKey]
+            if (!field || !field.visible) return null
+            if (field.origin !== 'user_custom' && field.applicability === 'active') return null
+            return (
+              <TriStateFieldFeedback
+                key={fieldKey}
+                field={field}
+                effectiveText={String(field.effectiveValue ?? '')}
+                desiredText={String(field.desiredValue ?? '')}
+                baselineText={String(baseDerived[fieldKey] ?? '')}
+                hasBoundWorkflow={hasBoundWorkflow}
+                onRestore={() => void handleRestoreSingleField(fieldKey)}
+                onFixAction={onFixAction}
+              />
+            )
+          })}
+        </div>
+      )}
 
       {/* 1. 选择分析模式 */}
       <Card className="p-5">

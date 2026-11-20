@@ -364,6 +364,15 @@ export async function initDatabaseAndDependentServices(
         })
       })
 
+      // 初始化工作区运行时上下文服务（注册 get-snapshot / incremental-recovery IPC 与窗口 focus 复检）
+      try {
+        const { workspaceRuntimeContextService } =
+          await import('../runtime-services/system/workspace-runtime-context-service')
+        workspaceRuntimeContextService.initialize()
+      } catch (err) {
+        logger.warn(LogCategory.MAIN, '[Initialization] 初始化 WorkspaceRuntimeContextService 异常:', err)
+      }
+
       // 模块化资源与 Tombstone 启动期对账与持久化配置 (Spec §7.1.1 #5)
       try {
         const { tombstoneGCService } =

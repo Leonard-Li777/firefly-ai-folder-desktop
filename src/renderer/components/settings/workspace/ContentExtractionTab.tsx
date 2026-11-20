@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import {
+  BaseAIConfig,
   WorkspaceDirectory,
   WorkspaceConfig,
   TechnicalEngineParameters,
@@ -15,9 +16,13 @@ import { Label } from '../../ui/label'
 import { cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
-import { submitWorkspacePolicyMutation,
-  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
-import { getOcrModelSizeLabel } from './TriStateFieldFeedback'
+import {
+  submitWorkspacePolicyMutation,
+  getMutationErrorText,
+  type DegradationFixAction,
+  type ResolvedTriStateField
+} from '../../../lib/workspace-policy/workspace-ai-client'
+import { getOcrModelSizeLabel, TriStateFieldFeedback } from './TriStateFieldFeedback'
 import { openExternalLink } from '../../../lib/external-link'
 import {
   FileText,
@@ -37,6 +42,9 @@ export interface ContentExtractionTabProps {
   hardwareInfo?: HardwareInfo | null
   isActive?: boolean
   onConfigSaved?: () => void
+  resolvedFields?: Record<string, ResolvedTriStateField>
+  hasBoundWorkflow?: boolean
+  onFixAction?: (action: DegradationFixAction) => void
 }
 
 /** 待提交的补丁累积 */
@@ -84,7 +92,10 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
   workspace,
   hardwareInfo,
   isActive = true,
-  onConfigSaved
+  onConfigSaved,
+  resolvedFields,
+  hasBoundWorkflow = false,
+  onFixAction
 }) => {
   const [isSaving, setIsSaving] = useState(false)
 
@@ -103,11 +114,11 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
   const currentIntent = isReady && parsedConfig.intent ? parsedConfig.intent : 'fast_archive'
 
   // 基线快照与局部微调覆盖
-  const baseDerived: TechnicalEngineParameters = useMemo(() => {
+  const baseDerived: BaseAIConfig = useMemo(() => {
     if (isReady && parsedConfig.baseAIConfig) {
       return parsedConfig.baseAIConfig
     }
-    return mapIntentToParameters(currentIntent, hardwareInfo)
+    return mapIntentToParameters(currentIntent, hardwareInfo) as BaseAIConfig
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
 
   const [overrides, setOverrides] = useState<Partial<TechnicalEngineParameters>>(() => {
@@ -128,7 +139,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
   }, [workspace.id, workspace.workspace_config])
 
   // 当前有效参数合成 (基线 + overrides)
-  const effectiveParams: TechnicalEngineParameters = useMemo(() => {
+  const effectiveParams: BaseAIConfig = useMemo(() => {
     return {
       ...baseDerived,
       ...overrides
@@ -222,15 +233,15 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     toast.success(t('已恢复当前场景的文件内容萃取推荐参数'))
   }
 
-  // 检测 LibreOffice 状态
-  const checkLibreOfficeStatus = async () => {
+  // 检测 LibreOffice 状态（手动重检传 forceRefresh=true 穿透缓存）
+  const checkLibreOfficeStatus = async (forceRefresh = false) => {
     if (!(window as any).electronAPI?.utils?.detectLibreOffice) {
       setLibreOfficeInstalled(false)
       return
     }
     setCheckingLibreOffice(true)
     try {
-      const result = await (window as any).electronAPI.utils.detectLibreOffice()
+      const result = await (window as any).electronAPI.utils.detectLibreOffice(forceRefresh)
       setLibreOfficeInstalled(result?.installed ?? false)
       setLibreOfficeVersion(result?.version)
     } catch (error) {
@@ -311,6 +322,49 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
           )}
         </div>
       </div>
+
+      {/* SLICE-08：本 Tab 专管内容萃取参数的三态反馈（用户自定义 / 环境降级 / 级联关闭） */}
+      {resolvedFields && (
+        <div className="space-y-1.5">
+          {CONTENT_EXTRACTION_KEYS.map(fieldKey => {
+            const field = resolvedFields[fieldKey]
+            if (!field || !field.visible) return null
+            if (field.origin !== 'user_custom' && field.applicability === 'active') return null
+            const fmtVal = (v: unknown) =>
+              fieldKey === 'ocrModelSize'
+                ? getOcrModelSizeLabel(v === 'small' ? 'small' : 'tiny')
+                : String(v ?? '')
+            return (
+              <TriStateFieldFeedback
+                key={fieldKey}
+                field={field}
+                effectiveText={fmtVal(field.effectiveValue)}
+                desiredText={fmtVal(field.desiredValue)}
+                baselineText={fmtVal(baseDerived[fieldKey as keyof BaseAIConfig])}
+                hasBoundWorkflow={hasBoundWorkflow}
+                onRestore={() => {
+                  if (workspace.id == null) return
+                  void submitWorkspacePolicyMutation(workspace.id, {
+                    restoreOverrideFields: [fieldKey as keyof BaseAIConfig]
+                  }).then(res => {
+                    if (res.success) {
+                      setOverrides(prev => {
+                        const next = { ...prev }
+                        delete next[fieldKey]
+                        return next
+                      })
+                      onConfigSaved?.()
+                    } else {
+                      toast.error(getMutationErrorText(res, t('恢复默认失败')))
+                    }
+                  })
+                }}
+                onFixAction={onFixAction}
+              />
+            )
+          })}
+        </div>
+      )}
 
       {/* 主卡片 */}
       <Card className="p-5 space-y-6">
@@ -569,7 +623,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={checkLibreOfficeStatus}
+                      onClick={() => void checkLibreOfficeStatus(true)}
                       disabled={checkingLibreOffice}
                       className="h-8 text-xs"
                     >

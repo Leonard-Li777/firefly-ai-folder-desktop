@@ -501,7 +501,13 @@ export class FileProcessor {
         moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')
         // 每个文件默认不期望 ASR 常驻，仅当本文件 effectiveConfig 确实需要 ASR 时才置真
         moduleHibernationCoordinator.setAsrExpectedActive(false)
-      } catch {}
+      } catch (hibErr) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          '[分析队列] 通知休眠协调器置位失败:',
+          hibErr
+        )
+      }
 
       // V2.2 架构：优先从 item.path 获取，如果存在则通过 item_id 查询数据库
       filePath = (item as any).file_path || item.path
@@ -2948,12 +2954,30 @@ export class FileProcessor {
         // 工单 05 终态 B（simple 模式）：标签落库 + FTS 同步后固化 canonical 语义文本/向量
         await solidifyCanonicalForTerminal('simple', fileFingerprint)
 
-        // 最终统计收集
+        // 最终统计收集（串行 simple 分支同样落盘 appliedCapabilities 与 attempted_empty，防降级重扫死循环）
         const analysisStats = await this.collectAnalysisStats(timer, effectiveParams.analysisMode)
         const analysisStatsWithBenchmark = applyMarkitdownBenchmark(
           analysisStats,
           markitdownBenchmark
         )
+        const hadOcrTextSimple = Boolean((anydocResult as any)?.ocrText)
+        const hadAsrTextSimple = Boolean((anydocResult as any)?.audioTranscript)
+        ;(analysisStatsWithBenchmark as any).analysisMode = effectiveParams.analysisMode
+        ;(analysisStatsWithBenchmark as any).appliedCapabilities = {
+          ocrSize: effectiveParams.ocrModelSize,
+          asrApplied: capabilities.asrEffectivelyEnabled,
+          officeCoverApplied: effectiveParams.enableOfficeCover,
+          analysisStage: cpuCompletionStage
+        }
+        ;(analysisStatsWithBenchmark as any).attempted_empty = {
+          fileFingerprint,
+          ocrModelSize: effectiveParams.ocrModelSize,
+          asrDurationSec: isVideo
+            ? effectiveParams.videoAsrDurationSec
+            : effectiveParams.audioAnalysisDurationSec,
+          ocrEmpty: effectiveParams.enableImageOcr && !hadOcrTextSimple,
+          asrEmpty: capabilities.asrEffectivelyEnabled && !hadAsrTextSimple
+        }
         await databaseService.updateFileAnalysisResult(workspaceFile.id, {
           analysisStats: analysisStatsWithBenchmark,
           syncStatus: 4

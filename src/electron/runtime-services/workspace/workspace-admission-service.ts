@@ -16,8 +16,10 @@
 import type { Database } from 'better-sqlite3'
 import path from 'node:path'
 import {
+  DEFAULT_UNBOUND_AI_CONFIG,
   isWorkspaceConfigReady,
   parseWorkspaceConfig,
+  sanitizeWorkspaceAIConfig,
   serializeWorkspaceConfig,
   type IFilterRule,
   type LocalWorkflowRecord,
@@ -25,7 +27,8 @@ import {
   type BaseAIConfig,
   type WorkspaceConfig,
   type WorkspaceConfigIntent,
-  type WorkspaceConfigReady
+  type WorkspaceConfigReady,
+  type WorkspacePluginId
 } from '@firefly/types'
 import {
   compileFilterPolicy,
@@ -42,10 +45,7 @@ import {
 } from '@firefly/shared'
 import {
   LOCAL_WORKFLOW_SOURCE,
-  DEFAULT_UNBOUND_AI_CONFIG,
-  CURRENT_WORKFLOW_PRESET_VERSION,
-  sanitizeWorkspaceAIConfig,
-  type WorkspacePluginId
+  CURRENT_WORKFLOW_PRESET_VERSION
 } from '../../config/local-workflow-source'
 
 /**
@@ -558,7 +558,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     }
 
     // 1. 包含规则解包（§2.2.3 切换/解绑快照保护）：
-    //    includeExts > customIncludeRules > 绑定切换剥离合并 > 解绑快照保留/既有
+    //    includeExts > customIncludeRules > restoreWorkflowDefault > 绑定切换剥离合并 > 显式解绑固化快照 > 常规保留既有
     const incomingExts = mutation.includeExts
     const incomingIncludeRules = mutation.customIncludeRules
     let nextIncludeRules: IFilterRule[]
@@ -566,21 +566,26 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       nextIncludeRules = normalizeExtensionsToFilterRules(incomingExts)
     } else if (incomingIncludeRules !== undefined) {
       nextIncludeRules = normalizeRuleList(incomingIncludeRules, 'include')
+    } else if (mutation.restoreWorkflowDefault && templateOverlay) {
+      nextIncludeRules = templateOverlay.customIncludeRules || []
     } else if (isBindSwitch) {
       // 切换非空工作流：剥离旧工作流注入的 isSystem: true 规则后，合并新模板规则与用户 !isSystem 规则（防无限累加）
       const userRules = (currentReady?.customIncludeRules || []).filter(r => !r.isSystem)
       const templateRules = (templateOverlay?.customIncludeRules || []).filter(r => r.isSystem)
       nextIncludeRules = [...templateRules, ...userRules]
-    } else {
+    } else if (isExplicitUnbind) {
       // 显式解绑且未指定自定义包含规则时，完整保留既有规则快照并将 isSystem 固化为 false
       nextIncludeRules = (currentReady?.customIncludeRules || []).map(r => ({
         ...r,
         isSystem: false
       }))
+    } else {
+      // 常规参数/插件增量更新：原样保留既有包含规则（严禁篡改 isSystem: true 标记）
+      nextIncludeRules = currentReady?.customIncludeRules || []
     }
 
     // 2. 排除规则解包（同包含规则快照保护语义）：
-    //    customExcludeRules > restoreWorkflowDefault 模板覆盖 > 既有配置合并模板
+    //    customExcludeRules > restoreWorkflowDefault 模板覆盖 > 绑定切换剥离合并 > 显式解绑固化快照 > 常规保留既有
     const incomingExcludeRules = mutation.customExcludeRules
     let nextExcludeRules: IFilterRule[]
     if (incomingExcludeRules !== undefined) {
@@ -591,23 +596,23 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       const existing = (currentReady?.customExcludeRules || []).filter(r => !r.isSystem)
       const templateRules = (templateOverlay?.customExcludeRules || []).filter(r => r.isSystem)
       nextExcludeRules = normalizeRuleList([...templateRules, ...existing], 'exclude')
-    } else {
+    } else if (isExplicitUnbind) {
       nextExcludeRules = (currentReady?.customExcludeRules || []).map(r => ({
         ...r,
         isSystem: false
       }))
+    } else {
+      nextExcludeRules = currentReady?.customExcludeRules || []
     }
 
     // 3. 计算 AI 分析基础参数（未绑定/解绑基线统一为 DEFAULT_UNBOUND_AI_CONFIG，对齐 MIXED_INBOX 策略）
-    const nextBaseAi: TechnicalEngineParameters =
+    const nextBaseAi: BaseAIConfig =
       mutation.baseAIConfig ||
       (mutation.restoreWorkflowDefault ? templateOverlay?.baseAIConfig : undefined) ||
       templateOverlay?.baseAIConfig ||
-      (isExplicitUnbind
-        ? (DEFAULT_UNBOUND_AI_CONFIG as unknown as BaseAIConfig)
-        : undefined) ||
+      (isExplicitUnbind ? DEFAULT_UNBOUND_AI_CONFIG : undefined) ||
       currentReady?.baseAIConfig ||
-      (DEFAULT_UNBOUND_AI_CONFIG as unknown as BaseAIConfig)
+      DEFAULT_UNBOUND_AI_CONFIG
 
     // 3b. 工作流默认插件清单：mutation 显式声明 > 模板覆盖 > 解绑置 [] > 既有
     const nextWorkflowPluginDefaults =
@@ -662,9 +667,12 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
     // Step 4（字段级恢复与增量补丁合并）：
     // 先 restoreOverrideFields / restorePluginOverrideIds 精确 delete，
     // 再整字典与增量补丁合并，最后统一 sanitizeWorkspaceAIConfig 清洗。
-    let mergedOverrides: Record<string, unknown> | undefined = {
-      ...(effectiveOverrides as Record<string, unknown> | undefined)
-    }
+    let mergedOverrides: Record<string, unknown> | undefined =
+      mutation.overrides === null
+        ? undefined
+        : {
+            ...(effectiveOverrides as Record<string, unknown> | undefined)
+          }
     if (mergedOverrides) {
       for (const field of mutation.restoreOverrideFields || []) {
         delete mergedOverrides[field as string]
@@ -672,15 +680,15 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       if (mutation.overridePatch) {
         Object.assign(mergedOverrides, mutation.overridePatch)
       }
+    } else if (mutation.overridePatch) {
+      mergedOverrides = { ...mutation.overridePatch }
     }
-    let mergedPluginOverrides: Record<string, boolean> | undefined = {
-      ...((effectivePluginOverrides ?? (mutation.pluginOverrides === null ? undefined : undefined)) as
-        | Record<string, boolean>
-        | undefined)
-    }
-    if (mutation.pluginOverrides === null) {
-      mergedPluginOverrides = undefined
-    }
+    let mergedPluginOverrides: Record<string, boolean> | undefined =
+      mutation.pluginOverrides === null
+        ? undefined
+        : {
+            ...(effectivePluginOverrides as Record<string, boolean> | undefined)
+          }
     if (mergedPluginOverrides) {
       for (const pluginId of mutation.restorePluginOverrideIds || []) {
         delete mergedPluginOverrides[pluginId as string]
@@ -688,11 +696,13 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       if (mutation.pluginOverridePatch) {
         Object.assign(mergedPluginOverrides, mutation.pluginOverridePatch)
       }
+    } else if (mutation.pluginOverridePatch) {
+      mergedPluginOverrides = { ...(mutation.pluginOverridePatch as Record<string, boolean>) }
     }
 
     const sanitized = sanitizeWorkspaceAIConfig({
       baseAIConfig: nextBaseAi,
-      overrides: mergedOverrides,
+      overrides: mergedOverrides as Partial<BaseAIConfig> | undefined,
       pluginOverrides: mergedPluginOverrides
     })
 
@@ -997,8 +1007,12 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
             db.prepare(
               'UPDATE workspace_directories SET bound_workflow_id = ? WHERE workspace_id = ?'
             ).run(nextBoundWorkflowId, workspaceId)
-          } catch {
-            // 忽略子目录表同步异常
+          } catch (syncErr) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[WorkspaceAdmission] 同步 workspace_directories.bound_workflow_id 失败 (workspaceId=${workspaceId}):`,
+              syncErr
+            )
           }
         })()
 
@@ -1248,8 +1262,12 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       // 启动期共用读路径同步升级：存量 v1 工作区先刷新 presetVersion: 2 基线（OBS-02 无竞态）
       try {
         this.ensureBaselineVersion(workspaceId)
-      } catch {
-        // 升级失败不阻断启动对账
+      } catch (upgradeErr) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[WorkspaceAdmission] 启动期升级工作区 ${workspaceId} presetVersion 基线失败:`,
+          upgradeErr
+        )
       }
 
       let meta: Record<string, any> = {}

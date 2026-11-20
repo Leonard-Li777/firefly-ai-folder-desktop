@@ -1,36 +1,31 @@
+import {
+  LogCategory,
+  logger,
+  resolveEffectiveAIConfig,
+  type EffectiveWorkspaceAIConfigResult as SharedEffectiveWorkspaceAIConfigResult,
+  type WorkspaceRuntimeContext
+} from '@firefly/shared'
+import { DEFAULT_UNBOUND_AI_CONFIG } from '@firefly/types'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../database/database-service'
-import { getWorkspaceRuntimeContextEpoch } from './workspace-runtime-context-service'
+import {
+  getWorkspaceRuntimeContextEpoch,
+  workspaceRuntimeContextService
+} from './workspace-runtime-context-service'
 import type { AnalysisMode } from '../../config/analysis-mode'
 
 /**
- * 工作区运行时有效配置的最小消费契约（Group A `EffectiveWorkspaceAIConfigResult` 的过渡形态）。
- * 合流 Group A 后，`resolveWorkspaceEffectiveConfig` 内部直接改调其导出的
- * `resolveEffectiveAIConfig()` 即可，本文件对外签名保持不变。
+ * 主进程工作区运行时有效配置契约：
+ * 直接基于 `@firefly/shared` 权威 `resolveEffectiveAIConfig()` 输出，
+ * 并附带 `videoFrameQuotaMax` / `enableVideoVisualAnalysis` 兼容别名供既有 `file-processor` 无缝消费。
  */
-export interface EffectiveWorkspaceAIConfigResult {
-  effectiveParams: {
+export interface EffectiveWorkspaceAIConfigResult extends SharedEffectiveWorkspaceAIConfigResult {
+  effectiveParams: SharedEffectiveWorkspaceAIConfigResult['effectiveParams'] & {
     analysisMode: AnalysisMode
-    enableImageOcr: boolean
-    ocrModelSize: 'tiny' | 'small'
-    maxDocumentOcrItems: number
-    extractPages: number
-    maxContentSizeKb: number
-    enableOfficeCover: boolean
-    videoAsrDurationSec: number
-    audioAnalysisDurationSec: number
-    enableVideoVisualAnalysis: boolean
+    /** 与 `videoQuotaMax` 同源，兼容既有 `file-processor` 读取 */
     videoFrameQuotaMax: number
-    videoCutSensitivity: string
-    videoSoftTokenBudget: number
-    clipTextEnabled: boolean
-    reuseBasicAnalysisData: boolean
-  }
-  capabilities: {
-    asrEffectivelyEnabled: boolean
-    videoVisualAnalysisEnabled: boolean
-    nsfwEffectivelyEnabled: boolean
-    faceEffectivelyEnabled: boolean
+    /** 与 `capabilities.videoVisualAnalysisEnabled` 同源，兼容既有 `file-processor` 读取 */
+    enableVideoVisualAnalysis: boolean
   }
 }
 
@@ -43,138 +38,133 @@ export interface WorkspaceAnalysisContext {
   capabilityFingerprint: string
 }
 
-function readNumber(config: Record<string, unknown>, overrides: Record<string, unknown>, key: string, fallback: number): number {
-  const value = overrides[key] ?? config[key]
-  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
-}
-
-function readBool(config: Record<string, unknown>, overrides: Record<string, unknown>, key: string, fallback: boolean): boolean {
-  const value = overrides[key] ?? config[key]
-  return typeof value === 'boolean' ? value : fallback
+/** 无工作区配置时的回退构造（仅在无 ready 工作区时尊重全局 REUSE_BASIC_ANALYSIS_DATA 兼容单测与无区场景） */
+function buildUnboundFallbackInput() {
+  const reuse = ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA')
+  return {
+    baseAIConfig: {
+      ...DEFAULT_UNBOUND_AI_CONFIG,
+      ...(typeof reuse === 'boolean' ? { reuseBasicAnalysisData: reuse } : {})
+    }
+  }
 }
 
 /**
- * 基于工作区 `WorkspaceConfigReady` 解析实际生效配置。
- * `hasInstalledAiEngine` 由调用方按当前引擎安装态传入，确保 `simple` 降级时
- * `skip5wSynthesis === false`（CPU 5W 机械名保留）。
+ * 基于工作区 `WorkspaceConfigReady` 与主进程权威 `WorkspaceRuntimeContext`
+ * 调用 `@firefly/shared::resolveEffectiveAIConfig()` 实时计算生效配置。
+ * `hasInstalledAiEngine` 若由调用方显式传入 `false`，覆盖 `isGenerativeAiEnabled = false`
+ * 确保 `simple` 降级时 `skip5wSynthesis === false`（保留 CPU 5W 机械命名）。
  */
 export async function resolveWorkspaceEffectiveConfig(
   workspaceId: number | null,
   hasInstalledAiEngine?: boolean | null
 ): Promise<EffectiveWorkspaceAIConfigResult> {
-  const orchestrator = ConfigOrchestrator.getInstance()
-  const global = {
-    analysisMode: orchestrator.getValue<string>('ANALYSIS_MODE'),
-    enableImageOcr: orchestrator.getValue<boolean>('ENABLE_IMAGE_OCR'),
-    ocrModelSize: orchestrator.getValue<string>('OCR_MODEL_SIZE'),
-    maxDocumentOcrItems: orchestrator.getValue<number>('MAX_DOCUMENT_OCR_ITEMS'),
-    extractPages: orchestrator.getValue<number>('EXTRACT_PAGES'),
-    maxContentSizeKb: orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB'),
-    enableOfficeCover: orchestrator.getValue<boolean>('ENABLE_OFFICE_COVER'),
-    videoAsrDurationSec: orchestrator.getValue<number>('VIDEO_ASR_DURATION'),
-    audioAnalysisDurationSec: orchestrator.getValue<number>('AUDIO_ANALYSIS_DURATION'),
-    videoFrameQuotaMax: orchestrator.getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any),
-    videoCutSensitivity: orchestrator.getValue<string>('VIDEO_CUT_SENSITIVITY' as any),
-    videoSoftTokenBudget: orchestrator.getValue<number>('VIDEO_SOFT_TOKEN_BUDGET'),
-    clipTextEnabled: orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED')
-  }
-
-  let overrides: Record<string, unknown> = {}
-  let policyVersion = 0
+  let readyConfig = null
   if (workspaceId !== null && workspaceId !== undefined) {
     try {
-      const ready = await databaseService.getWorkspaceConfig(workspaceId)
-      if (ready && ready.status === 'ready') {
-        policyVersion = ready.policyVersion
-        overrides = {
-          ...(ready.baseAIConfig || {}),
-          ...(ready.overrides || {})
-        }
+      const cfg = await databaseService.getWorkspaceConfig(workspaceId)
+      if (cfg && cfg.status === 'ready') {
+        readyConfig = cfg
       }
     } catch (error) {
-      // 显式上报，严禁静默吞掉工作区配置读取失败（AGENTS.md 禁止静默降级）
-      console.warn('[WorkspaceAnalysisContext] 工作区配置读取失败，按全局配置降级:', error)
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        '[WorkspaceAnalysisContext] 工作区配置读取失败，按未绑定系统默认基线解析:',
+        error
+      )
     }
   }
 
-  const rawMode = (overrides.analysisMode as AnalysisMode) || (global.analysisMode as AnalysisMode) || 'full'
-  const configuredMode: AnalysisMode =
-    rawMode === 'simple' || rawMode === 'quick_name' || rawMode === 'full' ? rawMode : 'full'
-  // 生成式引擎未安装/未就绪时强制 simple（保留 CPU 5W 机械名），绝不传 desired 值
-  const analysisMode: AnalysisMode = hasInstalledAiEngine === false ? 'simple' : configuredMode
-  const ocrSize = overrides.ocrModelSize ?? global.ocrModelSize
-  const embeddingProfile =
-    (overrides.embeddingProfile as string) || orchestrator.getValue<string>('EMBEDDING_PROFILE' as any) || 'classic_light'
+  const baseRuntime: WorkspaceRuntimeContext = workspaceRuntimeContextService.getRuntimeContext()
+  const runtimeContext: WorkspaceRuntimeContext =
+    hasInstalledAiEngine === false
+      ? { ...baseRuntime, isGenerativeAiEnabled: false }
+      : hasInstalledAiEngine === true
+        ? { ...baseRuntime, isGenerativeAiEnabled: true }
+        : baseRuntime
 
-  const effectiveParams: EffectiveWorkspaceAIConfigResult['effectiveParams'] = {
-    analysisMode,
-    enableImageOcr: readBool(global, overrides, 'enableImageOcr', false),
-    ocrModelSize: ocrSize === 'small' ? 'small' : 'tiny',
-    maxDocumentOcrItems: readNumber(global, overrides, 'maxDocumentOcrItems', 3),
-    extractPages: readNumber(global, overrides, 'extractPages', -1),
-    maxContentSizeKb: readNumber(global, overrides, 'maxContentSizeKb', 30),
-    enableOfficeCover: readBool(global, overrides, 'enableOfficeCover', false),
-    videoAsrDurationSec: readNumber(global, overrides, 'videoAsrDurationSec', 60),
-    audioAnalysisDurationSec: readNumber(global, overrides, 'audioAnalysisDurationSec', 30),
-    enableVideoVisualAnalysis: embeddingProfile === 'gemma_unified',
-    videoFrameQuotaMax: readNumber(global, overrides, 'videoFrameQuotaMax', 60),
-    videoCutSensitivity: String(overrides.videoCutSensitivity ?? global.videoCutSensitivity ?? 'medium'),
-    videoSoftTokenBudget: readNumber(global, overrides, 'videoSoftTokenBudget', 140),
-    clipTextEnabled: readBool(global, overrides, 'clipTextEnabled', true),
-    reuseBasicAnalysisData: readBool(global, overrides, 'reuseBasicAnalysisData', true)
-  }
-
-  const asrEffectivelyEnabled =
-    effectiveParams.videoAsrDurationSec > 0 || effectiveParams.audioAnalysisDurationSec > 0
-  const capabilityFingerprint = [
-    effectiveParams.analysisMode,
-    effectiveParams.ocrModelSize,
-    effectiveParams.enableImageOcr,
-    effectiveParams.enableOfficeCover,
-    effectiveParams.videoAsrDurationSec,
-    effectiveParams.audioAnalysisDurationSec,
-    embeddingProfile
-  ].join('|')
-
+  const resolved = resolveEffectiveAIConfig(
+    readyConfig ?? buildUnboundFallbackInput(),
+    runtimeContext
+  )
   return {
-    effectiveParams,
-    capabilities: {
-      asrEffectivelyEnabled,
-      videoVisualAnalysisEnabled: effectiveParams.enableVideoVisualAnalysis,
-      nsfwEffectivelyEnabled: orchestrator.getValue<boolean>('ENABLE_NSFW_PERCEPTION' as any) ?? false,
-      faceEffectivelyEnabled: orchestrator.getValue<boolean>('ENABLE_FACE_PERCEPTION' as any) ?? false
+    ...resolved,
+    effectiveParams: {
+      ...resolved.effectiveParams,
+      analysisMode: resolved.effectiveParams.analysisMode as AnalysisMode,
+      videoFrameQuotaMax: resolved.capabilities.videoVisualAnalysisEnabled
+        ? resolved.effectiveParams.videoQuotaMax
+        : 0,
+      enableVideoVisualAnalysis: resolved.capabilities.videoVisualAnalysisEnabled
     }
   }
 }
 
-/** 在文件入口单次锁定工作区分析上下文（OBS-02）。 */
+/** 在文件入口单次锁定工作区分析上下文（OBS-02）：消费已同步升级 `presetVersion: 2` 的最新 `policyVersion`。 */
 export async function lockWorkspaceAnalysisContext(
   workspaceId: number | null,
   hasInstalledAiEngine?: boolean | null
 ): Promise<WorkspaceAnalysisContext> {
-  const effectiveConfig = await resolveWorkspaceEffectiveConfig(workspaceId, hasInstalledAiEngine)
+  let readyConfig = null
   let policyVersion = 0
   if (workspaceId !== null && workspaceId !== undefined) {
     try {
-      const ready = await databaseService.getWorkspaceConfig(workspaceId)
-      if (ready && ready.status === 'ready') policyVersion = ready.policyVersion
-    } catch {
-      // 已在 resolveWorkspaceEffectiveConfig 中显式上报，此处仅维持默认版本
+      const cfg = await databaseService.getWorkspaceConfig(workspaceId)
+      if (cfg && cfg.status === 'ready') {
+        readyConfig = cfg
+        policyVersion = cfg.policyVersion
+      }
+    } catch (error) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        '[WorkspaceAnalysisContext] 锁定快照读取工作区配置失败:',
+        error
+      )
     }
   }
+
+  const baseRuntime: WorkspaceRuntimeContext = workspaceRuntimeContextService.getRuntimeContext()
+  const runtimeContext: WorkspaceRuntimeContext =
+    hasInstalledAiEngine === false
+      ? { ...baseRuntime, isGenerativeAiEnabled: false }
+      : hasInstalledAiEngine === true
+        ? { ...baseRuntime, isGenerativeAiEnabled: true }
+        : baseRuntime
+
+  const resolved = resolveEffectiveAIConfig(
+    readyConfig ?? buildUnboundFallbackInput(),
+    runtimeContext
+  )
+  const effectiveConfig: EffectiveWorkspaceAIConfigResult = {
+    ...resolved,
+    effectiveParams: {
+      ...resolved.effectiveParams,
+      analysisMode: resolved.effectiveParams.analysisMode as AnalysisMode,
+      videoFrameQuotaMax: resolved.capabilities.videoVisualAnalysisEnabled
+        ? resolved.effectiveParams.videoQuotaMax
+        : 0,
+      enableVideoVisualAnalysis: resolved.capabilities.videoVisualAnalysisEnabled
+    }
+  }
+
+  const ep = effectiveConfig.effectiveParams
+  const capabilityFingerprint = [
+    ep.analysisMode,
+    ep.ocrModelSize,
+    ep.enableImageOcr,
+    ep.enableOfficeCover,
+    ep.videoAsrDurationSec,
+    ep.audioAnalysisDurationSec,
+    effectiveConfig.capabilities.asrEffectivelyEnabled,
+    effectiveConfig.capabilities.videoVisualAnalysisEnabled,
+    runtimeContext.globalEmbeddingProfile
+  ].join('|')
+
   return {
     workspaceId,
     policyVersion,
     contextEpoch: getWorkspaceRuntimeContextEpoch(),
     effectiveConfig,
-    capabilityFingerprint: [
-      policyVersion,
-      effectiveParamsKey(effectiveConfig)
-    ].join('|')
+    capabilityFingerprint
   }
-}
-
-function effectiveParamsKey(config: EffectiveWorkspaceAIConfigResult): string {
-  const p = config.effectiveParams
-  return [p.ocrModelSize, p.enableImageOcr, p.videoAsrDurationSec, p.audioAnalysisDurationSec, p.enableVideoVisualAnalysis].join('|')
 }
