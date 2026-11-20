@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "canonicalization": "json-stable-v1",
-  "canonical_sha256": "8e3f8b6c11f2c599e60a1fd1c3af8fcdc48bfc8414b3f59818fd82c62148a5a6",
-  "bake_fingerprint": "b9f98b0fb33256781ca733c1c3daa8332f157ce717084dad68bb74d3159cac3e",
+  "canonical_sha256": "2344a93e9f84d531738cca8754412ac396fc79f7657da1efd515639b43a7730a",
+  "bake_fingerprint": "95674178164a1e305206f3fa23262e2ab32bf4b18fe65e6d6a4a9c877e83acf7",
   "languages": [
     "zh-CN",
     "en-US",
@@ -37,11 +37,14 @@
           "40-设计灵感与竞品归档/02-设计灵感收藏",
           "40-设计灵感与竞品归档/03-行业案例参考"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_frontend_dev",
@@ -66,11 +69,13 @@
           "05-测试报告与缺陷排查/02-E2E测试报告",
           "05-测试报告与缺陷排查/03-缺陷跟踪清单"
         ],
-        "tags": ["{TAG:编程语言}"],
+        "tags": [
+          "{TAG:编程语言}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_backend_arch",
@@ -92,11 +97,14 @@
           "04-性能监控与排障/链路追踪",
           "04-性能监控与排障/告警规则"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_para_universal",
@@ -118,11 +126,13 @@
           "04-Archives (历史封存归档)/2025结项归档",
           "04-Archives (历史封存归档)/归档索引"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_johnny_decimal",
@@ -144,11 +154,13 @@
           "40-49 资产采购与行政/42-采购验收",
           "40-49 资产采购与行政/43-资产处置"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_photography_pipeline",
@@ -173,11 +185,13 @@
           "05-网络展示Web/社交媒体尺寸",
           "05-网络展示Web/网络展示九宫格"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
-        "embedding_profile": "gemma_unified",
-        "mrl_dimension": 512
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_video_production",
@@ -202,11 +216,13 @@
           "05-成片渲染Exports/多平台竖版切片",
           "05-成片渲染Exports/成片字幕版本"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
-        "embedding_profile": "gemma_unified",
-        "mrl_dimension": 512
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_academic_thesis",
@@ -231,11 +247,13 @@
           "05-审稿意见与最终定稿/盲审版PDF",
           "05-审稿意见与最终定稿/归档说明"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_finance_accounting",
@@ -260,11 +278,13 @@
           "05-年度审计报告/审计底稿",
           "05-年度审计报告/审计意见书"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
-        "embedding_profile": "gemma_unified",
-        "mrl_dimension": 512
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_family_household",
@@ -289,11 +309,13 @@
           "05-生活电器与售后/保修卡与说明书",
           "05-生活电器与售后/家电购买凭证"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_newmedia_content",
@@ -318,11 +340,13 @@
           "05-数据复盘与报告/转化漏斗分析",
           "05-数据复盘与报告/竞品对标"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_ecommerce_ops",
@@ -347,11 +371,13 @@
           "05-大促复盘与售后/客诉分析",
           "05-大促复盘与售后/售后处理单"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_game_dev_assets",
@@ -376,11 +402,15 @@
           "05-测试包发布Builds/发行安装包",
           "05-测试包发布Builds/版本说明"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}", "{TAG:模型格式}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}",
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_cross_border_ops",
@@ -402,11 +432,13 @@
           "04-订单售后与财务对账/利润核算表",
           "04-订单售后与财务对账/多店铺财务汇总"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_legal_case_dossier",
@@ -428,11 +460,13 @@
           "04-判决与执行/执行申请与进展",
           "04-判决与执行/结案归档清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_clinical_medical_records",
@@ -454,11 +488,13 @@
           "04-统计分析与论文/论文草稿与投稿",
           "04-统计分析与论文/图表与审稿意见"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_teacher_lesson_prep",
@@ -480,11 +516,13 @@
           "04-教研与进修/公开课与课题",
           "04-教研与进修/培训学习笔记"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_consulting_due_diligence",
@@ -509,11 +547,13 @@
           "05-汇报与交付/最终报告与建议",
           "05-汇报与交付/项目复盘"
         ],
-        "tags": ["{TAG:模型格式}"],
+        "tags": [
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_architectural_cad_design",
@@ -535,11 +575,13 @@
           "04-材料与造价/工程量与预算表",
           "04-材料与造价/供应商报价"
         ],
-        "tags": ["{TAG:模型格式}"],
+        "tags": [
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_writing_publishing_pipeline",
@@ -561,11 +603,13 @@
           "04-投稿与出版/编辑审校意见",
           "04-投稿与出版/封面与成书文件"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_wellness_health_portfolio",
@@ -587,11 +631,13 @@
           "04-阶段总结与回访/回访记录",
           "04-阶段总结与回访/下一阶段计划"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_pm_product_workflow",
@@ -616,11 +662,13 @@
           "05-迭代与上线/上线公告",
           "05-迭代与上线/迭代复盘"
         ],
-        "tags": ["{TAG:文档类型}"],
+        "tags": [
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_data_science_analytics",
@@ -645,11 +693,15 @@
           "05-看板与汇报/分析报告",
           "05-看板与汇报/汇报幻灯片"
         ],
-        "tags": ["{TAG:文件类型}", "{TAG:模型格式}", "{TAG:文档类型}"],
+        "tags": [
+          "{TAG:文件类型}",
+          "{TAG:模型格式}",
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_qa_testing_lifecycle",
@@ -674,11 +726,13 @@
           "05-测试报告与发布/上线检查与复盘",
           "05-测试报告与发布/遗留问题清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_sales_pipeline_crm",
@@ -703,11 +757,13 @@
           "05-回款与客户维护/对账单",
           "05-回款与客户维护/回访与续约记录"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_hr_people_operations",
@@ -732,11 +788,13 @@
           "05-培训与员工活动/培训记录与考核",
           "05-培训与员工活动/团建与关怀活动"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_marketing_campaign_imc",
@@ -761,11 +819,13 @@
           "05-数据与复盘/转化数据明细",
           "05-数据与复盘/结案复盘报告"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_corporate_legal_compliance",
@@ -790,11 +850,13 @@
           "05-纠纷与诉讼/判决与和解协议",
           "05-纠纷与诉讼/案件进展记录"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_embedded_iot_firmware",
@@ -815,11 +877,13 @@
           "05-量产与交付/量产固件烧录包",
           "05-量产与交付/烧录说明与产测指导"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_3d_cg_animation",
@@ -840,11 +904,13 @@
           "05-渲染与成片/分层渲染序列",
           "05-渲染与成片/合成调色与最终成片"
         ],
-        "tags": ["{TAG:模型格式}"],
+        "tags": [
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_freelance_business_delivery",
@@ -864,11 +930,13 @@
           "05-作品集与个人品牌/案例展示与作品集",
           "05-作品集与个人品牌/服务介绍与报价手册"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_pkm_knowledge_vault",
@@ -888,11 +956,13 @@
           "05-复盘与输出/月度与年度复盘",
           "05-复盘与输出/已发布的文章博客"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_gamer_library",
@@ -912,11 +982,13 @@
           "05-攻略与设定集/通关攻略与收集地图",
           "05-攻略与设定集/电子设定集与原画"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_novel_reading_library",
@@ -936,11 +1008,13 @@
           "05-精校收藏版/已校对精排电子书",
           "06-书单与书评/私人书单与五星书评"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_home_theater_audiophile",
@@ -960,11 +1034,13 @@
           "05-字幕与海报信息/外挂字幕",
           "05-字幕与海报信息/海报与影片简介"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
-        "embedding_profile": "gemma_unified",
-        "mrl_dimension": 512
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_acg_anime_manga",
@@ -983,11 +1059,13 @@
           "05-同人志与展会/同人志收藏",
           "05-同人志与展会/展会购物清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_pc_hardware_gear",
@@ -1006,11 +1084,13 @@
           "05-说明书与保修/产品说明书",
           "05-说明书与保修/发票与保修凭证"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_cooking_recipes_vault",
@@ -1029,11 +1109,13 @@
           "05-探店与宴客菜单/探店打卡记录",
           "05-探店与宴客菜单/宴客菜单规划"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_pet_care_diary",
@@ -1051,11 +1133,13 @@
           "05-用品与出行/用品说明书",
           "05-用品与出行/寄养协议与出行证明"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_travel_outdoor_journey",
@@ -1075,11 +1159,13 @@
           "05-票根与游记/门票票根",
           "05-票根与游记/旅行手账与游记"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_audio_sound_engineering",
@@ -1099,11 +1185,13 @@
           "05-版权与授权/音效授权证书",
           "05-版权与授权/分账与合作合同"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
-        "embedding_profile": "gemma_unified",
-        "mrl_dimension": 512
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_graphic_brand_design",
@@ -1123,11 +1211,13 @@
           "05-交付与版权/客户确认单",
           "05-交付与版权/版权协议与授权书"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_illustration_cg_art",
@@ -1147,11 +1237,13 @@
           "05-成稿与交付/高清成图",
           "05-成稿与交付/小样与水印预览"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_mobile_app_dev",
@@ -1171,11 +1263,13 @@
           "05-打包与上架材料/安装包归档",
           "05-打包与上架材料/商店截图与文案"
         ],
-        "tags": ["{TAG:图片格式}"],
+        "tags": [
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_cloud_native_sre",
@@ -1195,11 +1289,13 @@
           "05-巡检与故障复盘/例行巡检报告",
           "05-巡检与故障复盘/故障复盘记录"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_supply_chain_logistics",
@@ -1219,11 +1315,13 @@
           "05-物流与报关/运单与提单",
           "05-物流与报关/报关单据"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_study_abroad_application",
@@ -1243,11 +1341,13 @@
           "05-录取与签证/录取通知书",
           "05-录取与签证/签证表格与面签材料"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_desktop_declutter",
@@ -1268,11 +1368,15 @@
           "05-软件安装包与压缩包/压缩包与已解压临时文件",
           "06-旧桌面历史打包存档/往期桌面文件集中封存"
         ],
-        "tags": ["{TAG:文档类型}", "{TAG:文件类型}", "{TAG:图片格式}"],
+        "tags": [
+          "{TAG:文档类型}",
+          "{TAG:文件类型}",
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_downloads_triage",
@@ -1292,11 +1396,15 @@
           "05-过期文件待清理/长期未用的旧下载",
           "05-过期文件待清理/重复下载与残留"
         ],
-        "tags": ["{TAG:文档类型}", "{TAG:图片格式}", "{TAG:音频格式}"],
+        "tags": [
+          "{TAG:文档类型}",
+          "{TAG:图片格式}",
+          "{TAG:音频格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_inbox_staging_universal",
@@ -1304,12 +1412,20 @@
         "slug": "inbox-staging-universal",
         "name": "个人文件收件箱与待办整理",
         "summary": "基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转",
-        "paths": ["01-收件箱", "02-马上要办", "03-等人回复", "04-常用参考", "05-办完归档"],
-        "tags": ["{TAG:文件类型}"],
+        "paths": [
+          "01-收件箱",
+          "02-马上要办",
+          "03-等人回复",
+          "04-常用参考",
+          "05-办完归档"
+        ],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_desktop_classic_classification",
@@ -1332,11 +1448,15 @@
           "04-安装包与压缩包/软件安装包",
           "04-安装包与压缩包/压缩文件"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}", "{TAG:图片格式}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}",
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_qa_testing_asset_vault",
@@ -1358,11 +1478,13 @@
           "05-发布质量检查/上线检查清单",
           "05-发布质量检查/版本质量统计"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_k12_education_vault",
@@ -1381,11 +1503,13 @@
           "04-兴趣与成长记录/书法绘画与考级",
           "04-兴趣与成长记录/体育与实践活动"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_k12_school_term_pipeline",
@@ -1403,11 +1527,13 @@
           "04-寒暑假/假期作业与实践",
           "04-寒暑假/假期阅读与拓展"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_senior_life_archive",
@@ -1425,11 +1551,13 @@
           "04-证件与重要备忘/证件复印件",
           "04-证件与重要备忘/重要事项备忘"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_senior_medical_care_pipeline",
@@ -1447,11 +1575,13 @@
           "04-复诊与长期档案/复诊提醒与医嘱",
           "04-复诊与长期档案/年度体检汇总"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_office_general_archive",
@@ -1473,11 +1603,13 @@
           "04-合同与用印/常用合同模板",
           "04-合同与用印/用印登记"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_office_document_dispatch_flow",
@@ -1499,11 +1631,13 @@
           "04-办结归档/往年归档",
           "04-办结归档/办结清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_household_dossier_vault",
@@ -1525,11 +1659,13 @@
           "04-缴费与银行单据/银行对账单",
           "04-缴费与银行单据/存款与理财凭证"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_media_collector_vault",
@@ -1551,11 +1687,13 @@
           "04-电子书与漫画/漫画",
           "04-电子书与漫画/杂志"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_code_asset_vault",
@@ -1577,11 +1715,13 @@
           "04-实用脚本/自动化运维脚本",
           "04-实用脚本/数据转换脚本"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_system_cache_appdata_vault",
@@ -1596,11 +1736,13 @@
           "04-过期备份残留",
           "05-确认后可删除"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_chat_software_vault",
@@ -1608,12 +1750,22 @@
         "slug": "chat-software-vault",
         "name": "聊天接收文件库",
         "summary": "针对微信WeChat Files、QQ、钉钉接收文档、发票、音视频与压缩包的结构化收敛体系",
-        "paths": ["01-文档与表格", "02-图片", "03-视频与语音", "04-压缩包", "05-待处理暂存"],
-        "tags": ["{TAG:文档类型}", "{TAG:文件类型}", "{TAG:图片格式}"],
+        "paths": [
+          "01-文档与表格",
+          "02-图片",
+          "03-视频与语音",
+          "04-压缩包",
+          "05-待处理暂存"
+        ],
+        "tags": [
+          "{TAG:文档类型}",
+          "{TAG:文件类型}",
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_cross_device_transfer_vault",
@@ -1628,11 +1780,13 @@
           "04-电脑发往手机",
           "05-临时中转暂存"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_screenshots_screenrecord_vault",
@@ -1647,11 +1801,13 @@
           "04-报错与问题记录",
           "05-看完可删的临时截图"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_scratchpad_drafts_vault",
@@ -1659,12 +1815,19 @@
         "slug": "scratchpad-drafts-vault",
         "name": "草稿与便签收纳箱",
         "summary": "针对散落的新建文本文档、未命名表格、副本文件与随手记事草稿的收敛急救体系",
-        "paths": ["01-随手记的便签", "02-写了一半的草稿", "03-摘抄与素材", "04-写完待归档"],
-        "tags": ["{TAG:文件类型}"],
+        "paths": [
+          "01-随手记的便签",
+          "02-写了一半的草稿",
+          "03-摘抄与素材",
+          "04-写完待归档"
+        ],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_external_storage_vault",
@@ -1679,11 +1842,13 @@
           "04-系统安装盘",
           "05-旧文件暂存"
         ],
-        "tags": ["{TAG:文档类型}"],
+        "tags": [
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_scanned_documents_vault",
@@ -1698,11 +1863,13 @@
           "04-书信与资料翻拍",
           "05-待识别文字的文件"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_docs_office_vault",
@@ -1717,11 +1884,13 @@
           "04-制度与参考资料",
           "05-草稿与待办"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       },
       {
         "template_id": "tpl_docs_study_research_vault",
@@ -1736,11 +1905,13 @@
           "04-题目与练习",
           "05-课题与研究报告"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
-        "analysis_mode": "quick_name",
-        "embedding_profile": "classic_light",
-        "mrl_dimension": 256
+        "analysis_mode": "full",
+        "embedding_profile": "",
+        "mrl_dimension": 0
       }
     ]
   }

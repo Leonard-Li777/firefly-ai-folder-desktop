@@ -28,10 +28,21 @@ function extractWhitelistPatterns(parsedConfig: WorkspaceConfig | undefined): st
 
 export class WorkspaceDao {
   constructor(private db: Database) {}
+
+  /**
+   * 构造共享同一连接的准入服务实例（写口委托收归统一单核 [SLICE-07]）
+   */
+  private getAdmissionService(): WorkspaceAdmissionService {
+    return new WorkspaceAdmissionService({ db: this.db })
+  }
+
   async getAll(): Promise<WorkspaceDirectory[]> {
     const rows = this.db.prepare('SELECT * FROM workspaces ORDER BY created_at ASC').all() as any[]
     return rows.map(row => {
-      const parsedConfig = parseWorkspaceConfig(row.workspace_config)
+      let parsedConfig = parseWorkspaceConfig(row.workspace_config)
+      // 共用读路径同步升级：存量 v1 工作区首读即无感刷新 presetVersion: 2 (OBS-02)
+      const upgraded = this.getAdmissionService().ensureBaselineVersion(row.workspace_id)
+      if (upgraded) parsedConfig = upgraded
       const whitelistRules = (parsedConfig as any).customIncludeRules || []
       const whitelistPatterns = Array.isArray(whitelistRules)
         ? whitelistRules.map((r: any) => (typeof r === 'string' ? r : r.value)).filter(Boolean)
@@ -84,6 +95,9 @@ export class WorkspaceDao {
       const parsedConfig = row.workspace_config
         ? parseWorkspaceConfig(row.workspace_config)
         : undefined
+      // 共用读路径同步升级：存量 v1 工作区首读即无感刷新 presetVersion: 2 (OBS-02)
+      const upgraded = this.getAdmissionService().ensureBaselineVersion(row.workspace_id)
+      const effectiveConfig = upgraded ?? parsedConfig
 
       return {
         id: row.workspace_id,
@@ -94,10 +108,10 @@ export class WorkspaceDao {
         isActive: Boolean(row.is_active),
         autoWatch: Boolean(row.auto_watch),
         lastScanAt: null,
-        workspace_config: parsedConfig,
+        workspace_config: effectiveConfig,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.created_at),
-        whitelist_patterns: extractWhitelistPatterns(parsedConfig),
+        whitelist_patterns: extractWhitelistPatterns(effectiveConfig),
         bound_workflow_id: row.bound_workflow_id ?? null,
         totalCount,
         analyzedCount,
@@ -110,6 +124,9 @@ export class WorkspaceDao {
     const row = this.db.prepare('SELECT * FROM workspaces WHERE is_active = 1 LIMIT 1').get() as any
     if (!row) return null
     const parsedConfig = parseWorkspaceConfig(row.workspace_config)
+    // 共用读路径同步升级：存量 v1 工作区首读即无感刷新 presetVersion: 2 (OBS-02)
+    const upgraded = this.getAdmissionService().ensureBaselineVersion(row.workspace_id)
+    const effectiveConfig = upgraded ?? parsedConfig
     return {
       id: row.workspace_id,
       workspace_id: row.workspace_id,
@@ -119,11 +136,11 @@ export class WorkspaceDao {
       recursive: true,
       isActive: Boolean(row.is_active),
       autoWatch: Boolean(row.auto_watch),
-      workspace_config: parsedConfig,
+      workspace_config: effectiveConfig,
       lastScanAt: null,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.created_at),
-      whitelist_patterns: extractWhitelistPatterns(parsedConfig),
+      whitelist_patterns: extractWhitelistPatterns(effectiveConfig),
       bound_workflow_id: row.bound_workflow_id ?? null
     }
   }
@@ -132,6 +149,9 @@ export class WorkspaceDao {
     const row = this.db.prepare('SELECT * FROM workspaces WHERE workspace_id = ?').get(id) as any
     if (!row) return null
     const parsedConfig = parseWorkspaceConfig(row.workspace_config)
+    // 共用读路径同步升级：存量 v1 工作区首读即无感刷新 presetVersion: 2 (OBS-02)
+    const upgraded = this.getAdmissionService().ensureBaselineVersion(id)
+    const effectiveConfig = upgraded ?? parsedConfig
     return {
       id: row.workspace_id,
       workspace_id: row.workspace_id,
@@ -141,11 +161,11 @@ export class WorkspaceDao {
       recursive: true,
       isActive: Boolean(row.is_active),
       autoWatch: Boolean(row.auto_watch),
-      workspace_config: parsedConfig,
+      workspace_config: effectiveConfig,
       lastScanAt: null,
       createdAt: new Date(row.created_at),
       updatedAt: new Date(row.created_at),
-      whitelist_patterns: extractWhitelistPatterns(parsedConfig),
+      whitelist_patterns: extractWhitelistPatterns(effectiveConfig),
       bound_workflow_id: row.bound_workflow_id ?? null
     }
   }
@@ -154,6 +174,9 @@ export class WorkspaceDao {
     const row = this.db.prepare('SELECT * FROM workspaces WHERE path = ?').get(dirPath) as any
     if (row) {
       const parsedConfig = parseWorkspaceConfig(row.workspace_config)
+      // 共用读路径同步升级：存量 v1 工作区首读即无感刷新 presetVersion: 2 (OBS-02)
+      const upgraded = this.getAdmissionService().ensureBaselineVersion(row.workspace_id)
+      const effectiveConfig = upgraded ?? parsedConfig
       return {
         id: row.workspace_id,
         path: row.path,
@@ -163,10 +186,10 @@ export class WorkspaceDao {
         isActive: Boolean(row.is_active),
         autoWatch: Boolean(row.auto_watch),
         lastScanAt: null,
-        workspace_config: parsedConfig,
+        workspace_config: effectiveConfig,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.created_at),
-        whitelist_patterns: extractWhitelistPatterns(parsedConfig),
+        whitelist_patterns: extractWhitelistPatterns(effectiveConfig),
         bound_workflow_id: row.bound_workflow_id ?? null
       }
     }
@@ -489,7 +512,12 @@ export class WorkspaceDao {
     const row = this.db
       .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
       .get(workspaceId) as any
-    return parseWorkspaceConfig(row?.workspace_config)
+    const config = parseWorkspaceConfig(row?.workspace_config)
+    // 共用读路径同步升级：存量 v1 工作区首读即无感刷新 presetVersion: 2 (OBS-02)
+    if (isWorkspaceConfigReady(config)) {
+      return this.getAdmissionService().ensureBaselineVersion(workspaceId) ?? config
+    }
+    return config
   }
 
   /**
@@ -518,27 +546,22 @@ export class WorkspaceDao {
   }
 
   /**
-   * 确保工作区配置处于就绪状态 (若为 pending 或残缺，自适应赋予默认未绑定工作流的就绪策略)
+   * 确保工作区配置处于就绪状态 (若为 pending 或残缺，委托 WorkspaceAdmissionService.applyPolicyMutation
+   * 单事务写盘默认未绑定工作流策略)；已就绪时顺带执行 presetVersion: 2 基线同步升级
    */
   async ensureConfigReady(workspaceId: number): Promise<boolean> {
     try {
       const config = await this.getConfig(workspaceId)
       if (isWorkspaceConfigReady(config)) {
+        // 存量 v1 工作区在门闩读取口同步无感升级 (OBS-02)
+        this.getAdmissionService().ensureBaselineVersion(workspaceId)
         return true
       }
-      const defaultConfig: WorkspaceConfigReady = {
-        schemaVersion: 1,
-        status: 'ready',
-        policyVersion: 1,
-        baseAIConfig: mapIntentToParameters('fast_archive'),
-        customExcludeRules: [],
-        customIncludeRules: [],
-        configuredAt: Date.now()
-      }
-      await this.updateConfig(workspaceId, defaultConfig)
+      // pending/残缺配置：委托统一写入口自适应就绪为默认 AI 策略 (未绑定工作流)
+      await this.getAdmissionService().applyPolicyMutation(workspaceId, {})
       logger.info(
         LogCategory.DATABASE,
-        `[WorkspaceDao] 工作区 ${workspaceId} 尚未就绪，已自适应就绪为默认 AI 策略 (未绑定工作流)`
+        `[WorkspaceDao] 工作区 ${workspaceId} 尚未就绪，已委托 applyPolicyMutation 自适应就绪为默认 AI 策略 (未绑定工作流)`
       )
       return true
     } catch (err) {
@@ -562,77 +585,24 @@ export class WorkspaceDao {
   }
 
   /**
-   * 应用工作流配置到工作区 (直接填入 local_workflows.workspace_config 并绑定)
+   * 应用工作流配置到工作区 (委托 WorkspaceAdmissionService.applyPolicyMutation 单事务写盘 [SLICE-07])
    */
   async applyWorkflowConfig(workspaceId: number, workflowId: string): Promise<boolean> {
-    const template = this.db
-      .prepare('SELECT workspace_config FROM local_workflows WHERE id = ?')
-      .get(workflowId) as { workspace_config: string } | undefined
-
-    if (!template || !template.workspace_config) {
-      throw new Error(`WORKFLOW_TEMPLATE_NOT_FOUND: ${workflowId}`)
-    }
-
-    const currentConfig = await this.getConfig(workspaceId)
-    const nextPolicyVersion =
-      (currentConfig.status === 'ready' ? currentConfig.policyVersion : 0) + 1
-
-    const changed = this.db.transaction(() => {
-      const stmt = this.db.prepare(`
-        UPDATE workspaces
-        SET 
-          bound_workflow_id = ?,
-          workspace_config = json_set(
-            (SELECT workspace_config FROM local_workflows WHERE id = ?),
-            '$.policyVersion', ?,
-            '$.configuredAt', ?
-          )
-        WHERE workspace_id = ?
-      `)
-      const res = stmt.run(workflowId, workflowId, nextPolicyVersion, Date.now(), workspaceId)
-      try {
-        this.db
-          .prepare('UPDATE workspace_directories SET bound_workflow_id = ? WHERE workspace_id = ?')
-          .run(workflowId, workspaceId)
-      } catch {}
-      return res.changes > 0
-    })()
-    invalidateWorkspacePolicyCache(workspaceId)
-    return changed
+    const result = await this.getAdmissionService().applyPolicyMutation(workspaceId, {
+      workflowId,
+      restoreWorkflowDefault: true
+    })
+    return Boolean(result.appliedConfig)
   }
 
   /**
-   * 一键恢复工作区配置为绑定的工作流初始预设 (单调递增 policyVersion 防倒退，原子执行)
+   * 一键恢复工作区配置为绑定工作流初始预设 (委托统一写入口；未绑定时由内核回退默认基线，不再抛 BOUND_WORKFLOW_NOT_FOUND)
    */
   async restoreWorkflowConfig(workspaceId: number): Promise<boolean> {
-    const row = this.db
-      .prepare('SELECT bound_workflow_id, workspace_config FROM workspaces WHERE workspace_id = ?')
-      .get(workspaceId) as
-      | { bound_workflow_id: string | null; workspace_config: string }
-      | undefined
-
-    if (!row || !row.bound_workflow_id) {
-      throw new Error('BOUND_WORKFLOW_NOT_FOUND')
-    }
-
-    const currentConfig = parseWorkspaceConfig(row.workspace_config)
-    const nextPolicyVersion =
-      (currentConfig.status === 'ready' ? currentConfig.policyVersion : 0) + 1
-
-    const stmt = this.db.prepare(`
-      UPDATE workspaces 
-      SET 
-        workspace_config = json_set(
-          (SELECT workspace_config FROM local_workflows WHERE id = workspaces.bound_workflow_id),
-          '$.policyVersion', ?,
-          '$.configuredAt', ?
-        )
-      WHERE workspace_id = ? AND bound_workflow_id IS NOT NULL
-    `)
-
-    const result = stmt.run(nextPolicyVersion, Date.now(), workspaceId)
-    invalidateWorkspacePolicyCache(workspaceId)
-    return result.changes > 0
+    const result = await this.getAdmissionService().applyPolicyMutation(workspaceId, {
+      restoreWorkflowDefault: true
+    })
+    return Boolean(result.appliedConfig)
   }
 
   /**
@@ -652,21 +622,11 @@ export class WorkspaceDao {
   }
 
   async updateBoundWorkflow(workspaceId: number, workflowId: string | null): Promise<boolean> {
-    const result = this.db
-      .prepare('UPDATE workspaces SET bound_workflow_id = ? WHERE workspace_id = ?')
-      .run(workflowId, workspaceId)
-    try {
-      this.db
-        .prepare('UPDATE workspace_directories SET bound_workflow_id = ? WHERE workspace_id = ?')
-        .run(workflowId, workspaceId)
-    } catch (err) {
-      logger.warn(
-        LogCategory.DATABASE,
-        `同步更新子目录 bound_workflow_id 异常: ${workspaceId}`,
-        err
-      )
-    }
-    invalidateWorkspacePolicyCache(workspaceId)
-    return result.changes > 0
+    // 委托收归统一写入口：绑定新工作流套用模板默认规则，解绑置空时保留规则快照 [SLICE-07]
+    const result = await this.getAdmissionService().applyPolicyMutation(workspaceId, {
+      workflowId,
+      restoreWorkflowDefault: workflowId !== null
+    })
+    return Boolean(result.appliedConfig)
   }
 }

@@ -16,6 +16,12 @@ import {
   logger,
   LogCategory
 } from '@firefly/shared'
+// .ffw 导入清洗依赖（SLICE-07）：消毒清洗、插件白名单字典与官方预设版本号
+import {
+  sanitizeWorkspaceAIConfig,
+  WORKSPACE_CONFIGURABLE_PLUGIN_IDS,
+  CURRENT_WORKFLOW_PRESET_VERSION
+} from '../../config/local-workflow-source'
 
 export interface ILocalWorkflowDatabase {
   saveLocalWorkflow(
@@ -67,10 +73,21 @@ export class LocalWorkflowService {
           : `wf_usr_${Math.random().toString(36).substring(2, 10)}${Date.now().toString(36).slice(-4)}`
 
       const baseAi = (unifiedConfig as any)?.baseAIConfig || manifest.engineParameters || {}
+      // .ffw 导入强制清洗 [SLICE-07]：剥离底座字段、校准枚举与数值区间、白名单过滤插件清单
+      const sanitized = sanitizeWorkspaceAIConfig({
+        baseAIConfig: baseAi,
+        overrides: undefined,
+        pluginOverrides: undefined
+      })
+      // workflowPluginDefaults 白名单过滤：仅保留封闭插件字典内的合法 ID
+      const rawPluginDefaults: string[] = (unifiedConfig as any)?.workflowPluginDefaults || []
+      const allowedPluginIds = WORKSPACE_CONFIGURABLE_PLUGIN_IDS as readonly string[]
+      const workflowPluginDefaults = rawPluginDefaults.filter(id => allowedPluginIds.includes(id))
       const workspaceConfigStr = JSON.stringify({
         schemaVersion: 1,
         status: 'ready',
         policyVersion: 1,
+        presetVersion: CURRENT_WORKFLOW_PRESET_VERSION,
         workflowId: resolvedWorkflowId,
         customExcludeRules:
           (unifiedConfig as any)?.customExcludeRules ||
@@ -80,7 +97,8 @@ export class LocalWorkflowService {
           (manifest.filterMode === 'whitelist'
             ? manifest.whitelistPatterns || manifest.filterPatterns || []
             : []),
-        baseAIConfig: baseAi,
+        baseAIConfig: sanitized.baseAIConfig,
+        workflowPluginDefaults,
         advancedAIPrompts: (unifiedConfig as any)?.advancedAIPrompts || undefined,
         unitRecognition: (unifiedConfig as any)?.unitRecognition || undefined,
         extensionWeights: (unifiedConfig as any)?.extensionWeights || undefined,

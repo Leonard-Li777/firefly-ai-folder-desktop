@@ -596,6 +596,40 @@ export function registerSettingsIPCHandlers(): void {
       handlePreviewInclusionImpact(workspaceId, patterns)
   )
 
+  // 统一补丁化策略变更 IPC [SLICE-07]：全仓前端写端与旧写口共用的唯一事务内核入口
+  ipcMain.handle(
+    'apply-workspace-policy-mutation',
+    async (_event, workspaceId: number, mutation: WorkspacePolicyMutation) => {
+      try {
+        const result = await workspaceAdmissionService.applyPolicyMutation(
+          workspaceId,
+          mutation || {}
+        )
+        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
+        BrowserWindow.getAllWindows().forEach(win => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('workspace-directories-updated')
+            if (ws?.path) {
+              win.webContents.send('directory-files-updated', ws.path)
+            }
+          }
+        })
+        return {
+          success: true,
+          policyVersion: result.policyVersion,
+          admissionChanged: result.admissionChanged,
+          needsRescan: result.needsRescan,
+          prunedFilesCount: result.prunedFilesCount,
+          cancelledTasksCount: result.cancelledTasksCount,
+          appliedConfig: result.appliedConfig
+        }
+      } catch (error) {
+        logger.error(LogCategory.SETTING, `应用工作区策略变更失败: ${workspaceId}`, error)
+        return { success: false, error: (error as any)?.message || String(error) }
+      }
+    }
+  )
+
   // 更新工作区绑定的工作流 (通过 WorkspaceAdmissionService 单一写入口 [M07])
   ipcMain.handle(
     'update-workspace-bound-workflow',

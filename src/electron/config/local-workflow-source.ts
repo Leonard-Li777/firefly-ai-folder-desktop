@@ -10,12 +10,74 @@
  */
 
 import { t } from '@app/languages'
-import type { WorkspaceConfigReady, BaseAIConfig, IFilterRule } from '@firefly/types'
+import type {
+  WorkspaceConfigReady,
+  BaseAIConfig,
+  IFilterRule,
+  TechnicalEngineParameters
+} from '@firefly/types'
 
 /** 目录树节点定义 */
 export interface DirectoryTreeNode {
   name: string
   children?: DirectoryTreeNode[]
+}
+
+/**
+ * 【窄边界局部适配 · Group A 合流接缝】
+ * 本区块按 L3 规格书 §2.1 / §2.2 的冻结字段名先行本地落地；
+ * Group A 合流后整体切换引用 @firefly/types 的 WorkspaceAIConfig /
+ * WorkspacePluginId / DEFAULT_UNBOUND_AI_CONFIG 并删除本局部定义。
+ */
+
+/**
+ * 剥离全局向量底座控制权后的工作区 AI 参数基石：
+ * 14 个必填标量，禁用 embeddingProfile 与 mrlDimension（编译期封堵底座读写通道）
+ */
+export type LocalWorkspaceAIConfig = Required<
+  Omit<TechnicalEngineParameters, 'embeddingProfile' | 'mrlDimension'>
+>
+
+/** 目录级可配置插件封闭字典（Group A 合流后切换 @firefly/shared 唯一事实源） */
+export const WORKSPACE_CONFIGURABLE_PLUGIN_IDS = [
+  'asr_sensevoice_onnx',
+  'perception_nsfw',
+  'archive_vfs_parser',
+  'face_recognition_tool',
+  'object_detection_pro',
+  'password_vault_cracker'
+] as const
+
+export type WorkspacePluginId = (typeof WORKSPACE_CONFIGURABLE_PLUGIN_IDS)[number]
+
+/** 7 大业务主题画像簇键 (§3.1) */
+export type WorkflowAIPresetKey =
+  | 'PHOTO_GALLERY'
+  | 'CODE_DEVOPS'
+  | 'SCAN_DOSSIER_OCR'
+  | 'OFFICE_RESEARCH_DOC'
+  | 'VIDEO_CREATOR'
+  | 'AUDIO_VOICE_RECORD'
+  | 'MIXED_INBOX'
+
+/**
+ * 未绑定工作流与第 71 个通用流唯一系统默认基线配置（对齐 MIXED_INBOX 策略，§2.1 冻结值）
+ */
+export const DEFAULT_UNBOUND_AI_CONFIG: LocalWorkspaceAIConfig = {
+  analysisMode: 'full',
+  videoQuotaMax: 24,
+  videoCutSensitivity: 'medium',
+  videoSoftTokenBudget: 48,
+  videoAsrDurationSec: 30,
+  audioAnalysisDurationSec: 60,
+  enableImageOcr: true,
+  ocrModelSize: 'tiny',
+  maxContentSizeKb: 4096,
+  extractPages: 3,
+  maxDocumentOcrItems: 3,
+  enableOfficeCover: false,
+  reuseBasicAnalysisData: true,
+  clipTextEnabled: true
 }
 
 /** 单套预置工作流的声明模型 (文案经 t() 包裹) */
@@ -33,41 +95,171 @@ export interface LocalWorkflowDefinition {
   extensionWeights: Record<string, number>
   customIncludeRules: IFilterRule[]
   customExcludeRules: IFilterRule[]
-  baseAIKey: 'LIGHT' | 'FULL'
+  /** 所属业务主题画像簇 (§3.3 映射总表) */
+  aiPresetKey: WorkflowAIPresetKey
+  /** 单工作流个性化参数微调（仅用于官方定义继承裁剪，绝不混入用户 overrides） */
+  aiOverrides?: Partial<LocalWorkspaceAIConfig>
+  /** 本工作流默认开启的目录级插件列表（显式声明，覆盖画像簇默认清单） */
+  enabledWorkspacePlugins?: WorkspacePluginId[]
+  /** 多义扩展名显式消歧声明（如 .ts 在影院/影音库中作为 MPEG-TS 视频流而非 TypeScript） */
+  mediaFlags?: {
+    tsAsVideo?: boolean
+  }
 }
 
-/** 标准基线 AI 推理配置 (提供全量 13 个必填字段) */
-export const DEFAULT_BASE_AI_CONFIG: BaseAIConfig = {
-  analysisMode: 'quick_name',
-  embeddingProfile: 'classic_light',
-  mrlDimension: 256,
-  videoQuotaMax: 10,
-  videoCutSensitivity: 'medium',
-  videoSoftTokenBudget: 48,
-  videoAsrDurationSec: 0,
-  audioAnalysisDurationSec: 0,
-  enableImageOcr: true,
-  ocrModelSize: 'tiny',
-  maxContentSizeKb: 4096,
-  enableOfficeCover: true,
-  reuseBasicAnalysisData: true
+interface WorkflowAIPreset {
+  baseAIConfig: LocalWorkspaceAIConfig
+  workflowPluginDefaults: WorkspacePluginId[]
 }
 
-/** 70 套工作流仅存在 2 种 baseAIConfig 取值，抽取为共享预设避免逐套重复 13 字段 */
-const BASE_AI_CONFIG_LIGHT: BaseAIConfig = {
-  ...DEFAULT_BASE_AI_CONFIG
-}
-
-const BASE_AI_CONFIG_FULL: BaseAIConfig = {
-  ...DEFAULT_BASE_AI_CONFIG,
-  analysisMode: 'full',
-  embeddingProfile: 'gemma_unified',
-  mrlDimension: 512
-}
-
-const BASE_AI_CONFIG_PRESETS: Record<'LIGHT' | 'FULL', BaseAIConfig> = {
-  LIGHT: BASE_AI_CONFIG_LIGHT,
-  FULL: BASE_AI_CONFIG_FULL
+/**
+ * 7 大业务主题画像簇全量基准 (§3.1)：
+ * §3.3 总表未单独覆写的字段一律继承所属画像簇基准
+ */
+export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> = {
+  PHOTO_GALLERY: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 16,
+      videoCutSensitivity: 'low',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 0,
+      audioAnalysisDurationSec: 0,
+      enableImageOcr: false,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 2048,
+      extractPages: 2,
+      maxDocumentOcrItems: 0,
+      enableOfficeCover: false,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro']
+  },
+  SCAN_DOSSIER_OCR: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 16,
+      videoCutSensitivity: 'medium',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 0,
+      audioAnalysisDurationSec: 0,
+      enableImageOcr: true,
+      ocrModelSize: 'small',
+      maxContentSizeKb: 8192,
+      extractPages: 10,
+      maxDocumentOcrItems: 15,
+      enableOfficeCover: true,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: ['archive_vfs_parser']
+  },
+  OFFICE_RESEARCH_DOC: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 16,
+      videoCutSensitivity: 'low',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 0,
+      audioAnalysisDurationSec: 0,
+      enableImageOcr: true,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 4096,
+      extractPages: 5,
+      maxDocumentOcrItems: 5,
+      enableOfficeCover: true,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: ['archive_vfs_parser']
+  },
+  VIDEO_CREATOR: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 80,
+      videoCutSensitivity: 'high',
+      videoSoftTokenBudget: 140,
+      videoAsrDurationSec: 60,
+      audioAnalysisDurationSec: 90,
+      enableImageOcr: false,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 2048,
+      extractPages: 2,
+      maxDocumentOcrItems: 0,
+      enableOfficeCover: false,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
+  },
+  AUDIO_VOICE_RECORD: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 16,
+      videoCutSensitivity: 'low',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 60,
+      audioAnalysisDurationSec: 180,
+      enableImageOcr: false,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 2048,
+      extractPages: 2,
+      maxDocumentOcrItems: 0,
+      enableOfficeCover: false,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: ['asr_sensevoice_onnx', 'archive_vfs_parser']
+  },
+  CODE_DEVOPS: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 8,
+      videoCutSensitivity: 'low',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 0,
+      audioAnalysisDurationSec: 0,
+      enableImageOcr: false,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 4096,
+      extractPages: 2,
+      maxDocumentOcrItems: 0,
+      enableOfficeCover: false,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: ['archive_vfs_parser']
+  },
+  MIXED_INBOX: {
+    baseAIConfig: {
+      analysisMode: 'full',
+      videoQuotaMax: 24,
+      videoCutSensitivity: 'medium',
+      videoSoftTokenBudget: 48,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 60,
+      enableImageOcr: true,
+      ocrModelSize: 'tiny',
+      maxContentSizeKb: 4096,
+      extractPages: 3,
+      maxDocumentOcrItems: 3,
+      enableOfficeCover: false,
+      reuseBasicAnalysisData: true,
+      clipTextEnabled: true
+    },
+    workflowPluginDefaults: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
+  }
 }
 
 /** 70 套官方预置工作流的声明数据 (仅用户可见文案经 t() 包裹) */
@@ -179,7 +371,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 3, extractPages: 3 },
+    enabledWorkspacePlugins: ['perception_nsfw'],
   },
   {
     id: 'builtin.workflow.frontend-dev',
@@ -299,7 +493,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.backend-arch',
@@ -419,7 +614,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.para-universal',
@@ -511,7 +707,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.johnny-decimal',
@@ -607,7 +805,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.photography-raw',
@@ -739,7 +939,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'FULL'
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.video-production',
@@ -867,7 +1068,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'FULL'
+    aiPresetKey: 'VIDEO_CREATOR',
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.academic-thesis',
@@ -975,7 +1177,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.finance-contract',
@@ -1140,7 +1344,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'FULL'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.family-household',
@@ -1248,7 +1454,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5, enableOfficeCover: true },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.newmedia-content',
@@ -1364,7 +1572,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'VIDEO_CREATOR',
+    aiOverrides: { enableImageOcr: true, maxDocumentOcrItems: 3, extractPages: 3, enableOfficeCover: true, videoQuotaMax: 64 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.ecommerce-ops',
@@ -1464,7 +1674,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['object_detection_pro'],
   },
   {
     id: 'builtin.workflow.game-dev-assets',
@@ -1588,7 +1800,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { videoQuotaMax: 8, audioAnalysisDurationSec: 60 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.cross-border-ops',
@@ -1680,7 +1894,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     customExcludeRules: [],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['object_detection_pro'],
   },
   {
     id: 'builtin.workflow.legal-case-dossier',
@@ -2056,7 +2272,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 24, maxDocumentOcrItems: 20, extractPages: 15, videoAsrDurationSec: 60, audioAnalysisDurationSec: 120 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.clinical-medical-records',
@@ -2396,7 +2614,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.teacher-lesson-prep',
@@ -2728,7 +2948,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 60, audioAnalysisDurationSec: 120 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.consulting-due-diligence',
@@ -3076,7 +3298,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10, audioAnalysisDurationSec: 120 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.architectural-cad-design',
@@ -3496,7 +3720,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { enableImageOcr: true, maxDocumentOcrItems: 3, extractPages: 5, enableOfficeCover: true, videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.writing-publishing-pipeline',
@@ -3792,7 +4018,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8, extractPages: 10, audioAnalysisDurationSec: 90 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.wellness-health-portfolio',
@@ -4084,7 +4312,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.pm-product-workflow',
@@ -4398,7 +4628,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.data-science-analytics',
@@ -4886,7 +5118,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    aiOverrides: { enableOfficeCover: true, extractPages: 3 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.qa-testing-lifecycle',
@@ -5334,7 +5568,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { ocrModelSize: 'small', enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.sales-pipeline-crm',
@@ -5664,7 +5900,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoQuotaMax: 8, audioAnalysisDurationSec: 120 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.hr-people-operations',
@@ -5982,7 +6220,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.marketing-campaign-imc',
@@ -6388,7 +6628,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 48, videoAsrDurationSec: 60, audioAnalysisDurationSec: 90 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.corporate-legal-compliance',
@@ -6742,7 +6984,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { maxDocumentOcrItems: 20, extractPages: 15, videoQuotaMax: 8, audioAnalysisDurationSec: 120 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.embedded-iot-firmware',
@@ -7107,7 +7351,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    aiOverrides: { extractPages: 3 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.creative-assets',
@@ -7459,7 +7705,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { videoQuotaMax: 48, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.freelance-business-delivery',
@@ -7741,7 +7989,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.pkm-knowledge-vault',
@@ -7929,7 +8179,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { enableOfficeCover: false, extractPages: 10, videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.gaming',
@@ -8277,7 +8529,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.novel',
@@ -8489,7 +8743,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { enableImageOcr: false, maxDocumentOcrItems: 0, extractPages: 15, enableOfficeCover: false, videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.movie-cinema',
@@ -8816,7 +9072,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'FULL'
+    aiPresetKey: 'VIDEO_CREATOR',
+    aiOverrides: { videoQuotaMax: 64 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    mediaFlags: { tsAsVideo: true }
   },
   {
     id: 'builtin.workflow.anime-comic',
@@ -9073,7 +9332,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { videoQuotaMax: 8, audioAnalysisDurationSec: 60 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.pc-hardware-gear',
@@ -9314,7 +9575,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.cooking-recipes-vault',
@@ -9508,7 +9771,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.pet-care-diary',
@@ -9681,7 +9946,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.travel-outdoor-journey',
@@ -9978,7 +10245,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'face_recognition_tool', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.music-audio',
@@ -10310,7 +10579,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'FULL'
+    aiPresetKey: 'AUDIO_VOICE_RECORD',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.graphic-brand-design',
@@ -10569,7 +10840,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['archive_vfs_parser', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.illustration-cg-art',
@@ -10858,7 +11131,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.mobile-app-dev',
@@ -11282,7 +11556,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.cloud-native-sre',
@@ -11628,7 +11903,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    aiOverrides: { extractPages: 3 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.supply-chain-logistics',
@@ -11854,7 +12131,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.study-abroad-application',
@@ -12035,7 +12314,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.desktop-declutter',
@@ -12335,7 +12616,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { videoQuotaMax: 16, audioAnalysisDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.downloads-triage',
@@ -12838,7 +13121,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.inbox-staging-universal',
@@ -13074,7 +13358,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5, enableOfficeCover: true, videoQuotaMax: 16 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.desktop-classic-classification',
@@ -13389,7 +13675,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { videoQuotaMax: 16, audioAnalysisDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.qa-testing-asset-vault',
@@ -13720,7 +14008,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { ocrModelSize: 'small', enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.k12-education-vault',
@@ -13983,7 +14273,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { ocrModelSize: 'small', maxDocumentOcrItems: 10, extractPages: 5, videoQuotaMax: 24, videoAsrDurationSec: 30, audioAnalysisDurationSec: 90 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.k12-school-term-pipeline',
@@ -14176,7 +14468,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { ocrModelSize: 'small', maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30, audioAnalysisDurationSec: 60 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.senior-life-archive',
@@ -14446,7 +14740,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'PHOTO_GALLERY',
+    aiOverrides: { extractPages: 3, videoQuotaMax: 24, videoAsrDurationSec: 30, audioAnalysisDurationSec: 90 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
   },
   {
     id: 'builtin.workflow.senior-medical-care-pipeline',
@@ -14629,7 +14925,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.office-docs',
@@ -14844,7 +15142,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.office-document-dispatch-flow',
@@ -15035,7 +15335,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.household-dossier-vault',
@@ -15222,7 +15524,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: ['password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.media-collector-vault',
@@ -15587,7 +15891,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'VIDEO_CREATOR',
+    aiOverrides: { videoQuotaMax: 48, extractPages: 5, audioAnalysisDurationSec: 120 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    mediaFlags: { tsAsVideo: true }
   },
   {
     id: 'builtin.workflow.code-asset-vault',
@@ -15984,7 +16291,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.system-cache-appdata-vault',
@@ -16142,7 +16450,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'CODE_DEVOPS',
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.chat-software-vault',
@@ -16446,7 +16755,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { maxDocumentOcrItems: 5, videoQuotaMax: 16 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.cross-device-transfer-vault',
@@ -16729,7 +17040,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
   },
   {
     id: 'builtin.workflow.screenshots-screenrecord-vault',
@@ -16886,7 +17198,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 3, videoQuotaMax: 32, videoAsrDurationSec: 45 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw'],
   },
   {
     id: 'builtin.workflow.scratchpad-drafts-vault',
@@ -17033,7 +17347,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { enableOfficeCover: false, maxDocumentOcrItems: 3, videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.external-storage-vault',
@@ -17403,7 +17719,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'MIXED_INBOX',
+    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5 },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
   },
   {
     id: 'builtin.workflow.scanned-documents-vault',
@@ -17543,7 +17861,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    aiOverrides: { maxDocumentOcrItems: 20, extractPages: 15, videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.docs-office-vault',
@@ -17723,7 +18043,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8 },
+    enabledWorkspacePlugins: [],
   },
   {
     id: 'builtin.workflow.docs-study-research-vault',
@@ -17981,28 +18303,212 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       }
     ],
-    baseAIKey: 'LIGHT'
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
+    enabledWorkspacePlugins: [],
   }
 ]
 
+
+/** 纯音频媒介扩展集合（排除纯乐谱 .mid/.midi，§3.2 冻结清单） */
+const AUDIO_MEDIA_EXTS: ReadonlySet<string> = new Set([
+  '.mp3', '.wav', '.flac', '.m4a', '.m4b', '.aac', '.ogg', '.wma', '.opus',
+  '.amr', '.ape', '.dsf', '.dff', '.aif', '.aiff', '.caf', '.wv', '.mka'
+])
+
+/** 视频媒介扩展集合（.ts 仅在 mediaFlags.tsAsVideo 白名单下计入，§3.2 冻结清单） */
+const VIDEO_MEDIA_EXTS: ReadonlySet<string> = new Set([
+  '.mp4', '.mov', '.mkv', '.avi', '.wmv', '.flv', '.webm', '.rmvb', '.m2ts',
+  '.mts', '.3gp', '.m4v', '.insv', '.vob', '.f4v', '.divx', '.rm'
+])
+
+/** Office 文档媒介扩展集合（§3.2 冻结清单） */
+const OFFICE_MEDIA_EXTS: ReadonlySet<string> = new Set([
+  '.doc', '.docx', '.docm', '.ppt', '.pptx', '.pptm', '.pps', '.ppsx',
+  '.xls', '.xlsx', '.xlsm', '.xlsb', '.wps', '.et', '.dps', '.odt', '.ods', '.odp'
+])
+
+/** 多义/非媒介消歧后缀：一律不参与媒介猜想（防 .dts 等后缀误触发 ASR，§3.2） */
+const NON_MEDIA_AMBIGUOUS_EXTS: ReadonlySet<string> = new Set([
+  '.dts', '.mod', '.dat', '.svg', '.svgz', '.iso'
+])
+
+/** 门禁自动填充常量 (§3.2 [V12-E12]) */
+const DEFAULT_VIDEO_ASR_FILL_SEC = 30
+const DEFAULT_AUDIO_ASR_FILL_SEC = 60
+
+/** 工作流媒介扩展集合提取结果 */
+interface WorkflowMediaFlags {
+  hasVideo: boolean
+  hasAudio: boolean
+  hasOffice: boolean
+}
+
 /**
- * 组装单套工作流就绪配置
- * 彻底消除冗余字段：baseAIConfig 由共享预设键引用，
+ * 提取工作流真实媒介扩展集合（正权重 extensionWeights ∪ customIncludeRules 字面量后缀 − customExcludeRules）
+ * 显式消歧：.ts 仅在 mediaFlags.tsAsVideo === true 时计入视频；.dts/.mod/.dat/.svg/.svgz/.iso 一律不参与媒介猜想
+ */
+function collectWorkflowMediaExtensionSet(def: LocalWorkflowDefinition): WorkflowMediaFlags {
+  const positive = new Set<string>()
+  for (const [ext, weight] of Object.entries(def.extensionWeights || {})) {
+    if (typeof weight === 'number' && weight > 0) positive.add(ext.toLowerCase())
+  }
+  for (const rule of def.customIncludeRules || []) {
+    const value = typeof rule === 'string' ? rule : (rule as IFilterRule).value
+    if (typeof value === 'string' && value.startsWith('.')) positive.add(value.toLowerCase())
+  }
+  const excluded = new Set<string>()
+  for (const rule of def.customExcludeRules || []) {
+    const value = typeof rule === 'string' ? rule : (rule as IFilterRule).value
+    if (typeof value === 'string' && value.startsWith('.')) excluded.add(value.toLowerCase())
+  }
+  const tsAsVideo = def.mediaFlags?.tsAsVideo === true
+  let hasVideo = false
+  let hasAudio = false
+  let hasOffice = false
+  for (const ext of positive) {
+    if (excluded.has(ext) || NON_MEDIA_AMBIGUOUS_EXTS.has(ext)) continue
+    if (AUDIO_MEDIA_EXTS.has(ext)) {
+      hasAudio = true
+      continue
+    }
+    if (ext === '.ts') {
+      if (tsAsVideo) hasVideo = true
+      continue
+    }
+    if (VIDEO_MEDIA_EXTS.has(ext)) {
+      hasVideo = true
+      continue
+    }
+    if (OFFICE_MEDIA_EXTS.has(ext)) {
+      hasOffice = true
+    }
+  }
+  return { hasVideo, hasAudio, hasOffice }
+}
+
+/** 媒介门禁候选形状（声明态构建期转换的输入与输出） */
+export interface WorkflowMediaGateCandidate {
+  baseAIConfig: LocalWorkspaceAIConfig
+  workflowPluginDefaults: WorkspacePluginId[]
+}
+
+/**
+ * 有序媒介门禁转换 (§3.2，仅在声明配置生成阶段执行，运行时绝不覆盖用户 pluginOverrides)：
+ * 严格执行顺序 Stage 1 规则③（ASR 插件联动，防与规则①②交叉死锁）➔ Stage 2 规则①（视频伴音 ASR）
+ * ➔ Stage 3 规则②（纯音频 ASR）➔ Stage 4 规则④（Office 封面单向防废算门禁）
+ */
+export function applyExtensionWeightsMediaGate(
+  def: LocalWorkflowDefinition,
+  candidate: WorkflowMediaGateCandidate
+): WorkflowMediaGateCandidate {
+  const media = collectWorkflowMediaExtensionSet(def)
+  const baseAIConfig: LocalWorkspaceAIConfig = { ...candidate.baseAIConfig }
+  const workflowPluginDefaults: WorkspacePluginId[] = [...candidate.workflowPluginDefaults]
+
+  // Stage 1 — 规则③（ASR 插件联动，必须最先执行）
+  if (!media.hasVideo && !media.hasAudio) {
+    const idx = workflowPluginDefaults.indexOf('asr_sensevoice_onnx')
+    if (idx !== -1) workflowPluginDefaults.splice(idx, 1)
+  } else if (!workflowPluginDefaults.includes('asr_sensevoice_onnx')) {
+    workflowPluginDefaults.push('asr_sensevoice_onnx')
+  }
+
+  // Stage 2 — 规则①（视频伴音 ASR：无视频归 0；含视频且开启 ASR 时补 30s）
+  if (!media.hasVideo) {
+    baseAIConfig.videoAsrDurationSec = 0
+  } else if (
+    workflowPluginDefaults.includes('asr_sensevoice_onnx') &&
+    baseAIConfig.videoAsrDurationSec === 0
+  ) {
+    baseAIConfig.videoAsrDurationSec = DEFAULT_VIDEO_ASR_FILL_SEC
+  }
+
+  // Stage 3 — 规则②（纯音频 ASR：无音频归 0；含纯音频且开启 ASR 时补 60s）
+  if (!media.hasAudio) {
+    baseAIConfig.audioAnalysisDurationSec = 0
+  } else if (
+    workflowPluginDefaults.includes('asr_sensevoice_onnx') &&
+    baseAIConfig.audioAnalysisDurationSec === 0
+  ) {
+    baseAIConfig.audioAnalysisDurationSec = DEFAULT_AUDIO_ASR_FILL_SEC
+  }
+
+  // Stage 4 — 规则④（Office 封面单向防废算门禁：无 Office 强制 false，含 Office 允许工作流主动设 false）
+  if (!media.hasOffice) {
+    baseAIConfig.enableOfficeCover = false
+  }
+
+  return { baseAIConfig, workflowPluginDefaults }
+}
+
+/**
+ * 构建期只读一致性断言 (§3.2 Stage 5)：
+ * 有音视频必须启用语音识别插件且对应时长 > 0，无 Office 必关封面；失败抛错阻断构建
+ */
+export function validateWorkflowMediaConsistency(
+  def: LocalWorkflowDefinition,
+  final: WorkflowMediaGateCandidate
+): void {
+  const media = collectWorkflowMediaExtensionSet(def)
+  if (media.hasVideo || media.hasAudio) {
+    if (!final.workflowPluginDefaults.includes('asr_sensevoice_onnx')) {
+      throw new Error(
+        `[WorkflowMediaGate] 工作流 ${def.id} 含音视频扩展但未启用 asr_sensevoice_onnx 插件`
+      )
+    }
+    if (
+      !(
+        final.baseAIConfig.videoAsrDurationSec > 0 ||
+        final.baseAIConfig.audioAnalysisDurationSec > 0
+      )
+    ) {
+      throw new Error(
+        `[WorkflowMediaGate] 工作流 ${def.id} 含音视频扩展但视频/音频 ASR 时长均为 0`
+      )
+    }
+  }
+  if (!media.hasOffice && final.baseAIConfig.enableOfficeCover) {
+    throw new Error(
+      `[WorkflowMediaGate] 工作流 ${def.id} 无 Office 扩展却开启封面渲染（防 LibreOffice 废算）`
+    )
+  }
+}
+
+/** 官方工作流预设版本号：v2 = 7 大画像簇个性化基线（§6.1 SLICE-03） */
+export const CURRENT_WORKFLOW_PRESET_VERSION = 2
+
+/**
+ * 组装单套工作流就绪配置：
+ * 继承链 = WORKFLOW_AI_PRESETS[def.aiPresetKey] ➔ def.aiOverrides ➔ applyExtensionWeightsMediaGate
+ * ➔ validateWorkflowMediaConsistency ➔ 烘焙携带 presetVersion: 2 的 WorkspaceConfigReady
  * namingPattern / namingTemplate 由顶层字段权威承载，derivedSnapshot 已彻底删除。
  */
 const buildWorkspaceConfig = (def: LocalWorkflowDefinition): WorkspaceConfigReady => {
-  const baseAi = BASE_AI_CONFIG_PRESETS[def.baseAIKey]
+  const preset = WORKFLOW_AI_PRESETS[def.aiPresetKey]
+  const baseAi: LocalWorkspaceAIConfig = { ...preset.baseAIConfig, ...(def.aiOverrides || {}) }
+  const workflowPluginDefaults: WorkspacePluginId[] = [
+    ...(def.enabledWorkspacePlugins ?? preset.workflowPluginDefaults)
+  ]
+  const gated = applyExtensionWeightsMediaGate(def, {
+    baseAIConfig: baseAi,
+    workflowPluginDefaults
+  })
+  validateWorkflowMediaConsistency(def, gated)
   return {
     schemaVersion: 1,
     status: 'ready',
     policyVersion: 1,
+    presetVersion: CURRENT_WORKFLOW_PRESET_VERSION,
     workflowId: def.id,
     customExcludeRules: def.customExcludeRules,
     customIncludeRules: def.customIncludeRules,
-    baseAIConfig: baseAi,
+    // 【窄边界适配】Group A 合流后 WorkspaceConfigReady.baseAIConfig 切换为 WorkspaceAIConfig，删除本断言
+    baseAIConfig: gated.baseAIConfig as unknown as BaseAIConfig,
+    workflowPluginDefaults: gated.workflowPluginDefaults,
     extensionWeights: def.extensionWeights,
     configuredAt: 1762425600000
-  }
+  } as WorkspaceConfigReady
 }
 
 /** 官方预置工作流本地事实源工厂 (返回 70 套内存态工作流实体) */
@@ -18046,3 +18552,85 @@ export const LOCAL_WORKFLOW_SOURCE = (): Array<{
 
 /** 兼容别名：与旧事实源工厂签名对齐 */
 export const LOCAL_WORKFLOW_CONFIG_SOURCE = LOCAL_WORKFLOW_SOURCE
+
+/** 消毒清洗候选形状（baseAIConfig 本体 + overrides + pluginOverrides 三处） */
+interface SanitizeCandidate {
+  baseAIConfig?: unknown
+  overrides?: unknown
+  pluginOverrides?: unknown
+  [key: string]: unknown
+}
+
+/**
+ * 双入口消毒清洗纯函数 (§2.1)：
+ * 读入口 parseWorkspaceConfig 产物与写入口 applyPolicyMutation 合并结果统一调用。
+ * 1. 从 baseAIConfig 本体与 overrides 两处彻底删除 embeddingProfile、mrlDimension 与历史错误混入的 enabledWorkspacePlugins；
+ * 2. 枚举与数值字段统一区间/枚举校准（medium→tiny、70→48、videoQuotaMax [8,240]、ASR 时长 [0,180]）；
+ * 3. pluginOverrides 仅保留封闭插件字典内的合法键；空键集收敛为 undefined。
+ * 【窄边界局部适配】Group A 合流后切换引用 @firefly/shared 的同名实现并删除本函数。
+ */
+export function sanitizeWorkspaceAIConfig<T extends SanitizeCandidate>(candidate: T): T {
+  // 浅拷贝 baseAIConfig 后再清洗，隔离共享常量（如 DEFAULT_UNBOUND_AI_CONFIG）免受原地突变污染
+  const result = candidate as Record<string, unknown>
+  if (result.baseAIConfig && typeof result.baseAIConfig === 'object') {
+    result.baseAIConfig = { ...(result.baseAIConfig as Record<string, unknown>) }
+  }
+
+  // 1. 底座字段与历史双写通道清理
+  const cleanBaseKeys = (obj: unknown): void => {
+    if (obj && typeof obj === 'object') {
+      delete (obj as Record<string, unknown>).embeddingProfile
+      delete (obj as Record<string, unknown>).mrlDimension
+      delete (obj as Record<string, unknown>).enabledWorkspacePlugins
+    }
+  }
+  cleanBaseKeys(result.baseAIConfig)
+  cleanBaseKeys(result.overrides)
+
+  // 2. 枚举与数值字段统一校准（仅 baseAIConfig 本体；overrides 由读取侧 resolveEffectiveAIConfig 兜底）
+  const base = result.baseAIConfig as Record<string, unknown> | undefined
+  if (base && typeof base === 'object') {
+    if (base.ocrModelSize !== 'tiny' && base.ocrModelSize !== 'small') {
+      base.ocrModelSize = 'tiny'
+    }
+    if (base.videoSoftTokenBudget !== 140) {
+      base.videoSoftTokenBudget = 48
+    }
+    if (typeof base.videoQuotaMax !== 'number' || !Number.isFinite(base.videoQuotaMax)) {
+      base.videoQuotaMax = DEFAULT_UNBOUND_AI_CONFIG.videoQuotaMax
+    } else {
+      base.videoQuotaMax = Math.min(240, Math.max(8, Math.round(base.videoQuotaMax as number)))
+    }
+    for (const key of ['videoAsrDurationSec', 'audioAnalysisDurationSec'] as const) {
+      const raw = base[key]
+      if (typeof raw !== 'number' || !Number.isFinite(raw)) {
+        base[key] = 0
+      } else {
+        base[key] = Math.min(180, Math.max(0, Math.round(raw as number)))
+      }
+    }
+  }
+
+  // 3. pluginOverrides 白名单过滤与空键集收敛
+  if (result.pluginOverrides && typeof result.pluginOverrides === 'object') {
+    const cleaned: Record<string, boolean> = {}
+    for (const [key, value] of Object.entries(result.pluginOverrides as Record<string, unknown>)) {
+      if (
+        (WORKSPACE_CONFIGURABLE_PLUGIN_IDS as readonly string[]).includes(key) &&
+        typeof value === 'boolean'
+      ) {
+        cleaned[key] = value
+      }
+    }
+    result.pluginOverrides = Object.keys(cleaned).length > 0 ? cleaned : undefined
+  }
+
+  // overrides 空键集收敛
+  if (result.overrides && typeof result.overrides === 'object') {
+    if (Object.keys(result.overrides as Record<string, unknown>).length === 0) {
+      result.overrides = undefined
+    }
+  }
+
+  return candidate
+}
