@@ -29,7 +29,10 @@ import type Database from 'better-sqlite3'
 import { LocalWorkflowDao, LocalWorkflowRecord } from '../database/dao/modular-resource-dao'
 import { t } from '@app/languages'
 // 第 71 个运行时通用流唯一基线：与未绑定工作流默认值同源对齐（§2.1 唯一事实源统一替换）
-import { DEFAULT_UNBOUND_AI_CONFIG, CURRENT_WORKFLOW_PRESET_VERSION } from '../../config/local-workflow-source'
+import {
+  DEFAULT_UNBOUND_AI_CONFIG,
+  CURRENT_WORKFLOW_PRESET_VERSION
+} from '../../config/local-workflow-source'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
 // 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
@@ -1241,6 +1244,54 @@ export class ConfigDbManager {
       LogCategory.CONFIG,
       `ConfigDbManager: 开始按 locale=${this.currentLanguage} + config_version>${lastSyncVersion} 增量拉取云端 app_configs...`
     )
+
+    // ── Schema 再生对账（防增量水位线永久失效）─────────────────────────────
+    // full_reset 等脚本执行 DROP SCHEMA CASCADE 后会连带删除序列
+    // seq_app_configs_revision，重建后 config_version 从 1 重新递增。
+    // 若客户端 SQLite 持久化了高于重建后 max(version) 的旧水位，
+    // 下方 .gt('config_version', lastSyncVersion) 会永久过滤掉重建后的全部行，
+    // 表现为「云端明明有 TIER_CONSTANTS / OPERATION_PRICES，客户端却读到 undefined」。
+    // 这里做一次轻量对账：云端 max(config_version) 低于本地水位 ⇒ 判定 schema 已再生，
+    // 重置水位为 0 强制本轮全量重拉（幂等，INSERT OR REPLACE 不会重复写入副作用）。
+    try {
+      const probe = await supabase
+        .schema(sharedSchema)
+        .from('app_configs')
+        .select('config_version')
+        .order('config_version', { ascending: false })
+        .limit(1)
+      if (!probe.error && Array.isArray(probe.data) && probe.data.length > 0) {
+        const cloudMaxVersion = Number(probe.data[0]?.config_version)
+        if (
+          Number.isFinite(cloudMaxVersion) &&
+          cloudMaxVersion > 0 &&
+          lastSyncVersion > cloudMaxVersion
+        ) {
+          logger.warn(
+            LogCategory.CONFIG,
+            `[ConfigDbManager] 检测到云端 schema 已再生（云端 max(config_version)=${cloudMaxVersion} < ` +
+              `本地水位=${lastSyncVersion}），重置增量水位为 0 强制全量重拉，避免配置永久丢失`
+          )
+          lastSyncVersion = 0
+        }
+      } else if (!probe.error && Array.isArray(probe.data) && probe.data.length === 0) {
+        // 云端 app_configs 完全为空：首次建库或全量重置后尚未同步。
+        // 保留 lastSyncVersion 原值——空表本身无可拉取内容，等脚本回灌后再拉。
+        logger.debug(
+          LogCategory.CONFIG,
+          'ConfigDbManager: 云端 app_configs 为空（首次建库或重置后未回灌）'
+        )
+      }
+    } catch (probeErr) {
+      // 对账探针失败不阻断主流程：保留原水位，由主查询兜底
+      const probeErrMsg =
+        probeErr instanceof Error ? probeErr.message : String(probeErr ?? 'unknown')
+      logger.debug(
+        LogCategory.CONFIG,
+        'ConfigDbManager: schema 再生对账探针失败（非致命）:',
+        probeErrMsg
+      )
+    }
 
     const maxRetries = 3
     let lastError: any = null
