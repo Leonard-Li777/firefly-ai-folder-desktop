@@ -16,6 +16,8 @@ import {
   countUnclassified,
   extractCandidatePathsFromTree,
   filterEmptyDirectoryNodes,
+  flattenDirectoriesToRoot,
+  isUnclassifiedNodeName,
   mergeTreesWithDraft,
   resetTreeToOutline
 } from '../../utils/helpers'
@@ -124,7 +126,9 @@ export function useOrganizeExecution({
               .electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(vdirId, mergedPreview)
               .then(() => {
                 window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId } }))
-                window.dispatchEvent(new CustomEvent('vdir:incremental-updated', { detail: { vdirId } }))
+                window.dispatchEvent(
+                  new CustomEvent('vdir:incremental-updated', { detail: { vdirId } })
+                )
               })
               .catch(err => {
                 logger.warn(LogCategory.FILE_ORGANIZATION, '实时保存整理批次结果失败:', err)
@@ -224,7 +228,11 @@ export function useOrganizeExecution({
         const candidatePaths = extractCandidatePathsFromTree(draftTree)
         const fileIds = filesToOrganize.map((f: any) => f.id || f.fileId).filter(Boolean)
         // 以文件总数为分母初始化进度（IPC 侧 batchEmbedText 每批次会推送实时进度覆盖此值）
-        setProgressInfo({ current: 0, total: Math.max(fileIds.length, 1), message: t('正在计算路径余弦打分...') })
+        setProgressInfo({
+          current: 0,
+          total: Math.max(fileIds.length, 1),
+          message: t('正在计算路径余弦打分...')
+        })
         const filesMap: Record<number | string, any> = {}
         for (const f of filesToOrganize) {
           const fid = f.id != null ? f.id : (f as any).fileId
@@ -235,7 +243,7 @@ export function useOrganizeExecution({
           workspaceId: currentWorkspaceDirectory.id,
           fileIds,
           candidatePaths,
-          floorThreshold: 0.05,  // 支持用户将及格线降低至 5%，后端绝对底限与前端 slider min 同步
+          floorThreshold: 0.05, // 支持用户将及格线降低至 5%，后端绝对底限与前端 slider min 同步
           force: useOrganizeStore.getState().bypassCapacityLimit
         })
 
@@ -250,7 +258,11 @@ export function useOrganizeExecution({
         useOrganizeStore.getState().setRawMatches(rawMatches)
         useOrganizeStore.getState().setFilesMap(filesMap)
 
-        setProgressInfo({ current: fileIds.length, total: Math.max(fileIds.length, 1), message: t('正在生成重塑目录树...') })
+        setProgressInfo({
+          current: fileIds.length,
+          total: Math.max(fileIds.length, 1),
+          message: t('正在生成重塑目录树...')
+        })
 
         const thresholdScore = useOrganizeStore.getState().thresholdScore ?? 0.4
         const maxCandidatesPerFile = useOrganizeStore.getState().maxCandidatesPerFile || 1
@@ -526,6 +538,21 @@ export function useOrganizeExecution({
     setStage('structure')
   }, [currentVDir?.id])
 
+  // 根据当前选项（平铺到根目录 / 不生成空目录）构造落盘树
+  const buildTreeToSave = useCallback(
+    (sourceTree: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
+      if (options?.flattenToRoot) {
+        const flatDirs = flattenDirectoriesToRoot(sourceTree, Boolean(options?.skipEmptyDirs))
+        const unclassifiedNode = sourceTree.find(
+          n => isUnclassifiedNodeName(n.name) && Array.isArray(n.files) && n.files.length > 0
+        )
+        return unclassifiedNode ? [...flatDirs, unclassifiedNode] : flatDirs
+      }
+      return options?.skipEmptyDirs ? filterEmptyDirectoryNodes(sourceTree) : sourceTree
+    },
+    [options?.flattenToRoot, options?.skipEmptyDirs]
+  )
+
   // ─── 保存虚拟目录 ─────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
     if (!currentVDir?.id || displayTree.length === 0) {
@@ -538,7 +565,11 @@ export function useOrganizeExecution({
     }
     try {
       // 单一事实源原子落库：由 syncIncrementalDirectoryTree 统一提取全量文件与空目录 .keep 占位，杜绝双写竞态冲刷
-      await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, displayTree)
+      const treeToSave = buildTreeToSave(displayTree)
+      await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(
+        currentVDir.id,
+        treeToSave
+      )
       const targetSource =
         draft?.source && draft.source !== 'draft' ? draft.source : 'ai-reorganized'
       await window.electronAPI!.virtualDirectory.updateMeta(currentVDir.id, {
@@ -561,6 +592,7 @@ export function useOrganizeExecution({
   }, [
     currentVDir?.id,
     displayTree,
+    buildTreeToSave,
     toOrganizeFiles,
     navigate,
     loadVirtualDirectories,
@@ -575,7 +607,11 @@ export function useOrganizeExecution({
     if (!currentVDir?.id || displayTree.length === 0) return
     try {
       // 单一事实源原子落库：由 syncIncrementalDirectoryTree 统一提取全量文件与空目录 .keep 占位，杜绝双写竞态冲刷
-      await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, displayTree)
+      const treeToSave = buildTreeToSave(displayTree)
+      await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(
+        currentVDir.id,
+        treeToSave
+      )
       const targetSource =
         draft?.source && draft.source !== 'draft' ? draft.source : 'ai-reorganized'
       await window.electronAPI!.virtualDirectory.updateMeta(currentVDir.id, {
@@ -598,6 +634,7 @@ export function useOrganizeExecution({
   }, [
     currentVDir?.id,
     displayTree,
+    buildTreeToSave,
     toOrganizeFiles,
     navigate,
     loadVirtualDirectories,
@@ -632,7 +669,10 @@ export function useOrganizeExecution({
       setIsExecutingRename(true)
       try {
         if (window.electronAPI?.organizeBatch?.executeRename) {
-          const res = await window.electronAPI.organizeBatch.executeRename(template, toOrganizeFiles)
+          const res = await window.electronAPI.organizeBatch.executeRename(
+            template,
+            toOrganizeFiles
+          )
           if (res && res.successCount > 0) {
             toast.success(t('成功更新 {count} 个文件智能名称', { count: res.successCount }))
             if (res.failedCount > 0) {
@@ -665,9 +705,10 @@ export function useOrganizeExecution({
     async (
       changes: import('@firefly/types').BatchTagOperation
     ): Promise<import('@firefly/types').BatchTagResult | void> => {
-      const fileIds = changes.fileIds && changes.fileIds.length > 0
-        ? changes.fileIds
-        : toOrganizeFiles.map(f => f.id).filter(Boolean)
+      const fileIds =
+        changes.fileIds && changes.fileIds.length > 0
+          ? changes.fileIds
+          : toOrganizeFiles.map(f => f.id).filter(Boolean)
       if (fileIds.length === 0) {
         toast.warning(t('暂无目标文件'))
         return
@@ -681,7 +722,11 @@ export function useOrganizeExecution({
           })
           if (res) {
             // 如果移除的标签属于泛维度（如作者 4、内容标签 28 等），同步清理 file_tags 库表定义
-            if (changes.removeTags && changes.removeTags.length > 0 && window.electronAPI?.organizeBatch?.deleteTagGlobally) {
+            if (
+              changes.removeTags &&
+              changes.removeTags.length > 0 &&
+              window.electronAPI?.organizeBatch?.deleteTagGlobally
+            ) {
               for (const rt of changes.removeTags) {
                 const dimIdentifier = rt.dimensionCode || (rt as any).dimensionId
                 if (
@@ -691,7 +736,10 @@ export function useOrganizeExecution({
                   dimIdentifier === concept('内容标签')
                 ) {
                   try {
-                    await window.electronAPI.organizeBatch.deleteTagGlobally(dimIdentifier, rt.tagName)
+                    await window.electronAPI.organizeBatch.deleteTagGlobally(
+                      dimIdentifier,
+                      rt.tagName
+                    )
                   } catch {
                     /* ignore */
                   }
@@ -778,29 +826,26 @@ export function useOrganizeExecution({
 
   // ─── 查重清理文件 (移入回收站) ─────────────────────────────────────────────
   const [isTrashingDuplicates, setIsTrashingDuplicates] = useState(false)
-  const trashDuplicateFiles = useCallback(
-    async (filePaths: string[]) => {
-      if (!filePaths || filePaths.length === 0) {
-        toast.warning(t('未选择要清理的冗余文件'))
-        return
-      }
-      setIsTrashingDuplicates(true)
-      try {
-        if (window.electronAPI?.organizeBatch?.trashDuplicates) {
-          const res = await window.electronAPI.organizeBatch.trashDuplicates(filePaths)
-          if (res) {
-            toast.success(t('已安全移入系统回收站 {count} 个文件', { count: res.deletedCount }))
-            await loadFilesToOrganize()
-          }
+  const trashDuplicateFiles = useCallback(async (filePaths: string[]) => {
+    if (!filePaths || filePaths.length === 0) {
+      toast.warning(t('未选择要清理的冗余文件'))
+      return
+    }
+    setIsTrashingDuplicates(true)
+    try {
+      if (window.electronAPI?.organizeBatch?.trashDuplicates) {
+        const res = await window.electronAPI.organizeBatch.trashDuplicates(filePaths)
+        if (res) {
+          toast.success(t('已安全移入系统回收站 {count} 个文件', { count: res.deletedCount }))
+          await loadFilesToOrganize()
         }
-      } catch (err: any) {
-        toast.error(err?.message || t('清理冗余文件失败'))
-      } finally {
-        setIsTrashingDuplicates(false)
       }
-    },
-    []
-  )
+    } catch (err: any) {
+      toast.error(err?.message || t('清理冗余文件失败'))
+    } finally {
+      setIsTrashingDuplicates(false)
+    }
+  }, [])
 
   return {
     showBatchLimitConfirm,

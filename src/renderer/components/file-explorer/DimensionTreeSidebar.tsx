@@ -97,6 +97,8 @@ export interface DimensionTreeSidebarProps {
 // 单独提取的树节点渲染行组件，使用 React.memo 进行细粒度隔离
 interface DimensionTreeRowProps {
   row: any
+  /** 虚拟滚动绝对定位顶部偏移（未虚拟化时为 undefined，走正常文档流） */
+  virtualTop?: number
   isExportMode?: boolean
   toggleDimensionGroupCollapsed: (id: number) => void
   toggleTagExpand: (tagValue: string) => void
@@ -115,21 +117,38 @@ interface DimensionTreeRowProps {
   handleTagClickInternal: (tag: any) => void
 }
 
+const ANCESTOR_GUIDE_BG =
+  'repeating-linear-gradient(to right, transparent 0px, transparent 8px, hsl(var(--muted-foreground) / 0.38) 8px, hsl(var(--muted-foreground) / 0.38) 9px, transparent 9px, transparent 18px)'
+
 const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
   ({
     row,
+    virtualTop,
     isExportMode,
     toggleDimensionGroupCollapsed,
     toggleTagExpand,
     toggleTagSelection,
     handleTagClickInternal
   }) => {
+    const virtualPosStyle: React.CSSProperties | undefined =
+      virtualTop !== undefined
+        ? {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            transform: `translate3d(0, ${virtualTop}px, 0)`,
+            contain: 'layout style'
+          }
+        : undefined
+
     if (row.type === 'header' && row.node) {
       return (
         <div
           data-testid="dimension-group-header"
           data-group-code={row.node?.code || ''}
           className="dimension-group relative mb-2"
+          style={virtualPosStyle}
         >
           {/* 维度名称向下贯穿到底部 Tag 节点的垂直竖线 (精确左移 8px，100% 绝对对齐维度名称前的箭头中心) */}
           {!row.isCollapsed && (
@@ -162,6 +181,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
 
     if (row.type === 'tag' && row.tag) {
       const tag = row.tag
+      const depth = row.depth || 0
       return (
         <div
           data-testid="dimension-tree-node"
@@ -169,27 +189,31 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
           data-concept-code={tag.code || ''}
           data-lifted={tag.isLifted ? 'true' : 'false'}
           className="flex items-center group min-h-[25px] relative h-[26px]"
-          style={{ paddingLeft: `${(row.depth || 0) * 18 + 0}px` }}
+          style={
+            virtualPosStyle
+              ? { ...virtualPosStyle, paddingLeft: `${depth * 18}px` }
+              : { paddingLeft: `${depth * 18}px` }
+          }
         >
-          {/* 贯穿每一个 L2 / L3 父级标签中轴线的多重深层垂直贯线 │ (8px 基准，绝对对齐维度名称前的箭头) */}
-          {(row.depth || 0) > 0 &&
-            Array.from({ length: row.depth || 0 }).map((_, d) => (
-              <div
-                key={`ancestor-v-line-${d}`}
-                className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
-                style={{
-                  left: `${d * 18 + 8}px`,
-                  top: 0,
-                  height: '100%'
-                }}
-              />
-            ))}
+          {/* 贯穿所有 L2+ 父级中轴线的垂直贯线：单层 CSS repeating-linear-gradient 替代 depth 个 div，减少 60%+ DOM 节点 */}
+          {depth > 0 && (
+            <div
+              className="absolute pointer-events-none z-0"
+              style={{
+                left: 0,
+                top: 0,
+                width: `${depth * 18}px`,
+                height: '100%',
+                backgroundImage: ANCESTOR_GUIDE_BG
+              }}
+            />
+          )}
 
           {/* 本层级的 ├── 树分支与贯穿线 */}
           <div
             className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
             style={{
-              left: `${(row.depth || 0) * 18 + 8}px`,
+              left: `${depth * 18 + 8}px`,
               top: 0,
               height: row.isLastInGroup ? '13px' : '100%'
             }}
@@ -198,7 +222,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
           <div
             className="absolute border-b border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
             style={{
-              left: `${(row.depth || 0) * 18 + 8}px`,
+              left: `${depth * 18 + 8}px`,
               top: 0,
               width: '10px',
               height: '13px'
@@ -337,7 +361,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
 )
 DimensionTreeRow.displayName = 'DimensionTreeRow'
 
-export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
+const DimensionTreeSidebarInner: React.FC<DimensionTreeSidebarProps> = ({
   dimensionGroups,
   pathCountMap,
   showEmptyTags = false,
@@ -1066,20 +1090,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     })
   }, [])
 
-  const [scrollTop, setScrollTop] = useState(0)
   const [containerHeight, setContainerHeight] = useState(600)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop)
-  }, [])
+  const scrollTopRef = useRef(0)
+  const scrollRafRef = useRef<number | null>(null)
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
     const updateHeight = () => {
-      setContainerHeight(container.clientHeight || 600)
+      const nextHeight = container.clientHeight || 600
+      setContainerHeight(prev => (prev === nextHeight ? prev : nextHeight))
     }
 
     updateHeight()
@@ -1225,6 +1247,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   // 精准虚拟滚动计算：Header 40px (32px + mb-2 8px), Tag 26px
   const HEADER_HEIGHT = 40
   const TAG_HEIGHT = 26
+  const VIRTUAL_THRESHOLD = 150
+  // 滞后缓冲策略：上下各过扫 24 行，安全边距 8 行；仅当视口逼近已渲染窗口边缘时才批切换窗口，
+  // 避免每滚动 1px 就 setState 重渲染或每滚 1 行就增删 DOM 引发卡顿与 Reflow
+  const OVERSCAN_BEFORE = 24
+  const OVERSCAN_AFTER = 24
+  const SAFE_MARGIN = 8
 
   const { rowOffsets, totalContentHeight } = useMemo(() => {
     const offsets: number[] = new Array(flatRows.length + 1)
@@ -1238,64 +1266,147 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     return { rowOffsets: offsets, totalContentHeight: currentOffset }
   }, [flatRows])
 
-  // 二分查找当前 scrollTop 对应的起始行索引
-  const { startIndex, endIndex, paddingTop, paddingBottom } = useMemo(() => {
-    const count = flatRows.length
-    if (count === 0) {
-      return { startIndex: 0, endIndex: 0, paddingTop: 0, paddingBottom: 0 }
-    }
+  const computeVirtualWindow = useCallback(
+    (curScrollTop: number, viewHeight: number, offsets: number[], count: number) => {
+      if (count === 0) {
+        return { startIndex: 0, endIndex: 0 }
+      }
+      // 当列表总行数较少 (<= 150 行) 时，全量渲染，零虚拟切片，确保滚动平滑且 100% 杜绝任何白屏或子标签丢损
+      if (count <= VIRTUAL_THRESHOLD) {
+        return { startIndex: 0, endIndex: count }
+      }
+      // 关键保护：回滚到顶部（scrollTop <= 5）时绝对强制重置到索引 0
+      if (curScrollTop <= 5) {
+        const end = Math.min(count, Math.ceil(viewHeight / TAG_HEIGHT) + OVERSCAN_AFTER)
+        return { startIndex: 0, endIndex: end }
+      }
 
-    // 当列表总行数较少 (<= 150 行) 时，全量渲染，零虚拟切片，确保滚动平滑且 100% 杜绝任何白屏或子标签丢损
-    if (count <= 150) {
-      return { startIndex: 0, endIndex: count, paddingTop: 0, paddingBottom: 0 }
-    }
+      // 二分查找第一个 offset + itemHeight > scrollTop 的位置
+      let low = 0
+      let high = count - 1
+      let target = 0
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2)
+        if (offsets[mid + 1] > curScrollTop) {
+          target = mid
+          high = mid - 1
+        } else {
+          low = mid + 1
+        }
+      }
 
-    // 关键保护：回滚到顶部（scrollTop <= 5）时绝对强制重置到索引 0
-    if (scrollTop <= 5) {
-      const end = Math.min(count, Math.ceil(containerHeight / TAG_HEIGHT) + 20)
-      const top = 0
-      const bottom = Math.max(0, totalContentHeight - rowOffsets[end])
-      return { startIndex: 0, endIndex: end, paddingTop: top, paddingBottom: bottom }
-    }
+      const start = Math.max(0, target - OVERSCAN_BEFORE)
 
-    // 二分查找第一个 offset + itemHeight > scrollTop 的位置
-    let low = 0
-    let high = count - 1
-    let target = 0
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2)
-      if (rowOffsets[mid + 1] > scrollTop) {
-        target = mid
-        high = mid - 1
-      } else {
-        low = mid + 1
+      // 二分查找视口底部对应索引，加上向下充分过扫缓冲
+      const viewBottom = curScrollTop + viewHeight
+      let endTarget = count
+      low = start
+      high = count - 1
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2)
+        if (offsets[mid] >= viewBottom) {
+          endTarget = mid
+          high = mid - 1
+        } else {
+          low = mid + 1
+        }
+      }
+      const end = Math.min(count, endTarget + OVERSCAN_AFTER)
+      return { startIndex: start, endIndex: end }
+    },
+    []
+  )
+
+  const [windowRange, setWindowRange] = useState<{ startIndex: number; endIndex: number }>(() =>
+    computeVirtualWindow(0, containerHeight, rowOffsets, flatRows.length)
+  )
+  const windowRangeRef = useRef(windowRange)
+  windowRangeRef.current = windowRange
+
+  const virtualMetricsRef = useRef({
+    rowOffsets,
+    count: flatRows.length,
+    containerHeight
+  })
+  virtualMetricsRef.current = {
+    rowOffsets,
+    count: flatRows.length,
+    containerHeight
+  }
+
+  // 当数据行数或容器高度变化时，同步对齐虚拟窗口
+  useEffect(() => {
+    const next = computeVirtualWindow(
+      scrollTopRef.current,
+      containerHeight,
+      rowOffsets,
+      flatRows.length
+    )
+    setWindowRange(prev =>
+      prev.startIndex === next.startIndex && prev.endIndex === next.endIndex ? prev : next
+    )
+  }, [flatRows.length, rowOffsets, containerHeight, computeVirtualWindow])
+
+  // 卸载时清理挂起的 rAF，防内存泄漏与卸载后 setState
+  useEffect(() => {
+    return () => {
+      if (scrollRafRef.current !== null) {
+        cancelAnimationFrame(scrollRafRef.current)
+        scrollRafRef.current = null
       }
     }
+  }, [])
 
-    // 向上充分缓冲 15 行，杜绝向上滚动时的视觉残缺
-    const start = Math.max(0, target - 15)
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      scrollTopRef.current = e.currentTarget.scrollTop
+      if (virtualMetricsRef.current.count <= VIRTUAL_THRESHOLD) return
+      if (scrollRafRef.current !== null) return
 
-    // 二分查找视口底部对应索引，加上向下充分缓冲 20 行
-    const viewBottom = scrollTop + containerHeight
-    let endTarget = count
-    low = start
-    high = count - 1
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2)
-      if (rowOffsets[mid] >= viewBottom) {
-        endTarget = mid
-        high = mid - 1
-      } else {
-        low = mid + 1
-      }
-    }
-    const end = Math.min(count, endTarget + 20)
+      scrollRafRef.current = requestAnimationFrame(() => {
+        scrollRafRef.current = null
+        const {
+          rowOffsets: offsets,
+          count,
+          containerHeight: viewHeight
+        } = virtualMetricsRef.current
+        if (count <= VIRTUAL_THRESHOLD) return
 
-    const top = rowOffsets[start]
-    const bottom = Math.max(0, totalContentHeight - rowOffsets[end])
+        const curScrollTop = scrollTopRef.current
+        const cur = windowRangeRef.current
 
-    return { startIndex: start, endIndex: end, paddingTop: top, paddingBottom: bottom }
-  }, [flatRows.length, rowOffsets, totalContentHeight, scrollTop, containerHeight])
+        // 安全区判定：视口仍处于已渲染过扫窗口的内部安全边距中时，零 setState / 零 DOM 变更
+        const topSafe =
+          curScrollTop <= 5
+            ? cur.startIndex === 0
+            : cur.startIndex === 0 ||
+              curScrollTop >= offsets[Math.min(count, cur.startIndex + SAFE_MARGIN)]
+        const bottomSafe =
+          cur.endIndex >= count ||
+          curScrollTop + viewHeight <= offsets[Math.max(0, cur.endIndex - SAFE_MARGIN)]
+
+        if (topSafe && bottomSafe) return
+
+        const next = computeVirtualWindow(curScrollTop, viewHeight, offsets, count)
+        setWindowRange(prev =>
+          prev.startIndex === next.startIndex && prev.endIndex === next.endIndex ? prev : next
+        )
+      })
+    },
+    [computeVirtualWindow]
+  )
+
+  const isVirtualized = flatRows.length > VIRTUAL_THRESHOLD
+  const startIndex = isVirtualized ? Math.min(windowRange.startIndex, flatRows.length) : 0
+  const endIndex = isVirtualized
+    ? Math.min(Math.max(windowRange.endIndex, startIndex), flatRows.length)
+    : flatRows.length
+  // 固定槽位复用池容量（恒大于单次可见窗口行数）：保证窗口滑动时留在视口内的行 key 与 DOM 纹丝不动，
+  // 离开视口的旧槽位原地复用给新进入的行，实现滚动过程 0 次 DOM 节点销毁/新建
+  const slotPoolSize = Math.max(
+    endIndex - startIndex + 4,
+    Math.ceil(containerHeight / TAG_HEIGHT) + OVERSCAN_BEFORE + OVERSCAN_AFTER + 8
+  )
 
   const visibleRows = useMemo(() => {
     return flatRows.slice(startIndex, endIndex)
@@ -1389,22 +1500,47 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       <div
         ref={containerRef}
         onScroll={handleScroll}
+        style={{ overflowAnchor: 'none' }}
         className="flex-1 overflow-y-auto p-4 custom-scrollbar relative"
       >
-        <div style={{ paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}>
-          {visibleRows.map(row => (
-            <DimensionTreeRow
-              key={row.id}
-              row={row}
-              isExportMode={isExportMode}
-              toggleDimensionGroupCollapsed={toggleDimensionGroupCollapsed}
-              toggleTagExpand={toggleTagExpand}
-              toggleTagSelection={toggleTagSelection}
-              handleTagClickInternal={handleTagClickInternal}
-            />
-          ))}
-        </div>
+        {isVirtualized ? (
+          <div style={{ height: `${totalContentHeight}px`, position: 'relative' }}>
+            {visibleRows.map((row, idx) => {
+              const absIndex = startIndex + idx
+              const slotKey = `slot-${absIndex % slotPoolSize}`
+              return (
+                <DimensionTreeRow
+                  key={slotKey}
+                  row={row}
+                  virtualTop={rowOffsets[absIndex] ?? 0}
+                  isExportMode={isExportMode}
+                  toggleDimensionGroupCollapsed={toggleDimensionGroupCollapsed}
+                  toggleTagExpand={toggleTagExpand}
+                  toggleTagSelection={toggleTagSelection}
+                  handleTagClickInternal={handleTagClickInternal}
+                />
+              )
+            })}
+          </div>
+        ) : (
+          <div>
+            {visibleRows.map(row => (
+              <DimensionTreeRow
+                key={row.id}
+                row={row}
+                isExportMode={isExportMode}
+                toggleDimensionGroupCollapsed={toggleDimensionGroupCollapsed}
+                toggleTagExpand={toggleTagExpand}
+                toggleTagSelection={toggleTagSelection}
+                handleTagClickInternal={handleTagClickInternal}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
 }
+
+export const DimensionTreeSidebar = React.memo(DimensionTreeSidebarInner)
+DimensionTreeSidebar.displayName = 'DimensionTreeSidebar'

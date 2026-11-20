@@ -803,7 +803,16 @@ declare global {
             ancestryMatchedCode: string | null
           }>
         }>
-        deleteTagGlobally: (dimensionId: number | string, tagName: string) => Promise<boolean>
+        deleteTagGlobally: (
+          dimensionId: number | string,
+          tagName: string,
+          options?: {
+            code?: string
+            codePath?: string
+            codePaths?: string[]
+            viaParentCode?: string
+          }
+        ) => Promise<boolean>
         scanDuplicates: (options: any) => Promise<any[]>
         onScanProgress?: (callback: (data: any) => void) => () => void
         trashDuplicates: (filePaths: string[]) => Promise<any>
@@ -811,7 +820,16 @@ declare global {
         getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>
       }
 
-      deleteTagGlobally: (dimensionId: number | string, tagName: string) => Promise<boolean>
+      deleteTagGlobally: (
+        dimensionId: number | string,
+        tagName: string,
+        options?: {
+          code?: string
+          codePath?: string
+          codePaths?: string[]
+          viaParentCode?: string
+        }
+      ) => Promise<boolean>
       getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>
 
       // 整理真实目录相关

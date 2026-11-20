@@ -7,6 +7,45 @@ import { toast } from '../../../common/Toast'
 import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
 import { notifyEnqueueResult } from '../../../../utils/enqueue-notifier'
 
+/** 单文件/目录分析详情客户端 LRU 缓存（命中时 0ms 秒开，后台静默校验更新） */
+const DETAILS_CACHE_MAX = 60
+const fileDetailsCache = new Map<string, any>()
+
+function getDetailsCacheKey(path: string, isDir: boolean): string {
+  const norm =
+    window.electronAPI?.utils?.normalizeForCache?.(path) ||
+    path.toLowerCase().replace(/[\\/]+$/, '')
+  return `${isDir ? 'dir' : 'file'}::${norm}`
+}
+
+function readDetailsCache(path: string, isDir: boolean): any | undefined {
+  const key = getDetailsCacheKey(path, isDir)
+  const hit = fileDetailsCache.get(key)
+  if (hit !== undefined) {
+    fileDetailsCache.delete(key)
+    fileDetailsCache.set(key, hit)
+  }
+  return hit
+}
+
+function writeDetailsCache(path: string, isDir: boolean, value: any): void {
+  const key = getDetailsCacheKey(path, isDir)
+  if (fileDetailsCache.size >= DETAILS_CACHE_MAX && !fileDetailsCache.has(key)) {
+    const oldest = fileDetailsCache.keys().next().value
+    if (oldest !== undefined) fileDetailsCache.delete(oldest)
+  }
+  fileDetailsCache.set(key, value)
+}
+
+function invalidateDetailsCache(path?: string): void {
+  if (!path) {
+    fileDetailsCache.clear()
+    return
+  }
+  fileDetailsCache.delete(getDetailsCacheKey(path, false))
+  fileDetailsCache.delete(getDetailsCacheKey(path, true))
+}
+
 export function useFileDetails(
   item: FileItem | DirectoryItem | undefined,
   workspaceDirectoryPath?: string,
@@ -20,6 +59,9 @@ export function useFileDetails(
   const lastSeenStatusRef = useRef<string | null>(null)
   const reanalyzeStartTimeRef = useRef<number>(0)
   const lastSeenUpdatedAtRef = useRef<number>(0)
+  const requestSeqRef = useRef<number>(0)
+  const analysisResultRef = useRef<any>(null)
+  analysisResultRef.current = analysisResult
 
   // isDirectory 兼容两种对象：FileItem（有 isDirectory 字段）和虚拟目录树节点（有 isFile 字段）
   const isDirectory = item
@@ -28,64 +70,77 @@ export function useFileDetails(
       : 'isDirectory' in item && item.isDirectory
     : !!workspaceDirectoryPath
 
-  const refreshAnalysis = useCallback(async () => {
-    // 优先使用 item.path，兼容虚拟目录树节点的 originalPath，如果是工作区目录视图（无 item）则使用 currentDirectoryPath，最后回退到 workspaceDirectoryPath
-    const currentPath =
-      item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
-    if (!currentPath) return
-    try {
-      const res = isDirectory
-        ? await window.electronAPI!.getDirectoryAnalysisResult(currentPath)
-        : await window.electronAPI!.getFileAnalysisResult(currentPath)
-      setAnalysisResult(res)
-    } catch (e) {
-      logger.error(LogCategory.FILE_ANALYSIS, '刷新分析结果失败:', e)
-    }
-  }, [
-    item?.path,
-    (item as any)?.originalPath,
-    currentDirectoryPath,
-    workspaceDirectoryPath,
-    isDirectory
-  ])
+  const refreshAnalysis = useCallback(
+    async (options?: { bypassCache?: boolean }) => {
+      // 优先使用 item.path，兼容虚拟目录树节点的 originalPath，如果是工作区目录视图（无 item）则使用 currentDirectoryPath，最后回退到 workspaceDirectoryPath
+      const currentPath =
+        item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
+      if (!currentPath) return
 
-  // 切换文件或目录时重置分析状态并加载数据
+      const seq = ++requestSeqRef.current
+      const isDirFlag = Boolean(isDirectory)
+      let cachedValue: any = undefined
+      if (options?.bypassCache) {
+        invalidateDetailsCache(currentPath)
+      } else {
+        cachedValue = readDetailsCache(currentPath, isDirFlag)
+        if (cachedValue !== undefined) {
+          setAnalysisResult(cachedValue)
+        }
+      }
+
+      try {
+        const res = isDirFlag
+          ? await window.electronAPI!.getDirectoryAnalysisResult(currentPath)
+          : await window.electronAPI!.getFileAnalysisResult(currentPath)
+        if (seq !== requestSeqRef.current) return
+        writeDetailsCache(currentPath, isDirFlag, res)
+        // 缓存命中且后台静默刷新数据无变化时，跳过重复 setState，避免触发整面板二次重渲染
+        if (cachedValue !== undefined && JSON.stringify(res) === JSON.stringify(cachedValue)) {
+          return
+        }
+        setAnalysisResult(res)
+      } catch (e) {
+        if (seq === requestSeqRef.current) {
+          logger.error(LogCategory.FILE_ANALYSIS, '刷新分析结果失败:', e)
+        }
+      }
+    },
+    [
+      item?.path,
+      (item as any)?.originalPath,
+      currentDirectoryPath,
+      workspaceDirectoryPath,
+      isDirectory
+    ]
+  )
+
+  // 切换文件或目录时：直接从内存 store 同步读取队列状态（零额外 IPC），并按 LRU 缓存 + 请求序号加载分析详情
   useEffect(() => {
     const targetPath =
       item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
 
-    const checkInitialQueueStatus = async () => {
-      if (!targetPath) {
-        setReanalyzing(false)
-        setQueueStatus(null)
-        return
+    if (!targetPath) {
+      setReanalyzing(false)
+      setQueueStatus(null)
+    } else {
+      const { isPathEqual } = window.electronAPI!.utils || {
+        isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
       }
+      const snapshot = useAnalysisQueueStore.getState().snapshot
+      const queueItem = snapshot?.items?.find((i: any) => i.path && isPathEqual(i.path, targetPath))
 
-      try {
-        const { isPathEqual } = window.electronAPI!.utils || {
-          isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
-        }
-        const snapshot = await window.electronAPI!.getAnalysisQueue()
-        const queueItem = snapshot?.items?.find(
-          (i: any) => i.path && isPathEqual(i.path, targetPath)
-        )
-
-        if (queueItem && (queueItem.status === 'pending' || queueItem.status === 'analyzing')) {
-          setReanalyzing(true)
-          setQueueStatus(queueItem.status)
-          lastSeenStatusRef.current = queueItem.status
-        } else {
-          setReanalyzing(false)
-          setQueueStatus(null)
-        }
-      } catch (e) {
-        logger.error(LogCategory.FILE_ANALYSIS, '检查初始分析队列状态失败:', e)
-        setReanalyzing(false)
-        setQueueStatus(null)
+      if (queueItem && (queueItem.status === 'pending' || queueItem.status === 'analyzing')) {
+        setReanalyzing(true)
+        setQueueStatus(queueItem.status)
+        lastSeenStatusRef.current = queueItem.status
+      } else {
+        setReanalyzing(prev => (prev ? false : prev))
+        setQueueStatus(prev => (prev !== null ? null : prev))
+        lastSeenStatusRef.current = null
       }
     }
 
-    checkInitialQueueStatus()
     refreshAnalysis()
   }, [
     item?.path,
@@ -96,10 +151,11 @@ export function useFileDetails(
     refreshAnalysis
   ])
 
-  // 监听智能文件名更新事件和全局文件变更，自动刷新详情面板中的智能文件名与分析结果
+  // 监听智能文件名更新事件和全局文件变更，失效缓存并自动刷新详情面板中的智能文件名与分析结果
   useEffect(() => {
     const handleRefresh = () => {
-      refreshAnalysis()
+      invalidateDetailsCache()
+      refreshAnalysis({ bypassCache: true })
     }
     window.addEventListener('smartname-updated', handleRefresh)
     window.addEventListener('files-updated', handleRefresh)
@@ -113,6 +169,9 @@ export function useFileDetails(
   useEffect(() => {
     if (!window.electronAPI?.onDirectoryContextUpdated) return
     const cleanup = window.electronAPI.onDirectoryContextUpdated(data => {
+      if (data?.directoryPath) {
+        invalidateDetailsCache(data.directoryPath)
+      }
       const targetPath =
         item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
       if (!targetPath) return
@@ -120,7 +179,7 @@ export function useFileDetails(
         isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
       }
       if (data?.directoryPath && isPathEqual(data.directoryPath, targetPath)) {
-        refreshAnalysis()
+        refreshAnalysis({ bypassCache: true })
       }
     })
     return () => {
@@ -138,24 +197,28 @@ export function useFileDetails(
   useEffect(() => {
     if (!window.electronAPI?.onFileAnalysisUpdated) return
     const cleanup = window.electronAPI.onFileAnalysisUpdated(payload => {
+      if (payload?.filePath) {
+        invalidateDetailsCache(payload.filePath)
+      }
       const targetPath =
         item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
       if (!targetPath) return
       const { isPathEqual } = window.electronAPI!.utils || {
         isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
       }
+      const curResult = analysisResultRef.current
       const isTarget =
         (payload?.filePath && isPathEqual(payload.filePath, targetPath)) ||
         (payload?.fileFingerprint &&
-          (analysisResult?.fingerprint === payload.fileFingerprint ||
-            analysisResult?.fileFingerprint === payload.fileFingerprint))
+          (curResult?.fingerprint === payload.fileFingerprint ||
+            curResult?.fileFingerprint === payload.fileFingerprint))
 
       if (isTarget) {
         if (payload?.status === 'completed' || payload?.source === 'retag') {
           setReanalyzing(false)
           setQueueStatus(null)
         }
-        refreshAnalysis()
+        refreshAnalysis({ bypassCache: true })
         if (onFileUpdated) {
           onFileUpdated()
         }
@@ -169,8 +232,6 @@ export function useFileDetails(
     (item as any)?.originalPath,
     currentDirectoryPath,
     workspaceDirectoryPath,
-    analysisResult?.fingerprint,
-    analysisResult?.fileFingerprint,
     refreshAnalysis,
     onFileUpdated
   ])
@@ -332,7 +393,7 @@ export function useFileDetails(
       if (result && result.success) {
         toast.success(t('已清空分析'))
 
-        refreshAnalysis()
+        refreshAnalysis({ bypassCache: true })
 
         if (onFileUpdated) {
           onFileUpdated()

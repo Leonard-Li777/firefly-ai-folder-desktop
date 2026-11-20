@@ -99,12 +99,16 @@ function makeMarkdownComponents(anchorMap: Map<string, string>, tokens: string[]
     ol: ({ children }: any) => (
       <ol className="list-decimal pl-5 space-y-1 mb-2 last:mb-0">{children}</ol>
     ),
-    li: ({ children }: any) => <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>,
+    li: ({ children }: any) => (
+      <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>
+    ),
     strong: ({ children }: any) => (
       <strong className="font-bold text-foreground">{highlightChildren(children, tokens)}</strong>
     ),
     code: ({ children }: any) => (
-      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
+      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">
+        {children}
+      </code>
     ),
     a: ({ href, children }: any) => (
       <a
@@ -138,7 +142,10 @@ function MarkdownRenderer({ content, maskClass }: { content: string; maskClass?:
   }, [tokens, globalKeyword])
 
   const anchorMap = React.useMemo(() => extractAnchorMap(content), [content])
-  const components = React.useMemo(() => makeMarkdownComponents(anchorMap, effectiveTokens), [anchorMap, effectiveTokens])
+  const components = React.useMemo(
+    () => makeMarkdownComponents(anchorMap, effectiveTokens),
+    [anchorMap, effectiveTokens]
+  )
   return (
     <div className={cn('break-words', maskClass)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components as any}>
@@ -309,11 +316,10 @@ const FileDetailsPanelComponent: React.FC<any> = ({
 
     const normalized = normalizeForCache(absPath).replace(/\\/g, '/')
     const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
-    const refreshKey = (analysisResult as any)?.lastAnalyzedAt
-      ? new Date((analysisResult as any).lastAnalyzedAt).getTime()
-      : Date.now()
+    const lastAnalyzedAt = (analysisResult as any)?.lastAnalyzedAt
+    const refreshKey = lastAnalyzedAt ? new Date(lastAnalyzedAt).getTime() : null
 
-    return `file://${cleanPath}?t=${refreshKey}`
+    return refreshKey ? `file://${cleanPath}?t=${refreshKey}` : `file://${cleanPath}`
   }
 
   // 生成原始图片URL - 如果没有缩略图，但文件本身是图片，则直接显示
@@ -352,11 +358,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
 
     // 1. 图片类：若有提取文字（ocr 或 content），展示【OCR】Tab
     const hasImageOcr =
-      isImageFile &&
-      Boolean(
-        analysisResult.ocr?.trim() ||
-          analysisResult.content?.trim()
-      )
+      isImageFile && Boolean(analysisResult.ocr?.trim() || analysisResult.content?.trim())
     if (hasImageOcr) {
       tabs.push({ id: 'ocr', label: t('OCR'), icon: 'document_scanner' })
     }
@@ -381,18 +383,17 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     // 避免清空分析数据后仍残留空 tab
     const hasCategoryContent = Boolean(
       analysisResult.category &&
-        (typeof analysisResult.category === 'object'
-          ? Object.keys(analysisResult.category).length > 0
-          : String(analysisResult.category).trim().length > 0)
+      (typeof analysisResult.category === 'object'
+        ? Object.keys(analysisResult.category).length > 0
+        : String(analysisResult.category).trim().length > 0)
     )
     const hasMetadataObject = Boolean(
       analysisResult.metadata &&
-        typeof analysisResult.metadata === 'object' &&
-        Object.keys(analysisResult.metadata).length > 0
+      typeof analysisResult.metadata === 'object' &&
+      Object.keys(analysisResult.metadata).length > 0
     )
     const hasMetadataContent = hasCategoryContent || hasMetadataObject
-    if (hasMetadataContent)
-      tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
+    if (hasMetadataContent) tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
     if (analysisResult.analysisStats) tabs.push({ id: 'timing', label: t('耗时'), icon: 'timer' })
     return tabs
   }, [analysisResult, activeLanguage])
@@ -493,62 +494,62 @@ const FileDetailsPanelComponent: React.FC<any> = ({
             isFileAnalysis={isFileAnalysis}
           />
           {analysisResult &&
-            isFileAnalysis(analysisResult) &&
-            analysisResult.isAnalyzed &&
-            (analysisResult.smartName ||
-              (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
-              <>
-                {(() => {
-                  const realName = item?.name || analysisResult.name || ''
-                  const smartName = analysisResult.smartName || ''
+          isFileAnalysis(analysisResult) &&
+          analysisResult.isAnalyzed &&
+          (analysisResult.smartName ||
+            (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
+            <>
+              {(() => {
+                const realName = item?.name || analysisResult.name || ''
+                const smartName = analysisResult.smartName || ''
 
-                  if (smartName) {
-                    const primary = swapFileNameDisplay ? realName : smartName
-                    const secondary = swapFileNameDisplay ? smartName : realName
-
-                    return (
-                      <>
-                        <h2
-                          className="font-semibold text-base mt-3 text-primary break-all cursor-text"
-                          title={primary}
-                        >
-                          <HighlightText text={primary} title={primary} />
-                        </h2>
-                        {secondary && (
-                          <p
-                            className="text-xs text-muted-foreground mt-1 break-all cursor-text"
-                            title={secondary}
-                          >
-                            <HighlightText text={secondary} title={secondary} />
-                          </p>
-                        )}
-                      </>
-                    )
-                  }
+                if (smartName) {
+                  const primary = swapFileNameDisplay ? realName : smartName
+                  const secondary = swapFileNameDisplay ? smartName : realName
 
                   return (
-                    <h2
-                      className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
-                      title={realName}
-                    >
-                      <HighlightText text={realName} title={realName} />
-                    </h2>
+                    <>
+                      <h2
+                        className="font-semibold text-base mt-3 text-primary break-all cursor-text"
+                        title={primary}
+                      >
+                        <HighlightText text={primary} title={primary} />
+                      </h2>
+                      {secondary && (
+                        <p
+                          className="text-xs text-muted-foreground mt-1 break-all cursor-text"
+                          title={secondary}
+                        >
+                          <HighlightText text={secondary} title={secondary} />
+                        </p>
+                      )}
+                    </>
                   )
-                })()}
-                {analysisResult.description && (
-                  <div className="mt-2 text-left">
-                    <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
-                  </div>
-                )}
-              </>
-            ) : item && !isDirectory ? (
-              <h2
-                className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
-                title={item.name}
-              >
-                <HighlightText text={item.name} title={item.name} />
-              </h2>
-            ) : null}
+                }
+
+                return (
+                  <h2
+                    className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
+                    title={realName}
+                  >
+                    <HighlightText text={realName} title={realName} />
+                  </h2>
+                )
+              })()}
+              {analysisResult.description && (
+                <div className="mt-2 text-left">
+                  <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
+                </div>
+              )}
+            </>
+          ) : item && !isDirectory ? (
+            <h2
+              className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
+              title={item.name}
+            >
+              <HighlightText text={item.name} title={item.name} />
+            </h2>
+          ) : null}
           {analysisResult && isDirAnalysis(analysisResult) && (
             <h2 className="font-semibold text-base mt-3 text-foreground break-all">
               ⭐{analysisResult.name}
@@ -563,13 +564,17 @@ const FileDetailsPanelComponent: React.FC<any> = ({
           )}
         </div>
 
-        {!isDirectory && !showDirectory && analysisResult && isFileAnalysis(analysisResult) && analysisResult.isAnalyzed && (
-          <TagList
-            analysisResult={analysisResult}
-            getTagColor={getTagColor}
-            onTagDeleted={refreshAnalysis}
-          />
-        )}
+        {!isDirectory &&
+          !showDirectory &&
+          analysisResult &&
+          isFileAnalysis(analysisResult) &&
+          analysisResult.isAnalyzed && (
+            <TagList
+              analysisResult={analysisResult}
+              getTagColor={getTagColor}
+              onTagDeleted={refreshAnalysis}
+            />
+          )}
 
         {(showDirectory || isDirectory) && analysisResult && isDirAnalysis(analysisResult) && (
           <DirectoryProfileSection

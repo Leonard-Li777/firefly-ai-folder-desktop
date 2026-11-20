@@ -18,15 +18,11 @@ function tryTriggerSplitPreview(item: FileType | DirectoryItem, pageId?: string)
   const pageMode = state.pageStates[pageId]?.mode ?? 'split'
   if (pageMode !== 'split') return
   const ext = (item as any).extension || item.path?.split('.').pop() || ''
-  const targetCurrentTime =
-    (item as any).currentTime ?? (item as any).matchedChunk?.startSec
+  const targetCurrentTime = (item as any).currentTime ?? (item as any).matchedChunk?.startSec
   const targetHighlightRange =
     (item as any).highlightRange ??
     ((item as any).matchedChunk
-      ? [
-          (item as any).matchedChunk.startSec,
-          (item as any).matchedChunk.endSec
-        ]
+      ? [(item as any).matchedChunk.startSec, (item as any).matchedChunk.endSec]
       : undefined)
   state.openPreview(item.path || '', item.name, ext, pageId, {
     currentTime: targetCurrentTime,
@@ -351,6 +347,26 @@ export const useFileListSelection = ({
         if (rafRef.current) cancelAnimationFrame(rafRef.current)
 
         let finalSelectionPaths = new Set<string>()
+        const upDx = Math.abs(upEvent.clientX - startClientX)
+        const upDy = Math.abs(upEvent.clientY - startClientY)
+
+        // 若用户快速划动框选并在首帧 rAF 执行前就释放鼠标，cancelAnimationFrame 会导致 isDraggingRef 仍为 false；
+        // 这里按实际位移补齐 dragStart 与框选计算，彻底杜绝快速框选静默失效
+        if (!isDraggingRef.current && (upDx > 5 || upDy > 5) && containerRef.current) {
+          const mRect = containerRef.current.getBoundingClientRect()
+          const scrollers = containerRef.current.querySelectorAll(SCROLLER_SELECTOR)
+          const scroller = Array.from(scrollers).find(
+            s => s.scrollHeight > s.clientHeight
+          ) as HTMLElement
+          const mCurrentScroll = scroller ? scroller.scrollTop : propsRef.current.scrollOffset
+          const dragStartAbs = {
+            x: startClientX - mRect.left,
+            y: startClientY - mRect.top + mCurrentScroll
+          }
+          isDraggingRef.current = true
+          useDragSelectStore.getState().beginDrag(dragStartAbs)
+        }
+
         if (isDraggingRef.current) {
           const mRect = containerRef.current!.getBoundingClientRect()
           const mx = upEvent.clientX - mRect.left
@@ -366,13 +382,17 @@ export const useFileListSelection = ({
           useDragSelectStore.getState().endDrag()
 
           // 拖拽释放时的 click 事件会冒泡到卡片（原先由 [&_*]:pointer-events-none 抑制），
-          // 这里在捕获阶段吞掉紧随 mouseup 的一次 click，避免误触发卡片点击/勾选
+          // 这里在捕获阶段吞掉紧随 mouseup 的一次 click，并加 0ms 定时器兜底移除，
+          // 避免跨元素/空白处松开不触发 click 时监听器永久泄漏并吞掉下一次任意点击
           const suppressClick = (clickEvent: MouseEvent) => {
             clickEvent.preventDefault()
             clickEvent.stopPropagation()
             document.removeEventListener('click', suppressClick, true)
           }
           document.addEventListener('click', suppressClick, true)
+          setTimeout(() => {
+            document.removeEventListener('click', suppressClick, true)
+          }, 0)
         }
 
         setTimeout(() => {
@@ -519,9 +539,7 @@ export const useFileListSelection = ({
           window.electronAPI?.utils?.normalizeForCache ||
           ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
         const currentSelected = getLatestSelectedFiles()
-        const selectedKeys = new Set(
-          currentSelected.map(f => (f?.path ? normalize(f.path) : ''))
-        )
+        const selectedKeys = new Set(currentSelected.map(f => (f?.path ? normalize(f.path) : '')))
         const merged = [...currentSelected]
         for (const item of currentItems) {
           if (!item.path) continue

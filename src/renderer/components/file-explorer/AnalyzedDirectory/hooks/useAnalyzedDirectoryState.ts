@@ -35,7 +35,7 @@ const DIMENSION_LOAD_TIMEOUT_MS = 8000
  *
  * 注意：被包裹的 Promise 仍会继续执行，其后续结果由调用方的请求序号机制丢弃。
  */
-const withTimeout = <T,>(
+const withTimeout = <T>(
   promise: Promise<T>,
   timeoutMs: number,
   onTimeout: () => void
@@ -176,10 +176,14 @@ export const useAnalyzedDirectoryState = (
     }
   }, [])
 
-  // Reload files when filters or search keyword change
+  // 仅在搜索关键词/排序变更时刷新 store 侧文件列表；
+  // 标签筛选（selectedTags / unionMode）已由 DimensionFileListPanel 独立承载并带 LRU 缓存，
+  // 避免每次点击标签触发双重 getFilteredFilesPaged IPC 与整页双次 isLoading 重渲染。
   useEffect(() => {
-    loadFilteredFiles()
-  }, [selectedTags, sortBy, sortOrder, analyzedDirectoryKeyword, unionMode])
+    if (analyzedDirectoryKeyword.trim()) {
+      loadFilteredFiles()
+    }
+  }, [sortBy, sortOrder, analyzedDirectoryKeyword])
 
   // Reload data when workspace directory or language changes
   useEffect(() => {
@@ -277,17 +281,14 @@ export const useAnalyzedDirectoryState = (
   }, [currentWorkspaceDirectory])
 
   // 监听基础 AI 引擎（Omni）「未就绪 → 运行中」跃迁：
-  // 冷启动期间受控分类树会先降级为空树（避免阻塞首屏），引擎就绪后自动重取一次，
-  // 否则左侧「分类维度」会一直停留在"暂无数据"，直到用户手动触发刷新。
+  // 冷启动期间受控分类树可能先降级走 SQLite 回退路径（仅含少量残缺标签），引擎首次就绪后立即补取完整受控维度树；
+  // 判定条件用 `wasRunning !== true`（覆盖初始态 null → true 以及 false → true），防止首条事件即为 running=true 时漏补拉。
   useEffect(() => {
     const unsubscribe = window.electronAPI?.onOmniStatusChanged?.(status => {
       const wasRunning = omniRunningRef.current
       omniRunningRef.current = status.running
-      if (wasRunning === false && status.running && currentWorkspaceDirectory) {
-        logger.info(
-          LogCategory.RENDERER,
-          '[已分析目录] Omni 引擎已就绪，重新加载受控分类维度树'
-        )
+      if (wasRunning !== true && status.running && currentWorkspaceDirectory) {
+        logger.info(LogCategory.RENDERER, '[已分析目录] Omni 引擎已就绪，重新加载受控分类维度树')
         loadDimensionGroups()
       }
     })
@@ -295,7 +296,6 @@ export const useAnalyzedDirectoryState = (
       if (unsubscribe) unsubscribe()
     }
   }, [currentWorkspaceDirectory])
-
 
   // 记录非勾选模式下的单选状态
   useEffect(() => {

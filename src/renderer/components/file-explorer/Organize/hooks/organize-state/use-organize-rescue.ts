@@ -93,6 +93,16 @@ export function useOrganizeRescue({
             total: progress.totalSteps || 1,
             message: progress.message || ''
           })
+
+          // 每批次找补完成时，将增量预览树点对点合并到基线快照中，实时动态刷新目录树与未归类计数
+          if (progress?.currentTreePreview) {
+            const mergedPreview = mergeRescueResult(
+              baseTreeSnapshot,
+              sanitizeTree(progress.currentTreePreview)
+            )
+            setFinalTree(mergedPreview)
+            setUnmatchedCount(countUnclassified(mergedPreview))
+          }
         }
       )
 

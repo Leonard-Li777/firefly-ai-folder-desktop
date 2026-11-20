@@ -611,7 +611,10 @@ export function registerVirtualDirectoryIPCHandlers() {
         ...options,
         language: ConfigOrchestrator.getInstance().getValue('DEFAULT_LANGUAGE') as string,
         onProgress: progress => {
-          event.sender.send('virtual-directory/reorganize-progress', progress)
+          event.sender.send('virtual-directory/reorganize-progress', {
+            ...progress,
+            isRescue: Boolean(options?.isRescue)
+          })
         },
         checkPaused: async () => {
           while (reorganizePauseFlags.get(virtualDirectoryId)) {
@@ -1525,9 +1528,22 @@ export function registerVirtualDirectoryIPCHandlers() {
     }
   )
 
-  ipcMain.handle('delete-tag-globally', async (event, dimensionId: number, tagName: string) => {
-    return await databaseService.deleteTagGlobally(dimensionId, tagName)
-  })
+  ipcMain.handle(
+    'delete-tag-globally',
+    async (
+      event,
+      dimensionId: number | string,
+      tagName: string,
+      options?: {
+        code?: string
+        codePath?: string
+        codePaths?: string[]
+        viaParentCode?: string
+      }
+    ) => {
+      return await databaseService.deleteTagGlobally(dimensionId, tagName, options)
+    }
+  )
 
   // ─── 批量查重与安全清理 IPC ───────────────────────────────────────────────
   ipcMain.handle('duplicate:scan', async (event, options: any) => {

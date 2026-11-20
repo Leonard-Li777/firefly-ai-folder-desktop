@@ -15,8 +15,16 @@ export const organizeApi = {
     applyTags: (operation: any): Promise<any> => ipcRenderer.invoke('batch-tag:apply', operation),
     inspectControlledTags: (items: any[], language?: string): Promise<any> =>
       ipcRenderer.invoke('batch-tag:inspect-controlled-tags', items, language),
-    deleteTagGlobally: (dimensionId: number, tagName: string): Promise<boolean> =>
-      ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
+    deleteTagGlobally: (
+      dimensionId: number | string,
+      tagName: string,
+      options?: {
+        code?: string
+        codePath?: string
+        codePaths?: string[]
+        viaParentCode?: string
+      }
+    ): Promise<boolean> => ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName, options),
     scanDuplicates: (options: any): Promise<any[]> => ipcRenderer.invoke('duplicate:scan', options),
     onScanProgress: (callback: (data: any) => void): (() => void) => {
       const handler = (_: any, data: any) => callback(data)
@@ -37,8 +45,16 @@ export const organizeApi = {
       ipcRenderer.invoke('get-effective-directory-config', dirPath)
   },
 
-  deleteTagGlobally: (dimensionId: number, tagName: string): Promise<boolean> =>
-    ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
+  deleteTagGlobally: (
+    dimensionId: number | string,
+    tagName: string,
+    options?: {
+      code?: string
+      codePath?: string
+      codePaths?: string[]
+      viaParentCode?: string
+    }
+  ): Promise<boolean> => ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName, options),
 
   getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>
     ipcRenderer.invoke('get-effective-directory-config', dirPath),
@@ -180,7 +196,7 @@ export const organizeApi = {
     onReorganizeProgress: (callback: (progress: any) => void) => {
       const handler = (_event: any, payload: any) => callback(payload)
       ipcRenderer.on('virtual-directory/reorganize-progress', handler)
-      return () => ipcRenderer.removeListener('virtual-directory/remove-progress', handler)
+      return () => ipcRenderer.removeListener('virtual-directory/reorganize-progress', handler)
     }
   },
 

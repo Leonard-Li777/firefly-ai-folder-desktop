@@ -943,6 +943,43 @@ export function mergeRescueResult(
     walk(nodes)
   }
 
+  // 1.5 构建原始文件元数据索引（后端找补预览/结果常返回瘦身对象 { fileId, smartName }，缺少 name/path/originalPath）
+  const originalFileByKey = new Map<string, any>()
+  const indexOriginalFiles = (nodes: VirtualDirectoryNode[]) => {
+    for (const node of nodes || []) {
+      if (Array.isArray(node.files)) {
+        for (const f of node.files) {
+          if (!f) continue
+          for (const k of getAllFileKeys(f)) {
+            if (!originalFileByKey.has(k)) {
+              originalFileByKey.set(k, f)
+            }
+          }
+        }
+      }
+      if (Array.isArray(node.subdirectories)) {
+        indexOriginalFiles(node.subdirectories)
+      }
+    }
+  }
+  indexOriginalFiles(original)
+
+  const enrichRescuedFile = (f: any) => {
+    const keys = getAllFileKeys(f)
+    for (const k of keys) {
+      const orig = originalFileByKey.get(k)
+      if (orig) {
+        return {
+          ...orig,
+          ...f,
+          name: f.name || orig.name,
+          smartName: f.smartName || orig.smartName
+        }
+      }
+    }
+    return f
+  }
+
   // 3. 收集 rescued 树中所有被归类到非「未归类」节点的文件并合并
   const traverseRescued = (nodes: VirtualDirectoryNode[], pathParts: string[]) => {
     for (const node of nodes) {
@@ -953,9 +990,10 @@ export function mergeRescueResult(
       if (node.files && node.files.length > 0) {
         const targetNode = findOrCreatePath(newTree, currentPath)
         for (const f of node.files) {
+          const enriched = enrichRescuedFile(f)
           // 先从 newTree 的原有旧节点中彻底擦除该文件，避免在新旧节点中重复出现
-          removeFileFromTree(newTree, f)
-          targetNode.files.push(f)
+          removeFileFromTree(newTree, enriched)
+          targetNode.files.push(enriched)
         }
       }
       if (node.subdirectories) {
@@ -1196,4 +1234,70 @@ export function filterEmptyDirectoryNodes(nodes: VirtualDirectoryNode[]): Virtua
   }
 
   return result
+}
+
+/**
+ * 取消目录嵌套层级，将所有嵌套子目录提升平铺到根目录（各自保留所属文件；同名目录合并并按全特征 Key 去重，自动跳过未归类节点）。
+ * 供 DoneView「平铺到根目录」预览与保存落盘复用。
+ */
+export function flattenDirectoriesToRoot(
+  nodes: VirtualDirectoryNode[],
+  skipEmptyDirs = false
+): VirtualDirectoryNode[] {
+  if (!Array.isArray(nodes)) return []
+  const mergedByName = new Map<string, { node: VirtualDirectoryNode; seenFileKeys: Set<string> }>()
+  const orderedNames: string[] = []
+
+  const walk = (list: VirtualDirectoryNode[]) => {
+    for (const node of list) {
+      if (!node || isUnclassifiedNodeName(node.name)) continue
+      const dirName = sanitizeDirectoryName(node.name).trim() || node.name
+      let entry = mergedByName.get(dirName)
+      if (!entry) {
+        entry = {
+          node: {
+            ...node,
+            name: dirName,
+            parent: null,
+            subdirectories: [],
+            files: [],
+            fileCount: 0,
+            totalSize: 0
+          },
+          seenFileKeys: new Set<string>()
+        }
+        mergedByName.set(dirName, entry)
+        orderedNames.push(dirName)
+      }
+
+      if (Array.isArray(node.files)) {
+        for (const f of node.files) {
+          if (!f) continue
+          const keys = getAllFileKeys(f)
+          if (keys.length > 0 && keys.some(k => entry!.seenFileKeys.has(k))) continue
+          keys.forEach(k => entry!.seenFileKeys.add(k))
+          entry.node.files.push(f)
+        }
+      }
+
+      if (Array.isArray(node.subdirectories) && node.subdirectories.length > 0) {
+        walk(node.subdirectories)
+      }
+    }
+  }
+
+  walk(nodes)
+
+  const flatDirs: VirtualDirectoryNode[] = []
+  for (const name of orderedNames) {
+    const { node } = mergedByName.get(name)!
+    node.fileCount = node.files.length
+    node.totalSize = node.files.reduce((sum: number, f: any) => sum + (f.size || 0), 0)
+    if (skipEmptyDirs && node.files.length === 0) {
+      continue
+    }
+    flatDirs.push(node)
+  }
+
+  return flatDirs
 }

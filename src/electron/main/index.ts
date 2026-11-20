@@ -497,8 +497,9 @@ logger.on(
           }
           try {
             const rawJson = JSON.stringify(arg)
-            // 软截断为紧凑摘要
-            parts.push(rawJson.length > 80 ? rawJson.slice(0, 80) + '...' : rawJson)
+            // 开发模式：不截断，原样输出完整 JSON；生产/E2E 保留 80 字符软截断
+            const isDev = process.env.NODE_ENV === 'development'
+            parts.push(!isDev && rawJson.length > 80 ? rawJson.slice(0, 80) + '...' : rawJson)
           } catch {
             parts.push('[Object]')
           }
@@ -573,10 +574,17 @@ logger.on(
       const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}.${String(d.getMilliseconds()).padStart(3, '0')}`
       const seqStr = `#${String(seq).padStart(4, '0')}`
 
-      // 组装格式化单行纯文本（安全软截断 ≤200 字符）
-      let cleanMsg = rawMessage.replace(/[\r\n]+/g, ' ')
-      if (cleanMsg.length > 120) {
-        cleanMsg = cleanMsg.slice(0, 120) + '...'
+      // 组装格式化单行纯文本（生产/E2E 软截断 ≤200 字符；开发模式不截断，保留完整消息与换行）
+      const isDevMsg = process.env.NODE_ENV === 'development'
+      let cleanMsg: string
+      if (isDevMsg) {
+        // 开发模式：不截断长度，仅把换行折叠成空格避免破坏单行展示
+        cleanMsg = rawMessage.replace(/[\r\n]+/g, ' ')
+      } else {
+        cleanMsg = rawMessage.replace(/[\r\n]+/g, ' ')
+        if (cleanMsg.length > 120) {
+          cleanMsg = cleanMsg.slice(0, 120) + '...'
+        }
       }
 
       const metaParts: string[] = []

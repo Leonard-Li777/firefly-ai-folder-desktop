@@ -23,8 +23,18 @@ interface DimensionFileListPanelProps {
   // Selected tags & callbacks
   selectedTags: SelectedTag[]
   isMultiSelectMode: boolean
-  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string, codePath?: string) => void
-  toggleTagSelection: (dimensionId: number, tagValue: string, parentTagValue?: string, codePath?: string) => void
+  removeSelectedTag: (
+    dimensionId: number,
+    tagValue?: string,
+    parentTagValue?: string,
+    codePath?: string
+  ) => void
+  toggleTagSelection: (
+    dimensionId: number,
+    tagValue: string,
+    parentTagValue?: string,
+    codePath?: string
+  ) => void
   clearSelectedTags: () => void
 
   // File selection & active preview item callbacks
@@ -59,6 +69,32 @@ interface DimensionFileListPanelProps {
 }
 
 const PAGE_SIZE = 100
+/** 延迟显示 loading 阈值（毫秒）：本地 SQLite 查询通常 1~5ms 完成，避免每次切换标签都闪烁 loading 并重建 FileList */
+const LOADING_DELAY_MS = 180
+/** 标签筛选结果客户端 LRU 缓存容量：切回已浏览标签时 0ms 瞬切，同时后台静默刷新 */
+const FILTER_CACHE_MAX = 40
+
+interface FilterCacheEntry {
+  items: FileType[]
+  total: number
+}
+
+function buildFilterCacheKey(params: {
+  workspaceDirectoryPath?: string
+  virtualDirectoryId?: number
+  sortBy: string
+  sortOrder: string
+  unionMode: string
+  selectedTags: SelectedTag[]
+}): string {
+  const tagPart = params.selectedTags
+    .map(
+      t =>
+        `${t.dimensionId}|${t.code || ''}|${t.codePath || ''}|${t.tagValue}|${t.isLifted ? '1' : '0'}`
+    )
+    .join(',')
+  return `${params.workspaceDirectoryPath || ''}|${params.virtualDirectoryId ?? ''}|${params.sortBy}|${params.sortOrder}|${params.unionMode}|${tagPart}`
+}
 
 export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   workspaceDirectoryPath,
@@ -95,7 +131,11 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   const [totalFilesCount, setTotalFilesCount] = useState(0)
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall'>('grid')
 
-  const loadingRef = useRef(false)
+  const loadingMoreRef = useRef(false)
+  const requestSeqRef = useRef(0)
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const filterCacheRef = useRef<Map<string, FilterCacheEntry>>(new Map())
+  const prevRefreshKeyRef = useRef(refreshKey)
   const filteredFilesRef = useRef<FileType[]>([])
   filteredFilesRef.current = filteredFiles
 
@@ -108,17 +148,62 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
     }
   }, [config?.DEFAULT_VIEW])
 
+  useEffect(() => {
+    return () => {
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current)
+        loadingTimerRef.current = null
+      }
+    }
+  }, [])
+
   const loadFilteredFiles = useCallback(
-    async (isLoadMore = false) => {
-      if (loadingRef.current) return
-      loadingRef.current = true
+    async (isLoadMore = false, bypassCache = false) => {
+      if (isLoadMore) {
+        if (loadingMoreRef.current) return
+        loadingMoreRef.current = true
+      }
+
+      const seq = ++requestSeqRef.current
+      const cacheKey = buildFilterCacheKey({
+        workspaceDirectoryPath,
+        virtualDirectoryId,
+        sortBy,
+        sortOrder,
+        unionMode,
+        selectedTags
+      })
+
+      if (loadingTimerRef.current) {
+        clearTimeout(loadingTimerRef.current)
+        loadingTimerRef.current = null
+      }
+
+      let hitCache = false
+      if (!isLoadMore && !bypassCache) {
+        const cached = filterCacheRef.current.get(cacheKey)
+        if (cached) {
+          hitCache = true
+          // LRU 刷新位置
+          filterCacheRef.current.delete(cacheKey)
+          filterCacheRef.current.set(cacheKey, cached)
+          setFilteredFiles(cached.items)
+          setTotalFilesCount(cached.total)
+          setIsLoading(false)
+        }
+      }
 
       try {
         const currentCount = filteredFilesRef.current.length
         if (isLoadMore) {
           setIsLoadingMore(true)
-        } else {
-          setIsLoading(true)
+        } else if (!hitCache && currentCount === 0) {
+          // 仅在当前列表为空且请求超过 180ms 未返回时才展示 loading，避免每次切标签闪烁并触发 FileList 重建
+          loadingTimerRef.current = setTimeout(() => {
+            if (seq === requestSeqRef.current) {
+              setIsLoading(true)
+            }
+          }, LOADING_DELAY_MS)
         }
 
         const currentOffset = isLoadMore ? currentCount : 0
@@ -134,66 +219,67 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
           unionMode
         })
 
+        // 丢弃已被后续点击取代的过期请求，防快速连点标签结果串台
+        if (seq !== requestSeqRef.current) return
+
+        const items = result.items || []
+        const total = result.total || 0
+
         if (isLoadMore) {
-          setFilteredFiles(prev => [...prev, ...(result.items || [])])
+          setFilteredFiles(prev => [...prev, ...items])
         } else {
-          setFilteredFiles(result.items || [])
+          // 写入 LRU 缓存
+          if (filterCacheRef.current.size >= FILTER_CACHE_MAX) {
+            const oldestKey = filterCacheRef.current.keys().next().value
+            if (oldestKey !== undefined) filterCacheRef.current.delete(oldestKey)
+          }
+          filterCacheRef.current.set(cacheKey, { items, total })
+          setFilteredFiles(items)
         }
-        setTotalFilesCount(result.total || 0)
+        setTotalFilesCount(total)
       } catch (error) {
-        logger.error(LogCategory.VIRTUAL_DIRECTORY, '加载已过滤文件失败:', error)
+        if (seq === requestSeqRef.current) {
+          logger.error(LogCategory.VIRTUAL_DIRECTORY, '加载已过滤文件失败:', error)
+        }
       } finally {
-        loadingRef.current = false
-        setIsLoading(false)
-        setIsLoadingMore(false)
+        if (isLoadMore) {
+          loadingMoreRef.current = false
+          setIsLoadingMore(false)
+        }
+        if (seq === requestSeqRef.current) {
+          if (loadingTimerRef.current) {
+            clearTimeout(loadingTimerRef.current)
+            loadingTimerRef.current = null
+          }
+          setIsLoading(false)
+        }
       }
     },
-    [
-      selectedTags,
-      sortBy,
-      sortOrder,
-      workspaceDirectoryPath,
-      virtualDirectoryId,
-      unionMode
-    ]
+    [selectedTags, sortBy, sortOrder, workspaceDirectoryPath, virtualDirectoryId, unionMode]
   )
 
+  // 合并原本重复的两个 useEffect，避免每次点击标签连续发起 2 次相同 IPC
   useEffect(() => {
+    const refreshChanged = prevRefreshKeyRef.current !== refreshKey
+    prevRefreshKeyRef.current = refreshKey
+    if (refreshChanged) {
+      filterCacheRef.current.clear()
+    }
     if (
       !currentPath ||
       currentPath === '/analyzed-directory' ||
       currentPath === '/virtual-directory' ||
       currentPath === '/organize'
     ) {
-      loadFilteredFiles(false)
+      loadFilteredFiles(false, refreshChanged)
     }
-  }, [
-    selectedTags,
-    sortBy,
-    sortOrder,
-    workspaceDirectoryPath,
-    virtualDirectoryId,
-    refreshKey,
-    currentPath,
-    unionMode,
-    loadFilteredFiles
-  ])
+  }, [refreshKey, currentPath, loadFilteredFiles])
 
-  useEffect(() => {
-    if (
-      !currentPath ||
-      currentPath === '/analyzed-directory' ||
-      currentPath === '/virtual-directory' ||
-      currentPath === '/organize'
-    ) {
-      loadFilteredFiles(false)
-    }
-  }, [currentPath, loadFilteredFiles])
-
-  // 监听全局标签/智能文件名/文件变动事件，自动刷新列表
+  // 监听全局标签/智能文件名/文件变动事件，失效缓存并自动刷新列表
   useEffect(() => {
     const handleGlobalUpdate = () => {
-      loadFilteredFiles(false)
+      filterCacheRef.current.clear()
+      loadFilteredFiles(false, true)
     }
     window.addEventListener('tags-updated', handleGlobalUpdate)
     window.addEventListener('tags:updated', handleGlobalUpdate)
@@ -208,7 +294,7 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   }, [loadFilteredFiles])
 
   const handleLoadMore = useCallback(() => {
-    if (!loadingRef.current && filteredFilesRef.current.length < totalFilesCount) {
+    if (!loadingMoreRef.current && filteredFilesRef.current.length < totalFilesCount) {
       loadFilteredFiles(true)
     }
   }, [totalFilesCount, loadFilteredFiles])
@@ -231,6 +317,8 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   }, [])
 
   const lastSelectedItemRef = useRef<any>(null)
+  const selectedFilesRef = useRef<any[]>(selectedFiles)
+  selectedFilesRef.current = selectedFiles
 
   const handleFileSelect = useCallback(
     (newSelection: any[], isFromCheckbox = false) => {
@@ -250,9 +338,9 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
         filteredFiles.forEach(f => {
           if (f?.path) pageMap.set(normalize(f.path), f)
         })
-        // 全量选中项查找表：勾选事件只携带当前页受影响项，需与既有多页选中项合并而非整体覆盖
+        // 全量选中项查找表：使用 selectedFilesRef 避免闭包过期，与既有多页选中项合并而非整体覆盖
         const selectedMap = new Map<string, FileType>()
-        selectedFiles.forEach(f => {
+        selectedFilesRef.current.forEach(f => {
           const p = typeof f === 'string' ? f : f?.path
           if (p) selectedMap.set(normalize(p), f as FileType)
         })
@@ -347,7 +435,9 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   // 全选状态判断：仅以「当前已加载页」为基准判定，与复选框实际可见范围保持一致
   const isAllVisibleItemsSelected = useMemo(() => {
     if (filteredFiles.length === 0) return false
-    return filteredFiles.every(f => f?.path && selectedPathsSet.has(normalizePathForCompare(f.path)))
+    return filteredFiles.every(
+      f => f?.path && selectedPathsSet.has(normalizePathForCompare(f.path))
+    )
   }, [filteredFiles, selectedPathsSet, normalizePathForCompare])
 
   /**
@@ -495,20 +585,27 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                         return (
                           <span
                             key={itemKey}
-                        className="bg-primary/10 border border-primary/30 rounded-md px-2 py-0.5 flex items-center flex-shrink-0 text-primary text-xs font-medium"
-                      >
-                        <span className="text-[10px] opacity-60 mr-1">{tag.dimensionName}:</span>
-                        {tag.tagValue}
-                        <button
-                          className="ml-1.5 opacity-40 hover:opacity-100 cursor-pointer"
-                          onClick={() =>
-                            toggleTagSelection(tag.dimensionId, tag.tagValue, tag.parentTagValue, tag.codePath)
-                          }
-                        >
-                          <MaterialIcon icon="close" className="text-[12px]" />
-                        </button>
-                      </span>
-                    )
+                            className="bg-primary/10 border border-primary/30 rounded-md px-2 py-0.5 flex items-center flex-shrink-0 text-primary text-xs font-medium"
+                          >
+                            <span className="text-[10px] opacity-60 mr-1">
+                              {tag.dimensionName}:
+                            </span>
+                            {tag.tagValue}
+                            <button
+                              className="ml-1.5 opacity-40 hover:opacity-100 cursor-pointer"
+                              onClick={() =>
+                                toggleTagSelection(
+                                  tag.dimensionId,
+                                  tag.tagValue,
+                                  tag.parentTagValue,
+                                  tag.codePath
+                                )
+                              }
+                            >
+                              <MaterialIcon icon="close" className="text-[12px]" />
+                            </button>
+                          </span>
+                        )
                       })
                     })()}
                     {selectedTags.length > 15 && (

@@ -15,7 +15,8 @@ import {
   recalculateNodeFileCounts,
   getAllFileKeys,
   isUnclassifiedNodeName,
-  filterEmptyDirectoryNodes
+  filterEmptyDirectoryNodes,
+  flattenDirectoriesToRoot
 } from '../utils/helpers'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
@@ -98,8 +99,8 @@ export function DoneView({
         const subs = filterUnclassified(n.subdirectories || [])
         const cleanFiles = (n.files || []).filter(
           f =>
-            !isUnclassifiedNodeName(f.name) &&
-            !isUnclassifiedNodeName(f.smartName) &&
+            !(f.name && isUnclassifiedNodeName(f.name)) &&
+            !(f.smartName && isUnclassifiedNodeName(f.smartName)) &&
             !f.isUnclassified &&
             !f.unclassified
         )
@@ -161,6 +162,15 @@ export function DoneView({
       ? fullClassifiedTree
       : recalculateNodeFileCounts(filterPendingFilesOnly(fullClassifiedTree))
     : fullClassifiedTree
+
+  // 勾选「平铺到根目录」时，取消目录嵌套层级，将所有子目录提升到根目录并列展示
+  const renderedClassifiedTree = React.useMemo(
+    () =>
+      options?.flattenToRoot
+        ? flattenDirectoriesToRoot(classifiedTree, Boolean(options?.skipEmptyDirs))
+        : classifiedTree,
+    [options?.flattenToRoot, options?.skipEmptyDirs, classifiedTree]
+  )
 
   const classifiedCount = countRealFiles(classifiedTree)
   const totalClassifiedCount = countRealFiles(fullClassifiedTree)
@@ -245,18 +255,33 @@ export function DoneView({
 
       if (currentVDir?.id && res.tree.length > 0) {
         // 单一事实源原子落库：由 syncIncrementalDirectoryTree 统一提取全量文件与空目录 .keep 占位，严格遵守 options.skipEmptyDirs
-        const treeToSync = options?.skipEmptyDirs
-          ? filterEmptyDirectoryNodes(res.tree)
-          : res.tree
-        window.electronAPI?.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, treeToSync).then(() => {
-          window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } }))
-          window.dispatchEvent(new CustomEvent('vdir:incremental-updated', { detail: { vdirId: currentVDir.id } }))
-        }).catch(err => {
-          logger.warn(LogCategory.FILE_ORGANIZATION, '滑块重塑同步树失败:', err)
-        })
+        const treeToSync = options?.skipEmptyDirs ? filterEmptyDirectoryNodes(res.tree) : res.tree
+        window.electronAPI?.virtualDirectory
+          .syncIncrementalDirectoryTree(currentVDir.id, treeToSync)
+          .then(() => {
+            window.dispatchEvent(
+              new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } })
+            )
+            window.dispatchEvent(
+              new CustomEvent('vdir:incremental-updated', { detail: { vdirId: currentVDir.id } })
+            )
+          })
+          .catch(err => {
+            logger.warn(LogCategory.FILE_ORGANIZATION, '滑块重塑同步树失败:', err)
+          })
       }
     },
-    [draftTree, tree, rawMatches, filesMap, userPinnedFileMap, setFinalTree, setUnmatchedCount, currentVDir?.id, options?.skipEmptyDirs]
+    [
+      draftTree,
+      tree,
+      rawMatches,
+      filesMap,
+      userPinnedFileMap,
+      setFinalTree,
+      setUnmatchedCount,
+      currentVDir?.id,
+      options?.skipEmptyDirs
+    ]
   )
 
   // 拦截文件微调事件，记录用户手动固定的路径映射 (Pinned 保护)
@@ -356,11 +381,16 @@ export function DoneView({
               setOptions(prev => ({ ...prev, skipEmptyDirs: nextVal }))
               if (currentVDir?.id && tree.length > 0) {
                 const treeToSync = nextVal ? filterEmptyDirectoryNodes(tree) : tree
-                window.electronAPI?.virtualDirectory.syncIncrementalDirectoryTree(currentVDir.id, treeToSync).then(() => {
-                  window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } }))
-                }).catch(err => {
-                  logger.warn(LogCategory.FILE_ORGANIZATION, '同步空目录开关状态失败:', err)
-                })
+                window.electronAPI?.virtualDirectory
+                  .syncIncrementalDirectoryTree(currentVDir.id, treeToSync)
+                  .then(() => {
+                    window.dispatchEvent(
+                      new CustomEvent('vdir:updated', { detail: { vdirId: currentVDir.id } })
+                    )
+                  })
+                  .catch(err => {
+                    logger.warn(LogCategory.FILE_ORGANIZATION, '同步空目录开关状态失败:', err)
+                  })
               }
             }}
           />
@@ -425,7 +455,7 @@ export function DoneView({
                   <div className="h-full flex flex-col overflow-hidden p-4">
                     <div className="flex-1 overflow-auto">
                       <VDirTree
-                        nodes={classifiedTree}
+                        nodes={renderedClassifiedTree}
                         onDeleteNode={onDeleteNode}
                         onRenameNode={onRenameNode}
                         onAddSubdir={onAddSubdir}
@@ -437,9 +467,7 @@ export function DoneView({
                             <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
                               <Checkbox
                                 checked={showPreviousClassified}
-                                onCheckedChange={checked =>
-                                  setShowPreviousClassified(!!checked)
-                                }
+                                onCheckedChange={checked => setShowPreviousClassified(!!checked)}
                               />
                               <span>{t('显示前次已归类文件')}</span>
                             </label>
@@ -461,10 +489,7 @@ export function DoneView({
                     <div className="mb-3 flex items-center justify-between flex-wrap gap-2.5 pb-2.5 border-b border-border/60">
                       <div className="flex items-center gap-2 flex-wrap">
                         <div className="text-xs font-semibold text-foreground flex items-center gap-1.5 shrink-0 whitespace-nowrap">
-                          <MaterialIcon
-                            icon="help_outline"
-                            className="text-sm text-yellow-500"
-                          />
+                          <MaterialIcon icon="help_outline" className="text-sm text-yellow-500" />
                           <span>
                             {t('未归类文件 ({count})', { count: unclassifiedFiles.length })}
                           </span>
@@ -546,9 +571,7 @@ export function DoneView({
                               icon="sync"
                               className="text-primary text-sm animate-spin shrink-0"
                             />
-                            <span>
-                              {progressInfo?.message || t('正在执行 AI 找补归类...')}
-                            </span>
+                            <span>{progressInfo?.message || t('正在执行 AI 找补归类...')}</span>
                           </span>
                           <span className="tabular-nums text-primary font-bold text-xs">
                             {t('第 {current} / {total} 批次', {
@@ -565,9 +588,7 @@ export function DoneView({
                                 100,
                                 Math.max(
                                   10,
-                                  ((progressInfo?.current || 1) /
-                                    (progressInfo?.total || 1)) *
-                                    100
+                                  ((progressInfo?.current || 1) / (progressInfo?.total || 1)) * 100
                                 )
                               )}%`
                             }}
@@ -616,7 +637,10 @@ export function DoneView({
                     {/* 底部拖拽操作提示：告知用户可直接拖动待归类文件到左侧目录或同级文件旁边 */}
                     <div className="pt-2.5 mt-2 border-t border-border/60 flex items-center justify-between text-xs text-muted-foreground select-none shrink-0 bg-muted/20 -mx-4 -mb-4 px-4 py-2.5 rounded-b-xl">
                       <span className="flex items-center gap-1.5 text-foreground/80 font-medium">
-                        <MaterialIcon icon="drag_indicator" className="text-base text-primary shrink-0" />
+                        <MaterialIcon
+                          icon="drag_indicator"
+                          className="text-base text-primary shrink-0"
+                        />
                         <span>{t('提示：可直接拖动文件到左侧目录或同级文件旁边完成归类')}</span>
                       </span>
                     </div>
@@ -629,7 +653,7 @@ export function DoneView({
           <div className="h-full flex flex-col overflow-hidden p-4">
             <div className="flex-1 overflow-auto">
               <VDirTree
-                nodes={classifiedTree}
+                nodes={renderedClassifiedTree}
                 onDeleteNode={onDeleteNode}
                 onRenameNode={onRenameNode}
                 onAddSubdir={onAddSubdir}
@@ -641,9 +665,7 @@ export function DoneView({
                     <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
                       <Checkbox
                         checked={showPreviousClassified}
-                        onCheckedChange={checked =>
-                          setShowPreviousClassified(!!checked)
-                        }
+                        onCheckedChange={checked => setShowPreviousClassified(!!checked)}
                       />
                       <span>{t('显示前次已归类文件')}</span>
                     </label>

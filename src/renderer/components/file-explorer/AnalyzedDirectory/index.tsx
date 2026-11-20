@@ -390,27 +390,40 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
       const deleteFn =
         window.electronAPI?.deleteTagGlobally ||
         (window.electronAPI as any)?.organizeBatch?.deleteTagGlobally
-      if (deleteFn) {
-        const results = await Promise.allSettled(
-          selectedTags.map(tag => deleteFn(tag.dimensionId, tag.tagValue))
+      if (!deleteFn) {
+        toast.error(t('批量删除标签失败：接口不可用'))
+        return
+      }
+
+      const results = await Promise.allSettled(
+        selectedTags.map(tag =>
+          deleteFn(tag.dimensionId, tag.tagValue, {
+            code: tag.code,
+            codePath: tag.codePath,
+            codePaths: tag.codePaths,
+            viaParentCode: tag.viaParentCode
+          })
         )
-        for (const res of results) {
-          if (res.status === 'fulfilled' && res.value) {
-            deletedCount++
-          }
+      )
+      for (const res of results) {
+        if (res.status === 'fulfilled' && res.value === true) {
+          deletedCount++
         }
       }
-      toast.success(
-        t('已成功删除 {count} 个勾选的标签', { count: deletedCount || selectedTags.length })
-      )
-      clearSelectedTags()
-      setShowBatchDeleteDialog(false)
-      // 广播标签变更事件并刷新分类维度树与文件列表
-      window.dispatchEvent(new CustomEvent('tags-updated'))
-      window.dispatchEvent(new CustomEvent('tags:updated'))
-      if (currentWorkspaceDirectory) {
-        await loadDimensionGroups()
-        await loadFilteredFiles()
+
+      if (deletedCount > 0) {
+        toast.success(t('已成功删除 {count} 个勾选的标签', { count: deletedCount }))
+        clearSelectedTags()
+        setShowBatchDeleteDialog(false)
+        // 广播标签变更事件并刷新分类维度树与文件列表
+        window.dispatchEvent(new CustomEvent('tags-updated'))
+        window.dispatchEvent(new CustomEvent('tags:updated'))
+        if (currentWorkspaceDirectory) {
+          await loadDimensionGroups()
+          await loadFilteredFiles()
+        }
+      } else {
+        toast.error(t('未能删除所选标签，请刷新分类维度树后重试'))
       }
     } catch (error: any) {
       toast.error(error?.message || t('批量删除标签失败'))
