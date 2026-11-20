@@ -286,6 +286,8 @@ export class LoggingService {
     if (depth > 15) return Array.isArray(data) ? '[Array...]' : '[Object...]'
 
     if (typeof data === 'string') {
+      // 开发模式：不脱敏，原样输出完整字符串
+      if (process.env.NODE_ENV === 'development') return data
       return maskSensitiveInfo(data)
     }
     if (typeof data === 'number' || typeof data === 'boolean') {
@@ -293,6 +295,15 @@ export class LoggingService {
     }
     if (data instanceof Error || data instanceof Date || data instanceof RegExp) {
       return data
+    }
+    // 开发模式：不截断数组/对象，原样输出
+    if (process.env.NODE_ENV === 'development') {
+      if (Array.isArray(data)) return data.map(item => this.sanitizeData(item, depth + 1))
+      const devOut: any = {}
+      for (const key of Object.keys(data)) {
+        devOut[key] = this.sanitizeData(data[key], depth + 1)
+      }
+      return devOut
     }
     if (Array.isArray(data)) {
       if (data.length > 100) {

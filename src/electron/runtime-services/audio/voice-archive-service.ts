@@ -22,7 +22,68 @@ import { app } from 'electron'
 import { logger, LogCategory, ResourceLocator, PluginPathResolver } from '@firefly/shared'
 import { omniClient } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
-import type { VoiceMeta } from '../../../renderer/constants/tts-voices'
+import { PRESET_VOICES, type VoiceMeta } from '../../../renderer/constants/tts-voices'
+
+/**
+ * M5-TTS 原生 preset_voices.json ID 到策展元数据 (PRESET_VOICES) ID 的 1:1 映射表。
+ * 保留 M5 原生 `voice_m5_*` 作为运行时 ID（直通 Omni O(1) 精确命中），同时复用策展过的
+ * 优雅显示名、准确性别/语种与推荐标记，避免 UI 直接暴露原始音频文件名。
+ */
+const M5_VOICE_ID_TO_CURATED_ID: Record<string, string> = {
+  voice_m5_azure_云希: 'azure_yunxi',
+  voice_m5_azure_云野: 'azure_yunye',
+  voice_m5_donald_j_trump: 'donald_trump',
+  voice_m5_my_biggest_weaknesses_is_asking_for_help_when_i_need_it: 'english_native_male',
+  voice_m5_ホットするっていうかそれはあの: 'japanese_daily',
+  voice_m5_一支穿云箭_千军万马来相见: 'zhouxingchi',
+  voice_m5_丁真: 'dingzhen',
+  voice_m5_东北娘们: 'dongbei_dajie',
+  voice_m5_从来没有一位高官_会在在位或者退休之后: 'documentary_male',
+  voice_m5_你干嘛哈哈哎哟: 'kunkun_sound',
+  voice_m5_光动嘴不如亲自做给你看: 'action_youth',
+  voice_m5_卢本伟: 'lubenwei',
+  voice_m5_哪些死去士兵的意义将由我们来赋予: 'erwin',
+  voice_m5_喜欢用雷军ai配音来玩梗恶搞的小朋友们你们好_我是雷军: 'leijun',
+  voice_m5_坚持才是胜利: 'inspirational_youth',
+  voice_m5_大家好我是嘉然戴安娜_关注嘉然顿顿解馋_谢谢: 'jiaran',
+  voice_m5_太乙真人: 'taiyi_zhenren',
+  voice_m5_奶龙: 'nailong',
+  voice_m5_姜文: 'jiangwen',
+  voice_m5_孙笑川: 'sunxiaochuan',
+  voice_m5_山本_沃日你仙人: 'liangjian_veteran',
+  voice_m5_希望你以后_能够做的比我还好哟: 'mentor_gentle',
+  voice_m5_常凯申: 'chiang_kai_shek',
+  voice_m5_年轻人_不讲武德: 'mabaoguo',
+  voice_m5_影视飓风_tim: 'tim',
+  voice_m5_懒羊羊: 'lanyangyang',
+  voice_m5_我之前无数次地想过_要不然干脆死了算了: 'emotional_monologue',
+  voice_m5_我当然知道啦: 'tsundere_girl',
+  voice_m5_新闻播报女: 'news_anchor_female',
+  voice_m5_新闻播报男: 'news_anchor_male',
+  voice_m5_是的_全灭的可能性相当的高: 'anime_hotblood',
+  voice_m5_曼波: 'manbo',
+  voice_m5_朝鲜播报员: 'passionate_announcer',
+  voice_m5_派蒙: 'paimon',
+  voice_m5_流萤: 'liuying',
+  voice_m5_火山_奶气萌娃: 'huoshan_mengwa',
+  voice_m5_火山_朱美: 'huoshan_zhumei',
+  voice_m5_火山_湾湾小何: 'huoshan_wanwan',
+  voice_m5_火山_猴哥: 'huoshan_houge',
+  voice_m5_皆_よろしく: 'japanese_anime',
+  voice_m5_短视频解说男声: 'narration_male',
+  voice_m5_符玄: 'fuxuan',
+  voice_m5_纳西妲: 'nahida',
+  voice_m5_舌尖上的中国: 'lilihong_shejian',
+  voice_m5_营销号_女声: 'marketing_female',
+  voice_m5_蔡徐坤: 'caixukun',
+  voice_m5_要到饭了_兄弟们: 'outdoor_streamer',
+  voice_m5_说得好像您带我以来我考好过几次一样: 'naughty_boy',
+  voice_m5_这种富裕仗_我八辈子也没有打过_咱们就敞开了当回地主_没有助攻_全他娘的主攻: 'liyunlong',
+  voice_m5_钟离: 'zhongli',
+  voice_m5_麦克阿瑟: 'macarthur'
+}
+
+const CURATED_VOICE_BY_ID = new Map<string, VoiceMeta>(PRESET_VOICES.map(v => [v.id, v]))
 
 /** 16 字节 Header 常量 */
 const ARCHIVE_MAGIC = 'MTTS'
@@ -122,7 +183,9 @@ export class VoiceArchiveService {
     let activeModuleId: string | null = moduleOverride || null
     let pluginsRoot = ''
     try {
-      const { modularResourceService } = require('../system/modular-resource-service')
+      // 使用 ESM 动态 import 规避与 modular-resource-service-core 的循环依赖，
+      // 严禁使用 CommonJS require('../system/...')（主进程单文件打包后会保留字面量路径导致 MODULE_NOT_FOUND）
+      const { modularResourceService } = await import('../system/modular-resource-service')
       if (!activeModuleId) {
         const activeModule = modularResourceService?.getActiveModuleBySlot?.('voice_tts')
         if (activeModule && activeModule.install_state === 'active') {
@@ -138,10 +201,21 @@ export class VoiceArchiveService {
             return ''
           }
         })()
-    } catch {
+    } catch (err) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[VoiceArchiveService] 动态加载 modularResourceService 失败，回退 PluginPathResolver:',
+        err
+      )
       try {
         pluginsRoot = PluginPathResolver.getPluginsRootDir()
-      } catch {}
+      } catch (resolverErr) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[VoiceArchiveService] PluginPathResolver.getPluginsRootDir 失败:',
+          resolverErr
+        )
+      }
     }
 
     if (!activeModuleId) {
@@ -199,18 +273,24 @@ export class VoiceArchiveService {
           const rawStr = await fsPromises.readFile(foundJsonPath, 'utf-8')
           const rawItems = JSON.parse(rawStr)
           if (Array.isArray(rawItems)) {
-            const voices: VoiceMeta[] = rawItems.map((item: any) => ({
-              id: String(item.id),
-              displayName: String(item.displayName || item.id),
-              gender:
-                item.gender === 'female' || item.gender === 'male' || item.gender === 'child'
-                  ? item.gender
-                  : 'female',
-              lang: String(item.lang || 'zh'),
-              desc: String(item.desc || ''),
-              recommended: Boolean(item.recommended),
-              isCustom: false
-            }))
+            const voices: VoiceMeta[] = rawItems.map((item: any) => {
+              const rawId = String(item.id)
+              const curatedId = M5_VOICE_ID_TO_CURATED_ID[rawId]
+              const curated = curatedId ? CURATED_VOICE_BY_ID.get(curatedId) : undefined
+              return {
+                id: rawId,
+                displayName: curated?.displayName || String(item.displayName || item.name || rawId),
+                gender:
+                  curated?.gender ||
+                  (item.gender === 'female' || item.gender === 'male' || item.gender === 'child'
+                    ? item.gender
+                    : 'female'),
+                lang: curated?.lang || String(item.lang || 'zh'),
+                desc: curated?.desc || String(item.desc || ''),
+                recommended: curated ? Boolean(curated.recommended) : Boolean(item.recommended),
+                isCustom: false
+              }
+            })
             if (voices.length > 0) {
               this.presetVoicesCache = voices
               return voices

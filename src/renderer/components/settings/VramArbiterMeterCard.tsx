@@ -317,7 +317,7 @@ export const VramArbiterMeterCard: React.FC<VramArbiterMeterCardProps> = ({ clas
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-foreground/75 flex items-center gap-1.5">
                 <Mic className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
-                {t('离线语音合成')}
+                {t('高质量语音合成')}
               </span>
               <span className="h-2 w-2 rounded-full bg-muted-foreground/40 shrink-0" />
             </div>

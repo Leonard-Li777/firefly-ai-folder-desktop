@@ -103,8 +103,22 @@ export class UserTierService {
         signature
       )
       const schema = getSharedSchemaName()
-      this.queries = new UserTierQueries(supabase, this.getTierConstants(), schema)
-      this.tierService = new TierService(this.queries, this.getTierConstants())
+
+      // 追查源头，严禁消费侧伪兜底：TIER_CONSTANTS 是云端 SSOT（异步下行），
+      // 启动早期尚未就绪时必须显式上浮错误，暴露配置时序缺口，
+      // 严禁把 undefined 冻结进 TierService 单例导致后续 syncFromCloud 读取
+      // this.tierConstants.tierLimits 时抛出晦涩的 TypeError（原报错根因）。
+      const tierConstants = this.getTierConstants()
+      if (!tierConstants || !tierConstants.tierLimits) {
+        throw new Error(
+          '[UserTierService] TIER_CONSTANTS 未就绪（云端 SSOT 尚未下行）。' +
+            'tier 服务依赖 tierConstants 计算额度，无法在配置缺失时构造。' +
+            '请等待 ConfigDbManager 完成云端同步（onConfigChange 触发重试）后再调用 getTierService()。'
+        )
+      }
+
+      this.queries = new UserTierQueries(supabase, tierConstants, schema)
+      this.tierService = new TierService(this.queries, tierConstants)
     }
     return this.tierService
   }
@@ -497,6 +511,31 @@ export class UserTierService {
     }
   }
 
+  /**
+   * 归一化云端流水展示类型：
+   * V4 账本 firecore_transactions.transaction_type 受 CHECK 约束固定写入大类
+   * （如 'consume' / 'exchange'），具体消费动作存在 metadata.action_type 中。
+   * 展示层优先取 metadata.action_type，与本地 pending_firecore_operations.operation_type 对齐。
+   */
+  private mapCloudTransactionToDisplayItem(tx: any) {
+    const actionType =
+      typeof tx?.metadata?.action_type === 'string' ? tx.metadata.action_type.trim() : ''
+    const displayType =
+      actionType && (tx.transaction_type === 'consume' || tx.transaction_type === 'exchange')
+        ? actionType
+        : tx.transaction_type
+
+    return {
+      id: tx.id,
+      type: displayType,
+      firecores: tx.firecores,
+      balance_after: tx.balance_after,
+      status: 'completed',
+      time: tx.created_at,
+      metadata: tx.metadata || null
+    }
+  }
+
   async fetchAndPushCloudTransactions(machineId: string): Promise<any[]> {
     try {
       const cloudData = await this.getTierService().getFirecoreTransactions(machineId, 500, 0)
@@ -518,15 +557,7 @@ export class UserTierService {
       }
       const locals = this.getDataManager().getLocalPendingRecords()
       return this.mergeCloudWithLocals(
-        cloudData.map(tx => ({
-          id: tx.id,
-          type: tx.transaction_type,
-          firecores: tx.firecores,
-          balance_after: tx.balance_after,
-          status: 'completed',
-          time: tx.created_at,
-          metadata: tx.metadata || null
-        })),
+        cloudData.map(tx => this.mapCloudTransactionToDisplayItem(tx)),
         locals
       )
     } catch {
@@ -582,15 +613,7 @@ export class UserTierService {
         }
       } else {
         result = this.mergeCloudWithLocals(
-          cloudData.map(tx => ({
-            id: tx.id,
-            type: tx.transaction_type,
-            firecores: tx.firecores,
-            balance_after: tx.balance_after,
-            status: 'completed',
-            time: tx.created_at,
-            metadata: tx.metadata || null
-          })),
+          cloudData.map(tx => this.mapCloudTransactionToDisplayItem(tx)),
           this.getDataManager().getLocalPendingRecords()
         )
       }
@@ -744,6 +767,32 @@ export class UserTierService {
               logger.error(LogCategory.SYSTEM, '[UserTierService] 配置变更后同步失败:', err)
             }
           )
+        }
+
+        // TIER_CONSTANTS 是云端 SSOT（异步下行）。启动早期未就绪时 getTierService()
+        // 会抛出明确错误（而非冻结 undefined 进单例）。此处监听其首次就绪，
+        // 重置已构造的 tierService/dataManager 单例，确保后续同步使用权威常量。
+        if ('TIER_CONSTANTS' in changes) {
+          const tc = this.getTierConstants()
+          if (tc && tc.tierLimits) {
+            logger.info(
+              LogCategory.SYSTEM,
+              '[UserTierService] TIER_CONSTANTS 已就绪，重置 tier 服务单例并重新同步'
+            )
+            this.tierService = null
+            this.queries = null
+            UserTierDataManager.resetInstance()
+            this.dataManager = null
+            this.syncLocalCacheAndNotify(SystemIdentityService.getInstance().getMachineId()).catch(
+              err => {
+                logger.error(
+                  LogCategory.SYSTEM,
+                  '[UserTierService] TIER_CONSTANTS 就绪后同步失败:',
+                  err
+                )
+              }
+            )
+          }
         }
       })
       // 初始化 DataManager (它会自动启动定时器和同步)

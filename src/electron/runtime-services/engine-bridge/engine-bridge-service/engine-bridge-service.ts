@@ -26,6 +26,7 @@ import {
   OmniModuleStatusResult,
   ProcessTreeIdentity
 } from '../../hibernation/types'
+import { moduleHibernationCoordinator } from '../../hibernation/module-hibernation-coordinator'
 import { omniService } from '../../system/omni-service'
 import { processTreeManager, ProcessTreeManager } from '../process-tree-manager'
 import {
@@ -790,19 +791,6 @@ export class EngineBridgeService {
       wasOffline
     ) {
       this.broadcastStatus()
-      // 同步最新运行状态至休眠协调器
-      try {
-        const {
-          moduleHibernationCoordinator
-        } = require('../../hibernation/module-hibernation-coordinator')
-        if (data.status === 'ready' || data.status === 'processing') {
-          moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
-        } else if (data.status === 'stopped' || data.status === 'error') {
-          moduleHibernationCoordinator.notifyModuleHibernated('firefly-ai-engine')
-        }
-      } catch (err) {
-        logger.warn(LogCategory.SYSTEM, '[EngineBridge] 同步状态至协调器异常:', err)
-      }
     }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径。
     // 该端点每次请求都要引擎侧全盘扫描，故按 TTL 节流，不跟随 5s 心跳无脑重扫（见 shouldRefreshModelCount）
@@ -856,11 +844,6 @@ export class EngineBridgeService {
     status: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' | undefined
   ): void {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { moduleHibernationCoordinator } =
-        require('../../hibernation/module-hibernation-coordinator') as {
-          moduleHibernationCoordinator: import('../../hibernation/module-hibernation-coordinator').ModuleHibernationCoordinator
-        }
       if (status === 'ready' || status === 'processing' || status === 'starting') {
         moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
       } else if (status === 'stopped' || status === 'error') {

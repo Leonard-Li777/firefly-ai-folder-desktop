@@ -59,6 +59,29 @@ function isNetworkError(error: any): boolean {
 }
 
 /**
+ * 仅为非 PostgREST 端点（如 Edge Functions）追加 `_lang` 查询参数以隔离 CDN 缓存。
+ * PostgREST (`/rest/v1/*`) 会把未知查询参数当作列过滤器或 RPC 形参解析，
+ * 追加 `_lang=zh-CN` 会触发 `failed to parse filter (zh-CN)` 400 错误。
+ */
+export function appendLangQueryIfSafe(input: any, language?: string): any {
+  if (!language) return input
+  const rawUrl = typeof input === 'string' ? input : input instanceof URL ? input.toString() : ''
+  if (!rawUrl || /\/rest\/v1(\/|$|\?)/i.test(rawUrl)) {
+    return input
+  }
+  if (typeof input === 'string' && !input.includes('_lang=')) {
+    const sep = input.includes('?') ? '&' : '?'
+    return `${input}${sep}_lang=${encodeURIComponent(language)}`
+  }
+  if (input instanceof URL && !input.searchParams.has('_lang')) {
+    const urlObj = new URL(input.toString())
+    urlObj.searchParams.set('_lang', language)
+    return urlObj.toString()
+  }
+  return input
+}
+
+/**
  * Supabase 客户端创建工厂，强制使用 Electron 原生网络堆栈
  */
 export function createSupabaseClient(
@@ -129,16 +152,8 @@ export function createSupabaseClient(
         // 忽略测试或未初始化时的错误
       }
 
-      // 给 URL 拼上 _lang 参数，确保 EdgeOne CDN 无法通过纯 URL 混淆不同语言的 Schema 缓存
-      let targetUrl = input
-      if (typeof input === 'string' && language && !input.includes('_lang=')) {
-        const sep = input.includes('?') ? '&' : '?'
-        targetUrl = `${input}${sep}_lang=${encodeURIComponent(language)}`
-      } else if (input instanceof URL && language && !input.searchParams.has('_lang')) {
-        const urlObj = new URL(input.toString())
-        urlObj.searchParams.set('_lang', language)
-        targetUrl = urlObj.toString()
-      }
+      // 仅为非 PostgREST 端点拼上 _lang 参数，避免 PostgREST 将 _lang=zh-CN 当作列过滤器解析报错
+      const targetUrl = appendLangQueryIfSafe(input, language)
 
       // 核心：使用 Electron 原生 net 模块，指定 text 类型以保留原始 JSON 双引号，避免 text() 返回无引号字符串导致客户端解析报错
       const response = await nativeFetch(targetUrl, {

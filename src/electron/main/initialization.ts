@@ -15,6 +15,8 @@ import { databaseService } from '../runtime-services/database/database-service'
 import { cloudAnalysisService, WORKSPACE_CONSTANTS } from '@firefly/server'
 import { createSupabaseClient } from '../runtime-services/system/supabase-client-factory'
 import { analysisQueueService } from '../runtime-services/analysis-queue-service'
+import { moduleHibernationCoordinator } from '../runtime-services/hibernation/module-hibernation-coordinator'
+import { isTTSActive } from './ipc-handlers/tts'
 import { systemHealthService } from '../runtime-services/system/system-health-service'
 import {
   llamaServerService,
@@ -370,7 +372,11 @@ export async function initDatabaseAndDependentServices(
           await import('../runtime-services/system/workspace-runtime-context-service')
         workspaceRuntimeContextService.initialize()
       } catch (err) {
-        logger.warn(LogCategory.MAIN, '[Initialization] 初始化 WorkspaceRuntimeContextService 异常:', err)
+        logger.warn(
+          LogCategory.MAIN,
+          '[Initialization] 初始化 WorkspaceRuntimeContextService 异常:',
+          err
+        )
       }
 
       // 模块化资源与 Tombstone 启动期对账与持久化配置 (Spec §7.1.1 #5)
@@ -574,10 +580,13 @@ export async function initializeMinimalServices(options?: {
     //     desktop 不再自带任何推理进程。探活失败则静默拉起引擎应用；
     //     仍不可用时由基础AI引擎（Tier 1 / Omni）全程保底，绝不回退到本地自拉起。
     //     PRD-0044：生效引擎为「云端」或「禁用」时不拉起引擎（禁用 = 只跑基础AI引擎通道）。
+    moduleHibernationCoordinator.setAnalysisQueueService(analysisQueueService)
+    moduleHibernationCoordinator.setTtsActiveChecker(isTTSActive)
     try {
+      const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+      moduleHibernationCoordinator.setEngineBridgeService(engineBridgeService)
       const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
       if (initMode !== 'cloud' && initMode !== 'disabled') {
-        const { engineBridgeService } = await import('../runtime-services/engine-bridge')
         const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
         if (tier2Online) {
           logger.debug(

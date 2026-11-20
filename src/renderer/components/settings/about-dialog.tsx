@@ -43,7 +43,7 @@ const getOpenSourceNotices = () => [
   { name: 'Gemma', url: 'https://github.com/google-deepmind/gemma' },
   { name: 'Qwen', url: 'https://github.com/QwenLM' },
   { name: 'MiniCPM', url: 'https://github.com/OpenBMB/MiniCPM' },
-  { name: 'LFM (Liquid AI)', url: 'https://github.com/Liquid4All' },
+  { name: 'LFM (Liquid AI)', url: 'https://github.com/Liquid4All' }
 ]
 
 export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) => {
@@ -154,7 +154,7 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
 
           {/* 版权声明 */}
           <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground space-y-2">
-            <p>{t('萤核智能文件夹是一位软件极客的个人作品，欢迎交流使用心得和意见反馈。')}</p>
+            <p>{t('萤核是海眼（seaeye）历时两年全职开发的个人作品，还在不断进化中，欢迎交流。')}</p>
             <p>{t('Copyright © 2026 萤核智能文件. All rights reserved.')}</p>
             <p>{t('本软件桌面端核心业务逻辑基于 CC BY-NC-SA 4.0 许可证开源发布。')}</p>
           </div>

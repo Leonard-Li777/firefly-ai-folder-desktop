@@ -357,5 +357,22 @@ describe('ModuleHibernationCoordinator & MemoryProbe (Ticket 04)', () => {
       expect(store.get('firefly-ai-engine').residentBytes).toBe(0)
       expect(store.get('firefly-ai-engine').lastReleasedBytes).toBe(1800 * 1024 * 1024)
     })
+
+    it('已处于 resident 且内存无变化时重复调用 notifyModuleResident 不应触发快照广播', () => {
+      const broadcastSpy = vi.spyOn(coordinator, 'triggerSnapshotBroadcast')
+
+      // 首次从 hibernated -> resident，应触发广播
+      coordinator.notifyModuleResident('firefly-ai-engine', 1800 * 1024 * 1024)
+      expect(broadcastSpy).toHaveBeenCalledTimes(1)
+
+      // 模拟心跳重复通知（不传 residentBytes 或传相同值），不应再次触发广播
+      coordinator.notifyModuleResident('firefly-ai-engine')
+      coordinator.notifyModuleResident('firefly-ai-engine', 1800 * 1024 * 1024)
+      expect(broadcastSpy).toHaveBeenCalledTimes(1)
+
+      // 若内存字节数发生实质变化，应重新触发广播
+      coordinator.notifyModuleResident('firefly-ai-engine', 2000 * 1024 * 1024)
+      expect(broadcastSpy).toHaveBeenCalledTimes(2)
+    })
   })
 })

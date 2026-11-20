@@ -280,5 +280,59 @@ describe('Plugin Shared SSOT Convergence & M5-TTS Spec Tests (TC-SSOT-01~36)', (
       expect(voices.length).toBe(51)
       expect(voices[0].id).toBe('voice_m5_1')
     })
+
+    it('TC-SSOT-16b: VoiceArchiveService 保留 M5 原生 voice_m5_* ID 并合并策展展示元数据', async () => {
+      const pluginsRoot = path.join(tmpDir, 'plugins-curated')
+      const m5Dir = path.join(pluginsRoot, '_shared', 'tts-e43ab9e3')
+      fs.mkdirSync(m5Dir, { recursive: true })
+
+      const mockVoices = [
+        {
+          id: 'voice_m5_东北娘们',
+          displayName: '东北娘们',
+          gender: 'female',
+          lang: 'zh',
+          desc: 'raw'
+        },
+        {
+          id: 'voice_m5_一支穿云箭_千军万马来相见',
+          displayName: '一支穿云箭,千军万马来相见',
+          gender: 'male',
+          lang: 'zh',
+          desc: 'raw'
+        },
+        {
+          id: 'voice_m5_影视飓风_tim',
+          displayName: '影视飓风-Tim',
+          gender: 'female',
+          lang: 'zh',
+          desc: 'raw'
+        }
+      ]
+      fs.writeFileSync(path.join(m5Dir, 'preset_voices.json'), JSON.stringify(mockVoices))
+
+      PluginPathResolver.initialize(pluginsRoot)
+      modularResourceService.setPluginsRootDirForTesting(pluginsRoot)
+      const service = new VoiceArchiveService()
+      service.invalidatePresetVoicesCache()
+
+      const voices = await service.getPresetVoices('tts_m5_onnx')
+      expect(voices).toHaveLength(3)
+      expect(voices[0]).toMatchObject({
+        id: 'voice_m5_东北娘们',
+        displayName: '东北大姐',
+        gender: 'female'
+      })
+      expect(voices[1]).toMatchObject({
+        id: 'voice_m5_一支穿云箭_千军万马来相见',
+        displayName: '功夫·斧头帮',
+        gender: 'male'
+      })
+      expect(voices[2]).toMatchObject({
+        id: 'voice_m5_影视飓风_tim',
+        displayName: 'Tim',
+        gender: 'male'
+      })
+    })
   })
 })

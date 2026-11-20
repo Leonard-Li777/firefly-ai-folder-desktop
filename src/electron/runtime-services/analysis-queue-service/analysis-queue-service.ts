@@ -21,6 +21,7 @@ export type { EnqueueResult }
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { createCoreEngineAdapters } from '../../adapters'
 import { databaseService } from '../database/database-service'
+import { moduleHibernationCoordinator } from '../hibernation/module-hibernation-coordinator'
 import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
@@ -514,9 +515,8 @@ export class AnalysisQueueService {
         let analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
         if (activeWorkspaceId != null) {
           try {
-            const { resolveWorkspaceEffectiveConfig } = await import(
-              '../system/workspace-analysis-context'
-            )
+            const { resolveWorkspaceEffectiveConfig } =
+              await import('../system/workspace-analysis-context')
             const wsEff = await resolveWorkspaceEffectiveConfig(
               activeWorkspaceId,
               hasInstalledAiEngine
@@ -654,10 +654,6 @@ export class AnalysisQueueService {
    */
   private syncHibernationState(active: boolean): void {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const {
-        moduleHibernationCoordinator
-      } = require('../hibernation/module-hibernation-coordinator')
       if (active) {
         moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
         moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')

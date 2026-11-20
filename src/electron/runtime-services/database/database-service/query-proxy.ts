@@ -63,7 +63,6 @@ import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignor
 import type { IIgnoreRule } from '@firefly/types/settings-types'
 import { ConfigDbManager } from '../../config/config-db-manager'
 
-
 /**
  * DatabaseService 查询代理 mixin（Ticket 07）。
  * 承载 DAO 转发、批量标签、标签展示名、向量代理与视频片段代理。
@@ -186,11 +185,7 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
    * @param newPath 新绝对路径
    * @param statMtimeMs 移动后文件 mtime_ms（Math.trunc(stats.mtimeMs)，FileGuard 围栏锚点）
    */
-  async updateFilePath(
-    oldPath: string,
-    newPath: string,
-    statMtimeMs?: number
-  ): Promise<void> {
+  async updateFilePath(oldPath: string, newPath: string, statMtimeMs?: number): Promise<void> {
     await this.addDirectory(path.dirname(newPath))
     this.fsMutationDao.updateFilePathAtomic(oldPath, newPath, statMtimeMs)
   }
@@ -978,7 +973,6 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     }
   }
 
-
   async resetAllAnalysisData(): Promise<void> {
     if (!this._db) throw new Error('数据库未初始化')
     try {
@@ -1037,37 +1031,210 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   }
 
   /**
-   * 全局直接删除指定维度标签（清理关联关系与标签记录）
+   * 全局直接删除指定维度标签（同时兼容模型 B 受控标签 `omw.*`/`hownet.*`/`builtin.*` 与私有标签 `file_tags_private`）。
+   *
+   * 精确分支优先：
+   * - 若传入 `options.codePath` / `options.codePaths`，仅删除对应物化路径及其子树下的 `file_tag_relations`
+   *   （防删除 `文档 > 小说 > 题材 > 美食` 时误杀其他分支同名标签），并回收孤儿 `tag_paths` 与无引用的私有标签；
+   * - 否则按 `options.code` / `file_tags_private` / 受控概念字典 / `tag_aliases` 反查目标 `tag_code` 删除关联。
+   *
+   * 严禁 0 命中时伪造 `true`：仅当实际删除了至少 1 条关联或私有标签记录时才返回 `true`。
    */
-  async deleteTagGlobally(dimensionId: number | string, tagName: string): Promise<boolean> {
+  async deleteTagGlobally(
+    dimensionId: number | string,
+    tagName: string,
+    options?: {
+      code?: string
+      codePath?: string
+      codePaths?: string[]
+      viaParentCode?: string
+    }
+  ): Promise<boolean> {
     if (!this._db) return false
     try {
-      // 创世 Baseline V1：标签以 code 自然主键存储，维度由其父级 code 表达。
       const dimCode = this.resolveDimensionCode(dimensionId) || String(dimensionId)
+      const normalizeCodePath = (raw?: string): string => {
+        if (!raw) return ''
+        const segs = raw.trim().replace(/\\/g, '/').split('/').filter(Boolean)
+        return segs.length > 0 ? `/${segs.join('/')}` : ''
+      }
+      const escapeLike = (s: string) =>
+        s.replace(/\|/g, '||').replace(/%/g, '|%').replace(/_/g, '|_')
+
+      const targetCodePaths = Array.from(
+        new Set(
+          [
+            ...(Array.isArray(options?.codePaths) ? options.codePaths : []),
+            ...(options?.codePath ? [options.codePath] : [])
+          ]
+            .map(normalizeCodePath)
+            .filter(Boolean)
+        )
+      )
+
+      let deletedRelations = 0
+      let deletedPrivateTags = 0
+      const dirtyFingerprints = new Set<string>()
 
       this._db.transaction(() => {
-        const tagRows = this._db!.prepare(
-          `
-          SELECT code FROM file_tags_private
-          WHERE (code LIKE ? || '.%' OR json_extract(parent_codes, '$[0]') = ?)
-            AND LOWER(TRIM(name)) = LOWER(TRIM(?))
-        `
-        ).all(dimCode, dimCode, tagName) as Array<{
-          code: string
-        }>
+        const db = this._db!
+        const candidatePrivateCodesToPrune = new Set<string>()
 
-        for (const tag of tagRows) {
-          this._db!.prepare('DELETE FROM file_tag_relations WHERE tag_code = ?').run(tag.code)
-          this._db!.prepare('DELETE FROM file_tags_private WHERE code = ?').run(tag.code)
+        // 1. 优先按精准物化路径（模型 B `tag_paths.code_path`）删除该节点及其子树关联
+        if (targetCodePaths.length > 0) {
+          const matchedPathIds = new Set<number>()
+          const findPathsStmt = db.prepare(
+            `SELECT path_id, leaf_code FROM tag_paths WHERE code_path = ? OR code_path LIKE ? ESCAPE '|'`
+          )
+          for (const cp of targetCodePaths) {
+            const prefixPattern = `${escapeLike(cp)}/%`
+            const rows = findPathsStmt.all(cp, prefixPattern) as Array<{
+              path_id: number
+              leaf_code: string
+            }>
+            for (const r of rows) {
+              matchedPathIds.add(r.path_id)
+              if (r.leaf_code) candidatePrivateCodesToPrune.add(r.leaf_code)
+            }
+          }
+
+          if (matchedPathIds.size > 0) {
+            const pathIdList = Array.from(matchedPathIds)
+            const placeholders = pathIdList.map(() => '?').join(',')
+
+            const affectedFps = db
+              .prepare(
+                `SELECT DISTINCT file_fingerprint FROM file_tag_relations WHERE path_id IN (${placeholders})`
+              )
+              .all(...pathIdList) as Array<{ file_fingerprint: string }>
+            for (const row of affectedFps) {
+              if (row.file_fingerprint) dirtyFingerprints.add(row.file_fingerprint)
+            }
+
+            const delRelRes = db
+              .prepare(`DELETE FROM file_tag_relations WHERE path_id IN (${placeholders})`)
+              .run(...pathIdList)
+            deletedRelations += delRelRes.changes
+
+            // 回收已无任何文件关联引用的孤儿 tag_paths（tag_path_ancestors 自动 ON DELETE CASCADE）
+            db.prepare(
+              `DELETE FROM tag_paths
+               WHERE path_id IN (${placeholders})
+                 AND NOT EXISTS (
+                   SELECT 1 FROM file_tag_relations ftr WHERE ftr.path_id = tag_paths.path_id
+                 )`
+            ).run(...pathIdList)
+          }
+        }
+
+        // 2. 若未传 codePath，或 codePath 未匹配到任何 path_id，回退按 tag_code 删除
+        if (targetCodePaths.length === 0 || deletedRelations === 0) {
+          const targetCodes = new Set<string>()
+          if (options?.code && options.code.trim()) {
+            targetCodes.add(options.code.trim())
+          }
+
+          // 2.1 查询私有标签表（先按维度收敛，无命中再按名称兜底）
+          const privateScoped = db
+            .prepare(
+              `SELECT code FROM file_tags_private
+               WHERE (code LIKE ? || '.%' OR json_extract(parent_codes, '$[0]') = ?)
+                 AND LOWER(TRIM(name)) = LOWER(TRIM(?))`
+            )
+            .all(dimCode, dimCode, tagName) as Array<{ code: string }>
+          for (const row of privateScoped) targetCodes.add(row.code)
+
+          if (targetCodes.size === 0 && tagName?.trim()) {
+            const privateByName = db
+              .prepare(
+                `SELECT code FROM file_tags_private WHERE LOWER(TRIM(name)) = LOWER(TRIM(?))`
+              )
+              .all(tagName) as Array<{ code: string }>
+            for (const row of privateByName) targetCodes.add(row.code)
+          }
+
+          // 2.2 受控标签（omw.* / hownet.* / builtin.*）不在 file_tags_private 中，按受控字典与 tag_aliases 反查
+          if (targetCodes.size === 0 && tagName?.trim()) {
+            const trimmedName = tagName.trim()
+            if (isControlledConcept(trimmedName)) {
+              const c = concept(trimmedName as any)
+              if (c) targetCodes.add(c)
+            }
+            try {
+              const aliasRows = db
+                .prepare(
+                  `SELECT DISTINCT tag_code FROM tag_aliases WHERE LOWER(TRIM(lemma)) = LOWER(TRIM(?))`
+                )
+                .all(trimmedName) as Array<{ tag_code: string }>
+              for (const row of aliasRows) {
+                if (row.tag_code) targetCodes.add(row.tag_code)
+              }
+            } catch {}
+          }
+
+          for (const code of targetCodes) {
+            candidatePrivateCodesToPrune.add(code)
+            const hasViaParent = Boolean(options?.viaParentCode && options.viaParentCode.trim())
+            const affectedFps = hasViaParent
+              ? (db
+                  .prepare(
+                    `SELECT DISTINCT file_fingerprint FROM file_tag_relations WHERE tag_code = ? AND via_parent_code = ?`
+                  )
+                  .all(code, options!.viaParentCode!.trim()) as Array<{ file_fingerprint: string }>)
+              : (db
+                  .prepare(
+                    `SELECT DISTINCT file_fingerprint FROM file_tag_relations WHERE tag_code = ?`
+                  )
+                  .all(code) as Array<{ file_fingerprint: string }>)
+            for (const row of affectedFps) {
+              if (row.file_fingerprint) dirtyFingerprints.add(row.file_fingerprint)
+            }
+
+            const delRelRes = hasViaParent
+              ? db
+                  .prepare(
+                    `DELETE FROM file_tag_relations WHERE tag_code = ? AND via_parent_code = ?`
+                  )
+                  .run(code, options!.viaParentCode!.trim())
+              : db.prepare(`DELETE FROM file_tag_relations WHERE tag_code = ?`).run(code)
+            deletedRelations += delRelRes.changes
+          }
+        }
+
+        // 3. 清理已无任何文件关联引用的私有标签记录（受控标签不在 file_tags_private 中，此句安全无副作用）
+        for (const code of candidatePrivateCodesToPrune) {
+          const stillReferenced = db
+            .prepare(`SELECT 1 FROM file_tag_relations WHERE tag_code = ? LIMIT 1`)
+            .get(code)
+          if (!stillReferenced) {
+            const delPrivRes = db.prepare(`DELETE FROM file_tags_private WHERE code = ?`).run(code)
+            deletedPrivateTags += delPrivRes.changes
+          }
+        }
+
+        // 4. 标记受影响文件拼音/检索脏位
+        if (dirtyFingerprints.size > 0) {
+          const fpList = Array.from(dirtyFingerprints)
+          const updatePinyinStmt = db.prepare(
+            `UPDATE files SET pinyin_state = 0 WHERE file_fingerprint = ?`
+          )
+          for (const fp of fpList) {
+            try {
+              updatePinyinStmt.run(fp)
+            } catch {}
+          }
         }
       })()
 
       this.clearDimensionsCache()
-      logger.debug(
+      omniClient.clearTaxonomyTreeCache()
+
+      const actuallyDeleted = deletedRelations > 0 || deletedPrivateTags > 0
+      logger.info(
         LogCategory.DATABASE_SERVICE,
-        `全局删除标签成功: dimId=${dimensionId}, tagName=${tagName}`
+        `全局删除标签完成: dimId=${dimensionId}, tagName=${tagName}, code=${options?.code || ''}, codePaths=${targetCodePaths.join(',')}, deletedRelations=${deletedRelations}, deletedPrivateTags=${deletedPrivateTags}`
       )
-      return true
+      return actuallyDeleted
     } catch (error) {
       logger.error(
         LogCategory.DATABASE_SERVICE,
@@ -2118,16 +2285,18 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
    * @returns 实际写入行数（过滤非受控后）
    */
   public seedTagAliasRows(
-    rows: Array<{ tagCode: string; lemma: string; isCanonical?: boolean; n?: number; count?: number }>,
+    rows: Array<{
+      tagCode: string
+      lemma: string
+      isCanonical?: boolean
+      n?: number
+      count?: number
+    }>,
     locale?: string
   ): number {
     if (!this._db) return 0
     try {
-      return seedTagAliasesSingleTable(
-        this._db,
-        locale || this.currentLanguage || 'zh-CN',
-        rows
-      )
+      return seedTagAliasesSingleTable(this._db, locale || this.currentLanguage || 'zh-CN', rows)
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, 'seedTagAliasRows 补写单表失败:', error)
       return 0

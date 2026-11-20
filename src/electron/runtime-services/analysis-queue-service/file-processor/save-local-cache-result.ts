@@ -116,7 +116,8 @@ export async function saveLocalAnalysisResult(
     prAny?.effectiveAnalysisMode || resolveEffectiveAnalysisMode(hasInstalledAiEngine)
   initialStatsWithBenchmark.completed_mode = effectiveMode
   // [SLICE-06] 增量完整性能力履历与空尝试记录随同一次写入落库（保留由 file-crud 白名单保证）
-  if (prAny?.attemptedEmpty) (initialStatsWithBenchmark as any).attempted_empty = prAny.attemptedEmpty
+  if (prAny?.attemptedEmpty)
+    (initialStatsWithBenchmark as any).attempted_empty = prAny.attemptedEmpty
   if (prAny?.appliedCapabilities)
     (initialStatsWithBenchmark as any).appliedCapabilities = prAny.appliedCapabilities
 
@@ -158,10 +159,10 @@ export async function saveLocalAnalysisResult(
     new Date(stats.mtime).toISOString(),
     new Date(stats.atime).toISOString(),
     isAnalyzed ? 1 : 0,
-    new Date().toISOString(),
     stats?.size ?? 0,
     Math.trunc(stats?.mtimeMs ?? Date.now()),
-    shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0
+    shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0,
+    new Date().toISOString()
   )
 
   const workspaceFile = db

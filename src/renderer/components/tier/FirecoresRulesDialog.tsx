@@ -937,8 +937,7 @@ const ConsumptionDetailTab: React.FC = () => {
   }
 
   const getTypeLabel = (type: string, metadata?: Record<string, any> | null) => {
-    const actionType =
-      typeof metadata?.action_type === 'string' ? metadata.action_type.trim() : ''
+    const actionType = typeof metadata?.action_type === 'string' ? metadata.action_type.trim() : ''
     const resolvedType =
       actionType && (type === 'consume' || type === 'exchange') ? actionType : type
 
@@ -1137,7 +1136,7 @@ const ConsumptionDetailTab: React.FC = () => {
                               ? t('萤火充值退款')
                               : isSubscriptionRefund
                                 ? t('会员订阅退款')
-                                : getTypeLabel(item.type)}
+                                : getTypeLabel(item.type, item.metadata)}
                         </span>
                         {isUpgrade && (
                           <Badge
