@@ -40,9 +40,7 @@ type WorkspacePolicyApiWindow = Window & {
       workspaceId: number,
       mutation: WorkspacePolicyMutation
     ) => Promise<WorkspacePolicyMutationResult>
-    getWorkspaceRuntimeContextSnapshot?: (
-      workspaceId?: number | null
-    ) => Promise<unknown>
+    getWorkspaceRuntimeContextSnapshot?: (workspaceId?: number | null) => Promise<unknown>
     onWorkspaceRuntimeContextUpdated?: (callback: (snapshot: unknown) => void) => () => void
     triggerWorkspaceIncrementalRecovery?: (
       workspaceId: number
@@ -191,9 +189,9 @@ export interface WorkspacePolicyMutation {
   overrides?: Partial<BaseAIConfig> | null
   /** 目录插件开关整字典替换或清空（撤销解绑恢复用，传 null 表清空） */
   pluginOverrides?: Partial<Record<string, boolean>> | null
-  /** AI 参数增量补丁：用户手动触碰即写入（哪怕等于默认，保留 user_custom） */
+  /** AI 参数增量补丁：仅写入值 ≠ 当前基线的显式覆盖（等值回退算默认态，须改走 restoreOverrideFields） */
   overridePatch?: Partial<TechnicalEngineParameters>
-  /** 恢复默认：精确 delete 覆盖字典中对应键（严禁传 null/undefined） */
+  /** 恢复默认：精确 delete 覆盖字典中对应键（严禁传 null/undefined）；等值回退与显式恢复共用该通道 */
   restoreOverrideFields?: Array<keyof TechnicalEngineParameters>
   /** 目录插件开关增量补丁 */
   pluginOverridePatch?: Record<string, boolean>
@@ -326,8 +324,7 @@ function normalizeRuntimeSnapshot(raw: unknown): WorkspaceRuntimeContextSnapshot
       videoInferenceBackend: nested.videoInferenceBackend ?? 'unknown',
       isProTier: tierStr === 'pro' || tierStr === 'enterprise' || tierStr === 'max',
       moduleStates,
-      recoverableCount:
-        typeof obj.recoverableCount === 'number' ? obj.recoverableCount : undefined
+      recoverableCount: typeof obj.recoverableCount === 'number' ? obj.recoverableCount : undefined
     }
   }
 
@@ -357,7 +354,7 @@ export function subscribeWorkspaceRuntimeContext(
 }
 
 /**
- * 目录级可配置插件白名单（直接转出 `@firefly/types` 唯一事实源，L3 §1.2 D5：6 项）
+ * 目录级可配置插件白名单（直接转出 `@firefly/types` 唯一事实源，L3 §1.2 D5：10 项）
  */
 export const WORKSPACE_CONFIGURABLE_PLUGIN_IDS = SHARED_WORKSPACE_CONFIGURABLE_PLUGIN_IDS
 
@@ -372,7 +369,11 @@ export const WORKSPACE_COMING_SOON_PLUGIN_IDS = [
   'archive_vfs_parser',
   'face_recognition_tool',
   'object_detection_pro',
-  'password_vault_cracker'
+  'password_vault_cracker',
+  'image_video_enhance',
+  'image_video_deobfuscate',
+  'image_video_dewatermark',
+  'file_ai_cover'
 ] as const
 
 /** 判定是否目录级可配置插件 */

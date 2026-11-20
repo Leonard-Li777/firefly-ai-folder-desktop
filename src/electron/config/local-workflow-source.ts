@@ -45,7 +45,11 @@ export const WORKSPACE_CONFIGURABLE_PLUGIN_IDS = [
   'archive_vfs_parser',
   'face_recognition_tool',
   'object_detection_pro',
-  'password_vault_cracker'
+  'password_vault_cracker',
+  'image_video_enhance',
+  'image_video_deobfuscate',
+  'image_video_dewatermark',
+  'file_ai_cover'
 ] as const
 
 export type WorkspacePluginId = (typeof WORKSPACE_CONFIGURABLE_PLUGIN_IDS)[number]
@@ -373,7 +377,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 3, extractPages: 3 },
-    enabledWorkspacePlugins: ['perception_nsfw'],
+    enabledWorkspacePlugins: ['perception_nsfw']
   },
   {
     id: 'builtin.workflow.frontend-dev',
@@ -494,7 +498,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.backend-arch',
@@ -615,7 +619,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.para-universal',
@@ -709,7 +713,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.johnny-decimal',
@@ -807,7 +811,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.photography-raw',
@@ -940,7 +944,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'PHOTO_GALLERY',
-    enabledWorkspacePlugins: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.video-production',
@@ -1069,7 +1073,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'VIDEO_CREATOR',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.academic-thesis',
@@ -1179,7 +1188,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.finance-contract',
@@ -1346,7 +1355,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['password_vault_cracker'],
+    enabledWorkspacePlugins: ['password_vault_cracker']
   },
   {
     id: 'builtin.workflow.family-household',
@@ -1456,7 +1465,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5, enableOfficeCover: true },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.newmedia-content',
@@ -1573,8 +1587,19 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'VIDEO_CREATOR',
-    aiOverrides: { enableImageOcr: true, maxDocumentOcrItems: 3, extractPages: 3, enableOfficeCover: true, videoQuotaMax: 64 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    aiOverrides: {
+      enableImageOcr: true,
+      maxDocumentOcrItems: 3,
+      extractPages: 3,
+      enableOfficeCover: true,
+      videoQuotaMax: 64
+    },
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.ecommerce-ops',
@@ -1676,7 +1701,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['object_detection_pro'],
+    enabledWorkspacePlugins: ['object_detection_pro']
   },
   {
     id: 'builtin.workflow.game-dev-assets',
@@ -1802,7 +1827,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 8, audioAnalysisDurationSec: 60 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.cross-border-ops',
@@ -1896,7 +1921,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['object_detection_pro'],
+    enabledWorkspacePlugins: ['object_detection_pro']
   },
   {
     id: 'builtin.workflow.legal-case-dossier',
@@ -2273,8 +2298,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { videoQuotaMax: 24, maxDocumentOcrItems: 20, extractPages: 15, videoAsrDurationSec: 60, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      videoQuotaMax: 24,
+      maxDocumentOcrItems: 20,
+      extractPages: 15,
+      videoAsrDurationSec: 60,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.clinical-medical-records',
@@ -2616,7 +2647,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.teacher-lesson-prep',
@@ -2950,7 +2981,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 60, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.consulting-due-diligence',
@@ -3299,8 +3330,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      videoQuotaMax: 8,
+      maxDocumentOcrItems: 10,
+      extractPages: 10,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.architectural-cad-design',
@@ -3721,8 +3757,15 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
-    aiOverrides: { enableImageOcr: true, maxDocumentOcrItems: 3, extractPages: 5, enableOfficeCover: true, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      enableImageOcr: true,
+      maxDocumentOcrItems: 3,
+      extractPages: 5,
+      enableOfficeCover: true,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.writing-publishing-pipeline',
@@ -4020,7 +4063,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, extractPages: 10, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.wellness-health-portfolio',
@@ -4314,7 +4357,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.pm-product-workflow',
@@ -4630,7 +4673,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.data-science-analytics',
@@ -5120,7 +5163,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'CODE_DEVOPS',
     aiOverrides: { enableOfficeCover: true, extractPages: 3 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.qa-testing-lifecycle',
@@ -5569,8 +5612,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      enableOfficeCover: false,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.sales-pipeline-crm',
@@ -5901,8 +5949,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoQuotaMax: 8, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      maxDocumentOcrItems: 10,
+      extractPages: 5,
+      videoQuotaMax: 8,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.hr-people-operations',
@@ -6222,7 +6275,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.marketing-campaign-imc',
@@ -6630,7 +6683,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 48, videoAsrDurationSec: 60, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.corporate-legal-compliance',
@@ -6985,8 +7038,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { maxDocumentOcrItems: 20, extractPages: 15, videoQuotaMax: 8, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      maxDocumentOcrItems: 20,
+      extractPages: 15,
+      videoQuotaMax: 8,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.embedded-iot-firmware',
@@ -7353,7 +7411,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'CODE_DEVOPS',
     aiOverrides: { extractPages: 3 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.creative-assets',
@@ -7707,7 +7765,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 48, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.freelance-business-delivery',
@@ -7991,7 +8049,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.pkm-knowledge-vault',
@@ -8181,7 +8239,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { enableOfficeCover: false, extractPages: 10, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.gaming',
@@ -8531,7 +8589,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.novel',
@@ -8744,8 +8802,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { enableImageOcr: false, maxDocumentOcrItems: 0, extractPages: 15, enableOfficeCover: false, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser'],
+    aiOverrides: {
+      enableImageOcr: false,
+      maxDocumentOcrItems: 0,
+      extractPages: 15,
+      enableOfficeCover: false,
+      videoQuotaMax: 8
+    },
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.movie-cinema',
@@ -9074,7 +9138,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'VIDEO_CREATOR',
     aiOverrides: { videoQuotaMax: 64 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ],
     mediaFlags: { tsAsVideo: true }
   },
   {
@@ -9334,7 +9404,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 8, audioAnalysisDurationSec: 60 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.pc-hardware-gear',
@@ -9577,7 +9647,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.cooking-recipes-vault',
@@ -9773,7 +9843,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.pet-care-diary',
@@ -9948,7 +10018,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.travel-outdoor-journey',
@@ -10247,7 +10317,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.music-audio',
@@ -10581,7 +10655,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'AUDIO_VOICE_RECORD',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.graphic-brand-design',
@@ -10842,7 +10916,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['archive_vfs_parser', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.illustration-cg-art',
@@ -11132,7 +11206,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
-    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.mobile-app-dev',
@@ -11557,7 +11631,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.cloud-native-sre',
@@ -11905,7 +11979,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'CODE_DEVOPS',
     aiOverrides: { extractPages: 3 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.supply-chain-logistics',
@@ -12133,7 +12207,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.study-abroad-application',
@@ -12316,7 +12390,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: ['archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.desktop-declutter',
@@ -12618,7 +12692,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { videoQuotaMax: 16, audioAnalysisDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.downloads-triage',
@@ -13122,7 +13196,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
   },
   {
     id: 'builtin.workflow.inbox-staging-universal',
@@ -13359,8 +13438,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5, enableOfficeCover: true, videoQuotaMax: 16 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    aiOverrides: {
+      maxDocumentOcrItems: 5,
+      extractPages: 5,
+      enableOfficeCover: true,
+      videoQuotaMax: 16
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.desktop-classic-classification',
@@ -13677,7 +13761,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { videoQuotaMax: 16, audioAnalysisDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.qa-testing-asset-vault',
@@ -14009,8 +14093,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      enableOfficeCover: false,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.k12-education-vault',
@@ -14274,8 +14363,15 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', maxDocumentOcrItems: 10, extractPages: 5, videoQuotaMax: 24, videoAsrDurationSec: 30, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      maxDocumentOcrItems: 10,
+      extractPages: 5,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 90
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.k12-school-term-pipeline',
@@ -14469,8 +14565,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30, audioAnalysisDurationSec: 60 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      maxDocumentOcrItems: 10,
+      extractPages: 5,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 60
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.senior-life-archive',
@@ -14741,8 +14843,18 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
-    aiOverrides: { extractPages: 3, videoQuotaMax: 24, videoAsrDurationSec: 30, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    aiOverrides: {
+      extractPages: 3,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 90
+    },
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'archive_vfs_parser',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.senior-medical-care-pipeline',
@@ -14927,7 +15039,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.office-docs',
@@ -15144,7 +15256,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.office-document-dispatch-flow',
@@ -15337,7 +15449,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.household-dossier-vault',
@@ -15526,7 +15638,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['password_vault_cracker'],
+    enabledWorkspacePlugins: ['password_vault_cracker']
   },
   {
     id: 'builtin.workflow.media-collector-vault',
@@ -15893,7 +16005,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'VIDEO_CREATOR',
     aiOverrides: { videoQuotaMax: 48, extractPages: 5, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ],
     mediaFlags: { tsAsVideo: true }
   },
   {
@@ -16292,7 +16410,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.system-cache-appdata-vault',
@@ -16451,7 +16569,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.chat-software-vault',
@@ -16757,7 +16875,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { maxDocumentOcrItems: 5, videoQuotaMax: 16 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
   },
   {
     id: 'builtin.workflow.cross-device-transfer-vault',
@@ -17041,7 +17164,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.screenshots-screenrecord-vault',
@@ -17199,8 +17322,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 3, videoQuotaMax: 32, videoAsrDurationSec: 45 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw'],
+    aiOverrides: {
+      maxDocumentOcrItems: 5,
+      extractPages: 3,
+      videoQuotaMax: 32,
+      videoAsrDurationSec: 45
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw']
   },
   {
     id: 'builtin.workflow.scratchpad-drafts-vault',
@@ -17349,7 +17477,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { enableOfficeCover: false, maxDocumentOcrItems: 3, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.external-storage-vault',
@@ -17721,7 +17849,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
   },
   {
     id: 'builtin.workflow.scanned-documents-vault',
@@ -17863,7 +17996,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { maxDocumentOcrItems: 20, extractPages: 15, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.docs-office-vault',
@@ -18045,7 +18178,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.docs-study-research-vault',
@@ -18305,32 +18438,83 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   }
 ]
 
-
 /** 纯音频媒介扩展集合（排除纯乐谱 .mid/.midi，§3.2 冻结清单） */
 const AUDIO_MEDIA_EXTS: ReadonlySet<string> = new Set([
-  '.mp3', '.wav', '.flac', '.m4a', '.m4b', '.aac', '.ogg', '.wma', '.opus',
-  '.amr', '.ape', '.dsf', '.dff', '.aif', '.aiff', '.caf', '.wv', '.mka'
+  '.mp3',
+  '.wav',
+  '.flac',
+  '.m4a',
+  '.m4b',
+  '.aac',
+  '.ogg',
+  '.wma',
+  '.opus',
+  '.amr',
+  '.ape',
+  '.dsf',
+  '.dff',
+  '.aif',
+  '.aiff',
+  '.caf',
+  '.wv',
+  '.mka'
 ])
 
 /** 视频媒介扩展集合（.ts 仅在 mediaFlags.tsAsVideo 白名单下计入，§3.2 冻结清单） */
 const VIDEO_MEDIA_EXTS: ReadonlySet<string> = new Set([
-  '.mp4', '.mov', '.mkv', '.avi', '.wmv', '.flv', '.webm', '.rmvb', '.m2ts',
-  '.mts', '.3gp', '.m4v', '.insv', '.vob', '.f4v', '.divx', '.rm'
+  '.mp4',
+  '.mov',
+  '.mkv',
+  '.avi',
+  '.wmv',
+  '.flv',
+  '.webm',
+  '.rmvb',
+  '.m2ts',
+  '.mts',
+  '.3gp',
+  '.m4v',
+  '.insv',
+  '.vob',
+  '.f4v',
+  '.divx',
+  '.rm'
 ])
 
 /** Office 文档媒介扩展集合（§3.2 冻结清单） */
 const OFFICE_MEDIA_EXTS: ReadonlySet<string> = new Set([
-  '.doc', '.docx', '.docm', '.ppt', '.pptx', '.pptm', '.pps', '.ppsx',
-  '.xls', '.xlsx', '.xlsm', '.xlsb', '.wps', '.et', '.dps', '.odt', '.ods', '.odp'
+  '.doc',
+  '.docx',
+  '.docm',
+  '.ppt',
+  '.pptx',
+  '.pptm',
+  '.pps',
+  '.ppsx',
+  '.xls',
+  '.xlsx',
+  '.xlsm',
+  '.xlsb',
+  '.wps',
+  '.et',
+  '.dps',
+  '.odt',
+  '.ods',
+  '.odp'
 ])
 
 /** 多义/非媒介消歧后缀：一律不参与媒介猜想（防 .dts 等后缀误触发 ASR，§3.2） */
 const NON_MEDIA_AMBIGUOUS_EXTS: ReadonlySet<string> = new Set([
-  '.dts', '.mod', '.dat', '.svg', '.svgz', '.iso'
+  '.dts',
+  '.mod',
+  '.dat',
+  '.svg',
+  '.svgz',
+  '.iso'
 ])
 
 /** 门禁自动填充常量 (§3.2 [V12-E12]) */
@@ -18463,9 +18647,7 @@ export function validateWorkflowMediaConsistency(
         final.baseAIConfig.audioAnalysisDurationSec > 0
       )
     ) {
-      throw new Error(
-        `[WorkflowMediaGate] 工作流 ${def.id} 含音视频扩展但视频/音频 ASR 时长均为 0`
-      )
+      throw new Error(`[WorkflowMediaGate] 工作流 ${def.id} 含音视频扩展但视频/音频 ASR 时长均为 0`)
     }
   }
   if (!media.hasOffice && final.baseAIConfig.enableOfficeCover) {

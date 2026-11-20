@@ -1,18 +1,32 @@
 /**
  * 目录插件配置 Tab (`WorkspacePluginsTab`) — Group D / SLICE-08-2
  *
- * 严格仅渲染 6 个目录级可配置插件，严禁渲染 6 个全局专属插件。
+ * 严格仅渲染 10 个目录级可配置插件，严禁渲染 6 个全局专属插件。
  * - 主区（2 个已上线）：asr_sensevoice_onnx、perception_nsfw
  *   展示推荐标识、大白话收益/资源影响、Switch → `pluginOverridePatch`
- * - 预告区（4 个 coming_soon）：archive_vfs_parser、face_recognition_tool、
- *   object_detection_pro、password_vault_cracker
+ * - 预告区（8 个 coming_soon）：archive_vfs_parser、face_recognition_tool、
+ *   object_detection_pro、password_vault_cracker、image_video_enhance、
+ *   image_video_deobfuscate、image_video_dewatermark、file_ai_cover
  *   中性只读预览，0 橙色降级，0 死链修复按钮；password_vault_cracker 加注绝不自动破解
  *
  * 【i18n 铁律】所有 UI 文案均为静态字面量 `t('...')`，严禁传入变量。
  * 【零工程黑话】严禁出现 ASR/OCR/CLIP/ONNX/gemma_unified/classic_light/LibreOffice 等术语。
  */
 import React, { useCallback, useState } from 'react'
-import { Eye, ImageIcon, Lock, Mic, Package, RotateCcw, ShieldAlert, Sparkles } from 'lucide-react'
+import {
+  Eraser,
+  Eye,
+  FileImage,
+  ImageIcon,
+  Lock,
+  Mic,
+  Package,
+  RotateCcw,
+  ShieldAlert,
+  Sparkles,
+  Stamp,
+  Wand2
+} from 'lucide-react'
 
 import { t } from '@app/languages'
 
@@ -30,7 +44,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../ui/card'
 
 export interface WorkspacePluginsTabProps {
   workspaceId: number
-  /** 6 个目录插件的三态仲裁结果 */
+  /** 10 个目录插件的三态仲裁结果 */
   plugins: Record<string, ResolvedPluginTriState>
   /** 是否已绑定工作流（决定推荐标识文案） */
   hasBoundWorkflow: boolean
@@ -57,6 +71,14 @@ function PluginIcon({ pluginId }: { pluginId: string }): React.ReactNode {
       return <ImageIcon className="h-5 w-5 text-indigo-500" aria-hidden="true" />
     case 'password_vault_cracker':
       return <Lock className="h-5 w-5 text-slate-500" aria-hidden="true" />
+    case 'image_video_enhance':
+      return <Wand2 className="h-5 w-5 text-violet-500" aria-hidden="true" />
+    case 'image_video_deobfuscate':
+      return <Eraser className="h-5 w-5 text-cyan-500" aria-hidden="true" />
+    case 'image_video_dewatermark':
+      return <Stamp className="h-5 w-5 text-teal-500" aria-hidden="true" />
+    case 'file_ai_cover':
+      return <FileImage className="h-5 w-5 text-fuchsia-500" aria-hidden="true" />
     default:
       return <Sparkles className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
   }
@@ -84,17 +106,29 @@ function renderRecommendationLabel(
 }
 
 export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.ReactNode {
-  const { workspaceId, plugins, hasBoundWorkflow, onMutationSuccess, onMutationError, onFixAction } =
-    props
+  const {
+    workspaceId,
+    plugins,
+    hasBoundWorkflow,
+    onMutationSuccess,
+    onMutationError,
+    onFixAction
+  } = props
   const [pendingIds, setPendingIds] = useState<Set<string>>(new Set())
 
   const handleToggle = useCallback(
     async (pluginId: string, checked: boolean) => {
-      setPendingIds((prev) => new Set(prev).add(pluginId))
+      setPendingIds(prev => new Set(prev).add(pluginId))
       try {
-        const result = await submitWorkspacePolicyMutation(workspaceId, {
-          pluginOverridePatch: { [pluginId]: checked }
-        })
+        // 等值回退：开关值与基线（工作流推荐开启 / 其余默认关闭）一致时精确删键算回默认态，不算用户自定义
+        const baselineEnabled =
+          plugins[pluginId]?.workflowRecommendation === 'workflow_recommended_on'
+        const result = await submitWorkspacePolicyMutation(
+          workspaceId,
+          checked === baselineEnabled
+            ? { restorePluginOverrideIds: [pluginId] }
+            : { pluginOverridePatch: { [pluginId]: checked } }
+        )
         if (!result.success) {
           onMutationError?.(getMutationErrorText(result, t('目录插件配置保存失败')))
         } else {
@@ -104,19 +138,19 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
         const message = err instanceof Error ? err.message : String(err)
         onMutationError?.(message)
       } finally {
-        setPendingIds((prev) => {
+        setPendingIds(prev => {
           const next = new Set(prev)
           next.delete(pluginId)
           return next
         })
       }
     },
-    [workspaceId, onMutationSuccess, onMutationError]
+    [workspaceId, plugins, onMutationSuccess, onMutationError]
   )
 
   const handleRestorePluginDefault = useCallback(
     async (pluginId: string) => {
-      setPendingIds((prev) => new Set(prev).add(pluginId))
+      setPendingIds(prev => new Set(prev).add(pluginId))
       try {
         const result = await submitWorkspacePolicyMutation(workspaceId, {
           restorePluginOverrideIds: [pluginId]
@@ -130,7 +164,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
         const message = err instanceof Error ? err.message : String(err)
         onMutationError?.(message)
       } finally {
-        setPendingIds((prev) => {
+        setPendingIds(prev => {
           const next = new Set(prev)
           next.delete(pluginId)
           return next
@@ -147,11 +181,9 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
     <div className="space-y-4">
       {/* ─── 主区：已上线可用插件 ─── */}
       <div>
-        <h3 className="mb-2 text-sm font-medium text-foreground">
-          {t('已上线功能组件')}
-        </h3>
+        <h3 className="mb-2 text-sm font-medium text-foreground">{t('已上线功能组件')}</h3>
         <div className="space-y-2">
-          {availableIds.map((pluginId) => {
+          {availableIds.map(pluginId => {
             const plugin = plugins[pluginId]
             const isEnabled = plugin?.effectiveValue ?? false
             const isPending = pendingIds.has(pluginId)
@@ -159,11 +191,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
             const isDegraded = plugin?.applicability === 'degraded'
             const baselineEnabled = plugin?.workflowRecommendation === 'workflow_recommended_on'
             // user_custom 且处于环境降级时，说明用户期望开启但被全局组件未就绪拦截
-            const desiredEnabled = isUserCustom
-              ? isDegraded
-                ? true
-                : isEnabled
-              : baselineEnabled
+            const desiredEnabled = isUserCustom ? (isDegraded ? true : isEnabled) : baselineEnabled
 
             return (
               <Card key={pluginId}>
@@ -204,7 +232,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                     <Switch
                       checked={isEnabled}
                       disabled={isPending}
-                      onCheckedChange={(checked) => handleToggle(pluginId, checked)}
+                      onCheckedChange={checked => handleToggle(pluginId, checked)}
                       aria-label={renderPluginName(pluginId)}
                     />
                   </div>
@@ -226,11 +254,9 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                       baselineText={baselineEnabled ? t('开启') : t('关闭')}
                       hasBoundWorkflow={hasBoundWorkflow}
                       onRestore={
-                        isUserCustom
-                          ? () => void handleRestorePluginDefault(pluginId)
-                          : undefined
+                        isUserCustom ? () => void handleRestorePluginDefault(pluginId) : undefined
                       }
-                      onFixAction={(action) => onFixAction?.(action, pluginId)}
+                      onFixAction={action => onFixAction?.(action, pluginId)}
                     />
                   )}
                 </CardContent>
@@ -242,11 +268,9 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
 
       {/* ─── 预告区：即将上线（coming_soon），中性只读 ─── */}
       <div>
-        <h3 className="mb-2 text-sm font-medium text-foreground">
-          {t('即将上线')}
-        </h3>
+        <h3 className="mb-2 text-sm font-medium text-foreground">{t('即将上线')}</h3>
         <div className="space-y-2">
-          {comingSoonIds.map((pluginId) => (
+          {comingSoonIds.map(pluginId => (
             <Card key={pluginId} className="opacity-70">
               <CardContent className="flex items-start gap-3 py-3">
                 <PluginIcon pluginId={pluginId} />
@@ -269,7 +293,9 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                   </p>
                   {pluginId === 'password_vault_cracker' && (
                     <p className="mt-1.5 rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
-                      {t('启用仅表示允许在本目录协助解密常见密码本或详情页手动解密，不会自动暴力破解您的敏感文件')}
+                      {t(
+                        '启用仅表示允许在本目录协助解密常见密码本或详情页手动解密，不会自动暴力破解您的敏感文件'
+                      )}
                     </p>
                   )}
                 </div>
@@ -282,7 +308,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
   )
 }
 
-/** 插件展示名（大白话，零工程术语） */
+/** 插件展示名（与插件中心 seed 正名严格对齐，零工程术语） */
 function renderPluginName(pluginId: string): string {
   switch (pluginId) {
     case 'asr_sensevoice_onnx':
@@ -290,33 +316,49 @@ function renderPluginName(pluginId: string): string {
     case 'perception_nsfw':
       return t('内容安全识别')
     case 'archive_vfs_parser':
-      return t('压缩包直接浏览')
+      return t('压缩包透视与深度解析器')
     case 'face_recognition_tool':
       return t('照片人物识别')
     case 'object_detection_pro':
       return t('图片物体标记')
     case 'password_vault_cracker':
       return t('加密文件解密助手')
+    case 'image_video_enhance':
+      return t('图片视频高清化')
+    case 'image_video_deobfuscate':
+      return t('图片视频去打码')
+    case 'image_video_dewatermark':
+      return t('图片视频去水印')
+    case 'file_ai_cover':
+      return t('文件AI封面图')
     default:
       return pluginId
   }
 }
 
-/** 插件大白话收益（§5.2 + 零工程术语） */
+/** 插件大白话收益（§5.2 + 零工程术语；与插件中心 seed 描述语义严格对齐） */
 function renderPluginBenefit(pluginId: string): string {
   switch (pluginId) {
     case 'asr_sensevoice_onnx':
       return t('把语音和视频里的讲话自动转成文字，方便直接搜索和整理')
     case 'perception_nsfw':
-      return t('自动识别不适宜公开的图片，帮您提前标记或过滤')
+      return t('自动识别不适宜公开的图文，帮您提前标记或过滤')
     case 'archive_vfs_parser':
-      return t('不用解压就能直接浏览压缩包里的文件列表')
+      return t('不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担')
     case 'face_recognition_tool':
       return t('自动识别照片里的人物，帮您按人物整理相册')
     case 'object_detection_pro':
       return t('自动标记照片里的物体（如车、猫、建筑），让搜索更精准')
     case 'password_vault_cracker':
       return t('帮您打开带有密码保护的常见加密文件（如 PDF、ZIP）')
+    case 'image_video_enhance':
+      return t('把低分辨率的图片和视频变得清晰，老照片和模糊视频也能看清细节')
+    case 'image_video_deobfuscate':
+      return t('自动找出图片视频中被局部打码的区域，用智能修复尝试还原')
+    case 'image_video_dewatermark':
+      return t('自动找出图片视频中的水印位置并干净抹除，画面自然不留痕')
+    case 'file_ai_cover':
+      return t('为没有封面的文本类文件自动生成好看的AI封面图，一眼认出文件内容')
     default:
       return ''
   }
@@ -337,6 +379,14 @@ function renderPluginResourceImpact(pluginId: string): string {
       return t('扫描图片时会占用一定后台资源')
     case 'password_vault_cracker':
       return t('仅在您手动操作时短暂运行，不会在后台持续占用资源')
+    case 'image_video_enhance':
+      return t('处理图片和视频时会占用一定后台资源，普通电脑可流畅运行')
+    case 'image_video_deobfuscate':
+      return t('处理图片和视频时会占用较多后台资源，建议有独立显卡的电脑开启')
+    case 'image_video_dewatermark':
+      return t('处理图片和视频时会占用少量后台资源，普通电脑可流畅运行')
+    case 'file_ai_cover':
+      return t('生成封面图时会占用一定后台资源，建议有独立显卡的电脑开启')
     default:
       return ''
   }

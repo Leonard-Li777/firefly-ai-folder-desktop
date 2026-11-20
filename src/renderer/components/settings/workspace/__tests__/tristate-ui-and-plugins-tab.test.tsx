@@ -1,12 +1,9 @@
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
 import '@testing-library/jest-dom'
 
-import {
-  TriStateFieldFeedback,
-  getOcrModelSizeLabel
-} from '../TriStateFieldFeedback'
+import { TriStateFieldFeedback, getOcrModelSizeLabel } from '../TriStateFieldFeedback'
 import { WorkspacePluginsTab } from '../WorkspacePluginsTab'
 import { ContentExtractionTab } from '../ContentExtractionTab'
 import {
@@ -26,9 +23,12 @@ import {
 } from '../../../../stores/workspace-runtime-context-store'
 
 // 禁止出现的底层工程黑话正则（AGENTS.md §2.16 & 规格书 §5.3）
-const FORBIDDEN_JARGON_RE = /\b(ASR|OCR|CLIP|ONNX|gemma_unified|classic_light|LibreOffice|300s|Token)\b/
+const FORBIDDEN_JARGON_RE =
+  /\b(ASR|OCR|CLIP|ONNX|gemma_unified|classic_light|LibreOffice|300s|Token)\b/
 
-function makeSnapshot(overrides: Partial<WorkspaceRuntimeContextSnapshot> = {}): WorkspaceRuntimeContextSnapshot {
+function makeSnapshot(
+  overrides: Partial<WorkspaceRuntimeContextSnapshot> = {}
+): WorkspaceRuntimeContextSnapshot {
   return {
     contextEpoch: 1,
     workspaceId: 1,
@@ -200,30 +200,30 @@ describe('SLICE-08: WorkspacePluginsTab 目录插件双分区与补丁提交', (
     }
   })
 
-  it('严格仅渲染 6 个目录插件、绝不渲染 6 个全局插件，且预告区只读无假降级', () => {
-    expect(WORKSPACE_CONFIGURABLE_PLUGIN_IDS).toHaveLength(6)
+  it('严格仅渲染 10 个目录插件、绝不渲染 6 个全局插件，且预告区只读无假降级', () => {
+    expect(WORKSPACE_CONFIGURABLE_PLUGIN_IDS).toHaveLength(10)
     expect(GLOBAL_ONLY_PLUGIN_IDS).toHaveLength(6)
 
     const { container } = render(
-      <WorkspacePluginsTab
-        workspaceId={42}
-        plugins={{}}
-        hasBoundWorkflow={false}
-      />
+      <WorkspacePluginsTab workspaceId={42} plugins={{}} hasBoundWorkflow={false} />
     )
 
-    // 仅主区 2 个插件带 Switch，预告区 4 个 coming_soon 只读无 Switch
+    // 仅主区 2 个插件带 Switch，预告区 8 个 coming_soon 只读无 Switch
     const switches = screen.getAllByRole('switch')
     expect(switches).toHaveLength(2)
 
     const text = container.textContent ?? ''
     expect(text).toContain('语音听写')
     expect(text).toContain('内容安全识别')
-    expect(text).toContain('压缩包直接浏览')
+    expect(text).toContain('压缩包透视与深度解析器')
     expect(text).toContain('照片人物识别')
     expect(text).toContain('图片物体标记')
     expect(text).toContain('加密文件解密助手')
     expect(text).toContain('不会自动暴力破解')
+    expect(text).toContain('图片视频高清化')
+    expect(text).toContain('图片视频去打码')
+    expect(text).toContain('图片视频去水印')
+    expect(text).toContain('文件AI封面图')
     // 未绑定工作流时不得误提「当前工作流主题」
     expect(text).not.toContain('当前工作流主题')
     expect(text).not.toContain('本主题推荐')
@@ -234,7 +234,7 @@ describe('SLICE-08: WorkspacePluginsTab 目录插件双分区与补丁提交', (
     }
   })
 
-  it('主区 Switch 提交 pluginOverridePatch，恢复默认提交 restorePluginOverrideIds（严禁传 null）', async () => {
+  it('主区 Switch 等值回退：关闭至基线值提交 restorePluginOverrideIds，开启至非基线值提交 pluginOverridePatch，恢复默认提交 restorePluginOverrideIds（严禁传 null）', async () => {
     const plugins: Record<string, ResolvedPluginTriState> = {
       asr_sensevoice_onnx: {
         pluginId: 'asr_sensevoice_onnx',
@@ -246,20 +246,16 @@ describe('SLICE-08: WorkspacePluginsTab 目录插件双分区与补丁提交', (
       }
     }
 
-    render(
-      <WorkspacePluginsTab
-        workspaceId={9}
-        plugins={plugins}
-        hasBoundWorkflow={true}
-      />
+    const { unmount } = render(
+      <WorkspacePluginsTab workspaceId={9} plugins={plugins} hasBoundWorkflow={true} />
     )
 
-    // 点击 Switch 切换
+    // 点击 Switch 切换为关闭：目标值 false === 工作流默认 false -> 等值回退精确删键算回默认态
     const asrSwitch = screen.getByRole('switch', { name: '语音听写' })
     fireEvent.click(asrSwitch)
     await waitFor(() => {
       expect(mockApplyMutation).toHaveBeenCalledWith(9, {
-        pluginOverridePatch: { asr_sensevoice_onnx: false }
+        restorePluginOverrideIds: ['asr_sensevoice_onnx']
       })
     })
 
@@ -268,6 +264,27 @@ describe('SLICE-08: WorkspacePluginsTab 目录插件双分区与补丁提交', (
     await waitFor(() => {
       expect(mockApplyMutation).toHaveBeenCalledWith(9, {
         restorePluginOverrideIds: ['asr_sensevoice_onnx']
+      })
+    })
+
+    unmount()
+
+    // 非等值：基线关闭、当前关闭，点 Switch 开启（true !== false）-> 写入覆盖键
+    const pluginsOff: Record<string, ResolvedPluginTriState> = {
+      asr_sensevoice_onnx: {
+        pluginId: 'asr_sensevoice_onnx',
+        effectiveValue: false,
+        origin: 'workflow_default',
+        applicability: 'active',
+        availability: 'approved',
+        workflowRecommendation: 'workflow_default_off'
+      }
+    }
+    render(<WorkspacePluginsTab workspaceId={9} plugins={pluginsOff} hasBoundWorkflow={true} />)
+    fireEvent.click(screen.getByRole('switch', { name: '语音听写' }))
+    await waitFor(() => {
+      expect(mockApplyMutation).toHaveBeenCalledWith(9, {
+        pluginOverridePatch: { asr_sensevoice_onnx: true }
       })
     })
   })
@@ -281,13 +298,17 @@ describe('SLICE-08: RuntimeContextStore & 补丁通道显式错误上报', () =>
   it('contextEpoch 单调递增：丢弃过旧或同 epoch 推送，接受更高 epoch', async () => {
     let listener: ((snap: WorkspaceRuntimeContextSnapshot) => void) | null = null
     ;(window as any).electronAPI = {
-      getWorkspaceRuntimeContextSnapshot: vi.fn().mockResolvedValue(makeSnapshot({ contextEpoch: 5 })),
-      onWorkspaceRuntimeContextUpdated: vi.fn((cb: (s: WorkspaceRuntimeContextSnapshot) => void) => {
-        listener = cb
-        return () => {
-          listener = null
+      getWorkspaceRuntimeContextSnapshot: vi
+        .fn()
+        .mockResolvedValue(makeSnapshot({ contextEpoch: 5 })),
+      onWorkspaceRuntimeContextUpdated: vi.fn(
+        (cb: (s: WorkspaceRuntimeContextSnapshot) => void) => {
+          listener = cb
+          return () => {
+            listener = null
+          }
         }
-      })
+      )
     }
 
     await useWorkspaceRuntimeContext.getState().initialize(1)
@@ -306,7 +327,9 @@ describe('SLICE-08: RuntimeContextStore & 补丁通道显式错误上报', () =>
 
   it('IPC 通道未就绪时显式返回失败，严禁静默假成功', async () => {
     ;(window as any).electronAPI = {}
-    const mutRes = await submitWorkspacePolicyMutation(1, { overridePatch: { maxContentSizeKb: 2048 } })
+    const mutRes = await submitWorkspacePolicyMutation(1, {
+      overridePatch: { maxContentSizeKb: 2048 }
+    })
     expect(mutRes.success).toBe(false)
     expect(mutRes.error).toBe('WORKSPACE_POLICY_MUTATION_CHANNEL_UNAVAILABLE')
 
@@ -317,9 +340,13 @@ describe('SLICE-08: RuntimeContextStore & 补丁通道显式错误上报', () =>
 })
 
 describe('SLICE-08: ContentExtractionTab 刻度重构与非标历史值保真', () => {
+  const mockApplyMutation = vi.fn()
+
   beforeEach(() => {
+    vi.clearAllMocks()
+    mockApplyMutation.mockResolvedValue({ success: true, policyVersion: 2 })
     ;(window as any).electronAPI = {
-      applyWorkspacePolicyMutation: vi.fn().mockResolvedValue({ success: true }),
+      applyWorkspacePolicyMutation: mockApplyMutation,
       utils: {
         detectLibreOffice: vi.fn().mockResolvedValue({ installed: true, version: '24.2' })
       }
@@ -357,6 +384,46 @@ describe('SLICE-08: ContentExtractionTab 刻度重构与非标历史值保真', 
     expect(text).toContain('极速识别（省电流畅）')
     expect(text).toContain('高清精识（适合票据与密字截图）')
     expect(text).not.toMatch(FORBIDDEN_JARGON_RE)
+  })
+
+  it('v1.5 等值回退写端：触碰字段设为非基线值提交 overridePatch，改回基线值提交 restoreOverrideFields 精确删键', async () => {
+    const workspace: any = {
+      id: 8,
+      name: 'Media',
+      path: 'D:\\Media',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'ready',
+        policyVersion: 1,
+        baseAIConfig: {
+          analysisMode: 'full',
+          enableImageOcr: true,
+          enableOfficeCover: true,
+          reuseBasicAnalysisData: true
+        }
+      })
+    }
+    render(<ContentExtractionTab workspace={workspace} />)
+
+    // 1. 关闭图片文字识别（false !== 基线 true）-> 防抖 500ms 后提交覆盖补丁
+    //    （防抖 timer 回调与异步落库的 setState 必须整体包裹在 act 内捕获）
+    const ocrSwitch = screen.getByRole('switch', { name: '开启图片文字识别' })
+    await act(async () => {
+      fireEvent.click(ocrSwitch)
+      await new Promise(resolve => setTimeout(resolve, 620))
+    })
+    expect(mockApplyMutation).toHaveBeenCalledWith(8, {
+      overridePatch: { enableImageOcr: false }
+    })
+
+    // 2. 再开启回基线值（true === 基线 true）-> 等值回退精确删键算回默认态，不写覆盖
+    await act(async () => {
+      fireEvent.click(ocrSwitch)
+      await new Promise(resolve => setTimeout(resolve, 620))
+    })
+    expect(mockApplyMutation).toHaveBeenCalledWith(8, {
+      restoreOverrideFields: ['enableImageOcr']
+    })
   })
 })
 
@@ -450,13 +517,7 @@ describe('SLICE-08 Round 1 审查修复回归', () => {
         globalAvailability: 'available'
       }
     }
-    render(
-      <WorkspacePluginsTab
-        workspaceId={1}
-        plugins={plugins}
-        hasBoundWorkflow={true}
-      />
-    )
+    render(<WorkspacePluginsTab workspaceId={1} plugins={plugins} hasBoundWorkflow={true} />)
     expect(screen.getAllByRole('button', { name: '恢复默认' })).toHaveLength(1)
     expect(screen.getByText('（用户自定义：开启）')).toBeInTheDocument()
   })
