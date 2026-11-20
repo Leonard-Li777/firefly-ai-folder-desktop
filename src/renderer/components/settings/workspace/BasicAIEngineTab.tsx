@@ -37,6 +37,8 @@ import {
   VideoCutSensitivity,
   VIDEO_ANALYSIS_PRESETS,
   estimateVideoAnalysisDurationSec,
+  isAppleSiliconPlatform,
+  isDedicatedGpu,
   mapIntentToParameters
 } from '@firefly/shared'
 import { useTierStore } from '../../../stores/tier-store'
@@ -319,6 +321,16 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const localVideoSoftTokenBudget = effectiveParams.videoSoftTokenBudget ?? 48
   const videoAsrCap = effectiveParams.videoAsrDurationSec ?? 30
   const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 60
+  // 耗时预估口径硬件分档：与 workspace-config-policy.ts footage_studio 的 hasGpuPower 判定同源
+  // （真实独显或 Apple Silicon），探测缺失或纯核显时保守按纯 CPU 口径估算；
+  // 注意 GPU 帧成本常数仅在 Windows DML + RTX 3060 标定，mac CoreML 口径未标定属外推
+  const hasGpuPower = useMemo(
+    () =>
+      Boolean(
+        hardwareInfo && (isDedicatedGpu(hardwareInfo) || isAppleSiliconPlatform(hardwareInfo))
+      ),
+    [hardwareInfo]
+  )
   // 语音听写组件是否就绪：同时校验全局插件状态与目录插件开关
   const asrPluginReady = pluginModules.some(
     m => m.id === 'asr_sensevoice_onnx' && m.install_state === 'active'
@@ -1062,7 +1074,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                 videoQuotaMax,
                 localVideoSoftTokenBudget,
                 videoAsrCap,
-                false,
+                hasGpuPower,
                 300
               )
               const totalMins = (est.totalSec / 60).toFixed(1)
@@ -1184,13 +1196,13 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                     </div>
                   </div>
 
-                  {/* 纯 CPU 深度档慢于实时播放时的贴心提示 */}
+                  {/* 纯 CPU 口径深度档慢于实时播放时的贴心提示 */}
                   {est.perChunkSec >= 300 && (
                     <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
                       <span>💡</span>
                       <span>
                         {t(
-                          '这个档位在没有独立显卡的电脑上，整理会比视频本身更慢，适合放在后台慢慢整理；配备独立显卡时可获得数倍流畅提速。'
+                          '这个档位对电脑算力要求高：普通轻薄本整理会比视频播放更慢，建议放后台慢慢整理；有独立显卡的电脑大约能快 2~3 倍，多数情况能比实时播放更快完成（具体快多少因显卡型号而异）。'
                         )}
                       </span>
                     </div>
