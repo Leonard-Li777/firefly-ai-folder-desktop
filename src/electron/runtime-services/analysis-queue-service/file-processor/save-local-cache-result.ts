@@ -113,6 +113,11 @@ export async function saveLocalAnalysisResult(
       : true
   const effectiveMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
   initialStatsWithBenchmark.completed_mode = effectiveMode
+  // [SLICE-06] 增量完整性能力履历与空尝试记录随同一次写入落库（保留由 file-crud 白名单保证）
+  const prAny = processResult as any
+  if (prAny?.attemptedEmpty) (initialStatsWithBenchmark as any).attempted_empty = prAny.attemptedEmpty
+  if (prAny?.appliedCapabilities)
+    (initialStatsWithBenchmark as any).appliedCapabilities = prAny.appliedCapabilities
 
   // 统一通过「分析模式单一事实来源」判定是否完成。
   // 此处 completedMode 即本次刚写入的模式，等级覆盖判定天然成立：
@@ -191,6 +196,8 @@ export async function saveLocalAnalysisResult(
     metadata: processResult.metadata,
     rawSmartName: (processResult as any).rawSmartName || null,
     analysisStats: initialStatsWithBenchmark,
+    // [SLICE-04] 显式传入本次实际生效分析模式，供 isAnalyzedForMode 精确判定，杜绝跨区误标
+    analysisMode: effectiveMode,
     isHit: false,
     syncStatus: isBasic ? 4 : 0
   })

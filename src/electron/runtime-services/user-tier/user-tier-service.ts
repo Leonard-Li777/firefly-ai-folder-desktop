@@ -18,6 +18,7 @@ import { databaseService } from '../database/database-service'
 import { createSupabaseClient } from '../system/supabase-client-factory'
 import { t } from '@app/languages'
 import { net } from 'electron'
+import { emitRuntimeContextChange } from '../system/workspace-runtime-context-bus'
 
 export class UserTierService {
   private static instance: UserTierService
@@ -787,6 +788,8 @@ export class UserTierService {
       logger.error(LogCategory.SYSTEM, 'syncLocalCacheAndNotify failed', e)
     }
     this.notifyProfileChanged()
+    // 会员等级/权益变化驱动 contextEpoch 递增，触发工作区有效能力重算
+    emitRuntimeContextChange('user_tier_changed')
 
     // 启动时异步拉取云端流水记录，确保余额变更（如邀请赠送）能及时反映
     this.fetchCloudTransactionsInBackground(machineId, false).catch(err => {

@@ -11,7 +11,7 @@ import {
   checkBasicDataCompleteness
 } from './file-processor'
 import { databaseService } from '../database/database-service'
-import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
+import { resolveWorkspaceEffectiveConfig } from '../system/workspace-analysis-context'
 import { isTimeoutError, isTransientInfraError } from './file-processor/analysis-error-classifier'
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { moduleHibernationCoordinator } from '../hibernation/module-hibernation-coordinator'
@@ -146,8 +146,10 @@ export class AnalysisOrchestratorWorker {
 
         let shouldSkipCpu = false
         try {
+          // [OBS-02] 基于队列项所属工作区解析有效配置，完整性判定与 file-processor 同源
+          const workspaceEffectiveConfig = await resolveWorkspaceEffectiveConfig(item.workspaceId ?? null)
           const reuseBasicAnalysisData =
-            ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
+            workspaceEffectiveConfig.effectiveParams.reuseBasicAnalysisData
 
           if (isAlreadyStage2(item)) {
             if (!reuseBasicAnalysisData) {
@@ -162,6 +164,7 @@ export class AnalysisOrchestratorWorker {
                 databaseService.db!,
                 item.workspaceId!,
                 item.path,
+                workspaceEffectiveConfig,
                 fileFingerprint
               )
               if (completeness.isComplete) {

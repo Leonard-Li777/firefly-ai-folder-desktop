@@ -928,6 +928,17 @@ export class FileCrudMixin extends FileDaoSharedBase {
         if (completedMode) {
           finalStatsObj.completed_mode = completedMode
         }
+        // [SLICE-06] 白名单必须保留增量完整性能力履历与空尝试记录，否则会被静默丢弃导致无限重跑。
+        // 优先采用本次写入值，缺省回退历史值，实现多次写入的增量合并保留。
+        const attemptedEmpty = incomingStats.attempted_empty ?? existingStats.attempted_empty
+        if (attemptedEmpty !== undefined) {
+          finalStatsObj.attempted_empty = attemptedEmpty
+        }
+        const appliedCapabilities =
+          incomingStats.appliedCapabilities ?? existingStats.appliedCapabilities
+        if (appliedCapabilities !== undefined) {
+          finalStatsObj.appliedCapabilities = appliedCapabilities
+        }
 
         newStatsJson = JSON.stringify(finalStatsObj)
       }
@@ -1028,9 +1039,12 @@ export class FileCrudMixin extends FileDaoSharedBase {
       // 必须同时校验 completed_mode：quick_name 与 full 的终态 stage 都是 4，
       // 但 quick_name 跳过质量评分，仅凭 stage 无法区分。
       // 采用等级覆盖口径：高级模式的产物对低级模式依然有效（无需重跑）。
+      // [SLICE-04] 显式传入本次分析实际生效模式：防跨区 stage=2 误标或漏标 is_analyzed。
+      // 未提供时由 isAnalyzedForMode 内部回退全局解析（向后兼容）。
       const isTargetStageReached = isAnalyzedForMode({
         stage: currentStage,
-        completedMode: currentCompletedMode
+        completedMode: currentCompletedMode,
+        mode: normalizeAnalysisMode(result.analysisMode)
       })
 
       this.db

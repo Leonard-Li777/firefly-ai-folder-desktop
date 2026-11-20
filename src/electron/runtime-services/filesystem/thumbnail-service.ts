@@ -293,7 +293,7 @@ export class ThumbnailService {
     filePath: string,
     outputPath: string,
     _fileId?: string,
-    options?: { skipIfExists?: boolean }
+    options?: { skipIfExists?: boolean; enableOfficeCover?: boolean }
   ): Promise<boolean> {
     try {
       // 优先检查磁盘目标路径是否已经存在缩略图
@@ -314,7 +314,10 @@ export class ThumbnailService {
       }
 
       const { omniService } = await import('../system/omni-service')
-      const coverBuffer = await omniService.getFileCover(filePath, { skipIfExistsPath: outputPath })
+      const coverBuffer = await omniService.getFileCover(filePath, {
+        skipIfExistsPath: outputPath,
+        enableOfficeCover: options?.enableOfficeCover
+      })
       if (coverBuffer && coverBuffer.length > 0) {
         const fs = await import('node:fs/promises')
         await fs.mkdir(path.dirname(outputPath), { recursive: true })

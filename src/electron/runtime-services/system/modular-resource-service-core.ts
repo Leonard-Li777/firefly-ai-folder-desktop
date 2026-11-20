@@ -137,6 +137,7 @@ import {
   runtimeTopologyCoordinator
 } from './runtime-topology-coordinator'
 import { DEFAULT_CATALOG_SEEDS } from './catalog-seeds'
+import { emitRuntimeContextChange } from './workspace-runtime-context-bus'
 
 /**
  * 依据资源下载任务状态列表映射上层模块安装状态 (ISS-09 / Ticket 04)
@@ -3102,6 +3103,7 @@ export class ModularResourceService implements IModularResourceService {
   ): Promise<BuiltinModuleView> {
     this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
+    emitRuntimeContextChange('module_installing')
 
     return await this.topologyCoordinator.execute(async () => {
       const dao = this.getDao()
@@ -3991,6 +3993,7 @@ export class ModularResourceService implements IModularResourceService {
   async uninstallModule(moduleId: string): Promise<BuiltinModuleView> {
     this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
+    emitRuntimeContextChange('module_uninstalling')
 
     return await this.topologyCoordinator.execute(async () => {
       const db = this.getDb()
@@ -4178,6 +4181,8 @@ export class ModularResourceService implements IModularResourceService {
   ): Promise<BuiltinModuleView> {
     this.assertWriteGateAllowed()
     this.ensureDefaultSeeds()
+    // 能力槽位激活/停用是 contextEpoch 的核心触发源：100ms 合并由上下文服务统一处理
+    emitRuntimeContextChange('module_state_changed')
     const dao = this.getDao()
     const existing = dao.modules.findByIdSync(moduleId)
     if (!existing) {

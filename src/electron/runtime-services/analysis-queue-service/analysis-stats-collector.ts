@@ -6,6 +6,7 @@ import { hardwareDetectionService } from '../system'
 import { unifiedModelManager } from '../llama/unified-model-manager'
 import { engineBridgeService } from '../engine-bridge'
 import { isAiStageEnabled, resolveAnalysisMode } from '@app/electron/config/analysis-mode'
+import type { AnalysisMode } from '@app/electron/config/analysis-mode'
 
 /**
  * 判断标识是否为物理文件路径（Windows 盘符路径 / UNC / POSIX 绝对路径 / 模型权重文件）。
@@ -43,11 +44,15 @@ export class AnalysisStatsCollector {
   /**
    * 收集分析统计信息
    */
-  async collectAnalysisStats(timer: PerformanceTimer): Promise<AnalysisStats> {
+  async collectAnalysisStats(
+    timer: PerformanceTimer,
+    effectiveAnalysisMode?: AnalysisMode
+  ): Promise<AnalysisStats> {
     // 标准分析（simple）模式在 CPU 内容提取完成后即结束，不进入 AI 阶段（stage 3/4），
     // 全程未调用任何 AI 模型。此时不应记录模型信息，否则前端会在「分析耗时」旁
     // 显示一个无意义（甚至错误）的模型标识。门控前置到 try 之外，确保异常兜底分支同样生效。
-    const aiStageEnabled = isAiStageEnabled(resolveAnalysisMode())
+    // [SLICE-04] 优先消费工作区锁定的有效分析模式，杜绝全局 ConfigOrchestrator 旁路口径漂移。
+    const aiStageEnabled = isAiStageEnabled(effectiveAnalysisMode ?? resolveAnalysisMode())
     try {
       const hardware = await hardwareDetectionService.detectSystemResources()
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')

@@ -84,10 +84,28 @@ export interface OmniPerceptionOptions {
   enableGeoReverse?: boolean
   enableTextAnalysis?: boolean
   maxContentSizeKb?: number
+  /** 图片 OCR 开关（false 时 Rust 全链路 OCR/DBNet 在模型初始化前短路） */
+  enableImageOcr?: boolean
+  /** OCR 模型尺寸（仅 'tiny' | 'small' 生效，复用双常驻槽位零卸载） */
+  ocrModelSize?: 'tiny' | 'small'
+  /** 文档 OCR 项数（0 关闭，-1 不限，正值限数） */
+  maxDocumentOcrItems?: number
+  /** PDF 预提取页数（<= 0 / -1 全本，> 0 仅抽前 N 页） */
+  extractPages?: number
+  /** 视频伴音 ASR 时长（秒，仅视频 0 号切片读取，0 表跳过） */
+  videoAsrDurationSec?: number
+  /** 视频逐帧视觉分析开关（false 时彻底跳过抽帧，不受引擎内部下限覆盖） */
+  enableVideoVisualAnalysis?: boolean
+  /** 敏感内容感知开关（仅可向下收窄，绝不卸载全局会话） */
+  enableNsfwPerception?: boolean
+  /** 人脸感知开关 */
+  enableFacePerception?: boolean
   audioAnalysisDuration?: number
   timeoutMs?: number
   /** 是否需要生成缩略图/封面（若已有则传 false，不要求生成） */
   generateThumbnail?: boolean
+  /** Office 完整封面截图开关（perceive 统一读此字段，缺失时回退 enableCover） */
+  enableOfficeCover?: boolean
   enableCover?: boolean
   /** 视频内容定位精度（抽帧间隔秒数），默认 5.0，精细模式可设为 1.0 */
   videoFrameIntervalSeconds?: number
@@ -106,6 +124,18 @@ export interface OmniPerceptionOptions {
   /** 是否跳过 CPU 阶段 5W 造句（当后续由生成式 AI 接管时置为 true） */
   skip5wSynthesis?: boolean
 }
+
+/** POST /api/extract 逐请求覆盖字段（`extract` 回退通道必须与 perceive 同源，杜绝参数丢失） */
+export type OmniExtractOptions = Pick<
+  OmniPerceptionOptions,
+  | 'extractPages'
+  | 'enableImageOcr'
+  | 'ocrModelSize'
+  | 'maxDocumentOcrItems'
+  | 'maxContentSizeKb'
+  | 'enableOfficeCover'
+  | 'timeoutMs'
+>
 
 export interface OmniPerceptionBenchmarkResponse {
   total_ms: number

@@ -33,6 +33,7 @@ import type {
   OmniGeoReverseItem,
   OmniGeoReverseResponse,
   OmniPerceptionOptions,
+  OmniExtractOptions,
   OmniPerceptionBenchmarkResponse,
   OmniTagChainItem,
   OmniResolveParentRequest,
@@ -66,6 +67,11 @@ import type {
   InspectControlledTagsResponse
 } from './types'
 import { broadcastOmniStatus } from './helpers'
+import {
+  buildCoverUrl,
+  buildExtractRequestBody,
+  buildPerceiveRequestBody
+} from './request-serialization'
 
 export class OmniService {
   private static instance: OmniService
@@ -1962,10 +1968,14 @@ export class OmniService {
   /**
    * 提取文件全量信息 (元数据, Magika, Markdown, EXIF, 音视频标签)
    */
-  public async extract(filePath: string): Promise<OmniExtractionResponse | null> {
+  public async extract(
+    filePath: string,
+    options?: OmniExtractOptions
+  ): Promise<OmniExtractionResponse | null> {
     await this.ensureRunning()
     const tStart = Date.now()
-    const reqBody = { file_path: filePath }
+    // 逐请求覆盖字段经 POST /api/extract 下沉至 Rust ExtractRequest，杜绝回退通道丢失工作区参数。
+    const reqBody = buildExtractRequestBody(filePath, options)
     logger.debug(
       LogCategory.SYSTEM,
       `[OmniService] >>> POST /api/extract 请求发起:`,
@@ -2209,7 +2219,11 @@ export class OmniService {
    */
   public async getFileCover(
     filePath: string,
-    options?: { skipIfExistsPath?: string; skipIfExists?: boolean }
+    options?: {
+      skipIfExistsPath?: string
+      skipIfExists?: boolean
+      enableOfficeCover?: boolean
+    }
   ): Promise<Buffer | null> {
     if (options?.skipIfExists) {
       return null
@@ -2231,8 +2245,8 @@ export class OmniService {
 
     await this.ensureRunning()
     const tStart = Date.now()
-    const skipQuery = options?.skipIfExists ? `&skip_if_exists=true` : ''
-    const url = `${this.baseUrl}/api/cover?path=${encodeURIComponent(filePath)}${skipQuery}`
+    // [V12-E06] Office 封面逐请求透传：false/true 均按请求写入 query，绝不丢失用户显式关闭意图。
+    const url = buildCoverUrl(this.baseUrl, filePath, options)
     logger.debug(LogCategory.SYSTEM, `[OmniService] >>> GET /api/cover 请求发起 (${filePath})`)
 
     const doFetch = async () => {
@@ -2321,27 +2335,9 @@ export class OmniService {
   ): Promise<OmniPerceptionResponse | null> {
     await this.ensureRunning()
     const tStart = Date.now()
-    const reqBody = {
-      file_path: filePath,
-      file_fingerprint: options?.fileFingerprint,
-      language: options?.language,
-      enable_visual_tags: options?.enableVisualTags ?? true,
-      enable_asr: options?.enableAudioTranscript,
-      enable_geo_reverse: options?.enableGeoReverse ?? true,
-      enable_text_analysis: options?.enableTextAnalysis,
-      max_content_size_kb: options?.maxContentSizeKb,
-      audio_analysis_duration: options?.audioAnalysisDuration,
-      generate_thumbnail: options?.generateThumbnail ?? options?.enableCover,
-      video_frame_interval_seconds: options?.videoFrameIntervalSeconds,
-      video_soft_token_budget: options?.videoSoftTokenBudget,
-      video_frame_quota_max:
-        options?.videoFrameQuotaMax ?? this.getConfigValue<number>('VIDEO_FRAME_QUOTA_MAX'),
-      video_cut_sensitivity:
-        options?.videoCutSensitivity ?? this.getConfigValue<string>('VIDEO_CUT_SENSITIVITY'),
-      video_max_analyze_sec: options?.videoMaxAnalyzeSec,
-      video_analyze_start_sec: options?.videoAnalyzeStartSec,
-      skip_5w_synthesis: options?.skip5wSynthesis
-    }
+    const reqBody = buildPerceiveRequestBody(filePath, options, <T>(key: string) =>
+      this.getConfigValue<T>(key)
+    )
     logger.debug(
       LogCategory.SYSTEM,
       `[OmniService] >>> POST /api/perceive 请求发起:`,

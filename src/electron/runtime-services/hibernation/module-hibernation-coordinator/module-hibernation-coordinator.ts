@@ -77,6 +77,12 @@ export class ModuleHibernationCoordinator {
   /** 内存门闩快速判定缓存: targetId -> boolean */
   private readonly blockedUnloadCache = new Map<string, boolean>()
 
+  /**
+   * 当前活跃分析任务是否真正需要 ASR 常驻（由 file-processor 依据工作区 effectiveConfig 写入）。
+   * 关闭 ASR 的工作区即便在跑音视频，对账器也严禁据此把 asr-sensevoice-onnx 标为 resident。
+   */
+  private asrExpectedActive = false
+
   /** 崩溃滑动窗口与稳定驻留计时字典 */
   private readonly lastCrashAtMap = new Map<string, number>()
   private readonly residentSinceMap = new Map<string, number>()
@@ -179,6 +185,14 @@ export class ModuleHibernationCoordinator {
    * @param targetId   HIBERNATABLE_TARGET_CATALOG 中的模块 ID（如 'firefly-ai-engine', 'tts-m5-onnx'）
    * @param residentBytes  已知内存占用字节数（可选，0 或未传则不更新）
    */
+  /**
+   * 声明当前活跃分析任务是否需要 ASR 常驻（只由 file-processor 依 effectiveConfig 调用）。
+   * reconcileLiveStates 对 ASR 的常驻裁决必须依赖此声明，杜绝后台对账偷标。
+   */
+  setAsrExpectedActive(active: boolean): void {
+    this.asrExpectedActive = active
+  }
+
   notifyModuleResident(targetId: string, residentBytes?: number): void {
     logger.info(
       LogCategory.SYSTEM,
@@ -3299,8 +3313,9 @@ export class ModuleHibernationCoordinator {
         }
       }
 
-      // 3. 对 asr-sensevoice-onnx 的决议：若队列活跃且处于音视频提取中，必须常驻
-      if (queueRunning || queueBusy) {
+      // 3. 对 asr-sensevoice-onnx 的决议：仅当队列活跃、处于音视频提取中【且当前任务确实需要 ASR】时常驻。
+      //    [SLICE-04] 关闭 ASR 的工作区即便在跑音视频，也严禁被后台对账偷标为 resident。
+      if ((queueRunning || queueBusy) && this.asrExpectedActive) {
         const rt = this.runtimeStore.get('asr-sensevoice-onnx')
         if (rt && (isAudioVideoProcessing || rt.state !== 'resident')) {
           if (isAudioVideoProcessing) {

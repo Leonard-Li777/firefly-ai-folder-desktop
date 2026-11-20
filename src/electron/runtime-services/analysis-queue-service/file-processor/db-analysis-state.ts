@@ -2,6 +2,7 @@ import { LogCategory, logger, FileCategory, getFileCategory } from '@firefly/sha
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { omniClient } from '../../../services/omni-client'
 import { decompressText } from '../../../utils/text-compressor'
+import type { EffectiveWorkspaceAIConfigResult } from '../../system/workspace-analysis-context'
 
 export function getFileStageFromDB(db: any, workspaceId: number, filePath: string): number {
   try {
@@ -87,6 +88,7 @@ export async function checkBasicDataCompleteness(
   db: any,
   workspaceId: number,
   filePath: string,
+  effectiveConfig: EffectiveWorkspaceAIConfigResult,
   fingerprint?: string
 ): Promise<BasicDataCompletenessResult> {
   const missingReasons: string[] = []
@@ -174,12 +176,15 @@ export async function checkBasicDataCompleteness(
         lrc?: Buffer | string
         asr?: Buffer | string
         exif?: Buffer | string
+        analysis_stats?: string
       }
     | undefined
 
   try {
     contentRow = db
-      .prepare('SELECT content, ocr, lrc, asr, exif FROM file_contents WHERE file_fingerprint = ?')
+      .prepare(
+        'SELECT content, ocr, lrc, asr, exif, analysis_stats FROM file_contents WHERE file_fingerprint = ?'
+      )
       .get(fingerprint)
   } catch {
     missingReasons.push('query_file_contents_error')
@@ -192,6 +197,36 @@ export async function checkBasicDataCompleteness(
   const hasOcr = contentRow?.ocr ? decompressText(contentRow.ocr as any).trim().length > 0 : false
   const hasLrc = contentRow?.lrc ? decompressText(contentRow.lrc as any).trim().length > 0 : false
   const hasAsr = contentRow?.asr ? decompressText(contentRow.asr as any).trim().length > 0 : false
+
+  // [V11-06] attempted_empty 二元组指纹：仅同一文件指纹且当前能力档位 <= 已试探档位时采纳短路，
+  // 文件内容变化或能力升格（tiny->small / ASR 时长变长）立即失效重跑，杜绝永久漏提取与死循环。
+  let attemptedEmpty:
+    | {
+        fileFingerprint?: string
+        ocrModelSize?: 'tiny' | 'small'
+        asrDurationSec?: number
+        ocrEmpty?: boolean
+        asrEmpty?: boolean
+      }
+    | undefined
+  try {
+    if (contentRow?.analysis_stats) {
+      const stats = JSON.parse(contentRow.analysis_stats)
+      if (stats && typeof stats.attempted_empty === 'object' && stats.attempted_empty) {
+        attemptedEmpty = stats.attempted_empty
+      }
+    }
+  } catch {
+    // 解析失败视为无历史记录（保守重跑），静默忽略是安全的：不会导致漏提取
+  }
+  const ocrRank = (size?: string): number => (size === 'small' ? 2 : size === 'tiny' ? 1 : 0)
+  const sameFingerprint = attemptedEmpty?.fileFingerprint === fingerprint
+  const effectiveOcrValid =
+    sameFingerprint && ocrRank(effectiveConfig.effectiveParams.ocrModelSize) <= ocrRank(attemptedEmpty?.ocrModelSize)
+  const targetAsrSec = effectiveConfig.effectiveParams.videoAsrDurationSec ||
+    effectiveConfig.effectiveParams.audioAnalysisDurationSec
+  const effectiveAsrValid =
+    sameFingerprint && targetAsrSec <= (attemptedEmpty?.asrDurationSec ?? -1)
 
   // 3. 针对不同类型文件的基础数据健全性检查
   if (
@@ -217,21 +252,58 @@ export async function checkBasicDataCompleteness(
       missingReasons.push('thumbnail_check_error')
     }
 
-    // b) 检查 OCR：如果配置启用了图片 OCR (ENABLE_IMAGE_OCR)，且图片未曾提取过 OCR/Content
-    const enableImageOcr =
-      ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
-    if (enableImageOcr && !hasOcr && !hasContent) {
+    // b) 仅当工作区 effectiveConfig 开启图片 OCR 且图片确无 OCR/Content 时才判缺口；
+    // 命中有效 attempted_empty.ocrEmpty 则短路，避免降级态反复重跑（防死循环）
+    if (
+      effectiveConfig.effectiveParams.enableImageOcr &&
+      !hasOcr &&
+      !hasContent &&
+      !(effectiveOcrValid && attemptedEmpty?.ocrEmpty)
+    ) {
       missingReasons.push('missing_image_ocr')
     }
   } else if (category === FileCategory.AUDIO) {
-    // 音频：应检查是否有歌词 (lrc) 或 ASR 语音转录 (asr) 或内容 (content)
-    if (!hasLrc && !hasAsr && !hasContent) {
-      missingReasons.push('missing_audio_transcript_or_lyrics')
+    // 音频：仅当 ASR 生效且时长 > 0 且无歌词/转录/内容时判缺口；attempted_empty.asrEmpty 有效则短路
+    if (
+      effectiveConfig.capabilities.asrEffectivelyEnabled &&
+      targetAsrSec > 0 &&
+      !hasLrc &&
+      !hasAsr &&
+      !hasContent &&
+      !(effectiveAsrValid && attemptedEmpty?.asrEmpty)
+    ) {
+      missingReasons.push('missing_audio_transcript')
     }
   }
 
   return {
     isComplete: missingReasons.length === 0,
     missingReasons
+  }
+}
+
+/**
+ * 统计待增量补齐的可恢复文件数（contextEpoch 提升时轻量扫描）。
+ * Free -> Pro 长视频续跑直接复用既有 file_video_segments 外键同源事实：
+ * `file_video_segments.file_id TEXT NOT NULL` 直指 `files(file_fingerprint)`（database.ts:481/495），
+ * 零新表零新索引、零 ALTER TABLE。
+ */
+export function countRecoverableFiles(db: any, workspaceId: number): number {
+  try {
+    const row = db
+      .prepare(
+        `SELECT COUNT(*) AS n
+         FROM workspace_files wf
+         WHERE wf.workspace_id = ?
+           AND EXISTS (
+             SELECT 1 FROM file_video_segments fvs
+             WHERE fvs.file_id = wf.file_fingerprint AND fvs.status = 'pending'
+           )`
+      )
+      .get(workspaceId) as { n?: number } | undefined
+    return Number(row?.n ?? 0)
+  } catch (error) {
+    logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 可恢复文件统计失败:', error)
+    return 0
   }
 }

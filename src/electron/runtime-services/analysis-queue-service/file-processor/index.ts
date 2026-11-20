@@ -40,6 +40,7 @@ import {
   safeTruncateUtf8Bytes
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { lockWorkspaceAnalysisContext } from '../../system/workspace-analysis-context'
 import {
   resolveAnalysisMode,
   resolveEffectiveAnalysisMode,
@@ -206,20 +207,21 @@ function createRetagCompletedHandler(filePath: string, fileFingerprint: string) 
   }
 }
 
+/** 当前是否已安装可用 AI 引擎（唯一事实源，供有效模式与工作区上下文共同消费）。 */
+function getHasInstalledAiEngine(): boolean {
+  const aiServiceMode =
+    ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
+  return aiServiceMode === 'local'
+    ? engineBridgeService.hasInstalledEngines !== false &&
+      Boolean(engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model)
+    : true
+}
+
 /**
  * 获取当前能力感知型有效分析模式
  */
 function getEffectiveAnalysisMode(): AnalysisMode {
-  const aiServiceMode =
-    ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
-  const hasInstalledAiEngine =
-    aiServiceMode === 'local'
-      ? engineBridgeService.hasInstalledEngines !== false &&
-        Boolean(
-          engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
-        )
-      : true
-  return resolveEffectiveAnalysisMode(hasInstalledAiEngine)
+  return resolveEffectiveAnalysisMode(getHasInstalledAiEngine())
 }
 
 export class FileProcessor {
@@ -288,7 +290,10 @@ export class FileProcessor {
       extra?: any
     ) => void,
     private pause: () => void,
-    private collectAnalysisStats: (timer: PerformanceTimer) => Promise<any>,
+    private collectAnalysisStats: (
+      timer: PerformanceTimer,
+      effectiveAnalysisMode?: AnalysisMode
+    ) => Promise<any>,
     private getModelName: (modelId: string, mode: string) => string,
     private analyzeDirectoryContext: (
       directoryPath: string,
@@ -494,6 +499,8 @@ export class FileProcessor {
         } = require('../../hibernation/module-hibernation-coordinator')
         moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
         moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')
+        // 每个文件默认不期望 ASR 常驻，仅当本文件 effectiveConfig 确实需要 ASR 时才置真
+        moduleHibernationCoordinator.setAsrExpectedActive(false)
       } catch {}
 
       // V2.2 架构：优先从 item.path 获取，如果存在则通过 item_id 查询数据库
@@ -543,6 +550,13 @@ export class FileProcessor {
         return
       }
 
+      // [OBS-02] 单文件快照锁定：消费 WorkspaceDao.getById 已刷新的配置（由 resolveWorkspaceEffectiveConfig
+      // 经 databaseService.getWorkspaceConfig 读取），全程贯穿 Stage 1~4 与长视频 0~k 切片，杜绝途中漂移串扰。
+      const workspaceCtx = await lockWorkspaceAnalysisContext(currentWorkspaceId, getHasInstalledAiEngine())
+      const effectiveParams = workspaceCtx.effectiveConfig.effectiveParams
+      const capabilities = workspaceCtx.effectiveConfig.capabilities
+      analysisMode = effectiveParams.analysisMode
+
       // ========== 测试模式拦截器 ==========
       // 检查特定的 Mock JSON 文件是否存在作为测试环境的唯一标识
       const mockJsonPath = process.env.TEST_MOCK_JSON_PATH
@@ -577,12 +591,10 @@ export class FileProcessor {
       }
       this.initStatements(db)
 
-      const reuseBasicAnalysisData =
-        ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
+      const reuseBasicAnalysisData = effectiveParams.reuseBasicAnalysisData
       const initialStage = db ? getFileStageFromDB(db, currentWorkspaceId, filePath) : 0
 
-      // 提前读取分析模式配置（统一走能力感知型解析，避免各处口径漂移与静默兜底）
-      analysisMode = getEffectiveAnalysisMode()
+      // [OBS-02] analysisMode 已在入口由锁定快照赋值，严禁再次从全局 ConfigOrchestrator 覆写
 
       if (phase === 'all') {
         // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）
@@ -612,6 +624,7 @@ export class FileProcessor {
             db,
             currentWorkspaceId,
             filePath,
+            workspaceCtx.effectiveConfig,
             existingFp
           )
           if (!completeness.isComplete) {
@@ -1312,7 +1325,16 @@ export class FileProcessor {
               enableGeoReverse: false,
               enableTextAnalysis: true,
               generateThumbnail: false,
-              skip5wSynthesis: true
+              skip5wSynthesis: true,
+              // [High-03] cpuSkipped 热锚点只唤醒 Bekko 全局锚点，严禁重跑任何昂贵感知分支：
+              // 否则 Rust enable_asr 默认开启会让复用的音视频/图片重新 ASR/OCR/抽帧。
+              enableAudioTranscript: false,
+              enableImageOcr: false,
+              enableVideoVisualAnalysis: false,
+              enableNsfwPerception: false,
+              enableFacePerception: false,
+              videoAsrDurationSec: 0,
+              audioAnalysisDuration: 0
             })
           } catch (anchorWarmupErr) {
             logger.warn(
@@ -1364,7 +1386,7 @@ export class FileProcessor {
         }
 
         if (!finalMergedStats) {
-          finalMergedStats = await this.collectAnalysisStats(timer)
+          finalMergedStats = await this.collectAnalysisStats(timer, effectiveParams.analysisMode)
         }
 
         timer.printSummary()
@@ -1625,13 +1647,19 @@ export class FileProcessor {
       // MarkitdownServer 提取阶段细分耗时（来自响应 time_ms/benchmark）
       let markitdownBenchmark: MarkitdownBenchmark | undefined = undefined
 
-      const extractPages = ConfigOrchestrator.getInstance().getValue<number>('EXTRACT_PAGES') ?? 2
-      const maxDocOcrItems =
-        ConfigOrchestrator.getInstance().getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 3
-      const ocrModelSize =
-        ConfigOrchestrator.getInstance().getValue<string>('OCR_MODEL_SIZE') ?? 'tiny'
-      const maxContentSizeKb =
-        ConfigOrchestrator.getInstance().getValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
+      // [SLICE-04] 统一从入口锁定的 effectiveConfig 解构，彻底清除对 ConfigOrchestrator 的 4 项悬空读取
+      const {
+        extractPages,
+        maxDocumentOcrItems: maxDocOcrItems,
+        ocrModelSize,
+        maxContentSizeKb,
+        videoAsrDurationSec,
+        audioAnalysisDurationSec,
+        videoSoftTokenBudget: effectiveVideoSoftTokenBudget,
+        videoFrameQuotaMax: effectiveVideoFrameQuotaMax,
+        videoCutSensitivity: effectiveVideoCutSensitivity,
+        enableOfficeCover
+      } = effectiveParams
 
       // 核心原则：无后缀文件必须优先通过 Magika 分析后确定推导后缀，全流程统一依据推导后缀处理
       let effectiveExt = path.extname(filePath).toLowerCase()
@@ -1684,15 +1712,13 @@ export class FileProcessor {
       // 语音识别时长：参与 Omni 侧 90s 向量预算求解（ASR 成本 = min(A, 可分析时长)·r）
       // 视频文件与纯音频解耦：视频优先读取专属 VIDEO_ASR_DURATION，纯音频读取全局 AUDIO_ANALYSIS_DURATION
       const audioAnalysisDuration = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_ASR_DURATION') ?? 60)
+        ? videoAsrDurationSec
         : isAudioOrVideo
-          ? (ConfigOrchestrator.getInstance().getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30)
+          ? audioAnalysisDurationSec
           : undefined
       // 抽帧间隔已从设置页移除：由引擎按预算自决（内部下限 1.0s，长视频自动放大），不再读配置
       const videoFrameIntervalSeconds = undefined
-      const videoSoftTokenBudget = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140)
-        : undefined
+      const videoSoftTokenBudget = isVideo ? effectiveVideoSoftTokenBudget : undefined
       let isFreeUser = false
       try {
         const tierProfile = await userTierService.getProfile()
@@ -1728,25 +1754,24 @@ export class FileProcessor {
         benchmark: undefined
       }
 
-      const videoFrameQuotaMax = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ?? 60)
-        : 60
-      const videoCutSensitivity = isVideo
-        ? (ConfigOrchestrator.getInstance().getValue<any>('VIDEO_CUT_SENSITIVITY' as any) ??
-          'medium')
-        : 'medium'
+      const videoFrameQuotaMax = isVideo ? effectiveVideoFrameQuotaMax : 60
+      const videoCutSensitivity = isVideo ? effectiveVideoCutSensitivity : 'medium'
+      // [V11-01] classic_light 禁写 file_video_segments 且禁调 computeVideoVisualParamsHash(0)：
+      // 否则会生成 v1_60_... 脏指纹，用户后续切 gemma_unified 时永久跳过帧向量提取。
       // 严格仅受画面提取与表征参数影响，杜绝纯音频 Key 误污染视频切片指纹 (ISS-65)
-      const paramsHash = computeVideoVisualParamsHash(
-        videoFrameQuotaMax,
-        videoSoftTokenBudget ?? 140,
-        videoCutSensitivity
-      )
+      const paramsHash = isVideo && capabilities.videoVisualAnalysisEnabled
+        ? computeVideoVisualParamsHash(
+            videoFrameQuotaMax,
+            videoSoftTokenBudget ?? 140,
+            videoCutSensitivity as any
+          )
+        : ''
 
       // 0 号切片处理 (名义 0 ~ 300s，支持降档不失效与升级重提取，ISS-65)
       const seg0 = existingSegMap.get(0)
       const seg0Completed =
         seg0?.status === 'completed' && shouldReuseVideoSegment(seg0.params_hash, paramsHash)
-      if (isVideo && !seg0Completed) {
+      if (isVideo && capabilities.videoVisualAnalysisEnabled && !seg0Completed) {
         try {
           databaseService.upsertVideoSegment({
             id: `${fileFingerprint}_seg_0`,
@@ -1765,6 +1790,8 @@ export class FileProcessor {
 
       if (!seg0Completed) {
         let enableAudioTranscript: boolean | undefined = undefined
+        let shouldRunAsr = false
+        let targetAsrSec = 0
         if (isAudioOrVideo) {
           try {
             const asrMod = modularResourceService.getActiveModuleBySlot('voice_asr')
@@ -1776,11 +1803,36 @@ export class FileProcessor {
                 `[分析队列] 未激活 ASR 插件，跳过音视频字幕提取 (可前往插件中心安装 ASR 语音模型): ${filePath}`
               )
             }
-          } catch {
-            enableAudioTranscript = true
+          } catch (asrSlotErr) {
+            // 严禁异常时误启 ASR：异常一律返回 false 并显式上报（AGENTS.md 禁止静默降级 / `OBS-05`）
+            enableAudioTranscript = false
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] ASR 插件槽位查询失败，安全跳过语音转录: ${filePath}`,
+              asrSlotErr
+            )
           }
 
-          if (enableAudioTranscript) {
+          // [OBS-05] 纵深防御：ASR 总开关 + 有效时长 + 插件激活三者缺一不可，
+          // 避免 Rust `enable_asr.unwrap_or(true)` 默认开启在关闭 ASR 的工作区误唤醒模型。
+          targetAsrSec = isVideo ? videoAsrDurationSec : audioAnalysisDurationSec
+          shouldRunAsr =
+            capabilities.asrEffectivelyEnabled && enableAudioTranscript === true && targetAsrSec > 0
+          enableAudioTranscript = shouldRunAsr
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const { moduleHibernationCoordinator } =
+              require('../../hibernation/module-hibernation-coordinator')
+            moduleHibernationCoordinator.setAsrExpectedActive(shouldRunAsr)
+          } catch (asrExpectErr) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] 声明 ASR 常驻期望失败:',
+              asrExpectErr
+            )
+          }
+
+          if (shouldRunAsr) {
             try {
               // eslint-disable-next-line @typescript-eslint/no-require-imports
               const {
@@ -1807,7 +1859,21 @@ export class FileProcessor {
             language,
             // 音视频文件在 0 号切片根据 ASR 插件激活状态启用语音转录，并传递配置的截取时长
             enableAudioTranscript,
-            audioAnalysisDuration: audioAnalysisDuration,
+            // [OBS-05] 非音视频 / 关闭 ASR / 时长 0 时同步显式传双时长 0，形成双保险
+            videoAsrDurationSec: shouldRunAsr && isVideo ? targetAsrSec : 0,
+            audioAnalysisDuration: shouldRunAsr && !isVideo ? targetAsrSec : 0,
+            // 全参数直传：杜绝下游回退通道丢失工作区 effectiveConfig
+            enableImageOcr: effectiveParams.enableImageOcr,
+            ocrModelSize: effectiveParams.ocrModelSize,
+            maxDocumentOcrItems: effectiveParams.maxDocumentOcrItems,
+            extractPages: effectiveParams.extractPages,
+            maxContentSizeKb: effectiveParams.maxContentSizeKb,
+            enableOfficeCover: effectiveParams.enableOfficeCover,
+            enableVideoVisualAnalysis: capabilities.videoVisualAnalysisEnabled,
+            enableNsfwPerception: capabilities.nsfwEffectivelyEnabled,
+            enableFacePerception: capabilities.faceEffectivelyEnabled,
+            videoFrameQuotaMax,
+            videoCutSensitivity,
             videoFrameIntervalSeconds: videoFrameIntervalSeconds,
             videoSoftTokenBudget: videoSoftTokenBudget,
             videoAnalyzeStartSec: 0,
@@ -1815,7 +1881,8 @@ export class FileProcessor {
             enableTextAnalysis: true,
             generateThumbnail: !existingThumbCheck.exists,
             fileFingerprint,
-            skip5wSynthesis: isAiStageEnabled(analysisMode)
+            // [V11-01] 必须传 effective 模式的 isAiStageEnabled，simple 下为 false 保留 CPU 5W 机械名
+            skip5wSynthesis: isAiStageEnabled(effectiveParams.analysisMode)
           })
           .catch(err => {
             logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 0号切片提取失败: ${err.message}`)
@@ -1858,7 +1925,8 @@ export class FileProcessor {
       }
 
       // 视频切片流水线与断点续作调度 (升维架构：读时派生 + 一次性登记 + 24h物理防爆 + 尾片容差合并，FIN-01 / FIN-03 / FIN-14)
-      if (isVideo) {
+      // [V11-01] classic_light 彻底跳过视觉切片调度，杜绝空指纹永久投毒
+      if (isVideo && capabilities.videoVisualAnalysisEnabled) {
         const probedDuration = (anydocResult.metadata as any)?.duration || 0
         if (probedDuration > 0) {
           // 24 小时物理防爆门禁 (FIN-03)：超过 24h 的异常视频全量置为 failed，不进入调度
@@ -1963,6 +2031,21 @@ export class FileProcessor {
               const chunkResult = await anydocService.perceive(filePath, {
                 language,
                 enableAudioTranscript: false, // 后续切片不重复执行 ASR (FIN-08)
+                // [OBS-05] k >= 1 切片双时长恒为 0，与 Rust enable_asr 守卫形成双保险
+                videoAsrDurationSec: 0,
+                audioAnalysisDuration: 0,
+                // 全参数直传：与 0 号切片共享同一锁定快照，杜绝切片间指纹分裂
+                enableImageOcr: effectiveParams.enableImageOcr,
+                ocrModelSize: effectiveParams.ocrModelSize,
+                maxDocumentOcrItems: effectiveParams.maxDocumentOcrItems,
+                extractPages: effectiveParams.extractPages,
+                maxContentSizeKb: effectiveParams.maxContentSizeKb,
+                enableOfficeCover: effectiveParams.enableOfficeCover,
+                enableVideoVisualAnalysis: capabilities.videoVisualAnalysisEnabled,
+                enableNsfwPerception: capabilities.nsfwEffectivelyEnabled,
+                enableFacePerception: capabilities.faceEffectivelyEnabled,
+                videoFrameQuotaMax,
+                videoCutSensitivity,
                 videoFrameIntervalSeconds: videoFrameIntervalSeconds,
                 videoSoftTokenBudget: videoSoftTokenBudget,
                 videoAnalyzeStartSec: chunkStart,
@@ -2090,7 +2173,7 @@ export class FileProcessor {
                 filePath,
                 outPath,
                 String(existingWorkspaceFile?.id || ''),
-                { skipIfExists: existingThumbCheck.exists }
+                { skipIfExists: existingThumbCheck.exists, enableOfficeCover }
               )
               if (success) {
                 return path.relative(rootWorkspaceDir.path, outPath)
@@ -2289,9 +2372,8 @@ export class FileProcessor {
         bwMs: omniBm?.bw_ms ?? (omniBm as any)?.bwMs
       }
 
-      // 根据用户配置的 MAX_CONTENT_SIZE_KB 进行统一的 UTF-8 字符边界防乱码安全截断 (-1 表示不限制大小)
-      const finalMaxKb =
-        ConfigOrchestrator.getInstance().getValue<number>('MAX_CONTENT_SIZE_KB') ?? 1024
+      // [OBS-02] 统一消费入口锁定快照的 maxContentSizeKb，杜绝全局 ConfigOrchestrator 旁路串扰
+      const finalMaxKb = maxContentSizeKb
       if (finalMaxKb > 0) {
         const maxBytes = finalMaxKb * 1024
         const currentContentBytes = Buffer.byteLength(combinedContent, 'utf8')
@@ -2669,7 +2751,7 @@ export class FileProcessor {
         // 登记 CPU 阶段耗时，供后续 GPU 阶段的 AI 超时按「单文件总预算 − 已用」收紧
         cpuPhaseElapsedMs.set(item.id, timer.getTotalDuration())
         try {
-          const cpuTimerStats = await this.collectAnalysisStats(timer)
+          const cpuTimerStats = await this.collectAnalysisStats(timer, effectiveParams.analysisMode)
           const cpuStatsWithBenchmark = applyMarkitdownBenchmark(
             cpuTimerStats,
             markitdownBenchmark,
@@ -2681,6 +2763,25 @@ export class FileProcessor {
           }
           if (cpuStatsWithBenchmark.performance?.fresh && stage1Benchmark) {
             cpuStatsWithBenchmark.performance.fresh.stage1Breakdown = stage1Benchmark
+          }
+          // [SLICE-06] 落库能力履历与空尝试记录，配合 file-crud 白名单实现增量完整性闭环
+          const hadOcrText = Boolean((anydocResult as any)?.ocrText)
+          const hadAsrText = Boolean((anydocResult as any)?.audioTranscript)
+          ;(cpuStatsWithBenchmark as any).analysisMode = effectiveParams.analysisMode
+          ;(cpuStatsWithBenchmark as any).appliedCapabilities = {
+            ocrSize: effectiveParams.ocrModelSize,
+            asrApplied: capabilities.asrEffectivelyEnabled,
+            officeCoverApplied: effectiveParams.enableOfficeCover,
+            analysisStage: cpuCompletionStage
+          }
+          ;(cpuStatsWithBenchmark as any).attempted_empty = {
+            fileFingerprint,
+            ocrModelSize: effectiveParams.ocrModelSize,
+            asrDurationSec: isVideo
+              ? effectiveParams.videoAsrDurationSec
+              : effectiveParams.audioAnalysisDurationSec,
+            ocrEmpty: effectiveParams.enableImageOcr && !hadOcrText,
+            asrEmpty: capabilities.asrEffectivelyEnabled && !hadAsrText
           }
 
           // 确保 workspace_files 记录存在并绑定最新指纹
@@ -2842,7 +2943,7 @@ export class FileProcessor {
         await solidifyCanonicalForTerminal('simple', fileFingerprint)
 
         // 最终统计收集
-        const analysisStats = await this.collectAnalysisStats(timer)
+        const analysisStats = await this.collectAnalysisStats(timer, effectiveParams.analysisMode)
         const analysisStatsWithBenchmark = applyMarkitdownBenchmark(
           analysisStats,
           markitdownBenchmark
@@ -3071,7 +3172,7 @@ export class FileProcessor {
       }
 
       if (!finalMergedStats) {
-        const analysisStats = await this.collectAnalysisStats(timer)
+        const analysisStats = await this.collectAnalysisStats(timer, effectiveParams.analysisMode)
         finalMergedStats = applyMarkitdownBenchmark(
           analysisStats,
           markitdownBenchmark,

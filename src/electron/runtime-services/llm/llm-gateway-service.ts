@@ -24,6 +24,7 @@ import {
   sanitizeUnicodeContent
 } from '@firefly/shared'
 import type { TaskSpec, FinishReason } from './task-specs/types'
+import { emitRuntimeContextChange } from '../system/workspace-runtime-context-bus'
 import {
   shortNameTaskSpec,
   type ShortNameInput,
@@ -565,6 +566,8 @@ export class LlmGatewayService implements ILlmGatewayService {
     const prevMode = this.desiredMode
     this.desiredMode = mode
     this.routeEpoch++
+    // 引擎底座切换是 contextEpoch 的权威触发源，渲染侧据此实时反映有效模式
+    emitRuntimeContextChange('generative_engine_mode_changed')
 
     logger.info(
       LogCategory.AI_SERVICE,

@@ -36,9 +36,12 @@ export class AnydocService {
   /**
    * 提取文档文本与 Markdown 内容 (全面由 Omni Rust 原生微服务接管)
    */
-  public async extract(filePath: string, _timeoutMs: number = 60000): Promise<AnydocResult> {
+  public async extract(
+    filePath: string,
+    options?: import('./omni-service').OmniExtractOptions
+  ): Promise<AnydocResult> {
     try {
-      const omniData = await omniService.extract(filePath)
+      const omniData = await omniService.extract(filePath, options)
       const rawContent = omniData?.markdown_content || ''
       const isBinaryNulSkip = rawContent.includes('[Binary File] NUL byte detected')
       return {
@@ -94,7 +97,8 @@ export class AnydocService {
       )
     }
 
-    return this.extract(filePath, options?.timeoutMs)
+    // 感知失败回退基础提取时，必须把逐请求覆盖参数一并透传，杜绝回退通道丢失工作区配置。
+    return this.extract(filePath, options)
   }
 }
 

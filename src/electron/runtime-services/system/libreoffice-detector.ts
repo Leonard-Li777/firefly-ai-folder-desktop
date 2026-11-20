@@ -6,6 +6,7 @@ import fixPath from 'fix-path'
 import { logger, LogCategory, toShortPathOnWindows } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { t } from '@app/languages'
+import { emitRuntimeContextChange } from './workspace-runtime-context-bus'
 
 // 在 macOS 和 Linux 上修复 PATH 环境变量
 if (process.platform !== 'win32') {
@@ -66,6 +67,8 @@ export class LibreOfficeDetector {
       }
 
       this.cachedResult = result
+      // 接入主进程运行时上下文：仅 installed 变化时由上下文服务决定是否递增 contextEpoch
+      emitRuntimeContextChange('libreoffice_detected')
       return result
     } catch (error) {
       logger.error(LogCategory.FILE_PROCESSOR, '[LibreOffice检测] 检测过程发生异常:', error)
