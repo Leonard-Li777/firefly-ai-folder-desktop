@@ -15,12 +15,21 @@ vi.mock('electron', () => ({
 
 vi.mock('electron-conf', () => ({
   Conf: class {
-    get() { return {} }
+    get() {
+      return {}
+    }
     set() {}
   }
 }))
 
+vi.mock('../../system/modular-resource-service', () => ({
+  modularResourceService: {
+    getActiveModuleBySlot: vi.fn().mockReturnValue(null)
+  }
+}))
+
 import { TTSWavCacheService } from '../tts-wav-cache-service'
+import { commonResourcePathService } from '../common-resource-path-service'
 
 describe('TTSWavCacheService 单元测试', () => {
   let service: TTSWavCacheService
@@ -29,9 +38,19 @@ describe('TTSWavCacheService 单元测试', () => {
   beforeEach(() => {
     service = new TTSWavCacheService()
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tts-cache-test-'))
+    commonResourcePathService.setConfigAdapter({
+      getValue: <T>(key: 'COMMON_RESOURCE_PATH' | 'PREVIOUS_COMMON_RESOURCE_PATH' | 'TEMP_PATH') =>
+        (key === 'COMMON_RESOURCE_PATH'
+          ? tempDir
+          : key === 'TEMP_PATH'
+            ? path.join(tempDir, 'tmp')
+            : '') as unknown as T,
+      updateValue: async () => {}
+    })
   })
 
   afterEach(() => {
+    commonResourcePathService.setConfigAdapter(undefined)
     try {
       fs.rmSync(tempDir, { recursive: true, force: true })
     } catch {
@@ -47,10 +66,20 @@ describe('TTSWavCacheService 单元测试', () => {
     expect(fileName2).toBe('fp987654_multimodalContent_1.25x_0.wav')
 
     // 预览/试听音色：无文件指纹干扰，统一以 preview_ 开头
-    const fileNamePreview = service.generateCacheFileName('preview', '我的音色', 1.0, 'custom_12345')
+    const fileNamePreview = service.generateCacheFileName(
+      'preview',
+      '我的音色',
+      1.0,
+      'custom_12345'
+    )
     expect(fileNamePreview).toBe('preview_我的音色_1x_custom_12345.wav')
 
-    const fileNamePreviewSpeed = service.generateCacheFileName('preview', 'Donald Trump', 1.5, 'donald_trump')
+    const fileNamePreviewSpeed = service.generateCacheFileName(
+      'preview',
+      'Donald Trump',
+      1.5,
+      'donald_trump'
+    )
     expect(fileNamePreviewSpeed).toBe('preview_Donald_Trump_1.5x_donald_trump.wav')
   })
 
@@ -316,4 +345,3 @@ describe('TTSWavCacheService 单元测试', () => {
     expect(readWithoutManifest).toBeNull()
   })
 })
-

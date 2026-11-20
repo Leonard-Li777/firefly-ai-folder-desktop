@@ -213,9 +213,6 @@ export function registerMiscIPCHandlers() {
       }
 
       const rootDir = await databaseService.getWorkspaceDirectoryById(workspaceFile.workspace_id)
-      if (!rootDir) {
-        throw new Error(t('未找到所属的工作区目录'))
-      }
 
       const { thumbnailService } =
         await import('../../runtime-services/filesystem/thumbnail-service')
@@ -227,7 +224,7 @@ export function registerMiscIPCHandlers() {
         filePath,
         workspaceFile.file_fingerprint,
         workspaceFile.name,
-        rootDir.path
+        rootDir?.path
       )
       return result
     } catch (error) {

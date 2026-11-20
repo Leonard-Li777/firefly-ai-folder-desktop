@@ -120,6 +120,13 @@ export class ModuleHibernationCoordinator {
   private readonly clusterGraceTimers = new Map<string, ReturnType<typeof setTimeout>>()
   private readonly clusterIdleStartTime = new Map<string, number>()
   private powerMonitorServiceInstance?: IPowerMonitorService
+  private analysisQueueServiceInstance?: any
+  private ttsActiveChecker?: () => boolean
+  private readonly lazyLoadAttempted = {
+    engineBridge: false,
+    analysisQueue: false,
+    tts: false
+  }
   private readonly getSystemIdleTimeProvider?: () => number
   private readonly getFreeMemoryProvider?: () => number
   private readonly getTotalMemoryProvider?: () => number
@@ -156,22 +163,33 @@ export class ModuleHibernationCoordinator {
     this.engineBridgeServiceInstance = service
   }
 
-  /** 获取底层引擎桥接服务（支持懒加载单例兜底） */
+  /** 注入或绑定分析队列服务引用（避免打包态动态 require 失效） */
+  setAnalysisQueueService(service: any): void {
+    this.analysisQueueServiceInstance = service
+  }
+
+  /** 注入或绑定 TTS 活跃状态查询函数（避免打包态动态 require 失效） */
+  setTtsActiveChecker(checker: () => boolean): void {
+    this.ttsActiveChecker = checker
+  }
+
+  /** 获取底层引擎桥接服务（未显式注入时走 ESM 动态 import 异步兜底，避免 Vite 打包态 CJS require 失效） */
   getEngineBridgeService(): IEngineBridgeService | undefined {
-    if (!this.engineBridgeServiceInstance) {
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { engineBridgeService } = require('../../engine-bridge')
-        if (engineBridgeService) {
-          this.engineBridgeServiceInstance = engineBridgeService
-          logger.info(
-            LogCategory.SYSTEM,
-            '[HibernationDiag] 成功懒加载注入 engineBridgeService 单例'
-          )
-        }
-      } catch (err) {
-        logger.warn(LogCategory.SYSTEM, '[HibernationDiag] 懒加载 engineBridgeService 失败:', err)
-      }
+    if (!this.engineBridgeServiceInstance && !this.lazyLoadAttempted.engineBridge) {
+      this.lazyLoadAttempted.engineBridge = true
+      void import('../../engine-bridge')
+        .then(({ engineBridgeService }) => {
+          if (engineBridgeService && !this.engineBridgeServiceInstance) {
+            this.engineBridgeServiceInstance = engineBridgeService
+            logger.info(
+              LogCategory.SYSTEM,
+              '[HibernationDiag] 成功异步注入 engineBridgeService 单例'
+            )
+          }
+        })
+        .catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[HibernationDiag] 懒加载 engineBridgeService 失败:', err)
+        })
     }
     return this.engineBridgeServiceInstance
   }
@@ -194,7 +212,7 @@ export class ModuleHibernationCoordinator {
   }
 
   notifyModuleResident(targetId: string, residentBytes?: number): void {
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       `[HibernationDiag] notifyModuleResident 收到调用: targetId=${targetId}, residentBytes=${residentBytes ?? 'unknown'}`
     )
@@ -212,7 +230,9 @@ export class ModuleHibernationCoordinator {
           : (meta?.estimatedMemoryBytes ?? 250 * 1024 * 1024)
 
     if (rt.state === 'resident') {
-      // 已经是常驻状态，仅更新内存数（若有提供）并刷新活跃时间戳
+      // 已经是常驻状态：仅当内存字节数或采样发生实质变化时才触发快照广播，避免探活心跳导致高频刷屏与无效 IPC 推送
+      const bytesChanged = rt.residentBytes !== effectiveBytes
+      const needsSample = !rt.residentSample || rt.residentSample.bytes <= 0
       this.runtimeStore.update(targetId, d => {
         d.residentBytes = effectiveBytes
         d.lastActiveTimestamp = Date.now()
@@ -226,7 +246,9 @@ export class ModuleHibernationCoordinator {
           }
         }
       })
-      this.triggerSnapshotBroadcast()
+      if (bytesChanged || needsSample) {
+        this.triggerSnapshotBroadcast()
+      }
       return
     }
     this.runtimeStore.update(targetId, d => {
@@ -259,7 +281,7 @@ export class ModuleHibernationCoordinator {
    * @param lastReleasedBytes  本次释放的内存字节数（可选）
    */
   notifyModuleHibernated(targetId: string, lastReleasedBytes?: number): void {
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       `[HibernationDiag] notifyModuleHibernated 收到调用: targetId=${targetId}, lastReleasedBytes=${lastReleasedBytes ?? 'unknown'}`
     )
@@ -3233,8 +3255,19 @@ export class ModuleHibernationCoordinator {
       let isAudioVideoProcessing = false
       let currentFileExt = ''
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { analysisQueueService } = require('../../analysis-queue-service')
+        if (!this.analysisQueueServiceInstance && !this.lazyLoadAttempted.analysisQueue) {
+          this.lazyLoadAttempted.analysisQueue = true
+          void import('../../analysis-queue-service')
+            .then(({ analysisQueueService }) => {
+              if (analysisQueueService && !this.analysisQueueServiceInstance) {
+                this.analysisQueueServiceInstance = analysisQueueService
+              }
+            })
+            .catch(() => {
+              // 测试或无队列环境下静默跳过
+            })
+        }
+        const analysisQueueService = this.analysisQueueServiceInstance
         if (analysisQueueService) {
           queueBusy =
             typeof analysisQueueService.isLocalModelBusy === 'function' &&
@@ -3340,8 +3373,19 @@ export class ModuleHibernationCoordinator {
 
       // 4. 极速语音朗读 (tts-m5-onnx) 活跃态联动对账
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const { isTTSActive } = require('../../../main/ipc-handlers/tts')
+        if (!this.ttsActiveChecker && !this.lazyLoadAttempted.tts) {
+          this.lazyLoadAttempted.tts = true
+          void import('../../../main/ipc-handlers/tts')
+            .then(({ isTTSActive }) => {
+              if (typeof isTTSActive === 'function' && !this.ttsActiveChecker) {
+                this.ttsActiveChecker = isTTSActive
+              }
+            })
+            .catch(() => {
+              // 测试或无主进程 IPC 环境下静默跳过
+            })
+        }
+        const isTTSActive = this.ttsActiveChecker
         if (typeof isTTSActive === 'function' && isTTSActive()) {
           const rt = this.runtimeStore.get('tts-m5-onnx')
           if (rt && rt.state !== 'resident') {
@@ -3364,7 +3408,14 @@ export class ModuleHibernationCoordinator {
         }
       } catch {}
 
-      logger.info(LogCategory.SYSTEM, `[HibernationDiag] 对账完成: ${JSON.stringify(diagLog)}`)
+      const hasReconcileChange = Boolean(
+        diagLog.reconciledEngine || diagLog.reconciledAsr || diagLog.reconciledTts
+      )
+      if (hasReconcileChange) {
+        logger.info(LogCategory.SYSTEM, `[HibernationDiag] 对账纠偏完成: ${JSON.stringify(diagLog)}`)
+      } else {
+        logger.debug(LogCategory.SYSTEM, `[HibernationDiag] 对账完成: ${JSON.stringify(diagLog)}`)
+      }
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[HibernationDiag] 对账异常:', err)
     }
@@ -3374,7 +3425,7 @@ export class ModuleHibernationCoordinator {
    * 获取当前模块休眠与能耗全景快照 (spec §3.3.2)
    */
   async getSnapshot(): Promise<HibernationSnapshot> {
-    logger.info(LogCategory.SYSTEM, '[HibernationDiag] getSnapshot() 被调用，开始对账...')
+    logger.debug(LogCategory.SYSTEM, '[HibernationDiag] getSnapshot() 被调用，开始对账...')
     this.reconcileLiveStates()
     const metrics: ModuleRuntimeMetric[] = []
     for (const [targetId, meta] of Object.entries(HIBERNATABLE_TARGET_CATALOG)) {
@@ -3429,7 +3480,7 @@ export class ModuleHibernationCoordinator {
       modules: metrics
     }
 
-    logger.info(
+    logger.debug(
       LogCategory.SYSTEM,
       `[HibernationDiag] getSnapshot() 最终输出: isEnergySaving=${isEnergySaving}, totalSavedRam=${memoryGauges.totalSavedRamBytes}, totalSavedVram=${memoryGauges.totalSavedVramBytes}, modules=${metrics.map(m => `${m.id}:${m.state}(${m.residentBytes ?? 0})`).join(', ')}`
     )

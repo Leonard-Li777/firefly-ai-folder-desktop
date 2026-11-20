@@ -3,28 +3,29 @@
  * apps/desktop/src/electron/runtime-services/filesystem/tts-wav-cache-service.ts
  *
  * 核心特性：
- * 1. 唯一且默认落盘路径：<workspaceDir>/.VirtualDirectory/.tts/
- * 2. Windows 平台自动设置 +h 隐藏属性（与 .VirtualDirectory/.thumbnail 一致）
- * 3. 自包含标准 RIFF 'meta' Sub-chunk，存放 UTF-8 编码的进度元数据，无伴生文件
- * 4. 增量断点续存：流式追加分句 PCM 并原子更新 meta chunk 与 RIFF 长度
- * 5. 在文件夹中定位：调用 shell.showItemInFolder
+ * 1. 全局公共资源 CAS 落盘路径：<COMMON_RESOURCE_PATH>/audio_synthesis/<fingerprint>/<voiceId>_<speedFixed2>.wav
+ *    及分片池：<COMMON_RESOURCE_PATH>/audio_synthesis/<fingerprint>/<voiceId>_<speedFixed2>/chunks/
+ *    （默认位于 userData/resources，允许用户在设置中自定义，跨工作目录全局共享；只读懒兼容旧版 .VirtualDirectory/.tts）
+ * 2. 自包含标准 RIFF 'meta' Sub-chunk，存放 UTF-8 编码的进度元数据，无伴生文件
+ * 3. 增量断点续存：流式追加分句 PCM 并原子更新 meta chunk 与 RIFF 长度
+ * 4. 在文件夹中定位：调用 shell.showItemInFolder
  */
 
 import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import * as path from 'node:path'
 import * as crypto from 'node:crypto'
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import { shell } from 'electron'
 import { logger, LogCategory, isSubPath } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { modularResourceService } from '../system/modular-resource-service'
 import { omniClient } from '../../services/omni-client'
+import {
+  commonResourcePathService,
+  COMMON_AUDIO_SYNTHESIS_DIR_NAME
+} from './common-resource-path-service'
 
-const execFileAsync = promisify(execFile)
-
-/** 虚拟目录及 TTS 缓存目录常量 */
+/** 旧版虚拟目录及 TTS 缓存目录常量（仅用于历史缓存只读懒兼容） */
 export const VIRTUAL_DIRECTORY_FOLDER = '.VirtualDirectory'
 export const TTS_CACHE_FOLDER = '.tts'
 
@@ -115,46 +116,21 @@ export interface AppendWavChunkParams {
 
 export class TTSWavCacheService {
   /**
-   * 获取 TTS 缓存目录路径
+   * 获取全局 TTS 语音合成缓存根目录路径 (<COMMON_RESOURCE_PATH>/audio_synthesis)
    */
-  public getTtsDirPath(workspaceDirectoryPath: string): string {
-    return path.join(workspaceDirectoryPath, VIRTUAL_DIRECTORY_FOLDER, TTS_CACHE_FOLDER)
+  public getTtsDirPath(_workspaceDirectoryPath?: string): string {
+    return commonResourcePathService.getAudioSynthesisRoot()
   }
 
   /**
-   * 确保 TTS 缓存目录存在，并设置为隐藏目录（仅 Windows）
+   * 确保全局 TTS 语音合成缓存目录存在（不再在工作区创建 .VirtualDirectory/.tts）
    */
-  public async ensureTtsDirectory(workspaceDirectoryPath: string): Promise<string> {
-    const virtualDirPath = path.join(workspaceDirectoryPath, VIRTUAL_DIRECTORY_FOLDER)
-    const ttsDirPath = path.join(virtualDirPath, TTS_CACHE_FOLDER)
-
+  public async ensureTtsDirectory(_workspaceDirectoryPath?: string): Promise<string> {
     try {
-      // 检查 .VirtualDirectory 是否存在
-      try {
-        await fsPromises.access(virtualDirPath)
-      } catch {
-        await fsPromises.mkdir(virtualDirPath, { recursive: true })
-      }
-
-      // 检查 .tts 是否存在
-      try {
-        await fsPromises.access(ttsDirPath)
-      } catch {
-        await fsPromises.mkdir(ttsDirPath, { recursive: true })
-
-        // 设置为隐藏目录（仅Windows，保持内部缓存目录静默隐藏）
-        if (process.platform === 'win32') {
-          try {
-            await execFileAsync('attrib', ['+h', ttsDirPath], { windowsHide: true })
-          } catch (error) {
-            logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 设置隐藏属性失败:`, error)
-          }
-        }
-      }
-
-      return ttsDirPath
+      const resolved = await commonResourcePathService.resolveEffectiveRootPath()
+      return path.join(resolved.rootPath, COMMON_AUDIO_SYNTHESIS_DIR_NAME)
     } catch (error) {
-      logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 创建 TTS 缓存目录失败:`, error)
+      logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 创建全局 TTS 缓存目录失败:`, error)
       throw error
     }
   }
@@ -194,7 +170,7 @@ export class TTSWavCacheService {
 
   /**
    * 解析或生成文件内容指纹
-    */
+   */
   public resolveFileFingerprint(
     filePath?: string,
     fileFingerprint?: string,
@@ -248,10 +224,16 @@ export class TTSWavCacheService {
     speed: number = 1.0,
     voiceId: string | number = 'lilihong_shejian'
   ): string {
-    const isPreview = !fileFingerprint || fileFingerprint === 'preview' || fileFingerprint.startsWith('preview_')
+    const isPreview =
+      !fileFingerprint || fileFingerprint === 'preview' || fileFingerprint.startsWith('preview_')
     const safeFingerprint = (fileFingerprint || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_')
-    const safeDisplayName = String(displayName || voiceId || 'voice').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
-    const speedStr = Number(speed || 1.0).toFixed(2).replace(/\.?0+$/, '')
+    const safeDisplayName = String(displayName || voiceId || 'voice').replace(
+      /[^a-zA-Z0-9_\u4e00-\u9fa5-]/g,
+      '_'
+    )
+    const speedStr = Number(speed || 1.0)
+      .toFixed(2)
+      .replace(/\.?0+$/, '')
     const safeVoice = String(
       voiceId !== undefined && voiceId !== null && voiceId !== '' ? voiceId : 'lilihong_shejian'
     ).replace(/[^a-zA-Z0-9_-]/g, '_')
@@ -263,7 +245,7 @@ export class TTSWavCacheService {
   }
 
   /**
-   * 获取缓存文件的完整绝对路径（优先按新命名规范匹配，并平滑兼容历史旧格式）
+   * 获取缓存文件的完整绝对路径（统一落盘至全局 CAS 目录，并平滑懒兼容历史公共目录与旧工作区 .VirtualDirectory/.tts）
    */
   public async getCacheWavPath(params: {
     filePath?: string
@@ -275,13 +257,6 @@ export class TTSWavCacheService {
     voiceId?: string | number
     speed?: number
   }): Promise<string | null> {
-    const workspacePath = await this.resolveWorkspaceForPath(params.filePath)
-    if (!workspacePath) {
-      return null
-    }
-
-    await this.ensureTtsDirectory(workspacePath)
-    const ttsDir = this.getTtsDirPath(workspacePath)
     const isPreviewMode =
       params.fieldName === 'audition' ||
       params.fieldName === 'preview' ||
@@ -294,64 +269,123 @@ export class TTSWavCacheService {
           params.text,
           params.fieldName
         )
-    const voiceIdVal = params.voiceId !== undefined ? params.voiceId : (params.sid !== undefined ? params.sid : 'lilihong_shejian')
+    const voiceIdVal =
+      params.voiceId !== undefined
+        ? params.voiceId
+        : params.sid !== undefined
+          ? params.sid
+          : 'lilihong_shejian'
     const speedVal = params.speed !== undefined ? params.speed : 1.0
     const displayNameVal = params.displayName || String(voiceIdVal)
 
-    // 1. 优先按最新命名规范命中：{fileFingerprint}_{displayName}_{speed}x_{voiceId}.wav 或 preview_{displayName}_{speed}x_{voiceId}.wav
-    const standardName = this.generateCacheFileName(
+    const { rootPath } = await commonResourcePathService.ensureAudioSynthesisDir(fingerprint)
+
+    // 1. 优先命中全局 CAS 规范路径：<COMMON_RESOURCE_PATH>/audio_synthesis/<fingerprint>/<voiceId>_<speedFixed2>.wav
+    const casPath = commonResourcePathService.getAudioWavPath({
       fingerprint,
-      displayNameVal,
-      speedVal,
-      voiceIdVal
-    )
-    const standardPath = path.join(ttsDir, standardName)
-    if (fs.existsSync(standardPath)) {
-      return standardPath
+      voiceId: voiceIdVal,
+      speed: speedVal,
+      rootPath
+    })
+    if (fs.existsSync(casPath)) {
+      return casPath
     }
 
-    // 2. 兼容历史带 fieldName 格式：{fileFingerprint}_{fieldName}_{voiceId}_{speed}x.wav
-    const speedStr = Number(speedVal).toFixed(2).replace(/\.?0+$/, '')
+    // 2. 懒兼容历史公共资源目录（切换保存目录后只读复用已完成的旧资产，严禁向历史目录续写未完成文件）
+    const fallbackRoots = commonResourcePathService.getLazyReadFallbackRoots(rootPath)
+    for (const prevRoot of fallbackRoots) {
+      const prevCasPath = commonResourcePathService.getAudioWavPath({
+        fingerprint,
+        voiceId: voiceIdVal,
+        speed: speedVal,
+        rootPath: prevRoot
+      })
+      if (fs.existsSync(prevCasPath)) {
+        const meta = await this.readWavMetadata(prevCasPath)
+        if (meta?.completed) {
+          return prevCasPath
+        }
+      }
+    }
+
+    // 3. 懒兼容旧版工作区 .VirtualDirectory/.tts/ 下已完成的完整音频（只读复用，绝不新建旧目录或续写旧文件）
+    const speedStr = Number(speedVal)
+      .toFixed(2)
+      .replace(/\.?0+$/, '')
     const safeField = (params.fieldName || 'textContent').replace(/[^a-zA-Z0-9_-]/g, '_')
     const safeVoice = String(voiceIdVal).replace(/[^a-zA-Z0-9_-]/g, '_')
-    const legacySpeedName = `${fingerprint}_${safeField}_${safeVoice}_${speedStr}x.wav`
-    const legacySpeedPath = path.join(ttsDir, legacySpeedName)
-    if (fs.existsSync(legacySpeedPath)) {
-      return legacySpeedPath
-    }
+    const legacyWorkspacePath = await this.resolveWorkspaceForPath(params.filePath)
+    const legacyTtsDir = legacyWorkspacePath
+      ? commonResourcePathService.getLegacyWorkspaceTtsDir(legacyWorkspacePath)
+      : null
 
-    // 3. 兼容历史无 speed 格式（仅当 1.0x 时）：{fileFingerprint}_{fieldName}_{voiceId}.wav
-    if (Math.abs(speedVal - 1.0) < 0.01) {
-      const legacyName = `${fingerprint}_${safeField}_${safeVoice}.wav`
-      const legacyPath = path.join(ttsDir, legacyName)
-      if (fs.existsSync(legacyPath)) {
-        return legacyPath
+    if (legacyTtsDir && fs.existsSync(legacyTtsDir)) {
+      const legacyCandidates = [
+        path.join(
+          legacyTtsDir,
+          this.generateCacheFileName(fingerprint, displayNameVal, speedVal, voiceIdVal)
+        ),
+        path.join(legacyTtsDir, `${fingerprint}_${safeField}_${safeVoice}_${speedStr}x.wav`)
+      ]
+      if (Math.abs(speedVal - 1.0) < 0.01) {
+        legacyCandidates.push(
+          path.join(legacyTtsDir, `${fingerprint}_${safeField}_${safeVoice}.wav`)
+        )
+      }
+      for (const candidate of legacyCandidates) {
+        if (fs.existsSync(candidate)) {
+          const meta = await this.readWavMetadata(candidate)
+          if (meta?.completed) {
+            return candidate
+          }
+        }
       }
     }
 
     // 4. 【核心创新】：若目标倍率非 1.0x，探测 1.0x 基准文件是否存在且已全部完成合成
-    // 若 1.0x 基准文件已就绪，立即通过纯 Rust WSOLA 极速算法在内存中（< 30ms）派生目标倍率文件并落盘，秒级就绪！
+    // 若 1.0x 基准文件已就绪，立即通过纯 Rust WSOLA 极速算法在内存中（< 30ms）派生目标倍率文件并落盘至新 CAS 路径
     if (Math.abs(speedVal - 1.0) >= 0.01) {
-      const base1xCandidates = [
-        path.join(ttsDir, this.generateCacheFileName(fingerprint, displayNameVal, 1.0, voiceIdVal)),
-        path.join(ttsDir, `${fingerprint}_${safeField}_${safeVoice}_1x.wav`),
-        path.join(ttsDir, `${fingerprint}_${safeField}_${safeVoice}.wav`)
+      const base1xCandidates: string[] = [
+        commonResourcePathService.getAudioWavPath({
+          fingerprint,
+          voiceId: voiceIdVal,
+          speed: 1.0,
+          rootPath
+        }),
+        ...fallbackRoots.map(prevRoot =>
+          commonResourcePathService.getAudioWavPath({
+            fingerprint,
+            voiceId: voiceIdVal,
+            speed: 1.0,
+            rootPath: prevRoot
+          })
+        )
       ]
+      if (legacyTtsDir && fs.existsSync(legacyTtsDir)) {
+        base1xCandidates.push(
+          path.join(
+            legacyTtsDir,
+            this.generateCacheFileName(fingerprint, displayNameVal, 1.0, voiceIdVal)
+          ),
+          path.join(legacyTtsDir, `${fingerprint}_${safeField}_${safeVoice}_1x.wav`),
+          path.join(legacyTtsDir, `${fingerprint}_${safeField}_${safeVoice}.wav`)
+        )
+      }
 
       for (const baseCandidate of base1xCandidates) {
         if (fs.existsSync(baseCandidate)) {
           const meta = await this.readWavMetadata(baseCandidate)
           if (meta && meta.completed) {
-            const derived = await this.deriveScaledWav(baseCandidate, standardPath, speedVal)
+            const derived = await this.deriveScaledWav(baseCandidate, casPath, speedVal)
             if (derived) {
-              return standardPath
+              return casPath
             }
           }
         }
       }
     }
 
-    return standardPath
+    return casPath
   }
 
   /**
@@ -520,7 +554,11 @@ export class TTSWavCacheService {
               const jsonStr = fileBuffer.toString('utf-8', offset, offset + chunkSize)
               foundMeta = JSON.parse(jsonStr) as TTSWavMetadata
             } catch (jsonErr) {
-              logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 解析 meta chunk JSON 异常:`, jsonErr)
+              logger.warn(
+                LogCategory.FILE_PROCESSOR,
+                `[TTS缓存服务] 解析 meta chunk JSON 异常:`,
+                jsonErr
+              )
             }
           }
         }
@@ -553,7 +591,11 @@ export class TTSWavCacheService {
         totalSamples
       }
     } catch (err) {
-      logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 读取 WAV 元数据失败 (${wavPath}):`, err)
+      logger.warn(
+        LogCategory.FILE_PROCESSOR,
+        `[TTS缓存服务] 读取 WAV 元数据失败 (${wavPath}):`,
+        err
+      )
       return null
     }
   }
@@ -655,12 +697,17 @@ export class TTSWavCacheService {
       // 构建更新后的 meta 元数据
       const doneCount = chunkIndex + 1
       const isCompleted = doneCount >= totalChunks
-      const resolvedVoiceId = voiceId !== undefined ? String(voiceId) : (sid !== undefined ? String(sid) : 'lilihong_shejian')
+      const resolvedVoiceId =
+        voiceId !== undefined
+          ? String(voiceId)
+          : sid !== undefined
+            ? String(sid)
+            : 'lilihong_shejian'
       const metaObj: TTSWavMetadata = {
         completed: isCompleted,
         total: totalChunks,
         done: doneCount,
-        sid: typeof sid === 'number' ? sid : (typeof voiceId === 'number' ? voiceId : undefined),
+        sid: typeof sid === 'number' ? sid : typeof voiceId === 'number' ? voiceId : undefined,
         voiceId: resolvedVoiceId,
         displayName: params.displayName,
         speed,
@@ -674,7 +721,8 @@ export class TTSWavCacheService {
 
       // 标准 44 字节 WAV 头部构建 (动态自适应采样率与声道，默认 48000Hz 立体声 16-bit)
       // 总 RIFF 大小 = 4(WAVE) + 24(fmt chunk) + 8(data header) + totalPcmBytes + pcmPadding + 8(meta header) + metaChunkSize + metaPadding
-      const riffTotalSize = 4 + 24 + 8 + totalPcmBytes + pcmPadding + 8 + metaChunkSize + metaPadding
+      const riffTotalSize =
+        4 + 24 + 8 + totalPcmBytes + pcmPadding + 8 + metaChunkSize + metaPadding
 
       const header = Buffer.alloc(44)
       header.write('RIFF', 0)
@@ -728,20 +776,18 @@ export class TTSWavCacheService {
   }
 
   /**
-   * 获取特定音频的分片缓存池目录路径
+   * 获取特定音频的分片缓存池目录路径（读写分离：写入一律落当前生效全局 CAS 目录，只读场景懒兼容历史分片目录）
    */
-  public async getChunksDirPath(params: {
-    filePath?: string
-    fileFingerprint?: string
-    fieldName?: string
-    displayName?: string
-    voiceId: string | number
-  }): Promise<string | null> {
-    const workspacePath = await this.resolveWorkspaceForPath(params.filePath)
-    if (!workspacePath) return null
-    await this.ensureTtsDirectory(workspacePath)
-    const ttsDir = this.getTtsDirPath(workspacePath)
-
+  public async getChunksDirPath(
+    params: {
+      filePath?: string
+      fileFingerprint?: string
+      fieldName?: string
+      displayName?: string
+      voiceId: string | number
+    },
+    options?: { forWrite?: boolean }
+  ): Promise<string | null> {
     const isPreview =
       params.fieldName === 'audition' ||
       params.fieldName === 'preview' ||
@@ -750,21 +796,60 @@ export class TTSWavCacheService {
 
     const fingerprint = isPreview
       ? 'preview'
-      : this.resolveFileFingerprint(params.filePath, params.fileFingerprint, undefined, params.fieldName)
+      : this.resolveFileFingerprint(
+          params.filePath,
+          params.fileFingerprint,
+          undefined,
+          params.fieldName
+        )
 
-    const safeVoice = String(params.voiceId || 'voice').replace(/[^a-zA-Z0-9_-]/g, '_')
-    // 优先匹配可能已存在的带 safeDisplay 的历史目录
-    if (params.displayName) {
-      const safeDisplay = String(params.displayName).replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
-      const legacyKey = `${fingerprint}_${safeDisplay}_${safeVoice}`
-      const legacyDir = path.join(ttsDir, '.chunks', legacyKey)
-      if (fs.existsSync(legacyDir)) {
-        return legacyDir
+    const { rootPath } = await commonResourcePathService.ensureAudioSynthesisDir(fingerprint)
+    const casChunksDir = commonResourcePathService.getAudioChunksDir({
+      fingerprint,
+      voiceId: params.voiceId,
+      speed: 1.0,
+      rootPath
+    })
+    if (options?.forWrite || fs.existsSync(casChunksDir)) {
+      return casChunksDir
+    }
+
+    // 仅只读场景下懒兼容历史公共目录的分片池
+    for (const prevRoot of commonResourcePathService.getLazyReadFallbackRoots(rootPath)) {
+      const prevChunksDir = commonResourcePathService.getAudioChunksDir({
+        fingerprint,
+        voiceId: params.voiceId,
+        speed: 1.0,
+        rootPath: prevRoot
+      })
+      if (fs.existsSync(prevChunksDir)) {
+        return prevChunksDir
       }
     }
-    // 默认使用唯一确定的稳定分片池 key，避免 displayName 缺省或漂移导致分片池割裂
-    const baseKey = `${fingerprint}_${safeVoice}`
-    return path.join(ttsDir, '.chunks', baseKey)
+
+    // 仅只读场景下懒兼容旧工作区 .VirtualDirectory/.tts/.chunks 下尚未合并的分片
+    const legacyWorkspacePath = await this.resolveWorkspaceForPath(params.filePath)
+    if (legacyWorkspacePath) {
+      const legacyTtsDir = commonResourcePathService.getLegacyWorkspaceTtsDir(legacyWorkspacePath)
+      const safeVoice = String(params.voiceId || 'voice').replace(/[^a-zA-Z0-9_-]/g, '_')
+      if (params.displayName) {
+        const safeDisplay = String(params.displayName).replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
+        const legacyDisplayDir = path.join(
+          legacyTtsDir,
+          '.chunks',
+          `${fingerprint}_${safeDisplay}_${safeVoice}`
+        )
+        if (fs.existsSync(legacyDisplayDir)) {
+          return legacyDisplayDir
+        }
+      }
+      const legacyBaseDir = path.join(legacyTtsDir, '.chunks', `${fingerprint}_${safeVoice}`)
+      if (fs.existsSync(legacyBaseDir)) {
+        return legacyBaseDir
+      }
+    }
+
+    return casChunksDir
   }
 
   /**
@@ -886,7 +971,7 @@ export class TTSWavCacheService {
    */
   public async saveChunk(params: SaveChunkParams): Promise<boolean> {
     try {
-      const chunksDir = await this.getChunksDirPath(params)
+      const chunksDir = await this.getChunksDirPath(params, { forWrite: true })
       if (!chunksDir) return false
       if (!fs.existsSync(chunksDir)) {
         await fsPromises.mkdir(chunksDir, { recursive: true })
@@ -941,7 +1026,11 @@ export class TTSWavCacheService {
 
       let textHash: string | undefined
       if (params.chunkText && params.chunkText.trim()) {
-        textHash = crypto.createHash('sha256').update(params.chunkText.trim()).digest('hex').slice(0, 16)
+        textHash = crypto
+          .createHash('sha256')
+          .update(params.chunkText.trim())
+          .digest('hex')
+          .slice(0, 16)
       }
 
       manifest.cues[String(params.chunkIndex)] = {
@@ -953,8 +1042,8 @@ export class TTSWavCacheService {
 
       // 若全部句子均已集齐无空洞，触发终态流式合并
       if (manifest.completed.length >= params.totalChunks) {
-        const isAllPresent = Array.from({ length: params.totalChunks }, (_, i) => i).every(
-          idx => manifest.completed.includes(idx)
+        const isAllPresent = Array.from({ length: params.totalChunks }, (_, i) => i).every(idx =>
+          manifest.completed.includes(idx)
         )
         if (isAllPresent) {
           logger.debug(
@@ -1102,7 +1191,8 @@ export class TTSWavCacheService {
       const metaChunkSize = metaJsonBuffer.length
       const metaPadding = metaChunkSize % 2 !== 0 ? 1 : 0
 
-      const riffTotalSize = 4 + 24 + 8 + totalPcmBytes + pcmPadding + 8 + metaChunkSize + metaPadding
+      const riffTotalSize =
+        4 + 24 + 8 + totalPcmBytes + pcmPadding + 8 + metaChunkSize + metaPadding
 
       const header = Buffer.alloc(44)
       header.write('RIFF', 0)
@@ -1132,9 +1222,6 @@ export class TTSWavCacheService {
         ...(metaPadding ? [Buffer.alloc(1, 0)] : [])
       ])
 
-      const workspacePath = await this.resolveWorkspaceForPath(params.filePath)
-      if (!workspacePath) return null
-      const ttsDir = this.getTtsDirPath(workspacePath)
       const isPreview =
         params.fieldName === 'audition' ||
         params.fieldName === 'preview' ||
@@ -1143,31 +1230,35 @@ export class TTSWavCacheService {
 
       const fingerprint = isPreview
         ? 'preview'
-        : this.resolveFileFingerprint(params.filePath, params.fileFingerprint, undefined, params.fieldName)
+        : this.resolveFileFingerprint(
+            params.filePath,
+            params.fileFingerprint,
+            undefined,
+            params.fieldName
+          )
 
-      const standard1xName = this.generateCacheFileName(
+      const { rootPath } = await commonResourcePathService.ensureAudioSynthesisDir(fingerprint)
+      const standard1xPath = commonResourcePathService.getAudioWavPath({
         fingerprint,
-        params.displayName || String(params.voiceId),
-        1.0,
-        params.voiceId
-      )
-      const standard1xPath = path.join(ttsDir, standard1xName)
+        voiceId: params.voiceId,
+        speed: 1.0,
+        rootPath
+      })
 
       await fsPromises.writeFile(standard1xPath, finalBuffer)
       logger.debug(
         LogCategory.FILE_PROCESSOR,
-        `[TTS缓存服务] 成功组装完整 1.0x 母带 WAV 并嵌入 ${cueList.length} 条时间戳索引: ${standard1xName}`
+        `[TTS缓存服务] 成功组装完整 1.0x 母带 WAV 并嵌入 ${cueList.length} 条时间戳索引: ${standard1xPath}`
       )
 
       // 若当前语速非 1.0x，同步派生目标倍速母带并等比缩放时间戳表
       if (params.speed && Math.abs(params.speed - 1.0) >= 0.01) {
-        const targetSpeedName = this.generateCacheFileName(
+        const targetSpeedPath = commonResourcePathService.getAudioWavPath({
           fingerprint,
-          params.displayName || String(params.voiceId),
-          params.speed,
-          params.voiceId
-        )
-        const targetSpeedPath = path.join(ttsDir, targetSpeedName)
+          voiceId: params.voiceId,
+          speed: params.speed,
+          rootPath
+        })
         await this.deriveScaledWav(standard1xPath, targetSpeedPath, params.speed)
       }
 
@@ -1377,7 +1468,7 @@ export class StreamWavRecorder {
         if (buf.length === 0) return
 
         const startSample = Math.floor(this.totalPcmBytes / 2)
-        const durationSec = (buf.length / 2) / 24000
+        const durationSec = buf.length / 2 / 24000
         const startTimeSec = startSample / 24000
         const chunkIndex = this.recordedChunks.length
 

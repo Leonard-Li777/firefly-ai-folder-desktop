@@ -90,9 +90,76 @@ export const InterfaceSettings: React.FC = () => {
   const [isCleaningOldDir, setIsCleaningOldDir] = useState(false)
   const [isStartingMigration, setIsStartingMigration] = useState(false)
 
+  // 全局公共资源目录（缩略图与语音合成音频共享目录）状态
+  const [commonResourceInfo, setCommonResourceInfo] = useState<{
+    currentPath: string
+    configuredPath: string
+    defaultPath: string
+    isCustom: boolean
+    isFallback: boolean
+    fallbackReason?: string
+  } | null>(null)
+  const [isUpdatingCommonResourceDir, setIsUpdatingCommonResourceDir] = useState(false)
+
+  const loadCommonResourceInfo = async () => {
+    try {
+      const api = (window.electronAPI as any)?.commonResourceDir
+      if (!api?.getInfo) return
+      const res = await api.getInfo()
+      if (res?.success && res.data) {
+        setCommonResourceInfo(res.data)
+      }
+    } catch (err) {
+      console.warn('获取缩略图与语音缓存目录信息失败:', err)
+    }
+  }
+
+  const handleChangeCommonResourceDir = async () => {
+    const api = (window.electronAPI as any)?.commonResourceDir
+    if (!api?.pick || !api?.setPath) return
+    try {
+      const pickRes = await api.pick()
+      if (pickRes?.canceled || !pickRes?.path) return
+      setIsUpdatingCommonResourceDir(true)
+      const setRes = await api.setPath(pickRes.path)
+      if (setRes?.success) {
+        if (setRes.data) setCommonResourceInfo(setRes.data)
+        else await loadCommonResourceInfo()
+        toast.success(t('已更新缩略图与语音缓存目录，新生成的文件将保存到新位置'))
+      } else {
+        toast.error(setRes?.error || t('所选目录不可写入，请更换其他文件夹'))
+      }
+    } catch (err: any) {
+      toast.error(err?.message || t('更改目录失败，请稍后重试'))
+    } finally {
+      setIsUpdatingCommonResourceDir(false)
+    }
+  }
+
+  const handleResetCommonResourceDir = async () => {
+    const api = (window.electronAPI as any)?.commonResourceDir
+    if (!api?.reset) return
+    try {
+      setIsUpdatingCommonResourceDir(true)
+      const resetRes = await api.reset()
+      if (resetRes?.success) {
+        if (resetRes.data) setCommonResourceInfo(resetRes.data)
+        else await loadCommonResourceInfo()
+        toast.success(t('已恢复为默认缓存目录'))
+      } else {
+        toast.error(resetRes?.error || t('恢复默认目录失败'))
+      }
+    } catch (err: any) {
+      toast.error(err?.message || t('恢复默认目录失败'))
+    } finally {
+      setIsUpdatingCommonResourceDir(false)
+    }
+  }
+
   // 初始化拉取目录信息与监听进度
   useEffect(() => {
     loadDirInfo()
+    loadCommonResourceInfo()
     const unsubscribe = subscribeDirMigrationProgress()
     return () => {
       unsubscribe()
@@ -685,6 +752,82 @@ export const InterfaceSettings: React.FC = () => {
               <FolderOpen className="w-3.5 h-3.5" />
               <span>{t('更改目录')}</span>
             </Button>
+          </div>
+        </div>
+      </Card>
+
+      {/* 全局共享缩略图与语音缓存目录卡片 */}
+      <Card className="p-4" data-testid="common-resource-dir-card">
+        <div className="space-y-3">
+          <div>
+            <Label className="text-base font-medium text-foreground">
+              {t('缩略图与语音缓存目录')}
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t(
+                '统一存放所有工作目录共享的缩略图和语音朗读音频，更换文件夹或清理工作区时无需重新生成；可改存到空间更大的磁盘。'
+              )}
+            </p>
+          </div>
+
+          {commonResourceInfo?.isFallback && (
+            <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-700 dark:text-amber-400">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>
+                {t(
+                  '您设置的目录当前不可访问或无法写入，已临时改存至系统临时文件夹，请检查磁盘连接或重新选择目录。'
+                )}
+              </span>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-muted/30 border border-border">
+            <div className="space-y-1 min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <HardDrive className="w-4 h-4 text-muted-foreground shrink-0" />
+                <span
+                  className="text-xs font-mono font-medium truncate select-all"
+                  data-testid="common-resource-dir-path"
+                >
+                  {commonResourceInfo?.currentPath || t('正在获取目录信息...')}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {commonResourceInfo?.isCustom
+                  ? t('当前使用自定义保存位置，切换后旧目录中已生成的缓存仍会自动复用。')
+                  : t('当前使用软件默认数据目录，跨所有工作目录全局共享。')}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {commonResourceInfo?.isCustom && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  data-testid="reset-common-resource-dir-button"
+                  disabled={isUpdatingCommonResourceDir}
+                  onClick={handleResetCommonResourceDir}
+                  className="h-8 px-2.5 text-xs cursor-pointer"
+                >
+                  {t('恢复默认')}
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="outline"
+                data-testid="change-common-resource-dir-button"
+                disabled={isUpdatingCommonResourceDir}
+                onClick={handleChangeCommonResourceDir}
+                className="h-8 px-3 text-xs cursor-pointer flex items-center gap-1.5"
+              >
+                {isUpdatingCommonResourceDir ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <FolderOpen className="w-3.5 h-3.5" />
+                )}
+                <span>{t('更改目录')}</span>
+              </Button>
+            </div>
           </div>
         </div>
       </Card>

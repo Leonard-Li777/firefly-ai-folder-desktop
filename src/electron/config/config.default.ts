@@ -31,6 +31,7 @@ const tempPath = safeGetPath('temp', '.firefly-temp')
 const defaultLogDirectory = path.join(userDataPath, 'logs')
 const defaultTempDirectory = path.join(tempPath, 'firefly-temp')
 const defaultPluginModulesDirectory = path.join(userDataPath, 'modules')
+const defaultCommonResourceDirectory = path.join(userDataPath, 'resources')
 
 export const defaultUnifiedConfig: UnifiedAppConfig = deepMerge(DEFAULT_UNIFIED_CONFIG, {
   app: {
@@ -48,6 +49,8 @@ export const defaultUnifiedConfig: UnifiedAppConfig = deepMerge(DEFAULT_UNIFIED_
     LOG_PATH: defaultLogDirectory, // 日志路径
     TEMP_PATH: defaultTempDirectory, // 临时文件路径
     PLUGIN_MODULES_PATH: defaultPluginModulesDirectory,
-    PREVIOUS_PLUGIN_MODULES_PATH: ''
+    PREVIOUS_PLUGIN_MODULES_PATH: '',
+    COMMON_RESOURCE_PATH: defaultCommonResourceDirectory,
+    PREVIOUS_COMMON_RESOURCE_PATH: ''
   }
 })

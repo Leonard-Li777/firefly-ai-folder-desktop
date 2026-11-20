@@ -2,7 +2,7 @@
  * 设置相关 IPC 处理器
  * 负责处理前端关于系统设置、忽略规则、工作目录管理的请求
  */
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, dialog } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
@@ -18,6 +18,7 @@ import { fileWatcherService } from '../filesystem/file-watcher-service'
 import { cleanupVirtualDirectoryOnDelete } from '../filesystem/virtual-directory-cleanup'
 export { cleanupVirtualDirectoryOnDelete }
 import { thumbnailService } from '../filesystem/thumbnail-service'
+import { commonResourcePathService } from '../filesystem/common-resource-path-service'
 import { omniClient } from '../../services/omni-client'
 import {
   workspaceAdmissionService,
@@ -686,6 +687,68 @@ export function registerSettingsIPCHandlers(): void {
     } catch (error) {
       logger.error(LogCategory.SETTING, '重置 AI 分析数据库失败:', error)
       throw error
+    }
+  })
+
+  // 获取全局公共资源目录（缩略图与语音合成音频共享目录）状态信息
+  ipcMain.handle('settings:get-common-resource-dir-info', async () => {
+    try {
+      const info = await commonResourcePathService.getResourceDirInfo()
+      return { success: true, data: info }
+    } catch (error: any) {
+      logger.error(LogCategory.SETTING, '获取全局公共资源目录信息失败:', error)
+      return { success: false, error: error?.message || String(error) }
+    }
+  })
+
+  // 打开系统目录选择器以选择自定义公共资源目录
+  ipcMain.handle('settings:pick-common-resource-dir', async event => {
+    try {
+      const win = BrowserWindow.fromWebContents(event.sender) || BrowserWindow.getFocusedWindow()
+      const dialogOptions: Electron.OpenDialogOptions = {
+        title: t('选择缩略图与语音缓存保存目录'),
+        properties: ['openDirectory', 'createDirectory', 'dontAddToRecent']
+      }
+      const res = win
+        ? await dialog.showOpenDialog(win, dialogOptions)
+        : await dialog.showOpenDialog(dialogOptions)
+      if (res.canceled || !res.filePaths || res.filePaths.length === 0) {
+        return { canceled: true }
+      }
+      return { canceled: false, path: res.filePaths[0] }
+    } catch (error: any) {
+      logger.error(LogCategory.SETTING, '选择全局公共资源目录失败:', error)
+      return { canceled: true, error: error?.message || String(error) }
+    }
+  })
+
+  // 设置用户自定义的全局公共资源目录（含可写性探测）
+  ipcMain.handle('settings:set-common-resource-dir', async (_event, targetDir: string) => {
+    try {
+      const result = await commonResourcePathService.updateCommonResourcePath(targetDir)
+      if (!result.success) {
+        return result
+      }
+      const info = await commonResourcePathService.getResourceDirInfo()
+      return { ...result, data: info }
+    } catch (error: any) {
+      logger.error(LogCategory.SETTING, '更新全局公共资源目录失败:', error)
+      return { success: false, error: error?.message || String(error) }
+    }
+  })
+
+  // 恢复全局公共资源目录为系统默认位置
+  ipcMain.handle('settings:reset-common-resource-dir', async () => {
+    try {
+      const result = await commonResourcePathService.resetCommonResourcePath()
+      if (!result.success) {
+        return result
+      }
+      const info = await commonResourcePathService.getResourceDirInfo()
+      return { ...result, data: info }
+    } catch (error: any) {
+      logger.error(LogCategory.SETTING, '重置全局公共资源目录失败:', error)
+      return { success: false, error: error?.message || String(error) }
     }
   })
 }

@@ -8,8 +8,6 @@ import fs from 'node:fs/promises'
 import fsSync from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import { exec, execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import fixPath from 'fix-path'
 import { pathToFileURL } from 'node:url'
 import {
@@ -20,7 +18,10 @@ import {
   BROWSER_NATIVE_IMAGE_EXTS
 } from '@firefly/shared'
 import { loggingService } from '../system/logging-service'
-import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
+import {
+  commonResourcePathService,
+  COMMON_THUMBNAILS_DIR_NAME
+} from './common-resource-path-service'
 import sharp from 'sharp'
 import { t } from '@app/languages'
 
@@ -36,22 +37,19 @@ if (process.platform !== 'win32' && process.env.NODE_ENV !== 'test') {
   }
 }
 
-const execAsync = promisify(exec)
-const execFileAsync = promisify(execFile)
-
-// 虚拟目录文件夹名称常量
+// 旧版工作区虚拟目录常量（仅用于历史缩略图清理与只读懒兼容）
 const VIRTUAL_DIRECTORY_FOLDER = '.VirtualDirectory'
 const THUMBNAIL_FOLDER = '.thumbnail'
 
 export interface ThumbnailGenerationOptions {
-  /** 文件ID */
+  /** 文件ID / 文件内容指纹 */
   fileId: string
   /** 文件路径 */
   filePath: string
   /** 文件虚拟名称（用于命名缩略图） */
   smartName: string
-  /** 工作目录路径 */
-  workspaceDirectoryPath: string
+  /** 可选工作目录路径（仅用于旧版工作区缩略图只读懒兼容，新写入一律落盘至全局 COMMON_RESOURCE_PATH） */
+  workspaceDirectoryPath?: string
   /** 缩略图尺寸（仅用于Native/Sharp方法，通常用于 Simple 模式） */
   thumbnailSize?: number
   /** 是否为 Simple 模式（Simple 模式下跳过 PDF/Office） */
@@ -61,7 +59,7 @@ export interface ThumbnailGenerationOptions {
 export interface ThumbnailResult {
   /** 是否成功 */
   success: boolean
-  /** 缩略图相对路径（相对于工作目录） */
+  /** 缩略图路径（全局 CAS 规范下统一为绝对路径，便于跨工作目录共享复用） */
   relativePath?: string
   /** 缩略图绝对路径 */
   absolutePath?: string
@@ -120,59 +118,32 @@ export class ThumbnailService {
   }
 
   /**
-   * 获取缩略图目录路径
+   * 获取全局缩略图根目录路径 (<COMMON_RESOURCE_PATH>/thumbnails)
    */
-  public getThumbnailDirPath(workspaceDirectoryPath: string): string {
-    return path.join(workspaceDirectoryPath, VIRTUAL_DIRECTORY_FOLDER, THUMBNAIL_FOLDER)
+  public getThumbnailDirPath(_workspaceDirectoryPath?: string): string {
+    return path.join(commonResourcePathService.getConfiguredRootPath(), COMMON_THUMBNAILS_DIR_NAME)
   }
 
   /**
-   * 确保缩略图目录存在（并设置为隐藏）
+   * 确保全局缩略图根目录存在（不再在工作区创建 .VirtualDirectory/.thumbnail）
    */
-  public async ensureThumbnailDirectory(workspaceDirectoryPath: string): Promise<string> {
-    const virtualDirPath = path.join(workspaceDirectoryPath, VIRTUAL_DIRECTORY_FOLDER)
-    const thumbnailDirPath = path.join(virtualDirPath, THUMBNAIL_FOLDER)
-
+  public async ensureThumbnailDirectory(_workspaceDirectoryPath?: string): Promise<string> {
     try {
-      // 检查虚拟目录是否存在
-      try {
-        await fs.access(virtualDirPath)
-      } catch {
-        await fs.mkdir(virtualDirPath, { recursive: true })
-      }
-
-      // 检查缩略图目录是否存在
-      try {
-        await fs.access(thumbnailDirPath)
-      } catch {
-        await fs.mkdir(thumbnailDirPath, { recursive: true })
-
-        // 设置为隐藏目录（仅Windows）
-        if (process.platform === 'win32') {
-          try {
-            await execFileAsync('attrib', ['+h', thumbnailDirPath], { windowsHide: true })
-            logger.debug(
-              LogCategory.FILE_PROCESSOR,
-              `[缩略图服务] 已将目录设置为隐藏: ${thumbnailDirPath}`
-            )
-          } catch (error) {
-            logger.warn(LogCategory.FILE_PROCESSOR, `[缩略图服务] 设置隐藏属性失败:`, error)
-          }
-        }
-      }
-
-      return thumbnailDirPath
+      const resolved = await commonResourcePathService.resolveEffectiveRootPath()
+      return path.join(resolved.rootPath, COMMON_THUMBNAILS_DIR_NAME)
     } catch (error) {
-      logger.error(LogCategory.FILE_PROCESSOR, `[缩略图服务] 创建缩略图目录失败:`, error)
+      logger.error(LogCategory.FILE_PROCESSOR, `[缩略图服务] 创建全局缩略图目录失败:`, error)
       throw error
     }
   }
 
   /**
-   * 生成缩略图文件名
+   * 获取并确保指定文件指纹的全局 CAS 二级分桶缩略图写入路径：
+   * <COMMON_RESOURCE_PATH>/thumbnails/<ab>/<fileFingerprint>.webp
    */
-  private generateThumbnailFileName(fileId: string, _smartName?: string): string {
-    return `${fileId}.webp`
+  public async ensureThumbnailPathForFingerprint(fileFingerprint: string): Promise<string> {
+    const ensured = await commonResourcePathService.ensureThumbnailPath(fileFingerprint)
+    return ensured.absolutePath
   }
 
   /**
@@ -269,20 +240,20 @@ export class ThumbnailService {
   }
 
   /**
-   * 检查工作区磁盘中是否已存在指定文件指纹的缩略图
+   * 检查全局公共资源池（及旧工作区缓存）中是否已存在指定文件指纹的缩略图
    */
   public async hasThumbnail(
-    workspaceDirectoryPath: string,
+    workspaceDirectoryPath: string | undefined,
     fileFingerprint: string
   ): Promise<{ exists: boolean; relativePath: string; absolutePath: string }> {
-    const thumbnailFileName = this.generateThumbnailFileName(fileFingerprint)
-    const relativePath = path.join(VIRTUAL_DIRECTORY_FOLDER, THUMBNAIL_FOLDER, thumbnailFileName)
-    const absolutePath = path.join(workspaceDirectoryPath, relativePath)
-    try {
-      await fs.access(absolutePath)
-      return { exists: true, relativePath, absolutePath }
-    } catch {
-      return { exists: false, relativePath, absolutePath }
+    const found = await commonResourcePathService.findExistingThumbnail(
+      fileFingerprint,
+      workspaceDirectoryPath
+    )
+    return {
+      exists: found.exists,
+      relativePath: found.absolutePath,
+      absolutePath: found.absolutePath
     }
   }
 
@@ -382,31 +353,27 @@ export class ThumbnailService {
         }
       }
 
-      // 确保缩略图目录存在
-      const thumbnailDir = await this.ensureThumbnailDirectory(workspaceDirectoryPath)
-
-      // 生成缩略图文件名
-      const thumbnailFileName = this.generateThumbnailFileName(fileId, smartName)
-      const thumbnailAbsPath = path.join(thumbnailDir, thumbnailFileName)
-
-      const relativePath = path.join(VIRTUAL_DIRECTORY_FOLDER, THUMBNAIL_FOLDER, thumbnailFileName)
-
-      // 0. 优先检查磁盘是否已存在该缩略图（复用既有缩略图，避免重复生成开销）
-      try {
-        await fs.access(thumbnailAbsPath)
+      // 0. 优先检查全局 CAS 资源池（及历史目录/旧工作区）是否已存在该缩略图，实现跨工作目录零重复计算复用
+      const existingThumb = await commonResourcePathService.findExistingThumbnail(
+        fileId,
+        workspaceDirectoryPath
+      )
+      if (existingThumb.exists) {
         logger.debug(
           LogCategory.FILE_PROCESSOR,
-          `[缩略图服务] 命中磁盘现有缩略图，直接复用: ${thumbnailAbsPath}`
+          `[缩略图服务] 命中现有缩略图 (${existingThumb.source})，直接复用: ${existingThumb.absolutePath}`
         )
         return {
           success: true,
-          relativePath,
-          absolutePath: thumbnailAbsPath,
+          relativePath: existingThumb.absolutePath,
+          absolutePath: existingThumb.absolutePath,
           method: 'sharp'
         }
-      } catch {
-        // 文件不存在，继续执行后续生成流程
       }
+
+      // 确保全局 CAS 二级分桶目录存在，并获取写入绝对路径
+      const thumbnailAbsPath = await this.ensureThumbnailPathForFingerprint(fileId)
+      const relativePath = thumbnailAbsPath
 
       // 优先级0: 如果是常规图像格式，直接使用 Sharp 以获得最佳稳定性和速度
       if (isCategory(filePath, FileCategory.IMAGE)) {
@@ -484,11 +451,15 @@ export class ThumbnailService {
   }
 
   /**
-   * 删除缩略图文件
+   * 删除缩略图文件（兼容全局绝对路径与历史相对路径）
    */
-  async deleteThumbnail(thumbnailPath: string, workspaceDirectoryPath: string): Promise<boolean> {
+  async deleteThumbnail(thumbnailPath: string, workspaceDirectoryPath?: string): Promise<boolean> {
     try {
-      const absolutePath = path.join(workspaceDirectoryPath, thumbnailPath)
+      const absolutePath = path.isAbsolute(thumbnailPath)
+        ? thumbnailPath
+        : workspaceDirectoryPath
+          ? path.join(workspaceDirectoryPath, thumbnailPath)
+          : thumbnailPath
       await fs.unlink(absolutePath)
       logger.debug(LogCategory.FILE_PROCESSOR, `[缩略图服务] 已删除缩略图: ${absolutePath}`)
       return true
@@ -522,31 +493,30 @@ export class ThumbnailService {
   }
 
   /**
-   * 获取或生成浏览器不支持的图片的转码原图
+   * 获取或生成浏览器不支持的图片的转码原图（统一落盘至全局 CAS 目录）
    */
   async getOrGenerateOriginalTranscodedImage(
     filePath: string,
     fileFingerprint: string,
-    smartName: string,
-    workspaceDirectoryPath: string
+    _smartName: string,
+    workspaceDirectoryPath?: string
   ): Promise<{ success: boolean; absolutePath?: string; relativePath?: string; error?: string }> {
     try {
-      const thumbnailDir = await this.ensureThumbnailDirectory(workspaceDirectoryPath)
-      const transcodedFileName = this.generateThumbnailFileName(fileFingerprint, smartName)
-      const transcodedAbsPath = path.join(thumbnailDir, transcodedFileName)
-      const relativePath = path.join(VIRTUAL_DIRECTORY_FOLDER, THUMBNAIL_FOLDER, transcodedFileName)
-
-      // 1. 如果已存在，直接返回
-      try {
-        await fs.access(transcodedAbsPath)
+      // 1. 优先复用全局 CAS 或历史缓存
+      const existing = await commonResourcePathService.findExistingThumbnail(
+        fileFingerprint,
+        workspaceDirectoryPath
+      )
+      if (existing.exists) {
         return {
           success: true,
-          absolutePath: transcodedAbsPath,
-          relativePath
+          absolutePath: existing.absolutePath,
+          relativePath: existing.absolutePath
         }
-      } catch {
-        // 缓存不存在，开始转码
       }
+
+      const transcodedAbsPath = await this.ensureThumbnailPathForFingerprint(fileFingerprint)
+      const relativePath = transcodedAbsPath
 
       // 2. 检查源文件是否存在
       try {

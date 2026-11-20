@@ -936,10 +936,16 @@ const ConsumptionDetailTab: React.FC = () => {
     }
   }
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
+  const getTypeLabel = (type: string, metadata?: Record<string, any> | null) => {
+    const actionType =
+      typeof metadata?.action_type === 'string' ? metadata.action_type.trim() : ''
+    const resolvedType =
+      actionType && (type === 'consume' || type === 'exchange') ? actionType : type
+
+    switch (resolvedType) {
       case 'upgrade':
         return t('开通/续费会员')
+      case 'purchase':
       case 'purchase_firecores':
         return t('充值萤火点数')
       case 'creem_purchase':
@@ -948,6 +954,7 @@ const ConsumptionDetailTab: React.FC = () => {
         return t('支付入账')
       case 'welcome_grant':
         return t('首次使用，欢迎赠送')
+      case 'invite_reward':
       case 'invitation_earn':
         return t('邀请奖励')
       case 'invitation_receive':
@@ -974,16 +981,36 @@ const ConsumptionDetailTab: React.FC = () => {
         return t('获取密码')
       case 'spend_regenerate_vdir':
         return t('重新生成虚拟目录')
+      case 'spend_device_slot_addon':
+        return t('购买额外设备名额')
+      case 'analyze_file':
+      case 'spend_file_analysis':
+      case 'spend_ai_analysis':
+        return t('智能分析文件')
+      case 'analyze_query':
+        return t('智能检索分析')
+      case 'consume':
+        return t('萤火消费')
+      case 'exchange':
+        return t('权益兑换')
       case 'upload_earn':
         return t('上传收益')
+      case 'commission':
+        return t('推广佣金')
+      case 'refund':
+        return t('交易退款')
       case 'refund_firecores':
         return t('萤火充值退款')
       case 'refund_subscription':
         return t('会员订阅退款')
       case 'admin_adjust':
         return t('管理员调整')
+      case 'v3_migration':
+        return t('历史余额迁移')
+      case 'migration_opening_adjustment':
+        return t('历史余额校准')
       default:
-        return type
+        return resolvedType
     }
   }
 
@@ -1020,6 +1047,7 @@ const ConsumptionDetailTab: React.FC = () => {
 
               const isPurchaseFirecores =
                 item.type === 'purchase_firecores' ||
+                item.type === 'purchase' ||
                 item.metadata?.income_operation?.type === 'purchase_firecores'
 
               const isRefund =

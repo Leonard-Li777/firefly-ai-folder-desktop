@@ -212,7 +212,42 @@ export const workspaceApi = {
     ipcRenderer.removeAllListeners('queue-view-mode-changed')
   },
   queueWindowControl: (action: 'minimize' | 'maximize' | 'unmaximize' | 'close'): Promise<void> =>
-    ipcRenderer.invoke('queue-window-control', action)
+    ipcRenderer.invoke('queue-window-control', action),
+
+  // 全局公共资源目录（缩略图与语音合成音频共享目录）设置 API
+  commonResourceDir: {
+    getInfo: (): Promise<{
+      success: boolean
+      data?: {
+        currentPath: string
+        configuredPath: string
+        defaultPath: string
+        isCustom: boolean
+        isFallback: boolean
+        fallbackReason?: string
+        thumbnailsDir: string
+        audioSynthesisDir: string
+      }
+      error?: string
+    }> => ipcRenderer.invoke('settings:get-common-resource-dir-info'),
+    pick: (): Promise<{ canceled: boolean; path?: string; error?: string }> =>
+      ipcRenderer.invoke('settings:pick-common-resource-dir'),
+    setPath: (
+      targetDir: string
+    ): Promise<{
+      success: boolean
+      path?: string
+      previousPath?: string
+      data?: any
+      error?: string
+    }> => ipcRenderer.invoke('settings:set-common-resource-dir', targetDir),
+    reset: (): Promise<{
+      success: boolean
+      path?: string
+      data?: any
+      error?: string
+    }> => ipcRenderer.invoke('settings:reset-common-resource-dir')
+  }
 
   // 单元查询
 }

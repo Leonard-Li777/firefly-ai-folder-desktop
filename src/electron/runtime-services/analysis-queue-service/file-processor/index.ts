@@ -41,6 +41,7 @@ import {
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { lockWorkspaceAnalysisContext } from '../../system/workspace-analysis-context'
+import { moduleHibernationCoordinator } from '../../hibernation/module-hibernation-coordinator'
 import {
   resolveAnalysisMode,
   resolveEffectiveAnalysisMode,
@@ -213,7 +214,9 @@ function getHasInstalledAiEngine(): boolean {
     ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
   return aiServiceMode === 'local'
     ? engineBridgeService.hasInstalledEngines !== false &&
-      Boolean(engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model)
+        Boolean(
+          engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
+        )
     : true
 }
 
@@ -493,20 +496,12 @@ export class FileProcessor {
       this.throwIfAborted(signal)
 
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const {
-          moduleHibernationCoordinator
-        } = require('../../hibernation/module-hibernation-coordinator')
         moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
         moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')
         // 每个文件默认不期望 ASR 常驻，仅当本文件 effectiveConfig 确实需要 ASR 时才置真
         moduleHibernationCoordinator.setAsrExpectedActive(false)
       } catch (hibErr) {
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          '[分析队列] 通知休眠协调器置位失败:',
-          hibErr
-        )
+        logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 通知休眠协调器置位失败:', hibErr)
       }
 
       // V2.2 架构：优先从 item.path 获取，如果存在则通过 item_id 查询数据库
@@ -558,7 +553,10 @@ export class FileProcessor {
 
       // [OBS-02] 单文件快照锁定：消费 WorkspaceDao.getById 已刷新的配置（由 resolveWorkspaceEffectiveConfig
       // 经 databaseService.getWorkspaceConfig 读取），全程贯穿 Stage 1~4 与长视频 0~k 切片，杜绝途中漂移串扰。
-      const workspaceCtx = await lockWorkspaceAnalysisContext(currentWorkspaceId, getHasInstalledAiEngine())
+      const workspaceCtx = await lockWorkspaceAnalysisContext(
+        currentWorkspaceId,
+        getHasInstalledAiEngine()
+      )
       const effectiveParams = workspaceCtx.effectiveConfig.effectiveParams
       const capabilities = workspaceCtx.effectiveConfig.capabilities
       analysisMode = effectiveParams.analysisMode
@@ -1036,12 +1034,14 @@ export class FileProcessor {
         }
 
         let thumbnailRelativePath = existingBasicData.thumbnailPath || undefined
-        if (!thumbnailRelativePath && rootWorkspaceDir) {
+        if (!thumbnailRelativePath && fileFingerprint) {
           try {
-            const thumbDir = await thumbnailService.ensureThumbnailDirectory(rootWorkspaceDir.path)
-            const expectedWebp = path.join(thumbDir, `${fileFingerprint}.webp`)
-            if (fs.existsSync(expectedWebp)) {
-              thumbnailRelativePath = path.relative(rootWorkspaceDir.path, expectedWebp)
+            const existingThumb = await thumbnailService.hasThumbnail(
+              rootWorkspaceDir?.path,
+              fileFingerprint
+            )
+            if (existingThumb.exists) {
+              thumbnailRelativePath = existingThumb.absolutePath
             }
           } catch {}
         }
@@ -1748,9 +1748,9 @@ export class FileProcessor {
       // 因此在启动提取前必须检查中止信号，确保用户点击暂停后不再开始新的提取任务。
       this.throwIfAborted(signal)
 
-      // 检查物理磁盘上是否已有缩略图（当清空工作目录数据后重新分析时，磁盘上的缩略图被保留）
-      const existingThumbCheck = rootWorkspaceDir
-        ? await thumbnailService.hasThumbnail(rootWorkspaceDir.path, fileFingerprint)
+      // 检查全局公共资源池（及历史工作区缓存）是否已有缩略图，实现跨工作目录复用
+      const existingThumbCheck = fileFingerprint
+        ? await thumbnailService.hasThumbnail(rootWorkspaceDir?.path, fileFingerprint)
         : { exists: false, relativePath: '', absolutePath: '' }
 
       // 旧切片清理改为在提取成功后按窗口区间事务性替换，防止崩溃丢数据与跨窗口误删 (ISS-74)
@@ -1771,13 +1771,14 @@ export class FileProcessor {
       // [V11-01] classic_light 禁写 file_video_segments 且禁调 computeVideoVisualParamsHash(0)：
       // 否则会生成 v1_60_... 脏指纹，用户后续切 gemma_unified 时永久跳过帧向量提取。
       // 严格仅受画面提取与表征参数影响，杜绝纯音频 Key 误污染视频切片指纹 (ISS-65)
-      const paramsHash = isVideo && capabilities.videoVisualAnalysisEnabled
-        ? computeVideoVisualParamsHash(
-            videoFrameQuotaMax,
-            videoSoftTokenBudget ?? 140,
-            videoCutSensitivity as any
-          )
-        : ''
+      const paramsHash =
+        isVideo && capabilities.videoVisualAnalysisEnabled
+          ? computeVideoVisualParamsHash(
+              videoFrameQuotaMax,
+              videoSoftTokenBudget ?? 140,
+              videoCutSensitivity as any
+            )
+          : ''
 
       // 0 号切片处理 (名义 0 ~ 300s，支持降档不失效与升级重提取，ISS-65)
       const seg0 = existingSegMap.get(0)
@@ -1832,9 +1833,6 @@ export class FileProcessor {
             capabilities.asrEffectivelyEnabled && enableAudioTranscript === true && targetAsrSec > 0
           enableAudioTranscript = shouldRunAsr
           try {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            const { moduleHibernationCoordinator } =
-              require('../../hibernation/module-hibernation-coordinator')
             moduleHibernationCoordinator.setAsrExpectedActive(shouldRunAsr)
           } catch (asrExpectErr) {
             logger.warn(
@@ -1846,10 +1844,6 @@ export class FileProcessor {
 
           if (shouldRunAsr) {
             try {
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              const {
-                moduleHibernationCoordinator
-              } = require('../../hibernation/module-hibernation-coordinator')
               moduleHibernationCoordinator.notifyModuleResident('asr-sensevoice-onnx')
               moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')
               logger.info(
@@ -2144,9 +2138,9 @@ export class FileProcessor {
         (async () => {
           if (existingBasicData.thumbnailPath) return existingBasicData.thumbnailPath
 
-          // 物理磁盘优先复用检查：若磁盘上已存在该文件指纹的缩略图，直接复用，不重复生成
+          // 物理磁盘优先复用检查：若全局 CAS 或历史目录已存在该文件指纹的缩略图，直接复用，不重复生成
           if (existingThumbCheck.exists) {
-            return existingThumbCheck.relativePath
+            return existingThumbCheck.absolutePath
           }
 
           if (isNativeImage) {
@@ -2161,9 +2155,9 @@ export class FileProcessor {
                 filePath,
                 fileFingerprint,
                 enhancedSmartName,
-                rootWorkspaceDir.path
+                rootWorkspaceDir?.path
               )
-              return thumbResult.success ? thumbResult.relativePath : undefined
+              return thumbResult.success ? thumbResult.absolutePath : undefined
             } catch (thumbErr) {
               logger.warn(
                 LogCategory.ANALYSIS_QUEUE,
@@ -2174,13 +2168,11 @@ export class FileProcessor {
             }
           }
 
-          // PDF/Office/视频/多媒体等：统一通过 Omni 微服务获取封面缩略图
-          if (rootWorkspaceDir) {
+          // PDF/Office/视频/多媒体等：统一通过 Omni 微服务获取封面缩略图，落盘至全局 CAS 目录
+          if (fileFingerprint) {
             try {
-              const thumbDir = await thumbnailService.ensureThumbnailDirectory(
-                rootWorkspaceDir.path
-              )
-              const outPath = path.join(thumbDir, `${fileFingerprint}.webp`)
+              const outPath =
+                await thumbnailService.ensureThumbnailPathForFingerprint(fileFingerprint)
               const success = await (thumbnailService as any).generateThumbnailFallback(
                 filePath,
                 outPath,
@@ -2188,7 +2180,7 @@ export class FileProcessor {
                 { skipIfExists: existingThumbCheck.exists, enableOfficeCover }
               )
               if (success) {
-                return path.relative(rootWorkspaceDir.path, outPath)
+                return outPath
               }
             } catch (err: any) {
               logger.debug(
@@ -2441,17 +2433,16 @@ export class FileProcessor {
         `[FileProcessor] 阶段2内容与元数据提取完成: file=${item.name} combinedContentLen=${combinedContent.length} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
       )
 
-      // Omni 原生代表帧封面直出 (Ticket 05)：当存在 cover_webp_base64 时，直接原子落盘至 .thumbnail/${fileFingerprint}.webp 并作为权威封面
-      if (anydocResult?.perception?.cover_webp_base64 && rootWorkspaceDir && fileFingerprint) {
+      // Omni 原生代表帧封面直出 (Ticket 05)：当存在 cover_webp_base64 时，直接原子落盘至全局 CAS 目录并作为权威封面
+      if (anydocResult?.perception?.cover_webp_base64 && fileFingerprint) {
         try {
-          const thumbDir = await thumbnailService.ensureThumbnailDirectory(rootWorkspaceDir.path)
-          const webpPath = path.join(thumbDir, `${fileFingerprint}.webp`)
+          const webpPath = await thumbnailService.ensureThumbnailPathForFingerprint(fileFingerprint)
           const buf = Buffer.from(anydocResult.perception.cover_webp_base64, 'base64')
           await fs.promises.writeFile(webpPath, buf)
-          thumbnailRelativePath = path.relative(rootWorkspaceDir.path, webpPath)
+          thumbnailRelativePath = webpPath
           logger.debug(
             LogCategory.ANALYSIS_QUEUE,
-            `[FileProcessor] Omni 原生代表帧封面已落盘: ${thumbnailRelativePath}`
+            `[FileProcessor] Omni 原生代表帧封面已落盘至全局 CAS: ${thumbnailRelativePath}`
           )
         } catch (err) {
           logger.warn(LogCategory.ANALYSIS_QUEUE, '[FileProcessor] Omni 代表帧封面落盘失败:', err)
@@ -3509,11 +3500,11 @@ export class FileProcessor {
         now,
         now,
         now,
-        now,
-        now,
         fileData.size || 0,
         0,
-        shouldIgnoreFile(filePath, fileName, loadIgnoreRules()) ? 1 : 0
+        shouldIgnoreFile(filePath, fileName, loadIgnoreRules()) ? 1 : 0,
+        now,
+        now
       )
 
       const mockTagsList = this.mockData.file_tags_private || this.mockData.file_tags
@@ -3608,15 +3599,7 @@ export class FileProcessor {
               `INSERT OR IGNORE INTO file_tag_relations (
                  file_fingerprint, tag_code, via_parent_code, path_id, tag_group, confidence, source, sync_status, created_at, updated_at, meta
                ) VALUES (?, ?, ?, ?, ?, 1.0, 'rule', 0, ?, ?, '{}')`
-            ).run(
-              fingerprint,
-              tagCode,
-              viaParentCode,
-              pathId,
-              mockGroup,
-              nowMs,
-              nowMs
-            )
+            ).run(fingerprint, tagCode, viaParentCode, pathId, mockGroup, nowMs, nowMs)
           }
         }
       }

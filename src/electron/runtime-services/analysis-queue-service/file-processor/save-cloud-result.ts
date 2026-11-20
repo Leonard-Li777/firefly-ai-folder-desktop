@@ -89,39 +89,38 @@ export async function saveCloudResult(
     ) {
       try {
         const rootDir = await databaseService.findRootWorkspaceDirectory(filePath)
-        if (rootDir && rootDir.path) {
-          const thumbnailResult = await thumbnailService.generateThumbnail({
-            fileId: fileFingerprint,
-            filePath: filePath,
-            smartName: item.name,
-            workspaceDirectoryPath: rootDir.path
-          })
-          if (thumbnailResult && thumbnailResult.success)
-            thumbnailRelativePath = thumbnailResult.relativePath
+        const thumbnailResult = await thumbnailService.generateThumbnail({
+          fileId: fileFingerprint,
+          filePath: filePath,
+          smartName: item.name,
+          workspaceDirectoryPath: rootDir?.path
+        })
+        if (thumbnailResult && thumbnailResult.success) {
+          thumbnailRelativePath = thumbnailResult.absolutePath || thumbnailResult.relativePath
+        }
 
-          // 检查是否是非浏览器原生支持的特殊图片格式，若是则提前转码原尺寸 WebP
-          // 注意：仅对可解码图片（排除 dwg/dxf 等 CAD 矢量与 RAW 格式，图像解码器无法读取）
-          if (isCategory(filePath, FileCategory.IMAGE) && isDecodableImage(filePath)) {
-            const ext = path.extname(filePath).toLowerCase()
-            const nativeImageExtensions = [
-              '.jpg',
-              '.jpeg',
-              '.png',
-              '.gif',
-              '.webp',
-              '.svg',
-              '.ico',
-              '.bmp',
-              '.avif'
-            ]
-            if (!nativeImageExtensions.includes(ext)) {
-              await thumbnailService.getOrGenerateOriginalTranscodedImage(
-                filePath,
-                fileFingerprint,
-                item.name || path.basename(filePath),
-                rootDir.path
-              )
-            }
+        // 检查是否是非浏览器原生支持的特殊图片格式，若是则提前转码原尺寸 WebP
+        // 注意：仅对可解码图片（排除 dwg/dxf 等 CAD 矢量与 RAW 格式，图像解码器无法读取）
+        if (isCategory(filePath, FileCategory.IMAGE) && isDecodableImage(filePath)) {
+          const ext = path.extname(filePath).toLowerCase()
+          const nativeImageExtensions = [
+            '.jpg',
+            '.jpeg',
+            '.png',
+            '.gif',
+            '.webp',
+            '.svg',
+            '.ico',
+            '.bmp',
+            '.avif'
+          ]
+          if (!nativeImageExtensions.includes(ext)) {
+            await thumbnailService.getOrGenerateOriginalTranscodedImage(
+              filePath,
+              fileFingerprint,
+              item.name || path.basename(filePath),
+              rootDir?.path
+            )
           }
         }
       } catch (e) {
@@ -340,10 +339,10 @@ export async function saveCloudResult(
         new Date(stats.birthtime).toISOString(),
         new Date(stats.mtime).toISOString(),
         new Date(stats.atime).toISOString(),
-        new Date().toISOString(),
         stats?.size ?? 0,
         Math.trunc(stats?.mtimeMs ?? Date.now()),
-        shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0
+        shouldIgnoreFile(filePath, path.basename(filePath), loadIgnoreRules()) ? 1 : 0,
+        new Date().toISOString()
       )
 
       if (data.tags && Array.isArray(data.tags)) {
@@ -467,21 +466,23 @@ export async function saveCloudResult(
                 continue
               }
               const now = Date.now()
-              const insertRes = db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (
+              const insertRes = db
+                .prepare(
+                  `INSERT OR IGNORE INTO file_tag_relations (
                    file_fingerprint, tag_code, via_parent_code, path_id, tag_group, confidence, source, sync_status, created_at, updated_at, meta
                  ) VALUES (?, ?, ?, ?, ?, ?, 'rule', 2, ?, ?, ?)`
-              ).run(
-                fileFingerprint,
-                tagCode,
-                localDimCode,
-                pathId,
-                cloudGroup,
-                confidence,
-                now,
-                now,
-                JSON.stringify({ syncStatus: 2 })
-              )
+                )
+                .run(
+                  fileFingerprint,
+                  tagCode,
+                  localDimCode,
+                  pathId,
+                  cloudGroup,
+                  confidence,
+                  now,
+                  now,
+                  JSON.stringify({ syncStatus: 2 })
+                )
               if (insertRes?.changes > 0) tagsChanged = true
             } else {
               // 私有标签：可写入 file_tags_private 与 file_tag_relations
@@ -557,21 +558,23 @@ export async function saveCloudResult(
                   continue
                 }
                 const now = Date.now()
-                const insertRes = db.prepare(
-                  `INSERT OR IGNORE INTO file_tag_relations (
+                const insertRes = db
+                  .prepare(
+                    `INSERT OR IGNORE INTO file_tag_relations (
                      file_fingerprint, tag_code, via_parent_code, path_id, tag_group, confidence, source, sync_status, created_at, updated_at, meta
                    ) VALUES (?, ?, ?, ?, ?, ?, 'rule', 0, ?, ?, ?)`
-                ).run(
-                  fileFingerprint,
-                  finalTagCode,
-                  localDimCode,
-                  pathId,
-                  cloudGroup,
-                  confidence,
-                  now,
-                  now,
-                  JSON.stringify({ syncStatus: 0 })
-                )
+                  )
+                  .run(
+                    fileFingerprint,
+                    finalTagCode,
+                    localDimCode,
+                    pathId,
+                    cloudGroup,
+                    confidence,
+                    now,
+                    now,
+                    JSON.stringify({ syncStatus: 0 })
+                  )
                 if (insertRes?.changes > 0) tagsChanged = true
               }
             }
@@ -583,7 +586,9 @@ export async function saveCloudResult(
 
       // 标签集合有增删变更时置脏，供后台拼音回填刷新 files_pinyin_fts.tags_py（Spec §2.4.2 R2-7 & §3.1.B L304）
       if (tagsChanged) {
-        db.prepare('UPDATE files SET pinyin_state = 0 WHERE file_fingerprint = ?').run(fileFingerprint)
+        db.prepare('UPDATE files SET pinyin_state = 0 WHERE file_fingerprint = ?').run(
+          fileFingerprint
+        )
       }
     })
 

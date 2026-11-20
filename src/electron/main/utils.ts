@@ -305,6 +305,8 @@ export const enrichAIStatus = async (info: any) => {
     }
   }
 
+  let skipEnrichCache = false
+
   try {
     if (enriched.modelMode === 'local') {
       // 模型元数据唯一权威来源 = 萤核AI引擎（/api/models/meta），desktop 不再读取本地 model_*.json
@@ -338,6 +340,23 @@ export const enrichAIStatus = async (info: any) => {
         })
       }
 
+      // 3. 回退：当传入的是物理路径/文件名/简写 ID 时，先经目录解析器归一化为友好名，再用友好名反查元数据
+      if (!model && rawModels.length > 0) {
+        const candidates = [currentSelectedModelId, enriched.modelName].filter(
+          (v): v is string => typeof v === 'string' && v.length > 0
+        )
+        for (const candidate of candidates) {
+          const friendly = engineBridgeService.resolveFriendlyModelName(candidate)
+          if (friendly) {
+            const matched = rawModels.find(m => m.name === friendly || m.id === friendly)
+            if (matched) {
+              model = matched
+              break
+            }
+          }
+        }
+      }
+
       if (model) {
         const vramRequiredGB = Math.ceil(
           (model as any).vramRequiredGB ||
@@ -361,10 +380,19 @@ export const enrichAIStatus = async (info: any) => {
         if (friendly && friendly !== enriched.modelName) {
           enriched.modelName = friendly
         }
-        logger.warn(
-          LogCategory.MAIN,
-          `[enrichAIStatus] 未找到匹配的模型元数据: ${enriched.modelName}`
-        )
+        if (rawModels.length === 0) {
+          // 引擎元数据尚未拉取就绪，跳过缓存以便下次就绪后立即补全元数据，且不产生误报警告
+          skipEnrichCache = true
+          logger.debug(
+            LogCategory.MAIN,
+            `[enrichAIStatus] 引擎模型元数据尚未就绪，暂跳过元数据匹配: ${enriched.modelName}`
+          )
+        } else {
+          logger.warn(
+            LogCategory.MAIN,
+            `[enrichAIStatus] 未找到匹配的模型元数据: ${enriched.modelName}`
+          )
+        }
         // 未匹配时保留原始 modelName（不擅自改写），仅打印警告
       }
     } else if (enriched.modelMode === 'cloud') {
@@ -408,21 +436,23 @@ export const enrichAIStatus = async (info: any) => {
     `[enrichAIStatus] 增强后: mode=${enriched.modelMode}, name=${enriched.modelName}, provider=${enriched.provider}, backend=${enriched.backend}`
   )
 
-  // Cache the enriched properties
-  const enrichData = {
-    targetModelId: currentSelectedModelId ?? undefined,
-    error: enriched.error,
-    modelMode: enriched.modelMode,
-    modelName: enriched.modelName,
-    vramRequiredGB: enriched.vramRequiredGB,
-    totalSizeBytes: enriched.totalSizeBytes,
-    provider: enriched.provider,
-    backend: enriched.backend
+  // Cache the enriched properties（引擎元数据尚未就绪时跳过缓存，避免将缺失元数据缓存 30s）
+  if (!skipEnrichCache) {
+    const enrichData = {
+      targetModelId: currentSelectedModelId ?? undefined,
+      error: enriched.error,
+      modelMode: enriched.modelMode,
+      modelName: enriched.modelName,
+      vramRequiredGB: enriched.vramRequiredGB,
+      totalSizeBytes: enriched.totalSizeBytes,
+      provider: enriched.provider,
+      backend: enriched.backend
+    }
+    enrichCache.set(infoKey, {
+      timestamp: now,
+      data: enrichData
+    })
   }
-  enrichCache.set(infoKey, {
-    timestamp: now,
-    data: enrichData
-  })
 
   return enriched
 }
