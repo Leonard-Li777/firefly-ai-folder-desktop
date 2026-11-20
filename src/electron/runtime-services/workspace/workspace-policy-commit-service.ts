@@ -18,6 +18,8 @@ import {
   isWorkspaceConfigReady
 } from '@firefly/types'
 import { invalidateWorkspacePolicyCache, LogCategory, logger } from '@firefly/shared'
+import { DEFAULT_UNBOUND_AI_CONFIG, CURRENT_WORKFLOW_PRESET_VERSION } from '../../config/local-workflow-source'
+import { workspaceAdmissionService, type WorkspacePolicyMutation } from './workspace-admission-service'
 
 export interface CommitWorkspacePolicyParams {
   workspaceId: string | number
@@ -26,6 +28,8 @@ export interface CommitWorkspacePolicyParams {
   targetConfig?: WorkspaceConfigReady
   templateConfig?: Partial<WorkspaceConfigReady>
   isWorkflowSwitch?: boolean
+  /** 轻量乐观锁透传 [SLICE-07]：防止双端并发写覆写 */
+  expectedPolicyVersion?: number
 }
 
 export type PolicyCommitErrorCode = 'STORAGE' | 'PERMISSION' | 'CONFLICT' | 'UNKNOWN'
@@ -53,28 +57,6 @@ export interface WorkspacePolicyCommitDependencies {
     policyVersion: number,
     config: WorkspaceConfigReady
   ) => void | Promise<void>
-}
-
-/**
- * 规则去重与合并辅助函数
- * 以 type:value 为键，用户规则覆盖同名模板规则或追加，保留最新激活状态
- */
-function mergeRules(
-  templateRules: readonly IFilterRule[],
-  userRules: readonly IFilterRule[]
-): IFilterRule[] {
-  const map = new Map<string, IFilterRule>()
-  for (const r of templateRules) {
-    if (!r || typeof r.value !== 'string') continue
-    const key = `${r.type}:${r.value.trim().toLowerCase()}`
-    map.set(key, { ...r, isSystem: true })
-  }
-  for (const r of userRules) {
-    if (!r || typeof r.value !== 'string') continue
-    const key = `${r.type}:${r.value.trim().toLowerCase()}`
-    map.set(key, { ...r, isSystem: false })
-  }
-  return Array.from(map.values())
 }
 
 /**
@@ -134,25 +116,14 @@ const UNIVERSAL_WORKFLOW_SEED = {
     schemaVersion: 1,
     status: 'ready',
     policyVersion: 1,
+    presetVersion: CURRENT_WORKFLOW_PRESET_VERSION,
     workflowId: 'builtin.workflow.general-inbox',
     extensionWeights: {},
     customExcludeRules: [],
     customIncludeRules: [],
-    baseAIConfig: {
-      analysisMode: 'quick_name',
-      embeddingProfile: 'classic_light',
-      mrlDimension: 256,
-      videoQuotaMax: 10,
-      videoCutSensitivity: 'medium',
-      videoSoftTokenBudget: 48,
-      videoAsrDurationSec: 0,
-      audioAnalysisDurationSec: 0,
-      enableImageOcr: true,
-      ocrModelSize: 'tiny',
-      maxContentSizeKb: 4096,
-      enableOfficeCover: true,
-      reuseBasicAnalysisData: true
-    },
+    // 【窄边界适配】通用流补种基线统一直接消费 DEFAULT_UNBOUND_AI_CONFIG（§2.1 唯一事实源统一替换点 3）
+    baseAIConfig: DEFAULT_UNBOUND_AI_CONFIG,
+    workflowPluginDefaults: [],
     configuredAt: 1762425600000
   })
 }
@@ -191,7 +162,9 @@ export class WorkspacePolicyCommitService {
   }
 
   /**
-   * 原子提交工作区配置与绑定工作流 (主进程单一权威写入口)
+   * 原子提交工作区配置与绑定工作流（兼容薄代理 [SLICE-07]）：
+   * 写盘全部委托 WorkspaceAdmissionService.applyPolicyMutation 单事务内核执行，
+   * 本方法仅保留 workspaceId 校验、通用流自动补种与结构化错误分层。
    */
   async commitPolicy(params: CommitWorkspacePolicyParams): Promise<CommitWorkspacePolicyResult> {
     const numericWorkspaceId =
@@ -230,12 +203,13 @@ export class WorkspacePolicyCommitService {
   }
 
   /**
-   * 在 SQLite 独占事务内执行单条 SQL 原子递增与规则合并
+   * 在 SQLite 独占事务内执行通用流补种，随后委托 WorkspaceAdmissionService.applyPolicyMutation
+   * 单事务写盘并回填 CommitWorkspacePolicyResult 结构
    */
-  private executeCommitTransaction(
+  private async executeCommitTransaction(
     workspaceId: number,
     params: CommitWorkspacePolicyParams
-  ): CommitWorkspacePolicyResult {
+  ): Promise<CommitWorkspacePolicyResult> {
     let db: Database
     try {
       db = this.resolveDb()
@@ -255,35 +229,29 @@ export class WorkspacePolicyCommitService {
     }
 
     try {
-      let finalCommittedConfig: WorkspaceConfigReady | null = null
-      let newPolicyVersion = 0
+      // 1. 解析入站绑定意图：boundWorkflowId > workflowId > 保持现状（undefined 不透传）
+      let effectiveWorkflowId: string | null | undefined
+      if (params.boundWorkflowId !== undefined) {
+        effectiveWorkflowId = params.boundWorkflowId || null
+      } else if (params.workflowId !== undefined) {
+        effectiveWorkflowId = params.workflowId || null
+      }
 
-      const runInTx = db.transaction(() => {
-        // 1. 读取当前记录
+      // 2. 校验目标工作流在 local_workflows 表中的物理存在性，自动补种官方通用工作流，消除外键约束冲突
+      let seedWorkflowId: string | null = null
+      {
         const row = db
           .prepare(
-            'SELECT workspace_id, workspace_config, bound_workflow_id FROM workspaces WHERE workspace_id = ?'
+            'SELECT bound_workflow_id FROM workspaces WHERE workspace_id = ?'
           )
-          .get(workspaceId) as
-          | { workspace_id: number; workspace_config: string; bound_workflow_id: string | null }
-          | undefined
-
+          .get(workspaceId) as { bound_workflow_id: string | null } | undefined
         if (!row) {
           throw new Error(`工作区 [${workspaceId}] 不存在`)
         }
+        const candidate =
+          effectiveWorkflowId !== undefined ? effectiveWorkflowId : (row.bound_workflow_id ?? null)
 
-        // 显式支持解绑或未绑定工作流：传 null/空串时清空绑定；传非空字符串时绑定；杜绝传空字符串 '' 破坏外键约束
-        let effectiveWorkflowId: string | null = null
-        if (params.boundWorkflowId !== undefined) {
-          effectiveWorkflowId = params.boundWorkflowId || null
-        } else if (params.workflowId !== undefined) {
-          effectiveWorkflowId = params.workflowId || null
-        } else if (row.bound_workflow_id) {
-          effectiveWorkflowId = row.bound_workflow_id
-        }
-
-        // 校验目标工作流在 local_workflows 表中的物理存在性，防御性阻断外键约束破坏
-        if (effectiveWorkflowId) {
+        if (candidate) {
           let hasLocalWorkflowsTable = false
           try {
             const tableCheck = db
@@ -297,9 +265,9 @@ export class WorkspacePolicyCommitService {
           if (hasLocalWorkflowsTable) {
             let exists = db
               .prepare('SELECT 1 FROM local_workflows WHERE id = ?')
-              .get(effectiveWorkflowId)
+              .get(candidate)
 
-            if (!exists && effectiveWorkflowId === 'builtin.workflow.general-inbox') {
+            if (!exists && candidate === 'builtin.workflow.general-inbox') {
               // 自动补种官方通用文件工作流，消除外键约束冲突
               try {
                 db.prepare(
@@ -317,7 +285,7 @@ export class WorkspacePolicyCommitService {
                 ).run(UNIVERSAL_WORKFLOW_SEED)
                 exists = db
                   .prepare('SELECT 1 FROM local_workflows WHERE id = ?')
-                  .get(effectiveWorkflowId)
+                  .get(candidate)
               } catch (seedErr: any) {
                 logger.warn(
                   LogCategory.SYSTEM,
@@ -329,103 +297,66 @@ export class WorkspacePolicyCommitService {
             if (!exists) {
               logger.warn(
                 LogCategory.SYSTEM,
-                `[WorkspacePolicyCommitService] 绑定的工作流 [${effectiveWorkflowId}] 不存在于 local_workflows 表中，置空以避免外键约束冲突`
+                `[WorkspacePolicyCommitService] 绑定的工作流 [${candidate}] 不存在于 local_workflows 表中，置空以避免外键约束冲突`
               )
-              effectiveWorkflowId = null
+              if (effectiveWorkflowId !== undefined) {
+                effectiveWorkflowId = null
+                seedWorkflowId = null
+              }
+            } else if (effectiveWorkflowId === undefined) {
+              seedWorkflowId = candidate
             }
           }
         }
-
-        const rawTarget = (params.targetConfig || params.templateConfig || {}) as any
-        let configToPersist: WorkspaceConfigReady = {
-          schemaVersion: 1,
-          status: 'ready',
-          policyVersion: 1,
-          workflowId: effectiveWorkflowId || undefined,
-          extensionWeights: rawTarget.extensionWeights,
-          customExcludeRules: [],
-          customIncludeRules: [],
-          baseAIConfig: {
-            analysisMode: 'simple',
-            embeddingProfile: 'classic_light',
-            mrlDimension: 256
-          },
-          configuredAt: Date.now(),
-          ...rawTarget
-        }
-
-        // 2. 规则合并策略 (Merge Policy)：切换工作流时保留用户自建规则
-        if (params.isWorkflowSwitch) {
-          const prevConfig = parseWorkspaceConfig(row.workspace_config)
-          const prevReady = prevConfig.status === 'ready' ? prevConfig : null
-
-          const userExcludes = (prevReady?.customExcludeRules || []).filter((r: any) => !r.isSystem)
-          const userIncludes = (prevReady?.customIncludeRules || []).filter((r: any) => !r.isSystem)
-
-          const newTemplateExcludes = (configToPersist.customExcludeRules || []).filter(
-            (r: any) => r.isSystem
-          )
-          const newTemplateIncludes = (configToPersist.customIncludeRules || []).filter(
-            (r: any) => r.isSystem
-          )
-
-          configToPersist.customExcludeRules = mergeRules(newTemplateExcludes, userExcludes)
-          configToPersist.customIncludeRules = mergeRules(newTemplateIncludes, userIncludes)
-        }
-
-        // 确保状态就绪与模式版本对齐
-        configToPersist.status = 'ready'
-        configToPersist.schemaVersion = 1
-
-        const serializedConfig = JSON.stringify(configToPersist)
-
-        // 3. 单条 SQL 原子更新 bound_workflow_id 与自增 policyVersion
-        // 遵循 Genesis V1 列名：workspace_id, bound_workflow_id, workspace_config
-        const updateStmt = db.prepare(`
-          UPDATE workspaces
-          SET
-            bound_workflow_id = ?,
-            workspace_config = json_set(
-              ?,
-              '$.policyVersion',
-              COALESCE(json_extract(workspace_config, '$.policyVersion'), 0) + 1,
-              '$.status',
-              'ready'
-            )
-          WHERE workspace_id = ?;
-        `)
-
-        const updateResult = updateStmt.run(effectiveWorkflowId, serializedConfig, workspaceId)
-
-        if (updateResult.changes <= 0) {
-          throw new Error(`原子更新工作区 [${workspaceId}] 失败，受影响行数为 0`)
-        }
-
-        // 4. 事务内立即可读回写成果并提取最新版本号
-        const updatedRow = db
-          .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
-          .get(workspaceId) as { workspace_config: string }
-
-        const parsedResult = parseWorkspaceConfig(updatedRow.workspace_config)
-        newPolicyVersion = parsedResult.status === 'ready' ? (parsedResult.policyVersion ?? 1) : 1
-        finalCommittedConfig = parsedResult.status === 'ready' ? parsedResult : null
-      })
-
-      // 执行事务
-      runInTx()
-
-      if (!finalCommittedConfig) {
-        throw new Error('未能获取已提交的工作区配置快照')
       }
 
-      // 5. 事务提交成功后，使快照缓存失效并触发外部变更通知
+      // 3. 组装补丁化 mutation 委托 WorkspaceAdmissionService.applyPolicyMutation 单事务写盘 [SLICE-07]
+      const rawTarget = (params.targetConfig || {}) as any
+      const mutation: WorkspacePolicyMutation = {
+        // 兼容薄代理：向导传入完整 targetConfig，不清空既有 overrides
+        preserveOverrides: true,
+        customIncludeRules: rawTarget.customIncludeRules,
+        customExcludeRules: rawTarget.customExcludeRules,
+        extensionWeights: rawTarget.extensionWeights,
+        baseAIConfig: rawTarget.baseAIConfig,
+        workflowPluginDefaults: rawTarget.workflowPluginDefaults,
+        overrides: rawTarget.overrides,
+        advancedAIPrompts: rawTarget.advancedAIPrompts,
+        unitRecognition: rawTarget.unitRecognition,
+        intent: rawTarget.intent
+      }
+      if (effectiveWorkflowId !== undefined) {
+        mutation.workflowId = effectiveWorkflowId
+      } else if (seedWorkflowId) {
+        mutation.workflowId = seedWorkflowId
+      }
+      if (params.expectedPolicyVersion !== undefined) {
+        mutation.expectedPolicyVersion = params.expectedPolicyVersion
+      }
+
+      const applied = await workspaceAdmissionService.applyPolicyMutation(
+        workspaceId,
+        mutation
+      )
+
+      const committedConfig =
+        applied.appliedConfig ??
+        (parseWorkspaceConfig(
+          (
+            db
+              .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ?')
+              .get(workspaceId) as { workspace_config?: string } | undefined
+          )?.workspace_config ?? ''
+        ) as WorkspaceConfigReady)
+
+      // 4. 使快照缓存失效并触发外部变更通知
       try {
         invalidateWorkspacePolicyCache(workspaceId)
       } catch {}
 
-      if (this.deps.onPolicyCommitted) {
+      if (this.deps.onPolicyCommitted && committedConfig) {
         try {
-          this.deps.onPolicyCommitted(workspaceId, newPolicyVersion, finalCommittedConfig)
+          this.deps.onPolicyCommitted(workspaceId, applied.policyVersion, committedConfig)
         } catch (eventErr: any) {
           logger.warn(
             LogCategory.SYSTEM,
@@ -436,9 +367,9 @@ export class WorkspacePolicyCommitService {
 
       return {
         success: true,
-        policyVersion: newPolicyVersion,
-        committedConfig: finalCommittedConfig,
-        appliedConfig: finalCommittedConfig
+        policyVersion: applied.policyVersion,
+        committedConfig,
+        appliedConfig: committedConfig
       }
     } catch (err: any) {
       const errorCode = mapSqliteErrorCode(err)

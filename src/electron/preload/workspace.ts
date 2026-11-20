@@ -147,6 +147,22 @@ export const workspaceApi = {
     ipcRenderer.invoke('preview-workspace-inclusion-impact', workspaceId, patterns),
   updateWorkspaceBoundWorkflow: (workspaceId: number, workflowId: string | null) =>
     ipcRenderer.invoke('update-workspace-bound-workflow', workspaceId, workflowId),
+
+  // 统一补丁化策略变更通道 [SLICE-07]：顶层平铺暴露（不存在 window.electronAPI.workspace 命名空间）
+  applyWorkspacePolicyMutation: (workspaceId: number, mutation: unknown) =>
+    ipcRenderer.invoke('apply-workspace-policy-mutation', workspaceId, mutation),
+
+  // 只读运行时上下文桥接（通道注册由 Group C 在 WorkspaceRuntimeContextService 完成）
+  getWorkspaceRuntimeContextSnapshot: () =>
+    ipcRenderer.invoke('workspace-runtime-context:get-snapshot'),
+  onWorkspaceRuntimeContextUpdated: (callback: (data: unknown) => void) => {
+    const listener = (_event: unknown, data: unknown) => callback(data)
+    ipcRenderer.on('workspace-runtime-context-updated', listener as any)
+    // 返回精确卸载函数，避免 removeAllListeners 误杀同 channel 其他订阅者
+    return () => {
+      ipcRenderer.removeListener('workspace-runtime-context-updated', listener as any)
+    }
+  },
   getLocalWorkflows: (filter?: {
     source?: string
     category?: string

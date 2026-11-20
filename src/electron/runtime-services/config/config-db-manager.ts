@@ -28,6 +28,8 @@ import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
 import { LocalWorkflowDao, LocalWorkflowRecord } from '../database/dao/modular-resource-dao'
 import { t } from '@app/languages'
+// 第 71 个运行时通用流唯一基线：与未绑定工作流默认值同源对齐（§2.1 唯一事实源统一替换）
+import { DEFAULT_UNBOUND_AI_CONFIG, CURRENT_WORKFLOW_PRESET_VERSION } from '../../config/local-workflow-source'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
 // 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
@@ -679,25 +681,15 @@ export class ConfigDbManager {
         schemaVersion: 1,
         status: 'ready',
         policyVersion: 1,
+        presetVersion: CURRENT_WORKFLOW_PRESET_VERSION,
         workflowId: 'builtin.workflow.general-inbox',
         extensionWeights: {},
         customExcludeRules: [],
         customIncludeRules: [],
-        baseAIConfig: {
-          analysisMode: 'quick_name',
-          embeddingProfile: 'classic_light',
-          mrlDimension: 256,
-          videoQuotaMax: 10,
-          videoCutSensitivity: 'medium',
-          videoSoftTokenBudget: 48,
-          videoAsrDurationSec: 0,
-          audioAnalysisDurationSec: 0,
-          enableImageOcr: true,
-          ocrModelSize: 'tiny',
-          maxContentSizeKb: 4096,
-          enableOfficeCover: true,
-          reuseBasicAnalysisData: true
-        },
+        // 【窄边界适配】第 71 个通用流唯一基线：统一直接消费 DEFAULT_UNBOUND_AI_CONFIG，
+        // 彻底删除 quick_name/classic_light/256 旧默认值（§2.1 唯一事实源统一替换点 2）
+        baseAIConfig: DEFAULT_UNBOUND_AI_CONFIG,
+        workflowPluginDefaults: [],
         configuredAt: 1762425600000
       }),
       created_at: '2026-01-01T00:00:00.000Z',

@@ -14,6 +14,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.design-dev",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -68,20 +69,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -94,7 +99,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネスモジュール]_[ページ名]_[ステータスバリアント]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "10-設計仕様とコンポーネントライブラリ",
@@ -171,6 +176,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.frontend-dev",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -239,20 +245,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".vue": 0.1538,
         ".tsx": 0.1538,
@@ -267,7 +275,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-プロジェクトのソースコードとコンポーネント",
@@ -358,6 +366,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.backend-arch",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -426,20 +435,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".proto": 0.1667,
         ".graphql": 0.1667,
@@ -454,7 +465,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01 - システム設計と API ドキュメント",
@@ -531,6 +542,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.para-universal",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -578,20 +590,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".docx": 0.1667,
         ".xlsx": 0.1667,
@@ -603,7 +617,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-プロジェクト（進行中のプロジェクト）",
@@ -680,6 +694,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.johnny-decimal",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -727,20 +742,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -752,7 +771,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "10-19 組織統治と規制",
@@ -829,6 +848,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.photography-raw",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -905,19 +925,25 @@
       ],
       "baseAIConfig": {
         "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".cr3": 0.125,
         ".cr2": 0.125,
@@ -933,7 +959,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[撮影シーン]_[被写体]",
-    "naming_template": "[{TAG:コンテンツタグ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-オリジナル撮影RAW",
@@ -1024,6 +1050,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.video-production",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -1100,19 +1127,26 @@
       ],
       "baseAIConfig": {
         "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "videoQuotaMax": 80,
+        "videoCutSensitivity": "high",
+        "videoSoftTokenBudget": 140,
+        "videoAsrDurationSec": 60,
+        "audioAnalysisDurationSec": 90,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".prproj": 0.1429,
         ".drp": 0.1429,
@@ -1128,7 +1162,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[シーンカメラ]_[クリップテーマ]_[キャラクターアクション]",
-    "naming_template": "[{TAG:画質レベル}]{SMART_NAME}_{TAG:ショット種別}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:画质等级}]{SMART_NAME}_{TAG:景别}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-映像撮影記録",
@@ -1219,6 +1253,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.academic-thesis",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -1280,20 +1315,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".tex": 0.1818,
         ".bib": 0.1818,
@@ -1307,7 +1344,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-コアライブラリ",
@@ -1398,6 +1435,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.finance-contract",
       "customExcludeRules": [
         {
@@ -1510,19 +1548,23 @@
       ],
       "baseAIConfig": {
         "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -1535,7 +1577,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[署名する当事者]_[ビジネスの性質]_[主題の要点]",
-    "naming_template": "[{TAG:金融タイプ}]{SMART_NAME}_{MOD:YYYY-MM-DD}",
+    "naming_template": "[{TAG:财务类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}",
     "preset_directory_tree": [
       {
         "name": "01-原本請求書の払い戻し",
@@ -1626,6 +1668,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.family-household",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -1673,20 +1716,27 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.075,
         ".png": 0.075,
@@ -1698,7 +1748,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-Core ID と証明書",
@@ -1789,6 +1839,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.newmedia-content",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -1850,20 +1901,27 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "analysisMode": "full",
+        "videoQuotaMax": 64,
+        "videoCutSensitivity": "high",
+        "videoSoftTokenBudget": 140,
+        "videoAsrDurationSec": 60,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "maxContentSizeKb": 2048,
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".aep": 0.2,
         ".prproj": 0.2,
@@ -1877,7 +1935,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01 - トピックのインスピレーションと計画ライブラリ",
@@ -1968,6 +2026,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.ecommerce-ops",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -2022,20 +2081,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2048,7 +2111,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-製品選定のリサーチとサンプル",
@@ -2139,6 +2202,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.game-dev-assets",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -2214,20 +2278,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "audioAnalysisDurationSec": 60,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2243,7 +2312,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ゲームデザインドキュメントGDD",
@@ -2334,6 +2403,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.cross-border-ops",
       "customExcludeRules": [],
       "customIncludeRules": [
@@ -2381,20 +2451,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -2406,7 +2480,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ビジネス属性]_[件名]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-商品リストと多言語リスト",
@@ -2483,6 +2557,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.legal-case-dossier",
       "customExcludeRules": [
         {
@@ -2783,20 +2858,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 60,
+        "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 15,
+        "maxDocumentOcrItems": 20,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".docx": 0.16,
         ".doc": 0.05,
@@ -2831,7 +2912,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ケース名]_[パーティ]_[ドキュメントタイプ]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-委託とファイリング",
@@ -2908,6 +2989,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.clinical-medical-records",
       "customExcludeRules": [
         {
@@ -3180,20 +3262,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3224,7 +3311,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[患者番号または被験者]_[データ型]_[コンテンツポイント]",
-    "naming_template": "[{TAG:文書の内訳}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文档细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-診療記録-検査報告書",
@@ -3301,6 +3388,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.teacher-lesson-prep",
       "customExcludeRules": [
         {
@@ -3566,20 +3654,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 32,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 60,
+        "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -3609,7 +3702,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[科目グレード]_[単位または科目]_[データ型]",
-    "naming_template": "[{TAG:対象エリア}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-レッスンプランとコースウェア",
@@ -3686,6 +3779,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.consulting-due-diligence",
       "customExcludeRules": [
         {
@@ -3958,20 +4052,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.04,
@@ -4002,7 +4102,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[プロジェクトまたは会社名]_[研究テーマ]_[データ型]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-企業および競争製品の研究",
@@ -4093,6 +4193,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.architectural-cad-design",
       "customExcludeRules": [
         {
@@ -4435,20 +4536,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "maxContentSizeKb": 2048,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 3,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4485,7 +4591,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[プロジェクト名]_[図面内容]_[設計段階]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-計画とレンダリング",
@@ -4562,6 +4668,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.writing-publishing-pipeline",
       "customExcludeRules": [
         {
@@ -4799,20 +4906,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "audioAnalysisDurationSec": 90,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -4838,7 +4951,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[作品名]_[巻章]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{MOD:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-設定と概要",
@@ -4915,6 +5028,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.wellness-health-portfolio",
       "customExcludeRules": [
         {
@@ -5145,20 +5259,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5183,7 +5302,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[顧客番号]_[ファイル内容]_[コンディショニングステージ]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-健康記録と評価",
@@ -5260,6 +5379,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.pm-product-workflow",
       "customExcludeRules": [
         {
@@ -5504,20 +5624,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5544,7 +5669,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[製品またはモジュール]_[機能トピック]_[ドキュメントタイプ]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-商品企画",
@@ -5635,6 +5760,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.data-science-analytics",
       "customExcludeRules": [
         {
@@ -6033,20 +6159,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 3,
+        "maxDocumentOcrItems": 0,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6093,7 +6223,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[プロジェクトまたはデータセット]_[分析ステップ]_[出力タイプ]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{MOD:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{MOD:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-生データ",
@@ -6184,6 +6314,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.qa-testing-lifecycle",
       "customExcludeRules": [
         {
@@ -6540,20 +6671,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
+        "ocrModelSize": "small",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -6594,7 +6730,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[製品バージョン]_[テストモジュール]_[レコードタイプ]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{MOD:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{MOD:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-テスト計画",
@@ -6685,6 +6821,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.sales-pipeline-crm",
       "customExcludeRules": [
         {
@@ -6936,20 +7073,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".xlsx": 0.14,
         ".xls": 0.03,
@@ -6977,7 +7120,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[顧客名]_[ビジネスチャンスまたはプロジェクト]_[データ型]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-顧客とビジネスチャンス",
@@ -7068,6 +7211,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.hr-people-operations",
       "customExcludeRules": [
         {
@@ -7312,20 +7456,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".docx": 0.16,
         ".doc": 0.04,
@@ -7352,7 +7502,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[部署名]_[人事事項]_[データ型]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-組織と位置",
@@ -7443,6 +7593,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.marketing-campaign-imc",
       "customExcludeRules": [
         {
@@ -7764,20 +7915,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 48,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 60,
+        "audioAnalysisDurationSec": 90,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".pptx": 0.11,
         ".ppt": 0.03,
@@ -7815,7 +7972,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ブランドまたはイベント]_[コンテンツテーマ]_[素材タイプ]",
-    "naming_template": "[{TAG:ファイルの用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件用途}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-市場とブランドのポジショニング",
@@ -7906,6 +8063,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.corporate-legal-compliance",
       "customExcludeRules": [
         {
@@ -8178,20 +8336,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 15,
+        "maxDocumentOcrItems": 20,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".docx": 0.22,
         ".doc": 0.06,
@@ -8222,7 +8386,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[アイテム名]_[取引相手会社]_[ファイルタイプ]",
-    "naming_template": "[{TAG:契約・請求書の内訳}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-契約見直し",
@@ -8313,6 +8477,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.embedded-iot-firmware",
       "customExcludeRules": [
         {
@@ -8606,20 +8771,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -8656,7 +8825,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[プロジェクトボード]_[汎用モジュール]_[ファイルの内容]",
-    "naming_template": "[{TAG:ソースコードのセグメンテーション}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:源代码细分}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-ハードウェア設計",
@@ -8735,6 +8904,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.creative-assets",
       "customExcludeRules": [
         {
@@ -9014,20 +9184,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 48,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".blend": 0.1,
         ".c4d": 0.06,
@@ -9065,7 +9241,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "_[モデルボディ]_[プレシジョンギア]",
-    "naming_template": "[{TAG:コンテンツタグ}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:内容标签}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-参照および設定",
@@ -9144,6 +9320,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.freelance-business-delivery",
       "customExcludeRules": [
         {
@@ -9367,20 +9544,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.2,
         ".docx": 0.1,
@@ -9408,7 +9591,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[顧客名]_[プロジェクト内容]_[ファイル目的]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-受注-見積依頼",
@@ -9484,6 +9667,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.pkm-knowledge-vault",
       "customExcludeRules": [
         {
@@ -9623,20 +9807,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 10,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".md": 0.3,
         ".markdown": 0.02,
@@ -9654,7 +9840,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[知識トピック]_[コア視点]_[ソースソース]",
-    "naming_template": "[{TAG:対象エリア}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ハンディコレクションボックス",
@@ -9730,6 +9916,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.gaming",
       "customExcludeRules": [
         {
@@ -10009,20 +10196,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 32,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -10060,7 +10253,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ゲーム名]_[コンテンツテーマ]_[シーンまたはレコード]",
-    "naming_template": "[{TAG:ゲームタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:游戏类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ゲームインストールファイル",
@@ -10136,6 +10329,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.novel",
       "customExcludeRules": [
         {
@@ -10296,20 +10490,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 15,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10330,7 +10529,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[タイトル]_[件名-ジャンル]_[巻情報]",
-    "naming_template": "《{SMART_NAME}》_[{TAG:著者}]_[{TAG:掲載状況}]",
+    "naming_template": "《{SMART_NAME}》_[{TAG:作者}]_[{TAG:出版状态}]",
     "preset_directory_tree": [
       {
         "name": "01-最近の読書とフォローアップ",
@@ -10411,6 +10610,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.movie-cinema",
       "customExcludeRules": [
         {
@@ -10677,19 +10877,27 @@
       ],
       "baseAIConfig": {
         "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "videoQuotaMax": 64,
+        "videoCutSensitivity": "high",
+        "videoSoftTokenBudget": 140,
+        "videoAsrDurationSec": 60,
+        "audioAnalysisDurationSec": 90,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".mkv": 0.25,
         ".mp4": 0.15,
@@ -10725,7 +10933,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[映画とテレビ作品のタイトル]_[年]_[シーズンまたはバージョン]",
-    "naming_template": "{SMART_NAME}_[{TAG:画質レベル}]",
+    "naming_template": "{SMART_NAME}_[{TAG:画质等级}]",
     "preset_directory_tree": [
       {
         "name": "01-映画コレクション",
@@ -10801,6 +11009,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.anime-comic",
       "customExcludeRules": [
         {
@@ -11003,20 +11212,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "audioAnalysisDurationSec": 60,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -11043,7 +11258,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[作品のタイトル]_[ボリュームまたは単語の数]_[コンテンツの件名]",
-    "naming_template": "[{TAG:著者}]{SMART_NAME}_[{TAG:仕事の源}]",
+    "naming_template": "[{TAG:作者}]{SMART_NAME}_[{TAG:作品来源}]",
     "preset_directory_tree": [
       {
         "name": "01-追跡リスト",
@@ -11116,6 +11331,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.pc-hardware-gear",
       "customExcludeRules": [
         {
@@ -11304,10 +11520,8 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
@@ -11315,9 +11529,15 @@
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11342,7 +11562,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ハードウェアブランドモデル]_[データタイプ]_[キーポイント]",
-    "naming_template": "[{TAG:コンテンツタグ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-インストールされている構成リスト",
@@ -11415,6 +11635,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.cooking-recipes-vault",
       "customExcludeRules": [
         {
@@ -11497,7 +11718,7 @@
           "isSystem": true
         },
         {
-          "id": "builtin.workflow.cooking-recipes-vault-exclusive-1",
+          "id": "builtin.workflow.cooking-recipes-vault-common-epub",
           "type": "extension",
           "value": ".epub",
           "isActive": true,
@@ -11561,20 +11782,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11594,7 +11820,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[料理名]_[料理またはシーン]_[主な食材]",
-    "naming_template": "[{TAG:コンテンツタグ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-家庭料理と主食",
@@ -11667,6 +11893,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.pet-care-diary",
       "customExcludeRules": [
         {
@@ -11799,20 +12026,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -11830,7 +12062,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ペット名]_[イベント件名]_[シーン]",
-    "naming_template": "[{TAG:コンテンツタグ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:内容标签}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-健康とワクチンアーカイブ",
@@ -11900,6 +12132,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.travel-outdoor-journey",
       "customExcludeRules": [
         {
@@ -12137,20 +12370,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 32,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.22,
         ".jpeg": 0.05,
@@ -12182,7 +12421,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[目的地またはイベント]_[コンテンツの件名]_[詳細または時間]",
-    "naming_template": "[{TAG:地理的位置}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:地理位置}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-旅程と順序",
@@ -12258,6 +12497,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.music-audio",
       "customExcludeRules": [
         {
@@ -12524,19 +12764,24 @@
       ],
       "baseAIConfig": {
         "analysisMode": "full",
-        "embeddingProfile": "gemma_unified",
-        "mrlDimension": 512,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "audioAnalysisDurationSec": 180,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12572,7 +12817,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[プロジェクト名]_[トラックまたはオーディオトラック]_[制作段階]",
-    "naming_template": "[{TAG:音楽タイプ}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:音乐类型}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-アレンジプロジェクト",
@@ -12648,6 +12893,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.graphic-brand-design",
       "customExcludeRules": [
         {
@@ -12850,20 +13096,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12891,7 +13142,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[お客様ブランド]_[素材名]_[使用シナリオ]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-ブランド仕様",
@@ -12967,6 +13218,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.illustration-cg-art",
       "customExcludeRules": [
         {
@@ -13197,20 +13449,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13241,7 +13498,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ドラフトプロジェクト]_[キャラクターやテーマ]_[描画ステージ]",
-    "naming_template": "[{TAG:仕事の源}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:作品来源}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-任命および承認",
@@ -13317,6 +13574,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.mobile-app-dev",
       "customExcludeRules": [
         {
@@ -13666,20 +13924,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13723,7 +13985,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[プロジェクト名]_[汎用モジュール]_[コンテンツポイント]",
-    "naming_template": "[{TAG:運営プラットフォーム}]{SMART_NAME}_v{META:バージョン}",
+    "naming_template": "[{TAG:运行平台}]{SMART_NAME}_v{META:版本}",
     "preset_directory_tree": [
       {
         "name": "01-iOSプロジェクトのソースコード",
@@ -13799,6 +14061,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.cloud-native-sre",
       "customExcludeRules": [
         {
@@ -14078,20 +14341,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -14127,7 +14394,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[サービス名]_[環境]_[目的]",
-    "naming_template": "[{TAG:セキュリティレベル}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:安全等级}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-コンテナとクラスターの展開",
@@ -14203,6 +14470,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.supply-chain-logistics",
       "customExcludeRules": [
         {
@@ -14377,20 +14645,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -14414,7 +14686,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[仕入先またはプロジェクト]_[伝票タイプ]",
-    "naming_template": "[{TAG:契約・請求書の内訳}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-サプライヤー管理",
@@ -14490,6 +14762,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.study-abroad-application",
       "customExcludeRules": [
         {
@@ -14622,20 +14895,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14653,7 +14931,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[出願学校]_[資料名]_[目的]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-学校の選択とアプリケーションの要件",
@@ -14729,6 +15007,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.desktop-declutter",
       "customExcludeRules": [
         {
@@ -14966,20 +15245,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 30,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -15010,7 +15295,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[内容件名]_[目的]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-今日に対処するための緊急の必要性",
@@ -15094,6 +15379,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.downloads-triage",
       "customExcludeRules": [
         {
@@ -15513,20 +15799,27 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".exe": 0.0758,
         ".msi": 0.0324,
@@ -15582,7 +15875,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[コンテンツの件名]_[ソースまたは目的]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ソフトウェアインストールパッケージ",
@@ -15658,6 +15951,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.inbox-staging-universal",
       "customExcludeRules": [
         {
@@ -15853,20 +16147,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15893,7 +16193,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[主題]_[次のアクション]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-受信トレイ",
@@ -15934,6 +16234,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.desktop-classic-classification",
       "customExcludeRules": [
         {
@@ -16178,20 +16479,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 30,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -16224,7 +16531,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[内容件名]_[目的]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-一般的なソフトウェアショートカット",
@@ -16304,6 +16611,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.qa-testing-asset-vault",
       "customExcludeRules": [
         {
@@ -16562,20 +16870,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 30,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
+        "ocrModelSize": "small",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -16611,7 +16924,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[テスト対象システム]_[テスト内容]_[バージョン番号]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-テストケースとスクリプト",
@@ -16693,6 +17006,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.k12-education-vault",
       "customExcludeRules": [
         {
@@ -16902,20 +17216,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 90,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
+        "ocrModelSize": "small",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16943,7 +17262,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[科目]_[学年]_[材料科目]",
-    "naming_template": "[{TAG:対象エリア}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-教科教材",
@@ -17011,6 +17330,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.k12-school-term-pipeline",
       "customExcludeRules": [
         {
@@ -17157,20 +17477,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
+        "ocrModelSize": "small",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -17190,7 +17515,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[件名]_[学期ステージ]_[内容トピック]",
-    "naming_template": "[{TAG:対象エリア}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-学校スタートプラン",
@@ -17255,6 +17580,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.senior-life-archive",
       "customExcludeRules": [
         {
@@ -17471,20 +17797,27 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 90,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 3,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.1997,
         ".jpeg": 0.0399,
@@ -17513,7 +17846,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[人]_[機会またはイベント]_[年齢]",
-    "naming_template": "[{TAG:家族生活の内訳}]{SMART_NAME}",
+    "naming_template": "[{TAG:家庭生活细分}]{SMART_NAME}",
     "preset_directory_tree": [
       {
         "name": "01-古い家族の写真とフォトアルバム",
@@ -17578,6 +17911,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.senior-medical-care-pipeline",
       "customExcludeRules": [
         {
@@ -17717,20 +18051,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17749,7 +18087,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[患者]_[病院または部門]_[レポートまたは文書の名前]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-医者に会う前に準備する",
@@ -17814,6 +18152,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.office-docs",
       "customExcludeRules": [
         {
@@ -17981,20 +18320,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".docx": 0.2,
         ".doc": 0.08,
@@ -18017,7 +18358,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[部門]_[事項]_[ファイルタイプ]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{MOD:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-公式文書と通信",
@@ -18094,6 +18435,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.office-document-dispatch-flow",
       "customExcludeRules": [
         {
@@ -18240,20 +18582,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".docx": 0.22,
         ".doc": 0.08,
@@ -18273,7 +18617,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[単位]_[問題]_[文書番号]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-領収書の登録",
@@ -18350,6 +18694,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.household-dossier-vault",
       "customExcludeRules": [
         {
@@ -18482,20 +18827,24 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -18513,7 +18862,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[家族]_[証明書または書類の名前]",
-    "naming_template": "[{TAG:家族生活の内訳}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:家庭生活细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-家族の証明書",
@@ -18590,6 +18939,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.media-collector-vault",
       "customExcludeRules": [
         {
@@ -18890,20 +19240,28 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
-        "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "analysisMode": "full",
+        "videoQuotaMax": 48,
+        "videoCutSensitivity": "high",
+        "videoSoftTokenBudget": 140,
+        "videoAsrDurationSec": 60,
+        "audioAnalysisDurationSec": 120,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "maxContentSizeKb": 2048,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser",
+        "face_recognition_tool",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".mkv": 0.14,
         ".mp4": 0.1,
@@ -18941,7 +19299,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[作品名]_[季節コレクションまたは巻数]_[バージョンの特徴]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}[_{TAG:画質レベル}]",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}[_{TAG:画质等级}]",
     "preset_directory_tree": [
       {
         "name": "01-映画",
@@ -19018,6 +19376,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.code-asset-vault",
       "customExcludeRules": [
         {
@@ -19339,20 +19698,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".ts": 0.1,
         ".tsx": 0.06,
@@ -19389,7 +19750,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[技術スタック]_[コンポーネント機能]_[適用シナリオ]",
-    "naming_template": "[{TAG:ソースコードのセグメンテーション}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:源代码细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-プロジェクト足場",
@@ -19466,6 +19827,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.system-cache-appdata-vault",
       "customExcludeRules": [
         {
@@ -19591,20 +19953,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
-        "enableImageOcr": true,
+        "enableImageOcr": false,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".log": 0.3,
         ".dump": 0.06,
@@ -19623,7 +19987,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ソフトウェア名]_[シーンの生成]",
-    "naming_template": "[{TAG:システムファイルの内訳}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:系统文件细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ソフトウェア操作ログ",
@@ -19664,6 +20028,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.chat-software-vault",
       "customExcludeRules": [
         {
@@ -19922,20 +20287,27 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.1364,
         ".docx": 0.1362,
@@ -19967,7 +20339,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[ファイルの件名]_[関係者またはグループ]_[目的]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-文書とフォーム",
@@ -20008,6 +20380,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.cross-device-transfer-vault",
       "customExcludeRules": [
         {
@@ -20245,20 +20618,26 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 3,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -20290,7 +20669,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[コンテンツ]_[ソース機器]_[目的]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-携帯電話の写真とビデオ",
@@ -20331,6 +20710,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.screenshots-screenrecord-vault",
       "customExcludeRules": [
         {
@@ -20463,20 +20843,25 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 32,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
+        "videoAsrDurationSec": 45,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 3,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -20487,7 +20872,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[インターフェイスまたはソフトウェア]_[キーコンテンツ]_[目的]",
-    "naming_template": "[{TAG:スクリーンショット カテゴリ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:截图细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-チャットとコミュニケーションのスクリーンショット",
@@ -20528,6 +20913,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.scratchpad-drafts-vault",
       "customExcludeRules": [
         {
@@ -20646,20 +21032,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 5,
+        "maxDocumentOcrItems": 3,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".txt": 0.2731,
         ".md": 0.1637,
@@ -20675,7 +21063,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[件名]_[主なポイント]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{MOD:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ランダムノート",
@@ -20712,6 +21100,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.external-storage-vault",
       "customExcludeRules": [
         {
@@ -21026,20 +21415,27 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 24,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
-        "videoAsrDurationSec": 0,
-        "audioAnalysisDurationSec": 0,
+        "videoAsrDurationSec": 30,
+        "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.0879,
         ".docx": 0.0874,
@@ -21081,7 +21477,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[コンテンツの件名]_[目的]_[ソース]",
-    "naming_template": "[{TAG:ファイルタイプ}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:文件类型}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ポータブルオフィスドキュメント",
@@ -21122,6 +21518,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.scanned-documents-vault",
       "customExcludeRules": [
         {
@@ -21233,20 +21630,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
-        "ocrModelSize": "tiny",
-        "maxContentSizeKb": 4096,
-        "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 15,
+        "maxDocumentOcrItems": 20,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".pdf": 0.5551,
         ".jpg": 0.0679,
@@ -21261,7 +21660,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[文書名]_[所有者]",
-    "naming_template": "[{TAG:契約・請求書の内訳}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:合同票据细分}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-ドキュメントスキャン",
@@ -21302,6 +21701,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.docs-office-vault",
       "customExcludeRules": [
         {
@@ -21448,20 +21848,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.08,
@@ -21481,7 +21883,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[所属するプロジェクト]_[文書の件名]_[目的]",
-    "naming_template": "[{TAG:処理状況}]{SMART_NAME}_{MOD:YYYYMMDD}",
+    "naming_template": "[{TAG:处理状态}]{SMART_NAME}_{MOD:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-契約および契約",
@@ -21522,6 +21924,7 @@
       "schemaVersion": 1,
       "status": "ready",
       "policyVersion": 1,
+      "presetVersion": 2,
       "workflowId": "builtin.workflow.docs-study-research-vault",
       "customExcludeRules": [
         {
@@ -21738,20 +22141,22 @@
         }
       ],
       "baseAIConfig": {
-        "analysisMode": "quick_name",
-        "embeddingProfile": "classic_light",
-        "mrlDimension": 256,
-        "videoQuotaMax": 10,
-        "videoCutSensitivity": "medium",
+        "analysisMode": "full",
+        "videoQuotaMax": 8,
+        "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
         "maxContentSizeKb": 4096,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 10,
         "enableOfficeCover": true,
-        "reuseBasicAnalysisData": true
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
       },
+      "workflowPluginDefaults": [],
       "extensionWeights": {
         ".pdf": 0.34,
         ".docx": 0.08,
@@ -21779,7 +22184,7 @@
       "configuredAt": 1762425600000
     },
     "naming_pattern": "[トピックまたはコース]_[材料の件名]_[著者またはソース]",
-    "naming_template": "[{TAG:対象エリア}]{SMART_NAME}_{CRE:YYYYMMDD}",
+    "naming_template": "[{TAG:学科领域}]{SMART_NAME}_{CRE:YYYYMMDD}",
     "preset_directory_tree": [
       {
         "name": "01-講座-教材",
