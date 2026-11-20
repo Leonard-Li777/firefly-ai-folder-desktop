@@ -37,6 +37,7 @@ import {
 } from 'lucide-react'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
+import { submitWorkspacePolicyMutation } from '../../../lib/workspace-policy/workspace-ai-client'
 
 import type {
   WorkspaceSetupWizardProps,
@@ -650,73 +651,31 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
     setCommitError(null)
 
     try {
-      let actualHw = hardwareInfo
-      if (!actualHw && window.electronAPI?.getHardwareInfo) {
-        try {
-          actualHw = await window.electronAPI.getHardwareInfo()
-        } catch {}
-      }
-
-      // 解析 AI 引擎参数
-      let baseAi: TechnicalEngineParameters
-      if (selectedTemplateConfig?.baseAIConfig) {
-        baseAi = selectedTemplateConfig.baseAIConfig
-      } else if (selectedWorkflow.engine_params_json) {
-        try {
-          baseAi = JSON.parse(selectedWorkflow.engine_params_json)
-        } catch {
-          baseAi = mapIntentToParameters(mapWorkflowToIntent(selectedWorkflow.id), actualHw)
-        }
-      } else {
-        baseAi = mapIntentToParameters(mapWorkflowToIntent(selectedWorkflow.id), actualHw)
-      }
-
-      const templateConfig: Partial<WorkspaceConfig> = {
-        schemaVersion: 1,
-        status: 'ready',
+      // 工作流 AI 基线由主进程仲裁内核按 workflowId 派生；渲染层不再本地拼装 baseAIConfig /
+      // engine_params_json，统一通过平铺补丁通道提交工作流绑定与包含/排除规则。
+      const excludeRules = Array.isArray(selectedTemplateConfig?.customExcludeRules)
+        ? filterWorkspaceUniqueIgnoreEntries(
+            globalIgnoreRules,
+            selectedTemplateConfig.customExcludeRules
+          ).filter((r): r is IFilterRule => typeof r !== 'string')
+        : []
+      const mutationRes = await submitWorkspacePolicyMutation(workspace.id, {
         workflowId: selectedWorkflow.id,
-        extensionWeights:
-          selectedTemplateConfig?.extensionWeights ||
-          selectedWorkflow.extensionWeights ||
-          undefined,
-        customExcludeRules: Array.isArray(selectedTemplateConfig?.customExcludeRules)
-          ? filterWorkspaceUniqueIgnoreEntries(
-              globalIgnoreRules,
-              selectedTemplateConfig.customExcludeRules
-            ).filter((r): r is IFilterRule => typeof r !== 'string')
-          : [],
-        customIncludeRules: selectedTemplateConfig?.customIncludeRules || [],
-        baseAIConfig: baseAi,
-        advancedAIPrompts: selectedTemplateConfig?.advancedAIPrompts || undefined,
-        unitRecognition: selectedTemplateConfig?.unitRecognition || undefined,
-        configuredAt: Date.now()
-      }
-
-      // 优先调用主进程策略原子提交服务 WorkspacePolicyCommitService
-      let commitResult: any
-      if (window.electronAPI?.commitWorkspacePolicy) {
-        commitResult = await window.electronAPI.commitWorkspacePolicy({
-          workspaceId: workspace.id,
-          templateConfig,
-          boundWorkflowId: selectedWorkflow.id
-        })
-      } else if (window.electronAPI?.updateWorkspaceConfig) {
-        // 回退兼容方案
-        const nextPolicyVersion =
-          parsedConfig.status === 'ready' ? (parsedConfig.policyVersion ?? 0) + 1 : 1
-        const readyConfig: WorkspaceConfig = {
-          ...templateConfig,
-          policyVersion: nextPolicyVersion
-        } as WorkspaceConfig
-        const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, readyConfig)
-        commitResult = {
-          success: res.success,
-          policyVersion: nextPolicyVersion,
-          appliedConfig: readyConfig,
-          error: res.error ? { code: 'UNKNOWN', message: res.error } : undefined
-        }
-      } else {
-        throw new Error(t('主进程未提供配置提交接口'))
+        preserveOverrides: false,
+        customExcludeRules: excludeRules,
+        customIncludeRules: selectedTemplateConfig?.customIncludeRules || []
+      })
+      const commitResult: any = {
+        success: mutationRes.success,
+        policyVersion: mutationRes.policyVersion,
+        appliedConfig: mutationRes.appliedConfig,
+        admissionChanged: mutationRes.admissionChanged,
+        errorCode: mutationRes.errorCode,
+        errorMessage: mutationRes.errorMessage,
+        error:
+          typeof mutationRes.error === 'string'
+            ? { code: mutationRes.errorCode || 'UNKNOWN', message: mutationRes.error }
+            : mutationRes.error
       }
 
       if (!commitResult.success) {
@@ -745,7 +704,7 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
       const appliedConfig =
         commitResult.appliedConfig ||
         ({
-          ...templateConfig,
+          ...selectedTemplateConfig,
           policyVersion: commitResult.policyVersion
         } as WorkspaceConfig)
 

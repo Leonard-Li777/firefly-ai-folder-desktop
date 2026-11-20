@@ -52,6 +52,7 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
     })
   }
 
+  const mockApplyWorkspacePolicyMutation = vi.fn().mockResolvedValue({ success: true })
   const mockUpdateWorkspaceWhitelist = vi.fn().mockResolvedValue({ success: true })
 
   beforeEach(() => {
@@ -76,6 +77,7 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
     window.electronAPI = {
       updateWorkspaceWhitelist: mockUpdateWorkspaceWhitelist,
       updateWorkspaceConfig: vi.fn().mockResolvedValue({ success: true }),
+      applyWorkspacePolicyMutation: mockApplyWorkspacePolicyMutation,
       previewWorkspaceWhitelistImpact: vi.fn().mockResolvedValue({
         success: true,
         totalFiles: 10,
@@ -139,7 +141,9 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
     fireEvent.click(saveBtn)
 
     await waitFor(() => {
-      expect(mockUpdateWorkspaceWhitelist).toHaveBeenCalledWith(1, ['.docx'])
+      expect(mockApplyWorkspacePolicyMutation).toHaveBeenCalledWith(1, {
+        includeExts: ['.docx']
+      })
       // 成功切换到「检索式引擎」
       expect(screen.queryByTestId('unsaved-admission-rules-dialog')).toBeNull()
     })
@@ -243,7 +247,8 @@ describe('WorkspaceSettingsDialog 美化确认对话框拦截测试 (无原生co
     await waitFor(() => {
       expect(screen.getAllByText('检索式引擎').length).toBeGreaterThan(0)
       expect(screen.getByText('文件准入与包含排除')).toBeDefined()
-      expect(screen.getByText('未绑定工作流')).toBeDefined()
+      expect(screen.getAllByText('未绑定工作流').length).toBeGreaterThan(0)
+      expect(screen.getByText('未绑定工作流（通用配置）')).toBeDefined()
     })
 
     // 不应出现向导专有的「选择工作流」步骤胶囊

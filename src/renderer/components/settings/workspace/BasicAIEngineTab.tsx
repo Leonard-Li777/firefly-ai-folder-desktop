@@ -4,6 +4,7 @@ import {
   Gauge,
   HelpCircle,
   Layers,
+  Mic,
   Lock,
   RefreshCw,
   Sparkles,
@@ -53,6 +54,8 @@ import { useSettingsStore } from '../../../stores/settings-store'
 import { usePluginCenterStore } from '../../../stores/plugin-center-store'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
+import { submitWorkspacePolicyMutation,
+  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { cn } from '../../../lib/utils'
 
@@ -61,6 +64,12 @@ export interface BasicAIEngineTabProps {
   hardwareInfo?: HardwareInfo | null
   isActive?: boolean
   onConfigSaved?: () => void
+}
+
+/** 待提交的补丁累积 */
+interface PendingPolicyPatch {
+  patch: Partial<TechnicalEngineParameters>
+  restore: Set<keyof TechnicalEngineParameters>
 }
 
 /** 属于基础AI引擎 Tab 专管的参数键列表 (与文件内容萃取隔离，防跨Tab全量抹杀) */
@@ -157,113 +166,90 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     }
   }, [baseDerived, overrides])
 
-  // 待持久化数据引用与防抖计时器
-  const pendingOverridesRef = useRef<Partial<TechnicalEngineParameters> | null>(null)
+  // 待提交的补丁累积（用户触碰字段 / 待恢复字段）与防抖计时器
+  const pendingPatchRef = useRef<PendingPolicyPatch | null>(null)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  const persistConfig = useCallback(
-    async (targetOverrides: Partial<TechnicalEngineParameters>) => {
+  /** 通过统一补丁通道提交（严禁整份拼装 WorkspaceConfigReady 直写） */
+  const persistMutation = useCallback(
+    async (pending: PendingPolicyPatch) => {
       if (!workspace.id) return
+      const restoreKeys = Array.from(pending.restore)
+      const hasPatch = Object.keys(pending.patch).length > 0
+      if (!hasPatch && restoreKeys.length === 0) return
       setIsSaving(true)
       try {
-        const hasAnyOverride = Object.keys(targetOverrides).length > 0
-        const updatedConfig: WorkspaceConfig = {
-          schemaVersion: 1,
-          status: 'ready',
-          intent: currentIntent,
-          policyVersion: 1,
-          baseAIConfig: baseDerived,
-          overrides: hasAnyOverride ? targetOverrides : undefined,
-          customExcludeRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customExcludeRules || [] : [],
-          customIncludeRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customIncludeRules || [] : [],
-          configuredAt: Date.now()
-        }
-
-        if (window.electronAPI?.updateWorkspaceConfig) {
-          const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, updatedConfig)
-          if (res.success) {
-            onConfigSaved?.()
-          } else {
-            toast.error(res.error || t('保存失败'))
-          }
+        const res = await submitWorkspacePolicyMutation(workspace.id, {
+          ...(hasPatch ? { overridePatch: pending.patch } : {}),
+          ...(restoreKeys.length > 0 ? { restoreOverrideFields: restoreKeys } : {})
+        })
+        if (res.success) {
+          onConfigSaved?.()
+        } else {
+          toast.error(getMutationErrorText(res, t('保存失败')))
         }
       } catch (err: any) {
-        console.error('[BasicAIEngineTab] 自动保存微调策略异常:', err)
+        console.error('[BasicAIEngineTab] 提交配置补丁异常:', err)
+        toast.error(t('保存失败'))
       } finally {
         setIsSaving(false)
       }
     },
-    [workspace.id, currentIntent, baseDerived, parsedConfig, onConfigSaved]
+    [workspace.id, onConfigSaved]
   )
+
+  const flushPending = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    const pending = pendingPatchRef.current
+    if (pending !== null) {
+      pendingPatchRef.current = null
+      void persistMutation(pending)
+    }
+  }, [persistMutation])
 
   // 切 Tab (isActive 变为 false) 或卸载时立即 flush 未落盘数据，杜绝并发覆盖竞态
   useEffect(() => {
-    if (!isActive && pendingOverridesRef.current !== null) {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-      persistConfig(pendingOverridesRef.current)
-      pendingOverridesRef.current = null
-    }
-  }, [isActive, persistConfig])
+    if (!isActive) flushPending()
+  }, [isActive, flushPending])
 
   useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-      if (pendingOverridesRef.current !== null) {
-        persistConfig(pendingOverridesRef.current)
-        pendingOverridesRef.current = null
-      }
-    }
-  }, [persistConfig])
+    return () => flushPending()
+  }, [flushPending])
 
+  // 修改单个参数：用户手动触碰即保留 user_custom（哪怕等于默认值），500ms 防抖提交补丁
   const handleParamChange = <K extends keyof TechnicalEngineParameters>(
     key: K,
     val: TechnicalEngineParameters[K]
   ) => {
-    setOverrides(prev => {
-      const next = { ...prev, [key]: val }
-      if (val === baseDerived[key]) {
-        delete next[key]
-      }
-      pendingOverridesRef.current = next
-
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        if (pendingOverridesRef.current !== null) {
-          const toSave = pendingOverridesRef.current
-          pendingOverridesRef.current = null
-          persistConfig(toSave)
-        }
-      }, 500)
-
-      return next
-    })
+    setOverrides(prev => ({ ...prev, [key]: val }))
+    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
+    pending.patch = { ...pending.patch, [key]: val }
+    pending.restore.delete(key)
+    pendingPatchRef.current = pending
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    debounceTimerRef.current = setTimeout(flushPending, 500)
   }
 
-  // 检查当前 Tab 是否存在个性化覆盖项 (仅针对 BASIC_AI_KEYS)
+  // 检查当前 Tab 是否存在个性化覆盖项
   const hasBasicAiOverrides = useMemo(() => {
     return BASIC_AI_KEYS.some(k => overrides[k] !== undefined)
   }, [overrides])
 
-  // 重置为当前意图预设基线 (仅剔除基础AI引擎管理的键，完整保留内容萃取等其他Tab的overrides)
+  // 恢复默认：仅对本 Tab 管辖且已覆盖的键发送 restoreOverrideFields（严禁传 null）
   const handleResetToPreset = () => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
+    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
+    for (const k of BASIC_AI_KEYS.filter(k => overrides[k] !== undefined)) {
+      pending.restore.add(k)
+      delete pending.patch[k]
     }
+    pendingPatchRef.current = pending
     const next = { ...overrides }
-    for (const k of BASIC_AI_KEYS) {
-      delete next[k]
-    }
-    pendingOverridesRef.current = next
+    for (const k of BASIC_AI_KEYS) delete next[k]
     setOverrides(next)
-    persistConfig(next)
+    flushPending()
     toast.success(t('已恢复当前场景的基础引擎推荐参数'))
   }
 
@@ -344,6 +330,11 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const videoCutSensitivity = effectiveParams.videoCutSensitivity ?? 'medium'
   const localVideoSoftTokenBudget = effectiveParams.videoSoftTokenBudget ?? 48
   const videoAsrCap = effectiveParams.videoAsrDurationSec ?? 30
+  const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 30
+  // 语音听写组件是否就绪（全局插件中心状态；未就绪时两滑块灰显并提示）
+  const asrPluginReady = pluginModules.some(
+    m => m.id === 'asr_sensevoice_onnx' && m.install_state === 'active'
+  )
 
   const handleSelectVideoProfile = (profile: VideoAnalysisProfile) => {
     if (profile === 'custom') {
@@ -448,8 +439,11 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             <span>{t('检索式引擎')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {t('当前工作目录生效场景: {intent}。配置分析模式、视频取帧参数。', {
-              intent: getIntentDisplayName(currentIntent)
+            {t('当前配置：{name}。配置分析模式、视频取帧与语音听写参数。', {
+              name:
+                parsedConfig.status === 'ready' && parsedConfig.workflowId
+                  ? getIntentDisplayName(currentIntent)
+                  : t('默认配置')
             })}
           </p>
         </div>
@@ -468,7 +462,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             </span>
           )}
 
-          {/* 恢复场景预设按钮 (仅在存在本Tab微调项时展示) */}
+          {/* 恢复默认按钮 (仅在存在本Tab微调项时展示) */}
           {hasBasicAiOverrides && (
             <Button
               type="button"
@@ -476,10 +470,14 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               size="sm"
               onClick={handleResetToPreset}
               className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 h-8"
-              title={t('清除所有微调项，恢复为场景推荐默认值')}
+              title={t('清除所有微调项，恢复为默认值')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t('恢复场景推荐')}</span>
+              <span>
+                {parsedConfig.status === 'ready' && parsedConfig.workflowId
+                  ? t('恢复工作流默认')
+                  : t('恢复默认配置')}
+              </span>
             </Button>
           )}
         </div>
@@ -1007,34 +1005,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                       </button>
                     </div>
                   </div>
-
-                  {/* 视频伴音台词识别上限 */}
-                  <div className="space-y-1.5 pt-2 border-t border-border/30">
-                    <div className="flex items-center justify-between text-xs">
-                      <Label className="font-semibold text-foreground">
-                        {t('视频伴音台词识别上限')}
-                      </Label>
-                      <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                        {videoAsrCap} {t('秒')}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={180}
-                      step={15}
-                      value={videoAsrCap}
-                      onChange={e =>
-                        handleCustomParamChange({ asrCap: parseInt(e.target.value, 10) })
-                      }
-                      className="w-full accent-primary cursor-pointer"
-                    />
-                    <p className="text-[11px] text-muted-foreground">
-                      {t(
-                        '仅提取视频开头前 N 秒的音轨台词（不影响纯音频）。识别越长台词标签越全，分析耗时稍长。'
-                      )}
-                    </p>
-                  </div>
                 </div>
               )}
             </div>
@@ -1209,6 +1179,67 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
         </Card>
       )}
 
+      {/* 3b. 语音听写与音视频台词提取（常显，仅受语音听写组件联动，与引擎档位无关） */}
+      <Card className="p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Mic className="h-4 w-4 text-primary shrink-0" />
+          <Label className="text-sm font-medium text-foreground">
+            {t('语音听写与音视频台词提取')}
+          </Label>
+        </div>
+        {!asrPluginReady && (
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            {t('全局语音听写组件尚未就绪，该时长设置将在组件就绪后自动恢复生效')}
+          </p>
+        )}
+        <div className={cn('space-y-4', !asrPluginReady && 'opacity-50')}>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between text-xs">
+              <Label className="font-semibold text-foreground">{t('视频伴音台词识别上限')}</Label>
+              <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+                {videoAsrCap} {t('秒')}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={180}
+              step={15}
+              value={videoAsrCap}
+              onChange={e => handleParamChange('videoAsrDurationSec', parseInt(e.target.value, 10))}
+              className="w-full accent-primary cursor-pointer"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {t(
+                '仅提取视频开头前 N 秒的音轨台词（不影响纯音频）。识别越长台词标签越全，分析耗时稍长。'
+              )}
+            </p>
+          </div>
+          <div className="space-y-1.5 pt-2 border-t border-border/30">
+            <div className="flex items-center justify-between text-xs">
+              <Label className="font-semibold text-foreground">{t('纯音频听写时长上限')}</Label>
+              <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+                {audioAnalysisCap} {t('秒')}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={180}
+              step={15}
+              value={audioAnalysisCap}
+              onChange={e =>
+                handleParamChange('audioAnalysisDurationSec', parseInt(e.target.value, 10))
+              }
+              className="w-full accent-primary cursor-pointer"
+            />
+            <p className="text-[11px] text-muted-foreground">
+              {t('仅听写音频文件开头前 N 秒的内容，设为 0 则不听写。')}
+            </p>
+          </div>
+        </div>
+      </Card>
+
       {/* 4. 视觉语义搜索 (CLIP 跨模态通道，仅在双塔 classic_light 模式生效) */}
       {embeddingProfile === 'classic_light' && (
         <Card className="p-5">
@@ -1217,10 +1248,10 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-violet-500 shrink-0" />
                 <Label className="text-sm font-medium text-foreground">
-                  {t('视觉语义搜索 (CLIP)')}
+                  {t('文字直接找图')}
                   <HelpTooltip
                     content={t(
-                      '在轻量经典引擎模式下，用自然语言描述画面（如「红色的跑车」「左边的沙发」）跨模态检索图片。低配设备关闭可节省内存。'
+                      '在轻量模式下，用文字描述画面（如「红色的跑车」「左边的沙发」）直接找图片。低配设备关闭可节省内存。'
                     )}
                   />
                 </Label>
@@ -1234,7 +1265,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             <Switch
               checked={clipTextEnabled}
               onCheckedChange={checked => handleParamChange('clipTextEnabled', checked)}
-              aria-label={t('视觉语义搜索')}
+              aria-label={t('文字直接找图')}
             />
           </div>
         </Card>
@@ -1263,7 +1294,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             </p>
             <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
               {t(
-                '当切换 AI 引擎档位、变更 MRL 向量维度或遇到向量检索不准确时，可手动触发全库索引重建。'
+                '当切换搜索引擎档位，或发现搜索结果不准确时，可手动触发全库索引重建。'
               )}
             </p>
           </div>

@@ -30,6 +30,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
+import { submitWorkspacePolicyMutation,
+  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
 import {
   Filter,
   ShieldCheck,
@@ -237,26 +239,27 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
     if (!workspace.id) return false
     setIsSavingWhitelist(true)
     try {
-      // 始终按实际配置写入：不再存在「切到标准模式就清空包含规则」的互斥分支
+      // 始终按实际配置写入：通过统一平铺补丁通道提交包含规则
       const targetPatterns = whitelistTags
-      const updateFn =
-        window.electronAPI?.updateWorkspaceInclusion || window.electronAPI?.updateWorkspaceWhitelist
-      if (updateFn) {
-        const res = await updateFn(workspace.id, targetPatterns)
-        if (res.success) {
-          toast.success(
-            targetPatterns.length === 0
-              ? t('包含规则已清空，现按排除规则全量放行')
-              : t('包含规则已更新，已生效 {count} 项扩展名', { count: targetPatterns.length })
-          )
-          onConfigSaved?.()
-          return true
-        } else {
-          toast.error(res.error || t('更新包含规则失败'))
-          return false
-        }
+      const res = await submitWorkspacePolicyMutation(workspace.id, {
+        includeExts: targetPatterns
+      })
+      if (res.success) {
+        toast.success(
+          targetPatterns.length === 0
+            ? t('包含规则已清空，现按排除规则全量放行')
+            : t('包含规则已更新，已生效 {count} 项扩展名', { count: targetPatterns.length })
+        )
+        onConfigSaved?.()
+        return true
+      } else {
+        toast.error(
+          typeof res.error === 'string'
+            ? res.error
+            : res.error?.message || res.errorMessage || t('更新包含规则失败')
+        )
+        return false
       }
-      return false
     } catch (err: any) {
       toast.error(err?.message || t('保存包含规则失败'))
       return false
@@ -347,33 +350,14 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
   const persistRules = async (nextRules: IIgnoreRule[]) => {
     if (!workspace.id) return
     try {
-      const isReady = parsedConfig.status === 'ready'
-      const baseDerived = mapIntentToParameters('fast_archive', hardwareInfo)
-
-      const updatedConfig: WorkspaceConfig = isReady
-        ? {
-            ...parsedConfig,
-            customExcludeRules: nextRules,
-            configuredAt: Date.now()
-          }
-        : {
-            schemaVersion: 1,
-            status: 'ready',
-            policyVersion: 1,
-            baseAIConfig: baseDerived,
-            customExcludeRules: nextRules,
-            customIncludeRules: [],
-            configuredAt: Date.now()
-          }
-
-      if (window.electronAPI?.updateWorkspaceConfig) {
-        const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, updatedConfig)
-        if (res.success) {
-          toast.success(t('目录专属忽略规则已更新'))
-          onConfigSaved?.()
-        } else {
-          toast.error(res.error || t('更新规则失败'))
-        }
+      const res = await submitWorkspacePolicyMutation(workspace.id, {
+        customExcludeRules: nextRules
+      })
+      if (res.success) {
+        toast.success(t('目录专属忽略规则已更新'))
+        onConfigSaved?.()
+      } else {
+        toast.error(getMutationErrorText(res, t('更新规则失败')))
       }
     } catch (err: any) {
       toast.error(err?.message || t('保存忽略规则异常'))

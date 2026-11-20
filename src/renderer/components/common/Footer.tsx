@@ -28,6 +28,9 @@ import { useEngineStore } from '@/renderer/stores/engine-store'
 import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
+import { useWorkspaceRuntimeContext } from '@/renderer/stores/workspace-runtime-context-store'
+import { triggerWorkspaceIncrementalRecovery } from '@/renderer/lib/workspace-policy/workspace-ai-client'
+import { toast } from '@/renderer/components/common/Toast'
 import {
   compareVersions,
   LogCategory,
@@ -244,16 +247,54 @@ export function Footer() {
 
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
-  const displayAnalysisMode = useMemo(() => {
-    if (currentWorkspaceDirectory?.workspace_config) {
-      const parsed = parseWorkspaceConfig(currentWorkspaceDirectory.workspace_config)
+  const runtimeSnapshot = useWorkspaceRuntimeContext(s => s.snapshot)
+  const refreshRuntimeContext = useWorkspaceRuntimeContext(s => s.refresh)
+  const [isTriggeringRecovery, setIsTriggeringRecovery] = useState(false)
+
+  // SLICE-08：渲染层收口全局旁路 —— 结合当前工作区配置与运行时上下文派生有效分析模式
+  const resolveEffectiveAnalysisMode = (
+    workspaceConfigRaw?: Parameters<typeof parseWorkspaceConfig>[0]
+  ): string => {
+    if (runtimeSnapshot && !runtimeSnapshot.generativeAiEnabled) {
+      return 'simple'
+    }
+    if (workspaceConfigRaw) {
+      const parsed = parseWorkspaceConfig(workspaceConfigRaw)
       if (parsed.status === 'ready') {
         return parsed.overrides?.analysisMode ?? parsed.baseAIConfig?.analysisMode ?? 'quick_name'
       }
     }
     return config?.analysisMode ?? 'quick_name'
-  }, [currentWorkspaceDirectory?.workspace_config, config?.analysisMode])
+  }
+
+  const displayAnalysisMode = useMemo(() => {
+    return resolveEffectiveAnalysisMode(currentWorkspaceDirectory?.workspace_config)
+  }, [currentWorkspaceDirectory?.workspace_config, config?.analysisMode, runtimeSnapshot])
   const setCurrentWorkspaceDirectory = useVirtualDirectoryStore(s => s.setCurrentWorkspaceDirectory)
+
+  const recoverableCount = runtimeSnapshot?.recoverableCount ?? 0
+  const handleTriggerIncrementalRecovery = async () => {
+    const wsId = currentWorkspaceDirectory?.id
+    if (!wsId || isTriggeringRecovery) return
+    setIsTriggeringRecovery(true)
+    try {
+      const res = await triggerWorkspaceIncrementalRecovery(wsId)
+      if (res.success) {
+        toast.success(
+          t('已将 {count} 个历史文件加入补全队列，正在后台自动处理', {
+            count: res.queued ?? recoverableCount
+          })
+        )
+        void refreshRuntimeContext()
+      } else {
+        toast.error(res.error || t('增量补全触发失败，请稍后重试'))
+      }
+    } catch (err: any) {
+      toast.error(err?.message || t('增量补全触发异常'))
+    } finally {
+      setIsTriggeringRecovery(false)
+    }
+  }
 
   const runningWorkspace = useMemo(() => {
     if (!analyzing?.workspaceId) return null
@@ -290,7 +331,8 @@ export function Footer() {
         })
 
         // 新文件进入：先瞬时设置该阶段的物理起始点（禁用过渡，消除上个文件的100%残影）
-        const mode = config?.analysisMode
+        // 使用当前正在分析的工作区有效模式，消除全局 config.analysisMode 旁路
+        const mode = resolveEffectiveAnalysisMode(runningWorkspace?.workspace_config)
         const isSimpleMode = mode === 'simple' || mode === 'sample'
         const isQuickMode = mode === 'quick_name'
 
@@ -912,6 +954,27 @@ export function Footer() {
                       {t('当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果')}
                     </span>
                   </button>
+                )}
+                {recoverableCount > 0 && currentWorkspaceDirectory?.id != null && (
+                  <div
+                    data-testid="env-recovery-banner"
+                    className="mt-0.5 flex items-center gap-2 text-xs leading-tight text-amber-700 dark:text-amber-300"
+                  >
+                    <MaterialIcon icon="auto_fix_high" className="text-xs shrink-0" />
+                    <span className="truncate max-w-[340px]">
+                      {t('环境能力已恢复，有 {count} 个历史文件可补全更完整的内容', {
+                        count: recoverableCount
+                      })}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isTriggeringRecovery}
+                      onClick={() => void handleTriggerIncrementalRecovery()}
+                      className="shrink-0 font-semibold text-primary underline underline-offset-2 hover:opacity-80 cursor-pointer disabled:opacity-50"
+                    >
+                      {t('立即补全')}
+                    </button>
+                  </div>
                 )}
               </div>
             </div>

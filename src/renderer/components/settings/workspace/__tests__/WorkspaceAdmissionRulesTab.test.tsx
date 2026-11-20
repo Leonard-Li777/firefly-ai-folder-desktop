@@ -76,6 +76,7 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     })
   }
 
+  const mockApplyWorkspacePolicyMutation = vi.fn().mockResolvedValue({ success: true })
   const mockUpdateWorkspaceWhitelist = vi.fn().mockResolvedValue({ success: true })
   const mockPreviewWorkspaceWhitelistImpact = vi.fn().mockResolvedValue({
     success: true,
@@ -98,6 +99,7 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
       updateWorkspaceWhitelist: mockUpdateWorkspaceWhitelist,
       previewWorkspaceWhitelistImpact: mockPreviewWorkspaceWhitelistImpact,
       updateWorkspaceConfig: vi.fn().mockResolvedValue({ success: true }),
+      applyWorkspacePolicyMutation: mockApplyWorkspacePolicyMutation,
       utils: {
         probeDirectoryProfile: vi.fn().mockResolvedValue({
           detectedIntent: 'fast_archive',
@@ -188,10 +190,14 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     fireEvent.click(saveBtn)
 
     await waitFor(() => {
-      expect(mockUpdateWorkspaceWhitelist).toHaveBeenCalledWith(mockStandardWorkspace.id, ['.cr3'])
+      expect(mockApplyWorkspacePolicyMutation).toHaveBeenCalledWith(mockStandardWorkspace.id, {
+        includeExts: ['.cr3']
+      })
       expect(onConfigSaved).toHaveBeenCalled()
     })
-    expect(mockUpdateWorkspaceWhitelist).not.toHaveBeenCalledWith(mockStandardWorkspace.id, [])
+    expect(mockApplyWorkspacePolicyMutation).not.toHaveBeenCalledWith(mockStandardWorkspace.id, {
+      includeExts: []
+    })
   })
 
   it('回归: 两套规则可同时操作，空包含规则时仍按叠加顺序测算与放行说明', async () => {
@@ -284,10 +290,9 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     fireEvent.click(saveBtn)
 
     await waitFor(() => {
-      expect(mockUpdateWorkspaceWhitelist).toHaveBeenCalledWith(
-        mockWorkspace.id,
-        expect.arrayContaining(['.cr3', '.arw', '.docx'])
-      )
+      expect(mockApplyWorkspacePolicyMutation).toHaveBeenCalledWith(mockWorkspace.id, {
+        includeExts: expect.arrayContaining(['.cr3', '.arw', '.docx'])
+      })
       expect(onConfigSaved).toHaveBeenCalled()
     })
   })
@@ -399,7 +404,9 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     if (ref.current.isDirty()) {
       const ok = await ref.current.save()
       expect(ok).toBe(true)
-      expect(mockUpdateWorkspaceWhitelist).toHaveBeenCalledWith(mockStandardWorkspace.id, ['.pdf'])
+      expect(mockApplyWorkspacePolicyMutation).toHaveBeenCalledWith(mockStandardWorkspace.id, {
+        includeExts: ['.pdf']
+      })
     }
   })
 
@@ -425,6 +432,8 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     await waitFor(() => {
       expect(ref.current.isDirty()).toBe(false)
     })
-    expect(mockUpdateWorkspaceWhitelist).not.toHaveBeenCalledWith(mockStandardWorkspace.id, ['.xlsx'])
+    expect(mockApplyWorkspacePolicyMutation).not.toHaveBeenCalledWith(mockStandardWorkspace.id, {
+      includeExts: ['.xlsx']
+    })
   })
 })

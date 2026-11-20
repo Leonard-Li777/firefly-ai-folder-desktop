@@ -236,7 +236,7 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
       utils: {
         probeDirectoryProfile: vi.fn().mockResolvedValue(mockProfileResult)
       },
-      commitWorkspacePolicy: mockCommitWorkspacePolicy
+      applyWorkspacePolicyMutation: mockCommitWorkspacePolicy
     }
   })
 
@@ -357,9 +357,9 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
 
     await waitFor(() => {
       expect(mockCommitWorkspacePolicy).toHaveBeenCalledWith(
+        1,
         expect.objectContaining({
-          workspaceId: 1,
-          boundWorkflowId: 'builtin.workflow.desktop-declutter'
+          workflowId: 'builtin.workflow.desktop-declutter'
         })
       )
       expect(onFinish).toHaveBeenCalledWith('customize', expect.any(Object))
@@ -471,18 +471,16 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
     fireEvent.click(screen.getByRole('button', { name: /立即应用并进入工作目录/ }))
     await waitFor(() => {
       expect(mockCommitWorkspacePolicy).toHaveBeenCalledWith(
+        1,
         expect.objectContaining({
-          templateConfig: expect.objectContaining({
-            customExcludeRules: expect.arrayContaining([
-              expect.objectContaining({ value: '.lnk' }),
-              expect.objectContaining({ value: 'Desktop_Old_Backups' })
-            ])
-          })
+          customExcludeRules: expect.arrayContaining([
+            expect.objectContaining({ value: '.lnk' }),
+            expect.objectContaining({ value: 'Desktop_Old_Backups' })
+          ])
         })
       )
     })
-    const committedIgnores =
-      mockCommitWorkspacePolicy.mock.calls[0][0].templateConfig.customExcludeRules
+    const committedIgnores = mockCommitWorkspacePolicy.mock.calls[0][1].customExcludeRules
     expect(committedIgnores).toHaveLength(2)
   })
 

@@ -28,6 +28,8 @@ import {
 import { MaterialIcon, cn } from '../../lib/utils'
 import { toast } from '../common/Toast'
 import { t } from '@app/languages'
+import { submitWorkspacePolicyMutation,
+  getMutationErrorText } from '../../lib/workspace-policy/workspace-ai-client'
 import {
   Sparkles,
   ChevronDown,
@@ -292,46 +294,16 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     }
     setIsSaving(true)
     try {
-      let actualHw = hardwareInfo
-      if (!actualHw && window.electronAPI?.getHardwareInfo) {
-        try {
-          actualHw = await window.electronAPI.getHardwareInfo()
-        } catch {
-          // fallback
-        }
-      }
-
-      const baseAIConfig = mapIntentToParameters(selectedIntent, actualHw)
-      const hasOverrides = Object.keys(overrides).length > 0
-
-      const readyConfig: WorkspaceConfig = {
-        schemaVersion: 1,
-        status: 'ready',
+      // 统一补丁通道：仅提交意图与用户触碰的覆盖项，基线由主进程仲裁内核派生
+      const res = await submitWorkspacePolicyMutation(workspace.id, {
         intent: selectedIntent,
-        policyVersion: parsedConfig.status === 'ready' ? parsedConfig.policyVersion || 1 : 1,
-        baseAIConfig,
-        overrides: hasOverrides ? overrides : undefined,
-        extensionWeights:
-          parsedConfig.status === 'ready' ? parsedConfig.extensionWeights : undefined,
-        customExcludeRules:
-          parsedConfig.status === 'ready' && parsedConfig.customExcludeRules
-            ? parsedConfig.customExcludeRules
-            : [],
-        customIncludeRules:
-          parsedConfig.status === 'ready' && parsedConfig.customIncludeRules
-            ? parsedConfig.customIncludeRules
-            : [],
-        configuredAt: Date.now()
-      }
-
-      if (window.electronAPI?.updateWorkspaceConfig) {
-        const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, readyConfig)
-        if (res.success) {
-          toast.success(t('工作区配置已保存，AI 分析队列已就绪'))
-          onConfigSaved?.()
-        } else {
-          toast.error(res.error || t('保存失败'))
-        }
+        ...(Object.keys(overrides).length > 0 ? { overridePatch: overrides } : {})
+      })
+      if (res.success) {
+        toast.success(t('工作区配置已保存，AI 分析队列已就绪'))
+        onConfigSaved?.()
+      } else {
+        toast.error(getMutationErrorText(res, t('保存失败')))
       }
     } catch (error: any) {
       toast.error(error?.message || t('保存工作区配置异常'))

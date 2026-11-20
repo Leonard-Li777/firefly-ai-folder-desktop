@@ -21,6 +21,8 @@ import { useAnalyzedDirectoryStore } from '../../../stores/analyzed-directory-st
 import { MaterialIcon, cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
+import { submitWorkspacePolicyMutation,
+  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
 import {
   FolderOpen,
   RotateCcw,
@@ -287,8 +289,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
     if (!workspace.id) return
     setIsUnbinding(true)
     try {
-      if (window.electronAPI?.updateWorkspaceBoundWorkflow) {
-        const res = await window.electronAPI.updateWorkspaceBoundWorkflow(workspace.id, null)
+      {
+        const res = await submitWorkspacePolicyMutation(workspace.id, {
+          workflowId: null,
+          preserveInclusionSnapshot: true
+        })
         if (res?.success) {
           // 同步更新前端 store 状态
           const {
@@ -309,7 +314,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           setShowUnbindDialog(false)
           onConfigSaved?.()
         } else {
-          toast.error(res?.error || t('解除工作流绑定失败'))
+          toast.error(getMutationErrorText(res, t('解除工作流绑定失败')))
         }
       }
     } catch (err: any) {
@@ -324,8 +329,8 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
     if (!workspace.id) return
     setIsClearingWhitelist(true)
     try {
-      if (window.electronAPI?.updateWorkspaceWhitelist) {
-        const res = await window.electronAPI.updateWorkspaceWhitelist(workspace.id, [])
+      {
+        const res = await submitWorkspacePolicyMutation(workspace.id, { includeExts: [] })
         if (res?.success) {
           // 同步更新前端 store 状态
           const {
@@ -346,7 +351,7 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
           setShowClearWhitelistDialog(false)
           onConfigSaved?.()
         } else {
-          toast.error(res?.error || t('清空白名单失败'))
+          toast.error(getMutationErrorText(res, t('清空白名单失败')))
         }
       }
     } catch (err: any) {

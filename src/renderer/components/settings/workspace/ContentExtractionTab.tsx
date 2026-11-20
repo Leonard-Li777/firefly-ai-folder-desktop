@@ -15,6 +15,9 @@ import { Label } from '../../ui/label'
 import { cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
+import { submitWorkspacePolicyMutation,
+  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
+import { getOcrModelSizeLabel } from './TriStateFieldFeedback'
 import { openExternalLink } from '../../../lib/external-link'
 import {
   FileText,
@@ -34,6 +37,12 @@ export interface ContentExtractionTabProps {
   hardwareInfo?: HardwareInfo | null
   isActive?: boolean
   onConfigSaved?: () => void
+}
+
+/** 待提交的补丁累积 */
+interface PendingPolicyPatch {
+  patch: Partial<TechnicalEngineParameters>
+  restore: Set<keyof TechnicalEngineParameters>
 }
 
 /** 属于文件内容萃取 Tab 专管的参数键列表 (与基础AI引擎隔离，防跨Tab全量抹杀) */
@@ -126,116 +135,90 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     }
   }, [baseDerived, overrides])
 
-  // 待持久化数据引用与防抖计时器
-  const pendingOverridesRef = useRef<Partial<TechnicalEngineParameters> | null>(null)
+  // 待提交的补丁累积（用户触碰字段 / 待恢复字段）与防抖计时器
+  const pendingPatchRef = useRef<PendingPolicyPatch | null>(null)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
-  // 核心写盘方法 (按当前工作目录隔离持久化)
-  const persistConfig = useCallback(
-    async (targetOverrides: Partial<TechnicalEngineParameters>) => {
+  /** 通过统一补丁通道提交（严禁整份拼装 WorkspaceConfigReady 直写） */
+  const persistMutation = useCallback(
+    async (pending: PendingPolicyPatch) => {
       if (!workspace.id) return
+      const restoreKeys = Array.from(pending.restore)
+      const hasPatch = Object.keys(pending.patch).length > 0
+      if (!hasPatch && restoreKeys.length === 0) return
       setIsSaving(true)
       try {
-        const hasAnyOverride = Object.keys(targetOverrides).length > 0
-        const updatedConfig: WorkspaceConfig = {
-          schemaVersion: 1,
-          status: 'ready',
-          intent: currentIntent,
-          policyVersion: 1,
-          baseAIConfig: baseDerived,
-          overrides: hasAnyOverride ? targetOverrides : undefined,
-          customExcludeRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customExcludeRules || [] : [],
-          customIncludeRules:
-            parsedConfig.status === 'ready' ? parsedConfig.customIncludeRules || [] : [],
-          configuredAt: Date.now()
-        }
-
-        if (window.electronAPI?.updateWorkspaceConfig) {
-          const res = await window.electronAPI.updateWorkspaceConfig(workspace.id, updatedConfig)
-          if (res.success) {
-            onConfigSaved?.()
-          } else {
-            toast.error(res.error || t('保存失败'))
-          }
+        const res = await submitWorkspacePolicyMutation(workspace.id, {
+          ...(hasPatch ? { overridePatch: pending.patch } : {}),
+          ...(restoreKeys.length > 0 ? { restoreOverrideFields: restoreKeys } : {})
+        })
+        if (res.success) {
+          onConfigSaved?.()
+        } else {
+          toast.error(getMutationErrorText(res, t('保存失败')))
         }
       } catch (err: any) {
-        console.error('[ContentExtractionTab] 自动保存微调策略异常:', err)
+        console.error('[ContentExtractionTab] 提交配置补丁异常:', err)
+        toast.error(t('保存失败'))
       } finally {
         setIsSaving(false)
       }
     },
-    [workspace.id, currentIntent, baseDerived, parsedConfig, onConfigSaved]
+    [workspace.id, onConfigSaved]
   )
+
+  const flushPending = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = null
+    }
+    const pending = pendingPatchRef.current
+    if (pending !== null) {
+      pendingPatchRef.current = null
+      void persistMutation(pending)
+    }
+  }, [persistMutation])
 
   // 切 Tab (isActive 变为 false) 或卸载时立即 flush 未落盘数据，杜绝并发覆盖竞态
   useEffect(() => {
-    if (!isActive && pendingOverridesRef.current !== null) {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-      persistConfig(pendingOverridesRef.current)
-      pendingOverridesRef.current = null
-    }
-  }, [isActive, persistConfig])
+    if (!isActive) flushPending()
+  }, [isActive, flushPending])
 
-  // 组件卸载或弹窗关闭时：无条件立即写盘
   useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-      if (pendingOverridesRef.current !== null) {
-        persistConfig(pendingOverridesRef.current)
-        pendingOverridesRef.current = null
-      }
-    }
-  }, [persistConfig])
+    return () => flushPending()
+  }, [flushPending])
 
-  // 修改单个参数 (用户修改即保存，500ms 防抖自动落盘)
+  // 修改单个参数：用户手动触碰即保留 user_custom（哪怕等于默认值），500ms 防抖提交补丁
   const handleParamChange = <K extends keyof TechnicalEngineParameters>(
     key: K,
     val: TechnicalEngineParameters[K]
   ) => {
-    setOverrides(prev => {
-      const next = { ...prev, [key]: val }
-      if (val === baseDerived[key]) {
-        delete next[key]
-      }
-      pendingOverridesRef.current = next
-
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        if (pendingOverridesRef.current !== null) {
-          const toSave = pendingOverridesRef.current
-          pendingOverridesRef.current = null
-          persistConfig(toSave)
-        }
-      }, 500)
-
-      return next
-    })
+    setOverrides(prev => ({ ...prev, [key]: val }))
+    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
+    pending.patch = { ...pending.patch, [key]: val }
+    pending.restore.delete(key)
+    pendingPatchRef.current = pending
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+    debounceTimerRef.current = setTimeout(flushPending, 500)
   }
 
-  // 检查当前 Tab 是否存在个性化覆盖项 (仅针对 CONTENT_EXTRACTION_KEYS)
+  // 检查当前 Tab 是否存在个性化覆盖项
   const hasContentOverrides = useMemo(() => {
     return CONTENT_EXTRACTION_KEYS.some(k => overrides[k] !== undefined)
   }, [overrides])
 
-  // 重置为当前意图预设基线 (仅剔除内容萃取管理的键，完整保留基础AI引擎等其他Tab的overrides)
+  // 恢复默认：仅对本 Tab 管辖且已覆盖的键发送 restoreOverrideFields（严禁传 null）
   const handleResetToPreset = () => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
+    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
+    for (const k of CONTENT_EXTRACTION_KEYS.filter(k => overrides[k] !== undefined)) {
+      pending.restore.add(k)
+      delete pending.patch[k]
     }
+    pendingPatchRef.current = pending
     const next = { ...overrides }
-    for (const k of CONTENT_EXTRACTION_KEYS) {
-      delete next[k]
-    }
-    pendingOverridesRef.current = next
+    for (const k of CONTENT_EXTRACTION_KEYS) delete next[k]
     setOverrides(next)
-    persistConfig(next)
+    flushPending()
     toast.success(t('已恢复当前场景的文件内容萃取推荐参数'))
   }
 
@@ -284,8 +267,8 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             <span>{t('文件内容萃取')}</span>
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {t('当前工作目录生效场景: {intent}。控制文本提取、OCR识别与Office封面生成。', {
-              intent: getIntentDisplayName(currentIntent)
+            {t('当前配置：{name}。控制文字提取、图片文字识别与文档封面生成。', {
+              name: parsedConfig.status === 'ready' && parsedConfig.workflowId ? getIntentDisplayName(currentIntent) : t('默认配置')
             })}
           </p>
         </div>
@@ -304,7 +287,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             </span>
           )}
 
-          {/* 恢复场景预设按钮 (仅在存在本Tab微调项时展示) */}
+          {/* 恢复默认按钮 (仅在存在本Tab微调项时展示) */}
           {hasContentOverrides && (
             <Button
               type="button"
@@ -312,10 +295,14 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
               size="sm"
               onClick={handleResetToPreset}
               className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 h-8"
-              title={t('清除所有微调项，恢复为场景推荐默认值')}
+              title={t('清除所有微调项，恢复为默认值')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>{t('恢复场景推荐')}</span>
+              <span>
+                {parsedConfig.status === 'ready' && parsedConfig.workflowId
+                  ? t('恢复工作流默认')
+                  : t('恢复默认配置')}
+              </span>
             </Button>
           )}
         </div>
@@ -335,11 +322,11 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="max-content-size" className="text-sm font-medium">
-                  {t('正文(含OCR)提取大小上限')}
+                  {t('正文提取大小上限')}
                 </Label>
                 <HelpTooltip
                   content={t(
-                    '单个文本指标（文本/文档/OCR/HTML）的最大提取大小，超长内容会被自动截断，避免过多占用存储。'
+                    '单个文件中可提取的文字内容大小上限，超长内容会被自动截断，避免过多占用存储。'
                   )}
                 />
               </div>
@@ -377,10 +364,16 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             </div>
 
             {(() => {
-              const ticks = [10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100, -1]
+              const STANDARD_TICKS = [256, 512, 1024, 2048, 4096, 8192, 16384, -1]
               const normalizedValue = currentMaxContentSizeKb === 0 ? -1 : currentMaxContentSizeKb
-              const currentIndex =
-                ticks.indexOf(normalizedValue) !== -1 ? ticks.indexOf(normalizedValue) : 2
+              // 历史非标值（如 100）按实际值插入刻度并保真展示，禁止静默落回其它刻度
+              const ticks =
+                normalizedValue > 0 && !STANDARD_TICKS.includes(normalizedValue)
+                  ? [...STANDARD_TICKS.slice(0, -1), normalizedValue, -1].sort((a, b) =>
+                      a === -1 ? 1 : b === -1 ? -1 : a - b
+                    )
+                  : STANDARD_TICKS
+              const currentIndex = Math.max(0, ticks.indexOf(normalizedValue))
 
               return (
                 <div className="space-y-2 pt-1 pb-1 px-1">
@@ -434,7 +427,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                 <Label htmlFor="pdf-extract-pages" className="text-sm font-medium">
                   {t('PDF 文档正文提取页数')}
                 </Label>
-                <HelpTooltip content={t('控制 PDF 文档提取前多少页的内容进行文字与向量索引。')} />
+                <HelpTooltip content={t('控制 PDF 文档提取前多少页的文字内容用于搜索。')} />
               </div>
               <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
                 {currentExtractPages === -1 ? t('全本不限') : `${currentExtractPages} ${t('页')}`}
@@ -474,7 +467,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
               <div className="space-y-1 pr-4">
                 <div className="flex items-center gap-1.5">
                   <Label htmlFor="office-cover-switch" className="text-sm font-medium">
-                    {t('开启 Office 文档封面截图')}
+                    {t('开启办公文档封面缩略图')}
                   </Label>
                   <HelpTooltip
                     content={t(
@@ -484,8 +477,8 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {currentEnableOfficeCover
-                    ? t('开启：调用 LibreOffice 转首页为缩略图封面')
-                    : t('关闭：跳过 Office 封面图提取')}
+                    ? t('开启：自动为文档首页生成缩略图封面')
+                    : t('关闭：不生成办公文档封面缩略图')}
                 </p>
               </div>
               <Switch
@@ -500,10 +493,10 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                 <div className="flex items-start justify-between">
                   <div className="flex-1 pr-4">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      {t('依赖环境：LibreOffice')}
+                      {t('依赖环境：办公文档排版组件')}
                     </Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {t('支持 Office 文件整页转换与封面图提取')}，
+                      {t('支持 Word/PPT/Excel 首页缩略图')}，
                       <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                         {t('但会增加内容提取耗时，PDF不受影响')}
                       </span>
@@ -520,14 +513,14 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                           >
                             {showLibreOfficeHelp
                               ? t('收起 Windows 安装教程 💡')
-                              : t('展开 Windows 安装与 PATH 配置教程 💡')}
+                              : t('展开 Windows 安装与配置教程 💡')}
                           </button>
                           {showLibreOfficeHelp && (
                             <div className="mt-2 p-2.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg text-xs text-amber-700 dark:text-amber-300 space-y-1">
                               <p className="font-semibold">{t('如何配置：')}</p>
                               <ul className="ml-4 list-disc space-y-0.5">
                                 <li>
-                                  {t('请先将 LibreOffice 的安装路径添加进系统的 PATH 环境变量')}
+                                  {t('请先安装办公文档排版组件，并将其安装路径加入系统环境变量')}
                                 </li>
                                 <li>{t('默认位置：')}C:\Program Files\LibreOffice\program</li>
                                 <li>{t('配置后重启应用再次点击重新检测。')}</li>
@@ -589,7 +582,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
         <div className="space-y-4 pt-3 border-t border-border/60">
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ScanText className="h-4 w-4 text-primary shrink-0" />
-            <span>{t('OCR 文字识别与处理')}</span>
+            <span>{t('图片与文档文字识别')}</span>
           </div>
 
           {/* 开启图片 OCR 识别 */}
@@ -597,12 +590,12 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             <div className="space-y-1 pr-4">
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="image-ocr-switch" className="text-sm font-medium">
-                  {t('开启图片 OCR 智能识别')}
+                  {t('开启图片文字识别')}
                 </Label>
-                <HelpTooltip content={t('毫秒级智能感知图片中是否有文本，有则进行 OCR 识别')} />
+                <HelpTooltip content={t('快速判断图片中是否有文字，有则自动识别')} />
               </div>
               <p className="text-xs text-muted-foreground">
-                {t('自动识别并提取图片中的文本内容，支持全文检索与视觉标签')}
+                {t('自动识别图片中的文字内容，可直接按文字搜索')}
               </p>
             </div>
             <Switch
@@ -617,7 +610,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Label htmlFor="max-doc-ocr-items" className="text-sm font-medium">
-                  {t('文档内嵌 OCR 识别数量上限')}
+                  {t('文档内嵌图片文字识别数量上限')}
                 </Label>
                 <HelpTooltip
                   content={t(
@@ -693,7 +686,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
           {/* OCR 识别精度卡片 */}
           <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
             <div className="flex items-center gap-1.5">
-              <Label className="text-sm font-medium">{t('OCR 识别精度等级')}</Label>
+              <Label className="text-sm font-medium">{t('文字识别清晰度')}</Label>
               <HelpTooltip
                 content={t(
                   '选择 OCR 文字识别精度等级。极速 OCR 适合大部分场景；高精度 OCR 识别更准但耗时稍长。'
@@ -728,7 +721,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                       currentOcrModelSize === 'tiny' && 'text-primary'
                     )}
                   >
-                    {t('极速 OCR (tiny)')}
+                    {getOcrModelSizeLabel('tiny')}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
@@ -760,7 +753,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                       currentOcrModelSize === 'small' && 'text-primary'
                     )}
                   >
-                    {t('高精度 OCR (small)')}
+                    {getOcrModelSizeLabel('small')}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">

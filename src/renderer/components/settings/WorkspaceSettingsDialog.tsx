@@ -6,7 +6,6 @@ import {
   parseWorkspaceConfig,
   HardwareInfo
 } from '@firefly/types'
-import { mapIntentToParameters } from '@firefly/shared'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import {
   AlertDialog,
@@ -45,8 +44,21 @@ import {
   WorkspaceAdmissionRulesTabHandle
 } from './workspace/WorkspaceAdmissionRulesTab'
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
+import { WorkspacePluginsTab } from './workspace/WorkspacePluginsTab'
+import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
+import { useToastStore, toast } from '../common/Toast'
+import {
+  computeLocalEffectiveConfig,
+  submitWorkspacePolicyMutation,
+  getMutationErrorText
+} from '../../lib/workspace-policy/workspace-ai-client'
 
-type WorkspaceTabId = 'basic_ai_engine' | 'content_extraction' | 'ignore_rules' | 'maintenance'
+type WorkspaceTabId =
+  | 'basic_ai_engine'
+  | 'content_extraction'
+  | 'workspace_plugins'
+  | 'ignore_rules'
+  | 'maintenance'
 
 interface WorkspaceTabInfo {
   id: WorkspaceTabId
@@ -59,6 +71,7 @@ const MemoizedBasicAIEngineTab = memo(BasicAIEngineTab)
 const MemoizedContentExtractionTab = memo(ContentExtractionTab)
 const MemoizedWorkspaceAdmissionRulesTab = memo(WorkspaceAdmissionRulesTab)
 const MemoizedWorkspaceMaintenanceTab = memo(WorkspaceMaintenanceTab)
+const MemoizedWorkspacePluginsTab = memo(WorkspacePluginsTab)
 
 /**
  * 工作目录独立设置对话框 (WorkspaceSettingsDialog)
@@ -78,6 +91,13 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   const targetWorkspaceId = useSettingsStore(s => s.targetWorkspaceId)
   const targetWorkspaceTab = useSettingsStore(s => s.targetWorkspaceTab)
   const modules = usePluginCenterStore(s => s.modules)
+
+  // SLICE-08：渲染进程运行时上下文（contextEpoch 单调递增广播）
+  // 弹窗打开时初始化快照并订阅推送；关闭时释放订阅
+  const runtimeSnapshot = useWorkspaceRuntimeContext(s => s.snapshot)
+  const initializeRuntime = useWorkspaceRuntimeContext(s => s.initialize)
+  const disposeRuntime = useWorkspaceRuntimeContext(s => s.dispose)
+  const refreshRuntime = useWorkspaceRuntimeContext(s => s.refresh)
 
   // 从 virtual directory store 获取工作目录列表与当前活动目录
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
@@ -221,6 +241,15 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }, [isOpen])
 
+  // 2b. SLICE-08：弹窗打开时握手运行时上下文快照并订阅推送，关闭时释放订阅
+  useEffect(() => {
+    if (isOpen) {
+      void initializeRuntime(selectedWorkspaceId)
+    } else {
+      disposeRuntime()
+    }
+  }, [isOpen, selectedWorkspaceId, initializeRuntime, disposeRuntime])
+
   // 记录访问过的 Tab 以实现 Keep-Alive
   useEffect(() => {
     setVisitedTabs(prev => {
@@ -243,6 +272,23 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     return parseWorkspaceConfig(activeWorkspace.workspace_config)
   }, [activeWorkspace?.workspace_config])
 
+  // SLICE-08：本地隔离版三态仲裁（Group A 合流前过渡实现）
+  // 单次派生三桶计数与目录插件状态，驱动顶栏三态总览横幅与第 5 Tab。
+  const hasBoundWorkflow = parsedConfig.status === 'ready' && parsedConfig.workflowId != null
+  const resolvedEffectiveConfig = useMemo(() => {
+    if (parsedConfig.status !== 'ready') return null
+    return computeLocalEffectiveConfig({
+      parsedConfig,
+      runtimeSnapshot
+    })
+  }, [parsedConfig, runtimeSnapshot])
+  const effectiveSummary = resolvedEffectiveConfig?.summary ?? {
+    defaultCount: 0,
+    userCustomCount: 0,
+    degradedCount: 0
+  }
+  const pluginsRecord = resolvedEffectiveConfig?.plugins ?? {}
+
   // 判断是否应该展示设置向导：
   // 仅在用户显式要求向导模式（targetWorkspaceTab === 'wizard' 或手动点击运行向导）且未点击跳过时展示向导；
   // 即使工作区未绑定工作流（isPending），只要用户是打开工作目录设置，均允许直接进入 4-Tab 高级设置。
@@ -251,23 +297,20 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
   // 确保当前工作区就绪为默认配置（若处于 pending，保存为默认 AI 策略且未绑定工作流）
   const ensureDefaultReadyConfig = async () => {
-    if (
-      activeWorkspace?.id != null &&
-      parsedConfig.status === 'pending' &&
-      window.electronAPI?.updateWorkspaceConfig
-    ) {
+    if (activeWorkspace?.id != null && parsedConfig.status === 'pending') {
       try {
-        const baseDerived = mapIntentToParameters('fast_archive', hardwareInfo)
-        const skippedConfig: WorkspaceConfigReady = {
-          schemaVersion: 1,
-          status: 'ready',
-          policyVersion: 1,
-          baseAIConfig: baseDerived,
-          customExcludeRules: [],
-          customIncludeRules: [],
-          configuredAt: Date.now()
+        // SLICE-08：pending → ready 初始化也统一走补丁通道（restoreWorkflowDefault）
+        // 不再整份拼装 WorkspaceConfigReady 直写 updateWorkspaceConfig
+        const result = await submitWorkspacePolicyMutation(activeWorkspace.id!, {
+          restoreWorkflowDefault: true
+        })
+        if (!result.success) {
+          console.warn(
+            '[WorkspaceSettingsDialog] 持久化默认就绪配置失败:',
+            result.error ?? 'UNKNOWN'
+          )
+          return
         }
-        await window.electronAPI.updateWorkspaceConfig(activeWorkspace.id, skippedConfig)
         await refreshWorkspaceData()
       } catch (err) {
         console.warn('[WorkspaceSettingsDialog] 持久化默认就绪配置失败:', err)
@@ -322,13 +365,19 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         id: 'basic_ai_engine',
         name: t('检索式引擎'),
         icon: 'tune',
-        description: t('分析模式、视频抽帧与向量底座看板')
+        description: t('分析模式与视频画面提取')
       },
       {
         id: 'content_extraction',
         name: t('文件内容萃取'),
         icon: 'document_scanner',
-        description: t('正文提取、OCR精度与Office封面')
+        description: t('文字提取清晰度与首页封面图')
+      },
+      {
+        id: 'workspace_plugins',
+        name: t('目录插件配置'),
+        icon: 'extension',
+        description: t('按当前目录单独开关语音听写与敏感图识别等组件')
       },
       {
         id: 'ignore_rules',
@@ -338,27 +387,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
       }
     ]
 
-    if (!modules || modules.length === 0) return allTabs
-    const activeModules = modules.filter(m => m.install_state === 'active')
-
-    return allTabs.filter(tab => {
-      // 内置常驻项不随插件激活状态隐藏
-      if (tab.id === 'basic_ai_engine' || tab.id === 'ignore_rules' || tab.id === 'maintenance') {
-        return true
-      }
-      if (tab.id === 'content_extraction') {
-        return (
-          activeModules.length === 0 ||
-          activeModules.some(
-            m =>
-              m.contributes?.settings?.componentId === 'content_extraction' ||
-              m.capability_slot === 'perception_nsfw' ||
-              m.capability_slot === 'voice_asr'
-          )
-        )
-      }
-      return true
-    })
+    // SLICE-08：5 个 Tab 全部常驻，严禁随插件激活状态隐藏（修复 content_extraction
+    // 在仅启用基础引擎时整 Tab 消失、用户无法配置文字提取清晰度的 Bug）。
+    return allTabs
   }, [modules])
 
   if (!isOpen) return null
@@ -407,6 +438,65 @@ export const WorkspaceSettingsDialog: React.FC = () => {
               </DialogDescription>
             </div>
           </div>
+
+          {/* SLICE-08：三态配置总览横幅（向导模式隐藏；未绑定工作流切换为通用配置文案） */}
+          {activeWorkspace && !showWizard && (
+            <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+              {/* 未绑定工作流显式标识 */}
+              {!hasBoundWorkflow && (
+                <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  {t('未绑定工作流（通用配置）')}
+                </span>
+              )}
+
+              {/* 🔵 基础计数胶囊：已绑定工作流显示「工作流默认」，未绑定显示「默认配置」 */}
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true" />
+                {hasBoundWorkflow ? t('工作流默认') : t('默认配置')}
+                <span className="font-semibold">{effectiveSummary.defaultCount}</span>
+              </span>
+
+              {/* 🟣 用户自定义（>0 时展示） */}
+              {effectiveSummary.userCustomCount > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-2 py-0.5 text-[11px] font-medium text-purple-600 dark:text-purple-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-purple-500" aria-hidden="true" />
+                  {t('用户自定义')}
+                  <span className="font-semibold">{effectiveSummary.userCustomCount}</span>
+                </span>
+              )}
+
+              {/* 🟠 环境自动降级（按根因去重后 >0 时琥珀色醒目展示） */}
+              {effectiveSummary.degradedCount > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
+                  {t('环境自动降级')}
+                  <span className="font-semibold">{effectiveSummary.degradedCount}</span>
+                </span>
+              )}
+
+              {/* 全量重置按钮：已绑定显示「恢复工作流默认」，未绑定显示「恢复默认配置」 */}
+              {parsedConfig.status === 'ready' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+                  onClick={() => {
+                    void submitWorkspacePolicyMutation(activeWorkspace.id!, {
+                      restoreWorkflowDefault: true
+                    }).then(result => {
+                      if (result.success) {
+                        void refreshWorkspaceData()
+                        void refreshRuntime()
+                      }
+                    })
+                  }}
+                >
+                  <RotateCcw className="mr-1 h-3 w-3" />
+                  {hasBoundWorkflow ? t('恢复工作流默认') : t('恢复默认配置')}
+                </Button>
+              )}
+            </div>
+          )}
         </DialogHeader>
 
         {/* 主体内容区 */}
@@ -423,7 +513,52 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 hardwareInfo={hardwareInfo}
                 onSkip={handleSkipWizard}
                 onFinish={async (mode, readyConfig) => {
+                  const prevWorkflowId =
+                    parsedConfig.status === 'ready' ? (parsedConfig.workflowId ?? null) : null
+                  const prevOverrides =
+                    parsedConfig.status === 'ready' && parsedConfig.overrides
+                      ? { ...parsedConfig.overrides }
+                      : undefined
+                  const nextWorkflowId =
+                    readyConfig?.status === 'ready' ? (readyConfig.workflowId ?? null) : null
+                  const targetWorkspaceId = activeWorkspace.id
+
                   await refreshWorkspaceData()
+                  void refreshRuntime()
+
+                  // 切换工作流时提供非阻断 [撤销] Toast，允许一键还原原工作流与自定义覆盖
+                  if (
+                    targetWorkspaceId != null &&
+                    prevWorkflowId !== nextWorkflowId &&
+                    (prevWorkflowId !== null ||
+                      (prevOverrides && Object.keys(prevOverrides).length > 0))
+                  ) {
+                    useToastStore.getState().addToast({
+                      type: 'info',
+                      message: t('已切换工作流配置，原有自定义参数已重置'),
+                      duration: 8000,
+                      action: {
+                        label: t('撤销'),
+                        onClick: () => {
+                          void submitWorkspacePolicyMutation(targetWorkspaceId, {
+                            workflowId: prevWorkflowId,
+                            ...(prevOverrides && Object.keys(prevOverrides).length > 0
+                              ? { overridePatch: prevOverrides }
+                              : {})
+                          }).then(res => {
+                            if (res.success) {
+                              toast.success(t('已恢复切换前的工作流与参数配置'))
+                              void refreshWorkspaceData()
+                              void refreshRuntime()
+                            } else {
+                              toast.error(getMutationErrorText(res, t('撤销失败')))
+                            }
+                          })
+                        }
+                      }
+                    })
+                  }
+
                   if (mode === 'complete') {
                     closeSettings()
                   } else {
@@ -572,6 +707,34 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       onRerunWizard={() => setIsManualWizardMode(true)}
                       onConfigSaved={refreshWorkspaceData}
                     />
+                  </div>
+                )}
+
+                {visitedTabs.has('workspace_plugins') && (
+                  <div
+                    className={cn(
+                      'flex-1 flex flex-col overflow-y-auto',
+                      activeTab !== 'workspace_plugins' && 'hidden'
+                    )}
+                  >
+                    <div className="p-4">
+                      <WorkspacePluginsTab
+                        key={activeWorkspace.id}
+                        workspaceId={activeWorkspace.id!}
+                        plugins={pluginsRecord}
+                        hasBoundWorkflow={hasBoundWorkflow}
+                        onMutationSuccess={() => {
+                          void refreshWorkspaceData()
+                          void refreshRuntime()
+                        }}
+                        onMutationError={() => {
+                          // 隔离期显式上报，严禁静默吞掉
+                          console.warn(
+                            '[WorkspaceSettingsDialog] 目录插件开关提交失败（applyWorkspacePolicyMutation 通道可能未就绪）'
+                          )
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
                 </div>
