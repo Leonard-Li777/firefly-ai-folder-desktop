@@ -46,6 +46,7 @@ import {
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 import { WorkspacePluginsTab } from './workspace/WorkspacePluginsTab'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { useToastStore, toast } from '../common/Toast'
 import {
   computeLocalEffectiveConfig,
@@ -399,16 +400,28 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   }, [])
 
   // 统一处理三态降级一键引导动作（插件中心 / 文档封面 Tab / 专业版升级）
-  const handleDegradationFixAction = (action: DegradationFixAction) => {
+  // 【跳转归一铁律】install/enable/fix_global_plugin 三类组件级修复必须直达
+  // 插件中心覆盖层（可带 pluginId 定位到对应插件详情），严禁误跳生成式 AI 引擎
+  // 设置页 —— 引擎页只有 open_generative_engine / switch_to_gemma_unified 两类
+  // 引擎级动作合法。
+  const handleDegradationFixAction = (action: DegradationFixAction, pluginId?: string) => {
     switch (action) {
       case 'open_generative_engine':
       case 'switch_to_gemma_unified':
-      case 'install_global_plugin':
-      case 'enable_global_plugin':
-      case 'fix_global_plugin':
         closeSettings()
         openSystemSettings(SettingsCategory.AI_ENGINE_CONFIG)
         break
+      case 'install_global_plugin':
+      case 'enable_global_plugin':
+      case 'fix_global_plugin': {
+        closeSettings()
+        void Promise.resolve(usePluginCenterStore.getState().openOverlay()).then(() => {
+          if (pluginId) {
+            usePluginCenterStore.getState().setConfiguringModuleId(pluginId)
+          }
+        })
+        break
+      }
       case 'install_libreoffice':
         setActiveTab('content_extraction')
         break
@@ -719,108 +732,107 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
                 {/* Tab 内容区 (Keep-Alive 保活) */}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                {visitedTabs.has('basic_ai_engine') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'basic_ai_engine' && 'hidden'
-                    )}
-                  >
-                    <MemoizedBasicAIEngineTab
-                      key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
-                      workspace={activeWorkspace}
-                      hardwareInfo={hardwareInfo}
-                      isActive={activeTab === 'basic_ai_engine'}
-                      onConfigSaved={refreshWorkspaceData}
-                      resolvedFields={resolvedEffectiveConfig?.fields}
-                      hasBoundWorkflow={hasBoundWorkflow}
-                      onFixAction={handleDegradationFixAction}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('content_extraction') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'content_extraction' && 'hidden'
-                    )}
-                  >
-                    <MemoizedContentExtractionTab
-                      key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
-                      workspace={activeWorkspace}
-                      hardwareInfo={hardwareInfo}
-                      isActive={activeTab === 'content_extraction'}
-                      onConfigSaved={refreshWorkspaceData}
-                      resolvedFields={resolvedEffectiveConfig?.fields}
-                      hasBoundWorkflow={hasBoundWorkflow}
-                      onFixAction={handleDegradationFixAction}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('ignore_rules') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'ignore_rules' && 'hidden'
-                    )}
-                  >
-                    <MemoizedWorkspaceAdmissionRulesTab
-                      ref={rulesTabRef}
-                      key={activeWorkspace.id}
-                      workspace={activeWorkspace}
-                      hardwareInfo={hardwareInfo}
-                      onConfigSaved={refreshWorkspaceData}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('maintenance') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'maintenance' && 'hidden'
-                    )}
-                  >
-                    <MemoizedWorkspaceMaintenanceTab
-                      workspace={activeWorkspace}
-                      onRerunWizard={() => setIsManualWizardMode(true)}
-                      onConfigSaved={refreshWorkspaceData}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('workspace_plugins') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-y-auto',
-                      activeTab !== 'workspace_plugins' && 'hidden'
-                    )}
-                  >
-                    <div className="p-4">
-                      <MemoizedWorkspacePluginsTab
-                        key={activeWorkspace.id}
-                        workspaceId={activeWorkspace.id!}
-                        plugins={pluginsRecord}
+                  {visitedTabs.has('basic_ai_engine') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'basic_ai_engine' && 'hidden'
+                      )}
+                    >
+                      <MemoizedBasicAIEngineTab
+                        key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
+                        workspace={activeWorkspace}
+                        hardwareInfo={hardwareInfo}
+                        isActive={activeTab === 'basic_ai_engine'}
+                        onConfigSaved={refreshWorkspaceData}
+                        resolvedFields={resolvedEffectiveConfig?.fields}
                         hasBoundWorkflow={hasBoundWorkflow}
-                        onFixAction={action => handleDegradationFixAction(action)}
-                        onMutationSuccess={() => {
-                          void refreshWorkspaceData()
-                          void refreshRuntime()
-                        }}
-                        onMutationError={err => {
-                          // 显式上报并向用户提示失败，严禁静默吞掉
-                          console.warn(
-                            '[WorkspaceSettingsDialog] 目录插件开关提交失败:',
-                            err
-                          )
-                          toast.error(err || t('目录插件配置保存失败'))
-                        }}
+                        onFixAction={handleDegradationFixAction}
                       />
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {visitedTabs.has('content_extraction') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'content_extraction' && 'hidden'
+                      )}
+                    >
+                      <MemoizedContentExtractionTab
+                        key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
+                        workspace={activeWorkspace}
+                        hardwareInfo={hardwareInfo}
+                        isActive={activeTab === 'content_extraction'}
+                        onConfigSaved={refreshWorkspaceData}
+                        resolvedFields={resolvedEffectiveConfig?.fields}
+                        hasBoundWorkflow={hasBoundWorkflow}
+                        onFixAction={handleDegradationFixAction}
+                      />
+                    </div>
+                  )}
+
+                  {visitedTabs.has('ignore_rules') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'ignore_rules' && 'hidden'
+                      )}
+                    >
+                      <MemoizedWorkspaceAdmissionRulesTab
+                        ref={rulesTabRef}
+                        key={activeWorkspace.id}
+                        workspace={activeWorkspace}
+                        hardwareInfo={hardwareInfo}
+                        onConfigSaved={refreshWorkspaceData}
+                      />
+                    </div>
+                  )}
+
+                  {visitedTabs.has('maintenance') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'maintenance' && 'hidden'
+                      )}
+                    >
+                      <MemoizedWorkspaceMaintenanceTab
+                        workspace={activeWorkspace}
+                        onRerunWizard={() => setIsManualWizardMode(true)}
+                        onConfigSaved={refreshWorkspaceData}
+                      />
+                    </div>
+                  )}
+
+                  {visitedTabs.has('workspace_plugins') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-y-auto',
+                        activeTab !== 'workspace_plugins' && 'hidden'
+                      )}
+                    >
+                      <div className="p-4">
+                        <MemoizedWorkspacePluginsTab
+                          key={activeWorkspace.id}
+                          workspaceId={activeWorkspace.id!}
+                          plugins={pluginsRecord}
+                          hasBoundWorkflow={hasBoundWorkflow}
+                          onFixAction={(action, pluginId) =>
+                            handleDegradationFixAction(action, pluginId)
+                          }
+                          onMutationSuccess={() => {
+                            void refreshWorkspaceData()
+                            void refreshRuntime()
+                          }}
+                          onMutationError={err => {
+                            // 显式上报并向用户提示失败，严禁静默吞掉
+                            console.warn('[WorkspaceSettingsDialog] 目录插件开关提交失败:', err)
+                            toast.error(err || t('目录插件配置保存失败'))
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </>

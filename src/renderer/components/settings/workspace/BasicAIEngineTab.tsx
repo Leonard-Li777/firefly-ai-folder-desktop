@@ -48,8 +48,10 @@ import { useSettingsStore } from '../../../stores/settings-store'
 import { usePluginCenterStore } from '../../../stores/plugin-center-store'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
-import { submitWorkspacePolicyMutation,
-  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
+import {
+  submitWorkspacePolicyMutation,
+  getMutationErrorText
+} from '../../../lib/workspace-policy/workspace-ai-client'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { cn } from '../../../lib/utils'
 
@@ -58,9 +60,15 @@ export interface BasicAIEngineTabProps {
   hardwareInfo?: HardwareInfo | null
   isActive?: boolean
   onConfigSaved?: () => void
-  resolvedFields?: Record<string, import('../../../lib/workspace-policy/workspace-ai-client').ResolvedTriStateField>
+  resolvedFields?: Record<
+    string,
+    import('../../../lib/workspace-policy/workspace-ai-client').ResolvedTriStateField
+  >
   hasBoundWorkflow?: boolean
-  onFixAction?: (action: import('../../../lib/workspace-policy/workspace-ai-client').DegradationFixAction) => void
+  onFixAction?: (
+    action: import('../../../lib/workspace-policy/workspace-ai-client').DegradationFixAction,
+    pluginId?: string
+  ) => void
 }
 
 /** 待提交的补丁累积 */
@@ -218,15 +226,32 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     return () => flushPending()
   }, [flushPending])
 
-  // 修改单个参数：用户手动触碰即保留 user_custom（哪怕等于默认值），500ms 防抖提交补丁
+  // 修改单个参数：等值回退——设值与当前基线（工作流默认/系统默认）一致时精确 delete 覆盖键算回默认态，
+  // 仅值 ≠ 基线的显式覆盖写入补丁保留 user_custom，500ms 防抖提交
   const handleParamChange = <K extends keyof TechnicalEngineParameters>(
     key: K,
     val: TechnicalEngineParameters[K]
   ) => {
-    setOverrides(prev => ({ ...prev, [key]: val }))
+    const baselineVal = (baseDerived as Partial<TechnicalEngineParameters>)[key]
+    if (val === baselineVal) {
+      // 等值回退：本地覆盖字典同步删除该键，effectiveParams 自动回落基线（值相同）
+      setOverrides(prev => {
+        if (prev[key] === undefined) return prev
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
+    } else {
+      setOverrides(prev => ({ ...prev, [key]: val }))
+    }
     const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
-    pending.patch = { ...pending.patch, [key]: val }
-    pending.restore.delete(key)
+    if (val === baselineVal) {
+      delete pending.patch[key]
+      pending.restore.add(key)
+    } else {
+      pending.patch = { ...pending.patch, [key]: val }
+      pending.restore.delete(key)
+    }
     pendingPatchRef.current = pending
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
     debounceTimerRef.current = setTimeout(flushPending, 500)
@@ -336,26 +361,44 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     m => m.id === 'asr_sensevoice_onnx' && m.install_state === 'active'
   )
   const dirPluginOverrides =
-    parsedConfig.status === 'ready'
-      ? parsedConfig.pluginOverrides
-      : undefined
+    parsedConfig.status === 'ready' ? parsedConfig.pluginOverrides : undefined
   const wfPluginDefaults =
-    parsedConfig.status === 'ready'
-      ? parsedConfig.workflowPluginDefaults
-      : undefined
+    parsedConfig.status === 'ready' ? parsedConfig.workflowPluginDefaults : undefined
   const isAsrEnabledForDir =
     dirPluginOverrides?.asr_sensevoice_onnx !== undefined
       ? dirPluginOverrides.asr_sensevoice_onnx
       : Boolean(wfPluginDefaults?.includes('asr_sensevoice_onnx'))
   const isAsrCascadedOff = !asrPluginReady || !isAsrEnabledForDir
 
+  // 工作流基线所属档位（与 videoProfile 推导同区间逻辑，但以纯基线 baseDerived 为准、不含用户覆盖）。
+  // 三档全局预设 (VIDEO_ANALYSIS_PRESETS) 与工作流个性化基线可能不一致（如基线 quotaMax=16 落在
+  // 9~79 区间被推导为「均衡搜索」，但 balanced 预设 quotaMax=60），切回基线档必须恢复工作流基线
+  // 而非写入全局预设值，否则会残留「用户自定义」覆盖键（等值回退语义）。
+  const baselineVideoProfile = useMemo<VideoAnalysisProfile>(() => {
+    const baselineQuota = (baseDerived as Partial<TechnicalEngineParameters>).videoQuotaMax ?? 32
+    if (baselineQuota <= 8) return 'fast_archive'
+    if (baselineQuota >= 80) return 'deep_footage'
+    return 'balanced_search'
+  }, [baseDerived])
+
   const handleSelectVideoProfile = (profile: VideoAnalysisProfile) => {
     if (profile === 'custom') {
       setVideoProfile('custom')
       return
     }
-    const preset = VIDEO_ANALYSIS_PRESETS[profile]
     setVideoProfile(profile)
+    if (profile === baselineVideoProfile) {
+      // 切回工作流基线所属档位：整组恢复工作流基线值（经等值回退通道自动精确删键归默认态），
+      // 严禁写入全局预设值造成「用户自定义」残留
+      const baseline = baseDerived as Partial<TechnicalEngineParameters>
+      handleParamChange('videoQuotaMax', baseline.videoQuotaMax as number)
+      handleParamChange('videoCutSensitivity', baseline.videoCutSensitivity as VideoCutSensitivity)
+      handleParamChange('videoSoftTokenBudget', baseline.videoSoftTokenBudget as 48 | 140)
+      handleParamChange('videoAsrDurationSec', baseline.videoAsrDurationSec as number)
+      captureEvent('切换视频分析预设档位', { profile, restoredBaseline: true })
+      return
+    }
+    const preset = VIDEO_ANALYSIS_PRESETS[profile]
     handleParamChange('videoQuotaMax', preset.quotaMax)
     handleParamChange('videoCutSensitivity', preset.cutSensitivity)
     handleParamChange('videoSoftTokenBudget', preset.softTokenBudget as 48 | 140)
@@ -916,7 +959,9 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                       type="button"
                       onClick={e => {
                         e.stopPropagation()
-                        handleSelectVideoProfile('balanced_search')
+                        // 「恢复默认」= 切回工作流基线所属档位（整组恢复基线值归默认态），
+                        // 严禁硬编码 balanced_search 造成基线为其它档位的工作流残留覆盖
+                        handleSelectVideoProfile(baselineVideoProfile)
                       }}
                       className="text-xs text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 cursor-pointer transition-colors"
                     >
@@ -1354,9 +1399,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                   : t('正在读取索引状态…')}
             </p>
             <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
-              {t(
-                '当切换搜索引擎档位，或发现搜索结果不准确时，可手动触发全库索引重建。'
-              )}
+              {t('当切换搜索引擎档位，或发现搜索结果不准确时，可手动触发全库索引重建。')}
             </p>
           </div>
           <Button

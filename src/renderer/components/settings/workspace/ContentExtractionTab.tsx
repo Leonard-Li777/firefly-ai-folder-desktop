@@ -44,7 +44,7 @@ export interface ContentExtractionTabProps {
   onConfigSaved?: () => void
   resolvedFields?: Record<string, ResolvedTriStateField>
   hasBoundWorkflow?: boolean
-  onFixAction?: (action: DegradationFixAction) => void
+  onFixAction?: (action: DegradationFixAction, pluginId?: string) => void
 }
 
 /** 待提交的补丁累积 */
@@ -199,15 +199,32 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     return () => flushPending()
   }, [flushPending])
 
-  // 修改单个参数：用户手动触碰即保留 user_custom（哪怕等于默认值），500ms 防抖提交补丁
+  // 修改单个参数：等值回退——设值与当前基线（工作流默认/系统默认）一致时精确 delete 覆盖键算回默认态，
+  // 仅值 ≠ 基线的显式覆盖写入补丁保留 user_custom，500ms 防抖提交
   const handleParamChange = <K extends keyof TechnicalEngineParameters>(
     key: K,
     val: TechnicalEngineParameters[K]
   ) => {
-    setOverrides(prev => ({ ...prev, [key]: val }))
+    const baselineVal = (baseDerived as Partial<TechnicalEngineParameters>)[key]
+    if (val === baselineVal) {
+      // 等值回退：本地覆盖字典同步删除该键，effectiveParams 自动回落基线（值相同）
+      setOverrides(prev => {
+        if (prev[key] === undefined) return prev
+        const next = { ...prev }
+        delete next[key]
+        return next
+      })
+    } else {
+      setOverrides(prev => ({ ...prev, [key]: val }))
+    }
     const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
-    pending.patch = { ...pending.patch, [key]: val }
-    pending.restore.delete(key)
+    if (val === baselineVal) {
+      delete pending.patch[key]
+      pending.restore.add(key)
+    } else {
+      pending.patch = { ...pending.patch, [key]: val }
+      pending.restore.delete(key)
+    }
     pendingPatchRef.current = pending
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
     debounceTimerRef.current = setTimeout(flushPending, 500)
@@ -580,7 +597,9 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                                 <li>
                                   {t('请先安装办公文档排版组件，并将其安装路径加入系统环境变量')}
                                 </li>
-                                <li>{t('默认位置：办公文档排版组件安装目录下的 program 文件夹')}</li>
+                                <li>
+                                  {t('默认位置：办公文档排版组件安装目录下的 program 文件夹')}
+                                </li>
                                 <li>{t('配置后重启应用再次点击重新检测。')}</li>
                               </ul>
                             </div>

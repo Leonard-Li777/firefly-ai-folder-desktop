@@ -38,8 +38,8 @@ export interface TriStateFieldFeedbackProps<T = unknown> {
   hasBoundWorkflow: boolean
   /** 点击 [恢复默认] / [恢复默认配置] 回调 */
   onRestore?: () => void
-  /** 点击一键修复动作回调 */
-  onFixAction?: (action: DegradationFixAction) => void
+  /** 点击一键修复动作回调（第二个参数透出关联插件 ID，供上层打开插件中心并定位详情） */
+  onFixAction?: (action: DegradationFixAction, pluginId?: string) => void
   /** 级联关闭的浅灰行内提示（如「已由上方语音听写开关关闭」） */
   cascadedOffHint?: string
   className?: string
@@ -50,9 +50,10 @@ export interface TriStateFieldFeedbackProps<T = unknown> {
  */
 function renderDegradationReason(
   reason: DegradationReasonCode,
-  onFixAction?: (action: DegradationFixAction) => void,
+  onFixAction?: (action: DegradationFixAction, pluginId?: string) => void,
   fixAction?: DegradationFixAction,
-  onDismiss?: () => void
+  onDismiss?: () => void,
+  relatedPluginId?: string
 ): React.ReactNode {
   const canFix = Boolean(onFixAction) && fixAction !== 'none'
   switch (reason) {
@@ -69,7 +70,9 @@ function renderDegradationReason(
     case 'gemma_unified_not_active':
       return (
         <DegradationCallout
-          message={t('当前为轻量极速搜图模式，暂不支持视频逐帧找画面，可随时在插件中心切换高精度全能引擎')}
+          message={t(
+            '当前为轻量极速搜图模式，暂不支持视频逐帧找画面，可随时在插件中心切换高精度全能引擎'
+          )}
           primaryActionLabel={canFix ? t('切换全能引擎') : undefined}
           onPrimary={canFix ? () => onFixAction?.('switch_to_gemma_unified') : undefined}
         />
@@ -79,7 +82,9 @@ function renderDegradationReason(
         <DegradationCallout
           message={t('该功能组件尚未安装，安装后即可自动按目录启用')}
           primaryActionLabel={canFix ? t('一键安装组件') : undefined}
-          onPrimary={canFix ? () => onFixAction?.('install_global_plugin') : undefined}
+          onPrimary={
+            canFix ? () => onFixAction?.('install_global_plugin', relatedPluginId) : undefined
+          }
         />
       )
     case 'global_plugin_inactive':
@@ -87,7 +92,9 @@ function renderDegradationReason(
         <DegradationCallout
           message={t('该功能组件已在全局插件中心关闭，本目录已自动暂停使用')}
           primaryActionLabel={canFix ? t('前往开启组件') : undefined}
-          onPrimary={canFix ? () => onFixAction?.('enable_global_plugin') : undefined}
+          onPrimary={
+            canFix ? () => onFixAction?.('enable_global_plugin', relatedPluginId) : undefined
+          }
         />
       )
     case 'global_plugin_error':
@@ -95,13 +102,15 @@ function renderDegradationReason(
         <DegradationCallout
           message={t('该功能组件运行异常，暂已安全跳过，修复后可一键补齐')}
           primaryActionLabel={canFix ? t('立即修复组件') : undefined}
-          onPrimary={canFix ? () => onFixAction?.('fix_global_plugin') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('fix_global_plugin', relatedPluginId) : undefined}
         />
       )
     case 'libreoffice_missing':
       return (
         <DegradationCallout
-          message={t('未检测到办公文档排版组件，Word/PPT/Excel 暂不生成首页缩略图，安装后可一键补全封面')}
+          message={t(
+            '未检测到办公文档排版组件，Word/PPT/Excel 暂不生成首页缩略图，安装后可一键补全封面'
+          )}
           primaryActionLabel={canFix ? t('前往安装指引') : undefined}
           onPrimary={canFix ? () => onFixAction?.('install_libreoffice') : undefined}
         />
@@ -110,24 +119,24 @@ function renderDegradationReason(
       // 无一键引导动作（用户手动调节后将按其设定执行）
       return (
         <DegradationCallout
-          message={t('未检测到独立显卡，已为默认视频抓图开启省电护航（手动调节后将按您的设定执行）')}
+          message={t(
+            '未检测到独立显卡，已为默认视频抓图开启省电护航（手动调节后将按您的设定执行）'
+          )}
         />
       )
     case 'free_tier_video_limit':
       return (
         <DegradationCallout
-          message={t('当前方案默认深度分析每个视频前 5 分钟精华内容，升级专业版可自动续跑整片无需重扫')}
+          message={t(
+            '当前方案默认深度分析每个视频前 5 分钟精华内容，升级专业版可自动续跑整片无需重扫'
+          )}
           primaryActionLabel={canFix ? t('了解专业版') : undefined}
           onPrimary={canFix ? () => onFixAction?.('open_pro_upgrade') : undefined}
         />
       )
     case 'ocr_disabled_cascade':
       // 无一键引导动作
-      return (
-        <DegradationCallout
-          message={t('已关闭图片与文档文字提取，清晰度选项已暂停')}
-        />
-      )
+      return <DegradationCallout message={t('已关闭图片与文档文字提取，清晰度选项已暂停')} />
     default:
       return null
   }
@@ -300,7 +309,8 @@ export function TriStateFieldFeedback<T = unknown>(
             degradationReason,
             onFixAction,
             fixAction,
-            () => setCalloutDismissed(true)
+            () => setCalloutDismissed(true),
+            field.relatedPluginId
           )}
       </div>
     )
@@ -308,9 +318,7 @@ export function TriStateFieldFeedback<T = unknown>(
 
   // 级联关闭：温和灰显 + 浅灰行内提示，不打橙色徽标
   if (applicability === 'cascaded_off') {
-    const hint =
-      cascadedOffHint ??
-      (inactiveReason ? renderInactiveReason(inactiveReason) : null)
+    const hint = cascadedOffHint ?? (inactiveReason ? renderInactiveReason(inactiveReason) : null)
     return (
       <div className={className}>
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground/70">
