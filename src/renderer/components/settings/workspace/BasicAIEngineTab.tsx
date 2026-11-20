@@ -331,10 +331,19 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const localVideoSoftTokenBudget = effectiveParams.videoSoftTokenBudget ?? 48
   const videoAsrCap = effectiveParams.videoAsrDurationSec ?? 30
   const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 60
-  // 语音听写组件是否就绪（全局插件中心状态；未就绪时两滑块灰显并提示）
+  // 语音听写组件是否就绪：同时校验全局插件状态与目录插件开关
   const asrPluginReady = pluginModules.some(
     m => m.id === 'asr_sensevoice_onnx' && m.install_state === 'active'
   )
+  const dirPluginOverrides =
+    parsedConfig.status === 'ready'
+      ? (parsedConfig as unknown as { pluginOverrides?: Record<string, boolean> }).pluginOverrides
+      : undefined
+  const isAsrEnabledForDir =
+    dirPluginOverrides?.asr_sensevoice_onnx !== undefined
+      ? dirPluginOverrides.asr_sensevoice_onnx
+      : currentIntent === 'footage_studio'
+  const isAsrCascadedOff = !asrPluginReady || !isAsrEnabledForDir
 
   const handleSelectVideoProfile = (profile: VideoAnalysisProfile) => {
     if (profile === 'custom') {
@@ -1188,12 +1197,14 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             {t('语音听写与音视频台词提取')}
           </Label>
         </div>
-        {!asrPluginReady && (
+        {isAsrCascadedOff && (
           <p className="text-[11px] text-muted-foreground leading-snug">
-            {t('全局语音听写组件尚未就绪，该时长设置将在组件就绪后自动恢复生效')}
+            {!asrPluginReady
+              ? t('全局语音听写组件尚未就绪，该时长设置将在组件就绪后自动恢复生效')
+              : t('本主题默认无需语音听写（可在目录插件配置中开启）')}
           </p>
         )}
-        <div className={cn('space-y-4', !asrPluginReady && 'opacity-50')}>
+        <div className={cn('space-y-4', isAsrCascadedOff && 'opacity-50')}>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <Label className="font-semibold text-foreground">{t('视频伴音台词识别上限')}</Label>

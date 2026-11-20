@@ -54,14 +54,15 @@ function renderDegradationReason(
   fixAction?: DegradationFixAction,
   onDismiss?: () => void
 ): React.ReactNode {
+  const canFix = Boolean(onFixAction) && fixAction !== 'none'
   switch (reason) {
     case 'generative_ai_disabled':
       return (
         <DegradationCallout
           message={t('智能理解引擎未开启，已自动切换为极速基础整理（不卡电脑，可直接检索与分类）')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('前往开启引擎')}
+          primaryActionLabel={canFix ? t('前往开启引擎') : undefined}
           secondaryActionLabel={onDismiss ? t('保持当前模式') : undefined}
-          onPrimary={() => onFixAction?.('open_generative_engine')}
+          onPrimary={canFix ? () => onFixAction?.('open_generative_engine') : undefined}
           onSecondary={onDismiss}
         />
       )
@@ -69,40 +70,40 @@ function renderDegradationReason(
       return (
         <DegradationCallout
           message={t('当前为轻量极速搜图模式，暂不支持视频逐帧找画面，可随时在插件中心切换高精度全能引擎')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('切换全能引擎')}
-          onPrimary={() => onFixAction?.('switch_to_gemma_unified')}
+          primaryActionLabel={canFix ? t('切换全能引擎') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('switch_to_gemma_unified') : undefined}
         />
       )
     case 'global_plugin_not_installed':
       return (
         <DegradationCallout
           message={t('该功能组件尚未安装，安装后即可自动按目录启用')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('一键安装组件')}
-          onPrimary={() => onFixAction?.('install_global_plugin')}
+          primaryActionLabel={canFix ? t('一键安装组件') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('install_global_plugin') : undefined}
         />
       )
     case 'global_plugin_inactive':
       return (
         <DegradationCallout
           message={t('该功能组件已在全局插件中心关闭，本目录已自动暂停使用')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('前往开启组件')}
-          onPrimary={() => onFixAction?.('enable_global_plugin')}
+          primaryActionLabel={canFix ? t('前往开启组件') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('enable_global_plugin') : undefined}
         />
       )
     case 'global_plugin_error':
       return (
         <DegradationCallout
           message={t('该功能组件运行异常，暂已安全跳过，修复后可一键补齐')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('立即修复组件')}
-          onPrimary={() => onFixAction?.('fix_global_plugin')}
+          primaryActionLabel={canFix ? t('立即修复组件') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('fix_global_plugin') : undefined}
         />
       )
     case 'libreoffice_missing':
       return (
         <DegradationCallout
           message={t('未检测到办公文档排版组件，Word/PPT/Excel 暂不生成首页缩略图，安装后可一键补全封面')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('前往安装指引')}
-          onPrimary={() => onFixAction?.('install_libreoffice')}
+          primaryActionLabel={canFix ? t('前往安装指引') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('install_libreoffice') : undefined}
         />
       )
     case 'cpu_hardware_clamp':
@@ -116,8 +117,8 @@ function renderDegradationReason(
       return (
         <DegradationCallout
           message={t('当前方案默认深度分析每个视频前 5 分钟精华内容，升级专业版可自动续跑整片无需重扫')}
-          primaryActionLabel={fixAction === 'none' ? undefined : t('了解专业版')}
-          onPrimary={() => onFixAction?.('open_pro_upgrade')}
+          primaryActionLabel={canFix ? t('了解专业版') : undefined}
+          onPrimary={canFix ? () => onFixAction?.('open_pro_upgrade') : undefined}
         />
       )
     case 'ocr_disabled_cascade':
@@ -142,7 +143,7 @@ function renderInactiveReason(reason: InactiveReasonCode): string | null {
     case 'parent_plugin_unavailable':
       return t('全局语音听写组件尚未就绪，该时长设置将在组件就绪后自动恢复生效')
     case 'classic_engine_only':
-      return t('文字直接找图功能仅轻量双塔模式需要，全能引擎已原生支持自然语言找画面')
+      return t('文字直接找图功能仅轻量模式需要，全能引擎已直接支持用文字描述找画面')
     case 'plugin_downloading':
       return t('正在后台下载安装该组件，就绪后自动启用，无需重启')
     case 'plugin_coming_soon':

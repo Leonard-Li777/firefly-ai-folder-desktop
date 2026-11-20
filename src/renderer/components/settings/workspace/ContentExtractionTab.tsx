@@ -526,7 +526,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                                 <li>
                                   {t('请先安装办公文档排版组件，并将其安装路径加入系统环境变量')}
                                 </li>
-                                <li>{t('默认位置：')}C:\Program Files\LibreOffice\program</li>
+                                <li>{t('默认位置：办公文档排版组件安装目录下的 program 文件夹')}</li>
                                 <li>{t('配置后重启应用再次点击重新检测。')}</li>
                               </ul>
                             </div>

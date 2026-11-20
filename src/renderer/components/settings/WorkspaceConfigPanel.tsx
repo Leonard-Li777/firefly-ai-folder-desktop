@@ -27,6 +27,7 @@ import {
 } from '../ui/alert-dialog'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { toast } from '../common/Toast'
+import { getOcrModelSizeLabel } from './workspace/TriStateFieldFeedback'
 import { t } from '@app/languages'
 import { submitWorkspacePolicyMutation,
   getMutationErrorText } from '../../lib/workspace-policy/workspace-ai-client'
@@ -542,8 +543,8 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                       }
                       className="ml-auto p-1 rounded border border-border bg-muted/30 text-xs"
                     >
-                      <option value="tiny">{t('极速轻量')}</option>
-                      <option value="small">{t('标准高清')}</option>
+                      <option value="tiny">{getOcrModelSizeLabel('tiny')}</option>
+                      <option value="small">{getOcrModelSizeLabel('small')}</option>
                     </select>
                   )}
                 </div>

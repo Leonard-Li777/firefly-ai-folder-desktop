@@ -4,7 +4,8 @@ import {
   WorkspaceConfig,
   WorkspaceConfigReady,
   parseWorkspaceConfig,
-  HardwareInfo
+  HardwareInfo,
+  SettingsCategory
 } from '@firefly/types'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import {
@@ -18,7 +19,6 @@ import {
 import { Button } from '../ui/button'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
-import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import {
@@ -50,7 +50,8 @@ import { useToastStore, toast } from '../common/Toast'
 import {
   computeLocalEffectiveConfig,
   submitWorkspacePolicyMutation,
-  getMutationErrorText
+  getMutationErrorText,
+  type DegradationFixAction
 } from '../../lib/workspace-policy/workspace-ai-client'
 
 type WorkspaceTabId =
@@ -88,9 +89,9 @@ const MemoizedWorkspacePluginsTab = memo(WorkspacePluginsTab)
 export const WorkspaceSettingsDialog: React.FC = () => {
   const isOpen = useSettingsStore(s => s.isWorkspaceSettingsOpen)
   const closeSettings = useSettingsStore(s => s.closeWorkspaceSettings)
+  const openSystemSettings = useSettingsStore(s => s.openSystemSettings)
   const targetWorkspaceId = useSettingsStore(s => s.targetWorkspaceId)
   const targetWorkspaceTab = useSettingsStore(s => s.targetWorkspaceTab)
-  const modules = usePluginCenterStore(s => s.modules)
 
   // SLICE-08：渲染进程运行时上下文（contextEpoch 单调递增广播）
   // 弹窗打开时初始化快照并订阅推送；关闭时释放订阅
@@ -390,7 +391,33 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     // SLICE-08：5 个 Tab 全部常驻，严禁随插件激活状态隐藏（修复 content_extraction
     // 在仅启用基础引擎时整 Tab 消失、用户无法配置文字提取清晰度的 Bug）。
     return allTabs
-  }, [modules])
+  }, [])
+
+  // 统一处理三态降级一键引导动作（插件中心 / 文档封面 Tab / 专业版升级）
+  const handleDegradationFixAction = (action: DegradationFixAction) => {
+    switch (action) {
+      case 'open_generative_engine':
+      case 'switch_to_gemma_unified':
+      case 'install_global_plugin':
+      case 'enable_global_plugin':
+      case 'fix_global_plugin':
+        closeSettings()
+        openSystemSettings(SettingsCategory.AI_ENGINE_CONFIG)
+        break
+      case 'install_libreoffice':
+        setActiveTab('content_extraction')
+        break
+      case 're_enable_parent_plugin':
+        setActiveTab('workspace_plugins')
+        break
+      case 'open_pro_upgrade':
+        closeSettings()
+        openSystemSettings(SettingsCategory.GENERAL)
+        break
+      default:
+        break
+    }
+  }
 
   if (!isOpen) return null
 
@@ -442,8 +469,14 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           {/* SLICE-08：三态配置总览横幅（向导模式隐藏；未绑定工作流切换为通用配置文案） */}
           {activeWorkspace && !showWizard && (
             <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-              {/* 未绑定工作流显式标识 */}
-              {!hasBoundWorkflow && (
+              {/* 主题归属标识：已绑定显示工作流名称，未绑定显式显示通用配置 */}
+              {hasBoundWorkflow ? (
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                  {(parsedConfig.status === 'ready'
+                    ? (parsedConfig as unknown as { workflowName?: string }).workflowName
+                    : undefined) || t('已绑定工作流')}
+                </span>
+              ) : (
                 <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   {t('未绑定工作流（通用配置）')}
                 </span>
@@ -465,13 +498,22 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 </span>
               )}
 
-              {/* 🟠 环境自动降级（按根因去重后 >0 时琥珀色醒目展示） */}
+              {/* 🟠 环境自动降级（按根因去重后 >0 时琥珀色醒目展示，支持点击跳转定位受限 Tab） */}
               {effectiveSummary.degradedCount > 0 && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const hasPluginDegraded = Object.values(pluginsRecord).some(
+                      p => p.applicability === 'degraded'
+                    )
+                    handleTabChange(hasPluginDegraded ? 'workspace_plugins' : 'basic_ai_engine')
+                  }}
+                  className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-700 hover:bg-amber-500/25 dark:text-amber-300 transition-colors cursor-pointer"
+                >
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden="true" />
                   {t('环境自动降级')}
                   <span className="font-semibold">{effectiveSummary.degradedCount}</span>
-                </span>
+                </button>
               )}
 
               {/* 全量重置按钮：已绑定显示「恢复工作流默认」，未绑定显示「恢复默认配置」 */}
@@ -746,11 +788,12 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     )}
                   >
                     <div className="p-4">
-                      <WorkspacePluginsTab
+                      <MemoizedWorkspacePluginsTab
                         key={activeWorkspace.id}
                         workspaceId={activeWorkspace.id!}
                         plugins={pluginsRecord}
                         hasBoundWorkflow={hasBoundWorkflow}
+                        onFixAction={action => handleDegradationFixAction(action)}
                         onMutationSuccess={() => {
                           void refreshWorkspaceData()
                           void refreshRuntime()

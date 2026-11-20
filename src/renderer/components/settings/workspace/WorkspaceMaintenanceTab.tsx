@@ -19,7 +19,7 @@ import { EmptyFolderCleanupDialog } from '../../organize/EmptyFolderCleanupDialo
 import { useVirtualDirectoryStore } from '../../../stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '../../../stores/analyzed-directory-store'
 import { MaterialIcon, cn } from '../../../lib/utils'
-import { toast } from '../../common/Toast'
+import { toast, useToastStore } from '../../common/Toast'
 import { t } from '@app/languages'
 import { submitWorkspacePolicyMutation,
   getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
@@ -284,13 +284,18 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
     }
   }
 
-  // 7. 解除工作流绑定 (默认完整保留当前白名单快照，防非目标文件骤然涌入)
+  // 7. 解除工作流绑定 (默认完整保留当前白名单快照，防非目标文件骤然涌入；并提供非阻断 [撤销] Toast)
   const handleUnbindWorkflow = async () => {
     if (!workspace.id) return
+    const targetWorkspaceId = workspace.id
+    const prevWorkflowId =
+      parsedConfig.status === 'ready'
+        ? (parsedConfig.workflowId ?? workspace.bound_workflow_id ?? null)
+        : (workspace.bound_workflow_id ?? null)
     setIsUnbinding(true)
     try {
       {
-        const res = await submitWorkspacePolicyMutation(workspace.id, {
+        const res = await submitWorkspacePolicyMutation(targetWorkspaceId, {
           workflowId: null,
           preserveInclusionSnapshot: true
         })
@@ -303,14 +308,42 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             setCurrentWorkspaceDirectory
           } = useVirtualDirectoryStore.getState()
           const fresh = workspaceDirectories.map(w =>
-            w.id === workspace.id ? { ...w, bound_workflow_id: null } : w
+            w.id === targetWorkspaceId ? { ...w, bound_workflow_id: null } : w
           )
           setWorkspaceDirectories(fresh)
-          if (currentWorkspaceDirectory?.id === workspace.id) {
+          if (currentWorkspaceDirectory?.id === targetWorkspaceId) {
             setCurrentWorkspaceDirectory({ ...currentWorkspaceDirectory, bound_workflow_id: null })
           }
 
-          toast.success(t('已解除工作流绑定，当前白名单快照已安全保留'))
+          if (prevWorkflowId != null) {
+            useToastStore.getState().addToast({
+              type: 'info',
+              message: t('已解除工作流绑定，当前白名单快照已安全保留'),
+              duration: 8000,
+              action: {
+                label: t('撤销'),
+                onClick: () => {
+                  void submitWorkspacePolicyMutation(targetWorkspaceId, {
+                    workflowId: prevWorkflowId
+                  })
+                    .then(undoRes => {
+                      if (undoRes.success) {
+                        toast.success(t('已恢复解除前的工作流绑定'))
+                        onConfigSaved?.()
+                      } else {
+                        toast.error(getMutationErrorText(undoRes, t('撤销失败')))
+                      }
+                    })
+                    .catch(err => {
+                      console.warn('[WorkspaceMaintenanceTab] 撤销解绑工作流异常:', err)
+                      toast.error(err instanceof Error ? err.message : t('撤销失败'))
+                    })
+                }
+              }
+            })
+          } else {
+            toast.success(t('已解除工作流绑定，当前白名单快照已安全保留'))
+          }
           setShowUnbindDialog(false)
           onConfigSaved?.()
         } else {
