@@ -32,6 +32,8 @@ export interface TriStateFieldFeedbackProps<T = unknown> {
   effectiveText: string
   /** 期望值（用户/工作流声明）的大白话渲染 */
   desiredText: string
+  /** 基准默认值（工作流默认 / 通用默认）的大白话渲染；用于 user_custom && active 态对照展示 */
+  baselineText?: string
   /** 是否已绑定工作流（决定「工作流默认」vs「默认配置」回退文案） */
   hasBoundWorkflow: boolean
   /** 点击 [恢复默认] / [恢复默认配置] 回调 */
@@ -49,7 +51,8 @@ export interface TriStateFieldFeedbackProps<T = unknown> {
 function renderDegradationReason(
   reason: DegradationReasonCode,
   onFixAction?: (action: DegradationFixAction) => void,
-  fixAction?: DegradationFixAction
+  fixAction?: DegradationFixAction,
+  onDismiss?: () => void
 ): React.ReactNode {
   switch (reason) {
     case 'generative_ai_disabled':
@@ -57,8 +60,9 @@ function renderDegradationReason(
         <DegradationCallout
           message={t('智能理解引擎未开启，已自动切换为极速基础整理（不卡电脑，可直接检索与分类）')}
           primaryActionLabel={fixAction === 'none' ? undefined : t('前往开启引擎')}
-          secondaryActionLabel={t('保持当前模式')}
+          secondaryActionLabel={onDismiss ? t('保持当前模式') : undefined}
           onPrimary={() => onFixAction?.('open_generative_engine')}
+          onSecondary={onDismiss}
         />
       )
     case 'gemma_unified_not_active':
@@ -209,6 +213,7 @@ export function TriStateFieldFeedback<T = unknown>(
     field,
     effectiveText,
     desiredText,
+    baselineText,
     hasBoundWorkflow,
     onRestore,
     onFixAction,
@@ -217,14 +222,21 @@ export function TriStateFieldFeedback<T = unknown>(
   } = props
 
   const { origin, applicability, degradationReason, fixAction, inactiveReason } = field
+  const [calloutDismissed, setCalloutDismissed] = React.useState(false)
+
+  // 当降级原因变化时自动重新展示提示条
+  React.useEffect(() => {
+    setCalloutDismissed(false)
+  }, [degradationReason])
 
   // 默认正常态：零冗余徽标
   if (origin !== 'user_custom' && applicability === 'active') {
     return null
   }
 
-  // 用户自定义（仍正常生效）：🟣 徽标 + 原值对照 + 恢复默认
+  // 用户自定义（仍正常生效）：🟣 徽标 + 基准默认值对照 + 恢复默认
   if (origin === 'user_custom' && applicability === 'active') {
+    const compareText = baselineText ?? desiredText
     return (
       <div className={className}>
         <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
@@ -234,8 +246,8 @@ export function TriStateFieldFeedback<T = unknown>(
           </span>
           <span>
             {hasBoundWorkflow
-              ? t('（工作流默认：{value}）', { value: desiredText })
-              : t('（默认配置：{value}）', { value: desiredText })}
+              ? t('（工作流默认：{value}）', { value: compareText })
+              : t('（默认配置：{value}）', { value: compareText })}
           </span>
           {onRestore && (
             <button
@@ -282,7 +294,13 @@ export function TriStateFieldFeedback<T = unknown>(
           )}
         </div>
         {degradationReason &&
-          renderDegradationReason(degradationReason, onFixAction, fixAction)}
+          !calloutDismissed &&
+          renderDegradationReason(
+            degradationReason,
+            onFixAction,
+            fixAction,
+            () => setCalloutDismissed(true)
+          )}
       </div>
     )
   }

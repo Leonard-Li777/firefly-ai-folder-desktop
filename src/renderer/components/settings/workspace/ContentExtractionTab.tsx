@@ -268,7 +268,11 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
             {t('当前配置：{name}。控制文字提取、图片文字识别与文档封面生成。', {
-              name: parsedConfig.status === 'ready' && parsedConfig.workflowId ? getIntentDisplayName(currentIntent) : t('默认配置')
+              name:
+                parsedConfig.status === 'ready' && parsedConfig.workflowId
+                  ? (parsedConfig as unknown as { workflowName?: string }).workflowName ||
+                    getIntentDisplayName(currentIntent)
+                  : t('默认配置')
             })}
           </p>
         </div>
@@ -471,7 +475,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                   </Label>
                   <HelpTooltip
                     content={t(
-                      '支持 Office 文档首页导出为封面缩略图，但会增加 Office 分析耗时，PDF不受影响。需要安装 LibreOffice。'
+                      '支持将 Word/PPT/Excel 首页导出为封面缩略图，但会增加文档分析耗时，PDF 不受影响。需要先安装办公文档排版组件。'
                     )}
                   />
                 </div>
@@ -614,7 +618,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                 </Label>
                 <HelpTooltip
                   content={t(
-                    'Office 文档内嵌图片数量 / PDF 扫描版识别页数上限。0 表示跳过文档 OCR。'
+                    '办公文档内嵌图片数量与 PDF 扫描版识别页数上限。设为 0 表示跳过文档内图片文字识别。'
                   )}
                 />
               </div>
@@ -689,7 +693,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
               <Label className="text-sm font-medium">{t('文字识别清晰度')}</Label>
               <HelpTooltip
                 content={t(
-                  '选择 OCR 文字识别精度等级。极速 OCR 适合大部分场景；高精度 OCR 识别更准但耗时稍长。'
+                  '选择图片与文档文字识别清晰度。极速识别适合大部分场景；高清精识识别更准但耗时稍长。'
                 )}
               />
             </div>

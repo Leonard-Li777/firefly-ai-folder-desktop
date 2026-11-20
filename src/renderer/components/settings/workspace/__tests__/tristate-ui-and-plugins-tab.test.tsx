@@ -20,7 +20,10 @@ import {
   type ResolvedTriStateField,
   type WorkspaceRuntimeContextSnapshot
 } from '../../../../lib/workspace-policy/workspace-ai-client'
-import { useWorkspaceRuntimeContext } from '../../../../stores/workspace-runtime-context-store'
+import {
+  useWorkspaceRuntimeContext,
+  selectModuleStates
+} from '../../../../stores/workspace-runtime-context-store'
 
 // 禁止出现的底层工程黑话正则（AGENTS.md §2.16 & 规格书 §5.3）
 const FORBIDDEN_JARGON_RE = /\b(ASR|OCR|CLIP|ONNX|gemma_unified|classic_light|LibreOffice|300s|Token)\b/
@@ -354,5 +357,107 @@ describe('SLICE-08: ContentExtractionTab 刻度重构与非标历史值保真', 
     expect(text).toContain('极速识别（省电流畅）')
     expect(text).toContain('高清精识（适合票据与密字截图）')
     expect(text).not.toMatch(FORBIDDEN_JARGON_RE)
+  })
+})
+
+describe('SLICE-08 Round 1 审查修复回归', () => {
+  beforeEach(() => {
+    useWorkspaceRuntimeContext.getState().reset()
+  })
+
+  it('Store 引用计数保护：弹窗 dispose 不错杀 Footer 共享快照，且空态 selectModuleStates 返回稳定引用', async () => {
+    const snap = makeSnapshot({ contextEpoch: 7, recoverableCount: 12 })
+    const unsubscribe = vi.fn()
+    ;(window as any).electronAPI = {
+      getWorkspaceRuntimeContextSnapshot: vi.fn().mockResolvedValue(snap),
+      onWorkspaceRuntimeContextUpdated: vi.fn().mockReturnValue(unsubscribe)
+    }
+
+    // 空快照时两次 selector 调用必须返回同一引用（防 Zustand 无限重渲染）
+    const emptyA = selectModuleStates(useWorkspaceRuntimeContext.getState())
+    const emptyB = selectModuleStates(useWorkspaceRuntimeContext.getState())
+    expect(Object.is(emptyA, emptyB)).toBe(true)
+
+    // Footer + WorkspaceSettingsDialog 双消费者先后 initialize
+    await useWorkspaceRuntimeContext.getState().initialize(1)
+    await useWorkspaceRuntimeContext.getState().initialize(1)
+    expect(useWorkspaceRuntimeContext.getState().snapshot?.contextEpoch).toBe(7)
+    expect(useWorkspaceRuntimeContext.getState().subscriberRefCount).toBe(2)
+
+    // 弹窗关闭触发一次 dispose：仍有 Footer 存活，快照与订阅必须保持
+    useWorkspaceRuntimeContext.getState().dispose()
+    expect(useWorkspaceRuntimeContext.getState().snapshot?.contextEpoch).toBe(7)
+    expect(unsubscribe).not.toHaveBeenCalled()
+
+    // Footer 卸载触发最后一次 dispose：归零后才释放
+    useWorkspaceRuntimeContext.getState().dispose()
+    expect(useWorkspaceRuntimeContext.getState().snapshot).toBeNull()
+    expect(unsubscribe).toHaveBeenCalledTimes(1)
+  })
+
+  it('TriStateFieldFeedback：generative_ai_disabled「保持当前模式」可收起提示条，user_custom 优先显示 baselineText', () => {
+    const degradedField: ResolvedTriStateField<string> = {
+      effectiveValue: 'simple',
+      desiredValue: 'full',
+      origin: 'workflow_default',
+      applicability: 'degraded',
+      visible: true,
+      isUserCustom: false,
+      degradationReason: 'generative_ai_disabled',
+      fixAction: 'open_generative_engine'
+    }
+    const { rerender } = render(
+      <TriStateFieldFeedback
+        field={degradedField}
+        effectiveText="极速基础整理"
+        desiredText="深度理解"
+        hasBoundWorkflow={true}
+      />
+    )
+    expect(screen.getByText(/智能理解引擎未开启/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '保持当前模式' }))
+    expect(screen.queryByText(/智能理解引擎未开启/)).not.toBeInTheDocument()
+
+    // user_custom && active 必须对照 baselineText，而不是重复显示用户自定义值
+    const customField: ResolvedTriStateField<string> = {
+      effectiveValue: 'full',
+      desiredValue: 'full',
+      origin: 'user_custom',
+      applicability: 'active',
+      visible: true,
+      isUserCustom: true
+    }
+    rerender(
+      <TriStateFieldFeedback
+        field={customField}
+        effectiveText="深度理解"
+        desiredText="深度理解"
+        baselineText="平衡整理"
+        hasBoundWorkflow={true}
+      />
+    )
+    expect(screen.getByText('（工作流默认：平衡整理）')).toBeInTheDocument()
+  })
+
+  it('WorkspacePluginsTab：user_custom + degraded 仅显示 1 个恢复默认按钮，且期望值正确显示「开启」', () => {
+    const plugins: Record<string, ResolvedPluginTriState> = {
+      asr_sensevoice_onnx: {
+        effectiveValue: false,
+        origin: 'user_custom',
+        applicability: 'degraded',
+        degradationReason: 'global_plugin_not_installed',
+        workflowRecommendation: 'workflow_default_off',
+        globalAvailability: 'available'
+      }
+    }
+    render(
+      <WorkspacePluginsTab
+        workspaceId={1}
+        plugins={plugins}
+        hasBoundWorkflow={true}
+      />
+    )
+    expect(screen.getAllByRole('button', { name: '恢复默认' })).toHaveLength(1)
+    expect(screen.getByText('（用户自定义：开启）')).toBeInTheDocument()
   })
 })

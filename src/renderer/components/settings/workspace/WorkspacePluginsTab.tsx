@@ -96,7 +96,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
           pluginOverridePatch: { [pluginId]: checked }
         })
         if (!result.success) {
-          onMutationError?.(getMutationErrorText(result, 'UNKNOWN_ERROR'))
+          onMutationError?.(getMutationErrorText(result, t('目录插件配置保存失败')))
         } else {
           onMutationSuccess?.()
         }
@@ -122,7 +122,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
           restorePluginOverrideIds: [pluginId]
         })
         if (!result.success) {
-          onMutationError?.(getMutationErrorText(result, 'UNKNOWN_ERROR'))
+          onMutationError?.(getMutationErrorText(result, t('目录插件配置保存失败')))
         } else {
           onMutationSuccess?.()
         }
@@ -156,7 +156,14 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
             const isEnabled = plugin?.effectiveValue ?? false
             const isPending = pendingIds.has(pluginId)
             const isUserCustom = plugin?.origin === 'user_custom'
-            const desiredEnabled = plugin?.workflowRecommendation === 'workflow_recommended_on'
+            const isDegraded = plugin?.applicability === 'degraded'
+            const baselineEnabled = plugin?.workflowRecommendation === 'workflow_recommended_on'
+            // user_custom 且处于环境降级时，说明用户期望开启但被全局组件未就绪拦截
+            const desiredEnabled = isUserCustom
+              ? isDegraded
+                ? true
+                : isEnabled
+              : baselineEnabled
 
             return (
               <Card key={pluginId}>
@@ -181,7 +188,8 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                       <span className="text-xs text-muted-foreground">
                         {isEnabled ? t('已开启') : t('已关闭')}
                       </span>
-                      {isUserCustom && (
+                      {/* 降级态时由下方 TriStateFieldFeedback 统一呈现恢复按钮，避免同一卡片出现两个重复按钮 */}
+                      {isUserCustom && !isDegraded && (
                         <button
                           type="button"
                           disabled={isPending}
@@ -200,7 +208,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                       aria-label={renderPluginName(pluginId)}
                     />
                   </div>
-                  {plugin && plugin.applicability === 'degraded' && (
+                  {plugin && isDegraded && (
                     <TriStateFieldFeedback
                       className="mt-2"
                       field={{
@@ -215,6 +223,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                       }}
                       effectiveText={plugin.effectiveValue ? t('已开启') : t('已关闭')}
                       desiredText={desiredEnabled ? t('开启') : t('关闭')}
+                      baselineText={baselineEnabled ? t('开启') : t('关闭')}
                       hasBoundWorkflow={hasBoundWorkflow}
                       onRestore={
                         isUserCustom

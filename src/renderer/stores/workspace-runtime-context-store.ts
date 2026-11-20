@@ -22,6 +22,10 @@ import {
   type WorkspaceRuntimeContextSnapshot
 } from '../lib/workspace-policy/workspace-ai-client'
 
+const EMPTY_MODULE_STATES: WorkspaceRuntimeContextSnapshot['moduleStates'] = Object.freeze({})
+
+let _refreshSeq = 0
+
 interface WorkspaceRuntimeContextState {
   /** 当前快照（null 表示尚未拉取或主进程返回空） */
   snapshot: WorkspaceRuntimeContextSnapshot | null
@@ -31,6 +35,8 @@ interface WorkspaceRuntimeContextState {
   fetchError: string | null
   /** 是否已成功建立订阅 */
   subscribed: boolean
+  /** 活跃订阅者引用计数（避免单个弹窗关闭时错杀 Footer 等常驻消费者） */
+  subscriberRefCount: number
   /** 当前绑定的工作区 ID（用于 initialize 幂等判定） */
   activeWorkspaceId: number | null
   /** 内部：订阅退订函数（非响应式，不参与渲染） */
@@ -39,15 +45,15 @@ interface WorkspaceRuntimeContextState {
 
 interface WorkspaceRuntimeContextActions {
   /**
-   * 弹窗打开时握手：拉取快照 + 建立订阅（幂等）。
-   * 同一 workspaceId 重复调用不会重复注册；切换工作区会重新握手。
+   * 消费者挂载握手：递增引用计数、拉取快照并建立订阅（幂等）。
+   * 多个消费者共享同一推送订阅，避免单个弹窗关闭时错杀其他消费者。
    */
   initialize: (workspaceId: number | null) => Promise<void>
-  /** 拉取最新快照（幂等，重复调用会覆盖 fetchError） */
+  /** 拉取最新快照（幂等，带代次防并发竞态，重复调用会覆盖 fetchError） */
   refresh: () => Promise<void>
-  /** 断开订阅并清空快照（弹窗关闭时调用） */
+  /** 递减引用计数；仅当所有消费者均卸载时才断开订阅并清空快照 */
   dispose: () => void
-  /** 重置 store 到初始态 */
+  /** 强制重置 store 到初始态（供测试隔离或全局登出使用） */
   reset: () => void
 }
 
@@ -59,6 +65,7 @@ const initialState: WorkspaceRuntimeContextState = {
   loading: false,
   fetchError: null,
   subscribed: false,
+  subscriberRefCount: 0,
   activeWorkspaceId: null,
   _unsubscribe: null
 }
@@ -69,20 +76,27 @@ export const useWorkspaceRuntimeContext = create<
   ...initialState,
 
   initialize: async (workspaceId) => {
-    // 幂等：同一工作区且已订阅时不重复注册
     const prevId = get().activeWorkspaceId
     const alreadySubscribed = get().subscribed
+    const nextRefCount = get().subscriberRefCount + 1
+
+    // 幂等：已订阅且同一工作区时不重复注册底层监听，仅递增引用计数并刷新快照
     if (alreadySubscribed && prevId === workspaceId) {
-      // 仍刷新一次快照以保证数据新鲜
+      set({ subscriberRefCount: nextRefCount })
       await get().refresh()
       return
     }
 
-    // 切换工作区：先断开旧订阅
+    // 切换工作区或首次建立订阅：先断开旧订阅再重新握手
     const oldUnsub = get()._unsubscribe
     if (typeof oldUnsub === 'function') oldUnsub()
 
-    set({ activeWorkspaceId: workspaceId, subscribed: false, _unsubscribe: null })
+    set({
+      activeWorkspaceId: workspaceId,
+      subscribed: false,
+      subscriberRefCount: nextRefCount,
+      _unsubscribe: null
+    })
 
     // 建立订阅（仅接收 contextEpoch 更大的推送）
     const unsubscribe = subscribeWorkspaceRuntimeContext((incoming) => {
@@ -97,9 +111,14 @@ export const useWorkspaceRuntimeContext = create<
   },
 
   refresh: async () => {
+    const seq = ++_refreshSeq
     set({ loading: true, fetchError: null })
     try {
       const next = await fetchWorkspaceRuntimeContext()
+      // 竞态守卫：若期间发生更新的 refresh、dispose 或 reset（均已递增 _refreshSeq），则丢弃陈旧响应
+      if (seq !== _refreshSeq) {
+        return
+      }
       if (next === null) {
         // 主进程通道未就绪或主动返回空：显式记录，绝不静默清空旧快照
         set({
@@ -116,6 +135,7 @@ export const useWorkspaceRuntimeContext = create<
       }
       set({ snapshot: next, loading: false, fetchError: null })
     } catch (err) {
+      if (seq !== _refreshSeq) return
       // 任何异常必须显式上浮，禁止吞异常
       const message = err instanceof Error ? err.message : String(err)
       set({ loading: false, fetchError: message })
@@ -123,6 +143,12 @@ export const useWorkspaceRuntimeContext = create<
   },
 
   dispose: () => {
+    const nextRefCount = Math.max(0, get().subscriberRefCount - 1)
+    if (nextRefCount > 0) {
+      set({ subscriberRefCount: nextRefCount })
+      return
+    }
+    _refreshSeq += 1
     const unsub = get()._unsubscribe
     if (typeof unsub === 'function') {
       unsub()
@@ -132,13 +158,19 @@ export const useWorkspaceRuntimeContext = create<
       loading: false,
       fetchError: null,
       subscribed: false,
+      subscriberRefCount: 0,
       activeWorkspaceId: null,
       _unsubscribe: null
     })
   },
 
   reset: () => {
-    get().dispose()
+    _refreshSeq += 1
+    const unsub = get()._unsubscribe
+    if (typeof unsub === 'function') {
+      unsub()
+    }
+    set({ ...initialState })
   }
 }))
 
@@ -169,7 +201,8 @@ export const selectIsProTier = (s: WorkspaceRuntimeContextStore): boolean =>
 /** 派生 selector：模块可用性字典（pluginId -> availability/installed/active/error） */
 export const selectModuleStates = (
   s: WorkspaceRuntimeContextStore
-): WorkspaceRuntimeContextSnapshot['moduleStates'] => s.snapshot?.moduleStates ?? {}
+): WorkspaceRuntimeContextSnapshot['moduleStates'] =>
+  s.snapshot?.moduleStates ?? EMPTY_MODULE_STATES
 
 /** 派生 selector：是否正在加载首次快照 */
 export const selectRuntimeContextLoading = (s: WorkspaceRuntimeContextStore): boolean =>

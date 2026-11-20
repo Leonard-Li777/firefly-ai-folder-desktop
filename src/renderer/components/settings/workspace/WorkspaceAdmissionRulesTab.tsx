@@ -252,11 +252,7 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
         onConfigSaved?.()
         return true
       } else {
-        toast.error(
-          typeof res.error === 'string'
-            ? res.error
-            : res.error?.message || res.errorMessage || t('更新包含规则失败')
-        )
+        toast.error(getMutationErrorText(res, t('更新包含规则失败')))
         return false
       }
     } catch (err: any) {

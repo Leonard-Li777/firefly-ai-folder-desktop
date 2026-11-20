@@ -241,11 +241,11 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     }
   }, [isOpen])
 
-  // 2b. SLICE-08：弹窗打开时握手运行时上下文快照并订阅推送，关闭时释放订阅
+  // 2b. SLICE-08：弹窗打开时握手运行时上下文快照并订阅推送，关闭时仅释放本弹窗引用（不错杀 Footer）
   useEffect(() => {
-    if (isOpen) {
-      void initializeRuntime(selectedWorkspaceId)
-    } else {
+    if (!isOpen) return
+    void initializeRuntime(selectedWorkspaceId)
+    return () => {
       disposeRuntime()
     }
   }, [isOpen, selectedWorkspaceId, initializeRuntime, disposeRuntime])
@@ -483,12 +483,22 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   onClick={() => {
                     void submitWorkspacePolicyMutation(activeWorkspace.id!, {
                       restoreWorkflowDefault: true
-                    }).then(result => {
-                      if (result.success) {
-                        void refreshWorkspaceData()
-                        void refreshRuntime()
-                      }
                     })
+                      .then(result => {
+                        if (result.success) {
+                          toast.success(
+                            hasBoundWorkflow ? t('已恢复工作流默认配置') : t('已恢复默认配置')
+                          )
+                          void refreshWorkspaceData()
+                          void refreshRuntime()
+                        } else {
+                          toast.error(getMutationErrorText(result, t('恢复默认配置失败')))
+                        }
+                      })
+                      .catch(err => {
+                        console.warn('[WorkspaceSettingsDialog] 恢复默认配置异常:', err)
+                        toast.error(err instanceof Error ? err.message : t('恢复默认配置失败'))
+                      })
                   }}
                 >
                   <RotateCcw className="mr-1 h-3 w-3" />
@@ -519,6 +529,15 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     parsedConfig.status === 'ready' && parsedConfig.overrides
                       ? { ...parsedConfig.overrides }
                       : undefined
+                  const rawPrevPluginOverrides =
+                    parsedConfig.status === 'ready'
+                      ? (parsedConfig as unknown as { pluginOverrides?: Record<string, boolean> })
+                          .pluginOverrides
+                      : undefined
+                  const prevPluginOverrides =
+                    rawPrevPluginOverrides && Object.keys(rawPrevPluginOverrides).length > 0
+                      ? { ...rawPrevPluginOverrides }
+                      : undefined
                   const nextWorkflowId =
                     readyConfig?.status === 'ready' ? (readyConfig.workflowId ?? null) : null
                   const targetWorkspaceId = activeWorkspace.id
@@ -526,12 +545,13 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   await refreshWorkspaceData()
                   void refreshRuntime()
 
-                  // 切换工作流时提供非阻断 [撤销] Toast，允许一键还原原工作流与自定义覆盖
+                  // 切换工作流时提供非阻断 [撤销] Toast，允许一键还原原工作流、参数覆盖与插件覆盖
                   if (
                     targetWorkspaceId != null &&
                     prevWorkflowId !== nextWorkflowId &&
                     (prevWorkflowId !== null ||
-                      (prevOverrides && Object.keys(prevOverrides).length > 0))
+                      (prevOverrides && Object.keys(prevOverrides).length > 0) ||
+                      Boolean(prevPluginOverrides))
                   ) {
                     useToastStore.getState().addToast({
                       type: 'info',
@@ -544,16 +564,24 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                             workflowId: prevWorkflowId,
                             ...(prevOverrides && Object.keys(prevOverrides).length > 0
                               ? { overridePatch: prevOverrides }
+                              : {}),
+                            ...(prevPluginOverrides
+                              ? { pluginOverridePatch: prevPluginOverrides }
                               : {})
-                          }).then(res => {
-                            if (res.success) {
-                              toast.success(t('已恢复切换前的工作流与参数配置'))
-                              void refreshWorkspaceData()
-                              void refreshRuntime()
-                            } else {
-                              toast.error(getMutationErrorText(res, t('撤销失败')))
-                            }
                           })
+                            .then(res => {
+                              if (res.success) {
+                                toast.success(t('已恢复切换前的工作流与参数配置'))
+                                void refreshWorkspaceData()
+                                void refreshRuntime()
+                              } else {
+                                toast.error(getMutationErrorText(res, t('撤销失败')))
+                              }
+                            })
+                            .catch(err => {
+                              console.warn('[WorkspaceSettingsDialog] 撤销工作流切换异常:', err)
+                              toast.error(err instanceof Error ? err.message : t('撤销失败'))
+                            })
                         }
                       }
                     })
@@ -727,11 +755,13 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                           void refreshWorkspaceData()
                           void refreshRuntime()
                         }}
-                        onMutationError={() => {
-                          // 隔离期显式上报，严禁静默吞掉
+                        onMutationError={err => {
+                          // 显式上报并向用户提示失败，严禁静默吞掉
                           console.warn(
-                            '[WorkspaceSettingsDialog] 目录插件开关提交失败（applyWorkspacePolicyMutation 通道可能未就绪）'
+                            '[WorkspaceSettingsDialog] 目录插件开关提交失败:',
+                            err
                           )
+                          toast.error(err || t('目录插件配置保存失败'))
                         }}
                       />
                     </div>

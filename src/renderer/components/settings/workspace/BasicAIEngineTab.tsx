@@ -330,7 +330,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const videoCutSensitivity = effectiveParams.videoCutSensitivity ?? 'medium'
   const localVideoSoftTokenBudget = effectiveParams.videoSoftTokenBudget ?? 48
   const videoAsrCap = effectiveParams.videoAsrDurationSec ?? 30
-  const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 30
+  const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 60
   // 语音听写组件是否就绪（全局插件中心状态；未就绪时两滑块灰显并提示）
   const asrPluginReady = pluginModules.some(
     m => m.id === 'asr_sensevoice_onnx' && m.install_state === 'active'
@@ -442,7 +442,8 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             {t('当前配置：{name}。配置分析模式、视频取帧与语音听写参数。', {
               name:
                 parsedConfig.status === 'ready' && parsedConfig.workflowId
-                  ? getIntentDisplayName(currentIntent)
+                  ? (parsedConfig as unknown as { workflowName?: string }).workflowName ||
+                    getIntentDisplayName(currentIntent)
                   : t('默认配置')
             })}
           </p>
@@ -1100,7 +1101,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                       <span>0s</span>
                       <span>60s</span>
                       <span>150s</span>
-                      <span className="text-primary/80 font-medium">300s ({t('实时线')})</span>
+                      <span className="text-primary/80 font-medium">{t('5 分钟参考线')}</span>
                     </div>
 
                     {/* 细分耗时图例与百分比 */}

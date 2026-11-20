@@ -248,8 +248,18 @@ export function Footer() {
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
   const runtimeSnapshot = useWorkspaceRuntimeContext(s => s.snapshot)
+  const initializeRuntimeContext = useWorkspaceRuntimeContext(s => s.initialize)
+  const disposeRuntimeContext = useWorkspaceRuntimeContext(s => s.dispose)
   const refreshRuntimeContext = useWorkspaceRuntimeContext(s => s.refresh)
   const [isTriggeringRecovery, setIsTriggeringRecovery] = useState(false)
+
+  // 常驻握手工作区运行时上下文（引用计数保护，与设置弹窗共享同一底层推送订阅）
+  useEffect(() => {
+    void initializeRuntimeContext(currentWorkspaceDirectory?.id ?? null)
+    return () => {
+      disposeRuntimeContext()
+    }
+  }, [currentWorkspaceDirectory?.id, initializeRuntimeContext, disposeRuntimeContext])
 
   // SLICE-08：渲染层收口全局旁路 —— 结合当前工作区配置与运行时上下文派生有效分析模式
   const resolveEffectiveAnalysisMode = (
