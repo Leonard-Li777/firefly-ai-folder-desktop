@@ -904,7 +904,15 @@ export class HybridSearchArbiter {
     // 不满足前置条件（如 profile 档位不符、开关关闭、非中文或拼音命中）时严禁产生假 pendingClip。
     const orchestrator = ConfigOrchestrator.getInstance()
     const currentEmbeddingProfile = await omniService.getEmbeddingProfile()
-    const clipEnabled = orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+    const globalClipEnabled = orchestrator.getValue<boolean>('AI_CLIP_TEXT_SEARCH_ENABLED') ?? true
+    // [SLICE-04] 工作区级 clipTextEnabled 仲裁，杜绝全局 ConfigOrchestrator 旁路：
+    // 单工作区取该工作区有效值；全域搜索遍历所有已就绪工作区（全关才跳过，任一开启即执行）。
+    const isGlobalSearch = !context.workspaceId && !workspaceDirectoryPath
+    const clipEnabled = isGlobalSearch
+      ? this.resolveGlobalClipTextEnabled(globalClipEnabled)
+      : shortHanWorkspaceId != null
+        ? this.resolveWorkspaceClipTextEnabled(shortHanWorkspaceId, globalClipEnabled)
+        : globalClipEnabled
     const currentLang = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
     const clipPre = evaluateClipChannelPrecondition({
       profile: currentEmbeddingProfile,
@@ -1200,6 +1208,63 @@ export class HybridSearchArbiter {
    * 依次尝试 workspaces 根路径与 workspace_directories 子目录路径精确匹配；
    * 查询失败时显式上报并返回 undefined（调用方安全跳过快道走 LIKE 兜底，禁止静默降级）。
    */
+  /**
+   * 解析单个工作区的 clipTextEnabled（工作区覆盖优先：overrides > baseAIConfig；缺省回退全局）。
+   * 直读 workspaces.workspace_config，避免跨服务异步依赖与循环 import。
+   */
+  private resolveWorkspaceClipTextEnabled(workspaceId: number, fallback: boolean): boolean {
+    try {
+      const row = this.db
+        .prepare('SELECT workspace_config FROM workspaces WHERE workspace_id = ? LIMIT 1')
+        .get(workspaceId) as { workspace_config?: string | null } | undefined
+      if (!row || !row.workspace_config) return fallback
+      const cfg = JSON.parse(row.workspace_config)
+      const value = cfg?.overrides?.clipTextEnabled ?? cfg?.baseAIConfig?.clipTextEnabled
+      return typeof value === 'boolean' ? value : fallback
+    } catch (err) {
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearch] 读取工作区 clipTextEnabled 失败，回退全局:',
+        err
+      )
+      return fallback
+    }
+  }
+
+  /**
+   * 全域搜索（无目标工作区）clipTextEnabled 仲裁：
+   * 仅当所有已就绪工作区均显式关闭时才跳过 CLIP 路；任一启用（或未配置工作区按默认启用）则执行。
+   * 结果再按所属工作区范围过滤。
+   */
+  private resolveGlobalClipTextEnabled(fallback: boolean): boolean {
+    try {
+      const rows = this.db
+        .prepare('SELECT workspace_config FROM workspaces')
+        .all() as Array<{ workspace_config?: string | null }>
+      const ready = rows.filter((r) => r.workspace_config != null)
+      if (ready.length === 0) return fallback
+      for (const row of ready) {
+        let cfg: any
+        try {
+          cfg = JSON.parse(row.workspace_config as string)
+        } catch {
+          return true
+        }
+        if (cfg?.status && cfg.status !== 'ready') continue
+        const value = cfg?.overrides?.clipTextEnabled ?? cfg?.baseAIConfig?.clipTextEnabled
+        if (value !== false) return true
+      }
+      return false
+    } catch (err) {
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[HybridSearch] 全域 clipTextEnabled 仲裁失败，回退全局:',
+        err
+      )
+      return fallback
+    }
+  }
+
   private resolveWorkspaceIdFromPath(workspaceDirectoryPath?: string): number | undefined {
     if (!workspaceDirectoryPath) return undefined
     try {

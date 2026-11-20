@@ -42,6 +42,12 @@ export async function processLocalAnalysis(
     lrc?: string | null
     /** 并行流水线下 CPU 阶段已用时长（毫秒）：本次 timer 从 GPU 阶段起算，需补上这段 */
     elapsedBeforeAiMs?: number
+    /** 工作区锁定的视频参数（SLICE-04），优先于全局配置用于 AI 阶段超时预算 */
+    videoParams?: {
+      videoFrameQuotaMax?: number
+      videoSoftTokenBudget?: number
+      videoAsrDurationSec?: number
+    }
   },
   updateItemStatus: (
     itemId: number,
@@ -65,7 +71,8 @@ export async function processLocalAnalysis(
     fileInfo.path,
     undefined,
     false,
-    options.magikaCategory?.mime_type
+    options.magikaCategory?.mime_type,
+    options.videoParams
   )
   const elapsedMs = timer.getTotalDuration() + (options.elapsedBeforeAiMs ?? 0)
   const aiStageTimeoutMs = resolveAiStageTimeoutMs(budget, elapsedMs)

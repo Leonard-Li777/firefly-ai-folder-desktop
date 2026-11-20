@@ -141,7 +141,16 @@ export function resolveAnalysisTimeoutBudget(
   /** 调用方已知是音视频（如请求里带了音视频专属参数）时传入，避免无扩展名媒体被误判 */
   isMediaHint?: boolean,
   /** magika 给出的 mime_type：扩展名无法判定时用它兜底 */
-  mimeType?: string | null
+  mimeType?: string | null,
+  /**
+   * 工作区锁定的视频参数（SLICE-04）。优先消费，杜绝全局 ConfigOrchestrator 旁路串扰；
+   * 缺省时回退全局配置（向后兼容其他调用方）。
+   */
+  videoParams?: {
+    videoFrameQuotaMax?: number
+    videoSoftTokenBudget?: number
+    videoAsrDurationSec?: number
+  } | null
 ): AnalysisTimeoutBudget {
   const kind = detectAnalysisFileKind(filePath, isMediaHint, mimeType)
   let totalMs = Math.max(0, baseMs) + KIND_EXTRA_TIMEOUT_MS[kind]
@@ -149,10 +158,20 @@ export function resolveAnalysisTimeoutBudget(
   // 视频分析动态看门狗水位上浮：若用户配置了高配额抓图，自动同步撑大总超时与 CPU 上限 (Spec §9)
   if (kind === 'video') {
     try {
+// [SLICE-04] 优先消费工作区锁定参数，缺省才回退全局 ConfigOrchestrator
       const mod = require('../../config/config-orchestrator') as typeof import('../../config/config-orchestrator')
-      const quota = mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ?? 60
-      const tokens = mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
-      const asrSec = mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_ASR_DURATION' as any) ?? 60
+      const quota =
+        videoParams?.videoFrameQuotaMax ??
+        mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ??
+        60
+      const tokens =
+        videoParams?.videoSoftTokenBudget ??
+        mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ??
+        140
+      const asrSec =
+        videoParams?.videoAsrDurationSec ??
+        mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_ASR_DURATION' as any) ??
+        60
       const { computeDynamicVideoTimeoutMs } = require('@firefly/shared')
       totalMs = computeDynamicVideoTimeoutMs(quota, tokens, asrSec, totalMs)
     } catch {

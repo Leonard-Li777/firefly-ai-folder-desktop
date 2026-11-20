@@ -1130,7 +1130,13 @@ export class FileProcessor {
               initialStage,
               forceReanalyze: item.forceReanalyze === true,
               // 并行流水线：本次 timer 从 GPU 阶段起算，需补上 CPU 阶段（含视频向量 + ASR）耗时
-              elapsedBeforeAiMs
+              elapsedBeforeAiMs,
+              // [SLICE-04] 透传工作区锁定的视频参数，AI 阶段超时预算与 CPU 阶段同源
+              videoParams: {
+                videoFrameQuotaMax: effectiveParams.videoFrameQuotaMax,
+                videoSoftTokenBudget: effectiveParams.videoSoftTokenBudget,
+                videoAsrDurationSec: effectiveParams.videoAsrDurationSec
+              }
             },
             this.updateItemStatus.bind(this)
           ).catch(err => {
@@ -3034,7 +3040,13 @@ export class FileProcessor {
             isSpeedy,
             initialStage,
             forceReanalyze: item.forceReanalyze === true,
-            lrc: activeLrc
+            lrc: activeLrc,
+            // [SLICE-04] 透传工作区锁定的视频参数，AI 阶段超时预算与 CPU 阶段同源
+            videoParams: {
+              videoFrameQuotaMax: effectiveParams.videoFrameQuotaMax,
+              videoSoftTokenBudget: effectiveParams.videoSoftTokenBudget,
+              videoAsrDurationSec: effectiveParams.videoAsrDurationSec
+            }
           },
           this.updateItemStatus.bind(this)
         ).catch(err => {
