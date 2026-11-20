@@ -16,7 +16,6 @@ import {
 import {
   recommendWorkflowByProfile,
   DirectoryProfileStats,
-  mapIntentToParameters,
   buildPreviewTree,
   PreviewNode
 } from '@firefly/shared'

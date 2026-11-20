@@ -17,8 +17,7 @@ import {
 } from '@firefly/types'
 import {
   filterOutGlobalExclusionRules,
-  isValidAdmissionExtension,
-  mapIntentToParameters
+  isValidAdmissionExtension
 } from '@firefly/shared'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { Card } from '../../ui/card'

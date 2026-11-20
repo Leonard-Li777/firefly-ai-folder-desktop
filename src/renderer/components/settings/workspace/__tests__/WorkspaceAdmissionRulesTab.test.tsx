@@ -123,13 +123,13 @@ describe('WorkspaceAdmissionRulesTab 包含与排除规则管理及影响预览'
     } as any
   })
 
-  // ready 态配置必须带齐 baseAIConfig 与两组规则数组，否则 parseWorkspaceConfig 会降级为 pending
+  // ready 态配置必须带齐非空 baseAIConfig 与两组规则数组，否则 parseWorkspaceConfig 会降级为 pending
   const workspaceWithDuplicates: WorkspaceDirectory = {
     ...mockWorkspace,
     workspace_config: JSON.stringify({
       schemaVersion: 1,
       status: 'ready',
-      baseAIConfig: {},
+      baseAIConfig: { analysisMode: 'quick_name' },
       customIncludeRules: [],
       customExcludeRules: [
         {

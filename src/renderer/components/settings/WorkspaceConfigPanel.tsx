@@ -70,7 +70,7 @@ export function getIntentCards(): Array<{
       icon: 'description',
       title: t('极速整理与文档'),
       subtitle: t('文档 / 文献 / 电子书 / 代码'),
-      description: t('高精度 OCR、深度长文本提取、零星视频极速索引，极致轻量省电。'),
+      description: t('精准识别图片文字、深度长文本提取、零星视频极速索引，极致轻量省电。'),
       badge: t('⚡ 极速整理')
     },
     {
@@ -78,7 +78,7 @@ export function getIntentCards(): Array<{
       icon: 'photo_library',
       title: t('创意图库与设计'),
       subtitle: t('照片 / 插画 / 设计稿 / 素材'),
-      description: t('多模态视觉打标、高频图片 OCR、略过长伴音转录，专注于画面理解。'),
+      description: t('智能画面打标、高频图片文字识别、略过长伴音听写，专注于画面理解。'),
       badge: t('🎨 创意图库')
     },
     {
@@ -513,17 +513,17 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                   }
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground text-xs"
                 >
-                  <option value="simple">{t('极速标准 (simple) - 基础标签与智能名')}</option>
+                  <option value="simple">{t('极速标准 - 基础标签与智能命名')}</option>
                   <option value="quick_name">
-                    {t('增强润色 (quick_name) - 推荐，平衡速度与深度')}
+                    {t('增强润色 - 推荐，平衡速度与深度')}
                   </option>
-                  <option value="full">{t('全面深度 (full) - 全多模态深度理解')}</option>
+                  <option value="full">{t('全面深度 - 深度理解文档与画面细节')}</option>
                 </select>
               </div>
 
-              {/* 图像 OCR 开关与精度 */}
+              {/* 图片文字识别开关与精度 */}
               <div>
-                <Label className="text-xs font-medium mb-1.5 block">{t('图片 OCR 识别')}</Label>
+                <Label className="text-xs font-medium mb-1.5 block">{t('图片文字识别')}</Label>
                 <div className="flex items-center gap-3 p-1.5 bg-background rounded-lg border border-border">
                   <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
@@ -532,7 +532,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                       onChange={e => handleOverrideChange('enableImageOcr', e.target.checked)}
                       className="rounded border-border"
                     />
-                    <span>{t('开启 OCR')}</span>
+                    <span>{t('开启图片文字识别')}</span>
                   </label>
                   {effectiveParams.enableImageOcr && (
                     <select
@@ -542,8 +542,8 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                       }
                       className="ml-auto p-1 rounded border border-border bg-muted/30 text-xs"
                     >
-                      <option value="tiny">{t('极速微型 (tiny)')}</option>
-                      <option value="small">{t('标准高精 (small)')}</option>
+                      <option value="tiny">{t('极速轻量')}</option>
+                      <option value="small">{t('标准高清')}</option>
                     </select>
                   )}
                 </div>
@@ -554,7 +554,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <Label className="text-xs font-medium mb-1 block">
-                  {t('视频软预算 (Soft Tokens)')}
+                  {t('视频画面采样精度')}
                 </Label>
                 <select
                   value={effectiveParams.videoSoftTokenBudget}
@@ -563,14 +563,14 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                   }
                   className="w-full p-1.5 rounded-lg border border-border bg-background text-xs"
                 >
-                  <option value={48}>{t('48 tokens (流畅低负载)')}</option>
-                  <option value={140}>{t('140 tokens (超清精细)')}</option>
+                  <option value={48}>{t('标准采样（流畅低负载）')}</option>
+                  <option value={140}>{t('精细采样（超清细节）')}</option>
                 </select>
               </div>
 
               <div>
                 <Label className="text-xs font-medium mb-1 block">
-                  {t('台词转录秒数 (ASR Cap)')}
+                  {t('视频语音听写时长（秒）')}
                 </Label>
                 <input
                   type="number"
