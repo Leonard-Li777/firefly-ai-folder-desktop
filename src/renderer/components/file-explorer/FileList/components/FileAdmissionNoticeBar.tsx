@@ -13,9 +13,25 @@ export interface FileAdmissionNoticeBarProps {
   onOpenAdmissionRules: () => void
   /** 自定义类名 */
   className?: string
+  /**
+   * 受控关闭状态：由 FileList 提升管理，用于同步滚动区避让高度，防止提示条遮挡底部横向滚动条。
+   * 不传时退化为组件内部非受控管理，兼容独立使用与单测场景。
+   */
+  dismissed?: boolean
+  /** 受控模式下用户点击“知道了”或关闭图标时的通知回调 */
+  onDismissedChange?: (dismissed: boolean) => void
 }
 
 export const FILE_ADMISSION_NOTICE_STORAGE_KEY = 'firefly_dismiss_file_admission_notice_banner'
+
+/** 读取全局关闭状态：供父级初始化受控状态，与组件内部惰性初始化保持同源 */
+export const readFileAdmissionNoticeDismissed = (): boolean => {
+  try {
+    return localStorage.getItem(FILE_ADMISSION_NOTICE_STORAGE_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
 
 /**
  * 真实物理目录下 FileList 底部通栏吸底提示条
@@ -26,26 +42,28 @@ export const FILE_ADMISSION_NOTICE_STORAGE_KEY = 'firefly_dismiss_file_admission
 export const FileAdmissionNoticeBar: React.FC<FileAdmissionNoticeBarProps> = ({
   visible,
   onOpenAdmissionRules,
-  className
+  className,
+  dismissed,
+  onDismissedChange
 }) => {
   // 遵循系统标准提示条模式：惰性初始化，无首屏闪烁，全局记住用户关闭选择
-  const [isDismissed, setIsDismissed] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem(FILE_ADMISSION_NOTICE_STORAGE_KEY) === 'true'
-    } catch {
-      return false
-    }
-  })
+  // 非受控兜底：独立使用/单测场景仍由组件自身管理；受控模式（FileList 集成）以父级状态为准
+  const [innerDismissed, setInnerDismissed] = useState<boolean>(readFileAdmissionNoticeDismissed)
+  const isDismissed = dismissed ?? innerDismissed
 
-  const handleDismiss = useCallback((e?: React.MouseEvent) => {
-    e?.stopPropagation()
-    try {
-      localStorage.setItem(FILE_ADMISSION_NOTICE_STORAGE_KEY, 'true')
-    } catch (err) {
-      console.warn('Failed to save banner dismiss state to localStorage', err)
-    }
-    setIsDismissed(true)
-  }, [])
+  const handleDismiss = useCallback(
+    (e?: React.MouseEvent) => {
+      e?.stopPropagation()
+      try {
+        localStorage.setItem(FILE_ADMISSION_NOTICE_STORAGE_KEY, 'true')
+      } catch (err) {
+        console.warn('Failed to save banner dismiss state to localStorage', err)
+      }
+      setInnerDismissed(true)
+      onDismissedChange?.(true)
+    },
+    [onDismissedChange]
+  )
 
   if (!visible || isDismissed) {
     return null
@@ -63,9 +81,7 @@ export const FileAdmissionNoticeBar: React.FC<FileAdmissionNoticeBarProps> = ({
     >
       <div className="flex items-center gap-2 min-w-0 mr-3">
         <HelpCircle className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-        <span className="text-muted-foreground truncate">
-          {t('我的文件不在列表中？试试修改')}
-        </span>
+        <span className="text-muted-foreground truncate">{t('我的文件不在列表中？试试修改')}</span>
         <Button
           variant="outline"
           size="sm"

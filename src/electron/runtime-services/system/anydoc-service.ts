@@ -17,8 +17,14 @@ export interface AnydocResult {
   lrc?: string
   metadata?: any
   phash?: string
-  benchmark?: import('./omni-service').OmniBenchmarkResponse | import('./omni-service').OmniPerceptionBenchmarkResponse
+  benchmark?:
+    | import('./omni-service').OmniBenchmarkResponse
+    | import('./omni-service').OmniPerceptionBenchmarkResponse
   perception?: import('./omni-service').OmniPerceptionResponse
+  /** 是否为降级结果（原生多模态感知失败 → 回退基础提取；视频将因此无视觉切片） */
+  degraded?: boolean
+  /** 降级原因（便于日志与上层判定，禁止静默降级） */
+  degradedReason?: string
 }
 
 export class AnydocService {
@@ -72,6 +78,7 @@ export class AnydocService {
     filePath: string,
     options?: import('./omni-service').OmniPerceptionOptions
   ): Promise<AnydocResult> {
+    let failureReason: string | null = null
     try {
       const perception = await omniService.perceive(filePath, options)
       if (perception) {
@@ -82,23 +89,41 @@ export class AnydocService {
           assets: [],
           ocrText: perception.ocr_text || undefined,
           audioTranscript: perception.asr || undefined,
-          lrc: perception.lrc || perception.metadata?.lrc || perception.metadata?.audio?.lrc || undefined,
+          lrc:
+            perception.lrc ||
+            perception.metadata?.lrc ||
+            perception.metadata?.audio?.lrc ||
+            undefined,
           metadata: perception.metadata,
           phash: perception.phash,
           benchmark: perception.benchmark ? { ...perception.benchmark } : undefined,
           perception
         }
       }
-    } catch (error: any) {
+      // 返回 null 同样是失败（如引擎在视频推理中原生崩溃、自愈后仍不可用）。
+      // 历史上这里直接静默回退 extract，导致「分析完成但搜不到切片」且日志无线索 —— 必须显式上报。
+      failureReason = 'perceive_unavailable'
       logger.warn(
         LogCategory.ANALYSIS_QUEUE,
-        `[AnydocService] 原生多模态感知异常 (${filePath})，回退至基础提取:`,
+        `[AnydocService] 原生多模态感知返回空（引擎未就绪/推理失败），回退基础提取；视频将无法产出视觉切片: ${filePath}`
+      )
+    } catch (error: any) {
+      failureReason = error?.message || 'perceive_error'
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[AnydocService] 原生多模态感知异常 (${filePath})，回退至基础提取；视频将无法产出视觉切片:`,
         error?.message || error
       )
     }
 
     // 感知失败回退基础提取时，必须把逐请求覆盖参数一并透传，杜绝回退通道丢失工作区配置。
-    return this.extract(filePath, options)
+    // `degraded` 让上层能识别「元数据成功但视觉/切片缺失」，不再把降级当作完整成功。
+    const fallback = await this.extract(filePath, options)
+    return {
+      ...fallback,
+      degraded: true,
+      degradedReason: failureReason ?? 'perceive_unavailable'
+    }
   }
 }
 

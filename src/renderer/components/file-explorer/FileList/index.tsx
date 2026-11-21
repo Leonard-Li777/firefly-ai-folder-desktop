@@ -23,7 +23,10 @@ import { ColumnResizer } from './components/ColumnResizer'
 import { ContextMenu } from '../../common/ContextMenu'
 import { SelectionBox } from './components/SelectionBox'
 import { VirtualRowRenderer } from './components/VirtualRowRenderer'
-import { FileAdmissionNoticeBar } from './components/FileAdmissionNoticeBar'
+import {
+  FileAdmissionNoticeBar,
+  readFileAdmissionNoticeDismissed
+} from './components/FileAdmissionNoticeBar'
 import { EmptyState } from '../../common/EmptyState'
 import { Loading } from '../../common/Loading'
 import { t } from '@app/languages'
@@ -95,6 +98,13 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   const [isFirstRenderComplete, setIsFirstRenderComplete] = useState(false)
   const [reactWindowAvailable, setReactWindowAvailable] = useState(true)
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+  // 提示条关闭状态提升至此：提示条为 absolute 吸底，需让滚动区预留等高 padding，
+  // 否则会压住底部横向滚动条；关闭后 padding 自动撤销，恢复满高。
+  const [noticeDismissed, setNoticeDismissed] = useState<boolean>(() =>
+    readFileAdmissionNoticeDismissed()
+  )
+  /** 提示条是否实际显示（真实物理目录且用户未关闭）——决定滚动区是否避让 */
+  const showNoticeBar = isRealDirectory && !noticeDismissed
   const [columnWidths, setColumnWidths] = useState<Record<string, number>>(DEFAULT_COLUMN_WIDTHS)
   const containerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<any>(null)
@@ -246,12 +256,22 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     const searchPath = workspaceDirectoryPath || currentPath
     if (searchPath) {
       const matched = workspaceDirectories.find(
-        w => w.path && (isPathEqual(w.path, searchPath) || (isSubPath && isSubPath(w.path, searchPath)))
+        w =>
+          w.path &&
+          (isPathEqual(w.path, searchPath) || (isSubPath && isSubPath(w.path, searchPath)))
       )
       if (matched) return matched
     }
     return currentWorkspaceDirectory
-  }, [isRealDirectory, workspaceDirectoryPath, currentPath, workspaceDirectories, currentWorkspaceDirectory, isPathEqual, isSubPath])
+  }, [
+    isRealDirectory,
+    workspaceDirectoryPath,
+    currentPath,
+    workspaceDirectories,
+    currentWorkspaceDirectory,
+    isPathEqual,
+    isSubPath
+  ])
 
   // 检查当前工作目录是否配置了非空包含规则 (customIncludeRules 或 whitelist_patterns)
   const hasActiveIncludeRules = useMemo(() => {
@@ -894,7 +914,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     return (
       <div
         className={cn(
-          'w-full h-full flex flex-col overflow-hidden focus:outline-none relative animate-fade-in dark:bg-muted/70'
+          'w-full h-full flex flex-col overflow-hidden focus:outline-none relative animate-fade-in dark:bg-muted/70',
+          // 提示条吸底时预留等高空间，避免压住底部横向滚动条
+          showNoticeBar && 'pb-[38px]'
         )}
         key="list-view"
         ref={containerRef}
@@ -1113,53 +1135,58 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
             fontSize: `${Math.max(11, Math.min(18, Math.round(11 + ((gridCardWidth - 50) / 350) * 7)))}px`
           }}
         >
-          {items.length === 0 ? (
-            renderEmptyState(t('正在准备列表...'))
-          ) : (() => {
-            // 根据 gridCardWidth 动态缩放列表行高（从 50px 时 32px 到 400px 时 80px，默认 200px 时为标准 48px）
-            const listRowHeight = Math.max(30, Math.round(32 + ((gridCardWidth - 50) / 350) * 48))
-            const listFontSize = Math.max(
-              11,
-              Math.min(18, Math.round(11 + ((gridCardWidth - 50) / 350) * 7))
-            )
-            return reactWindowAvailable && ListComponent && listHeight > 0 ? (
-              isReactWindowV2 ? (
-                <ListComponent
-                  height={listHeight}
-                  rowCount={items.length}
-                  rowHeight={listRowHeight}
-                  width={containerSize.width || '100%'}
-                  className="scrollbar-thin"
-                  listRef={listRef}
-                  rowProps={{ data: { ...itemData, listRowHeight, listFontSize } }}
-                  rowComponent={VirtualRowRenderer}
-                  onScroll={onListScroll}
-                />
-              ) : (
-                <ListComponent
-                  height={listHeight}
-                  itemCount={items.length}
-                  itemSize={listRowHeight}
-                  width={containerSize.width || '100%'}
-                  className="scrollbar-thin"
-                  ref={listRef}
-                  outerRef={activeOuterRef}
-                  itemData={{ ...itemData, listRowHeight, listFontSize }}
-                  onScroll={onListScroll}
-                >
-                  {VirtualRowRenderer}
-                </ListComponent>
-              )
-            ) : (
-              renderEmptyState(t('正在准备列表...'))
-            )
-          })()}
+          {items.length === 0
+            ? renderEmptyState(t('正在准备列表...'))
+            : (() => {
+                // 根据 gridCardWidth 动态缩放列表行高（从 50px 时 32px 到 400px 时 80px，默认 200px 时为标准 48px）
+                const listRowHeight = Math.max(
+                  30,
+                  Math.round(32 + ((gridCardWidth - 50) / 350) * 48)
+                )
+                const listFontSize = Math.max(
+                  11,
+                  Math.min(18, Math.round(11 + ((gridCardWidth - 50) / 350) * 7))
+                )
+                return reactWindowAvailable && ListComponent && listHeight > 0 ? (
+                  isReactWindowV2 ? (
+                    <ListComponent
+                      height={listHeight}
+                      rowCount={items.length}
+                      rowHeight={listRowHeight}
+                      width={containerSize.width || '100%'}
+                      className="scrollbar-thin"
+                      listRef={listRef}
+                      rowProps={{ data: { ...itemData, listRowHeight, listFontSize } }}
+                      rowComponent={VirtualRowRenderer}
+                      onScroll={onListScroll}
+                    />
+                  ) : (
+                    <ListComponent
+                      height={listHeight}
+                      itemCount={items.length}
+                      itemSize={listRowHeight}
+                      width={containerSize.width || '100%'}
+                      className="scrollbar-thin"
+                      ref={listRef}
+                      outerRef={activeOuterRef}
+                      itemData={{ ...itemData, listRowHeight, listFontSize }}
+                      onScroll={onListScroll}
+                    >
+                      {VirtualRowRenderer}
+                    </ListComponent>
+                  )
+                ) : (
+                  renderEmptyState(t('正在准备列表...'))
+                )
+              })()}
         </div>
 
         <FileAdmissionNoticeBar
           visible={isRealDirectory}
           workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
           onOpenAdmissionRules={handleOpenAdmissionRules}
+          dismissed={noticeDismissed}
+          onDismissedChange={setNoticeDismissed}
         />
       </div>
     )
@@ -1169,7 +1196,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     return (
       <div
         className={cn(
-          'flex-1 h-full flex flex-col overflow-hidden dark:bg-muted/70 focus:outline-none relative animate-fade-in'
+          'flex-1 h-full flex flex-col overflow-hidden dark:bg-muted/70 focus:outline-none relative animate-fade-in',
+          showNoticeBar && 'pb-[38px]'
         )}
         key="waterfall-view"
         ref={containerRef}
@@ -1273,6 +1301,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           visible={isRealDirectory}
           workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
           onOpenAdmissionRules={handleOpenAdmissionRules}
+          dismissed={noticeDismissed}
+          onDismissedChange={setNoticeDismissed}
         />
       </div>
     )
@@ -1295,7 +1325,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     return (
       <div
         className={cn(
-          'flex-1 h-full flex flex-col dark:bg-muted/70 overflow-hidden focus:outline-none relative animate-fade-in'
+          'flex-1 h-full flex flex-col dark:bg-muted/70 overflow-hidden focus:outline-none relative animate-fade-in',
+          showNoticeBar && 'pb-[38px]'
         )}
         key="grid-view"
         ref={containerRef}
@@ -1322,9 +1353,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         {items.length === 0 ? (
           renderEmptyState(t('正在准备网格...'))
         ) : reactWindowAvailable &&
-        GridComponent &&
-        containerSize.width > 0 &&
-        containerSize.height > 0 ? (
+          GridComponent &&
+          containerSize.width > 0 &&
+          containerSize.height > 0 ? (
           <div className="flex-1 overflow-hidden p-2">
             {isReactWindowV2 ? (
               <GridComponent
@@ -1365,6 +1396,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           visible={isRealDirectory}
           workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
           onOpenAdmissionRules={handleOpenAdmissionRules}
+          dismissed={noticeDismissed}
+          onDismissedChange={setNoticeDismissed}
         />
       </div>
     )
@@ -1372,7 +1405,10 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
 
   return (
     <div
-      className="flex-1 overflow-hidden flex flex-col focus:outline-none relative"
+      className={cn(
+        'flex-1 overflow-hidden flex flex-col focus:outline-none relative',
+        showNoticeBar && 'pb-[38px]'
+      )}
       ref={containerRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
@@ -1393,166 +1429,170 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           onScroll={e => handleScroll(e)}
         >
           <table className="text-sm text-left" style={{ width: totalWidth, tableLayout: 'fixed' }}>
-          <colgroup>
-            <col style={{ width: columnWidths.checkbox }} />
-            <col style={{ width: columnWidths.name }} />
-            {shouldShowField('qualityScore') && (
-              <col style={{ width: columnWidths.qualityScore }} />
-            )}
-            {shouldShowField('description') && <col style={{ width: columnWidths.description }} />}
-            {shouldShowField('tags') && <col style={{ width: columnWidths.tags }} />}
-            {shouldShowField('author') && <col style={{ width: columnWidths.author }} />}
-            {shouldShowField('language') && <col style={{ width: columnWidths.language }} />}
-            {showAnalysisStatus && <col style={{ width: columnWidths.analysisStatus }} />}
-            {shouldShowField('analyzedAt') && <col style={{ width: columnWidths.analyzedAt }} />}
-            <col style={{ width: columnWidths.modified }} />
-            <col style={{ width: columnWidths.type }} />
-            <col style={{ width: columnWidths.size }} />
-          </colgroup>
-          <thead className="bg-muted/30 sticky top-0 z-10 border-b border-border/50">
-            <tr className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider h-10">
-              <th className="p-2 border-r border-border/50 relative">
-                <Checkbox
-                  checked={isAllSelected}
-                  onCheckedChange={checked => {
-                    if (checked) {
-                      onFileSelect(
-                        items.map(item => item.path!),
-                        true
-                      )
-                    } else {
-                      // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
-                      const visibleKeys = new Set(
-                        items.filter(it => !!it.path).map(it => normalizeForCache(it.path!))
-                      )
-                      onFileSelect(
-                        selectedFiles.filter(
-                          f => f && f.path && !visibleKeys.has(normalizeForCache(f.path))
-                        ),
-                        true
-                      )
-                    }
-                  }}
-                />
-                <ColumnResizer
-                  onResize={w => handleResize('checkbox', w)}
-                  currentWidth={columnWidths.checkbox}
-                />
-              </th>
-              <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                {!swapFileNameDisplay && showsmartName ? t('智能文件名') : t('名称')}
-                <ColumnResizer
-                  onResize={w => handleResize('name', w)}
-                  currentWidth={columnWidths.name}
-                />
-              </th>
+            <colgroup>
+              <col style={{ width: columnWidths.checkbox }} />
+              <col style={{ width: columnWidths.name }} />
               {shouldShowField('qualityScore') && (
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {getFieldLabel('qualityScore')}{' '}
-                  <ColumnResizer
-                    onResize={w => handleResize('qualityScore', w)}
-                    currentWidth={columnWidths.qualityScore}
-                  />
-                </th>
+                <col style={{ width: columnWidths.qualityScore }} />
               )}
               {shouldShowField('description') && (
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {getFieldLabel('description')}{' '}
+                <col style={{ width: columnWidths.description }} />
+              )}
+              {shouldShowField('tags') && <col style={{ width: columnWidths.tags }} />}
+              {shouldShowField('author') && <col style={{ width: columnWidths.author }} />}
+              {shouldShowField('language') && <col style={{ width: columnWidths.language }} />}
+              {showAnalysisStatus && <col style={{ width: columnWidths.analysisStatus }} />}
+              {shouldShowField('analyzedAt') && <col style={{ width: columnWidths.analyzedAt }} />}
+              <col style={{ width: columnWidths.modified }} />
+              <col style={{ width: columnWidths.type }} />
+              <col style={{ width: columnWidths.size }} />
+            </colgroup>
+            <thead className="bg-muted/30 sticky top-0 z-10 border-b border-border/50">
+              <tr className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider h-10">
+                <th className="p-2 border-r border-border/50 relative">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={checked => {
+                      if (checked) {
+                        onFileSelect(
+                          items.map(item => item.path!),
+                          true
+                        )
+                      } else {
+                        // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
+                        const visibleKeys = new Set(
+                          items.filter(it => !!it.path).map(it => normalizeForCache(it.path!))
+                        )
+                        onFileSelect(
+                          selectedFiles.filter(
+                            f => f && f.path && !visibleKeys.has(normalizeForCache(f.path))
+                          ),
+                          true
+                        )
+                      }
+                    }}
+                  />
                   <ColumnResizer
-                    onResize={w => handleResize('description', w)}
-                    currentWidth={columnWidths.description}
+                    onResize={w => handleResize('checkbox', w)}
+                    currentWidth={columnWidths.checkbox}
                   />
                 </th>
-              )}
-              {shouldShowField('tags') && (
                 <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {getFieldLabel('tags')}{' '}
+                  {!swapFileNameDisplay && showsmartName ? t('智能文件名') : t('名称')}
                   <ColumnResizer
-                    onResize={w => handleResize('tags', w)}
-                    currentWidth={columnWidths.tags}
+                    onResize={w => handleResize('name', w)}
+                    currentWidth={columnWidths.name}
                   />
                 </th>
-              )}
-              {shouldShowField('author') && (
+                {shouldShowField('qualityScore') && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {getFieldLabel('qualityScore')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('qualityScore', w)}
+                      currentWidth={columnWidths.qualityScore}
+                    />
+                  </th>
+                )}
+                {shouldShowField('description') && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {getFieldLabel('description')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('description', w)}
+                      currentWidth={columnWidths.description}
+                    />
+                  </th>
+                )}
+                {shouldShowField('tags') && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {getFieldLabel('tags')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('tags', w)}
+                      currentWidth={columnWidths.tags}
+                    />
+                  </th>
+                )}
+                {shouldShowField('author') && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {getFieldLabel('author')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('author', w)}
+                      currentWidth={columnWidths.author}
+                    />
+                  </th>
+                )}
+                {shouldShowField('language') && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {getFieldLabel('language')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('language', w)}
+                      currentWidth={columnWidths.language}
+                    />
+                  </th>
+                )}
+                {showAnalysisStatus && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {t('分析状态')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('analysisStatus', w)}
+                      currentWidth={columnWidths.analysisStatus}
+                    />
+                  </th>
+                )}
+                {shouldShowField('analyzedAt') && (
+                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
+                    {getFieldLabel('analyzedAt')}{' '}
+                    <ColumnResizer
+                      onResize={w => handleResize('analyzedAt', w)}
+                      currentWidth={columnWidths.analyzedAt}
+                    />
+                  </th>
+                )}
                 <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {getFieldLabel('author')}{' '}
+                  {t('修改日期')}{' '}
                   <ColumnResizer
-                    onResize={w => handleResize('author', w)}
-                    currentWidth={columnWidths.author}
+                    onResize={w => handleResize('modified', w)}
+                    currentWidth={columnWidths.modified}
                   />
                 </th>
-              )}
-              {shouldShowField('language') && (
                 <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {getFieldLabel('language')}{' '}
+                  {t('类型')}{' '}
                   <ColumnResizer
-                    onResize={w => handleResize('language', w)}
-                    currentWidth={columnWidths.language}
+                    onResize={w => handleResize('type', w)}
+                    currentWidth={columnWidths.type}
                   />
                 </th>
-              )}
-              {showAnalysisStatus && (
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {t('分析状态')}{' '}
+                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors relative">
+                  {t('大小')}{' '}
                   <ColumnResizer
-                    onResize={w => handleResize('analysisStatus', w)}
-                    currentWidth={columnWidths.analysisStatus}
+                    onResize={w => handleResize('size', w)}
+                    currentWidth={columnWidths.size}
                   />
                 </th>
-              )}
-              {shouldShowField('analyzedAt') && (
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {getFieldLabel('analyzedAt')}{' '}
-                  <ColumnResizer
-                    onResize={w => handleResize('analyzedAt', w)}
-                    currentWidth={columnWidths.analyzedAt}
-                  />
-                </th>
-              )}
-              <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                {t('修改日期')}{' '}
-                <ColumnResizer
-                  onResize={w => handleResize('modified', w)}
-                  currentWidth={columnWidths.modified}
+              </tr>
+            </thead>
+            <tbody className="divide-y relative">
+              {contextMenu && (
+                <ContextMenu
+                  x={contextMenu.x}
+                  y={contextMenu.y}
+                  items={contextMenuItems}
+                  onClose={() => setContextMenu(null)}
                 />
-              </th>
-              <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                {t('类型')}{' '}
-                <ColumnResizer
-                  onResize={w => handleResize('type', w)}
-                  currentWidth={columnWidths.type}
-                />
-              </th>
-              <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors relative">
-                {t('大小')}{' '}
-                <ColumnResizer
-                  onResize={w => handleResize('size', w)}
-                  currentWidth={columnWidths.size}
-                />
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y relative">
-            {contextMenu && (
-              <ContextMenu
-                x={contextMenu.x}
-                y={contextMenu.y}
-                items={contextMenuItems}
-                onClose={() => setContextMenu(null)}
-              />
-            )}
-            {items.map((item, index) => (
-              <RowRenderer key={item.path || index} index={index} style={{}} data={itemData} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+              )}
+              {items.map((item, index) => (
+                <RowRenderer key={item.path || index} index={index} style={{}} data={itemData} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <FileAdmissionNoticeBar
         visible={isRealDirectory}
         workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
         onOpenAdmissionRules={handleOpenAdmissionRules}
+        dismissed={noticeDismissed}
+        onDismissedChange={setNoticeDismissed}
       />
     </div>
   )

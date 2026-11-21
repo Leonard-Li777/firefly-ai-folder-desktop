@@ -618,6 +618,10 @@ declare global {
         writeFile: (filePath: string, content: string) => Promise<void>
         detectLibreOffice: () => Promise<LibreOfficeDetection>
         detectFfmpeg: () => Promise<any>
+        extractVideoFrame: (
+          filePath: string,
+          timestampSec: number
+        ) => Promise<{ success: boolean; dataUrl?: string; error?: string }>
         detectFfprobe: () => Promise<{ available: boolean; path: string | null }>
         openExternal: (url: string) => Promise<void>
         readFileBase64: (filePath: string) => Promise<string>

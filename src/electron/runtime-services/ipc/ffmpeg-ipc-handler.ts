@@ -6,9 +6,18 @@
 import { ipcMain } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import { ffmpegService } from '../system/ffmpeg-service'
+import { extractVideoFrameAsWebp } from './video-frame-extractor'
 
 export function registerFfmpegIpcHandlers() {
   logger.info(LogCategory.MAIN, '正在注册 FFmpeg IPC 处理器...')
+
+  // 按时间点抽取视频帧（供非原生格式切片预览图使用）
+  ipcMain.handle(
+    'ffmpeg:extract-frame',
+    async (_event, payload: { filePath: string; timestampSec: number }) => {
+      return await extractVideoFrameAsWebp(payload?.filePath ?? '', payload?.timestampSec ?? 0)
+    }
+  )
 
   // 检测安装状态
   ipcMain.handle('ffmpeg:check-installation', async () => {

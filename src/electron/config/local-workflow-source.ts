@@ -4,7 +4,7 @@
  *
  * 核心架构准则（SSOT 与零冗余）：
  * 1. 彻底删除 workspace_config 下的冗余字段 derivedSnapshot、namingPattern、namingTemplate；
- * 2. 70 套工作流的 baseAIConfig 仅有 2 种取值（LIGHT / FULL），抽取为共享预设并由键引用；
+ * 2. 78 套工作流的 baseAIConfig 仅有 2 种取值（LIGHT / FULL），抽取为共享预设并由键引用；
  * 3. 面向用户文本 100% 显式包裹 t('字面量')，供 voerkai18n 构建期静态 AST 提取；
  * 4. 树形结构 preset_directory_tree 包含全量层级信息，叶子 paths 纯动态派生。
  */
@@ -73,6 +73,7 @@ export const DEFAULT_UNBOUND_AI_CONFIG: LocalWorkspaceAIConfig = {
   videoCutSensitivity: 'medium',
   videoSoftTokenBudget: 48,
   videoAsrDurationSec: 30,
+  videoAnalyzeDurationSec: 10800,
   audioAnalysisDurationSec: 60,
   enableImageOcr: true,
   ocrModelSize: 'tiny',
@@ -128,6 +129,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'low',
       videoSoftTokenBudget: 48,
       videoAsrDurationSec: 0,
+      videoAnalyzeDurationSec: 300,
       audioAnalysisDurationSec: 0,
       enableImageOcr: false,
       ocrModelSize: 'tiny',
@@ -147,6 +149,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'medium',
       videoSoftTokenBudget: 48,
       videoAsrDurationSec: 0,
+      videoAnalyzeDurationSec: 300,
       audioAnalysisDurationSec: 0,
       enableImageOcr: true,
       ocrModelSize: 'small',
@@ -166,6 +169,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'low',
       videoSoftTokenBudget: 48,
       videoAsrDurationSec: 0,
+      videoAnalyzeDurationSec: 300,
       audioAnalysisDurationSec: 0,
       enableImageOcr: true,
       ocrModelSize: 'tiny',
@@ -185,6 +189,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'high',
       videoSoftTokenBudget: 140,
       videoAsrDurationSec: 60,
+      videoAnalyzeDurationSec: 10800,
       audioAnalysisDurationSec: 90,
       enableImageOcr: false,
       ocrModelSize: 'tiny',
@@ -209,6 +214,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'low',
       videoSoftTokenBudget: 48,
       videoAsrDurationSec: 60,
+      videoAnalyzeDurationSec: 300,
       audioAnalysisDurationSec: 180,
       enableImageOcr: false,
       ocrModelSize: 'tiny',
@@ -228,6 +234,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'low',
       videoSoftTokenBudget: 48,
       videoAsrDurationSec: 0,
+      videoAnalyzeDurationSec: 300,
       audioAnalysisDurationSec: 0,
       enableImageOcr: false,
       ocrModelSize: 'tiny',
@@ -247,6 +254,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       videoCutSensitivity: 'medium',
       videoSoftTokenBudget: 48,
       videoAsrDurationSec: 30,
+      videoAnalyzeDurationSec: 10800,
       audioAnalysisDurationSec: 60,
       enableImageOcr: true,
       ocrModelSize: 'tiny',
@@ -266,7 +274,7 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
   }
 }
 
-/** 70 套官方预置工作流的声明数据 (仅用户可见文案经 t() 包裹) */
+/** 78 套官方预置工作流的声明数据 (仅用户可见文案经 t() 包裹) */
 
 const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
@@ -16052,7 +16060,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       maxDocumentOcrItems: 5,
       extractPages: 3,
       videoQuotaMax: 32,
-      videoAsrDurationSec: 45
+      videoAsrDurationSec: 45,
+      videoAnalyzeDurationSec: 10800
     },
     enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw']
   },
@@ -17039,6 +17048,1321 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
     enabledWorkspacePlugins: []
+  },
+  {
+    id: 'builtin.workflow.renovation-project',
+    name: t('家装装修工程全流程管理'),
+    summary: t('从量房设计、预算合同到施工验收与入住保修的装修全过程档案'),
+    version: '1.0.0',
+    persona: t('正在装修或翻新房屋的业主与家装项目经理'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-量房与原始图纸'),
+        children: [
+          { name: t('原始户型图CAD') },
+          { name: t('量房手稿与照片') },
+          { name: t('承重与水电点位') }
+        ]
+      },
+      {
+        name: t('02-设计方案与效果图'),
+        children: [
+          { name: t('平面布局方案') },
+          { name: t('效果图渲染') },
+          { name: t('风格参考与灵感') },
+          { name: t('软装搭配方案') }
+        ]
+      },
+      {
+        name: t('03-预算报价与合同'),
+        children: [
+          { name: t('装修公司报价单') },
+          { name: t('主材辅材清单') },
+          { name: t('施工合同与增项') },
+          { name: t('付款节点记录') }
+        ]
+      },
+      {
+        name: t('04-施工进度与现场'),
+        children: [
+          { name: t('拆改与水电') },
+          { name: t('泥木油施工') },
+          { name: t('隐蔽工程留档') },
+          { name: t('安装与收尾') }
+        ]
+      },
+      {
+        name: t('05-验收与整改'),
+        children: [
+          { name: t('分项验收单') },
+          { name: t('问题整改记录') },
+          { name: t('环保检测报告') }
+        ]
+      },
+      {
+        name: t('06-入住与保修'),
+        children: [
+          { name: t('保修卡与说明书') },
+          { name: t('家电家具发票') },
+          { name: t('物业与钥匙交接') }
+        ]
+      }
+    ],
+    extensionWeights: {
+      '.dwg': 0.12,
+      '.dxf': 0.03,
+      '.3ds': 0.02,
+      '.skp': 0.02,
+      '.pdf': 0.14,
+      '.xlsx': 0.13,
+      '.docx': 0.09,
+      '.jpg': 0.17,
+      '.jpeg': 0.03,
+      '.png': 0.09,
+      '.heic': 0.03,
+      '.mp4': 0.06,
+      '.mov': 0.03,
+      '.txt': 0.02,
+      '.zip': 0.02
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.renovation-project-exclusive-1',
+        type: 'extension',
+        value: '.dwg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-exclusive-2',
+        type: 'extension',
+        value: '.dxf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-exclusive-3',
+        type: 'extension',
+        value: '.3ds',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-exclusive-4',
+        type: 'extension',
+        value: '.skp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-1',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-2',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-3',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-4',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-5',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-6',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-7',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-8',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-9',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-10',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-common-11',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.renovation-project-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.renovation-project-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.visual-appreciation-vault',
+    name: t('图片欣赏与灵感收藏库'),
+    summary: t('壁纸、插画、AI出图、同人图等纯欣赏收藏图片的统一图墙归档'),
+    version: '1.0.0',
+    persona: t('收藏壁纸插画、AI生成图与灵感素材的视觉爱好者'),
+    category: 'entertainment',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-壁纸与桌面'),
+        children: [{ name: t('电脑壁纸') }, { name: t('手机壁纸') }, { name: t('多屏与超宽') }]
+      },
+      {
+        name: t('02-插画与原画欣赏'),
+        children: [{ name: t('CG与概念图') }, { name: t('同人插画') }, { name: t('画师作品集') }]
+      },
+      {
+        name: t('03-AI生成图'),
+        children: [
+          { name: t('文生图成品') },
+          { name: t('图生图与重绘') },
+          { name: t('提示词与参数') }
+        ]
+      },
+      {
+        name: t('04-摄影与风光欣赏'),
+        children: [{ name: t('风光大片') }, { name: t('人像写真欣赏') }, { name: t('城市与建筑') }]
+      },
+      {
+        name: t('05-灵感素材与拼贴'),
+        children: [
+          { name: t('配色与纹理') },
+          { name: t('排版与构图参考') },
+          { name: t('moodboard情绪板') }
+        ]
+      }
+    ],
+    extensionWeights: {
+      '.png': 0.34,
+      '.jpg': 0.3,
+      '.jpeg': 0.12,
+      '.webp': 0.09,
+      '.gif': 0.04,
+      '.bmp': 0.02,
+      '.jfif': 0.02,
+      '.avif': 0.02,
+      '.tif': 0.02,
+      '.tiff': 0.01,
+      '.heic': 0.01,
+      '.svg': 0.01
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-1',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-2',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-3',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-4',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-9',
+        type: 'extension',
+        value: '.gif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-10',
+        type: 'extension',
+        value: '.bmp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-11',
+        type: 'extension',
+        value: '.jfif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-12',
+        type: 'extension',
+        value: '.avif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-5',
+        type: 'extension',
+        value: '.svg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-6',
+        type: 'extension',
+        value: '.tif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-7',
+        type: 'extension',
+        value: '.tiff',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-common-8',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-1',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-2',
+        type: 'extension',
+        value: '.clip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-3',
+        type: 'extension',
+        value: '.sai',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-4',
+        type: 'extension',
+        value: '.ai',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-5',
+        type: 'extension',
+        value: '.dwg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-6',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.visual-appreciation-vault-ignore-7',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.career-jobhunt-portfolio',
+    name: t('求职与职业发展档案'),
+    summary: t('简历多版本、作品集、面试复盘与Offer对比的职业跃迁档案'),
+    version: '1.0.0',
+    persona: t('正在求职或规划职业发展的职场人'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-简历多版本'),
+        children: [{ name: t('通用版简历') }, { name: t('定向投递版') }, { name: t('中英文双语') }]
+      },
+      {
+        name: t('02-作品集'),
+        children: [{ name: t('项目案例') }, { name: t('设计作品') }, { name: t('代码与仓库') }]
+      },
+      {
+        name: t('03-岗位与JD存档'),
+        children: [{ name: t('目标公司') }, { name: t('岗位JD截图') }, { name: t('投递记录') }]
+      },
+      {
+        name: t('04-面试复盘'),
+        children: [{ name: t('一面二面') }, { name: t('笔试题') }, { name: t('复盘笔记') }]
+      },
+      {
+        name: t('05-Offer与薪酬对比'),
+        children: [{ name: t('Offer扫描件') }, { name: t('薪酬对比表') }, { name: t('谈判记录') }]
+      },
+      {
+        name: t('06-背调与入职材料'),
+        children: [{ name: t('背调授权') }, { name: t('学历证明') }, { name: t('入职材料') }]
+      }
+    ],
+    extensionWeights: {
+      '.pdf': 0.4,
+      '.docx': 0.22,
+      '.xlsx': 0.1,
+      '.png': 0.1,
+      '.jpg': 0.06,
+      '.pptx': 0.06,
+      '.key': 0.02,
+      '.txt': 0.02,
+      '.zip': 0.02
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-1',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-2',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-3',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-4',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-5',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-exclusive-1',
+        type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-exclusive-2',
+        type: 'extension',
+        value: '.key',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-6',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-common-7',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.career-jobhunt-portfolio-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    enabledWorkspacePlugins: ['perception_nsfw']
+  },
+  {
+    id: 'builtin.workflow.online-course-production',
+    name: t('在线课程与网课制作'),
+    summary: t('课程大纲、录课原片、课件讲义到剪辑交付的网课生产线'),
+    version: '1.0.0',
+    persona: t('制作与售卖在线课程的讲师与课程团队'),
+    category: 'creative',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-课程大纲与脚本'),
+        children: [{ name: t('课程大纲') }, { name: t('逐字稿') }, { name: t('分镜脚本') }]
+      },
+      {
+        name: t('02-录课原片'),
+        children: [{ name: t('屏幕录制') }, { name: t('出镜原片') }, { name: t('备用素材') }]
+      },
+      {
+        name: t('03-课件与讲义'),
+        children: [{ name: t('PPT课件') }, { name: t('讲义PDF') }, { name: t('练习题') }]
+      },
+      {
+        name: t('04-剪辑工程'),
+        children: [{ name: t('剪辑工程文件') }, { name: t('字幕文件') }, { name: t('配音音轨') }]
+      },
+      {
+        name: t('05-学员作业'),
+        children: [{ name: t('作业提交') }, { name: t('批改记录') }, { name: t('优秀作业') }]
+      },
+      {
+        name: t('06-交付与分发版本'),
+        children: [{ name: t('成片渲染') }, { name: t('平台分发版') }, { name: t('宣传片') }]
+      }
+    ],
+    extensionWeights: {
+      '.mp4': 0.3,
+      '.mov': 0.1,
+      '.mkv': 0.04,
+      '.pdf': 0.14,
+      '.pptx': 0.14,
+      '.docx': 0.08,
+      '.png': 0.08,
+      '.jpg': 0.04,
+      '.srt': 0.03,
+      '.wav': 0.02,
+      '.mp3': 0.02,
+      '.zip': 0.01
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.online-course-production-common-1',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-common-2',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-exclusive-1',
+        type: 'extension',
+        value: '.mkv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-common-3',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-exclusive-2',
+        type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-common-4',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-common-5',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-common-6',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-exclusive-3',
+        type: 'extension',
+        value: '.srt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-exclusive-4',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-exclusive-5',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-common-7',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.online-course-production-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.online-course-production-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'VIDEO_CREATOR',
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw']
+  },
+  {
+    id: 'builtin.workflow.livestream-creator-ops',
+    name: t('直播与主播运营'),
+    summary: t('直播回放、高光切片、场控脚本到带货数据复盘的主播运营档案'),
+    version: '1.0.0',
+    persona: t('直播主播与直播运营团队'),
+    category: 'entertainment',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.55-2.27A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.89L15 14"/><rect x="1" y="6" width="14" height="12" rx="2"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-直播回放'),
+        children: [{ name: t('完整回放') }, { name: t('平台存档') }, { name: t('备用录制') }]
+      },
+      {
+        name: t('02-高光切片'),
+        children: [{ name: t('精彩瞬间') }, { name: t('名场面') }, { name: t('切片发布版') }]
+      },
+      {
+        name: t('03-场控脚本'),
+        children: [{ name: t('直播流程') }, { name: t('话术脚本') }, { name: t('互动环节') }]
+      },
+      {
+        name: t('04-直播间物料'),
+        children: [{ name: t('背景与贴片') }, { name: t('弹幕互动图') }, { name: t('商品卡') }]
+      },
+      {
+        name: t('05-带货与打赏数据'),
+        children: [{ name: t('销售数据') }, { name: t('打赏记录') }, { name: t('商品清单') }]
+      },
+      {
+        name: t('06-复盘报告'),
+        children: [{ name: t('流量复盘') }, { name: t('转化复盘') }, { name: t('改进计划') }]
+      }
+    ],
+    extensionWeights: {
+      '.mp4': 0.34,
+      '.flv': 0.12,
+      '.mov': 0.06,
+      '.png': 0.12,
+      '.jpg': 0.06,
+      '.xlsx': 0.1,
+      '.csv': 0.06,
+      '.docx': 0.06,
+      '.psd': 0.04,
+      '.txt': 0.04
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-1',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-exclusive-1',
+        type: 'extension',
+        value: '.flv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-2',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-3',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-4',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-5',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-exclusive-2',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-6',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-exclusive-3',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-common-7',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.livestream-creator-ops-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.livestream-creator-ops-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'VIDEO_CREATOR',
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw']
+  },
+  {
+    id: 'builtin.workflow.foodblogger-recipe-studio',
+    name: t('美食博主与食谱研发'),
+    summary: t('菜品拍摄、配方研发、探店素材到图文成稿的美食创作档案'),
+    version: '1.0.0',
+    persona: t('美食博主与食谱研发创作者'),
+    category: 'creative',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-菜品成品图'),
+        children: [{ name: t('精修成品') }, { name: t('俯拍全家福') }, { name: t('细节特写') }]
+      },
+      {
+        name: t('02-制作过程拍摄'),
+        children: [{ name: t('步骤图') }, { name: t('过程视频') }, { name: t('失败记录') }]
+      },
+      {
+        name: t('03-配方研发卡'),
+        children: [{ name: t('配方卡') }, { name: t('用量比例') }, { name: t('改良版本') }]
+      },
+      {
+        name: t('04-探店与素材'),
+        children: [{ name: t('探店拍摄') }, { name: t('门店素材') }, { name: t('氛围参考') }]
+      },
+      {
+        name: t('05-图文成稿'),
+        children: [{ name: t('菜谱文案') }, { name: t('小红书图文') }, { name: t('公众号长文') }]
+      },
+      {
+        name: t('06-平台分发与数据'),
+        children: [{ name: t('发布版本') }, { name: t('数据复盘') }, { name: t('商单合作') }]
+      }
+    ],
+    extensionWeights: {
+      '.jpg': 0.32,
+      '.jpeg': 0.12,
+      '.png': 0.2,
+      '.heic': 0.06,
+      '.mp4': 0.1,
+      '.mov': 0.05,
+      '.docx': 0.05,
+      '.pdf': 0.04,
+      '.xlsx': 0.04,
+      '.txt': 0.02
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-1',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-2',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-3',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-4',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-5',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-6',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-7',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-8',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-9',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-common-10',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.foodblogger-recipe-studio-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.travelblogger-shoot-studio',
+    name: t('旅行博主与旅拍工作室'),
+    summary: t('行程机位、原片精修、视频航拍到图文商单的旅拍创作档案'),
+    version: '1.0.0',
+    persona: t('旅行博主与旅拍工作室团队'),
+    category: 'creative',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-行程与机位'),
+        children: [{ name: t('行程规划') }, { name: t('机位地图') }, { name: t('攻略收藏') }]
+      },
+      {
+        name: t('02-原片RAW与JPG'),
+        children: [{ name: t('RAW原片') }, { name: t('JPG直出') }, { name: t('筛选入围') }]
+      },
+      {
+        name: t('03-精修客片'),
+        children: [{ name: t('调色精修') }, { name: t('客片交付') }, { name: t('组图排版') }]
+      },
+      {
+        name: t('04-视频与航拍'),
+        children: [{ name: t('旅拍视频') }, { name: t('航拍素材') }, { name: t('剪辑成片') }]
+      },
+      {
+        name: t('05-图文成稿'),
+        children: [{ name: t('游记长文') }, { name: t('种草短文') }, { name: t('九宫格') }]
+      },
+      {
+        name: t('06-平台分发与商单'),
+        children: [{ name: t('发布版本') }, { name: t('数据复盘') }, { name: t('品牌商单') }]
+      }
+    ],
+    extensionWeights: {
+      '.jpg': 0.26,
+      '.jpeg': 0.08,
+      '.png': 0.12,
+      '.heic': 0.05,
+      '.cr2': 0.06,
+      '.arw': 0.05,
+      '.nef': 0.04,
+      '.dng': 0.04,
+      '.mp4': 0.12,
+      '.mov': 0.08,
+      '.psd': 0.04,
+      '.docx': 0.03,
+      '.xlsx': 0.03
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-1',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-2',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-3',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-4',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-exclusive-1',
+        type: 'extension',
+        value: '.cr2',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-exclusive-2',
+        type: 'extension',
+        value: '.arw',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-exclusive-3',
+        type: 'extension',
+        value: '.nef',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-exclusive-4',
+        type: 'extension',
+        value: '.dng',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-5',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-6',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-exclusive-5',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-7',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-common-8',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.travelblogger-shoot-studio-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.study-tour-camp-organizer',
+    name: t('研学营地与亲子活动组织'),
+    summary: t('行程方案、安全预案、家长通知到活动复盘的研学营地组织档案'),
+    version: '1.0.0',
+    persona: t('研学机构与营地活动组织者'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2v3M14 2v3M9 5h6l1 3H8z"/><path d="M12 8v13M8 21h8"/><path d="M12 11l6-4M12 11l-6-4"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-行程方案与课表'),
+        children: [{ name: t('行程方案') }, { name: t('课程课表') }, { name: t('场地安排') }]
+      },
+      {
+        name: t('02-安全与应急预案'),
+        children: [{ name: t('安全预案') }, { name: t('医疗保障') }, { name: t('应急联系') }]
+      },
+      {
+        name: t('03-家长通知与报名'),
+        children: [{ name: t('报名表') }, { name: t('家长告知书') }, { name: t('缴费记录') }]
+      },
+      {
+        name: t('04-活动现场照片视频'),
+        children: [{ name: t('活动照片') }, { name: t('活动视频') }, { name: t('精彩瞬间') }]
+      },
+      {
+        name: t('05-学员作品与证书'),
+        children: [{ name: t('学员作品') }, { name: t('结业证书') }, { name: t('评优记录') }]
+      },
+      {
+        name: t('06-结营与复盘'),
+        children: [{ name: t('结营仪式') }, { name: t('复盘报告') }, { name: t('家长反馈') }]
+      }
+    ],
+    extensionWeights: {
+      '.pdf': 0.22,
+      '.docx': 0.18,
+      '.xlsx': 0.12,
+      '.jpg': 0.18,
+      '.jpeg': 0.06,
+      '.png': 0.08,
+      '.mp4': 0.08,
+      '.mov': 0.04,
+      '.pptx': 0.04
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-1',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-2',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-3',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-4',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-5',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-6',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-7',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-common-8',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-exclusive-1',
+        type: 'extension',
+        value: '.pptx',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-ignore-1',
+        type: 'extension',
+        value: '.exe',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-ignore-2',
+        type: 'extension',
+        value: '.log',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.study-tour-camp-organizer-ignore-4',
+        type: 'extension',
+        value: '.crdownload',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
   }
 ]
 
@@ -17208,6 +18532,11 @@ export function applyExtensionWeightsMediaGate(
     baseAIConfig.videoAsrDurationSec = DEFAULT_VIDEO_ASR_FILL_SEC
   }
 
+  // 无视频素材的主题不保留长视界默认值，避免给纯文档/图库流无意义地拉长分析范围
+  if (!media.hasVideo) {
+    baseAIConfig.videoAnalyzeDurationSec = 300
+  }
+
   // Stage 3 — 规则②（纯音频 ASR：无音频归 0；含纯音频且开启 ASR 时补 60s）
   if (!media.hasAudio) {
     baseAIConfig.audioAnalysisDurationSec = 0
@@ -17293,7 +18622,7 @@ const buildWorkspaceConfig = (def: LocalWorkflowDefinition): WorkspaceConfigRead
   } as WorkspaceConfigReady
 }
 
-/** 官方预置工作流本地事实源工厂 (返回 70 套内存态工作流实体) */
+/** 官方预置工作流本地事实源工厂 (返回 78 套内存态工作流实体) */
 export const LOCAL_WORKFLOW_SOURCE = (): Array<{
   id: string
   user_id: null
@@ -17383,6 +18712,11 @@ export function sanitizeWorkspaceAIConfig<T extends SanitizeCandidate>(candidate
     } else {
       base.videoQuotaMax = Math.min(240, Math.max(8, Math.round(base.videoQuotaMax as number)))
     }
+    const rawAnalyzeSec = base.videoAnalyzeDurationSec
+    base.videoAnalyzeDurationSec =
+      typeof rawAnalyzeSec !== 'number' || !Number.isFinite(rawAnalyzeSec)
+        ? 300
+        : Math.min(10800, Math.max(300, Math.round((rawAnalyzeSec as number) / 300) * 300))
     for (const key of ['videoAsrDurationSec', 'audioAnalysisDurationSec'] as const) {
       const raw = base[key]
       if (typeof raw !== 'number' || !Number.isFinite(raw)) {

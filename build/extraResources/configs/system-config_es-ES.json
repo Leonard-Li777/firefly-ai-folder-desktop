@@ -11,14 +11,14 @@
       "[Actualización de etiquetas de archivos] Enriquezca los tipos de etiquetas de hechos, las etiquetas son más precisas e interpretables y el árbol de etiquetas admite 10 niveles de expansión",
       "[Optimización del material del creador] Para diseñadores y medios propios, optimización especial de la clasificación de materiales de audio, vídeo e imágenes.",
       "[Detección mejorada de contenido confidencial] Identifique segmentariamente contenido pornográfico, violento, terrorista, político, abusivo, sangriento y otros contenidos ilegales y sus subcategorías",
-      "【工作流】内置70+套工作流适配文件整理的各种场景，无需复杂配置,轻松上手文件整理",
-      "【五大批量整理模式】身份蓝图、智能聚类... 等全新整理模式，秒级处理数千文件",
+      "[Flujo de trabajo] Más de 70 conjuntos integrados de flujos de trabajo se adaptan a varios escenarios de clasificación de archivos, sin una configuración compleja, es fácil comenzar con la clasificación de archivos",
+      "[Cinco modos de clasificación de gran volumen] Plan de identidad, agrupación inteligente... Y otros nuevos modos de clasificación, procesando miles de archivos en segundos",
       "[Plan de identidad (recomendado)] Seleccione roles de la industria, optimización de cuatro etapas y clasifique todos los archivos en milisegundos en el lado del cliente",
       "[Clúster inteligente] Clúster no supervisado de HAC final, genera árboles de directorios en milisegundos, clasifica todos los archivos en segundos y admite ajustes en tiempo real",
       "[Directorio externo generado por IA] Copie las palabras clave a Doubao, Kimi, ChatGPT con un solo clic y obtenga una vista previa y organice los resultados en tiempo real",
       "[Derivar árboles de directorios a partir de archivos] El motor de IA avanzado genera 3 conjuntos de candidatos de directorio a la vez y se selecciona la clasificación automática",
       "[Árbol de directorios personalizado] Pegue el directorio Markdown, obtenga una vista previa de dos columnas en tiempo real y cree reglas de organización exclusivas",
-      "【智能休眠】智能感知用户操作，在低内存水位线，功能闲置时自动释放内存占用",
+      "[Suspensión inteligente] Percepción inteligente de la operación del usuario, en el nivel bajo de agua de la memoria, el uso de la memoria se libera automáticamente cuando la función está inactiva.",
       "[Optimización de la interfaz de usuario en profundidad] Reconstruya la estructura de la página de configuración, agregue una nueva guía y entrada de ayuda y haga que la operación sea más intuitiva."
     ],
     "forceUpdate": false

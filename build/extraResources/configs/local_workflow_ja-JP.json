@@ -74,6 +74,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -248,6 +249,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -438,6 +440,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -593,6 +596,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -745,6 +749,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -925,6 +930,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -1127,6 +1133,7 @@
         "videoCutSensitivity": "high",
         "videoSoftTokenBudget": 140,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 90,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -1316,6 +1323,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -1506,6 +1514,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -1673,6 +1682,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -1858,6 +1868,7 @@
         "videoCutSensitivity": "high",
         "videoSoftTokenBudget": 140,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -2038,6 +2049,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -2233,6 +2245,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -2403,6 +2416,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -2780,6 +2794,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -3156,6 +3171,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -3517,6 +3533,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -3884,6 +3901,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -4340,6 +4358,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -4679,6 +4698,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 90,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -5000,6 +5020,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -5334,6 +5355,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -5838,6 +5860,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -6320,6 +6343,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -6691,6 +6715,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -7046,6 +7071,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -7477,6 +7503,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 90,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -7870,6 +7897,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 120,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -8277,6 +8305,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -8667,6 +8696,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -8999,6 +9029,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -9234,6 +9265,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -9602,6 +9634,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -9871,6 +9904,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -10233,6 +10267,7 @@
         "videoCutSensitivity": "high",
         "videoSoftTokenBudget": 140,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 90,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -10548,6 +10583,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -10831,6 +10867,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -11070,6 +11107,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -11290,6 +11328,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -11610,6 +11649,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -11982,6 +12022,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 180,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -12284,6 +12325,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -12606,6 +12648,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -13050,6 +13093,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -13437,6 +13481,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -13718,6 +13763,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -13945,6 +13991,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -14271,6 +14318,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 30,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -14800,6 +14848,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -15127,6 +15176,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -15434,6 +15484,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 30,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -15793,6 +15844,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -16115,6 +16167,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 90,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -16352,6 +16405,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -16648,6 +16702,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 90,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -16881,6 +16936,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -17120,6 +17176,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -17354,6 +17411,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -17571,6 +17629,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -17961,6 +18020,7 @@
         "videoCutSensitivity": "high",
         "videoSoftTokenBudget": 140,
         "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 120,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -18391,6 +18451,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -18646,6 +18707,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": false,
         "ocrModelSize": "tiny",
@@ -18959,6 +19021,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -19269,6 +19332,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -19469,6 +19533,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 45,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -19627,6 +19692,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -19982,6 +20048,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 10800,
         "audioAnalysisDurationSec": 60,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -20176,6 +20243,7 @@
         "videoCutSensitivity": "medium",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "small",
@@ -20366,6 +20434,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -20638,6 +20707,7 @@
         "videoCutSensitivity": "low",
         "videoSoftTokenBudget": 48,
         "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
         "audioAnalysisDurationSec": 0,
         "enableImageOcr": true,
         "ocrModelSize": "tiny",
@@ -20701,5 +20771,1993 @@
     ],
     "preview_tree": null,
     "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path d=\"M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z\"/><polyline points=\"14 2 14 8 20 8\"/><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.renovation-project",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "室内装飾プロジェクトの完全なプロセス管理",
+    "version": "1.0.0",
+    "persona": "住宅の改築または改築を行っている住宅所有者および住宅改善プロジェクト マネージャー",
+    "category": "office",
+    "summary": "部屋の測定と設計、予算契約から建設受理、入居保証までの装飾プロセス全体のアーカイブ",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.renovation-project",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.renovation-project-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.renovation-project-exclusive-1",
+          "type": "extension",
+          "value": ".dwg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-exclusive-2",
+          "type": "extension",
+          "value": ".dxf",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-exclusive-3",
+          "type": "extension",
+          "value": ".3ds",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-exclusive-4",
+          "type": "extension",
+          "value": ".skp",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-1",
+          "type": "extension",
+          "value": ".pdf",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-2",
+          "type": "extension",
+          "value": ".xlsx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-3",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-4",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-5",
+          "type": "extension",
+          "value": ".jpeg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-6",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-7",
+          "type": "extension",
+          "value": ".heic",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-8",
+          "type": "extension",
+          "value": ".mp4",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-9",
+          "type": "extension",
+          "value": ".mov",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-10",
+          "type": "extension",
+          "value": ".txt",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.renovation-project-common-11",
+          "type": "extension",
+          "value": ".zip",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "medium",
+        "videoSoftTokenBudget": 48,
+        "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": true,
+        "ocrModelSize": "small",
+        "maxContentSizeKb": 8192,
+        "extractPages": 10,
+        "maxDocumentOcrItems": 15,
+        "enableOfficeCover": true,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
+      "extensionWeights": {
+        ".dwg": 0.12,
+        ".dxf": 0.03,
+        ".3ds": 0.02,
+        ".skp": 0.02,
+        ".pdf": 0.14,
+        ".xlsx": 0.13,
+        ".docx": 0.09,
+        ".jpg": 0.17,
+        ".jpeg": 0.03,
+        ".png": 0.09,
+        ".heic": 0.03,
+        ".mp4": 0.06,
+        ".mov": 0.03,
+        ".txt": 0.02,
+        ".zip": 0.02
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-採寸と原図",
+        "children": [
+          {
+            "name": "オリジナル住宅プランCAD"
+          },
+          {
+            "name": "測定室の原稿と写真"
+          },
+          {
+            "name": "耐荷重と水道と電気のポイント"
+          }
+        ]
+      },
+      {
+        "name": "02-設計図と完成予想図",
+        "children": [
+          {
+            "name": "フロアプラン"
+          },
+          {
+            "name": "レンダリングのレンダリング"
+          },
+          {
+            "name": "スタイルの参照とインスピレーション"
+          },
+          {
+            "name": "ソフトファニシングマッチングプラン"
+          }
+        ]
+      },
+      {
+        "name": "03-予算見積と契約",
+        "children": [
+          {
+            "name": "装飾会社のお見積り"
+          },
+          {
+            "name": "主材料・副材料一覧"
+          },
+          {
+            "name": "工事契約と追加"
+          },
+          {
+            "name": "決済ノードレコード"
+          }
+        ]
+      },
+      {
+        "name": "04-工事進捗状況と現場",
+        "children": [
+          {
+            "name": "解体と改修と水道と電気"
+          },
+          {
+            "name": "マッドウッドオイル施工"
+          },
+          {
+            "name": "隠されたプロジェクトの記録"
+          },
+          {
+            "name": "取り付けと仕上げ"
+          }
+        ]
+      },
+      {
+        "name": "05-承認と修正",
+        "children": [
+          {
+            "name": "商品受付フォーム"
+          },
+          {
+            "name": "問題修正記録"
+          },
+          {
+            "name": "環境保護試験報告書"
+          }
+        ]
+      },
+      {
+        "name": "06-チェックインと保証",
+        "children": [
+          {
+            "name": "保証カードおよびマニュアル"
+          },
+          {
+            "name": "家電や家具の請求書"
+          },
+          {
+            "name": "プロパティとキーの引き継ぎ"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.visual-appreciation-vault",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "絵画鑑賞とインスピレーションコレクションライブラリー",
+    "version": "1.0.0",
+    "persona": "壁紙イラスト、AI 生成画像、インスピレーション素材を収集するビジュアル愛好家",
+    "category": "entertainment",
+    "summary": "壁紙、イラスト、AI 生成画像、ファン画像、その他の純粋な鑑賞とコレクションのための画像を統合した画像ウォール アーカイブ。",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.visual-appreciation-vault",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-1",
+          "type": "extension",
+          "value": ".psd",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-2",
+          "type": "extension",
+          "value": ".clip",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-3",
+          "type": "extension",
+          "value": ".sai",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-4",
+          "type": "extension",
+          "value": ".ai",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-5",
+          "type": "extension",
+          "value": ".dwg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-6",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-ignore-7",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-1",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-2",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-3",
+          "type": "extension",
+          "value": ".jpeg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-4",
+          "type": "extension",
+          "value": ".webp",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-9",
+          "type": "extension",
+          "value": ".gif",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-10",
+          "type": "extension",
+          "value": ".bmp",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-11",
+          "type": "extension",
+          "value": ".jfif",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-12",
+          "type": "extension",
+          "value": ".avif",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-5",
+          "type": "extension",
+          "value": ".svg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-6",
+          "type": "extension",
+          "value": ".tif",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-7",
+          "type": "extension",
+          "value": ".tiff",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.visual-appreciation-vault-common-8",
+          "type": "extension",
+          "value": ".heic",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
+        "videoSoftTokenBudget": 48,
+        "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": false,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "extensionWeights": {
+        ".png": 0.34,
+        ".jpg": 0.3,
+        ".jpeg": 0.12,
+        ".webp": 0.09,
+        ".gif": 0.04,
+        ".bmp": 0.02,
+        ".jfif": 0.02,
+        ".avif": 0.02,
+        ".tif": 0.02,
+        ".tiff": 0.01,
+        ".heic": 0.01,
+        ".svg": 0.01
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-壁紙とデスクトップ",
+        "children": [
+          {
+            "name": "コンピュータの壁紙"
+          },
+          {
+            "name": "携帯電話の壁紙"
+          },
+          {
+            "name": "マルチスクリーンとウルトラワイド"
+          }
+        ]
+      },
+      {
+        "name": "02 - イラスト・原画鑑賞",
+        "children": [
+          {
+            "name": "CGとコンセプト画"
+          },
+          {
+            "name": "ファンのイラスト"
+          },
+          {
+            "name": "画家のポートフォリオ"
+          }
+        ]
+      },
+      {
+        "name": "03-AI生成図",
+        "children": [
+          {
+            "name": "ヴィンセントの絵が完成しました"
+          },
+          {
+            "name": "描画と再描画"
+          },
+          {
+            "name": "プロンプトの単語とパラメータ"
+          }
+        ]
+      },
+      {
+        "name": "04-写真と風景鑑賞",
+        "children": [
+          {
+            "name": "風景の大ヒット作"
+          },
+          {
+            "name": "ポートレート写真鑑賞"
+          },
+          {
+            "name": "都市と建築"
+          }
+        ]
+      },
+      {
+        "name": "05-インスピレーション素材とコラージュ",
+        "children": [
+          {
+            "name": "色と質感"
+          },
+          {
+            "name": "タイポグラフィーと構成のリファレンス"
+          },
+          {
+            "name": "ムードボード ムードボード"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.5\"/><polyline points=\"21 15 16 10 5 21\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.career-jobhunt-portfolio",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "就職活動とキャリア開発プロフィール",
+    "version": "1.0.0",
+    "persona": "仕事を探している、またはキャリア開発を計画している専門家",
+    "category": "office",
+    "summary": "複数のバージョンの履歴書、ポートフォリオ、面接レビュー、オファーの比較を含むキャリア移行ファイル",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.career-jobhunt-portfolio",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-1",
+          "type": "extension",
+          "value": ".pdf",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-2",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-3",
+          "type": "extension",
+          "value": ".xlsx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-4",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-5",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-exclusive-1",
+          "type": "extension",
+          "value": ".pptx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-exclusive-2",
+          "type": "extension",
+          "value": ".key",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-6",
+          "type": "extension",
+          "value": ".txt",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.career-jobhunt-portfolio-common-7",
+          "type": "extension",
+          "value": ".zip",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
+        "videoSoftTokenBudget": 48,
+        "videoAsrDurationSec": 0,
+        "videoAnalyzeDurationSec": 300,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": true,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": true,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["perception_nsfw"],
+      "extensionWeights": {
+        ".pdf": 0.4,
+        ".docx": 0.22,
+        ".xlsx": 0.1,
+        ".png": 0.1,
+        ".jpg": 0.06,
+        ".pptx": 0.06,
+        ".key": 0.02,
+        ".txt": 0.02,
+        ".zip": 0.02
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01 - 複数のバージョンの履歴書",
+        "children": [
+          {
+            "name": "一般的な履歴書"
+          },
+          {
+            "name": "対象となる配信バージョン"
+          },
+          {
+            "name": "中国語と英語のバイリンガル"
+          }
+        ]
+      },
+      {
+        "name": "02-ポートフォリオ",
+        "children": [
+          {
+            "name": "プロジェクト事例"
+          },
+          {
+            "name": "デザイン作品"
+          },
+          {
+            "name": "コードとウェアハウス"
+          }
+        ]
+      },
+      {
+        "name": "03-ポジションとJDアーカイブ",
+        "children": [
+          {
+            "name": "対象会社"
+          },
+          {
+            "name": "ジョブJDのスクリーンショット"
+          },
+          {
+            "name": "納入実績"
+          }
+        ]
+      },
+      {
+        "name": "04-インタビューレビュー",
+        "children": [
+          {
+            "name": "片面と両面"
+          },
+          {
+            "name": "筆記試験の問題"
+          },
+          {
+            "name": "レビューノート"
+          }
+        ]
+      },
+      {
+        "name": "05-オファーと給与の比較",
+        "children": [
+          {
+            "name": "スキャンしたコピーを提供する"
+          },
+          {
+            "name": "給与比較表"
+          },
+          {
+            "name": "交渉記録"
+          }
+        ]
+      },
+      {
+        "name": "06-採用・エントリー資料",
+        "children": [
+          {
+            "name": "バックエンドの認可"
+          },
+          {
+            "name": "学歴証明書"
+          },
+          {
+            "name": "オンボーディング資料"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"2\" y=\"7\" width=\"20\" height=\"14\" rx=\"2\"/><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.online-course-production",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "オンラインコースとオンラインコース制作",
+    "version": "1.0.0",
+    "persona": "オンラインコースを制作・販売するインストラクターとコースチーム",
+    "category": "creative",
+    "summary": "コースのシラバス、オリジナルのコース録画、コースウェア、配布資料から編集、配信までのオンラインコース制作ライン",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.online-course-production",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.online-course-production-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.online-course-production-common-1",
+          "type": "extension",
+          "value": ".mp4",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-common-2",
+          "type": "extension",
+          "value": ".mov",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-exclusive-1",
+          "type": "extension",
+          "value": ".mkv",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-common-3",
+          "type": "extension",
+          "value": ".pdf",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-exclusive-2",
+          "type": "extension",
+          "value": ".pptx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-common-4",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-common-5",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-common-6",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-exclusive-3",
+          "type": "extension",
+          "value": ".srt",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-exclusive-4",
+          "type": "extension",
+          "value": ".wav",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-exclusive-5",
+          "type": "extension",
+          "value": ".mp3",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.online-course-production-common-7",
+          "type": "extension",
+          "value": ".zip",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 80,
+        "videoCutSensitivity": "high",
+        "videoSoftTokenBudget": 140,
+        "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 10800,
+        "audioAnalysisDurationSec": 90,
+        "enableImageOcr": false,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "extensionWeights": {
+        ".mp4": 0.3,
+        ".mov": 0.1,
+        ".mkv": 0.04,
+        ".pdf": 0.14,
+        ".pptx": 0.14,
+        ".docx": 0.08,
+        ".png": 0.08,
+        ".jpg": 0.04,
+        ".srt": 0.03,
+        ".wav": 0.02,
+        ".mp3": 0.02,
+        ".zip": 0.01
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-コース概要とスクリプト",
+        "children": [
+          {
+            "name": "コース概要"
+          },
+          {
+            "name": "逐語的に"
+          },
+          {
+            "name": "絵コンテ"
+          }
+        ]
+      },
+      {
+        "name": "02 - レッスンのオリジナル録音",
+        "children": [
+          {
+            "name": "画面録画"
+          },
+          {
+            "name": "オリジナル映画"
+          },
+          {
+            "name": "バックアップ映像"
+          }
+        ]
+      },
+      {
+        "name": "03-コースウェアと配布資料",
+        "children": [
+          {
+            "name": "PPTコースウェア"
+          },
+          {
+            "name": "配布資料PDF"
+          },
+          {
+            "name": "練習問題"
+          }
+        ]
+      },
+      {
+        "name": "04-編集プロジェクト",
+        "children": [
+          {
+            "name": "プロジェクトファイルの編集"
+          },
+          {
+            "name": "字幕ファイル"
+          },
+          {
+            "name": "ダビングトラック"
+          }
+        ]
+      },
+      {
+        "name": "05-学生の宿題",
+        "children": [
+          {
+            "name": "ジョブの提出"
+          },
+          {
+            "name": "訂正記録"
+          },
+          {
+            "name": "優れた宿題"
+          }
+        ]
+      },
+      {
+        "name": "06-配信-配信版",
+        "children": [
+          {
+            "name": "フィルムレンダリング"
+          },
+          {
+            "name": "プラットフォーム配布"
+          },
+          {
+            "name": "プロモーションビデオ"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"23 7 16 12 23 17 23 7\"/><rect x=\"1\" y=\"5\" width=\"15\" height=\"14\" rx=\"2\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.livestream-creator-ops",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "生放送とアンカー操作",
+    "version": "1.0.0",
+    "persona": "ライブ放送アンカーとライブ放送運用チーム",
+    "category": "entertainment",
+    "summary": "ライブ放送再生、高光沢スライス、フィールド制御スクリプト、および貨物データ再ディスク付きのアンカー操作ファイル",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.livestream-creator-ops",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.livestream-creator-ops-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-1",
+          "type": "extension",
+          "value": ".mp4",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-exclusive-1",
+          "type": "extension",
+          "value": ".flv",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-2",
+          "type": "extension",
+          "value": ".mov",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-3",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-4",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-5",
+          "type": "extension",
+          "value": ".xlsx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-exclusive-2",
+          "type": "extension",
+          "value": ".csv",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-6",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-exclusive-3",
+          "type": "extension",
+          "value": ".psd",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.livestream-creator-ops-common-7",
+          "type": "extension",
+          "value": ".txt",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 80,
+        "videoCutSensitivity": "high",
+        "videoSoftTokenBudget": 140,
+        "videoAsrDurationSec": 60,
+        "videoAnalyzeDurationSec": 10800,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": false,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "extensionWeights": {
+        ".mp4": 0.34,
+        ".flv": 0.12,
+        ".mov": 0.06,
+        ".png": 0.12,
+        ".jpg": 0.06,
+        ".xlsx": 0.1,
+        ".csv": 0.06,
+        ".docx": 0.06,
+        ".psd": 0.04,
+        ".txt": 0.04
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-ライブ再生",
+        "children": [
+          {
+            "name": "フルリプレイ"
+          },
+          {
+            "name": "プラットフォームアーカイブ"
+          },
+          {
+            "name": "代替録音"
+          }
+        ]
+      },
+      {
+        "name": "02-光沢度の高い切れ",
+        "children": [
+          {
+            "name": "ワンダフル-モーメント"
+          },
+          {
+            "name": "有名なシーン"
+          },
+          {
+            "name": "Sliceリリース版"
+          }
+        ]
+      },
+      {
+        "name": "03-フィールド制御スクリプト",
+        "children": [
+          {
+            "name": "ライブ放送プロセス"
+          },
+          {
+            "name": "スピーチスクリプト"
+          },
+          {
+            "name": "インタラクティブセッション"
+          }
+        ]
+      },
+      {
+        "name": "04-ライブルーム資料",
+        "children": [
+          {
+            "name": "背景とパッチ"
+          },
+          {
+            "name": "弾幕相互マップ"
+          },
+          {
+            "name": "商品カード"
+          }
+        ]
+      },
+      {
+        "name": "05-配信と報酬データ",
+        "children": [
+          {
+            "name": "販売データ"
+          },
+          {
+            "name": "報酬記録"
+          },
+          {
+            "name": "商品一覧"
+          }
+        ]
+      },
+      {
+        "name": "06-再注文レポート",
+        "children": [
+          {
+            "name": "トラフィックリカバリ"
+          },
+          {
+            "name": "変換と再開"
+          },
+          {
+            "name": "改善計画"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M15 10l4.55-2.27A1 1 0 0 1 21 8.62v6.76a1 1 0 0 1-1.45.89L15 14\"/><rect x=\"1\" y=\"6\" width=\"14\" height=\"12\" rx=\"2\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.foodblogger-recipe-studio",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "フードブロガーとレシピ開発",
+    "version": "1.0.0",
+    "persona": "フードブロガーとレシピ研究開発クリエーター",
+    "category": "creative",
+    "summary": "食品撮影のための食品作成アーカイブ、レシピの研究開発、グラフィックドラフトへの店舗探査材料",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.foodblogger-recipe-studio",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-1",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-2",
+          "type": "extension",
+          "value": ".jpeg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-3",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-4",
+          "type": "extension",
+          "value": ".heic",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-5",
+          "type": "extension",
+          "value": ".mp4",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-6",
+          "type": "extension",
+          "value": ".mov",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-7",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-8",
+          "type": "extension",
+          "value": ".pdf",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-9",
+          "type": "extension",
+          "value": ".xlsx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.foodblogger-recipe-studio-common-10",
+          "type": "extension",
+          "value": ".txt",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
+        "videoSoftTokenBudget": 48,
+        "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": false,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "extensionWeights": {
+        ".jpg": 0.32,
+        ".jpeg": 0.12,
+        ".png": 0.2,
+        ".heic": 0.06,
+        ".mp4": 0.1,
+        ".mov": 0.05,
+        ".docx": 0.05,
+        ".pdf": 0.04,
+        ".xlsx": 0.04,
+        ".txt": 0.02
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-料理の完成品の写真",
+        "children": [
+          {
+            "name": "洗練された完成品"
+          },
+          {
+            "name": "家族の肖像画を撮る"
+          },
+          {
+            "name": "詳細なクローズアップ"
+          }
+        ]
+      },
+      {
+        "name": "02-制作中の撮影",
+        "children": [
+          {
+            "name": "ステップ図"
+          },
+          {
+            "name": "プロセスビデオ"
+          },
+          {
+            "name": "失敗記録"
+          }
+        ]
+      },
+      {
+        "name": "03-フォーミュラ開発カード",
+        "children": [
+          {
+            "name": "レシピカード"
+          },
+          {
+            "name": "適量の比率"
+          },
+          {
+            "name": "改良版"
+          }
+        ]
+      },
+      {
+        "name": "04-店と材料を探索する",
+        "children": [
+          {
+            "name": "店を探索して撃つ"
+          },
+          {
+            "name": "店舗素材"
+          },
+          {
+            "name": "大気の参照"
+          }
+        ]
+      },
+      {
+        "name": "05-グラフィックドラフト",
+        "children": [
+          {
+            "name": "レシピコピーライティング"
+          },
+          {
+            "name": "Xiaohongshuのグラフィック"
+          },
+          {
+            "name": "公共のアカウント上の長い記事"
+          }
+        ]
+      },
+      {
+        "name": "06-プラットフォームの配布とデータ",
+        "children": [
+          {
+            "name": "リリースバージョン"
+          },
+          {
+            "name": "データ復旧"
+          },
+          {
+            "name": "商業注文協力"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"/><path d=\"M7 2v20\"/><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.travelblogger-shoot-studio",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "旅行ブロガーと旅行写真スタジオ",
+    "version": "1.0.0",
+    "persona": "旅行ブロガーと旅行スタジオチーム",
+    "category": "creative",
+    "summary": "旅程の座席、元のフィルムの精製、写実的な商業順序へのビデオ航空写真のための旅行射撃の作成ファイル",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.travelblogger-shoot-studio",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-1",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-2",
+          "type": "extension",
+          "value": ".jpeg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-3",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-4",
+          "type": "extension",
+          "value": ".heic",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-exclusive-1",
+          "type": "extension",
+          "value": ".cr2",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-exclusive-2",
+          "type": "extension",
+          "value": ".arw",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-exclusive-3",
+          "type": "extension",
+          "value": ".nef",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-exclusive-4",
+          "type": "extension",
+          "value": ".dng",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-5",
+          "type": "extension",
+          "value": ".mp4",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-6",
+          "type": "extension",
+          "value": ".mov",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-exclusive-5",
+          "type": "extension",
+          "value": ".psd",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-7",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.travelblogger-shoot-studio-common-8",
+          "type": "extension",
+          "value": ".xlsx",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
+        "videoSoftTokenBudget": 48,
+        "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": false,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 2048,
+        "extractPages": 2,
+        "maxDocumentOcrItems": 0,
+        "enableOfficeCover": false,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "extensionWeights": {
+        ".jpg": 0.26,
+        ".jpeg": 0.08,
+        ".png": 0.12,
+        ".heic": 0.05,
+        ".cr2": 0.06,
+        ".arw": 0.05,
+        ".nef": 0.04,
+        ".dng": 0.04,
+        ".mp4": 0.12,
+        ".mov": 0.08,
+        ".psd": 0.04,
+        ".docx": 0.03,
+        ".xlsx": 0.03
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-旅程と座席",
+        "children": [
+          {
+            "name": "旅程計画"
+          },
+          {
+            "name": "所在地地図"
+          },
+          {
+            "name": "レイダースコレクション"
+          }
+        ]
+      },
+      {
+        "name": "02-元のフィルムの未加工およびJPG",
+        "children": [
+          {
+            "name": "生オリジナルフィルム"
+          },
+          {
+            "name": "JPGストレートアウト"
+          },
+          {
+            "name": "審査ファイナリスト"
+          }
+        ]
+      },
+      {
+        "name": "03-洗練されたゲスト映画",
+        "children": [
+          {
+            "name": "調色と精製"
+          },
+          {
+            "name": "ゲスト映画配信"
+          },
+          {
+            "name": "グループ画像レイアウト"
+          }
+        ]
+      },
+      {
+        "name": "04-ビデオと航空写真",
+        "children": [
+          {
+            "name": "旅行ビデオ"
+          },
+          {
+            "name": "空中映像"
+          },
+          {
+            "name": "映画に編集されました"
+          }
+        ]
+      },
+      {
+        "name": "05-グラフィックドラフト",
+        "children": [
+          {
+            "name": "旅行記ロングエッセイ"
+          },
+          {
+            "name": "草を植えるエッセイ"
+          },
+          {
+            "name": "九公家"
+          }
+        ]
+      },
+      {
+        "name": "06-プラットフォームの流通と商業注文",
+        "children": [
+          {
+            "name": "リリースバージョン"
+          },
+          {
+            "name": "データ復旧"
+          },
+          {
+            "name": "ブランド一覧"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z\"/><circle cx=\"12\" cy=\"13\" r=\"4\"/></svg>"
+  },
+  {
+    "id": "builtin.workflow.study-tour-camp-organizer",
+    "user_id": null,
+    "author": "Firefly Official",
+    "name": "研究キャンプと親子活動組織",
+    "version": "1.0.0",
+    "persona": "研究機関やキャンプイベントの主催者",
+    "category": "office",
+    "summary": "旅程計画、安全計画、イベントの再開のための研究キャンプの組織ファイルへの親の通知",
+    "source": "official",
+    "status": "published",
+    "workspace_config": {
+      "schemaVersion": 1,
+      "status": "ready",
+      "policyVersion": 1,
+      "presetVersion": 2,
+      "workflowId": "builtin.workflow.study-tour-camp-organizer",
+      "customExcludeRules": [
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-ignore-1",
+          "type": "extension",
+          "value": ".exe",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-ignore-2",
+          "type": "extension",
+          "value": ".log",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-ignore-4",
+          "type": "extension",
+          "value": ".crdownload",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "customIncludeRules": [
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-1",
+          "type": "extension",
+          "value": ".pdf",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-2",
+          "type": "extension",
+          "value": ".docx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-3",
+          "type": "extension",
+          "value": ".xlsx",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-4",
+          "type": "extension",
+          "value": ".jpg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-5",
+          "type": "extension",
+          "value": ".jpeg",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-6",
+          "type": "extension",
+          "value": ".png",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-7",
+          "type": "extension",
+          "value": ".mp4",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-common-8",
+          "type": "extension",
+          "value": ".mov",
+          "isActive": true,
+          "isSystem": true
+        },
+        {
+          "id": "builtin.workflow.study-tour-camp-organizer-exclusive-1",
+          "type": "extension",
+          "value": ".pptx",
+          "isActive": true,
+          "isSystem": true
+        }
+      ],
+      "baseAIConfig": {
+        "analysisMode": "full",
+        "videoQuotaMax": 16,
+        "videoCutSensitivity": "low",
+        "videoSoftTokenBudget": 48,
+        "videoAsrDurationSec": 30,
+        "videoAnalyzeDurationSec": 300,
+        "audioAnalysisDurationSec": 0,
+        "enableImageOcr": true,
+        "ocrModelSize": "tiny",
+        "maxContentSizeKb": 4096,
+        "extractPages": 5,
+        "maxDocumentOcrItems": 5,
+        "enableOfficeCover": true,
+        "reuseBasicAnalysisData": true,
+        "clipTextEnabled": true
+      },
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "extensionWeights": {
+        ".pdf": 0.22,
+        ".docx": 0.18,
+        ".xlsx": 0.12,
+        ".jpg": 0.18,
+        ".jpeg": 0.06,
+        ".png": 0.08,
+        ".mp4": 0.08,
+        ".mov": 0.04,
+        ".pptx": 0.04
+      },
+      "configuredAt": 1762425600000
+    },
+    "naming_pattern": "YYYYMMDD_テーマの説明",
+    "naming_template": "{date}_{topic}_{desc}",
+    "preset_directory_tree": [
+      {
+        "name": "01-旅程プランとスケジュール",
+        "children": [
+          {
+            "name": "旅程プラン"
+          },
+          {
+            "name": "コーススケジュール"
+          },
+          {
+            "name": "会場手配"
+          }
+        ]
+      },
+      {
+        "name": "02-安全と緊急計画",
+        "children": [
+          {
+            "name": "安全計画"
+          },
+          {
+            "name": "医療保険"
+          },
+          {
+            "name": "緊急連絡先"
+          }
+        ]
+      },
+      {
+        "name": "03-親の通知と登録",
+        "children": [
+          {
+            "name": "登録フォーム"
+          },
+          {
+            "name": "親の通知"
+          },
+          {
+            "name": "支払記録"
+          }
+        ]
+      },
+      {
+        "name": "04-イベントのライブ写真とビデオ",
+        "children": [
+          {
+            "name": "イベント写真"
+          },
+          {
+            "name": "イベントビデオ"
+          },
+          {
+            "name": "ワンダフル-モーメント"
+          }
+        ]
+      },
+      {
+        "name": "05-学生作品と証明書",
+        "children": [
+          {
+            "name": "学生作品"
+          },
+          {
+            "name": "修了証明書"
+          },
+          {
+            "name": "評価記録"
+          }
+        ]
+      },
+      {
+        "name": "06-事業の閉鎖と再開",
+        "children": [
+          {
+            "name": "キャンプ閉会式"
+          },
+          {
+            "name": "再注文レポート"
+          },
+          {
+            "name": "親からのフィードバック"
+          }
+        ]
+      }
+    ],
+    "preview_tree": null,
+    "icon_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M10 2v3M14 2v3M9 5h6l1 3H8z\"/><path d=\"M12 8v13M8 21h8\"/><path d=\"M12 11l6-4M12 11l-6-4\"/></svg>"
   }
 ]

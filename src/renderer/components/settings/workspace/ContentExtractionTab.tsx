@@ -91,7 +91,7 @@ function getContentExtractionFieldLabel(key: string): string {
   }
 }
 
-/** 三态汇总表格值列大白话渲染：布尔转「开启/关闭」、枚举/数值转 UI 命名与单位（渲染期动态 t()） */
+/** 设置值四态表格各值列的大白话渲染：布尔转「开启/关闭」、枚举/数值转 UI 命名与单位（渲染期动态 t()） */
 function formatContentExtractionCellValue(key: string, v: unknown): string {
   if (typeof v === 'boolean') return v ? t('开启') : t('关闭')
   if (key === 'ocrModelSize') return getOcrModelSizeLabel(v === 'small' ? 'small' : 'tiny')
@@ -411,7 +411,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
       </div>
 
       {/* SLICE-08 + v1.5：本 Tab 专管内容萃取参数的三态反馈
-          - 用户自定义 && 正常生效项 → 汇总表格（逐行标明参数项 + 全局默认/工作流默认/用户自定义值对照）
+          - 用户自定义 && 正常生效项 → 设置值四态表格（逐行标明参数项 + 全局默认/工作流默认/用户自定义值/最终结算值对照）
           - 环境降级 / 级联关闭等态 → 保持 TriStateFieldFeedback 单项反馈 */}
       {resolvedFields && (
         <div className="space-y-1.5">
@@ -433,7 +433,8 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                       baseDerived[fieldKey as keyof BaseAIConfig]
                     )
                   : undefined,
-                customText: formatContentExtractionCellValue(fieldKey, field.desiredValue)
+                customText: formatContentExtractionCellValue(fieldKey, field.desiredValue),
+                finalText: formatContentExtractionCellValue(fieldKey, field.effectiveValue)
               })
               return acc
             }, [])}
@@ -443,7 +444,7 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
           {CONTENT_EXTRACTION_KEYS.map(fieldKey => {
             const field = resolvedFields[fieldKey]
             if (!field || !field.visible) return null
-            // 默认正常态零冗余；user_custom && active 已收归上方汇总表格；
+            // 默认正常态零冗余；user_custom && active 已收归上方设置值四态表格；
             // cascaded_off / pending 属具体控件位置语义（如清晰度随上方开关级联关闭），
             // 由「文字识别清晰度」控件区内渲染，严禁在顶部重复罗列
             if (field.applicability !== 'degraded') return null

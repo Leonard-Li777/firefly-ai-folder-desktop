@@ -1,10 +1,10 @@
 /**
- * 用户自定义参数汇总表格 (`TriStateCustomFieldsTable`) — v1.5 等值回退配套 UI
+ * 设置值四态表格（简称「四态表格」）— v1.5 等值回退配套 UI
  *
- * 将「用户自定义 && 正常生效」的三态项以表格形式汇总呈现，逐行标明参数项名称，
- * 替代原单项徽标「用户自定义（工作流默认：XX）」无法对应参数的割裂展示：
- * - 已绑定工作流：参数项 | 全局默认值 | 工作流默认值 | 用户自定义值 | 操作
- * - 未绑定工作流：参数项 | 全局默认值 | 用户自定义值 | 操作（基线即全局默认值）
+ * 将「用户自定义 && 正常生效」的参数以表格形式集中对照，逐行标明参数项名称：
+ * - 已绑定工作流：参数项 | 全局默认值 | 工作流默认值 | 用户自定义值 | 最终结算值 | 操作
+ * - 未绑定工作流：参数项 | 全局默认值 | 用户自定义值 | 最终结算值 | 操作（基线即全局默认值）
+ * 「最终结算值」是结合硬件与会员等级后真正生效的值，hover 问号给出解释。
  *
  * 仅承载 `origin === 'user_custom' && applicability === 'active'` 项；
  * 降级/级联等环境态仍由 `TriStateFieldFeedback` 承载。
@@ -29,6 +29,8 @@ export interface TriStateCustomFieldRow {
   workflowDefaultText?: string
   /** 用户自定义值的大白话渲染 */
   customText: string
+  /** 最终结算值（结合硬件与会员等级后的实际生效值） */
+  finalText: string
 }
 
 export interface TriStateCustomFieldsTableProps {
@@ -40,7 +42,7 @@ export interface TriStateCustomFieldsTableProps {
   className?: string
 }
 
-/** 用户自定义参数汇总表格：逐行标明参数项 + 全局默认 / 工作流默认 / 用户自定义值对照 */
+/** 设置值四态表格：逐行标明参数项 + 全局默认 / 工作流默认 / 用户自定义值 / 最终结算值对照 */
 export function TriStateCustomFieldsTable(props: TriStateCustomFieldsTableProps): React.ReactNode {
   const { rows, hasBoundWorkflow, onRestore, className } = props
 
@@ -70,6 +72,18 @@ export function TriStateCustomFieldsTable(props: TriStateCustomFieldsTableProps)
               <th className="px-3 py-2 text-left font-medium whitespace-nowrap">
                 {t('用户自定义值')}
               </th>
+              <th className="px-3 py-2 text-left font-medium whitespace-nowrap">
+                <span className="inline-flex items-center gap-1">
+                  {t('最终结算值')}
+                  <span
+                    title={t('结合您的电脑性能和当前会员等级，实际生效的设置值。')}
+                    className="inline-flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-muted-foreground/50 text-[9px] text-muted-foreground"
+                    aria-label={t('最终结算值说明')}
+                  >
+                    ?
+                  </span>
+                </span>
+              </th>
               <th className="px-3 py-2 text-right font-medium whitespace-nowrap">{t('操作')}</th>
             </tr>
           </thead>
@@ -89,6 +103,9 @@ export function TriStateCustomFieldsTable(props: TriStateCustomFieldsTableProps)
                 )}
                 <td className="px-3 py-2 font-medium text-purple-700 dark:text-purple-300 whitespace-nowrap">
                   {row.customText}
+                </td>
+                <td className="px-3 py-2 font-medium text-foreground whitespace-nowrap">
+                  {row.finalText}
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button

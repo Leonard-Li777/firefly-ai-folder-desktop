@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { isPathEqual } from '@firefly/shared'
 import {
   FileItem,
   DirectoryItem,
@@ -27,7 +28,12 @@ interface AnalyzedDirectoryStore {
   selectedTags: SelectedTag[]
   setSelectedTags: (tags: SelectedTag[]) => void
   addSelectedTag: (tag: SelectedTag) => void
-  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string, codePath?: string) => void
+  removeSelectedTag: (
+    dimensionId: number,
+    tagValue?: string,
+    parentTagValue?: string,
+    codePath?: string
+  ) => void
   clearSelectedTags: () => void
 
   // Filtered files
@@ -119,15 +125,37 @@ export const useAnalyzedDirectoryStore = create<AnalyzedDirectoryStore>((set, ge
 
   // Current workspace directory
   setCurrentWorkspaceDirectory: directory => {
-    set({
-      currentWorkspaceDirectory: directory,
-      selectedTags: [],
-      filteredFiles: [],
-      totalFilesCount: 0,
-      hasNewFiles: false,
-      newFilesCount: 0,
-      newAnalyzedPaths: new Set<string>()
-    })
+    const prev = get().currentWorkspaceDirectory
+    // 判断是否真正切换到不同工作目录（路径比较遵循 AGENTS.md 禁止归一化红线，统一走 shared isPathEqual）
+    const isSwitching = !isPathEqual(prev?.path, directory?.path)
+
+    if (isSwitching) {
+      // 切换目录：清空所有派生态（维度树 / 文件预览 / 选中项 / 路径计数）
+      set({
+        currentWorkspaceDirectory: directory,
+        selectedTags: [],
+        filteredFiles: [],
+        totalFilesCount: 0,
+        hasNewFiles: false,
+        newFilesCount: 0,
+        newAnalyzedPaths: new Set<string>(),
+        dimensionGroups: [],
+        pathCountMap: undefined,
+        selectedItem: null,
+        selectedFiles: []
+      })
+    } else {
+      // 同目录刷新（如 loadWorkspaceDirectories 轮询回调）：仅更新目录对象引用，保留用户当前选中预览
+      set({
+        currentWorkspaceDirectory: directory,
+        selectedTags: [],
+        filteredFiles: [],
+        totalFilesCount: 0,
+        hasNewFiles: false,
+        newFilesCount: 0,
+        newAnalyzedPaths: new Set<string>()
+      })
+    }
   },
 
   setWorkspaceDirectories: directories => set({ workspaceDirectories: directories }),
@@ -151,7 +179,12 @@ export const useAnalyzedDirectoryStore = create<AnalyzedDirectoryStore>((set, ge
     }
   },
 
-  removeSelectedTag: (dimensionId: number, tagValue?: string, parentTagValue?: string, codePath?: string) => {
+  removeSelectedTag: (
+    dimensionId: number,
+    tagValue?: string,
+    parentTagValue?: string,
+    codePath?: string
+  ) => {
     const { selectedTags } = get()
     if (tagValue) {
       // Remove specific tag from dimension (match on parentTagValue too)

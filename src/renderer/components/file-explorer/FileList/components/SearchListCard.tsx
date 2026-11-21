@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { formatDateTimeShort, logger, LogCategory, isCategory, FileCategory } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
@@ -42,7 +42,7 @@ export { toSafeFileUrl, resolveThumbnailUrl } from './thumbnail-url-utils'
 /**
  * 视频切片微型抽帧帧卡片（标准 16:9 画幅，时间锚定抽帧缩图预览，Hover 提示完整起止时间与相似度）
  */
-const VideoChunkFrame: React.FC<{
+export const VideoChunkFrame: React.FC<{
   chunk: {
     chunkIndex?: number
     startSec: number
@@ -59,20 +59,50 @@ const VideoChunkFrame: React.FC<{
   onItemSelect?: (e: React.MouseEvent) => void
 }> = ({ chunk, filePath, category, frameHeight = 38, onPreviewSeek, onItemSelect }) => {
   const [hasError, setHasError] = useState(false)
+  /** ffmpeg 实时抽帧得到的静态缩图 data URL（浏览器 <video> 无法解码时的兜底） */
+  const [frameDataUrl, setFrameDataUrl] = useState<string | null>(null)
+  /** 记录解码失败隶属的「文件|时间点」，避免虚拟行复用旧 hasError 触发多余抽帧 */
+  const errorKeyRef = useRef<string | null>(null)
 
+  // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏
+  const previewSec = chunk.repPtsSec ?? chunk.startSec
+  const frameSourceKey = `${filePath}|${previewSec.toFixed(3)}`
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
     const base = toSafeFileUrl(filePath)
-    // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏
-    const previewSec = chunk.repPtsSec ?? chunk.startSec
     const safeTime = clampVideoTime(previewSec, 3600)
     return `${base}#t=${safeTime}`
+  }, [filePath, previewSec])
+
+  // 虚拟行复用时重置抽帧兜底状态，避免上一行的缩图串到本行
+  useEffect(() => {
+    errorKeyRef.current = null
+    setHasError(false)
+    setFrameDataUrl(null)
   }, [filePath, chunk.repPtsSec, chunk.startSec])
 
-  // 虚拟行复用时重置错误状态
+  // 浏览器 <video> 解码失败后，实时调用 ffmpeg 抽取目标帧作为静态缩图
   useEffect(() => {
-    setHasError(false)
-  }, [filePath, chunk.repPtsSec, chunk.startSec])
+    if (!hasError || !filePath || frameDataUrl) return
+    if (errorKeyRef.current !== frameSourceKey) return
+    let cancelled = false
+    const safeTime = clampVideoTime(previewSec, 3600)
+    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, safeTime))
+      .then(result => {
+        if (cancelled) return
+        if (!result?.success || !result.dataUrl) {
+          logger.warn(LogCategory.RENDERER, '[切片缩图] ffmpeg 抽帧失败:', result?.error)
+          return
+        }
+        setFrameDataUrl(result.dataUrl)
+      })
+      .catch(err => {
+        if (!cancelled) logger.warn(LogCategory.RENDERER, '[切片缩图] 抽帧调用异常:', err)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [hasError, filePath, previewSec, frameSourceKey, frameDataUrl])
 
   const chunkPercent =
     typeof chunk.similarity === 'number'
@@ -81,19 +111,20 @@ const VideoChunkFrame: React.FC<{
         ? Math.round(Math.min(1, Math.max(0, chunk.score)) * 100)
         : null
 
+  // 是否走了 ffmpeg 抽帧兜底（即浏览器无法原生解码该格式）
+  const isFallbackFrame = hasError && Boolean(frameDataUrl)
+
   // 悬浮到单帧上显示精准起止时间与相似度
   const frameTooltip = `${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}${
     chunkPercent !== null ? ` (${t('相似度')}: ${chunkPercent}%)` : ''
-  }\n${t('单击跳轴预览，双击外部播放器打开')}`
+  }\n${
+    isFallbackFrame
+      ? t('单击显示静态缩图并在外部播放器跳轴')
+      : t('单击跳轴预览，双击外部播放器打开')
+  }`
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onItemSelect?.(e)
-    onPreviewSeek(chunk.seekSec ?? chunk.startSec, chunk.startSec, chunk.endSec)
-  }
-
-  const handleDoubleClick = async (e: React.MouseEvent) => {
-    e.stopPropagation()
+  /** 调用外部播放器精准跳到切片时间点（原生/兜底两路径共用） */
+  const launchExternalAtChunk = async () => {
     try {
       const rawCat = category
       const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
@@ -111,6 +142,22 @@ const VideoChunkFrame: React.FC<{
     }
   }
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onItemSelect?.(e)
+    onPreviewSeek(chunk.seekSec ?? chunk.startSec, chunk.startSec, chunk.endSec)
+    // 非原生格式：<video> 解码失败走 ffmpeg 静态缩图，单击时同步在外部播放器跳轴播放。
+    // e.detail >= 2 是双击的第二次 click，跳过以避免一次双击拉起两个播放器实例。
+    if (isFallbackFrame && e.detail < 2) void launchExternalAtChunk()
+  }
+
+  const handleDoubleClick = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    // 兜底路径单击已触发跳轴，双击不再重复拉起外部播放器
+    if (isFallbackFrame) return
+    await launchExternalAtChunk()
+  }
+
   const frameWidth = Math.round(frameHeight * (16 / 9))
   return (
     <div
@@ -120,7 +167,7 @@ const VideoChunkFrame: React.FC<{
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
     >
-      {/* 视频指定时间点抽帧缩略图，破损时平滑回退占位图标 */}
+      {/* 视频指定时间点抽帧缩略图：原生 <video> → ffmpeg 静态帧 → 占位图标 三级平滑回退 */}
       {!hasError && videoUrl ? (
         <video
           src={videoUrl}
@@ -128,7 +175,16 @@ const VideoChunkFrame: React.FC<{
           muted
           playsInline
           className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
-          onError={() => setHasError(true)}
+          onError={() => {
+            errorKeyRef.current = frameSourceKey
+            setHasError(true)
+          }}
+        />
+      ) : frameDataUrl ? (
+        <img
+          src={frameDataUrl}
+          alt=""
+          className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
         />
       ) : (
         <MaterialIcon icon="movie" className="text-muted-foreground/50 text-base" />

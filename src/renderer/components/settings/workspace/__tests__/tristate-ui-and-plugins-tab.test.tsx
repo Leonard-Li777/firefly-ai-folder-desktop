@@ -676,6 +676,8 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
       />
     )
 
+    // 语音听写已移入高级参数区：先展开微调面板
+    fireEvent.click(screen.getByText('展开微调'))
     // 语音听写卡片内（具体配置项下）恰好 1 条级联提示（双字段同因严禁重复）
     expect(screen.getAllByText('已由上级开关关闭')).toHaveLength(1)
     expect(screen.getAllByText(/您已在本目录关闭语音听写功能/)).toHaveLength(1)
@@ -684,21 +686,23 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
   })
 })
 
-describe('SLICE-08: TriStateCustomFieldsTable 用户自定义参数汇总表格 (v1.5)', () => {
+describe('SLICE-08: 设置值四态表格（四态表格）', () => {
   const rows: TriStateCustomFieldRow[] = [
     {
       key: 'videoQuotaMax',
       label: '单视频最大抓图数量',
       globalDefaultText: '32',
       workflowDefaultText: '16',
-      customText: '150'
+      customText: '150',
+      finalText: '80'
     },
     {
       key: 'videoCutSensitivity',
       label: '镜头切换捕捉敏锐度',
       globalDefaultText: '标准分段挑选代表画面',
       workflowDefaultText: '灵敏 (推荐)',
-      customText: '极高 (防吞噬)'
+      customText: '极高 (防吞噬)',
+      finalText: '灵敏 (推荐)'
     }
   ]
 
@@ -709,7 +713,9 @@ describe('SLICE-08: TriStateCustomFieldsTable 用户自定义参数汇总表格 
     expect(screen.getByText('全局默认值')).toBeInTheDocument()
     expect(screen.getByText('工作流默认值')).toBeInTheDocument()
     expect(screen.getByText('用户自定义值')).toBeInTheDocument()
-    // 逐行标明参数项名称与三值对照
+    expect(screen.getByText('最终结算值')).toBeInTheDocument()
+    expect(screen.getByText('80')).toBeInTheDocument()
+    // 逐行标明参数项名称与四值对照
     expect(screen.getByText('单视频最大抓图数量')).toBeInTheDocument()
     expect(screen.getByText('镜头切换捕捉敏锐度')).toBeInTheDocument()
     expect(screen.getByText('16')).toBeInTheDocument()

@@ -11,14 +11,14 @@
       "[Atualização de tag de arquivo] Enriqueça os tipos de tags de fatos, as tags são mais precisas e interpretáveis, e a árvore de tags suporta 10 níveis de expansão",
       "[Otimização do material do criador] Para designers e auto-mídia, otimização especial da classificação do material de áudio, vídeo e imagem",
       "[Detecção aprimorada de conteúdo sensível] Identifique segmentadamente conteúdo pornográfico, violento, terrorista, político, abusivo, sangrento e outros conteúdos ilegais e suas subcategorias",
-      "【工作流】内置70+套工作流适配文件整理的各种场景，无需复杂配置,轻松上手文件整理",
-      "【五大批量整理模式】身份蓝图、智能聚类... 等全新整理模式，秒级处理数千文件",
+      "[Fluxo de trabalho] Built-in 70 + conjuntos de fluxos de trabalho são adaptados a vários cenários de classificação de arquivos, sem configuração complexa, é fácil começar com a classificação de arquivos",
+      "[Cinco modos de classificação de grande volume] modelo de identidade, agrupamento inteligente... E outros novos modos de classificação, processando milhares de arquivos em segundos",
       "[Identity Blueprint (recomendado)] Selecione funções do setor, otimização em quatro estágios e classifique todos os arquivos em milissegundos no lado do cliente",
       "[Clustering inteligente] Clustering não supervisionado HAC final, gera árvores de diretórios em milissegundos, classifica todos os arquivos em segundos e suporta ajuste fino em tempo real",
       "[Diretório externo gerado por IA] Copie palavras de prompt para Doubao, Kimi, ChatGPT com um clique e visualize e organize os resultados em tempo real",
       "[Derivar árvores de diretórios de arquivos] O mecanismo avançado de IA gera 3 conjuntos de candidatos a diretório por vez e a classificação automática é selecionada",
       "[Árvore de diretórios personalizada] Cole o diretório Markdown, visualize duas colunas em tempo real e crie regras de organização exclusivas",
-      "【智能休眠】智能感知用户操作，在低内存水位线，功能闲置时自动释放内存占用",
+      "[Sono inteligente] percepção inteligente da operação do usuário, no nível de água com pouca memória, o uso de memória é liberado automaticamente quando a função está ociosa.",
       "[Otimização detalhada da interface do usuário] Reconstrua a estrutura da página de configuração, adicione um novo guia e entrada de ajuda e torne a operação mais intuitiva."
     ],
     "forceUpdate": false
