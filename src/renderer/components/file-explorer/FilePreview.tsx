@@ -64,6 +64,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [staticFrameUrl, setStaticFrameUrl] = useState<string | null>(null)
   /** 当前静态图对应的「文件|时间点」键，用于同一文件不同切片间切换时重新抽帧 */
   const [frameKey, setFrameKey] = useState<string | null>(null)
+  /** 已发起抽帧请求的 key，防止切点后旧请求晚到覆盖新帧或重复发起同 key 请求 */
+  const requestedFrameKeyRef = useRef<string | null>(null)
 
   // 切换文件路径时重置视频时长与抽帧降级状态
   useEffect(() => {
@@ -71,6 +73,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setVideoDecodeFailed(false)
     setStaticFrameUrl(null)
     setFrameKey(null)
+    requestedFrameKeyRef.current = null
   }, [filePath])
 
   // 视频解码失败时，实时调用 ffmpeg 在当前时间点抽帧作为静态预览图
@@ -81,6 +84,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       typeof currentTime === 'number' && Number.isFinite(currentTime) ? currentTime : 0
     const nextKey = `${filePath}|${seekSec.toFixed(3)}`
     if (frameKey === nextKey && staticFrameUrl) return
+    if (requestedFrameKeyRef.current === nextKey) return
+    requestedFrameKeyRef.current = nextKey
+    // 同一文件切换切片时先清掉旧帧，避免新帧返回前展示错误时间点画面
+    if (frameKey !== nextKey) setStaticFrameUrl(null)
 
     let cancelled = false
     Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, seekSec))
@@ -396,6 +403,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       src={staticFrameUrl}
                       alt={fileName}
                       className="max-w-full max-h-[65vh] shadow-lg rounded object-contain"
+                      onError={() => {
+                        logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
+                        setStaticFrameUrl(null)
+                      }}
                     />
                   ) : (
                     <div className="w-72 h-40 flex items-center justify-center bg-muted/40 rounded">
@@ -404,9 +415,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   )}
                   <div className="flex flex-col items-center gap-2 text-center">
                     <p className="text-xs text-muted-foreground">
-                      {t(
-                        '当前格式无法在应用内播放，已显示该时间点画面。点击下方可在外部播放器精准播放。'
-                      )}
+                      {t('无法在应用内播放此文件，可尝试在外部播放器中打开查看。')}
                     </p>
                     <Button
                       onClick={handleExternalSeek}

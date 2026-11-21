@@ -245,27 +245,39 @@ function StatusBadge({ item }: { item: AnalysisQueueItem }) {
 
   return (
     <span
-      className={cn('text-xs px-2 py-0.5 rounded font-medium transition-colors', colorStyle)}
+      className={cn(
+        'text-xs rounded transition-colors',
+        // analyzing 时进度条独占整个 cell：外层去掉 badge 的 px/py、底色与边框，仅保留文本色作为
+        // 进度条填充色（bg-current），避免双层框挤压宽度
+        isAnalyzing ? 'block w-full' : cn('px-2 py-0.5 font-medium', colorStyle)
+      )}
       title={tooltip || undefined}
     >
-      {/* analyzing 时外层不渲染 label，避免与进度条内嵌文案重复 */}
-      {!isAnalyzing && label}
-      {isAnalyzing && (
-        // 百分比在前 + 阶段名整体作为进度条内部叠加文案，避免换行、超长省略：
-        // 既不依赖额外列宽，又在中文/英文两种语言下都把数字放在最前最易读的位置。
-        <span className="relative ml-2 inline-block align-middle w-[92px] h-[18px] rounded-full border border-border bg-background/60 overflow-hidden box-border">
+      {/* analyzing 时整个 cell 宽都作为进度条：块级 w-full 撑满（cell 的 px-1 提供内边距），
+          百分比在前 + 阶段名整体作为进度条内部叠加文案，不换行、超长省略。 */}
+      {isAnalyzing ? (
+        // 进度条容器复用 colorStyle：各 stage 阶段色（stage2 青/stage3 紫/stage4 靛）、边框与
+        // pulse 动画自动对应；填充层 bg-current 继承阶段色，文字层 text-current 同步阶段色。
+        <span
+          className={cn(
+            'relative block w-full h-[18px] rounded-full border bg-background/60 overflow-hidden box-border',
+            colorStyle
+          )}
+        >
           {/* 进度填充层（底层） */}
           <span
             className="absolute inset-y-0 left-0 bg-current/25 rounded-full transition-all"
             style={{ width: `${Math.max(0, Math.min(100, progressPct))}%` }}
           />
           {/* 文案层（顶层，绝对铺满 + 不换行 + 超长省略） */}
-          <span className="absolute inset-0 flex items-center px-1.5 text-[10px] leading-none font-mono font-semibold tabular-nums text-foreground truncate">
+          <span className="absolute inset-0 flex items-center px-1.5 text-[10px] leading-none font-mono font-semibold tabular-nums text-current truncate">
             <span className="truncate">
               {Math.round(progressPct)}% {label}
             </span>
           </span>
         </span>
+      ) : (
+        <span className="block truncate">{label}</span>
       )}
     </span>
   )

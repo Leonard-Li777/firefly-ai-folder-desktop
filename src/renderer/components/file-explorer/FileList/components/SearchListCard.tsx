@@ -6,7 +6,7 @@ import { toast } from '../../../common/Toast'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { HighlightText } from '../../../common/HighlightText'
 import { FileType } from '../types'
-import { formatVideoTimestamp, clampVideoTime } from '../../../../lib/video-preview-utils'
+import { formatVideoTimestamp } from '../../../../lib/video-preview-utils'
 import { getExtFromSmartName } from '../../../../lib/preview-utils'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
@@ -64,14 +64,15 @@ export const VideoChunkFrame: React.FC<{
   /** 记录解码失败隶属的「文件|时间点」，避免虚拟行复用旧 hasError 触发多余抽帧 */
   const errorKeyRef = useRef<string | null>(null)
 
-  // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏
-  const previewSec = chunk.repPtsSec ?? chunk.startSec
+  // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏。
+  // 这里只做非负有限归一，不套用带片长上限的 clampVideoTime，避免 >1h 视频被截到 3599.9s。
+  const rawPreviewSec = chunk.repPtsSec ?? chunk.startSec
+  const previewSec = Number.isFinite(rawPreviewSec) && rawPreviewSec > 0 ? rawPreviewSec : 0
   const frameSourceKey = `${filePath}|${previewSec.toFixed(3)}`
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
     const base = toSafeFileUrl(filePath)
-    const safeTime = clampVideoTime(previewSec, 3600)
-    return `${base}#t=${safeTime}`
+    return `${base}#t=${previewSec}`
   }, [filePath, previewSec])
 
   // 虚拟行复用时重置抽帧兜底状态，避免上一行的缩图串到本行
@@ -86,8 +87,7 @@ export const VideoChunkFrame: React.FC<{
     if (!hasError || !filePath || frameDataUrl) return
     if (errorKeyRef.current !== frameSourceKey) return
     let cancelled = false
-    const safeTime = clampVideoTime(previewSec, 3600)
-    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, safeTime))
+    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, previewSec))
       .then(result => {
         if (cancelled) return
         if (!result?.success || !result.dataUrl) {
@@ -185,6 +185,12 @@ export const VideoChunkFrame: React.FC<{
           src={frameDataUrl}
           alt=""
           className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
+          onError={() => {
+            // WebP 头合法不代表整帧完整；渲染失败时回到 movie 图标且不立即重试同一坏帧
+            errorKeyRef.current = null
+            logger.warn(LogCategory.RENDERER, '[切片缩图] 静态帧渲染失败，回退占位图标')
+            setFrameDataUrl(null)
+          }}
         />
       ) : (
         <MaterialIcon icon="movie" className="text-muted-foreground/50 text-base" />
