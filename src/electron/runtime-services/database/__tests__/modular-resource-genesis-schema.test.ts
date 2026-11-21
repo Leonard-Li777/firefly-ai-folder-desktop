@@ -412,7 +412,7 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
   })
 })
 
-describe('TC-SEED-ISO: 目录种子行级失败隔离（存量库 CHECK 固化防御）', () => {
+describe('TC-SEED-ISO: 目录种子行级失败隔离与表级自愈重建（存量库 CHECK 固化防御）', () => {
   /** 88de81e2 之前的 builtin_modules 建表 SQL（category CHECK 不含 media_enhance），模拟存量库 */
   const LEGACY_BUILTIN_MODULES_DDL = `
     CREATE TABLE builtin_modules (
@@ -458,13 +458,14 @@ describe('TC-SEED-ISO: 目录种子行级失败隔离（存量库 CHECK 固化�
     );
   `
 
-  it('老库 category CHECK 不含 media_enhance 时：单行约束失败被隔离，其余种子照常落地（严禁整批回滚）', () => {
+  it('老库 CHECK 拒绝 media_enhance 时：行级隔离保首轮落地，表级自愈重建后全部种子落地且本地状态保留', () => {
     const legacyDb = new Database(':memory:')
     legacyDb.exec(LEGACY_BUILTIN_MODULES_DDL)
-    // 模拟存量：库中已有旧模块行
+    // 模拟存量：库中已有旧模块行且携带本地安装状态（自愈重建必须原样保留）
     legacyDb
       .prepare(
-        "INSERT INTO builtin_modules (id, version, category) VALUES ('engine_classic_light', '1.0.0', 'ai-engine')"
+        `INSERT INTO builtin_modules (id, version, category, install_state, user_config)
+         VALUES ('engine_classic_light', '1.0.0', 'ai-engine', 'active', '{"threshold":1}')`
       )
       .run()
 
@@ -474,14 +475,26 @@ describe('TC-SEED-ISO: 目录种子行级失败隔离（存量库 CHECK 固化�
       service.ensureDefaultSeeds()
 
       const dao = new BuiltinModuleDao(legacyDb)
-      // 合法分类的新种子行照常落地（file_ai_cover 属 ai-engine，老 CHECK 放行）
-      expect(dao.findByIdSync('file_ai_cover')).not.toBeNull()
-      // media_enhance 三行被存量表 CHECK 拒绝（行级隔离，严禁拖垮整批）
-      expect(dao.findByIdSync('image_video_enhance')).toBeNull()
-      expect(dao.findByIdSync('image_video_deobfuscate')).toBeNull()
-      expect(dao.findByIdSync('image_video_dewatermark')).toBeNull()
-      // 存量旧模块行不受影响
-      expect(dao.findByIdSync('engine_classic_light')).not.toBeNull()
+      // 表级自愈重建后：全部 17+ 种子行落地（含被老 CHECK 拒绝的 media_enhance 三行）
+      for (const id of [
+        'file_ai_cover',
+        'image_video_enhance',
+        'image_video_deobfuscate',
+        'image_video_dewatermark',
+        'asr_sensevoice_onnx',
+        'engine_gemma_unified'
+      ]) {
+        expect(dao.findByIdSync(id)).not.toBeNull()
+      }
+      // 本地安装状态与用户配置经重建回灌后原样保留（IN-04 铁律穿越自愈）
+      const restored = dao.findByIdSync('engine_classic_light')
+      expect(restored?.install_state).toBe('active')
+      expect(restored?.user_config).toBe('{"threshold":1}')
+      // 表 DDL 已更新至新创世基线（CHECK 白名单含 media_enhance）
+      const tableSql = legacyDb
+        .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'builtin_modules'")
+        .get() as { sql: string }
+      expect(tableSql.sql).toContain("'media_enhance'")
     } finally {
       legacyDb.close()
       fs.rmSync(tmpBase, { recursive: true, force: true })

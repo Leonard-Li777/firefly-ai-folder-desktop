@@ -52,6 +52,7 @@ import {
   type EmbeddingEpochRecord,
   type DownloadState
 } from '../database/dao/modular-resource-dao'
+import { GENESIS_V1_SCHEMA } from '../database/database'
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
 import { PluginProcessManager, getPluginProcessManager } from './plugin-process-manager'
@@ -1508,15 +1509,22 @@ export class ModularResourceService implements IModularResourceService {
   public ensureDefaultSeeds(): void {
     if (!this.seeded) {
       try {
-        const { failedRows } = this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
+        let { failedRows } = this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
         this.seeded = true
         if (failedRows.length > 0) {
-          // 显式上报（禁止静默降级）：存量库 builtin_modules 表级 CHECK 于建表时固化，
-          // 创世基线扩充白名单（如 media_enhance）后老库无法 ALTER，须删除本地数据库文件
-          // 重建（应用未上线，无迁移兼容；GENESIS_V1_SCHEMA 为唯一创世基线）
+          // 存量库 builtin_modules 表级 CHECK 于建表时固化，创世基线扩充白名单（如
+          // media_enhance）后老库单行插入被拒且无法 ALTER —— 先尝试表级自愈重建
+          // （备份本地状态 → DROP → 按创世基线重建 → 状态回灌 → 重试补灌）
+          const healed = this.rebuildBuiltinModulesTableForGenesisDrift()
+          if (healed) {
+            failedRows = this.syncCatalogSync(DEFAULT_CATALOG_SEEDS).failedRows
+          }
+        }
+        if (failedRows.length > 0) {
+          // 显式上报（禁止静默降级）：自愈后仍被拒绝属真异常，转人工处置
           logger.warn(
             LogCategory.SYSTEM,
-            `[catalog_seed_rows_rejected] ${failedRows.length} 行种子被存量表约束拒绝，` +
+            `[catalog_seed_rows_rejected] ${failedRows.length} 行种子被存量表约束拒绝（自愈重建未生效或失败），` +
               '请删除本地数据库文件后重建（应用未上线无迁移兼容，GENESIS_V1_SCHEMA 已更新）:',
             failedRows.map(r => `${r.id}: ${r.error}`).join('; ')
           )
@@ -1524,6 +1532,90 @@ export class ModularResourceService implements IModularResourceService {
       } catch (err) {
         logger.warn(LogCategory.SYSTEM, '[ModularResource] 初始化内置目录种子失败:', err)
       }
+    }
+  }
+
+  /**
+   * 表级自愈重建（创世基线漂移，仅供 ensureDefaultSeeds 失败分支调用，严禁扩作通用迁移路径）
+   *
+   * SQLite 表级 CHECK 于建表时固化，存量库的 builtin_modules 在 GENESIS 扩充约束白名单
+   * （如新增 media_enhance 分类）后无法 ALTER，新种子行会被 CHECK 物理拒绝。
+   * builtin_modules 为纯派生表（种子元数据 + 本地安装状态），检测到库表 DDL 与创世基线漂移时：
+   * 备份本地状态行 → 临时关闭外键（防 DROP 级联清空 resource_downloads 等引用行）→
+   * DROP 后按 GENESIS_V1_SCHEMA 全量重建（IF NOT EXISTS 幂等，仅 builtin_modules 与其索引新建）→
+   * 本地状态行回灌 → 外键恢复。应用未上线无迁移兼容，GENESIS_V1_SCHEMA 为唯一创世基线。
+   *
+   * @returns 是否实际执行了重建（表 DDL 与创世基线一致时返回 false——失败另有原因，不做无谓重建）
+   */
+  private rebuildBuiltinModulesTableForGenesisDrift(): boolean {
+    const db = this.getDb()
+    try {
+      const tableSql = (
+        db
+          .prepare(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'builtin_modules'"
+          )
+          .get() as { sql?: string } | undefined
+      )?.sql
+      const ddlStart = GENESIS_V1_SCHEMA.indexOf('CREATE TABLE IF NOT EXISTS builtin_modules')
+      const ddlEnd = GENESIS_V1_SCHEMA.indexOf('\n  );', ddlStart)
+      if (!tableSql || ddlStart < 0 || ddlEnd < 0) {
+        return false
+      }
+      // 规范化空白后比对：库表 DDL 与创世基线一致则失败另有原因，严禁无谓重建
+      const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
+      if (normalize(tableSql) === normalize(GENESIS_V1_SCHEMA.slice(ddlStart, ddlEnd))) {
+        return false
+      }
+
+      // 1. 备份全部模块行（含本地安装状态与用户配置）
+      const backupRows = db.prepare('SELECT * FROM builtin_modules').all() as Record<
+        string,
+        unknown
+      >[]
+      // 2. 临时关闭外键：DROP 被引用表不得级联清空 resource_downloads / module_resource_downloads 引用行
+      db.pragma('foreign_keys = OFF')
+      try {
+        db.exec('DROP TABLE builtin_modules')
+        // 3. 按创世基线全量重建（IF NOT EXISTS 幂等：仅 builtin_modules 与其索引新建）
+        db.exec(GENESIS_V1_SCHEMA)
+        // 4. 本地状态行回灌（旧数据行 category 均在新白名单内，逐行原样恢复）
+        const insertRow = db.prepare(
+          `INSERT OR REPLACE INTO builtin_modules (
+            id, kind, version, catalog_version, category, author_code, author_name,
+            availability, delist_reason, firecore_cost, total_bytes, catalog_meta_json,
+            config_schema, user_config, install_state, selected_variant, install_path,
+            installed_at, last_activated_at, user_consent, error_message, config_json,
+            capability_slot, slot_policy, backend_type
+          ) VALUES (
+            @id, @kind, @version, @catalog_version, @category, @author_code, @author_name,
+            @availability, @delist_reason, @firecore_cost, @total_bytes, @catalog_meta_json,
+            @config_schema, @user_config, @install_state, @selected_variant, @install_path,
+            @installed_at, @last_activated_at, @user_consent, @error_message, @config_json,
+            @capability_slot, @slot_policy, @backend_type
+          )`
+        )
+        const backfill = db.transaction((rows: Record<string, unknown>[]) => {
+          for (const row of rows) insertRow.run(row)
+        })
+        backfill(backupRows)
+      } finally {
+        db.pragma('foreign_keys = ON')
+      }
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[builtin_modules_schema_drift_healed] 检测到 builtin_modules 表 DDL 落后于创世基线` +
+          `（CHECK 白名单固化），已自愈重建并回灌 ${backupRows.length} 行本地状态；` +
+          '请重试此前被拒绝的操作'
+      )
+      return true
+    } catch (err) {
+      logger.error(
+        LogCategory.SYSTEM,
+        '[ModularResource] builtin_modules 表级自愈重建失败，请删除本地数据库文件重建:',
+        err
+      )
+      return false
     }
   }
 
