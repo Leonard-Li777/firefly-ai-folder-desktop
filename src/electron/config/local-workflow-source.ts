@@ -1297,20 +1297,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.finance-contract-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.finance-contract-ignore-3',
         type: 'extension',
         value: '.log',
@@ -1321,34 +1307,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.finance-contract-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-7',
-        type: 'file',
-        value: 'thumbs.db',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-8',
-        type: 'file',
-        value: 'desktop.ini',
         isActive: true,
         isSystem: true
       }
@@ -2206,20 +2164,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.legal-case-dossier-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.legal-case-dossier-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.legal-case-dossier-ignore-3',
         type: 'extension',
         value: '.log',
@@ -2230,20 +2174,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.legal-case-dossier-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.legal-case-dossier-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.legal-case-dossier-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -2554,20 +2484,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.clinical-medical-records-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.clinical-medical-records-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.clinical-medical-records-ignore-3',
         type: 'extension',
         value: '.log',
@@ -2578,20 +2494,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.clinical-medical-records-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.clinical-medical-records-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.clinical-medical-records-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -2888,20 +2790,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.teacher-lesson-prep-ignore-3',
         type: 'extension',
         value: '.log',
@@ -2912,20 +2800,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.teacher-lesson-prep-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -3238,20 +3112,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.consulting-due-diligence-ignore-3',
         type: 'extension',
         value: '.log',
@@ -3262,20 +3122,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.consulting-due-diligence-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -3637,20 +3483,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.architectural-cad-design-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.architectural-cad-design-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.architectural-cad-design-ignore-3',
         type: 'extension',
         value: '.log',
@@ -3661,20 +3493,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.architectural-cad-design-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.architectural-cad-design-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.architectural-cad-design-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -3970,20 +3788,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.writing-publishing-pipeline-ignore-3',
         type: 'extension',
         value: '.log',
@@ -3994,20 +3798,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.writing-publishing-pipeline-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -4264,20 +4054,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.wellness-health-portfolio-ignore-3',
         type: 'extension',
         value: '.log',
@@ -4288,20 +4064,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.wellness-health-portfolio-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -4580,20 +4342,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pm-product-workflow-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pm-product-workflow-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pm-product-workflow-ignore-3',
         type: 'extension',
         value: '.log',
@@ -4604,20 +4352,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.pm-product-workflow-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pm-product-workflow-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pm-product-workflow-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -5056,20 +4790,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.data-science-analytics-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.data-science-analytics-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.data-science-analytics-ignore-3',
         type: 'extension',
         value: '.log',
@@ -5080,20 +4800,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.data-science-analytics-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.data-science-analytics-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.data-science-analytics-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -5506,37 +5212,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.qa-testing-lifecycle-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-4',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -5857,20 +5535,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.sales-pipeline-crm-ignore-3',
         type: 'extension',
         value: '.log',
@@ -5881,20 +5545,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.sales-pipeline-crm-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -6182,20 +5832,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.hr-people-operations-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.hr-people-operations-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.hr-people-operations-ignore-3',
         type: 'extension',
         value: '.log',
@@ -6206,20 +5842,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.hr-people-operations-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.hr-people-operations-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.hr-people-operations-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -6590,20 +6212,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.marketing-campaign-imc-ignore-3',
         type: 'extension',
         value: '.log',
@@ -6614,20 +6222,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.marketing-campaign-imc-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -6946,20 +6540,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.corporate-legal-compliance-ignore-3',
         type: 'extension',
         value: '.log',
@@ -6970,20 +6550,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.corporate-legal-compliance-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -7339,30 +6905,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.embedded-iot-firmware-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-4',
-        type: 'extension',
-        value: '.swp',
         isActive: true,
         isSystem: true
       },
@@ -7398,13 +6943,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.embedded-iot-firmware-ignore-9',
         type: 'extension',
         value: '.pyc',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-10',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       }
@@ -7714,20 +7252,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.creative-assets-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.creative-assets-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.creative-assets-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -7752,13 +7276,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.creative-assets-ignore-6',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.creative-assets-ignore-7',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       }
@@ -7984,20 +7501,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.freelance-business-delivery-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8008,20 +7511,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.freelance-business-delivery-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -8188,20 +7677,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pkm-knowledge-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8212,20 +7687,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.pkm-knowledge-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -8538,20 +7999,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.gaming-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.gaming-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.gaming-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8562,13 +8009,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.gaming-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.gaming-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -8752,20 +8192,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.novel-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.novel-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.novel-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8776,13 +8202,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.novel-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.novel-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9087,20 +8506,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.movie-cinema-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.movie-cinema-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.movie-cinema-ignore-3',
         type: 'extension',
         value: '.part',
@@ -9118,13 +8523,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.movie-cinema-ignore-5',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.movie-cinema-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9353,20 +8751,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.anime-comic-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.anime-comic-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.anime-comic-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9377,13 +8761,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.anime-comic-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.anime-comic-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9596,20 +8973,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pc-hardware-gear-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pc-hardware-gear-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pc-hardware-gear-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9620,13 +8983,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.pc-hardware-gear-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pc-hardware-gear-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9799,20 +9155,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.cooking-recipes-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cooking-recipes-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cooking-recipes-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9823,13 +9165,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.cooking-recipes-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cooking-recipes-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9974,20 +9309,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pet-care-diary-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pet-care-diary-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pet-care-diary-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9998,13 +9319,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.pet-care-diary-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pet-care-diary-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -10266,20 +9580,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.travel-outdoor-journey-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.travel-outdoor-journey-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.travel-outdoor-journey-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -10290,13 +9590,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.travel-outdoor-journey-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.travel-outdoor-journey-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -10604,20 +9897,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.music-audio-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.music-audio-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.music-audio-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -10628,13 +9907,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.music-audio-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.music-audio-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -10872,20 +10144,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.graphic-brand-design-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.graphic-brand-design-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.graphic-brand-design-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -10896,20 +10154,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.graphic-brand-design-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.graphic-brand-design-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.graphic-brand-design-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       }
@@ -11156,20 +10400,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.illustration-cg-art-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.illustration-cg-art-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.illustration-cg-art-ignore-3',
         type: 'extension',
         value: '.log',
@@ -11180,20 +10410,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.illustration-cg-art-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.illustration-cg-art-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.illustration-cg-art-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -11553,20 +10769,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.mobile-app-dev-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.mobile-app-dev-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -11577,20 +10779,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.mobile-app-dev-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -11914,37 +11102,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.cloud-native-sre-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cloud-native-sre-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cloud-native-sre-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cloud-native-sre-ignore-4',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cloud-native-sre-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -12163,30 +11323,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.supply-chain-logistics-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.supply-chain-logistics-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.supply-chain-logistics-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.supply-chain-logistics-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -12346,30 +11485,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.study-abroad-application-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.study-abroad-application-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.study-abroad-application-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.study-abroad-application-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -12634,30 +11752,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.desktop-declutter-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-declutter-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.desktop-declutter-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-declutter-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -13167,27 +12264,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.downloads-triage-ignore-6',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.downloads-triage-ignore-7',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.downloads-triage-ignore-8',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.downloads-triage-ignore-9',
         type: 'extension',
         value: '.db',
@@ -13395,30 +12471,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.inbox-staging-universal-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.inbox-staging-universal-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.inbox-staging-universal-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.inbox-staging-universal-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -13710,30 +12765,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.desktop-classic-classification-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-classic-classification-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.desktop-classic-classification-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-classic-classification-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14050,37 +13084,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.qa-testing-asset-vault-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-4',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14313,30 +13319,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.k12-education-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-education-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.k12-education-vault-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-education-vault-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14522,30 +13507,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.k12-school-term-pipeline-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-school-term-pipeline-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.k12-school-term-pipeline-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-school-term-pipeline-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14793,30 +13757,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.senior-life-archive-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-life-archive-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.senior-life-archive-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-life-archive-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14995,30 +13938,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.senior-medical-care-pipeline-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -15212,20 +14134,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.office-docs-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-docs-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.office-docs-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -15236,20 +14144,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.office-docs-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-docs-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-docs-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       }
@@ -15405,20 +14299,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.office-document-dispatch-flow-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -15429,20 +14309,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.office-document-dispatch-flow-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       }
@@ -15594,20 +14460,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.household-dossier-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.household-dossier-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.household-dossier-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -15618,20 +14470,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.household-dossier-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.household-dossier-vault-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.household-dossier-vault-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       }
@@ -15933,20 +14771,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.media-collector-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.media-collector-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.media-collector-vault-ignore-3',
         type: 'extension',
         value: '.part',
@@ -15978,13 +14802,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.media-collector-vault-ignore-7',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.media-collector-vault-ignore-8',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -16318,37 +15135,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.code-asset-vault-ignore-2',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.code-asset-vault-ignore-3',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.code-asset-vault-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.code-asset-vault-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.code-asset-vault-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -16803,20 +15592,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.chat-software-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.chat-software-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.chat-software-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -16827,13 +15602,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.chat-software-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.chat-software-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -17114,20 +15882,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.cross-device-transfer-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cross-device-transfer-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cross-device-transfer-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17138,13 +15892,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.cross-device-transfer-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cross-device-transfer-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -17272,20 +16019,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17296,13 +16029,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -17433,20 +16159,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.scratchpad-drafts-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17457,20 +16169,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.scratchpad-drafts-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-6',
-        type: 'extension',
-        value: '.swp',
         isActive: true,
         isSystem: true
       }
@@ -17791,20 +16489,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.external-storage-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.external-storage-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.external-storage-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17815,20 +16499,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.external-storage-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.external-storage-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.external-storage-vault-ignore-6',
-        type: 'extension',
-        value: '.swp',
         isActive: true,
         isSystem: true
       },
@@ -17952,20 +16622,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.scanned-documents-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scanned-documents-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.scanned-documents-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17976,13 +16632,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.scanned-documents-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scanned-documents-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -18134,20 +16783,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.docs-office-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-office-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.docs-office-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -18158,20 +16793,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.docs-office-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-office-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-office-vault-ignore-6',
-        type: 'extension',
-        value: '.swp',
         isActive: true,
         isSystem: true
       }
@@ -18380,20 +17001,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.docs-study-research-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-study-research-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.docs-study-research-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -18404,13 +17011,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.docs-study-research-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-study-research-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },

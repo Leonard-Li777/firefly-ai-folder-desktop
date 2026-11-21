@@ -3,7 +3,7 @@
  * 负责处理前端关于系统设置、忽略规则、工作目录管理的请求
  */
 import { ipcMain, BrowserWindow, dialog } from 'electron'
-import { logger, LogCategory } from '@firefly/shared'
+import { clearEffectiveFilterPolicyCache, logger, LogCategory } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { ConfigDbManager } from '../config/config-db-manager'
@@ -131,6 +131,11 @@ export function registerSettingsIPCHandlers(): void {
     try {
       // 1. 保存到持久化配置
       await saveIgnoreRulesToConfig(rules)
+
+      // 1.5 清空准入策略缓存(resolveEffectiveFilterPolicy 按 workspaceId:policyVersion 缓存,
+      //     而全局规则变更不递增 policyVersion——全局排除统一准入语义后 isSystem:false 规则
+      //     成为准入承重墙,停用/新增/启用必须立即失效既有工作区缓存,否则永久陈旧)
+      clearEffectiveFilterPolicyCache()
 
       // 2. 异步通知其他服务重载（不阻塞 IPC 返回）
       setImmediate(async () => {

@@ -15,10 +15,7 @@ import {
   parseWorkspaceConfig,
   SettingsCategory
 } from '@firefly/types'
-import {
-  filterOutGlobalExclusionRules,
-  isValidAdmissionExtension
-} from '@firefly/shared'
+import { filterOutGlobalExclusionRules, isValidAdmissionExtension } from '@firefly/shared'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { Card } from '../../ui/card'
 import { Button } from '../../ui/button'
@@ -29,8 +26,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
-import { submitWorkspacePolicyMutation,
-  getMutationErrorText } from '../../../lib/workspace-policy/workspace-ai-client'
+import {
+  submitWorkspacePolicyMutation,
+  getMutationErrorText
+} from '../../../lib/workspace-policy/workspace-ai-client'
 import {
   Filter,
   ShieldCheck,
@@ -87,7 +86,10 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
   { workspace, hardwareInfo, onConfigSaved, onDirtyChange },
   ref
 ) {
-  const systemRules = useSettingsStore(s => s.ignoreRules)
+  const ignoreRulesAll = useSettingsStore(s => s.ignoreRules)
+  // 补集吸收基准收敛为 isSystem:true 系统硬排除子集:isSystem:false 同值副本是「启用钉子」
+  // (D3),纳入基准会被 persistRules 物理清剿——原样保留展示,仅 systemDeny 基线参与吸收
+  const systemRules = useMemo(() => ignoreRulesAll.filter(r => r.isSystem), [ignoreRulesAll])
   const openSystemSettings = useSettingsStore(s => s.openSystemSettings)
 
   // 1. 白名单初始数据规范化
@@ -787,7 +789,9 @@ export const WorkspaceAdmissionRulesTab = forwardRef<
                         ? 'build, dist, test_data'
                         : newRule.type === 'extension'
                           ? '.bak, .tmp'
-                          : t('输入要排除的名称或模式')
+                          : newRule.type === 'regex'
+                            ? t('输入正则表达式（自动忽略大小写，如 /node_modules/v2）')
+                            : t('输入要排除的名称或模式')
                     }
                     value={newRule.value}
                     onChange={e => setNewRule(prev => ({ ...prev, value: e.target.value }))}
