@@ -12,7 +12,7 @@ import { useDragSelectStore } from '../../../../stores/drag-select-store'
 import { PageId } from '../../../../constants/page-ids'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
-import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
+import { resolveThumbnailUrl } from './thumbnail-url-utils'
 
 interface GridCellInnerProps {
   item: any
@@ -377,58 +377,11 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
               </div>
             )
 
-          let baseUrl = ''
-          if (fileItem.thumbnailPath) {
-            const thumbPath = fileItem.thumbnailPath
-            let finalWorkspaceDirectoryPath = workspaceDirectoryPath || ''
-            if (
-              !finalWorkspaceDirectoryPath &&
-              'workspaceDirectoryPath' in fileItem &&
-              (fileItem as any).workspaceDirectoryPath
-            ) {
-              finalWorkspaceDirectoryPath = (fileItem as any).workspaceDirectoryPath as string
-            }
-            if (
-              !finalWorkspaceDirectoryPath &&
-              fileItem.path &&
-              typeof fileItem.path === 'string'
-            ) {
-              const itemPath = fileItem.path
-              const virtIdx = itemPath.indexOf('.VirtualDirectory')
-              if (virtIdx > 0) {
-                finalWorkspaceDirectoryPath = itemPath.substring(0, virtIdx).replace(/[\\/]+$/, '')
-              } else {
-                const lastSep = Math.max(itemPath.lastIndexOf('/'), itemPath.lastIndexOf('\\'))
-                if (lastSep > 0) {
-                  finalWorkspaceDirectoryPath = itemPath.substring(0, lastSep)
-                }
-              }
-            }
-            if (!finalWorkspaceDirectoryPath) {
-              finalWorkspaceDirectoryPath =
-                useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
-            }
-
-            const isAbs =
-              /^[a-zA-Z]:[\\/]/.test(thumbPath) ||
-              thumbPath.startsWith('/') ||
-              thumbPath.startsWith('\\')
-            let absPath = ''
-            if (isAbs) {
-              absPath = thumbPath
-            } else if (finalWorkspaceDirectoryPath) {
-              absPath = `${finalWorkspaceDirectoryPath.replace(/[\\/]+$/, '')}/${thumbPath.replace(/^[\\/]+/, '')}`
-            }
-            if (absPath) {
-              const normalized = normalizeForCache(absPath).replace(/\\/g, '/')
-              const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
-              baseUrl = `file://${cleanPath}`
-            }
-          } else if (typeof showThumbnail === 'boolean' && showThumbnail) {
-            const normalized = normalizeForCache(fileItem.path).replace(/\\/g, '/')
-            const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
-            baseUrl = `file://${cleanPath}`
-          }
+          const baseUrl = resolveThumbnailUrl(
+            fileItem.thumbnailPath,
+            fileItem.path,
+            workspaceDirectoryPath || (fileItem as any).workspaceDirectoryPath
+          )
 
           if (baseUrl && !imgError) {
             const finalUrl = refreshKey ? `${baseUrl}?t=${refreshKey}` : baseUrl

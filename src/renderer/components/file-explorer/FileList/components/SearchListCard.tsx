@@ -13,7 +13,6 @@ import { PageId, PAGE_IDS } from '../../../../constants/page-ids'
 import { useSearchStore } from '../../../../stores/search-store'
 import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
 import { useSettingsStore } from '../../../../stores/settings-store'
-import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
 import { useTierStore } from '../../../../stores/tier-store'
 
 /**
@@ -37,22 +36,8 @@ export const sanitizeSnippetHtml = (snippet?: string): string => {
   return escaped.replace(/&lt;mark&gt;/g, '<mark>').replace(/&lt;\/mark&gt;/g, '</mark>')
 }
 
-/**
- * 转换本地路径为安全的 Chromium file:/// 协议 URL
- * 编码非 ASCII 字符以及 #、?、% 等特殊 URL 关键字符，防止被截断或解析错乱
- */
-export function toSafeFileUrl(filePath: string): string {
-  if (!filePath) return ''
-  const unified = filePath.replace(/\\/g, '/').replace(/\/+/g, '/')
-  const segments = unified.split('/')
-  const encoded = segments
-    .map((seg, i) => {
-      if (i === 0 && /^[a-zA-Z]:$/.test(seg)) return seg
-      return encodeURIComponent(seg)
-    })
-    .join('/')
-  return `file://${encoded.startsWith('/') ? '' : '/'}${encoded}`
-}
+import { toSafeFileUrl, resolveThumbnailUrl } from './thumbnail-url-utils'
+export { toSafeFileUrl, resolveThumbnailUrl } from './thumbnail-url-utils'
 
 /**
  * 视频切片微型抽帧帧卡片（标准 16:9 画幅，时间锚定抽帧缩图预览，Hover 提示完整起止时间与相似度）
@@ -364,44 +349,15 @@ export const SearchListCard = React.memo(
       if (!isImage && !item.thumbnailPath) return { primaryImageUrl: '', fallbackImageUrl: '' }
 
       const originalUrl = isImage && item.path ? toSafeFileUrl(item.path) : ''
-      let thumbUrl = ''
-
-      if (item.thumbnailPath) {
-        const thumbPath = item.thumbnailPath
-        const isAbs =
-          /^[a-zA-Z]:[\\/]/.test(thumbPath) ||
-          thumbPath.startsWith('/') ||
-          thumbPath.startsWith('\\')
-
-        if (isAbs) {
-          thumbUrl = toSafeFileUrl(thumbPath)
-        } else {
-          let wsDir = workspaceDirectoryPath || (item as any).workspaceDirectoryPath || ''
-          if (!wsDir && item.path) {
-            const virtIdx = item.path.indexOf('.VirtualDirectory')
-            if (virtIdx > 0) {
-              wsDir = item.path.substring(0, virtIdx).replace(/[\\/]+$/, '')
-            } else {
-              const lastSep = Math.max(item.path.lastIndexOf('/'), item.path.lastIndexOf('\\'))
-              if (lastSep > 0) {
-                wsDir = item.path.substring(0, lastSep)
-              }
-            }
-          }
-          if (!wsDir) {
-            wsDir = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
-          }
-          if (wsDir) {
-            const cleanWs = wsDir.replace(/[\\/]+$/, '')
-            const cleanThumb = thumbPath.replace(/^[\\/]+/, '')
-            thumbUrl = toSafeFileUrl(`${cleanWs}/${cleanThumb}`)
-          }
-        }
-      }
+      const thumbUrl = resolveThumbnailUrl(
+        item.thumbnailPath,
+        item.path,
+        workspaceDirectoryPath || (item as any).workspaceDirectoryPath
+      )
 
       return {
         primaryImageUrl: thumbUrl || originalUrl,
-        fallbackImageUrl: thumbUrl && originalUrl ? originalUrl : ''
+        fallbackImageUrl: thumbUrl && originalUrl && thumbUrl !== originalUrl ? originalUrl : ''
       }
     }, [
       isImage,

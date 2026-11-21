@@ -26,6 +26,7 @@ import remarkGfm from 'remark-gfm'
 import { openExternalLink } from '../../../lib/external-link'
 import { HighlightText } from '../../common/HighlightText'
 import { useSearchStore } from '../../../stores/search-store'
+import { resolveThumbnailUrl, toSafeFileUrl } from '../FileList/components/thumbnail-url-utils'
 
 function extractAnchorMap(content: string): Map<string, string> {
   const map = new Map<string, string>()
@@ -270,56 +271,19 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     const thumbPathRaw =
       (analysisResult as any)?.thumbnailPath ||
       ('thumbnailPath' in item ? (item as any).thumbnailPath : undefined)
-    if (!thumbPathRaw) return null
+    const filePath =
+      'path' in item && typeof (item as any).path === 'string' ? (item as any).path : undefined
+    const wsPath =
+      workspaceDirectoryPath ||
+      ('workspaceDirectoryPath' in item ? (item as any).workspaceDirectoryPath : undefined)
 
-    const thumbnailPath = thumbPathRaw as string
-    let finalWorkspaceDirectoryPath = workspaceDirectoryPath || ''
-    if (
-      !finalWorkspaceDirectoryPath &&
-      'workspaceDirectoryPath' in item &&
-      (item as any).workspaceDirectoryPath
-    ) {
-      finalWorkspaceDirectoryPath = (item as any).workspaceDirectoryPath as string
-    }
+    const url = resolveThumbnailUrl(thumbPathRaw, filePath, wsPath)
+    if (!url) return null
 
-    // 兜底：若仍缺乏工作区根路径，通过文件 path 进行切分推导
-    if (!finalWorkspaceDirectoryPath && 'path' in item && typeof (item as any).path === 'string') {
-      const itemPath = (item as any).path as string
-      const virtIdx = itemPath.indexOf('.VirtualDirectory')
-      if (virtIdx > 0) {
-        finalWorkspaceDirectoryPath = itemPath.substring(0, virtIdx).replace(/[\\/]+$/, '')
-      } else {
-        const lastSep = Math.max(itemPath.lastIndexOf('/'), itemPath.lastIndexOf('\\'))
-        if (lastSep > 0) {
-          finalWorkspaceDirectoryPath = itemPath.substring(0, lastSep)
-        }
-      }
-    }
-
-    const { normalizeForCache } = window.electronAPI?.utils || {
-      normalizeForCache: (p: string) => p
-    }
-
-    const isAbs =
-      /^[a-zA-Z]:[\\/]/.test(thumbnailPath) ||
-      thumbnailPath.startsWith('/') ||
-      thumbnailPath.startsWith('\\')
-
-    let absPath = ''
-    if (isAbs) {
-      absPath = thumbnailPath
-    } else if (finalWorkspaceDirectoryPath) {
-      absPath = `${finalWorkspaceDirectoryPath.replace(/[\\/]+$/, '')}/${thumbnailPath.replace(/^[\\/]+/, '')}`
-    } else {
-      return null
-    }
-
-    const normalized = normalizeForCache(absPath).replace(/\\/g, '/')
-    const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
     const lastAnalyzedAt = (analysisResult as any)?.lastAnalyzedAt
     const refreshKey = lastAnalyzedAt ? new Date(lastAnalyzedAt).getTime() : null
 
-    return refreshKey ? `file://${cleanPath}?t=${refreshKey}` : `file://${cleanPath}`
+    return refreshKey ? `${url}?t=${refreshKey}` : url
   }
 
   // 生成原始图片URL - 如果没有缩略图，但文件本身是图片，则直接显示
@@ -331,9 +295,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
       !isCategory((item as any).extension, FileCategory.IMAGE)
     )
       return null
-    const { normalizeForCache } = window.electronAPI!.utils
-    const normalizedPath = normalizeForCache((item as FileItem).path)
-    return `file://${normalizedPath}`
+    return toSafeFileUrl((item as FileItem).path)
   }
 
   const displayUrl = useMemo(

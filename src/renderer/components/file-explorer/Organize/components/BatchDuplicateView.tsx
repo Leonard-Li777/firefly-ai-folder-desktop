@@ -27,6 +27,7 @@ import { ContextMenu, ContextMenuItem } from '../../../common/ContextMenu'
 import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
 import { notifyEnqueueResult } from '../../../../utils/enqueue-notifier'
 import { LogCategory, logger } from '@firefly/shared'
+import { resolveThumbnailUrl } from '../../FileList/components/thumbnail-url-utils'
 
 interface BatchDuplicateViewProps {
   files: any[]
@@ -425,41 +426,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     })
   }
 
-  // 计算缩略图或图片直显 URL（完全参考 FileList / GridCell 实现机制）
+  // 计算缩略图或图片直显 URL（统一使用 resolveThumbnailUrl）
   const getFileThumbnailUrl = useCallback(
     (file: DuplicateFileItem): string | null => {
-      const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
-      const isImg = IMAGE_EXTENSIONS.has(ext)
-      const normalize = window.electronAPI?.utils?.normalizeForCache || ((p: string) => p)
-
-      // 1. 如果有明确缩略图路径
-      if (file.thumbnailPath) {
-        const thumbPath = file.thumbnailPath
-        const isAbs =
-          /^[a-zA-Z]:[\\/]/.test(thumbPath) ||
-          thumbPath.startsWith('/') ||
-          thumbPath.startsWith('\\')
-        let absPath = ''
-        if (isAbs) {
-          absPath = thumbPath
-        } else if (workspaceDirectoryPath) {
-          absPath = `${workspaceDirectoryPath.replace(/[\\/]+$/, '')}/${thumbPath.replace(/^[\\/]+/, '')}`
-        }
-        if (absPath) {
-          const normalized = normalize(absPath).replace(/\\/g, '/')
-          const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
-          return `file://${cleanPath}`
-        }
-      }
-
-      // 2. 如果本身就是图片类型，直接使用原生 file:// 加载原图作为预览
-      if (isImg && file.path) {
-        const normalized = normalize(file.path).replace(/\\/g, '/')
-        const cleanPath = normalized.startsWith('/') ? normalized : `/${normalized}`
-        return `file://${cleanPath}`
-      }
-
-      return null
+      const url = resolveThumbnailUrl(file.thumbnailPath, file.path, workspaceDirectoryPath)
+      return url || null
     },
     [workspaceDirectoryPath]
   )
@@ -1077,10 +1048,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         confirmBtnText = t('确认重命名')
       } else if (singleNonTrashType === 'extFix') {
         title = t('确认批量修正扩展名？')
-        mainDescription = t(
-          '选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。',
-          { count: extFixCount }
-        )
+        mainDescription = t('选中的 {count} 个文件将根据真实文件类型修正扩展名，请核对后确认。', {
+          count: extFixCount
+        })
         confirmBtnText = t('确认修正')
       } else if (singleNonTrashType === 'exif') {
         title = t('确认批量清理隐私信息？')

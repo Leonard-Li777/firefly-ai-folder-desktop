@@ -19,6 +19,7 @@ import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../stores/analyzed-directory-store'
+import { useFileExplorerStore } from '../../../stores/app-store'
 import { useSearchStore } from '../../../stores/search-store'
 import { PAGE_IDS } from '../../../constants/page-ids'
 import { RestrictedFeatureOverlay } from '../../common/RestrictedFeatureOverlay'
@@ -435,6 +436,11 @@ export const Organize: React.FC = () => {
                 await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
                 const store = useAnalyzedDirectoryStore.getState()
                 await store.setCurrentWorkspaceDirectory(target)
+                // 切换工作区前清空旧文件列表，防止旧文件与新工作区路径混用造成缩略图 404
+                const explorerStore = useFileExplorerStore.getState()
+                explorerStore.setFiles([])
+                explorerStore.setDirectories([])
+                explorerStore.setSelectedFiles([])
                 navigate('/real-directory')
                 if (target?.id) {
                   useSettingsStore.getState().openWorkspaceSettings({
