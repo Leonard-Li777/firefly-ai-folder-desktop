@@ -664,9 +664,6 @@ export const WorkspaceSettingsDialog: React.FC = () => {
             <>
               {/* 一级导航：左侧配置项 Tab 竖向列表（样式对齐全局设置页面主副标题导航） */}
               <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/40">
-                <div className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/40">
-                  {t('配置项')}
-                </div>
                 <nav className="p-3 space-y-1.5 overflow-y-auto flex-1">
                   {tabs.map(tab => {
                     const isActive = activeTab === tab.id
@@ -708,9 +705,6 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 {/* 工作目录列表（横向标签栏，与左侧配置项互换位置） */}
                 <div className="flex-shrink-0 px-4 pt-2.5 border-b border-border/60 overflow-x-auto">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground shrink-0 mr-1.5">
-                      {t('工作目录列表')}
-                    </span>
                     {workspaceDirectories.map(ws => {
                       const isActive = activeWorkspace?.id === ws.id
                       return (

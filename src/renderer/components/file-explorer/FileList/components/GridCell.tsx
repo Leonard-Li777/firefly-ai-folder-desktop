@@ -197,7 +197,8 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             ? `${unitTheme.bg} ${unitTheme.darkBg} border ${unitTheme.border} ${unitTheme.darkBorder}`
             : 'bg-secondary/50 dark:bg-secondary',
         !isItemEffectiveSelected && isHovered && 'bg-primary/20',
-        isItemEffectiveSelected && 'ring-1 ring-primary/90 bg-primary/30 dark:bg-primary/30 ring-inset z-10'
+        isItemEffectiveSelected &&
+          'ring-1 ring-primary/90 bg-primary/30 dark:bg-primary/30 ring-inset z-10'
       )}
       title={isLost ? t('原文件已在磁盘上丢失或被移动') : isUnit ? unitTooltip : undefined}
       onMouseEnter={() => setIsHovered(true)}
@@ -228,10 +229,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             const targetHighlightRange =
               (fileItem as any)?.highlightRange ??
               ((fileItem as any)?.matchedChunk
-                ? [
-                    (fileItem as any).matchedChunk.startSec,
-                    (fileItem as any).matchedChunk.endSec
-                  ]
+                ? [(fileItem as any).matchedChunk.startSec, (fileItem as any).matchedChunk.endSec]
                 : undefined)
 
             if (routeType !== 'unsupported') {
@@ -270,10 +268,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
           const targetHighlightRange =
             (fileItem as any)?.highlightRange ??
             ((fileItem as any)?.matchedChunk
-              ? [
-                  (fileItem as any).matchedChunk.startSec,
-                  (fileItem as any).matchedChunk.endSec
-                ]
+              ? [(fileItem as any).matchedChunk.startSec, (fileItem as any).matchedChunk.endSec]
               : undefined)
 
           if (routeType !== 'unsupported') {
@@ -393,7 +388,11 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             ) {
               finalWorkspaceDirectoryPath = (fileItem as any).workspaceDirectoryPath as string
             }
-            if (!finalWorkspaceDirectoryPath && fileItem.path && typeof fileItem.path === 'string') {
+            if (
+              !finalWorkspaceDirectoryPath &&
+              fileItem.path &&
+              typeof fileItem.path === 'string'
+            ) {
               const itemPath = fileItem.path
               const virtIdx = itemPath.indexOf('.VirtualDirectory')
               if (virtIdx > 0) {
@@ -406,7 +405,8 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
               }
             }
             if (!finalWorkspaceDirectoryPath) {
-              finalWorkspaceDirectoryPath = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
+              finalWorkspaceDirectoryPath =
+                useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.path || ''
             }
 
             const isAbs =
@@ -564,9 +564,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             ? fileItem?.smartName || ''
             : safeItemName
           : ''
-        const nameTooltip = secondaryName
-          ? `${primaryName}\n${secondaryName}`
-          : primaryName
+        const nameTooltip = secondaryName ? `${primaryName}\n${secondaryName}` : primaryName
         const combinedTitle = fileItem?.description
           ? `${nameTooltip}\n\n${fileItem.description}`
           : nameTooltip
@@ -578,7 +576,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
           >
             <div
               className={cn(
-                'text-xs sm:text-sm font-medium text-center w-full px-0.5 transition-colors leading-tight',
+                'text-xs text-center w-full px-0.5 transition-colors leading-tight',
                 showFullName ? 'break-all line-clamp-3 whitespace-normal' : 'truncate',
                 isHovered ? 'text-primary' : 'text-gray-700 dark:text-gray-100'
               )}
@@ -589,7 +587,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             {secondaryName ? (
               <div
                 className={cn(
-                  'text-[10px] sm:text-xs text-muted-foreground w-full px-0.5 text-center leading-tight',
+                  'text-[10px] sm:text-xs text-muted-foreground/70 w-full px-0.5 text-center leading-tight',
                   showFullName ? 'break-all line-clamp-1 whitespace-normal' : 'truncate'
                 )}
                 title={
@@ -726,11 +724,10 @@ export const GridCell = React.memo((props: GridCellProps) => {
 
   // 静态选中状态由 selectedPathsSet 判断（键为归一化路径，需先归一化再查找）；
   // 拖拽框选高亮由 GridCellInner 内部订阅 store 实现，避免框选时每帧生成新 Set 导致全部可见卡片重渲染
-  const normalizedItemPath = itemPath
-    ? (data.normalizeForCache?.(itemPath) ?? itemPath)
-    : ''
-  const isSelected =
-    (normalizedItemPath ? (data.selectedPathsSet?.has(normalizedItemPath) ?? false) : false)
+  const normalizedItemPath = itemPath ? (data.normalizeForCache?.(itemPath) ?? itemPath) : ''
+  const isSelected = normalizedItemPath
+    ? (data.selectedPathsSet?.has(normalizedItemPath) ?? false)
+    : false
 
   const isActive = activeItem?.path && isPathEqual(itemPath, activeItem.path)
   const isDirectory = 'isDirectory' in item && item.isDirectory
@@ -739,7 +736,9 @@ export const GridCell = React.memo((props: GridCellProps) => {
     fileItem &&
     (Boolean(fileItem.thumbnailPath) ||
       (typeof isImageFile === 'function' &&
-        (isImageFile(fileItem.extension) || isImageFile(fileItem.path) || isImageFile(fileItem.name))))
+        (isImageFile(fileItem.extension) ||
+          isImageFile(fileItem.path) ||
+          isImageFile(fileItem.name))))
   )
   const safeItemName = item.name || t('未知文件')
 
