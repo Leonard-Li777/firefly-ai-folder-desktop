@@ -225,7 +225,7 @@ export function WorkspacePluginsTab(props: WorkspacePluginsTabProps): React.Reac
                           className="inline-flex items-center gap-1 text-xs text-purple-700 underline underline-offset-2 hover:text-purple-900 dark:text-purple-300 dark:hover:text-purple-100"
                         >
                           <RotateCcw className="h-3 w-3" aria-hidden="true" />
-                          {hasBoundWorkflow ? t('恢复默认') : t('恢复默认配置')}
+                          {hasBoundWorkflow ? t('恢复工作流默认') : t('恢复全局默认')}
                         </button>
                       )}
                     </div>

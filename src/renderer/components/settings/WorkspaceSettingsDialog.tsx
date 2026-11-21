@@ -534,7 +534,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 </button>
               )}
 
-              {/* 全量重置按钮：已绑定显示「恢复工作流默认」，未绑定显示「恢复默认配置」 */}
+              {/* 全量重置按钮：已绑定显示「恢复工作流默认」，未绑定显示「恢复全局默认」 */}
               {parsedConfig.status === 'ready' && (
                 <Button
                   variant="ghost"
@@ -547,7 +547,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       .then(result => {
                         if (result.success) {
                           toast.success(
-                            hasBoundWorkflow ? t('已恢复工作流默认配置') : t('已恢复默认配置')
+                            hasBoundWorkflow ? t('已恢复工作流默认配置') : t('已恢复全局默认配置')
                           )
                           void refreshWorkspaceData()
                           void refreshRuntime()
@@ -562,7 +562,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   }}
                 >
                   <RotateCcw className="mr-1 h-3 w-3" />
-                  {hasBoundWorkflow ? t('恢复工作流默认') : t('恢复默认配置')}
+                  {hasBoundWorkflow ? t('恢复工作流默认') : t('恢复全局默认')}
                 </Button>
               )}
             </div>

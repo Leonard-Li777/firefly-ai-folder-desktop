@@ -5,7 +5,8 @@ import {
   WorkspaceConfig,
   TechnicalEngineParameters,
   parseWorkspaceConfig,
-  HardwareInfo
+  HardwareInfo,
+  DEFAULT_UNBOUND_AI_CONFIG
 } from '@firefly/types'
 import { mapIntentToParameters } from '@firefly/shared'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
@@ -23,6 +24,7 @@ import {
   type ResolvedTriStateField
 } from '../../../lib/workspace-policy/workspace-ai-client'
 import { getOcrModelSizeLabel, TriStateFieldFeedback } from './TriStateFieldFeedback'
+import { TriStateCustomFieldsTable, type TriStateCustomFieldRow } from './TriStateCustomFieldsTable'
 import { openExternalLink } from '../../../lib/external-link'
 import {
   FileText,
@@ -63,6 +65,54 @@ const CONTENT_EXTRACTION_KEYS: (keyof TechnicalEngineParameters)[] = [
   'enableImageOcr',
   'ocrModelSize'
 ]
+
+/**
+ * CONTENT_EXTRACTION_KEYS 参数项展示名（渲染期 switch 动态返回静态 t() 以支持语言切换，
+ * 严禁置于模块级静态对象字面量——t() 静态对象切换语言后无法刷新）
+ */
+function getContentExtractionFieldLabel(key: string): string {
+  switch (key) {
+    case 'maxContentSizeKb':
+      return t('正文提取大小上限')
+    case 'extractPages':
+      return t('PDF 文档正文提取页数')
+    case 'maxDocumentOcrItems':
+      return t('文档内嵌图片文字识别数量上限')
+    case 'enableOfficeCover':
+      return t('开启办公文档封面缩略图')
+    case 'reuseBasicAnalysisData':
+      return t('重新分析时复用数据')
+    case 'enableImageOcr':
+      return t('开启图片文字识别')
+    case 'ocrModelSize':
+      return t('文字识别清晰度')
+    default:
+      return key
+  }
+}
+
+/** 三态汇总表格值列大白话渲染：布尔转「开启/关闭」、枚举/数值转 UI 命名与单位（渲染期动态 t()） */
+function formatContentExtractionCellValue(key: string, v: unknown): string {
+  if (typeof v === 'boolean') return v ? t('开启') : t('关闭')
+  if (key === 'ocrModelSize') return getOcrModelSizeLabel(v === 'small' ? 'small' : 'tiny')
+  if (key === 'maxContentSizeKb') {
+    const n = Number(v)
+    return n <= 0 ? t('不限') : `${n} KB`
+  }
+  if (key === 'extractPages') {
+    const n = Number(v)
+    if (!Number.isFinite(n)) return String(v ?? '')
+    return n === -1 ? t('全本不限') : `${n} ${t('页')}`
+  }
+  if (key === 'maxDocumentOcrItems') {
+    const n = Number(v)
+    // 契约语义（对齐类型注释与内核 docOcrOff 判据）：-1 不限、0 关闭文档识别，其余为张数
+    if (n === -1) return t('不限')
+    if (n === 0) return t('关闭')
+    return `${n} ${t('张')}`
+  }
+  return String(v ?? '')
+}
 
 /**
  * 辅助悬浮气泡组件
@@ -235,6 +285,26 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     return CONTENT_EXTRACTION_KEYS.some(k => overrides[k] !== undefined)
   }, [overrides])
 
+  /** 恢复单个字段默认：先冲刷防抖队列（防 patch 胜出竞态）再精确 delete 覆盖键 + 本地同步清理（表格行与降级反馈共用） */
+  const restoreContentExtractionField = (fieldKey: string) => {
+    if (workspace.id == null) return
+    flushPending()
+    void submitWorkspacePolicyMutation(workspace.id, {
+      restoreOverrideFields: [fieldKey as keyof BaseAIConfig]
+    }).then(res => {
+      if (res.success) {
+        setOverrides(prev => {
+          const next = { ...prev }
+          delete next[fieldKey as keyof TechnicalEngineParameters]
+          return next
+        })
+        onConfigSaved?.()
+      } else {
+        toast.error(getMutationErrorText(res, t('恢复默认失败')))
+      }
+    })
+  }
+
   // 恢复默认：仅对本 Tab 管辖且已覆盖的键发送 restoreOverrideFields（严禁传 null）
   const handleResetToPreset = () => {
     const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
@@ -333,49 +403,62 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
               <span>
                 {parsedConfig.status === 'ready' && parsedConfig.workflowId
                   ? t('恢复工作流默认')
-                  : t('恢复默认配置')}
+                  : t('恢复全局默认')}
               </span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* SLICE-08：本 Tab 专管内容萃取参数的三态反馈（用户自定义 / 环境降级 / 级联关闭） */}
+      {/* SLICE-08 + v1.5：本 Tab 专管内容萃取参数的三态反馈
+          - 用户自定义 && 正常生效项 → 汇总表格（逐行标明参数项 + 全局默认/工作流默认/用户自定义值对照）
+          - 环境降级 / 级联关闭等态 → 保持 TriStateFieldFeedback 单项反馈 */}
       {resolvedFields && (
         <div className="space-y-1.5">
+          <TriStateCustomFieldsTable
+            rows={CONTENT_EXTRACTION_KEYS.reduce<TriStateCustomFieldRow[]>((acc, fieldKey) => {
+              const field = resolvedFields[fieldKey]
+              if (!field || !field.visible) return acc
+              if (field.origin !== 'user_custom' || field.applicability !== 'active') return acc
+              acc.push({
+                key: String(fieldKey),
+                label: getContentExtractionFieldLabel(fieldKey),
+                globalDefaultText: formatContentExtractionCellValue(
+                  fieldKey,
+                  DEFAULT_UNBOUND_AI_CONFIG[fieldKey as keyof BaseAIConfig]
+                ),
+                workflowDefaultText: hasBoundWorkflow
+                  ? formatContentExtractionCellValue(
+                      fieldKey,
+                      baseDerived[fieldKey as keyof BaseAIConfig]
+                    )
+                  : undefined,
+                customText: formatContentExtractionCellValue(fieldKey, field.desiredValue)
+              })
+              return acc
+            }, [])}
+            hasBoundWorkflow={hasBoundWorkflow}
+            onRestore={fieldKey => restoreContentExtractionField(fieldKey)}
+          />
           {CONTENT_EXTRACTION_KEYS.map(fieldKey => {
             const field = resolvedFields[fieldKey]
             if (!field || !field.visible) return null
-            if (field.origin !== 'user_custom' && field.applicability === 'active') return null
-            const fmtVal = (v: unknown) =>
-              fieldKey === 'ocrModelSize'
-                ? getOcrModelSizeLabel(v === 'small' ? 'small' : 'tiny')
-                : String(v ?? '')
+            // 默认正常态零冗余；user_custom && active 已收归上方汇总表格；
+            // cascaded_off / pending 属具体控件位置语义（如清晰度随上方开关级联关闭），
+            // 由「文字识别清晰度」控件区内渲染，严禁在顶部重复罗列
+            if (field.applicability !== 'degraded') return null
             return (
               <TriStateFieldFeedback
                 key={fieldKey}
                 field={field}
-                effectiveText={fmtVal(field.effectiveValue)}
-                desiredText={fmtVal(field.desiredValue)}
-                baselineText={fmtVal(baseDerived[fieldKey as keyof BaseAIConfig])}
+                effectiveText={formatContentExtractionCellValue(fieldKey, field.effectiveValue)}
+                desiredText={formatContentExtractionCellValue(fieldKey, field.desiredValue)}
+                baselineText={formatContentExtractionCellValue(
+                  fieldKey,
+                  baseDerived[fieldKey as keyof BaseAIConfig]
+                )}
                 hasBoundWorkflow={hasBoundWorkflow}
-                onRestore={() => {
-                  if (workspace.id == null) return
-                  void submitWorkspacePolicyMutation(workspace.id, {
-                    restoreOverrideFields: [fieldKey as keyof BaseAIConfig]
-                  }).then(res => {
-                    if (res.success) {
-                      setOverrides(prev => {
-                        const next = { ...prev }
-                        delete next[fieldKey]
-                        return next
-                      })
-                      onConfigSaved?.()
-                    } else {
-                      toast.error(getMutationErrorText(res, t('恢复默认失败')))
-                    }
-                  })
-                }}
+                onRestore={() => restoreContentExtractionField(fieldKey)}
                 onFixAction={onFixAction}
               />
             )
@@ -770,6 +853,32 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
                 )}
               />
             </div>
+            {/* 清晰度级联/下载提示：随上方「开启图片文字识别」开关级联关闭时在此渲染（顶部汇总区严禁重复罗列） */}
+            {(() => {
+              const ocrField = resolvedFields?.['ocrModelSize']
+              if (
+                !ocrField ||
+                ocrField.visible === false ||
+                (ocrField.applicability !== 'cascaded_off' && ocrField.applicability !== 'pending')
+              ) {
+                return null
+              }
+              return (
+                <TriStateFieldFeedback
+                  field={ocrField}
+                  effectiveText={formatContentExtractionCellValue(
+                    'ocrModelSize',
+                    ocrField.effectiveValue
+                  )}
+                  desiredText={formatContentExtractionCellValue(
+                    'ocrModelSize',
+                    ocrField.desiredValue
+                  )}
+                  hasBoundWorkflow={hasBoundWorkflow}
+                  onFixAction={onFixAction}
+                />
+              )
+            })()}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* 极速 OCR */}
               <div

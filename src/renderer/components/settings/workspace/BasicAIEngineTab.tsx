@@ -23,6 +23,7 @@ import { Card } from '../../ui/card'
 import { Switch } from '../../ui/switch'
 import { Label } from '../../ui/label'
 import { TriStateFieldFeedback } from './TriStateFieldFeedback'
+import { TriStateCustomFieldsTable, type TriStateCustomFieldRow } from './TriStateCustomFieldsTable'
 import {
   BaseAIConfig,
   WorkspaceDirectory,
@@ -30,7 +31,8 @@ import {
   TechnicalEngineParameters,
   parseWorkspaceConfig,
   HardwareInfo,
-  UserTier
+  UserTier,
+  DEFAULT_UNBOUND_AI_CONFIG
 } from '@firefly/types'
 import {
   VideoAnalysisProfile,
@@ -75,6 +77,74 @@ export interface BasicAIEngineTabProps {
 interface PendingPolicyPatch {
   patch: Partial<TechnicalEngineParameters>
   restore: Set<keyof TechnicalEngineParameters>
+}
+
+/**
+ * BASIC_AI_KEYS 参数项展示名（渲染期 switch 动态返回静态 t() 以支持语言切换，
+ * 严禁置于模块级静态对象字面量——t() 静态对象切换语言后无法刷新）
+ */
+function getBasicAiFieldLabel(key: string): string {
+  switch (key) {
+    case 'analysisMode':
+      return t('选择分析模式')
+    case 'videoQuotaMax':
+      return t('单视频最大抓图数量')
+    case 'videoCutSensitivity':
+      return t('镜头切换捕捉敏锐度')
+    case 'videoSoftTokenBudget':
+      return t('画面识别精细度')
+    case 'videoAsrDurationSec':
+      return t('视频伴音台词识别上限')
+    case 'audioAnalysisDurationSec':
+      return t('纯音频听写时长上限')
+    case 'clipTextEnabled':
+      return t('文字直接找图')
+    case 'reuseBasicAnalysisData':
+      return t('重新分析时复用数据')
+    default:
+      return key
+  }
+}
+
+/** 三态汇总表格值列大白话渲染：布尔转「开启/关闭」、枚举转 UI 命名、数值带单位（渲染期动态 t()） */
+function formatTriStateCellValue(key: string, v: unknown): string {
+  if (typeof v === 'boolean') return v ? t('开启') : t('关闭')
+  switch (key) {
+    case 'analysisMode':
+      return v === 'simple'
+        ? t('标准分析')
+        : v === 'quick_name'
+          ? t('增强分析')
+          : v === 'full'
+            ? t('全面分析')
+            : String(v ?? '')
+    case 'videoCutSensitivity':
+      return v === 'low'
+        ? t('常规')
+        : v === 'medium'
+          ? t('灵敏 (推荐)')
+          : v === 'high'
+            ? t('极高 (防吞噬)')
+            : String(v ?? '')
+    case 'videoSoftTokenBudget': {
+      const n = Number(v)
+      if (!Number.isFinite(n)) return String(v ?? '')
+      return n <= 48 ? t('流畅极速') : t('高清精细')
+    }
+    case 'videoQuotaMax': {
+      const n = Number(v)
+      if (!Number.isFinite(n)) return String(v ?? '')
+      return `${n} ${t('张')}`
+    }
+    case 'videoAsrDurationSec':
+    case 'audioAnalysisDurationSec': {
+      const n = Number(v)
+      if (!Number.isFinite(n)) return String(v ?? '')
+      return `${n} ${t('秒')}`
+    }
+    default:
+      return String(v ?? '')
+  }
 }
 
 /** 属于基础AI引擎 Tab 专管的参数键列表 (与文件内容萃取隔离，严格剥离全局向量底座键) */
@@ -327,9 +397,15 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   })
   const [isProPanelOpen, setIsProPanelOpen] = useState(false)
 
-  // 当外部配置（如向导更新）改变时，自动同步校准 videoProfile 档位
+  // 当外部配置（如向导更新）改变时，自动同步校准 videoProfile 档位。
+  // 非等值判据：覆盖键存在但值与基线一致（v1.5 等值回退存量数据）时按基线区间推导，
+  // 严禁误显「已自定义」与内核 origin 默认态自相矛盾
   useEffect(() => {
-    if (overrides.videoQuotaMax !== undefined) {
+    const overrideQuota = overrides.videoQuotaMax
+    const isNonBaselineOverride =
+      overrideQuota !== undefined &&
+      overrideQuota !== (baseDerived as Partial<TechnicalEngineParameters>).videoQuotaMax
+    if (isNonBaselineOverride) {
       const matchedPreset = (['fast_archive', 'balanced_search', 'deep_footage'] as const).find(
         p => VIDEO_ANALYSIS_PRESETS[p].quotaMax === effectiveParams.videoQuotaMax
       )
@@ -339,7 +415,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
       else if (effectiveParams.videoQuotaMax >= 80) setVideoProfile('deep_footage')
       else setVideoProfile('balanced_search')
     }
-  }, [effectiveParams.videoQuotaMax, overrides.videoQuotaMax])
+  }, [effectiveParams.videoQuotaMax, overrides.videoQuotaMax, baseDerived])
 
   const videoQuotaMax = effectiveParams.videoQuotaMax ?? 32
   const videoCutSensitivity = effectiveParams.videoCutSensitivity ?? 'medium'
@@ -490,6 +566,9 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const handleRestoreSingleField = useCallback(
     async (fieldKey: keyof BaseAIConfig) => {
       if (workspace.id == null) return
+      // 防抖竞态防护：先冲刷 500ms 防抖队列（窗口内 pending.patch 同键旧值先落盘），
+      // 再发本次 restore（后到 delete 胜出），杜绝 flush 后 patch 静默写回撤销恢复
+      flushPending()
       const res = await submitWorkspacePolicyMutation(workspace.id, {
         restoreOverrideFields: [fieldKey]
       })
@@ -504,7 +583,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
         toast.error(getMutationErrorText(res, t('恢复默认失败')))
       }
     },
-    [workspace.id, onConfigSaved]
+    [workspace.id, onConfigSaved, flushPending]
   )
 
   return (
@@ -555,27 +634,54 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               <span>
                 {parsedConfig.status === 'ready' && parsedConfig.workflowId
                   ? t('恢复工作流默认')
-                  : t('恢复默认配置')}
+                  : t('恢复全局默认')}
               </span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* SLICE-08：本 Tab 专管 AI 参数的三态反馈（用户自定义 / 环境降级 / 级联关闭） */}
+      {/* SLICE-08 + v1.5：本 Tab 专管 AI 参数的三态反馈
+          - 用户自定义 && 正常生效项 → 汇总表格（逐行标明参数项 + 全局默认/工作流默认/用户自定义值对照）
+          - 环境降级 / 级联关闭等态 → 保持 TriStateFieldFeedback 单项反馈 */}
       {resolvedFields && (
         <div className="space-y-1.5">
+          <TriStateCustomFieldsTable
+            rows={BASIC_AI_KEYS.reduce<TriStateCustomFieldRow[]>((acc, fieldKey) => {
+              const field = resolvedFields[fieldKey]
+              if (!field || !field.visible) return acc
+              if (field.origin !== 'user_custom' || field.applicability !== 'active') return acc
+              acc.push({
+                key: String(fieldKey),
+                label: getBasicAiFieldLabel(fieldKey),
+                globalDefaultText: formatTriStateCellValue(
+                  fieldKey,
+                  DEFAULT_UNBOUND_AI_CONFIG[fieldKey]
+                ),
+                workflowDefaultText: hasBoundWorkflow
+                  ? formatTriStateCellValue(fieldKey, baseDerived[fieldKey])
+                  : undefined,
+                customText: formatTriStateCellValue(fieldKey, field.desiredValue)
+              })
+              return acc
+            }, [])}
+            hasBoundWorkflow={hasBoundWorkflow}
+            onRestore={fieldKey => void handleRestoreSingleField(fieldKey as keyof BaseAIConfig)}
+          />
           {BASIC_AI_KEYS.map(fieldKey => {
             const field = resolvedFields[fieldKey]
             if (!field || !field.visible) return null
-            if (field.origin !== 'user_custom' && field.applicability === 'active') return null
+            // 默认正常态零冗余；user_custom && active 已收归上方汇总表格；
+            // cascaded_off / pending 属具体控件位置语义（如 ASR 双时长同因级联），
+            // 由「语音听写与音视频台词提取」卡片内渲染一次，严禁在顶部逐字段重复罗列
+            if (field.applicability !== 'degraded') return null
             return (
               <TriStateFieldFeedback
                 key={fieldKey}
                 field={field}
-                effectiveText={String(field.effectiveValue ?? '')}
-                desiredText={String(field.desiredValue ?? '')}
-                baselineText={String(baseDerived[fieldKey] ?? '')}
+                effectiveText={formatTriStateCellValue(fieldKey, field.effectiveValue)}
+                desiredText={formatTriStateCellValue(fieldKey, field.desiredValue)}
+                baselineText={formatTriStateCellValue(fieldKey, baseDerived[fieldKey])}
                 hasBoundWorkflow={hasBoundWorkflow}
                 onRestore={() => void handleRestoreSingleField(fieldKey)}
                 onFixAction={onFixAction}
@@ -652,7 +758,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               )}
             >
               <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
-                {t('默认')}
+                {t('平衡')}
               </div>
               {isAdvancedAiEnabled && analysisMode === 'quick_name' && (
                 <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-xs">
@@ -966,7 +1072,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                       className="text-xs text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 cursor-pointer transition-colors"
                     >
                       <RotateCcw className="h-3 w-3" />
-                      <span>{t('恢复默认')}</span>
+                      <span>{hasBoundWorkflow ? t('恢复工作流默认') : t('恢复全局默认')}</span>
                     </button>
                   )}
                   {/* 显眼的展开/收起药丸胶囊 */}
@@ -1291,13 +1397,30 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
             {t('语音听写与音视频台词提取')}
           </Label>
         </div>
-        {isAsrCascadedOff && (
-          <p className="text-[11px] text-muted-foreground leading-snug">
-            {!asrPluginReady
-              ? t('全局语音听写组件尚未就绪，该时长设置将在组件就绪后自动恢复生效')
-              : t('本主题默认无需语音听写（可在目录插件配置中开启）')}
-          </p>
-        )}
+        {/* ASR 双时长级联/下载提示：以 videoAsrDurationSec 为代表字段渲染一次，
+            audioAnalysisDurationSec 同因严禁重复罗列（单一事实源对齐内核三态 inactiveReason） */}
+        {(() => {
+          const asrField = resolvedFields?.['videoAsrDurationSec']
+          if (
+            !asrField ||
+            asrField.visible === false ||
+            (asrField.applicability !== 'cascaded_off' && asrField.applicability !== 'pending')
+          ) {
+            return null
+          }
+          return (
+            <TriStateFieldFeedback
+              field={asrField}
+              effectiveText={formatTriStateCellValue(
+                'videoAsrDurationSec',
+                asrField.effectiveValue
+              )}
+              desiredText={formatTriStateCellValue('videoAsrDurationSec', asrField.desiredValue)}
+              hasBoundWorkflow={hasBoundWorkflow}
+              onFixAction={onFixAction}
+            />
+          )
+        })()}
         <div className={cn('space-y-4', isAsrCascadedOff && 'opacity-50')}>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
