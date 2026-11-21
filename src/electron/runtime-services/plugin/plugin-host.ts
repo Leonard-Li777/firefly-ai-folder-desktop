@@ -104,6 +104,16 @@ export class PluginHost {
   private spawnPromise: Promise<void> | null = null
   private handshakeTimer: any = null
 
+  /**
+   * 退出屏障幂等守卫（Exit Barrier 单一事实源）：
+   * 同一进程生命周期内只允许结算一次。崩溃注入或真实进程被杀时，
+   * 「子进程消息触发的 exit」与「kill 触发的 exit」会先后到达同一进程，
+   * 无守卫时同一进程被重复记账——熔断计数虚增（3 次崩溃记成 4）、在途任务被重复拒绝、
+   * 并向渲染进程重复广播崩溃事件。新一代进程 spawn 时重新武装。
+   */
+  private exitBarrierSettled = false
+  private lastExitDetails: ExitDetails | null = null
+
   /** 收集的 stderr 最近前 2KB 字符 */
   private stderrBuffer: string = ''
   private readonly MAX_STDERR_BYTES = 2048
@@ -211,6 +221,9 @@ export class PluginHost {
         }
 
         this.currentProcess = proc
+        // 新一代进程：退出屏障重新武装（幂等守卫按进程生命周期生效）
+        this.exitBarrierSettled = false
+        this.lastExitDetails = null
 
         // 绑定 stderr 日志采样
         if (proc.stderr) {
@@ -227,6 +240,13 @@ export class PluginHost {
 
         // 监听进程退出
         proc.on('exit', (code: number) => {
+          // 代际守卫：旧代际进程的迟到 exit 不得结算当前进程的退出屏障
+          if (this.currentProcess && this.currentProcess !== proc) {
+            this.logger.warn(
+              `[PluginHost:${this.manifest.id}] 忽略旧代际进程的迟到退出事件: code=${code}`
+            )
+            return
+          }
           const wasStarting = this.stateMachine.state === 'STARTING'
           const details = this.handleProcessExit(code, null)
           if (wasStarting && spawnReject) {
@@ -307,9 +327,24 @@ export class PluginHost {
   }
 
   /**
-   * 处理进程退出事件（退出清理屏障 Exit Barrier 的唯一事实源）
+   * 处理进程退出事件（退出清理屏障 Exit Barrier 的唯一事实源）。
+   * 幂等：同一进程生命周期的第二条 exit 事件只返回首次结算结果，绝不重复记账。
    */
   public handleProcessExit(code: number | null, signal: string | null): ExitDetails {
+    if (this.exitBarrierSettled) {
+      this.logger.warn(
+        `[PluginHost:${this.manifest.id}] 重复退出事件已忽略（退出屏障幂等守卫）: code=${String(code)}, signal=${String(signal)}`
+      )
+      return this.lastExitDetails as ExitDetails
+    }
+    this.exitBarrierSettled = true
+    const details = this.settleProcessExit(code, signal)
+    this.lastExitDetails = details
+    return details
+  }
+
+  /** 退出屏障实际结算体（唯一调用方为上面的幂等包装器） */
+  private settleProcessExit(code: number | null, signal: string | null): ExitDetails {
     this.clearHandshakeTimer()
 
     const rawCode = code ?? -1

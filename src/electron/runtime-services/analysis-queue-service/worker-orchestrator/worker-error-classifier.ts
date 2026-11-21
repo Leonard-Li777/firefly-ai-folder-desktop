@@ -94,7 +94,11 @@ export function classifyWorkerErrorKind(err: unknown): {
     code === 'UND_ERR_HEADERS_TIMEOUT' ||
     code === 'UND_ERR_BODY_TIMEOUT' ||
     msg.includes('ETIMEDOUT') ||
-    msg.includes('timed out')
+    msg.includes('timed out') ||
+    // axios 超时形态：code=ECONNABORTED，message 固定为 'timeout of <n>ms exceeded'。
+    // 必须同时校验 message 含 timeout，避免把 axios 的主动取消（同样可能带 ECONNABORTED）
+    // 误判为超时重试——取消必须走上方 CANCELED 分支，严禁进入瞬态重试。
+    (code === 'ECONNABORTED' && /timeout/i.test(msg))
   ) {
     return { kind: 'HTTP_TIMEOUT', retryable: true }
   }
