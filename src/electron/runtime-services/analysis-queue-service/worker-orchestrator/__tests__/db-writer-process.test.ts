@@ -388,9 +388,13 @@ describe('Stage2 S-B AnalysisDbWriterProcess 宿主状态机（工单 05）', ()
     expect(currentFake!.killed).toBe(true)
     expect(forkCalls.length).toBe(1)
 
-    // 退避窗口结束后重启第二轮
-    await new Promise(resolve => setTimeout(resolve, 300))
-    expect(forkCalls.length).toBe(2)
+    // 退避窗口结束后重启第二轮（vi.waitFor 轮询捕获 fork 时机，必须在第二轮 readyTimer(30ms) 前 emit READY）
+    await vi.waitFor(
+      () => {
+        expect(forkCalls.length).toBe(2)
+      },
+      { timeout: 1500, interval: 20 }
+    )
     currentFake!.emitMessage({ type: 'READY', pid: 4444 })
     expect(host.getState()).toBe('ready')
   })
@@ -594,9 +598,15 @@ describe('Stage2 S-B 写进程子入口真实链路（复用 WriteSetBatchDispat
         stat.mtimeMs
       )
     })
-    // 未 INIT：dispatcher 为 null，写集被静默缓冲（不崩进程）——宿主 READY 门禁保证不会发生，
-    // 此处仅验证子进程不会因未初始化而抛异常退出
+    // R1 盲审发现 4：未 INIT 时必须显式 error 回执（与 VIDEO_SEGMENT 分支语义对称），
+    // 严禁静默缓冲/丢弃；宿主 READY 门禁保证生产不达此处，此用例验证守卫纵深
     await new Promise(resolve => setTimeout(resolve, 30))
+    const guardAck = captured.find(
+      m => m.type === 'WRITE_ACK' && m.ack.queueId === seeded.queueId
+    ) as Extract<WriterOutMessage, { type: 'WRITE_ACK' }> | undefined
+    expect(guardAck).toBeDefined()
+    expect(guardAck!.ack.result).toBe('error')
+    expect(guardAck!.ack.reason).toBe('writer_process_not_initialized')
     expect(captured.find(m => m.type === 'READY')).toBeUndefined()
   })
 })

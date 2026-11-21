@@ -128,7 +128,22 @@ function handleMessage(msg: WriterInMessage): void {
       break
     }
     case 'WRITE_SET': {
-      dispatcher?.enqueue(msg.payload)
+      if (dispatcher) {
+        dispatcher.enqueue(msg.payload)
+      } else {
+        // R1 盲审发现 4：与 VIDEO_SEGMENT 分支语义对称——未 INIT 时显式 error 回执 + 留痕，
+        // 严禁静默丢弃（宿主 READY 门禁保证生产不达此处，守卫仅为纵深防御）
+        log('warn', '[DbWriterProcess] 未 INIT 即收到 WRITE_SET，显式回执 error (queueId=' + msg.payload.queueId + ')')
+        parentPort?.postMessage({
+          type: 'WRITE_ACK',
+          ack: {
+            queueId: msg.payload.queueId,
+            result: 'error',
+            errorKind: 'SQLITE_BUSY',
+            reason: 'writer_process_not_initialized'
+          }
+        })
+      }
       break
     }
     case 'VIDEO_SEGMENT_WRITE_SET': {
@@ -165,33 +180,33 @@ function handleMessage(msg: WriterInMessage): void {
 }
 
 function shutdown(): void {
-  try {
-    // 退出前冲刷待写微批与尾钩子（WRITE_SET 不丢）
-    if (dispatcher) {
-      dispatcher.resumeFromUi()
-      void dispatcher
-        .flush()
-        .then(() => {
-          dispatcher?.flushTailHooks()
-        })
-        .catch(err => {
-          log('warn', '[DbWriterProcess] SHUTDOWN 冲刷写集失败:', err)
-        })
+  // R1 盲审发现 11：冲刷与关库必须串行化（严禁固定 200ms 定时与异步 flush 竞态）——
+  // flush 完成后才关库退出；宿主 dispose 有 1500ms grace 兜底强杀。
+  // vitest 环境（子入口真实链路单测）下仅关库不退出进程，避免杀掉测试 worker。
+  const finalize = (): void => {
+    try {
+      db?.close()
+      db = null
+    } catch {
+      // 已关闭时忽略
     }
-  } finally {
-    // 冲刷为异步短窗；主进程宿主 dispose 会等待退出，超时则强杀。
-    // vitest 环境（子入口真实链路单测）下仅关库不退出进程，避免杀掉测试 worker。
-    setTimeout(() => {
-      try {
-        db?.close()
-        db = null
-      } catch {
-        // 已关闭时忽略
-      }
-      if (process.env.VITEST === undefined) {
-        process.exit(0)
-      }
-    }, 200).unref?.()
+    if (process.env.VITEST === undefined) {
+      process.exit(0)
+    }
+  }
+  if (dispatcher) {
+    dispatcher.resumeFromUi()
+    void dispatcher
+      .flush()
+      .then(() => {
+        dispatcher?.flushTailHooks()
+      })
+      .catch(err => {
+        log('warn', '[DbWriterProcess] SHUTDOWN 冲刷写集失败:', err)
+      })
+      .finally(finalize)
+  } else {
+    finalize()
   }
 }
 

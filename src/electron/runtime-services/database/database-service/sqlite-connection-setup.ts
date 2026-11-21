@@ -1,10 +1,11 @@
 /**
- * SQLite 连接 PRAGMA 套装与自定义 SQL 函数注册（纯 Node 模块，零 electron 依赖）
+ * SQLite 连接 PRAGMA 套装与自定义 SQL 函数注册（纯 Node 模块，零 electron 顶层依赖）
  *
- * 单点收口依据（红线：PRAGMA 套装禁止各模块重复实现）：
- * - 主进程 database-service/init.ts 打开主库时应用本套装；
- * - Stage2 S-B `AnalysisDbWriterProcess`（utilityProcess 子进程）打开同一主库文件时
- *   必须应用同一套装（WAL / busy_timeout / foreign_keys 等），保证跨进程写连接治理一致；
+ * 单点收口依据（红线：PRAGMA 套装禁止各模块重复实现；R1 盲审发现 5 纠偏后口径）：
+ * - 本模块 `DEFAULT_SQLITE_PRAGMAS` 为主库写连接标准 PRAGMA **值**的单一事实源——
+ *   database.ts `getDatabaseConfig` 非 E2E 分支的 pragma 块引用本常量展开（非复制）；
+ * - 主进程 database-service/init.ts 保留其应用逻辑（含 fkStatus 校验顺序），
+ *   子进程写连接经 `applySqliteConnectionPragmas` 应用同一值源，跨进程治理一致；
  * - Rust 侧对应权威实现在 omni-core/db_sqlite.rs（端云全景 §4 连接治理），两侧语义对齐。
  *
  * `registerAnalysisSqlFunctions`（decompress_text）为 FTS 触发器透明解压 BLOB 的
@@ -15,6 +16,7 @@
  */
 
 import type { Database } from 'better-sqlite3'
+import { LogCategory, logger } from '@firefly/shared'
 import { decompressText } from '../../../utils/text-compressor'
 
 /** 主库写连接标准 PRAGMA 值（与 database.ts getDatabaseConfig 非 E2E 分支同源） */
@@ -86,7 +88,13 @@ export function registerAnalysisSqlFunctions(db: Database): void {
     db.function('decompress_text', { deterministic: true }, (val: unknown) => {
       return decompressText(val as never)
     })
-  } catch {
-    // 忽略重复注册异常
+  } catch (err) {
+    // R1 盲审发现 6：注册失败必须留痕（漏注册时 FTS 触发器要到写集 Step 6 才炸
+    // `no such function: decompress_text`，严禁零留痕空 catch 掩盖真实故障）
+    logger.warn(
+      LogCategory.ANALYSIS_QUEUE,
+      '[SqliteConnectionSetup] decompress_text SQL 函数注册失败（FTS 触发器将不可用）:',
+      err
+    )
   }
 }

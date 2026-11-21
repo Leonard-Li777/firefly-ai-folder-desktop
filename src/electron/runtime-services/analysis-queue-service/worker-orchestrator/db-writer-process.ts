@@ -184,10 +184,14 @@ export class AnalysisDbWriterProcess {
     this.child = child
 
     child.on('message', (msg: WriterOutMessage) => {
+      // 身份守卫：仅处理当前子进程的消息，旧子进程迟到的消息/事件一律忽略（防竞态串写状态）
+      if (this.child !== child) return
       this.handleChildMessage(msg)
     })
 
     child.on('exit', (code: number) => {
+      // 身份守卫：旧子进程的迟到 exit 不清除新子进程引用、不触发崩溃记账（R1 盲审发现 3）
+      if (this.child !== child) return
       this.handleChildExit(code)
     })
 
@@ -337,13 +341,51 @@ export class AnalysisDbWriterProcess {
       this.killChild()
     }
     this.child = null
-    // 已无子进程且不再重启：剩余未确认写集显式上报（防丢）
-    const leftover = this.pendingWriteSets.size + this.pendingVideoSegs.length + this.crashOrphans.length
-    if (leftover > 0) {
+    // 已无子进程且不再重启：剩余未确认写集转投现成降级通路（R1 盲审发现 7）——
+    // 调用方 onDegradedToLocal 会把实体转投主进程本地执行器并在其 dispose 前完成冲刷，
+    // 严禁静默清空导致队列行滞留 analyzing 产生不必要的重分析。
+    const leftoverEntries: DegradedWriteEntry[] = []
+    // R2 盲审建议 2：跨容器去重（starting/crashed 双容器态与 handleChildCrash 同源问题）
+    const leftoverWriteSetIds = new Set<number>()
+    const leftoverSegmentIds = new Set<string>()
+    for (const [, ws] of this.pendingWriteSets) {
+      if (leftoverWriteSetIds.has(ws.queueId)) continue
+      leftoverWriteSetIds.add(ws.queueId)
+      leftoverEntries.push({ kind: 'write_set', writeSet: ws })
+    }
+    for (const seg of this.pendingVideoSegs) {
+      if (leftoverSegmentIds.has(seg.segmentId)) continue
+      leftoverSegmentIds.add(seg.segmentId)
+      leftoverEntries.push({ kind: 'video_segment', videoSeg: seg })
+    }
+    for (const entry of this.crashOrphans) {
+      if (entry.kind === 'write_set' && entry.writeSet) {
+        if (leftoverWriteSetIds.has(entry.writeSet.queueId)) continue
+        leftoverWriteSetIds.add(entry.writeSet.queueId)
+        leftoverEntries.push({ kind: 'write_set', writeSet: entry.writeSet })
+      } else if (entry.kind === 'video_segment' && entry.videoSeg) {
+        if (leftoverSegmentIds.has(entry.videoSeg.segmentId)) continue
+        leftoverSegmentIds.add(entry.videoSeg.segmentId)
+        leftoverEntries.push({ kind: 'video_segment', videoSeg: entry.videoSeg })
+      }
+    }
+    for (const msg of this.outbox) {
+      if (msg.type === 'WRITE_SET') {
+        if (leftoverWriteSetIds.has(msg.payload.queueId)) continue
+        leftoverWriteSetIds.add(msg.payload.queueId)
+        leftoverEntries.push({ kind: 'write_set', writeSet: msg.payload })
+      } else if (msg.type === 'VIDEO_SEGMENT_WRITE_SET') {
+        if (leftoverSegmentIds.has(msg.payload.segmentId)) continue
+        leftoverSegmentIds.add(msg.payload.segmentId)
+        leftoverEntries.push({ kind: 'video_segment', videoSeg: msg.payload })
+      }
+    }
+    if (leftoverEntries.length > 0) {
       logger.error(
         LogCategory.ANALYSIS_QUEUE,
-        `[DbWriterProcess] dispose 时仍有 ${leftover} 个未确认写集，已显式上报丢失（queue 行由孤儿 watchdog 兜底回收）`
+        `[DbWriterProcess] dispose 时仍有 ${leftoverEntries.length} 个未确认写集，转投本地执行器闭环`
       )
+      this.deps.onDegradedToLocal?.('dispose_leftover', leftoverEntries)
     }
     this.pendingWriteSets.clear()
     this.pendingVideoSegs = []
@@ -379,6 +421,9 @@ export class AnalysisDbWriterProcess {
           clearTimeout(this.readyTimer)
           this.readyTimer = null
         }
+        // R1 盲审发现 8 + R2 建议 4：仅 starting 态可接受 READY——
+        // disposed / crashed（ready_timeout kill 后迟到 READY）/ exhausted 一律严禁复活状态机
+        if (this.state !== 'starting') return
         this.state = 'ready'
         this.restartCount = 0
         logger.info(LogCategory.ANALYSIS_QUEUE, `[DbWriterProcess] 写进程就绪 (pid=${msg.pid})`)
@@ -444,20 +489,32 @@ export class AnalysisDbWriterProcess {
 
     // 崩溃瞬间在途写集全部转为回灌队列（SQLite 事务原子性保证未 COMMIT 批已回滚，
     // 已 COMMIT 未 ACK 批重放幂等：UPSERT + 集合替换 + 队列终态 WHERE status='analyzing'）
+    // R1 盲审发现 2：starting/crashed 态 enqueue 会同时落 pending 与 outbox 两个容器，
+    // 回灌收集必须按 queueId / segmentId 去重，严禁同一写集双份回灌（双倍写放大 + ACK 计数失真）。
+    const orphanWriteSetIds = new Set<number>()
+    const orphanSegmentIds = new Set<string>()
     for (const [queueId, ws] of this.pendingWriteSets) {
+      if (orphanWriteSetIds.has(queueId)) continue
+      orphanWriteSetIds.add(queueId)
       this.crashOrphans.push({ kind: 'write_set', writeSet: ws })
       this.pendingWriteSets.delete(queueId)
     }
     for (const seg of this.pendingVideoSegs) {
+      if (orphanSegmentIds.has(seg.segmentId)) continue
+      orphanSegmentIds.add(seg.segmentId)
       this.crashOrphans.push({ kind: 'video_segment', videoSeg: seg })
     }
     this.pendingVideoSegs = []
 
-    // outbox 中未投递的写集同样转为回灌队列
+    // outbox 中未投递的写集同样转为回灌队列（与 pending 已收集项按 ID 查重）
     for (const msg of this.outbox) {
       if (msg.type === 'WRITE_SET') {
+        if (orphanWriteSetIds.has(msg.payload.queueId)) continue
+        orphanWriteSetIds.add(msg.payload.queueId)
         this.crashOrphans.push({ kind: 'write_set', writeSet: msg.payload })
       } else if (msg.type === 'VIDEO_SEGMENT_WRITE_SET') {
+        if (orphanSegmentIds.has(msg.payload.segmentId)) continue
+        orphanSegmentIds.add(msg.payload.segmentId)
         this.crashOrphans.push({ kind: 'video_segment', videoSeg: msg.payload })
       }
     }

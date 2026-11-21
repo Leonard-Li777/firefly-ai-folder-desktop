@@ -10,7 +10,7 @@
  * 阶段 2（工单 05 真实入口冒烟）：若存在编译产物 out_build/main/analysis-db-writer-process.js，
  *         以真实写进程入口执行 INIT → READY → WRITE_SET → WRITE_ACK 全链路（含 8 步写集落库）。
  *
- * 退出码：0=全部通过；非 0=失败（失败项打印到 stderr，严禁伪装成功）。
+ * 退出码：0=全部通过；1=失败；2=阶段 2 被跳过（编译产物缺失）；失败项打印到 stderr，严禁伪装成功。
  * 产出：VERIFY12_REPORT_JSON 打印 stdout（供证据文档 docs/evidence/stage2-sb-writer-process.md 引用）。
  */
 
@@ -220,6 +220,7 @@ app.whenReady().then(async () => {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'verify12-abi-'))
   const report = { verify: 'VERIFY-12', electron: process.versions.electron, node: process.versions.node, stages: {} }
   let exitCode = 0
+  let stage2Skipped = false
   try {
     report.stages.stage1 = await stage1(tmpDir)
   } catch (err) {
@@ -228,6 +229,10 @@ app.whenReady().then(async () => {
   }
   try {
     report.stages.stage2 = await stage2(tmpDir)
+    // R1 盲审超纲 3：skip（编译产物缺失）必须与通过显式区分，防止 CI 把未验证当绿灯
+    if (report.stages.stage2 && report.stages.stage2.skipped) {
+      stage2Skipped = true
+    }
   } catch (err) {
     report.stages.stage2 = { ok: false, error: String((err && err.message) || err) }
     exitCode = 1
@@ -238,5 +243,6 @@ app.whenReady().then(async () => {
     // 清理失败不影响结论
   }
   process.stdout.write('\n===== VERIFY12_REPORT_JSON =====\n' + JSON.stringify(report, null, 2) + '\n================================\n')
-  app.exit(exitCode)
+  // 退出码语义：0=全通过；1=失败；2=阶段 2 被跳过（编译产物缺失，未完成完整验证）
+  app.exit(exitCode === 0 && stage2Skipped ? 2 : exitCode)
 })

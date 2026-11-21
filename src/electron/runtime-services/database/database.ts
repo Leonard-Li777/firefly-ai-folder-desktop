@@ -1,6 +1,6 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
-import { registerAnalysisSqlFunctions } from './database-service/sqlite-connection-setup'
+import { registerAnalysisSqlFunctions, DEFAULT_SQLITE_PRAGMAS } from './database-service/sqlite-connection-setup'
 import { normalizeSupportedLocale } from './database-service/locale-whitelist'
 // 保持原导出路径兼容：实现已下沉至纯模块 locale-whitelist.ts（Stage2 S-B 子进程安全化）
 export {
@@ -1170,18 +1170,9 @@ export function getDatabaseConfig(language?: string): IDatabaseConfig {
       maxBackups: 10,
       backupPath: path.join(userDataPath, 'backups')
     },
-    pragma: {
-      journal_mode: 'WAL',
-      synchronous: 'NORMAL',
-      cache_size: -64000,
-      mmap_size: 268435456,
-      temp_store: 'MEMORY',
-      foreign_keys: true,
-      busy_timeout: 5000,
-      // [Issue 04 Step 5 / R2-8] WAL 自动 checkpoint（1000 页）+ 文件大小上限（64MB），防主库 WAL 无界增长。
-      wal_autocheckpoint: 1000,
-      journal_size_limit: 67108864
-    }
+    // R1 盲审发现 5：PRAGMA 值单点引用 sqlite-connection-setup.DEFAULT_SQLITE_PRAGMAS
+    //（与 utilityProcess 写进程子连接同源，严禁两侧各自硬编码漂移）
+    pragma: { ...DEFAULT_SQLITE_PRAGMAS }
   }
 }
 

@@ -187,6 +187,9 @@ async function scenarioA(tmpDir, hostMod) {
     const { dbPath, seeded } = seedGenesis(path.join(tmpDir, 'local'), 'mode-local', files)
     const Database = require(path.resolve(__dirname, '..', 'node_modules', 'better-sqlite3'))
     const mainDb = new Database(dbPath)
+    // R1 盲审发现 10：对照组必须应用与生产主库一致的 PRAGMA 套装（WAL 等），
+    // 与写进程子连接同条件，量化对照才公平（严禁让对照组裸 delete journal 偏袒写进程）
+    hostMod.applySqliteConnectionPragmas(mainDb)
 
     const batchDurations = []
     let ackCount = 0

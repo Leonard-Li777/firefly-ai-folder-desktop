@@ -9,6 +9,8 @@
 
 export { AnalysisDbWriterProcess, resolveWriterProcessScriptPath } from './db-writer-process'
 export { WriteSetBatchDispatcher } from './write-set-batch-dispatcher'
+// R1 盲审发现 10：S-C 探针对照组（主进程本地执行器）必须应用同一 PRAGMA 套装，保证量化对照公平
+export { applySqliteConnectionPragmas } from '../../database/database-service/sqlite-connection-setup'
 export type {
   WriterBatchMetrics,
   WriterTailHookPayload,
