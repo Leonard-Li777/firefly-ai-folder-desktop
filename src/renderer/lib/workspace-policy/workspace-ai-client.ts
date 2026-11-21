@@ -373,7 +373,8 @@ export const WORKSPACE_COMING_SOON_PLUGIN_IDS = [
   'image_video_enhance',
   'image_video_deobfuscate',
   'image_video_dewatermark',
-  'file_ai_cover'
+  'file_ai_cover',
+  'design_file_parser'
 ] as const
 
 /** 判定是否目录级可配置插件 */

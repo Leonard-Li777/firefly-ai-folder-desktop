@@ -317,6 +317,8 @@ function renderPluginName(pluginId: string): string {
       return t('内容安全识别')
     case 'archive_vfs_parser':
       return t('压缩包透视与深度解析器')
+    case 'design_file_parser':
+      return t('设计稿透视与深度解析器')
     case 'face_recognition_tool':
       return t('照片人物识别')
     case 'object_detection_pro':
@@ -345,6 +347,8 @@ function renderPluginBenefit(pluginId: string): string {
       return t('自动识别不适宜公开的图文，帮您提前标记或过滤')
     case 'archive_vfs_parser':
       return t('不用解压 zip/rar 就能直接查看和搜索里面的文件内容，无额外电脑负担')
+    case 'design_file_parser':
+      return t('直接看懂 PSD、AI 等设计稿里的图层、画板与文字，按图层名或稿内文字秒搜文件')
     case 'face_recognition_tool':
       return t('自动识别照片里的人物，帮您按人物整理相册')
     case 'object_detection_pro':
@@ -373,6 +377,8 @@ function renderPluginResourceImpact(pluginId: string): string {
       return t('扫描图片时会占用少量后台资源，普通电脑可流畅运行')
     case 'archive_vfs_parser':
       return t('仅在浏览压缩包时短暂占用资源')
+    case 'design_file_parser':
+      return t('仅在解析设计稿时短暂占用资源')
     case 'face_recognition_tool':
       return t('扫描照片时会占用一定后台资源，建议有独立显卡的电脑开启')
     case 'object_detection_pro':

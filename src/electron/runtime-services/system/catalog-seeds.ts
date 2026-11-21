@@ -254,6 +254,27 @@ export const DEFAULT_CATALOG_SEEDS: CatalogModuleEntry[] = [
     install_state: 'not_installed'
   },
   {
+    id: BUILTIN_MODULE_CATALOG_META.design_file_parser.id,
+    name: '设计稿透视与深度解析器',
+    description:
+      '【不用装设计软件也能搜设计稿】直接看懂 PSD、AI 等设计稿里的图层、画板与文字内容，按图层名或稿内文字秒搜文件，无额外电脑负担。',
+    icon: 'Palette',
+    kind: 'builtin-module',
+    version: BUILTIN_MODULE_CATALOG_META.design_file_parser.version,
+    catalog_version: BUILTIN_MODULE_CATALOG_META.design_file_parser.catalogVersion,
+    category: BUILTIN_MODULE_CATALOG_META.design_file_parser.category,
+    capability_slot: BUILTIN_MODULE_CATALOG_META.design_file_parser.capabilitySlot,
+    slot_policy: BUILTIN_MODULE_CATALOG_META.design_file_parser.slotPolicy,
+    backend_type: BUILTIN_MODULE_CATALOG_META.design_file_parser.backendType,
+    author_code: 'official',
+    author_name: null,
+    availability: 'coming_soon',
+    delist_reason: null,
+    firecore_cost: 0,
+    total_bytes: BUILTIN_MODULE_CATALOG_META.design_file_parser.totalBytes,
+    install_state: 'not_installed'
+  },
+  {
     id: BUILTIN_MODULE_CATALOG_META.face_recognition_tool.id,
     name: '人脸识别与相册人物聚类',
     description:

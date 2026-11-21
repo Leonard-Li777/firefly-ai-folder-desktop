@@ -207,15 +207,15 @@ describe('SLICE-08: WorkspacePluginsTab 目录插件双分区与补丁提交', (
     }
   })
 
-  it('严格仅渲染 10 个目录插件、绝不渲染 6 个全局插件，且预告区只读无假降级', () => {
-    expect(WORKSPACE_CONFIGURABLE_PLUGIN_IDS).toHaveLength(10)
+  it('严格仅渲染 11 个目录插件、绝不渲染 6 个全局插件，且预告区只读无假降级', () => {
+    expect(WORKSPACE_CONFIGURABLE_PLUGIN_IDS).toHaveLength(11)
     expect(GLOBAL_ONLY_PLUGIN_IDS).toHaveLength(6)
 
     const { container } = render(
       <WorkspacePluginsTab workspaceId={42} plugins={{}} hasBoundWorkflow={false} />
     )
 
-    // 仅主区 2 个插件带 Switch，预告区 8 个 coming_soon 只读无 Switch
+    // 仅主区 2 个插件带 Switch，预告区 9 个 coming_soon 只读无 Switch
     const switches = screen.getAllByRole('switch')
     expect(switches).toHaveLength(2)
 
@@ -231,6 +231,7 @@ describe('SLICE-08: WorkspacePluginsTab 目录插件双分区与补丁提交', (
     expect(text).toContain('图片视频去打码')
     expect(text).toContain('图片视频去水印')
     expect(text).toContain('文件AI封面图')
+    expect(text).toContain('设计稿透视与深度解析器')
     // 未绑定工作流时不得误提「当前工作流主题」
     expect(text).not.toContain('当前工作流主题')
     expect(text).not.toContain('本主题推荐')
