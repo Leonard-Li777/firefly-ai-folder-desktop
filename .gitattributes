@@ -1,0 +1,56 @@
+# ============================================================
+# 统一行尾策略：所有文本文件在仓库内与磁盘均保持 LF
+# ============================================================
+# 根因：本仓 core.autocrlf=true 会把检出的文本行尾转成 CRLF，而 prettier/hook
+# 又将文件写回 LF，导致 git 反复把同一批文件标脏（噪音 M），且污染 diff/提交。
+# `* text=auto eol=lf` 让所有文本文件统一走 LF，覆盖 autocrlf=true 的行为，
+# 从根源消除 CRLF 噪音；二进制文件通过下方显式 `-text` 例外严格按字节锁定。
+# 归一化安全性：对象库(index/blob)内文本本就是 LF，此规则不改变任何已提交内容，
+# 仅统一 git 对磁盘行尾的期望。
+* text=auto eol=lf
+
+# ---- 二进制文件例外：严格按原始字节锁定，禁止任何换行符转换 ----
+*.png    -text
+*.jpg    -text
+*.jpeg   -text
+*.gif    -text
+*.webp   -text
+*.ico    -text
+*.icns   -text
+*.bmp    -text
+*.svg    text eol=lf
+*.wav    -text
+*.mp3    -text
+*.mp4    -text
+*.webm   -text
+*.ttf    -text
+*.ttc    -text
+*.otf    -text
+*.woff   -text
+*.woff2  -text
+*.eot    -text
+*.bin    -text
+*.dat    -text
+*.zip    -text
+*.7z     -text
+*.tar    -text
+*.gz     -text
+*.db     -text
+*.sqlite -text
+*.pdf    -text
+*.docx   -text
+*.xlsx   -text
+*.pptx   -text
+*.onnx   -text
+*.gguf   -text
+*.safetensors -text
+*.pyc    -text
+*.class  -text
+*.exe    -text
+*.dll    -text
+*.so     -text
+*.dylib  -text
+*.wasm   -text
+
+# Electron 构建产物与 llama 库等大文件按字节锁定
+build/llama-lib-zip/** -text
