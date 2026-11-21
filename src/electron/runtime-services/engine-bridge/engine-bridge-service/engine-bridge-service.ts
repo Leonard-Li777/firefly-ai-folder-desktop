@@ -206,8 +206,8 @@ export class EngineBridgeService {
   private constructor() {
     this.setupLifecycleHooks()
     this.setupThinkingConfigSync()
-    // 启动常驻状态轮询（3秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
-    this.startPolling(3000)
+    // 启动常驻状态轮询（10秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
+    this.startPolling(10000)
     // 开发模式下开机常驻监听引擎二进制热更新（感知 engine:deploy:watch 重编译与部署）
     if (this.isDevMode()) {
       this.startDevBinaryWatch()
