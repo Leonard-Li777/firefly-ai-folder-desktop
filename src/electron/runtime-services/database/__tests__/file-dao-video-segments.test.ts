@@ -227,4 +227,34 @@ describe('FileDao Video Segments 读时派生与原子状态机测试 (FIN-01 / 
     expect(fullyCoveredStats?.completed_duration_sec).toBe(720)
     expect(fullyCoveredStats?.is_fully_covered).toBe(true)
   })
+
+  it('5. 零帧 completed 切片可重置为 pending，正常已完成切片不受影响', () => {
+    fileDao.upsertVideoSegment({
+      id: 'file_video_1_seg_0',
+      fileId: 'file_video_1',
+      segmentIndex: 0,
+      startPtsSec: 0,
+      endPtsSec: 300,
+      paramsHash: 'v1_64_140_high',
+      status: 'pending'
+    })
+    fileDao.markVideoSegmentCompleted('file_video_1', 0, {
+      frameCount: 0,
+      visualEmbeddedCount: 0,
+      asrTranscriptChars: 0
+    })
+
+    expect(fileDao.resetEmptyCompletedVideoSegment('file_video_1', 0)).toBe(true)
+    expect(fileDao.markVideoSegmentProcessing('file_video_1', 0)).toBe(true)
+    fileDao.markVideoSegmentCompleted('file_video_1', 0, {
+      frameCount: 57,
+      visualEmbeddedCount: 57,
+      asrTranscriptChars: 0
+    })
+
+    expect(fileDao.resetEmptyCompletedVideoSegment('file_video_1', 0)).toBe(false)
+    const seg = fileDao.getVideoSegments('file_video_1').find(s => s.segment_index === 0)
+    expect(seg?.status).toBe('completed')
+    expect(seg?.frame_count).toBe(57)
+  })
 })

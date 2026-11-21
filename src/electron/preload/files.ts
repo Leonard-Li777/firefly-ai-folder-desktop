@@ -141,6 +141,16 @@ export const filesApi = {
     // FFmpeg检测
     detectFfmpeg: () => ipcRenderer.invoke('ffmpeg:check-installation'),
 
+    // 按时间点抽取视频帧（非原生格式切片预览图）
+    extractVideoFrame: (
+      filePath: string,
+      timestampSec: number
+    ): Promise<{
+      success: boolean
+      dataUrl?: string
+      error?: string
+    }> => ipcRenderer.invoke('ffmpeg:extract-frame', { filePath, timestampSec }),
+
     // ffprobe 外部依赖检测 (Issue #738 深度清理中心显式门禁)
     detectFfprobe: (): Promise<{ available: boolean; path: string | null }> =>
       ipcRenderer.invoke('ffmpeg:check-ffprobe'),

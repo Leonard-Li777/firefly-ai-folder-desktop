@@ -1,5 +1,6 @@
 import React from 'react'
 import { InterfaceSettings } from './interface-settings'
+import { StorageEnergySettings } from './storage-energy-settings'
 import { AIEngineConfigSettings } from './ai-engine-config-settings'
 import { TTSSettings } from './tts-settings'
 import { M5TTSSettings } from './m5-tts-settings'
@@ -37,6 +38,7 @@ export const TTSDynamicContainerSettings: React.FC = () => {
  */
 export const SETTINGS_COMPONENT_MAP: Record<string, React.ComponentType<any>> = {
   interface: InterfaceSettings,
+  storage_energy: StorageEnergySettings,
   ai_engine_config: AIEngineConfigSettings,
   tts: TTSDynamicContainerSettings,
   tts_moss: TTSSettings,

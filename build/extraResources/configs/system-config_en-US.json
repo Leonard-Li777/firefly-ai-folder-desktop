@@ -11,12 +11,14 @@
       "[File tag upgrade] Enrich fact tag types, the tags are more accurate and interpretable, and the tag tree supports 10 levels of expansion",
       "[Creator Material Optimization] For designers and self-media, special optimization of audio, video and picture material sorting",
       "[Enhanced Sensitive Content Detection] Segmentally identify pornographic, violent, terrorist, political, abusive, bloody and other illegal content and its subcategories",
-      "[Five major batch sorting modes] Identity blueprint / intelligent clustering / external AI generated directory / file derivation directory tree / custom directory tree, processing thousands of files in seconds",
+      "[Workflow] Built-in 70+ sets of workflows are adapted to various scenarios of file sorting, without complex configuration, it is easy to get started with file sorting",
+      "[Five large-volume sorting modes] Identity blueprint, intelligent clustering... And other new sorting modes, processing thousands of files in seconds",
       "[Identity Blueprint (Recommended)] Select industry roles, four-stage optimization, and classify all files in milliseconds on the client side",
       "[Intelligent Clustering] End-side HAC unsupervised clustering, generate directory trees in milliseconds, classify all files in seconds, and support real-time fine-tuning",
       "[External AI generated directory] Copy prompt words to Doubao, Kimi, ChatGPT with one click, and preview and organize the results in real time",
       "[Deriving directory trees from files] The advanced AI engine outputs 3 sets of directory candidates at a time, and automatic classification is selected",
       "[Customized directory tree] Paste Markdown directory, double-column real-time preview, and build exclusive organizing rules",
+      "[Intelligent sleep] Intelligent perception of user operation, at the low memory water level, the memory usage is automatically released when the function is idle.",
       "[In-depth UI optimization] Reconstruct the setting page structure, add a new guide and help entrance, and make the operation more intuitive."
     ],
     "forceUpdate": false

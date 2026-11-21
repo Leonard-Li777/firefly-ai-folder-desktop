@@ -93,6 +93,8 @@ function getBasicAiFieldLabel(key: string): string {
       return t('镜头切换捕捉敏锐度')
     case 'videoSoftTokenBudget':
       return t('画面识别精细度')
+    case 'videoAnalyzeDurationSec':
+      return t('每个视频分析时长上限')
     case 'videoAsrDurationSec':
       return t('视频伴音台词识别上限')
     case 'audioAnalysisDurationSec':
@@ -106,7 +108,7 @@ function getBasicAiFieldLabel(key: string): string {
   }
 }
 
-/** 三态汇总表格值列大白话渲染：布尔转「开启/关闭」、枚举转 UI 命名、数值带单位（渲染期动态 t()） */
+/** 设置值四态表格各值列的大白话渲染：布尔转「开启/关闭」、枚举转 UI 命名、数值带单位（渲染期动态 t()） */
 function formatTriStateCellValue(key: string, v: unknown): string {
   if (typeof v === 'boolean') return v ? t('开启') : t('关闭')
   switch (key) {
@@ -136,6 +138,11 @@ function formatTriStateCellValue(key: string, v: unknown): string {
       if (!Number.isFinite(n)) return String(v ?? '')
       return `${n} ${t('张')}`
     }
+    case 'videoAnalyzeDurationSec': {
+      const n = Number(v)
+      if (!Number.isFinite(n)) return String(v ?? '')
+      return `${Math.round(n / 60)} ${t('分钟')}`
+    }
     case 'videoAsrDurationSec':
     case 'audioAnalysisDurationSec': {
       const n = Number(v)
@@ -153,6 +160,7 @@ const BASIC_AI_KEYS: (keyof BaseAIConfig)[] = [
   'videoCutSensitivity',
   'videoSoftTokenBudget',
   'videoQuotaMax',
+  'videoAnalyzeDurationSec',
   'videoAsrDurationSec',
   'audioAnalysisDurationSec',
   'clipTextEnabled',
@@ -420,6 +428,19 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   const videoQuotaMax = effectiveParams.videoQuotaMax ?? 32
   const videoCutSensitivity = effectiveParams.videoCutSensitivity ?? 'medium'
   const localVideoSoftTokenBudget = effectiveParams.videoSoftTokenBudget ?? 48
+  const analyzeField = resolvedFields?.['videoAnalyzeDurationSec']
+  const desiredAnalyzeSec = Number(
+    analyzeField?.desiredValue ?? effectiveParams.videoAnalyzeDurationSec ?? 300
+  )
+  const videoAnalyzeDurationSec = Math.min(
+    10800,
+    Math.max(300, Math.round(desiredAnalyzeSec / 300) * 300)
+  )
+  // 用户设置值高于最终结算值（免费 5 分钟 / 硬件保守默认）时，就地提示而非禁止设置
+  const analyzeEffectiveSec = Number(
+    analyzeField?.effectiveValue ?? effectiveParams.videoAnalyzeDurationSec ?? 300
+  )
+  const isAnalyzeCapped = videoAnalyzeDurationSec > analyzeEffectiveSec
   const videoAsrCap = effectiveParams.videoAsrDurationSec ?? 30
   const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 60
   // 耗时预估口径硬件分档：与 workspace-config-policy.ts footage_studio 的 hasGpuPower 判定同源
@@ -470,6 +491,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
       handleParamChange('videoQuotaMax', baseline.videoQuotaMax as number)
       handleParamChange('videoCutSensitivity', baseline.videoCutSensitivity as VideoCutSensitivity)
       handleParamChange('videoSoftTokenBudget', baseline.videoSoftTokenBudget as 48 | 140)
+      handleParamChange('videoAnalyzeDurationSec', baseline.videoAnalyzeDurationSec as number)
       handleParamChange('videoAsrDurationSec', baseline.videoAsrDurationSec as number)
       captureEvent('切换视频分析预设档位', { profile, restoredBaseline: true })
       return
@@ -642,7 +664,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
       </div>
 
       {/* SLICE-08 + v1.5：本 Tab 专管 AI 参数的三态反馈
-          - 用户自定义 && 正常生效项 → 汇总表格（逐行标明参数项 + 全局默认/工作流默认/用户自定义值对照）
+          - 用户自定义 && 正常生效项 → 设置值四态表格（逐行标明参数项 + 全局默认/工作流默认/用户自定义值/最终结算值对照）
           - 环境降级 / 级联关闭等态 → 保持 TriStateFieldFeedback 单项反馈 */}
       {resolvedFields && (
         <div className="space-y-1.5">
@@ -661,7 +683,8 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                 workflowDefaultText: hasBoundWorkflow
                   ? formatTriStateCellValue(fieldKey, baseDerived[fieldKey])
                   : undefined,
-                customText: formatTriStateCellValue(fieldKey, field.desiredValue)
+                customText: formatTriStateCellValue(fieldKey, field.desiredValue),
+                finalText: formatTriStateCellValue(fieldKey, field.effectiveValue)
               })
               return acc
             }, [])}
@@ -671,7 +694,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           {BASIC_AI_KEYS.map(fieldKey => {
             const field = resolvedFields[fieldKey]
             if (!field || !field.visible) return null
-            // 默认正常态零冗余；user_custom && active 已收归上方汇总表格；
+            // 默认正常态零冗余；user_custom && active 已收归上方设置值四态表格；
             // cascaded_off / pending 属具体控件位置语义（如 ASR 双时长同因级联），
             // 由「语音听写与音视频台词提取」卡片内渲染一次，严禁在顶部逐字段重复罗列
             if (field.applicability !== 'degraded') return null
@@ -1215,6 +1238,97 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {/* 语音听写与音视频台词提取（仅受语音组件联动，与引擎档位无关） */}
+                  <div className="pt-2 border-t border-border/30 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Mic className="h-4 w-4 text-primary shrink-0" />
+                      <Label className="text-sm font-medium text-foreground">
+                        {t('语音听写与音视频台词提取')}
+                      </Label>
+                    </div>
+                    {(() => {
+                      const asrField = resolvedFields?.['videoAsrDurationSec']
+                      if (
+                        !asrField ||
+                        asrField.visible === false ||
+                        (asrField.applicability !== 'cascaded_off' &&
+                          asrField.applicability !== 'pending')
+                      ) {
+                        return null
+                      }
+                      return (
+                        <TriStateFieldFeedback
+                          field={asrField}
+                          effectiveText={formatTriStateCellValue(
+                            'videoAsrDurationSec',
+                            asrField.effectiveValue
+                          )}
+                          desiredText={formatTriStateCellValue(
+                            'videoAsrDurationSec',
+                            asrField.desiredValue
+                          )}
+                          hasBoundWorkflow={hasBoundWorkflow}
+                          onFixAction={onFixAction}
+                        />
+                      )
+                    })()}
+                    <div className={cn('space-y-4', isAsrCascadedOff && 'opacity-50')}>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <Label className="font-semibold text-foreground">
+                            {t('视频伴音台词识别上限')}
+                          </Label>
+                          <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+                            {videoAsrCap} {t('秒')}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={180}
+                          step={15}
+                          value={videoAsrCap}
+                          onChange={e =>
+                            handleParamChange('videoAsrDurationSec', parseInt(e.target.value, 10))
+                          }
+                          className="w-full accent-primary cursor-pointer"
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          {t(
+                            '仅提取视频开头前 N 秒的音轨台词（不影响纯音频）。识别越长台词标签越全，分析耗时稍长。'
+                          )}
+                        </p>
+                      </div>
+                      <div className="space-y-1.5 pt-2 border-t border-border/30">
+                        <div className="flex items-center justify-between text-xs">
+                          <Label className="font-semibold text-foreground">
+                            {t('纯音频听写时长上限')}
+                          </Label>
+                          <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+                            {audioAnalysisCap} {t('秒')}
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min={0}
+                          max={180}
+                          step={15}
+                          value={audioAnalysisCap}
+                          onChange={e =>
+                            handleParamChange(
+                              'audioAnalysisDurationSec',
+                              parseInt(e.target.value, 10)
+                            )
+                          }
+                          className="w-full accent-primary cursor-pointer"
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          {t('仅听写音频文件开头前 N 秒的内容，设为 0 则不听写。')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -1232,6 +1346,26 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               const fillWidthPct = Math.min(
                 100,
                 Math.max(3, Math.round((est.perChunkSec / 300) * 100))
+              )
+              // 整片口径：严格按「每个视频分析时长上限」滑块的 UI 值估算，结算差异由滑块下方提示单独说明
+              const fullEst = estimateVideoAnalysisDurationSec(
+                videoQuotaMax,
+                localVideoSoftTokenBudget,
+                videoAsrCap,
+                hasGpuPower,
+                videoAnalyzeDurationSec
+              )
+              const fullMins = (fullEst.totalSec / 60).toFixed(1)
+              const fullVideoMins = Math.round(videoAnalyzeDurationSec / 60)
+              // 固定 3 小时绝对标尺：填充长度随估算耗时变化，避免用「耗时/整片时长」比值导致拖动时恒定
+              const fullScaleSec = 10800
+              const fullFillPct = Math.min(
+                100,
+                Math.max(3, Math.round((fullEst.totalSec / fullScaleSec) * 100))
+              )
+              const fullMarkPct = Math.min(
+                100,
+                Math.max(0, Math.round((videoAnalyzeDurationSec / fullScaleSec) * 100))
               )
 
               return (
@@ -1359,6 +1493,106 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                     </div>
                   )}
 
+                  {/* 整片口径耗时条：所有用户可见，随「每个视频分析时长上限」动态变化 */}
+                  <div className="space-y-1.5 pt-2 border-t border-border/30">
+                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                          {t('按整片时长测算')}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {t('上限 {mins} 分钟', { mins: fullVideoMins })}
+                        </span>
+                      </div>
+                      <span className="text-sm font-extrabold font-mono text-primary">
+                        {fullEst.minSec} ~ {fullEst.maxSec} {t('秒')}
+                        <span className="ml-1 text-[11px] text-muted-foreground font-mono">
+                          ({t('约 {min} 分钟', { min: fullMins })})
+                        </span>
+                      </span>
+                    </div>
+                    <div className="relative h-2.5 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40">
+                      <div
+                        style={{ width: `${fullFillPct}%` }}
+                        className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
+                      >
+                        <div
+                          style={{ width: `${fullEst.visualPct}%` }}
+                          className="h-full bg-primary rounded-l-full transition-all duration-300"
+                          title={t('画面 AI 理解')}
+                        />
+                        <div
+                          style={{ width: `${fullEst.asrPct}%` }}
+                          className="h-full bg-emerald-500 transition-all duration-300"
+                          title={t('台词语音识别')}
+                        />
+                        <div
+                          style={{ width: `${fullEst.fixedPct}%` }}
+                          className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
+                          title={t('基础解包与索引')}
+                        />
+                      </div>
+                      <span
+                        style={{ left: `${fullMarkPct}%` }}
+                        className="absolute -top-0.5 h-3.5 w-0.5 bg-sky-500 rounded-full transition-all duration-300"
+                        title={t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
+                      <span>0</span>
+                      <span>{t('1 小时')}</span>
+                      <span>{t('2 小时')}</span>
+                      <span className="text-sky-500/80 font-medium">
+                        {t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 每个视频分析时长上限：所有用户可调，免费用户最终按 5 分钟结算 */}
+                  <div className="space-y-1.5 pt-2 border-t border-border/30">
+                    <div className="flex items-center justify-between text-xs">
+                      <Label className="font-semibold text-foreground">
+                        {t('每个视频分析时长上限')}
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+                          {Math.round(videoAnalyzeDurationSec / 60)} {t('分钟')}
+                        </span>
+                        {isFreeUser && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-[11px] text-amber-600 dark:text-amber-400"
+                            onClick={() => setIsUpgradeOpen(true)}
+                          >
+                            {t('解锁更长')}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min={300}
+                      max={10800}
+                      step={300}
+                      value={videoAnalyzeDurationSec}
+                      onChange={e =>
+                        handleParamChange('videoAnalyzeDurationSec', parseInt(e.target.value, 10))
+                      }
+                      className="w-full accent-primary cursor-pointer"
+                    />
+                    {isAnalyzeCapped && isFreeUser && (
+                      <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                        {t('当前你是免费用户，最终结算值为5分钟，升级后可应用设置值。')}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-muted-foreground">
+                      {t(
+                        '每个视频最多整理多长时间，5 分钟一档，最长 3 小时；普通电脑建议选短一些，放后台慢慢整理。'
+                      )}
+                    </p>
+                  </div>
+
                   {/* 免费会员权益说明与 Pro 升级引导 */}
                   {isFreeUser && (
                     <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
@@ -1369,7 +1603,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                             {t('免费版每个视频分析精彩前 5 分钟。')}
                           </p>
                           <p className="text-muted-foreground">
-                            {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 2 小时以上。')}
+                            {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 3 小时。')}
                           </p>
                         </div>
                       </div>
@@ -1388,86 +1622,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           </div>
         </Card>
       )}
-
-      {/* 3b. 语音听写与音视频台词提取（常显，仅受语音听写组件联动，与引擎档位无关） */}
-      <Card className="p-5 space-y-4">
-        <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-primary shrink-0" />
-          <Label className="text-sm font-medium text-foreground">
-            {t('语音听写与音视频台词提取')}
-          </Label>
-        </div>
-        {/* ASR 双时长级联/下载提示：以 videoAsrDurationSec 为代表字段渲染一次，
-            audioAnalysisDurationSec 同因严禁重复罗列（单一事实源对齐内核三态 inactiveReason） */}
-        {(() => {
-          const asrField = resolvedFields?.['videoAsrDurationSec']
-          if (
-            !asrField ||
-            asrField.visible === false ||
-            (asrField.applicability !== 'cascaded_off' && asrField.applicability !== 'pending')
-          ) {
-            return null
-          }
-          return (
-            <TriStateFieldFeedback
-              field={asrField}
-              effectiveText={formatTriStateCellValue(
-                'videoAsrDurationSec',
-                asrField.effectiveValue
-              )}
-              desiredText={formatTriStateCellValue('videoAsrDurationSec', asrField.desiredValue)}
-              hasBoundWorkflow={hasBoundWorkflow}
-              onFixAction={onFixAction}
-            />
-          )
-        })()}
-        <div className={cn('space-y-4', isAsrCascadedOff && 'opacity-50')}>
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <Label className="font-semibold text-foreground">{t('视频伴音台词识别上限')}</Label>
-              <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                {videoAsrCap} {t('秒')}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={180}
-              step={15}
-              value={videoAsrCap}
-              onChange={e => handleParamChange('videoAsrDurationSec', parseInt(e.target.value, 10))}
-              className="w-full accent-primary cursor-pointer"
-            />
-            <p className="text-[11px] text-muted-foreground">
-              {t(
-                '仅提取视频开头前 N 秒的音轨台词（不影响纯音频）。识别越长台词标签越全，分析耗时稍长。'
-              )}
-            </p>
-          </div>
-          <div className="space-y-1.5 pt-2 border-t border-border/30">
-            <div className="flex items-center justify-between text-xs">
-              <Label className="font-semibold text-foreground">{t('纯音频听写时长上限')}</Label>
-              <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                {audioAnalysisCap} {t('秒')}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={180}
-              step={15}
-              value={audioAnalysisCap}
-              onChange={e =>
-                handleParamChange('audioAnalysisDurationSec', parseInt(e.target.value, 10))
-              }
-              className="w-full accent-primary cursor-pointer"
-            />
-            <p className="text-[11px] text-muted-foreground">
-              {t('仅听写音频文件开头前 N 秒的内容，设为 0 则不听写。')}
-            </p>
-          </div>
-        </div>
-      </Card>
 
       {/* 4. 视觉语义搜索 (CLIP 跨模态通道，仅在双塔 classic_light 模式生效) */}
       {embeddingProfile === 'classic_light' && (

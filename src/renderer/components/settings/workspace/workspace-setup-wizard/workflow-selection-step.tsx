@@ -133,7 +133,7 @@ export const WorkflowSelectionStep = ({
       {/* ========== 步骤 1 视图：选择工作流 (左右分栏) ========== */}
       <div className="flex-1 flex min-h-0 gap-4 overflow-hidden">
         {/* 左侧：工作流分类与卡片列表 */}
-        <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto pr-1 space-y-3">
+        <div className="flex-1 min-w-0 flex flex-col h-full overflow-y-auto p-1 space-y-3">
           {/* 分类 Tab（首位展示“全部”） */}
           <div className="flex items-center justify-between flex-wrap gap-2 shrink-0">
             <span className="text-xs font-bold text-foreground">{t('全场景官方工作流矩阵库')}</span>

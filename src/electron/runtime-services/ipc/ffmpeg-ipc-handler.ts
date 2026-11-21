@@ -6,9 +6,26 @@
 import { ipcMain } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import { ffmpegService } from '../system/ffmpeg-service'
+import { extractVideoFrameAsWebp } from './video-frame-extractor'
 
 export function registerFfmpegIpcHandlers() {
   logger.info(LogCategory.MAIN, '正在注册 FFmpeg IPC 处理器...')
+
+  // 按时间点抽取视频帧（供非原生格式切片预览图使用）
+  ipcMain.handle(
+    'ffmpeg:extract-frame',
+    async (_event, payload: { filePath?: unknown; timestampSec?: unknown }) => {
+      try {
+        const filePath = typeof payload?.filePath === 'string' ? payload.filePath : ''
+        const timestampSec = typeof payload?.timestampSec === 'number' ? payload.timestampSec : 0
+        return await extractVideoFrameAsWebp(filePath, timestampSec)
+      } catch (err: unknown) {
+        // 保证 IPC 永远以结构化结果返回，不把异常直接抛成 renderer 侧 unhandled rejection
+        logger.warn(LogCategory.MAIN, '[视频抽帧] IPC 处理异常:', err)
+        return { success: false, error: '抽帧服务异常' }
+      }
+    }
+  )
 
   // 检测安装状态
   ipcMain.handle('ffmpeg:check-installation', async () => {

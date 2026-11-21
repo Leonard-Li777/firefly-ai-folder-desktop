@@ -50,7 +50,10 @@ describe('FileAdmissionNoticeBar 公共吸底提示条组件与 FileList 集成'
         normalizeForCache: (p: string) => p.toLowerCase(),
         stripTrailingSlash: (p: string) => p.replace(/[\\/]+$/, ''),
         isSubPath: (parent: string, child: string) =>
-          child.replace(/[\\/]+/g, '/').toLowerCase().startsWith(parent.replace(/[\\/]+/g, '/').toLowerCase()),
+          child
+            .replace(/[\\/]+/g, '/')
+            .toLowerCase()
+            .startsWith(parent.replace(/[\\/]+/g, '/').toLowerCase()),
         getPlatform: () => 'win32'
       }
     } as any
@@ -131,22 +134,14 @@ describe('FileAdmissionNoticeBar 公共吸底提示条组件与 FileList 集成'
     it('初始状态若已记录关闭，则首屏直接不渲染', () => {
       localStorage.setItem('firefly_dismiss_file_admission_notice_banner', 'true')
       render(
-        <FileAdmissionNoticeBar
-          visible={true}
-          workspaceId={101}
-          onOpenAdmissionRules={vi.fn()}
-        />
+        <FileAdmissionNoticeBar visible={true} workspaceId={101} onOpenAdmissionRules={vi.fn()} />
       )
       expect(screen.queryByTestId('file-admission-notice-bar')).not.toBeInTheDocument()
     })
 
     it('当 visible 为 false 时完全不渲染', () => {
       render(
-        <FileAdmissionNoticeBar
-          visible={false}
-          workspaceId={103}
-          onOpenAdmissionRules={vi.fn()}
-        />
+        <FileAdmissionNoticeBar visible={false} workspaceId={103} onOpenAdmissionRules={vi.fn()} />
       )
       expect(screen.queryByTestId('file-admission-notice-bar')).not.toBeInTheDocument()
     })
@@ -235,6 +230,42 @@ describe('FileAdmissionNoticeBar 公共吸底提示条组件与 FileList 集成'
         />
       )
 
+      expect(screen.queryByTestId('file-admission-notice-bar')).not.toBeInTheDocument()
+    })
+
+    it('提示条显示时根容器预留避让高度，关闭后自动撤销，避免遮挡底部横向滚动条', () => {
+      const { container } = render(
+        <FileList
+          files={[
+            {
+              id: 'file-3',
+              name: 'cover.jpg',
+              path: 'D:\\Projects\\PhotoGallery\\cover.jpg',
+              size: 1024,
+              extension: 'jpg',
+              isAnalyzed: true
+            } as any
+          ]}
+          directories={[]}
+          selectedFiles={[]}
+          activeItem={null}
+          onFileSelect={vi.fn()}
+          onFileDoubleClick={vi.fn()}
+          onDirectoryChange={vi.fn()}
+          isRealDirectory={true}
+          currentPath="D:\\Projects\\PhotoGallery"
+          workspaceDirectoryPath="D:\\Projects\\PhotoGallery"
+          viewMode="list"
+        />
+      )
+
+      const root = container.firstChild as HTMLElement
+      // 提示条吸底时，滚动区根容器预留等高 padding，横向滚动条不被覆盖
+      expect(root).toHaveClass('pb-[38px]')
+
+      fireEvent.click(screen.getByText('知道了'))
+      // 关闭后 padding 自动撤销，滚动区恢复满高
+      expect(root).not.toHaveClass('pb-[38px]')
       expect(screen.queryByTestId('file-admission-notice-bar')).not.toBeInTheDocument()
     })
   })

@@ -187,6 +187,28 @@ function StatusBadge({ item }: { item: AnalysisQueueItem }) {
   const stage = item.analysisStage ?? (item.analysisStats as any)?.analysis_stage ?? item.stage
   const isAnalyzing = status === 'analyzing'
 
+  // 切片级进度明细（长视频 stage2 以切片为单位计数，耗时是其它 stage 的数倍，需可见进度）
+  const stats = (item.analysisStats as any) ?? undefined
+  const progressPct = typeof item.progress === 'number' ? item.progress : 0
+  const videoDone =
+    typeof stats?.video_completed_slices === 'number' ? stats.video_completed_slices : undefined
+  const videoTotal =
+    typeof stats?.video_total_slices === 'number' ? stats.video_total_slices : undefined
+
+  // Tooltip 明细：视频切片进度 > 通用阶段进度 > 不显示
+  let tooltip = ''
+  if (
+    isAnalyzing &&
+    stage === 2 &&
+    typeof videoDone === 'number' &&
+    typeof videoTotal === 'number' &&
+    videoTotal > 0
+  ) {
+    tooltip = t('视频分析：已完成 {done}/{total} 个片段', { done: videoDone, total: videoTotal })
+  } else if (isAnalyzing && progressPct > 0 && progressPct < 100) {
+    tooltip = t('当前进度约 {pct}%', { pct: Math.round(progressPct) })
+  }
+
   const label = getStageLabel(status, stage, item.taskType)
 
   let colorStyle = 'bg-muted text-muted-foreground'
@@ -222,8 +244,41 @@ function StatusBadge({ item }: { item: AnalysisQueueItem }) {
   }
 
   return (
-    <span className={cn('text-xs px-2 py-0.5 rounded font-medium transition-colors', colorStyle)}>
-      {label}
+    <span
+      className={cn(
+        'text-xs rounded transition-colors',
+        // analyzing 时进度条独占整个 cell：外层去掉 badge 的 px/py、底色与边框，仅保留文本色作为
+        // 进度条填充色（bg-current），避免双层框挤压宽度
+        isAnalyzing ? 'block w-full' : cn('px-2 py-0.5 font-medium', colorStyle)
+      )}
+      title={tooltip || undefined}
+    >
+      {/* analyzing 时整个 cell 宽都作为进度条：块级 w-full 撑满（cell 的 px-1 提供内边距），
+          百分比在前 + 阶段名整体作为进度条内部叠加文案，不换行、超长省略。 */}
+      {isAnalyzing ? (
+        // 进度条容器复用 colorStyle：各 stage 阶段色（stage2 青/stage3 紫/stage4 靛）、边框与
+        // pulse 动画自动对应；填充层 bg-current 继承阶段色，文字层 text-current 同步阶段色。
+        <span
+          className={cn(
+            'relative block w-full h-[18px] rounded-full border bg-background/60 overflow-hidden box-border',
+            colorStyle
+          )}
+        >
+          {/* 进度填充层（底层） */}
+          <span
+            className="absolute inset-y-0 left-0 bg-current/25 rounded-full transition-all"
+            style={{ width: `${Math.max(0, Math.min(100, progressPct))}%` }}
+          />
+          {/* 文案层（顶层，绝对铺满 + 不换行 + 超长省略） */}
+          <span className="absolute inset-0 flex items-center px-1.5 text-[10px] leading-none font-mono font-semibold tabular-nums text-current truncate">
+            <span className="truncate">
+              {Math.round(progressPct)}% {label}
+            </span>
+          </span>
+        </span>
+      ) : (
+        <span className="block truncate">{label}</span>
+      )}
     </span>
   )
 }
@@ -377,6 +432,10 @@ const QueueRowRenderer = React.memo(
       prevItem.analysisStage === nextItem.analysisStage &&
       (prevItem.analysisStats as any)?.analysis_stage ===
         (nextItem.analysisStats as any)?.analysis_stage &&
+      (prevItem.analysisStats as any)?.video_completed_slices ===
+        (nextItem.analysisStats as any)?.video_completed_slices &&
+      (prevItem.analysisStats as any)?.video_total_slices ===
+        (nextItem.analysisStats as any)?.video_total_slices &&
       prevItem.name === nextItem.name &&
       prevItem.path === nextItem.path
     )
@@ -589,7 +648,16 @@ export function AnalysisQueueContent({
     const saved = localStorage.getItem('queue_col_widths')
     if (saved) {
       try {
-        return { ...DEFAULT_COL_WIDTHS, ...JSON.parse(saved) }
+        const merged = { ...DEFAULT_COL_WIDTHS, ...JSON.parse(saved) }
+        // 一次性迁移：本版本把百分比并入进度条内部文案，status 列不再需要为「百分比+条」
+        // 并排预留宽度，故回退到内嵌布局下的默认值 160（覆盖上一版 v2 抬升到 200 的旧存档）；
+        // 用户之后手动拖拽仍会写回并生效。版本标记防每次启动都强制覆盖。
+        const COL_WIDTHS_MIGRATION = 'queue_col_widths_v3'
+        if (!localStorage.getItem(COL_WIDTHS_MIGRATION)) {
+          merged.status = DEFAULT_COL_WIDTHS.status
+          localStorage.setItem(COL_WIDTHS_MIGRATION, '1')
+        }
+        return merged
       } catch (e) {}
     }
     return DEFAULT_COL_WIDTHS
@@ -886,14 +954,18 @@ export function AnalysisQueueContent({
           {running && !isCpuHintDismissed && !isCpuHintHidden && (
             <HintBanner
               icon={<Cpu className="w-3.5 h-3.5" />}
-              title={t('文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作')}
+              title={t(
+                '文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作'
+              )}
               className="shrink-0 border-b border-amber-500/20"
               actions={
                 <HintBannerLink onClick={handleDismissCpuHint}>{t('知道了')}</HintBannerLink>
               }
               onClose={() => setIsCpuHintHidden(true)}
             >
-              {t('文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作')}
+              {t(
+                '文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作'
+              )}
             </HintBanner>
           )}
           <div
@@ -927,7 +999,7 @@ export function AnalysisQueueContent({
                   />
                 </div>
                 <div className="relative px-2 py-2 group flex items-center">
-                  <span>{t('处理进度')}</span>
+                  <span>{t('当前阶段')}</span>
                   <ColumnResizeHandle
                     onResizeStart={() => handleResizeStart('status')}
                     onResize={delta => handleResize('status', delta)}

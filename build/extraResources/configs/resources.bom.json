@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-17T04:37:14.828Z",
+  "generatedAt": "2026-11-21T13:37:44.871Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -129,17 +129,17 @@
         {
           "name": "tags_visual_gemma_512.bin",
           "size": 307200,
-          "sha256": "095f17da6c648703cc76e4c350bbadf791c95087f74105f390f4b6d1729fcb9a"
+          "sha256": "7982c396cf25821497ec11a0bd865110bf926a6c7563d3c947bebef19367ff84"
         },
         {
           "name": "tags_visual_gemma_512.meta.json",
-          "size": 5016,
-          "sha256": "5879e9e0ed8f78a5fb9b28dad38a2ef10cc903904596d4e8378c95ee678153eb"
+          "size": 4811,
+          "sha256": "99b1ba1b8742d38e68d6fe5ddae44d60033cd7ae3c3b572fb0a14efd47b176fc"
         },
         {
           "name": "omw_concepts_gemma_512.bin",
-          "size": 21131264,
-          "sha256": "f464f96580fcbbc7589bc134171087f2070ca3419dd659a57d366a4844573938"
+          "size": 8469504,
+          "sha256": "da2955a6178a3699f723e69141b59e41ea5ac6831b20ce8011ef19c66bc941cd"
         },
         {
           "name": "omw_concepts_gemma_512.meta.json",

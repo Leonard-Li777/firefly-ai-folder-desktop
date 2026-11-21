@@ -1,8 +1,9 @@
-import { FileCategory, getFileCategory } from '@firefly/shared'
+import { FileCategory, getFileCategory, logger, LogCategory } from '@firefly/shared'
 import React, { useEffect, useRef, useState } from 'react'
 
 import { Button } from '../ui/button'
 import { EmptyState } from '../common/EmptyState'
+import { toast } from '../common/Toast'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import {
@@ -12,7 +13,11 @@ import {
 } from '../../lib/video-preview-utils'
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { useIsPrivateFile } from './hooks/useIsPrivateFile'
-import { usePreviewOverlayStore, setCurrentVideoPlaybackTime, getCurrentVideoPlaybackTime } from '../../stores/preview-overlay-store'
+import {
+  usePreviewOverlayStore,
+  setCurrentVideoPlaybackTime,
+  getCurrentVideoPlaybackTime
+} from '../../stores/preview-overlay-store'
 
 interface FilePreviewProps {
   filePath: string
@@ -53,12 +58,55 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [fileSize, setFileSize] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoDuration, setVideoDuration] = useState<number>(0)
+  /** <video> 无法解码该视频格式（如 AVI/MKV）时置 true，改用静态抽帧缩图预览 */
+  const [videoDecodeFailed, setVideoDecodeFailed] = useState(false)
+  /** ffmpeg 实时抽帧得到的静态预览图 data URL */
+  const [staticFrameUrl, setStaticFrameUrl] = useState<string | null>(null)
+  /** 当前静态图对应的「文件|时间点」键，用于同一文件不同切片间切换时重新抽帧 */
+  const [frameKey, setFrameKey] = useState<string | null>(null)
+  /** 已发起抽帧请求的 key，防止切点后旧请求晚到覆盖新帧或重复发起同 key 请求 */
+  const requestedFrameKeyRef = useRef<string | null>(null)
 
-  // 切换文件路径时重置视频时长
+  // 切换文件路径时重置视频时长与抽帧降级状态
   useEffect(() => {
     setVideoDuration(0)
+    setVideoDecodeFailed(false)
+    setStaticFrameUrl(null)
+    setFrameKey(null)
+    requestedFrameKeyRef.current = null
   }, [filePath])
 
+  // 视频解码失败时，实时调用 ffmpeg 在当前时间点抽帧作为静态预览图
+  // 时间点变化（点击同一文件不同的命中切片）时以新 key 重新抽帧，避免停留在旧帧
+  useEffect(() => {
+    if (!videoDecodeFailed || !filePath) return
+    const seekSec =
+      typeof currentTime === 'number' && Number.isFinite(currentTime) ? currentTime : 0
+    const nextKey = `${filePath}|${seekSec.toFixed(3)}`
+    if (frameKey === nextKey && staticFrameUrl) return
+    if (requestedFrameKeyRef.current === nextKey) return
+    requestedFrameKeyRef.current = nextKey
+    // 同一文件切换切片时先清掉旧帧，避免新帧返回前展示错误时间点画面
+    if (frameKey !== nextKey) setStaticFrameUrl(null)
+
+    let cancelled = false
+    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, seekSec))
+      .then(result => {
+        if (cancelled) return
+        if (!result?.success || !result.dataUrl) {
+          logger.warn(LogCategory.RENDERER, '[视频预览] ffmpeg 抽帧失败:', result?.error)
+          return
+        }
+        setFrameKey(nextKey)
+        setStaticFrameUrl(result.dataUrl)
+      })
+      .catch(err => {
+        if (!cancelled) logger.warn(LogCategory.RENDERER, '[视频预览] 抽帧调用异常:', err)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [videoDecodeFailed, filePath, currentTime, frameKey, staticFrameUrl])
 
   const jumpToTime = (targetTime: number) => {
     if (!videoRef.current) return
@@ -178,14 +226,33 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     window.electronAPI?.utils?.openFileWithDefaultApp?.(filePath)
   }
 
+  /** 在外部播放器精准跳到当前预览时间点（非原生格式静态预览时使用） */
+  const handleExternalSeek = async () => {
+    try {
+      const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
+        filePath,
+        category: 'video',
+        seekSeconds:
+          typeof currentTime === 'number' && Number.isFinite(currentTime) ? currentTime : 0
+      })
+      if (outcome?.fallbackToDefault) {
+        toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
+      }
+    } catch (err: unknown) {
+      logger.error(LogCategory.RENDERER, '外部播放器跳轴失败:', err)
+      toast.error(t('打开文件失败'))
+    }
+  }
+
   const handleShowInFolder = () => {
     window.electronAPI.utils.showItemInFolder(filePath)
   }
 
   const fileUrl = React.useMemo(() => {
-    const raw = typeof window.electronAPI?.utils?.normalizeForCache === 'function'
-      ? window.electronAPI.utils.normalizeForCache(filePath)
-      : filePath
+    const raw =
+      typeof window.electronAPI?.utils?.normalizeForCache === 'function'
+        ? window.electronAPI.utils.normalizeForCache(filePath)
+        : filePath
     // 转为 file:// URL，编码非 ASCII 字符
     const normalized = raw.replace(/\\/g, '/')
     const encoded = normalized
@@ -202,7 +269,6 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     }
     return base
   }, [filePath, currentTime])
-
 
   const fileExt = filePath.split('.').pop()?.toUpperCase() || 'UNKNOWN'
 
@@ -270,7 +336,12 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar">
           <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
             {/* 预览内容的正文区 */}
-            <div className={cn('flex items-center justify-center max-w-full', isPrivate && 'ph-no-capture')}>
+            <div
+              className={cn(
+                'flex items-center justify-center max-w-full',
+                isPrivate && 'ph-no-capture'
+              )}
+            >
               <img
                 src={fileUrl}
                 alt={fileName}
@@ -324,17 +395,58 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 isPrivate && 'ph-no-capture'
               )}
             >
-              <video
-                ref={videoRef}
-                src={fileUrl}
-                controls
-                onLoadedMetadata={handleVideoLoadedMetadata}
-                onCanPlay={handleCanPlay}
-                onTimeUpdate={handleTimeUpdate}
-                className="max-w-full max-h-[70vh] shadow-lg rounded"
-              >
-                {t('您的浏览器不支持视频播放')}
-              </video>
+              {videoDecodeFailed ? (
+                /* 浏览器无法解码（AVI/MKV 等）：显示 ffmpeg 静态抽帧 + 外部播放器跳轴引导 */
+                <div className="flex flex-col items-center gap-3 max-w-full">
+                  {staticFrameUrl ? (
+                    <img
+                      src={staticFrameUrl}
+                      alt={fileName}
+                      className="max-w-full max-h-[65vh] shadow-lg rounded object-contain"
+                      onError={() => {
+                        logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
+                        setStaticFrameUrl(null)
+                      }}
+                    />
+                  ) : (
+                    <div className="w-72 h-40 flex items-center justify-center bg-muted/40 rounded">
+                      <MaterialIcon icon="movie" className="text-5xl text-muted-foreground/50" />
+                    </div>
+                  )}
+                  <div className="flex flex-col items-center gap-2 text-center">
+                    <p className="text-xs text-muted-foreground">
+                      {t('无法在应用内播放此文件，可尝试在外部播放器中打开查看。')}
+                    </p>
+                    <Button
+                      onClick={handleExternalSeek}
+                      variant="outline"
+                      className="font-bold rounded-xl"
+                    >
+                      <MaterialIcon icon="play_arrow" className="mr-1.5 text-sm" />
+                      {t('在外部播放器播放此片段')}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <video
+                  ref={videoRef}
+                  src={fileUrl}
+                  controls
+                  onLoadedMetadata={handleVideoLoadedMetadata}
+                  onCanPlay={handleCanPlay}
+                  onTimeUpdate={handleTimeUpdate}
+                  onError={() => {
+                    logger.warn(
+                      LogCategory.RENDERER,
+                      `[视频预览] 浏览器无法解码视频，切换静态抽帧: ${filePath}`
+                    )
+                    setVideoDecodeFailed(true)
+                  }}
+                  className="max-w-full max-h-[70vh] shadow-lg rounded"
+                >
+                  {t('您的浏览器不支持视频播放')}
+                </video>
+              )}
 
               {/* 命中切片指示条与跳轴胶囊 */}
               {(hasHighlight || typeof currentTime === 'number') && (
@@ -362,20 +474,26 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   </div>
 
                   {/* 进度条切片高亮指示器 */}
-                  {hasHighlight && videoDuration > 0 && (() => {
-                    const { left, width } = computeHighlightPercent(startSec, endSec, videoDuration)
-                    return (
-                      <div className="relative w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-                        <div
-                          className="absolute top-0 bottom-0 bg-primary/80 rounded-full"
-                          style={{
-                            left: `${left}%`,
-                            width: `${width}%`
-                          }}
-                        />
-                      </div>
-                    )
-                  })()}
+                  {hasHighlight &&
+                    videoDuration > 0 &&
+                    (() => {
+                      const { left, width } = computeHighlightPercent(
+                        startSec,
+                        endSec,
+                        videoDuration
+                      )
+                      return (
+                        <div className="relative w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <div
+                            className="absolute top-0 bottom-0 bg-primary/80 rounded-full"
+                            style={{
+                              left: `${left}%`,
+                              width: `${width}%`
+                            }}
+                          />
+                        </div>
+                      )
+                    })()}
                 </div>
               )}
             </div>
@@ -437,7 +555,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   isPrivate && 'ph-mask'
                 )}
               >
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+                <p className="text-[11px] text-muted-foreground mb-1 font-medium">
+                  {t('多模态描述')}
+                </p>
                 <p
                   className={cn(
                     'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
@@ -483,7 +603,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               </div>
             )}
             <div className="flex items-center justify-between px-4 py-2 border-b border-border/40 bg-muted/10 shrink-0">
-              <span className="text-xs text-muted-foreground font-mono truncate max-w-xs">{fileName}</span>
+              <span className="text-xs text-muted-foreground font-mono truncate max-w-xs">
+                {fileName}
+              </span>
               <TTSActionGroup
                 text={textContent}
                 textId={`filepreview-${filePath}`}
@@ -493,7 +615,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               />
             </div>
             {/* 预览内容的正文区 */}
-            <div className={cn('flex-1 overflow-auto p-4 bg-muted/20', isPrivate && 'ph-no-capture')}>
+            <div
+              className={cn('flex-1 overflow-auto p-4 bg-muted/20', isPrivate && 'ph-no-capture')}
+            >
               <pre className="text-[15px] whitespace-pre-wrap break-words text-foreground/90 dark:text-foreground/70 leading-8 tracking-wide font-sans selection:bg-primary/20">
                 {textContent}
               </pre>

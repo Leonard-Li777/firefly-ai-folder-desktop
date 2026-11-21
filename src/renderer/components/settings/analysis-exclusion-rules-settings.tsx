@@ -194,7 +194,9 @@ export const AnalysisExclusionRulesSettings: React.FC = () => {
       <div>
         <h3 className="text-lg font-semibold mb-2">{t('全局排除文件规则')}</h3>
         <p className="text-sm text-muted-foreground">
-          {t('配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件')}
+          {t(
+            '配置真实目录不显示的文件，以便不进入AI分析提高分析效率并支持批量查重清理保护这些排除的文件'
+          )}
         </p>
       </div>
 
@@ -207,7 +209,7 @@ export const AnalysisExclusionRulesSettings: React.FC = () => {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <Label className="text-base font-semibold leading-none">{t('忽略规则列表')}</Label>
+                <Label className="text-base font-semibold leading-none">{t('排除规则列表')}</Label>
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                   {t('{total} 条 · {active} 启用', {
                     total: ignoreRules.length,

@@ -23,6 +23,8 @@ import { ResourceContentionBanner } from './ResourceContentionBanner'
 import { WorkspacePendingConfigBanner } from './WorkspacePendingConfigBanner'
 import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
+import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
+import { computeLocalEffectiveConfig } from '../../lib/workspace-policy/workspace-ai-client'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -139,81 +141,88 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       return matched || currentWorkspaceDirectory
     }, [currentWorkspaceDirectory, workspaceDirectories])
 
-    // 整理方式策略信息（大白话文案，禁止专业名词，闪电/对应图标）
-    const currentStrategyInfo = useMemo(() => {
+    // ===== 当前工作目录配置状态（默认参数 | 工作流参数 | 用户自定义配置 三层闭环）=====
+    // 运行时快照由 Footer 常驻握手，这里直接读取同一 store，避免重复订阅。
+    const runtimeSnapshot = useWorkspaceRuntimeContext(s => s.snapshot)
+
+    // 工作流列表：用于按 id 反查工作流显示名（配置仅持久化 workflowId，名称做多级兜底）
+    const [localWorkflowNames, setLocalWorkflowNames] = useState<Record<string, string>>({})
+    useEffect(() => {
+      const getLocalWorkflows = window.electronAPI?.getLocalWorkflows
+      if (typeof getLocalWorkflows !== 'function') {
+        // IPC 通道未就绪：名称走配置附加名 / 绑定 ID 兜底，显式记录不静默吞
+        console.warn('[DirectoryHeader] 本地工作流列表通道未就绪，工作流名称走兜底显示')
+        return
+      }
+      let isMounted = true
+      getLocalWorkflows()
+        .then((res: unknown) => {
+          const data = (res as { success?: boolean; data?: unknown })?.data
+          if (!isMounted || !(res as { success?: boolean })?.success || !Array.isArray(data)) return
+          const names: Record<string, string> = {}
+          for (const wf of data as Array<{ id?: string; name?: string }>) {
+            if (wf?.id && wf?.name) names[wf.id] = wf.name
+          }
+          setLocalWorkflowNames(names)
+        })
+        .catch((err: unknown) => {
+          // 禁止静默降级：主进程异常显式打印
+          console.warn('[DirectoryHeader] 获取本地工作流列表失败:', err)
+        })
+      return () => {
+        isMounted = false
+      }
+    }, [])
+
+    // 配置状态卡：用 @firefly/shared 权威仲裁结果驱动，杜绝「没改配置却显示自定义」误报。
+    // userCustomCount 为「覆盖值与基线不等」的真实自定义项数（等值回退不算），
+    // boundWorkflowId 为权威绑定判定，defaultOrigin 区分工作流默认 / 系统默认。
+    const configStatus = useMemo(() => {
       if (!activeWorkspaceDir) {
         return {
-          icon: 'folder_open',
-          title: t('未选择工作目录'),
+          bound: false,
+          workflowName: '',
+          customCount: 0,
+          headline: t('未选择工作目录'),
           desc: t('请先在左侧选择或新建一个工作目录。')
         }
       }
 
       const parsedConfig = parseWorkspaceConfig(activeWorkspaceDir.workspace_config)
 
-      // 判断是否有自定义微调参数或忽略规则：只要微调了参数，优先显示为「自定义分析方式」
+      let bound = false
+      let workflowId: string | undefined
+      let customCount = 0
+      let workflowNameFromConfig: string | undefined
+
       if (parsedConfig.status === 'ready') {
-        const hasOverrides = Boolean(
-          parsedConfig.overrides && Object.keys(parsedConfig.overrides).length > 0
-        )
-        const hasCustomExcludeRules = Boolean(
-          parsedConfig.customExcludeRules && parsedConfig.customExcludeRules.length > 0
-        )
-        const isCustom = parsedConfig.intent === 'custom' || hasOverrides || hasCustomExcludeRules
-
-        if (isCustom) {
-          return {
-            icon: 'tune',
-            title: t('自定义分析方式'),
-            desc: t('已根据你的偏好单独设置分析参数与文件规则。')
-          }
-        }
+        const summary = computeLocalEffectiveConfig({ parsedConfig, runtimeSnapshot }).summary
+        workflowId = summary.boundWorkflowId ?? undefined
+        bound = Boolean(workflowId)
+        customCount = summary.userCustomCount
+        workflowNameFromConfig = (parsedConfig as unknown as { workflowName?: string }).workflowName
       }
 
-      const intent =
-        parsedConfig.status === 'ready'
-          ? parsedConfig.intent
-          : (parsedConfig as { detectedIntent?: string }).detectedIntent
+      // 名称多级兜底：配置附加名 → 本地工作流列表按 id 反查 → 绑定 ID → 通用占位
+      const workflowName = bound
+        ? workflowNameFromConfig ||
+          (workflowId ? localWorkflowNames[workflowId] : undefined) ||
+          workflowId ||
+          t('已绑定工作流')
+        : ''
 
-      switch (intent) {
-        case 'fast_archive':
-          return {
-            icon: 'bolt',
-            title: t('极速整理与文档'),
-            desc: t('主要读取文字、资料和表格，分析迅速又省电，适合经常阅读和管理文档。')
-          }
-        case 'visual_gallery':
-          return {
-            icon: 'photo_library',
-            title: t('创意图库与设计'),
-            desc: t('看懂图片画面和主要颜色，找图搜图更方便，适合插画和设计素材。')
-          }
-        case 'footage_studio':
-          return {
-            icon: 'movie',
-            title: t('影视与剪辑素材'),
-            desc: t('自动识别视频对话并截取关键画面，方便剪辑找片段，适合长短视频。')
-          }
-        case 'chaotic_inbox':
-          return {
-            icon: 'inventory_2',
-            title: t('日常下载与杂乱文件'),
-            desc: t('自动理清各类杂乱文件，快速分类整理，找文件更轻松。')
-          }
-        case 'custom':
-          return {
-            icon: 'tune',
-            title: t('自定义分析方式'),
-            desc: t('按照你的偏好单独设置分析和文件过滤规则。')
-          }
-        default:
-          return {
-            icon: 'auto_awesome',
-            title: t('智能自适应分析'),
-            desc: t('根据文件夹中的文件类型自动匹配最合适的整理方式。')
-          }
+      return {
+        bound,
+        workflowName,
+        customCount,
+        headline: bound
+          ? t('已绑定工作流：{name}', { name: workflowName })
+          : t('未绑定工作流，当前为全局默认配置'),
+        desc: bound
+          ? t('当前文件夹按该工作流设定的分析参数与文件规则整理')
+          : t('尚未为这个文件夹指定专属方案')
       }
-    }, [activeWorkspaceDir, activeLanguage])
+    }, [activeWorkspaceDir, runtimeSnapshot, localWorkflowNames, activeLanguage])
 
     // 消息轮播相关
     const config = useConfigStore(state => state.config)
@@ -959,20 +968,39 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                         </div>
                       </div>
 
-                      {/* 详细说明框：全大白话，仅保留图标，无专业术语，无重复的“更改 >” */}
-                      <div className="rounded-lg bg-background/80 dark:bg-black/30 border border-border/60 dark:border-border/40 p-2.5 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-muted-foreground font-medium">
-                            {t('整理方式：')}
-                          </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
-                            <MaterialIcon icon={currentStrategyInfo.icon} className="text-xs" />
-                            <span>{currentStrategyInfo.title}</span>
-                          </span>
+                      {/* 配置状态卡：默认参数 | 工作流参数 | 用户自定义配置 三层闭环，全大白话无术语 */}
+                      <div className="rounded-xl bg-background/80 dark:bg-black/30 border border-border/60 dark:border-border/40 p-3 space-y-2">
+                        <div className="flex items-start gap-2">
+                          <div
+                            className={cn(
+                              'mt-0.5 flex items-center justify-center w-6 h-6 rounded-md shrink-0',
+                              configStatus.bound
+                                ? 'bg-primary/15 text-primary'
+                                : 'bg-muted-foreground/10 text-muted-foreground'
+                            )}
+                          >
+                            <MaterialIcon
+                              icon={configStatus.bound ? 'link' : 'tune'}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="text-xs font-semibold text-foreground leading-snug break-words">
+                              {configStatus.headline}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground leading-relaxed">
+                              {configStatus.desc}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground leading-relaxed">
-                          {currentStrategyInfo.desc}
-                        </p>
+                        {configStatus.customCount > 0 && (
+                          <div className="flex items-center gap-1.5 rounded-lg bg-primary/8 dark:bg-primary/10 border border-primary/15 px-2 py-1.5">
+                            <MaterialIcon icon="tune" className="text-xs text-primary shrink-0" />
+                            <span className="text-[11px] font-medium text-primary">
+                              {t('另有 {count} 项自定义配置', { count: configStatus.customCount })}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* 卡片底部双操作按钮：工作流向导 + 工作目录设置（双主按钮等权醒目展示） */}
@@ -989,10 +1017,14 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                                 targetTab: 'wizard'
                               })
                           }}
-                          title={t('打开向导重新挑选适合这个文件夹的整理方案')}
+                          title={
+                            configStatus.bound
+                              ? t('重新挑选工作流并替换当前方案')
+                              : t('打开向导为这个文件夹挑选合适的整理方案')
+                          }
                         >
                           <MaterialIcon icon="auto_awesome" className="text-sm" />
-                          <span>{t('工作流向导')}</span>
+                          <span>{configStatus.bound ? t('重新绑定工作流') : t('工作流向导')}</span>
                         </Button>
                         <Button
                           size="sm"

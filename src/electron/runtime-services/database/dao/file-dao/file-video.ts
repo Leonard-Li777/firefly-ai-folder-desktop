@@ -285,6 +285,28 @@ export class FileVideoMixin extends FileQueryMixin {
   }
 
   /**
+   * 修复历史中毒切片：`completed` 但零帧/零向量产出时重置为 `pending` 以便重新提取。
+   * 仅命中空完成态，不影响正常已完成切片，也不消耗毒药重试配额。
+   */
+  resetEmptyCompletedVideoSegment(fileId: string, segmentIndex: number): boolean {
+    const result = this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'pending',
+             attempt_count = 0,
+             error_message = NULL,
+             updated_at = ?
+         WHERE file_id = ?
+           AND segment_index = ?
+           AND status = 'completed'
+           AND COALESCE(frame_count, 0) <= 0
+           AND COALESCE(visual_embedded_count, 0) <= 0`
+      )
+      .run(Date.now(), fileId, segmentIndex)
+    return result.changes > 0
+  }
+
+  /**
    * 正常休眠/合盖/优雅退出时的切片安全回滚，不消耗毒药重试配额 (FIN-09)
    */
   rollbackVideoSegmentProcessing(fileId: string, segmentIndex: number): void {

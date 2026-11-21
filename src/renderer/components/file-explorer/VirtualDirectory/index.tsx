@@ -25,6 +25,7 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../common/Toast'
 import { useTierStore } from '../../../stores/tier-store'
 import { useSettingsStore } from '../../../stores/settings-store'
+import { useFileExplorerStore } from '../../../stores/app-store'
 import { WorkspaceDirectory } from '@firefly/types'
 
 export const VirtualDirectory: React.FC = () => {
@@ -156,6 +157,9 @@ export const VirtualDirectory: React.FC = () => {
                 const target = official || newDir
                 await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
                 setCurrentWorkspaceDirectory(target)
+                useFileExplorerStore.getState().setFiles([])
+                useFileExplorerStore.getState().setDirectories([])
+                useFileExplorerStore.getState().setSelectedFiles([])
                 navigate('/real-directory')
                 if (target?.id) {
                   useSettingsStore.getState().openWorkspaceSettings({

@@ -31,6 +31,7 @@ import { toast } from '../../common/Toast'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useSearchStore } from '../../../stores/search-store'
 import { usePreviewOverlayStore } from '../../../stores/preview-overlay-store'
+import { useFileExplorerStore } from '../../../stores/app-store'
 import { getPreviewRouteType, getExtFromSmartName } from '../../../lib/preview-utils'
 import { SplitPreviewPanel } from '../SplitPreviewPanel'
 import { SplitPane } from '../../common/SplitPane'
@@ -479,6 +480,9 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                 const target = official || newDir
                 await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
                 setCurrentWorkspaceDirectory(target)
+                useFileExplorerStore.getState().setFiles([])
+                useFileExplorerStore.getState().setDirectories([])
+                useFileExplorerStore.getState().setSelectedFiles([])
                 navigate('/real-directory')
                 if (target?.id) {
                   useSettingsStore.getState().openWorkspaceSettings({

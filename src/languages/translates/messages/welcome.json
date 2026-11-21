@@ -102,8 +102,8 @@
     "$files": [
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4281-4287)",
       "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4516-4522)",
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2389-2395)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(15022-15028)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2413-2419)",
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14967-14973)"
     ],
     "$id": 28471
   },
@@ -120,7 +120,7 @@
     "$files": [
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(4598-4605)",
       "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(4792-4799)",
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2642-2649)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2666-2673)"
     ],
     "$id": 31723
   },
@@ -241,7 +241,7 @@
     "ko-KR": "남은 디스크 공간이 부족합니다. 다운로드 및 설치를 위해 최소 2GB를 예약하세요.",
     "$files": [
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(7247-7279)",
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25814-25846)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25516-25548)"
     ],
     "$id": 31528
   },
@@ -302,7 +302,8 @@
     "ko-KR": "추천하다",
     "$files": [
       "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(8979-8985)",
-      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11172-11178)"
+      "src/renderer/components/welcome/WelcomeStep2PluginSetup.tsx(11172-11178)",
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1427-1433)"
     ],
     "$id": 31791
   },
@@ -599,14 +600,14 @@
     "ar-EG": "دليل تخزين المكونات الإضافية والنماذج",
     "pt-PT": "Diretório de armazenamento de plug-in e modelo",
     "ru-RU": "Каталог хранения плагинов и моделей",
-    "ja-JP": "插件与模型存储目录",
+    "ja-JP": "プラグインとモデルストレージディレクトリ",
     "de-DE": "Plug-in- und Modellspeicherverzeichnis",
     "fr-FR": "Répertoire de stockage des plug-ins et des modèles",
     "ko-KR": "플러그인 및 모델 저장 디렉터리",
     "$files": [
       "src/renderer/components/welcome/WelcomeStep3PluginDir.tsx(5154-5167)"
     ],
-    "$id": 31741
+    "$id": 38531
   },
   "存放 AI 大脑模型与功能扩展组件的本地文件夹": {
     "en-US": "A local folder that stores AI brain models and functional expansion components",
@@ -773,6 +774,111 @@
     ],
     "$id": 31740
   },
+  "在线安装插件": {
+    "en-US": "Install the plug-in online",
+    "es-ES": "Instale el complemento en línea",
+    "ar-EG": "قم بتثبيت المكون الإضافي عبر الإنترنت",
+    "pt-PT": "Instalar o plug-in online",
+    "ru-RU": "Установите подключаемый модуль онлайн",
+    "ja-JP": "プラグインをオンラインでインストールする",
+    "de-DE": "Installieren Sie das Plug-In online",
+    "fr-FR": "Installez le plug-in en ligne",
+    "ko-KR": "플러그인 온라인 설치",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1264-1274)"
+    ],
+    "$id": 38532
+  },
+  "联网自动装好，最省事": {
+    "en-US": "The network is automatically installed, which is the most trouble-free",
+    "es-ES": "La red se instala automáticamente, que es la más libre de problemas. ",
+    "ar-EG": "يتم تثبيت الشبكة تلقائيا ، وهي الأكثر خالية من المتاعب",
+    "pt-PT": "A rede é instalada automaticamente, o que é o mais livre de problemas",
+    "ru-RU": "Сеть устанавливается автоматически, что является наиболее безотказным процессом",
+    "ja-JP": "ネットワークは自動的にインストールされますが、これは最も問題のないものです",
+    "de-DE": "Das Netzwerk wird automatisch installiert, was am störungsfreiesten ist",
+    "fr-FR": "Le réseau est automatiquement installé, ce qui est le plus sans problème",
+    "ko-KR": "가장 문제가 없는 네트워크가 자동으로 설치됩니다",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1294-1308)"
+    ],
+    "$id": 38533
+  },
+  "插件和存放文件夹前面都选好了，只要电脑能上网，下一步软件就会自己把需要的东西下载好、装好，全程不用你操心。第一次花的时间主要看网速。": {
+    "en-US": "The plug-ins and storage folders have been selected in front of them. As long as the computer can access the Internet, the software will download and install the required things by itself in the next step. You don't need to worry about the whole process.The time spent for the first time mainly depends on the Internet speed.",
+    "es-ES": "Los complementos y las carpetas de almacenamiento se han seleccionado delante de ellos. Siempre que la computadora pueda acceder a Internet, el software descargará e instalará las cosas requeridas por sí mismo en el siguiente paso. No necesita preocuparse por todo el proceso.El tiempo empleado por primera vez depende principalmente de la velocidad de Internet.",
+    "ar-EG": "وقد تم اختيار المكونات الإضافية ومجلدات التخزين أمامهم. طالما أن الكمبيوتر يمكنه الوصول إلى الإنترنت ، سيقوم البرنامج بتنزيل وتثبيت الأشياء المطلوبة بنفسه في الخطوة التالية. لا داعي للقلق بشأن العملية برمتها.يعتمد الوقت المستغرق لأول مرة بشكل أساسي على سرعة الإنترنت.",
+    "pt-PT": "Os plug-ins e as pastas de armazenamento foram seleccionados à sua frente. Enquanto o computador puder aceder à Internet, o software irá descarregar e instalar as coisas necessárias por si só no próximo passo. Você não precisa se preocupar com todo o processo.O tempo gasto pela primeira vez depende principalmente da velocidade da Internet.",
+    "ru-RU": "Перед ними были выбраны подключаемые модули и папки для хранения. Пока компьютер имеет доступ к Интернету, программное обеспечение само загрузит и установит необходимые компоненты на следующем шаге. Вам не нужно беспокоиться обо всем процессе.Время, затраченное на первый раз, в основном зависит от скорости Интернета.",
+    "ja-JP": "プラグインとストレージフォルダは、それらの前に選択されています。 コンピュータがインターネットにアクセスできる限り、ソフトウェアは次のステップで必要なものを単独でダウンロードしてインストールします。 プロセス全体について心配する必要はありません。初めて費やされた時間は、主にインターネットの速度に依存します。",
+    "de-DE": "Die Plug-Ins und Speicherordner wurden vor ihnen ausgewählt. Solange der Computer auf das Internet zugreifen kann, lädt und installiert die Software im nächsten Schritt die erforderlichen Dinge von selbst. Sie müssen sich nicht um den gesamten Prozess kümmern.Die zum ersten Mal verbrachte Zeit hängt hauptsächlich von der Internetgeschwindigkeit ab.",
+    "fr-FR": "Les plug-ins et les dossiers de stockage ont été sélectionnés devant eux. Tant que l'ordinateur peut accéder à Internet, le logiciel téléchargera et installera les éléments requis par lui-même à l'étape suivante. Vous n'avez pas à vous soucier de l'ensemble du processus.Le temps passé pour la première fois dépend principalement de la vitesse d'Internet.",
+    "ko-KR": "플러그인 및 저장소 폴더가 앞에서 선택되었습니다. 컴퓨터가 인터넷에 접속할 수 있는 한,소프트웨어는 다음 단계에서 필요한 것을 다운로드하고 설치합니다. 전체 과정에 대해 걱정할 필요가 없습니다.처음으로 보낸 시간은 주로 인터넷 속도에 달려 있습니다.",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1340-1410)"
+    ],
+    "$id": 38534
+  },
+  "导入离线总包": {
+    "en-US": "Import offline total package",
+    "es-ES": "Importar paquete total sin conexión",
+    "ar-EG": "استيراد الحزمة الإجمالية دون اتصال",
+    "pt-PT": "Importar pacote total offline",
+    "ru-RU": "Импорт всего пакета в автономном режиме",
+    "ja-JP": "インポート-オフライン-トータル-パッケージ",
+    "de-DE": "Offline Gesamtpaket importieren",
+    "fr-FR": "Importer le package total hors ligne",
+    "ko-KR": "오프라인 총 패키지 가져오기",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1564-1574)"
+    ],
+    "$id": 38535
+  },
+  "不联网也能一次装齐": {
+    "en-US": "Can be installed all at once without networking",
+    "es-ES": "Se pueden instalar todos a la vez sin necesidad de conectarse en red",
+    "ar-EG": "يمكن تركيبها في كل مرة دون الشبكات",
+    "pt-PT": "Pode ser instalado de uma só vez sem rede",
+    "ru-RU": "Может быть установлено все сразу без подключения к сети",
+    "ja-JP": "ネットワーキングなしで一度にすべて取付けることができます",
+    "de-DE": "Kann ohne Netzwerk auf einmal installiert werden",
+    "fr-FR": "Peut être installé en une seule fois sans réseau",
+    "ko-KR": "네트워킹 없이 한 번에 모두 설치할 수 있습니다",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1594-1607)"
+    ],
+    "$id": 38536
+  },
+  "电脑不方便上网，或者你手上已经有完整的安装包时选这个。存放文件夹上一步已经选好，下一步会让你挑一个安装包文件，一次导入就能把插件装齐，全程不联网、不上传任何文件。": {
+    "en-US": "Choose this when the computer is not convenient to surf the Internet, or you already have a complete installation package in your hand.The storage folder has been selected in the previous step. In the next step, you will be asked to pick an installation package file. You can install the plug-ins once you import them. There is no Internet connection or uploading of any files throughout the process.",
+    "es-ES": "Elija esto cuando la computadora no sea conveniente para navegar por Internet, o ya tenga un paquete de instalación completo en la mano.La carpeta de almacenamiento se ha seleccionado en el paso anterior. En el siguiente paso, se le pedirá que elija un archivo de paquete de instalación. Puede instalar los complementos una vez que los importe. No hay conexión a Internet ni carga de archivos durante todo el proceso.",
+    "ar-EG": "اختر هذا عندما يكون الكمبيوتر غير مناسب لتصفح الإنترنت ، أو لديك بالفعل حزمة تثبيت كاملة في يدك.تم تحديد مجلد التخزين في الخطوة السابقة. في الخطوة التالية ، سيطلب منك اختيار ملف حزمة التثبيت. يمكنك تثبيت المكونات الإضافية بمجرد استيرادها. لا يوجد اتصال بالإنترنت أو تحميل أي ملفات طوال العملية.",
+    "pt-PT": "Escolha isso quando o computador não é conveniente para navegar na Internet, ou você já tem um pacote de instalação completo em sua mão.A pasta de armazenamento foi seleccionada no passo anterior. Na próxima etapa, você será solicitado a escolher um arquivo de pacote de instalação. Pode instalar os plug-ins assim que os Importar. Não há conexão com a Internet ou upload de arquivos durante todo o processo.",
+    "ru-RU": "Выбирайте этот вариант, когда на компьютере неудобно работать в Интернете или когда у вас уже есть полный установочный пакет на руках.Папка для хранения была выбрана на предыдущем шаге. На следующем шаге вам будет предложено выбрать файл установочного пакета. Вы можете установить подключаемые модули после их импорта. На протяжении всего процесса не требуется подключение к Интернету или загрузка каких-либо файлов.",
+    "ja-JP": "コンピュータがインターネットをサーフィンするのに便利ではない場合、またはすでに完全なインストールパッケージを手に持っている場合は、これを選択してください。ストレージフォルダは、前の手順で選択されています。 次のステップでは、インストールパッケージファイルを選択するように求められます。 プラグインをインポートすると、プラグインをインストールできます。 プロセス全体を通して、インターネット接続やファイルのアップロードはありません。",
+    "de-DE": "Wählen Sie diese Option, wenn der Computer nicht zum Surfen im Internet geeignet ist oder Sie bereits ein vollständiges Installationspaket in der Hand haben.Der Speicherordner wurde im vorherigen Schritt ausgewählt. Im nächsten Schritt werden Sie aufgefordert, eine Installationspaketdatei auszuwählen. Sie können die Plug-Ins installieren, sobald Sie sie importiert haben. Während des gesamten Vorgangs besteht keine Internetverbindung oder das Hochladen von Dateien.",
+    "fr-FR": "Choisissez cette option lorsque l'ordinateur n'est pas pratique pour surfer sur Internet ou que vous avez déjà un package d'installation complet en main.Le dossier de stockage a été sélectionné à l'étape précédente. À l'étape suivante, il vous sera demandé de choisir un fichier de package d'installation. Vous pouvez installer les plug-ins une fois que vous les avez importés. Il n'y a pas de connexion Internet ni de téléchargement de fichiers tout au long du processus.",
+    "ko-KR": "컴퓨터가 인터넷 서핑에 편리하지 않거나 이미 완전한 설치 패키지를 손에 들고 있을 때 이 옵션을 선택합니다.이전 단계에서 저장소 폴더가 선택되었습니다. 다음 단계에서는 설치 패키지 파일을 선택하라는 메시지가 표시됩니다. 당신이 그들을 가져 일단 플러그인을 설치할 수 있습니다. 인터넷 연결 또는 프로세스 전반에 걸쳐 모든 파일의 업로드가 없습니다.",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1639-1724)"
+    ],
+    "$id": 38537
+  },
+  "无网可用": {
+    "en-US": "No internet available",
+    "es-ES": "No hay internet disponible",
+    "ar-EG": "لا يوجد إنترنت",
+    "pt-PT": "Sem internet disponível",
+    "ru-RU": "Доступ в Интернет невозможен",
+    "ja-JP": "利用可能なインターネットはありません",
+    "de-DE": "Kein Internet verfügbar",
+    "fr-FR": "Pas d'Internet disponible",
+    "ko-KR": "인터넷 없음",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1741-1749)"
+    ],
+    "$id": 38538
+  },
   "插件怎么装？": {
     "en-US": "How to install the plug-in?",
     "es-ES": "¿Cómo instalar el complemento?",
@@ -784,7 +890,7 @@
     "fr-FR": "Comment installer le plugin ?",
     "ko-KR": "플러그인을 설치하는 방법은 무엇입니까?",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(1979-1989)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2003-2013)"
     ],
     "$id": 31718
   },
@@ -799,7 +905,7 @@
     "fr-FR": "Les compétences et le dossier de stockage ont été déterminés, et enfin choisi un moyen d'obtenir le plug-in ; cliquez sur Suivant pour démarrer l'installation, et elle n'occupera pas encore votre disque.",
     "ko-KR": "스킬과 저장 폴더가 결정되었으며, 마지막으로 플러그인을 얻을 수 있는 방법을 선택합니다. 다음을 클릭하여 설치를 시작하면 아직 디스크를 차지하지 않습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2009-2059)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(2033-2083)"
     ],
     "$id": 31620
   },
@@ -814,7 +920,7 @@
     "fr-FR": "Sélectionné, passez à l'étape suivante",
     "ko-KR": "선택되었습니다. 다음 단계로 진행하세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5661-5674)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5685-5698)"
     ],
     "$id": 31720
   },
@@ -829,7 +935,7 @@
     "fr-FR": "Cliquez sur cette carte pour la sélectionner",
     "ko-KR": "이 카드를 클릭하여 선택하세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5678-5689)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(5702-5713)"
     ],
     "$id": 31721
   },
@@ -844,7 +950,7 @@
     "fr-FR": "Les deux méthodes ne sont que des manières différentes d’obtenir le plug-in. Après l'installation, les fonctions sont exactement les mêmes ; vous pouvez les ajouter ou les soustraire à tout moment dans le centre de plug-ins à l'avenir, vous n'avez donc pas à vous soucier de sélectionner le mauvais maintenant.",
     "ko-KR": "두 가지 방법은 플러그인을 얻는 방법이 다릅니다. 설치 후 기능은 정확히 동일합니다. 나중에 플러그인 센터에서 언제든지 추가하거나 뺄 수 있으므로 지금은 잘못된 것을 선택하는 것에 대해 걱정할 필요가 없습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6133-6203)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6157-6227)"
     ],
     "$id": 31722
   },
@@ -859,7 +965,7 @@
     "fr-FR": "Toutes les fonctionnalités ont été incluses dans le package total hors ligne ; les moteurs et plug-ins sélectionnés précédemment seront utilisés comme référence pour lesquels on sera activé en premier une fois l'importation terminée.",
     "ko-KR": "모든 기능이 오프라인 전체 패키지에 포함되었습니다. 이전에 선택한 엔진과 플러그인은 가져오기가 완료된 후 먼저 활성화되는 참조로 사용됩니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6735-6801)"
+      "src/renderer/components/welcome/WelcomeStep4InstallMethod.tsx(6759-6825)"
     ],
     "$id": 31621
   },
@@ -874,7 +980,7 @@
     "fr-FR": "Il existe un plug-in optionnel qui n'est pas installé. Plus tard, allez dans le \"Centre de plug - in\" et cliquez sur \"Télécharger et installer\" pour compenser.",
     "ko-KR": "설치되지 않은 선택적 플러그인이 있습니다. 나중에\"플러그인 센터\"로 이동하여\"다운로드 및 설치\"를 클릭하여 만회하십시오.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(5204-5240)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(5046-5082)"
     ],
     "$id": 38601
   },
@@ -889,7 +995,7 @@
     "fr-FR": "Il y a eu un problème au démarrage du moteur. Veuillez réessayer ou passer au moteur ultra-rapide et léger.",
     "ko-KR": "엔진을 시동하는 데 문제가 발생했습니다. 다시 시도하거나 초고속 경량 엔진으로 전환해 보세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(7683-7711)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(7444-7472)"
     ],
     "$id": 31514
   },
@@ -904,7 +1010,7 @@
     "fr-FR": "Le plug-in facultatif n'a pas pu démarrer le téléchargement. Plus tard, allez dans le \"Centre de plug - in\" et cliquez sur \"Télécharger et installer\" pour compenser.",
     "ko-KR": "선택적 플러그인이 다운로드를 시작하지 못했습니다. 나중에\"플러그인 센터\"로 이동하여\"다운로드 및 설치\"를 클릭하여 만회하십시오.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8659-8696)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(8392-8429)"
     ],
     "$id": 38602
   },
@@ -919,7 +1025,7 @@
     "fr-FR": "La version actuelle ne prend pas en charge l'importation de packages généraux hors ligne.",
     "ko-KR": "현재 버전은 오프라인 일반 패키지 가져오기를 지원하지 않습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9458-9476)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9162-9180)"
     ],
     "$id": 31754
   },
@@ -934,7 +1040,7 @@
     "fr-FR": "Vous n'avez pas encore sélectionné le package d'installation, cliquez simplement sur le bouton ci-dessous pour le sélectionner à nouveau.",
     "ko-KR": "아직 설치 패키지를 선택하지 않았습니다. 아래 버튼을 클릭하여 다시 선택하세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9867-9892)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(9603-9628)"
     ],
     "$id": 31779
   },
@@ -949,7 +1055,7 @@
     "fr-FR": "Le moteur de recherche principal n'est pas inclus dans le package hors ligne sélectionné. Veuillez confirmer que le fichier est un package hors ligne Firefly complet.",
     "ko-KR": "선택한 오프라인 패키지에는 핵심 검색 엔진이 포함되어 있지 않습니다. 파일이 완전한 Firefly 오프라인 패키지인지 확인하세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10560-10603)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(10276-10319)"
     ],
     "$id": 31756
   },
@@ -964,7 +1070,7 @@
     "fr-FR": "L'autotest du moteur hors ligne a échoué. Veuillez confirmer que le fichier du package général hors ligne est intact.",
     "ko-KR": "오프라인 엔진 자체 테스트에 실패했습니다. 오프라인 일반 패키지 파일이 손상되지 않았는지 확인해주세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11358-11385)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(11422-11449)"
     ],
     "$id": 31757
   },
@@ -979,7 +1085,7 @@
     "fr-FR": "L'installation a rencontré un problème, veuillez réessayer",
     "ko-KR": "설치에 문제가 발생했습니다. 다시 시도해 주세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12161-12175)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12198-12212)"
     ],
     "$id": 31758
   },
@@ -994,7 +1100,7 @@
     "fr-FR": "En attente de la sélection du package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 선택을 기다리는 중",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12944-12957)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(12950-12963)"
     ],
     "$id": 31780
   },
@@ -1009,7 +1115,7 @@
     "fr-FR": "Les composants principaux ont été téléchargés et le moteur de recherche est en cours d'initialisation et de chargement...",
     "ko-KR": "핵심 구성 요소가 다운로드되었으며 검색 엔진이 초기화 및 로드되는 중입니다...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13080-13109)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13083-13112)"
     ],
     "$id": 31839
   },
@@ -1039,7 +1145,7 @@
     "fr-FR": "Le téléchargement du package d'installation est terminé et l'intégrité est en cours de vérification...",
     "ko-KR": "설치 패키지 다운로드가 완료되어 무결성을 검증하는 중입니다...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13285-13307)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13282-13304)"
     ],
     "$id": 31841
   },
@@ -1054,7 +1160,7 @@
     "fr-FR": "Installation du moteur de recherche principal, veuillez patienter...",
     "ko-KR": "기본 검색 엔진을 설치하는 중입니다. 잠시 기다려 주세요...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13332-13352)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13327-13347)"
     ],
     "$id": 31759
   },
@@ -1069,7 +1175,7 @@
     "fr-FR": "Vérification et importation du package d'installation hors ligne, veuillez patienter...",
     "ko-KR": "오프라인 설치 패키지를 확인하고 가져오는 중입니다. 잠시 기다려 주세요...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13400-13423)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13393-13416)"
     ],
     "$id": 31760
   },
@@ -1084,7 +1190,7 @@
     "fr-FR": "Le moteur de recherche principal a été téléchargé et est en cours de première vérification au démarrage...",
     "ko-KR": "메인 검색 엔진이 다운로드되어 1차 시작 검증을 진행 중입니다...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13468-13496)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13460-13488)"
     ],
     "$id": 31842
   },
@@ -1099,7 +1205,7 @@
     "fr-FR": "Le moteur de recherche principal est installé et peut être utilisé !",
     "ko-KR": "메인 검색 엔진이 설치되어 사용 가능해요!",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13533-13555)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13524-13546)"
     ],
     "$id": 31762
   },
@@ -1114,7 +1220,7 @@
     "fr-FR": "L'installation a rencontré des problèmes",
     "ko-KR": "설치에 문제가 발생했습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13569-13579)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(13559-13569)"
     ],
     "$id": 31763
   },
@@ -1129,7 +1235,7 @@
     "fr-FR": "Importer le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 가져오기",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14022-14033)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14000-14011)"
     ],
     "$id": 31766
   },
@@ -1144,7 +1250,7 @@
     "fr-FR": "Installation réseau en ligne",
     "ko-KR": "네트워크 온라인 설치",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14037-14047)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14015-14025)"
     ],
     "$id": 31767
   },
@@ -1159,7 +1265,7 @@
     "fr-FR": "Installer sur",
     "ko-KR": "에 설치하다",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14199-14206)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14173-14180)"
     ],
     "$id": 31768
   },
@@ -1174,7 +1280,7 @@
     "fr-FR": "Dossier par défaut",
     "ko-KR": "기본 폴더",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14324-14333)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14296-14305)"
     ],
     "$id": 31769
   },
@@ -1189,7 +1295,7 @@
     "fr-FR": "La gestion intelligente des fichiers est en cours d'installation pour vous",
     "ko-KR": "스마트 파일 관리가 설치되고 있습니다",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14507-14523)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14469-14485)"
     ],
     "$id": 31764
   },
@@ -1204,7 +1310,7 @@
     "fr-FR": "Donnez au logiciel le package d'installation que vous avez préparé et il fera le reste automatiquement.",
     "ko-KR": "소프트웨어에 준비한 설치 패키지를 제공하면 나머지는 자동으로 수행됩니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14576-14604)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14535-14563)"
     ],
     "$id": 31781
   },
@@ -1219,7 +1325,7 @@
     "fr-FR": "Installez d'abord le cerveau de recherche principal, et le reste des compétences sera installé en arrière-plan, vous n'aurez donc pas à attendre.",
     "ko-KR": "핵심 검색 브레인을 먼저 설치하면 나머지 스킬은 백그라운드에서 설치되므로 기다릴 필요가 없습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14619-14653)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(14577-14611)"
     ],
     "$id": 31765
   },
@@ -1234,7 +1340,7 @@
     "fr-FR": "Commencez l’aventure de la gestion intelligente des fichiers",
     "ko-KR": "지능형 파일 관리의 여정을 시작하세요",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(15465-15479)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(15398-15412)"
     ],
     "$id": 31772
   },
@@ -1249,7 +1355,7 @@
     "fr-FR": "Veuillez sélectionner le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지를 선택하세요.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16439-16451)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16350-16362)"
     ],
     "$id": 31782
   },
@@ -1264,7 +1370,7 @@
     "fr-FR": "Sélectionnez le package d'installation complet que vous avez téléchargé à l'avance et le logiciel l'installera automatiquement dans le dossier sélectionné à l'étape précédente ; l'ensemble du processus ne sera pas connecté à Internet et aucun fichier ne sera téléchargé.",
     "ko-KR": "미리 다운로드한 전체 설치 패키지를 선택하면 소프트웨어가 이전 단계에서 선택한 폴더에 자동으로 설치합니다. 전체 프로세스는 인터넷에 연결되지 않으며 파일도 업로드되지 않습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16588-16667)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(16496-16574)"
     ],
     "$id": 31783
   },
@@ -1279,7 +1385,7 @@
     "fr-FR": "Sélectionnez le package d'installation hors ligne",
     "ko-KR": "오프라인 설치 패키지 선택",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17519-17530)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17404-17415)"
     ],
     "$id": 31784
   },
@@ -1294,7 +1400,7 @@
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et passer à l'installation en ligne, afin que le logiciel puisse être automatiquement téléchargé en ligne.",
     "ko-KR": "이전 단계로 돌아가서 온라인 설치로 변경하면 소프트웨어가 온라인에서 자동으로 다운로드될 수도 있습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17646-17674)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(17528-17556)"
     ],
     "$id": 31785
   },
@@ -1309,7 +1415,7 @@
     "fr-FR": "Auto-vérification",
     "ko-KR": "자가 점검",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(19167-19174)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(19013-19020)"
     ],
     "$id": 31843
   },
@@ -1324,7 +1430,7 @@
     "fr-FR": "Vérification et décompression en toute sécurité du package d'installation...",
     "ko-KR": "설치 패키지를 확인하고 안전하게 압축을 푸는 중...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(20350-20369)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(20168-20187)"
     ],
     "$id": 31844
   },
@@ -1339,7 +1445,7 @@
     "fr-FR": "Vérification de l'intégrité des fichiers...",
     "ko-KR": "파일 무결성 확인 중...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(20575-20591)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(20389-20405)"
     ],
     "$id": 31845
   },
@@ -1354,7 +1460,7 @@
     "fr-FR": "Téléchargement...",
     "ko-KR": "다운로드 중...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(21406-21417)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(21204-21215)"
     ],
     "$id": 31846
   },
@@ -1369,7 +1475,7 @@
     "fr-FR": "Connexion au nœud de téléchargement haut débit...",
     "ko-KR": "고속 다운로드 노드에 연결 중...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(21862-21879)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(21651-21668)"
     ],
     "$id": 31847
   },
@@ -1384,7 +1490,7 @@
     "fr-FR": "On s'attend à ce que davantage",
     "ko-KR": "더욱 많아질 것으로 예상됩니다",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22220-22228)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22002-22010)"
     ],
     "$id": 31848
   },
@@ -1399,7 +1505,7 @@
     "fr-FR": "Secondes",
     "ko-KR": "초",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22599-22604)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(22373-22378)"
     ],
     "$id": 31849
   },
@@ -1414,7 +1520,7 @@
     "fr-FR": "Tous les composants principaux ont été téléchargés !",
     "ko-KR": "모든 핵심 구성 요소가 다운로드되었습니다!",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23373-23389)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23131-23147)"
     ],
     "$id": 31850
   },
@@ -1429,7 +1535,7 @@
     "fr-FR": "Démarrer le moteur de recherche pour la première fois et tester la fonction de recherche, cela prend généralement environ 1 minute, veuillez patienter...",
     "ko-KR": "처음 검색 엔진을 시작하고 검색 기능을 테스트,그것은 일반적으로 약 1 분 정도 걸립니다,기다려주십시오...",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23519-23556)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23274-23311)"
     ],
     "$id": 38606
   },
@@ -1444,7 +1550,7 @@
     "fr-FR": "Le moteur de recherche principal est installé et les autres plug-ins continuent à se télécharger en arrière-plan. Cela n’affecte pas votre capacité à commencer à l’utiliser maintenant.",
     "ko-KR": "기본 검색 엔진이 설치되고 다른 플러그인은 백그라운드에서 계속 다운로드됩니다. 지금 사용을 시작하는 능력에는 영향을 미치지 않습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(24100-24135)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(23842-23877)"
     ],
     "$id": 31770
   },
@@ -1459,7 +1565,7 @@
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25316-25322)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25032-25038)"
     ],
     "$id": 28468
   },
@@ -1474,9 +1580,84 @@
     "fr-FR": "Vous pouvez également revenir à l'étape précédente et essayer une autre méthode d'installation.",
     "ko-KR": "이전 단계로 돌아가서 다른 설치 방법을 시도해 볼 수도 있습니다.",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25451-25473)"
+      "src/renderer/components/welcome/WelcomeStep5InstallReady.tsx(25164-25186)"
     ],
     "$id": 31771
+  },
+  "选择语言": {
+    "en-US": "Select language",
+    "es-ES": "Seleccionar idioma",
+    "ar-EG": "اختر اللغة",
+    "pt-PT": "Selecione o idioma",
+    "ru-RU": "Выберите язык",
+    "ja-JP": "言語を選択",
+    "de-DE": "Sprache auswählen",
+    "fr-FR": "Sélectionnez la langue",
+    "ko-KR": "언어 선택",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStepper.tsx(599-607)"
+    ],
+    "$id": 38539
+  },
+  "能力装配": {
+    "en-US": "Ability assembly",
+    "es-ES": "Conjunto de habilidades",
+    "ar-EG": "القدرة الجمعية",
+    "pt-PT": "Capacidade de montagem",
+    "ru-RU": "Возможность сборки",
+    "ja-JP": "能力組立",
+    "de-DE": "Fähigkeit montage",
+    "fr-FR": "Assemblage de capacités",
+    "ko-KR": "능력 집합",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStepper.tsx(614-622)"
+    ],
+    "$id": 38540
+  },
+  "安装目录": {
+    "en-US": "Installation directory",
+    "es-ES": "Directorio de instalación",
+    "ar-EG": "دليل التثبيت",
+    "pt-PT": "Directório de instalação",
+    "ru-RU": "Установочный каталог",
+    "ja-JP": "インストールディレクトリ",
+    "de-DE": "Installationsverzeichnis",
+    "fr-FR": "Répertoire d'installation",
+    "ko-KR": "설치 디렉토리",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStepper.tsx(629-637)"
+    ],
+    "$id": 38541
+  },
+  "插件安装方式": {
+    "en-US": "Plug-in installation method",
+    "es-ES": "Método de instalación del complemento",
+    "ar-EG": "المكونات في طريقة التثبيت",
+    "pt-PT": "Método de instalação do Plug-in",
+    "ru-RU": "Способ установки подключаемого модуля",
+    "ja-JP": "プラグインのインストール方法",
+    "de-DE": "Plug-In-Installationsmethode",
+    "fr-FR": "Méthode d'installation du plug-in",
+    "ko-KR": "플러그인 설치 방법",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStepper.tsx(644-654)"
+    ],
+    "$id": 38542
+  },
+  "安装完成": {
+    "en-US": "Installation complete",
+    "es-ES": "Instalación completa",
+    "ar-EG": "اكتمال التثبيت",
+    "pt-PT": "Instalação concluída",
+    "ru-RU": "Установка завершена",
+    "ja-JP": "インストール完了",
+    "de-DE": "Installation abgeschlossen",
+    "fr-FR": "Installation terminée",
+    "ko-KR": "설치 완료",
+    "$files": [
+      "src/renderer/components/welcome/WelcomeStepper.tsx(661-669)"
+    ],
+    "$id": 38543
   },
   "第 {step} 步 / 共 5 步": {
     "en-US": "Step {step} / 5 steps in total",
@@ -1489,7 +1670,7 @@
     "fr-FR": "Étape {step} / 5 étapes au total",
     "ko-KR": "{step} 단계 / 총 5단계",
     "$files": [
-      "src/renderer/components/welcome/WelcomeStepper.tsx(988-1010)"
+      "src/renderer/components/welcome/WelcomeStepper.tsx(1031-1053)"
     ],
     "$id": 31773
   },

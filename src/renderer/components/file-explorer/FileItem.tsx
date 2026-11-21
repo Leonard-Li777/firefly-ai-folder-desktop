@@ -4,12 +4,8 @@ import { t } from '@app/languages'
 import { Checkbox } from '../ui/checkbox'
 import { SystemFileIcon } from '../common/SystemFileIcon'
 import type { FileItemProps } from '@firefly/types'
-import {
-  formatFileSize as sharedFormatFileSize,
-  FileCategory,
-  isCategory,
-  formatDateTime
-} from '@firefly/shared'
+import { formatFileSize as sharedFormatFileSize, formatDateTime } from '@firefly/shared'
+import { resolveThumbnailUrl } from './FileList/components/thumbnail-url-utils'
 
 export const getFileIcon = (type: 'file' | 'directory', extension?: string, className?: string) => {
   if (type === 'directory') {
@@ -223,45 +219,12 @@ export const FileItem: React.FC<ExtendedFileItemProps> = memo(
     const modifiedDate = formatDate(modifiedAt)
     const fileType = type === 'directory' ? t('文件夹') : getFileType(extension)
 
-    const isImageFile = (ext?: string) => {
-      if (!ext) return false
-      return isCategory(ext, FileCategory.IMAGE)
-    }
-
     const displayUrl = React.useMemo(() => {
-      let baseUrl = ''
-      const { normalizeForCache } = window.electronAPI!.utils
-
-      if (type === 'file' && isImageFile(extension) && workspaceDirectoryPath && path) {
-        const cleanDir = normalizeForCache(workspaceDirectoryPath)
-          .replace(/\\/g, '/')
-          .replace(/^\/+/, '')
-        const cleanFile = normalizeForCache(path).replace(/\\/g, '/').replace(/^\/+/, '')
-        baseUrl = `file:///${cleanDir}/${cleanFile}`
-      } else if (thumbnailPath) {
-        const isAbs =
-          /^[a-zA-Z]:[\\/]/.test(thumbnailPath) ||
-          thumbnailPath.startsWith('/') ||
-          thumbnailPath.startsWith('\\')
-        if (isAbs) {
-          const clean = normalizeForCache(thumbnailPath).replace(/\\/g, '/').replace(/^\/+/, '')
-          baseUrl = `file:///${clean}`
-        } else if (workspaceDirectoryPath) {
-          const cleanDir = normalizeForCache(workspaceDirectoryPath)
-            .replace(/\\/g, '/')
-            .replace(/^\/+/, '')
-          const cleanThumb = normalizeForCache(thumbnailPath)
-            .replace(/\\/g, '/')
-            .replace(/^\/+/, '')
-          baseUrl = `file:///${cleanDir}/${cleanThumb}`
-        }
-      } else {
-        return null
-      }
-
-      // 添加 refreshKey 绕过浏览器缓存
-      return refreshKey ? `${baseUrl}?t=${refreshKey}` : baseUrl
-    }, [thumbnailPath, workspaceDirectoryPath, path, extension, refreshKey])
+      if (type !== 'file') return null
+      const url = resolveThumbnailUrl(thumbnailPath, path, workspaceDirectoryPath)
+      if (!url) return null
+      return refreshKey ? `${url}?t=${refreshKey}` : url
+    }, [type, thumbnailPath, path, workspaceDirectoryPath, refreshKey])
 
     if (viewMode === 'table') {
       return (

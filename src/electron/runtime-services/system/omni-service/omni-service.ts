@@ -22,6 +22,13 @@ import {
 } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from '../analysis-timeout-policy'
+import {
+  isTransientStatusFetchError,
+  isTransientStatusHttpCode,
+  STATUS_VERIFY_BACKOFF_MS,
+  STATUS_VERIFY_MAX_ATTEMPTS,
+  STATUS_VERIFY_TIMEOUT_MS
+} from './mount-verify-classify'
 import { isLocalDevRuntime } from '../../../main/worktree-env'
 import { OmniInstanceLock, OmniTokenManager } from '../omni-security'
 import type {
@@ -72,6 +79,11 @@ import {
   buildExtractRequestBody,
   buildPerceiveRequestBody
 } from './request-serialization'
+import {
+  isFatalNativeExitCode,
+  serializeDmlCrashMarker,
+  shouldForceCpuFromMarker
+} from './ort-dml-crash-guard'
 
 export class OmniService {
   private static instance: OmniService
@@ -104,6 +116,10 @@ export class OmniService {
     strict: boolean
   } | null = null
   private lastMountValidationError: string | null = null
+  /** DirectML 原生崩溃标记文件路径（与主库同级；dbPath 未知时为 null） */
+  private dmlCrashMarkerPath: string | null = null
+  /** 是否已判定需强制纯 CPU（进程内即时生效，供自愈重试；跨进程由标记文件承载） */
+  private forceCpuForNextStarts = false
 
   /** 开发态二进制热更新检测周期 (毫秒) */
   private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
@@ -119,6 +135,36 @@ export class OmniService {
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
   /** 密钥代次失配防重复弹窗标志 */
   private isKeyEpochMismatchPrompted = false
+
+  /** 解析并缓存 DirectML 崩溃标记文件路径（与主库同级；dbPath 未知时沿用上次缓存）。 */
+  private resolveDmlCrashMarker(dbPath: string | null | undefined): string | null {
+    if (dbPath) {
+      this.dmlCrashMarkerPath = path.join(path.dirname(dbPath), '.omni-dml-crash.json')
+    }
+    return this.dmlCrashMarkerPath
+  }
+
+  private readTextFileSafe(file: string): string | null {
+    try {
+      return fs.readFileSync(file, 'utf8')
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 持久化 DirectML 原生崩溃标记，并在本进程内立即生效（后续 `start()` 直接走纯 CPU）。
+   * 写入失败不阻断（仅告警）：跨进程兜底失效时，本次进程内重试仍会强制 CPU。
+   */
+  private persistDmlCrash(marker: string | null): void {
+    this.forceCpuForNextStarts = true
+    if (!marker) return
+    try {
+      fs.writeFileSync(marker, serializeDmlCrashMarker(Date.now()), 'utf8')
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[OmniService] 写入 DirectML 崩溃标记失败:', err)
+    }
+  }
 
   /**
    * 拦截处理 Omni KeyEpoch 失配，触发前端大白话 UX 提示与系统通知 (Ticket 07)
@@ -1184,6 +1230,20 @@ export class OmniService {
         }
       } catch {}
 
+      // DirectML 原生崩溃守卫：本进程已判定（或持久标记仍在 TTL 内）时，强制 Omni 以纯 CPU 拉起，
+      // 避免在同一坏 GPU 路径上反复 abort 导致视频切片永久丢失（OMNI_DISABLE_DML 由 start_server 消费）。
+      this.resolveDmlCrashMarker(dbPath)
+      const dmlMarkerRaw = this.dmlCrashMarkerPath
+        ? this.readTextFileSafe(this.dmlCrashMarkerPath)
+        : null
+      if (this.forceCpuForNextStarts || shouldForceCpuFromMarker(dmlMarkerRaw, Date.now())) {
+        env.OMNI_DISABLE_DML = '1'
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[OmniService] 检测到 DirectML 原生崩溃历史，本次以纯 CPU 兜底拉起 Omni（OMNI_DISABLE_DML=1）'
+        )
+      }
+
       const child = spawn(exePath, spawnArgs, {
         cwd: binDir,
         env,
@@ -1267,6 +1327,15 @@ export class OmniService {
       child.on('exit', async (code, signal) => {
         const wasCurrentChild = this.process === child
         logger.warn(LogCategory.SYSTEM, `[OmniService] 子进程退出 (code=${code}, signal=${signal})`)
+        // 原生崩溃（abort / 访问越界等）无法被 Rust catch；持久化「禁用 DirectML」结论，
+        // 让随后的自愈重试与未来的进程重启都以纯 CPU 兜底，避免视频切片再次全毁。
+        if (!this.isIntentionalStopping && isFatalNativeExitCode(code)) {
+          this.persistDmlCrash(this.dmlCrashMarkerPath)
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 检测到 Omni 原生崩溃 (code=0x${(code >>> 0).toString(16)})，后续拉起将禁用 DirectML（纯 CPU 兜底）`
+          )
+        }
         try {
           const { processReaper } = require('../../../main/process-reaper')
           processReaper.unregisterChild(child.pid)
@@ -1326,14 +1395,24 @@ export class OmniService {
           const verifyRes = await this.verifyMountManifestStatus(expectedMountsSnapshot)
           if (!verifyRes.ok) {
             this.lastMountValidationError = verifyRes.error || '挂载清单双向核验未通过'
-            logger.error(
-              LogCategory.SYSTEM,
-              `[OmniService] 挂载清单双向核验失败 (Fail-Closed)，停机阻断激活: ${this.lastMountValidationError}`
-            )
-            await this.stop()
-            this.isStarting = false
-            this.pushStatus().catch(() => {})
-            return false
+            if (verifyRes.transient) {
+              // 瞬时超时/网络抖动 ≠ 挂载清单不一致：/health 已通过，禁止据此 SIGTERM 误杀
+              // 正在进行的视频分析（切片与封面会一起丢失）。仅显著告警，放行激活，
+              // 让后续真实推理与检索自然暴露真正的清单缺陷。
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OmniService] 挂载清单核验暂时不可达（瞬时故障，已重试 ${STATUS_VERIFY_MAX_ATTEMPTS} 次），放行激活不阻断: ${this.lastMountValidationError}`
+              )
+            } else {
+              logger.error(
+                LogCategory.SYSTEM,
+                `[OmniService] 挂载清单双向核验失败 (Fail-Closed)，停机阻断激活: ${this.lastMountValidationError}`
+              )
+              await this.stop()
+              this.isStarting = false
+              this.pushStatus().catch(() => {})
+              return false
+            }
           }
           logger.info(
             LogCategory.SYSTEM,
@@ -1504,14 +1583,52 @@ export class OmniService {
     sharedDir: string | null
     expectedResourceIds: string[]
     strict: boolean
-  }): Promise<{ ok: boolean; error?: string; statusData?: Record<string, any> }> {
+  }): Promise<{
+    ok: boolean
+    error?: string
+    /** true 表示失败源于超时/网络等瞬时故障（重试耗尽），不代表挂载清单不一致 */
+    transient?: boolean
+    statusData?: Record<string, any>
+  }> {
+    return this.verifyMountManifestStatusAttempt(expected, 1)
+  }
+
+  /**
+   * 单次核验实现；瞬时故障（超时/网络/5xx/半截响应）按预算重试，
+   * 确定性不一致立即返回，避免把忙碌引擎误判为清单错误。
+   */
+  private async verifyMountManifestStatusAttempt(
+    expected:
+      | {
+          manifestPath: string | null
+          sharedDir: string | null
+          expectedResourceIds: string[]
+          strict: boolean
+        }
+      | undefined,
+    attempt: number
+  ): Promise<{
+    ok: boolean
+    error?: string
+    transient?: boolean
+    statusData?: Record<string, any>
+  }> {
     const target = expected ?? this.lastExpectedMounts
     try {
       const res = await fetch(`${this.baseUrl}/api/v1/engine/status`, {
-        signal: AbortSignal.timeout(2500)
+        signal: AbortSignal.timeout(STATUS_VERIFY_TIMEOUT_MS)
       })
       if (!res.ok) {
-        return { ok: false, error: `/api/v1/engine/status 响应异常: HTTP ${res.status}` }
+        const transient = isTransientStatusHttpCode(res.status)
+        if (transient && attempt < STATUS_VERIFY_MAX_ATTEMPTS) {
+          await this.sleepStatusVerifyBackoff(attempt)
+          return this.verifyMountManifestStatusAttempt(expected, attempt + 1)
+        }
+        return {
+          ok: false,
+          transient,
+          error: `/api/v1/engine/status 响应异常: HTTP ${res.status}`
+        }
       }
       const data = (await res.json()) as Record<string, any>
       const mm = data?.mountManifest
@@ -1578,11 +1695,22 @@ export class OmniService {
 
       return { ok: true, statusData: data }
     } catch (err: any) {
+      // 半截响应导致的 JSON 解析失败同样属于瞬时故障，应重试而非判死。
+      const transient = isTransientStatusFetchError(err) || err?.name === 'SyntaxError'
+      if (transient && attempt < STATUS_VERIFY_MAX_ATTEMPTS) {
+        await this.sleepStatusVerifyBackoff(attempt)
+        return this.verifyMountManifestStatusAttempt(expected, attempt + 1)
+      }
       return {
         ok: false,
+        transient,
         error: `查询 /api/v1/engine/status 异常: ${err?.message || String(err)}`
       }
     }
+  }
+
+  private sleepStatusVerifyBackoff(attempt: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, STATUS_VERIFY_BACKOFF_MS * attempt))
   }
 
   /**
@@ -2487,6 +2615,15 @@ export class OmniService {
         LogCategory.SYSTEM,
         `[OmniService] <<< POST /api/perceive 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}，尝试自愈拉起并重试...`
       )
+      // 连接被重置/挂断通常意味着本地 Omni 进程已原生崩溃（如 DirectML abort）。
+      // 在拉起前先持久化「纯 CPU 兜底」结论，确保紧随其后的自愈重试不再复用坏 GPU 路径。
+      if (/ECONNRESET|ECONNREFUSED|socket hang up/i.test(fullError)) {
+        this.persistDmlCrash(this.dmlCrashMarkerPath)
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[OmniService] perceive 传输中断，判定引擎异常退出；自愈重试将以纯 CPU 兜底拉起'
+        )
+      }
       const restarted = await this.start()
       if (restarted) {
         try {

@@ -12,7 +12,8 @@ import {
   logger,
   PerformanceTimer,
   computeVideoVisualParamsHash,
-  shouldReuseVideoSegment,
+  isVideoSegmentReusable,
+  resolveVideoDurationSec,
   FileCategory,
   getFileCategory,
   isCategory,
@@ -1708,6 +1709,29 @@ export class FileProcessor {
       // ========== 第二阶段：内容提取与文本转换 ==========
       this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
 
+      // 单调递增进度上报器：合并「时间估算」与「切片完成」两类来源，保证进度永不回退。
+      // 背景：长视频 stage2 耗时是其它 stage 的数倍，且 0 号切片是一次性 perceive() 调用，
+      // 引擎内部抽帧期间主进程无法介入，若只在切片完成时上报，进度会长期卡死在 10%。
+      let reportedPct = 10
+      let videoCreepTimer: ReturnType<typeof setInterval> | null = null
+      const pushVideoProgress = (pct: number, slices?: { done: number; total: number }): void => {
+        const next = Math.max(reportedPct, Math.min(100, Math.round(pct)))
+        if (next === reportedPct) return
+        reportedPct = next
+        this.updateItemStatus(item.id, 'analyzing', next, undefined, {
+          analysisStage: 2,
+          analysisStats: {
+            analysis_stage: 2,
+            ...(slices
+              ? {
+                  video_completed_slices: slices.done,
+                  video_total_slices: slices.total
+                }
+              : {})
+          }
+        })
+      }
+
       const magikaGroup =
         typeof magikaCategory === 'string' ? magikaCategory : magikaCategory?.group
 
@@ -1782,10 +1806,12 @@ export class FileProcessor {
 
       // 0 号切片处理 (名义 0 ~ 300s，支持降档不失效与升级重提取，ISS-65)
       const seg0 = existingSegMap.get(0)
-      const seg0Completed =
-        seg0?.status === 'completed' && shouldReuseVideoSegment(seg0.params_hash, paramsHash)
+      const seg0Completed = isVideoSegmentReusable(seg0, paramsHash)
       if (isVideo && capabilities.videoVisualAnalysisEnabled && !seg0Completed) {
         try {
+          if (seg0) {
+            databaseService.resetEmptyCompletedVideoSegment(fileFingerprint, 0)
+          }
           databaseService.upsertVideoSegment({
             id: `${fileFingerprint}_seg_0`,
             fileId: fileFingerprint,
@@ -1860,6 +1886,21 @@ export class FileProcessor {
           }
         }
 
+        // 0 号切片是一次性 perceive()，引擎内部抽帧/感知期间主进程无法介入，可能持续数分钟。
+        // 启动「时间渐近」进度爬升：10% 起步、约 4 分钟内缓慢逼近上限 60%，给用户可见的生命迹象。
+        // 切片完成上报会取 max 覆盖，故爬升不会压过真实的切片进度。
+        if (isVideo && capabilities.videoVisualAnalysisEnabled) {
+          const creepStart = Date.now()
+          const CREEP_CAP_PCT = 60
+          const CREEP_TOTAL_MS = 4 * 60 * 1000
+          videoCreepTimer = setInterval(() => {
+            const elapsed = Date.now() - creepStart
+            // 用 1 - e^-t 平滑渐近，避免线性到达后卡满在 60% 造成"快好了"的错觉
+            const ratio = 1 - Math.exp(-elapsed / (CREEP_TOTAL_MS / 3))
+            pushVideoProgress(10 + (CREEP_CAP_PCT - 10) * ratio)
+          }, 3000)
+        }
+
         anydocResult = await anydocService
           .perceive(filePath, {
             language,
@@ -1919,11 +1960,21 @@ export class FileProcessor {
                 300
               )
             }
-            databaseService.markVideoSegmentCompleted(fileFingerprint, 0, {
-              frameCount: anydocResult.perception?.video_chunks?.length || 0,
-              visualEmbeddedCount: anydocResult.perception?.video_chunks?.length || 0,
-              asrTranscriptChars: (anydocResult.audioTranscript || '').length
-            })
+            if (seg0Chunks.length > 0) {
+              databaseService.markVideoSegmentCompleted(fileFingerprint, 0, {
+                frameCount: seg0Chunks.length,
+                visualEmbeddedCount: seg0Chunks.length,
+                asrTranscriptChars: (anydocResult.audioTranscript || '').length
+              })
+            } else if (capabilities.videoVisualAnalysisEnabled) {
+              // 严禁零帧写 completed：否则下次复用判定会永久跳过感知（历史「瞬间完成但零切片」根因）
+              const reason = 'perceive returned zero video chunks (seg 0)'
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 0号切片未产出任何画面，标记失败等待重提（不写 completed）: ${filePath}`
+              )
+              databaseService.markVideoSegmentFailedOrPending(fileFingerprint, 0, reason)
+            }
           } catch (e) {
             logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 0号视频片段完成更新失败:', e)
           }
@@ -1933,7 +1984,7 @@ export class FileProcessor {
       // 视频切片流水线与断点续作调度 (升维架构：读时派生 + 一次性登记 + 24h物理防爆 + 尾片容差合并，FIN-01 / FIN-03 / FIN-14)
       // [V11-01] classic_light 彻底跳过视觉切片调度，杜绝空指纹永久投毒
       if (isVideo && capabilities.videoVisualAnalysisEnabled) {
-        const probedDuration = (anydocResult.metadata as any)?.duration || 0
+        const probedDuration = resolveVideoDurationSec(anydocResult.metadata)
         if (probedDuration > 0) {
           // 24 小时物理防爆门禁 (FIN-03)：超过 24h 的异常视频全量置为 failed，不进入调度
           if (probedDuration > 86400) {
@@ -1950,6 +2001,11 @@ export class FileProcessor {
               paramsHash,
               status: 'failed'
             })
+            // 提前返回前清理时间渐近定时器，避免泄漏
+            if (videoCreepTimer) {
+              clearInterval(videoCreepTimer)
+              videoCreepTimer = null
+            }
             return
           }
 
@@ -1981,26 +2037,47 @@ export class FileProcessor {
             }
           }
 
+          // 切片级进度上报：长视频 stage2 耗时是其它 stage 的数倍，以切片为单位向用户可见地汇报进度。
+          // 0 号切片已在上方单独完成，计入已完成基数；每完成一片调用 onVideoSliceProgress 推送。
+          const videoTotalSlices = numChunks
+          let videoCompletedSlices = 1 // 0 号切片已处理完成
+          const VIDEO_PROGRESS_BASE = 10 // 进入 stage2 时已写入的初始进度，避免回退
+          const VIDEO_PROGRESS_SPAN = 88 // 留 2% 给后续阶段收尾，避免卡在 100 又跳回 98
+          const reportVideoSliceProgress = (completed: number) => {
+            const pct = VIDEO_PROGRESS_BASE + (completed / videoTotalSlices) * VIDEO_PROGRESS_SPAN
+            pushVideoProgress(pct, { done: completed, total: videoTotalSlices })
+          }
+
           // 2. 流式派发切片：受当前用户的 ComputedLimits.video_max_duration_seconds 门禁保护
           for (let k = 1; k < numChunks; k++) {
             // 派发前动态读取最新限额
             const cachedTierData = userTierService.getCachedData()
             const computedLimits = cachedTierData?.computed_limits
-            const currentLimit =
+            const entitlementLimit =
               typeof computedLimits?.video_max_duration_seconds === 'number'
                 ? computedLimits.video_max_duration_seconds
                 : isFreeUser
                   ? 300
                   : 999999999
+            const configuredRaw = effectiveParams.videoAnalyzeDurationSec ?? 300
+            const configuredLimit = Math.min(
+              10800,
+              Math.max(300, Math.round(configuredRaw / 300) * 300)
+            )
+            // 云端权益是客观上限，工作区配置是主观意愿；取较小值，用户配置永远不能放大权益
+            const currentLimit = Math.min(entitlementLimit, configuredLimit)
 
             const chunkStart = k * chunkSpan
-            const chunkEnd = k === numChunks - 1 ? probedDuration : (k + 1) * chunkSpan
+            const chunkEnd = Math.min(
+              k === numChunks - 1 ? probedDuration : (k + 1) * chunkSpan,
+              currentLimit
+            )
 
-            // 门禁断点：若切片起点超出当前权益上限，读时阻断后续切片（等待升级 Pro 后唤醒）
+            // 门禁断点：若切片起点超出最终上限，读时阻断后续切片（等待升级或用户调大配置后唤醒）
             if (chunkStart >= currentLimit) {
               logger.debug(
                 LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 片段 ${k} 起点 ${chunkStart}s 达到当前权益上限 ${currentLimit}s，断点暂停等待升级: ${filePath}`
+                `[分析队列] 片段 ${k} 起点 ${chunkStart}s 达到当前上限 ${currentLimit}s（权益 ${entitlementLimit}s / 工作区配置 ${configuredLimit}s），断点暂停: ${filePath}`
               )
               break
             }
@@ -2015,13 +2092,14 @@ export class FileProcessor {
             }
 
             const segK = existingSegMap.get(k)
-            if (
-              segK?.status === 'completed' &&
-              shouldReuseVideoSegment(segK.params_hash, paramsHash)
-            ) {
+            if (isVideoSegmentReusable(segK, paramsHash)) {
               continue
             }
             this.throwIfAborted(signal)
+
+            if (segK) {
+              databaseService.resetEmptyCompletedVideoSegment(fileFingerprint, k)
+            }
 
             // 原子 CAS 认领
             const canProceed = databaseService.markVideoSegmentProcessing(fileFingerprint, k)
@@ -2098,11 +2176,24 @@ export class FileProcessor {
                 chunkEnd
               )
 
-              databaseService.markVideoSegmentCompleted(fileFingerprint, k, {
-                frameCount: chunkFrames.length,
-                visualEmbeddedCount: chunkFrames.length,
-                asrTranscriptChars: 0
-              })
+              if (chunkFrames.length > 0) {
+                databaseService.markVideoSegmentCompleted(fileFingerprint, k, {
+                  frameCount: chunkFrames.length,
+                  visualEmbeddedCount: chunkFrames.length,
+                  asrTranscriptChars: 0
+                })
+
+                // 切片完成，推送切片级进度（仅上报，不静默失败）
+                videoCompletedSlices += 1
+                reportVideoSliceProgress(videoCompletedSlices)
+              } else {
+                const reason = `perceive returned zero video chunks (seg ${k})`
+                logger.warn(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[分析队列] 片段 ${k} 未产出任何画面，标记失败等待重提（不写 completed）: ${filePath}`
+                )
+                databaseService.markVideoSegmentFailedOrPending(fileFingerprint, k, reason)
+              }
 
               // 协程让出 50ms，释放 Node 事件循环 (FIN-10)
               await new Promise(resolve => setTimeout(resolve, 50))
@@ -2116,6 +2207,12 @@ export class FileProcessor {
             }
           }
         }
+      }
+
+      // 视频处理块结束：停掉时间渐近爬升定时器，避免泄漏与压过后续阶段进度
+      if (videoCreepTimer) {
+        clearInterval(videoCreepTimer)
+        videoCreepTimer = null
       }
 
       const anydocDurationMs = Date.now() - anydocStartTime

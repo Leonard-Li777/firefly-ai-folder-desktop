@@ -206,8 +206,8 @@ export class EngineBridgeService {
   private constructor() {
     this.setupLifecycleHooks()
     this.setupThinkingConfigSync()
-    // 启动常驻状态轮询（3秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
-    this.startPolling(3000)
+    // 启动常驻状态轮询（10秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
+    this.startPolling(10000)
     // 开发模式下开机常驻监听引擎二进制热更新（感知 engine:deploy:watch 重编译与部署）
     if (this.isDevMode()) {
       this.startDevBinaryWatch()
@@ -839,14 +839,24 @@ export class EngineBridgeService {
   /**
    * 将引擎探活状态同步至休眠协调器的 runtimeStore
    * 懒加载 coordinator 单例，避免模块初始化时形成循环依赖
+   *
+   * ⚠️ 核心契约：探活可响应 ≠ 引擎在用
+   * - ready/processing/starting **不再调用** notifyModuleResident：
+   *   引擎宿主能应答 status 只证明进程活着，不代表有活跃请求。
+   *   若在此谎报 resident，会把协调器已判定"无请求→可休眠"的引擎
+   *   重新标回常驻，架空 idle_hibernation 倒计时（scheduleIdleHibernation）。
+   *   引擎是否真的"在用"（有活跃租约 / 队列任务）由协调器的
+   *   reconcileLiveStates（读真实进程态 + connected/ready/processing + 队列忙碌态）
+   *   与 lease-registry 的活跃租约计数权威判定，bridge 不越权代劳。
+   * - stopped/error 仍需 notifyModuleHibernated：引擎真下线要如实通知，
+   *   避免协调器 runtimeStore 残留 resident 状态（UI 显示"已释放"的状态撒谎）。
    */
   private syncEngineStateToCoordinator(
     status: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' | undefined
   ): void {
     try {
-      if (status === 'ready' || status === 'processing' || status === 'starting') {
-        moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
-      } else if (status === 'stopped' || status === 'error') {
+      // 仅在下线时通知协调器；在线状态交还租约 + reconcileLiveStates 判定
+      if (status === 'stopped' || status === 'error') {
         moduleHibernationCoordinator.notifyModuleHibernated('firefly-ai-engine')
       }
     } catch {

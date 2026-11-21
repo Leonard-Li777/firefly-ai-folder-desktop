@@ -697,6 +697,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
           '检测到工作区变更或非法路径，重置当前路径:',
           currentWorkspaceDirectory.path
         )
+        useFileExplorerStore.getState().setFiles([])
+        useFileExplorerStore.getState().setDirectories([])
+        useFileExplorerStore.getState().setSelectedFiles([])
+        setSelectedItem(null)
         setCurrentPath(currentWorkspaceDirectory.path)
       }
     } else {
@@ -704,6 +708,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       // 我们通过检查 workspaceDirectories 是否已加载来判断
       if (workspaceDirectories.length > 0 && currentPath !== '') {
         logger.info(LogCategory.RENDERER, '工作目录为空，清空路径')
+        useFileExplorerStore.getState().setFiles([])
+        useFileExplorerStore.getState().setDirectories([])
+        useFileExplorerStore.getState().setSelectedFiles([])
+        setSelectedItem(null)
         setCurrentPath('')
       }
     }
@@ -788,6 +796,13 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
             localStorage.removeItem(oldKey)
           }
         }
+
+        // 切换工作目录前，立即清空旧工作区的文件列表与选中状态，防止在新工作区数据加载完成前
+        // 渲染旧文件产生路径错乱与缩略图 404
+        useFileExplorerStore.getState().setFiles([])
+        useFileExplorerStore.getState().setDirectories([])
+        useFileExplorerStore.getState().setSelectedFiles([])
+        setSelectedItem(null)
 
         await window.electronAPI!.setCurrentWorkspaceDirectory(directory.path)
         setCurrentWorkspaceDirectory(directory)

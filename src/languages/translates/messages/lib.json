@@ -129,6 +129,45 @@
     "$files": ["src/renderer/lib/external-link.ts(2966-2979)"],
     "$id": 4466
   },
+  "系统图标与元数据": {
+    "en-US": "System icons and metadata",
+    "es-ES": "Iconos y metadatos del sistema",
+    "ar-EG": "أيقونات النظام وبيانات التعريف",
+    "pt-PT": "Ícones e metadados do sistema",
+    "ru-RU": "Системные значки и метаданные",
+    "ja-JP": "システムアイコンとメタデータ",
+    "de-DE": "Systemsymbole und Metadaten",
+    "fr-FR": "Icônes système et métadonnées",
+    "ko-KR": "시스템 아이콘 및 메타데이터",
+    "$files": ["src/renderer/lib/preview-router.ts(4412-4424)"],
+    "$id": 38283
+  },
+  "Flyfish 通用预览引擎": {
+    "en-US": "Flyfish universal preview engine",
+    "es-ES": "Motor de vista previa universal Flyfish",
+    "ar-EG": "محرك المعاينة العالمي Flyfish",
+    "pt-PT": "Mecanismo de visualização universal Flyfish",
+    "ru-RU": "Универсальный механизм предварительного просмотра Flyfish",
+    "ja-JP": "Flyfish ユニバーサル プレビュー エンジン",
+    "de-DE": "Universelle Vorschau-Engine von Flyfish",
+    "fr-FR": "Moteur de prévisualisation universel Flyfish",
+    "ko-KR": "Flyfish 범용 미리보기 엔진",
+    "$files": ["src/renderer/lib/preview-router.ts(4734-4752)"],
+    "$id": 38284
+  },
+  "原生音视频与文档预览器": {
+    "en-US": "Native audio, video and document previewer",
+    "es-ES": "Vista previa nativa de audio, vídeo y documentos",
+    "ar-EG": "عارض الصوت والفيديو والمستندات الأصلي",
+    "pt-PT": "Pré-visualizador nativo de áudio, vídeo e documentos",
+    "ru-RU": "Встроенное средство предварительного просмотра аудио, видео и документов",
+    "ja-JP": "ネイティブのオーディオ、ビデオ、ドキュメントのプレビューア",
+    "de-DE": "Native Audio-, Video- und Dokumentvorschau",
+    "fr-FR": "Aperçu natif de l'audio, de la vidéo et des documents",
+    "ko-KR": "기본 오디오, 비디오 및 문서 미리보기",
+    "$files": ["src/renderer/lib/preview-router.ts(5085-5100)"],
+    "$id": 38285
+  },
   "海洋蓝": {
     "en-US": "Ocean blue",
     "es-ES": "Océano azul",

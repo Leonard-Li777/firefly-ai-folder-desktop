@@ -2456,6 +2456,10 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     this.fileDao?.rollbackVideoSegmentProcessing(fileId, segmentIndex)
   }
 
+  resetEmptyCompletedVideoSegment(fileId: string, segmentIndex: number): boolean {
+    return this.fileDao?.resetEmptyCompletedVideoSegment(fileId, segmentIndex) ?? false
+  }
+
   getVideoCoverageStatsBatch(fileIds: string[]) {
     return this.fileDao?.getVideoCoverageStatsBatch(fileIds) ?? new Map()
   }

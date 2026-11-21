@@ -135,6 +135,12 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
     name: t('萤核对外接口'),
     icon: 'share',
     description: t('对外 HTTP API、智能体连接状态与生态集成')
+  },
+  {
+    id: SettingsCategory.STORAGE_ENERGY,
+    name: t('存储与节能'),
+    icon: 'hard_drive',
+    description: t('插件与模型目录、缓存目录与休眠节能')
   }
 ]
 

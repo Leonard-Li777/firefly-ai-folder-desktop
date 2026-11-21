@@ -9,8 +9,72 @@
     "de-DE": "FFmpeg ist nicht bereit (System FFmpeg nicht erkannt), Audio kann nicht konvertiert werden",
     "fr-FR": "FFmpeg n'est pas prêt (système FFmpeg non détecté), impossible de convertir l'audio",
     "ko-KR": "FFmpeg가 준비되지 않았으며(시스템 FFmpeg가 감지되지 않음) 오디오를 변환할 수 없습니다.",
-    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(2615-2651)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/audio-converter.ts(2615-2651)"
+    ],
     "$id": 9445
+  },
+  "目录路径不能为空": {
+    "en-US": "The directory path cannot be empty",
+    "es-ES": "La ruta del directorio no puede estar vacía",
+    "ar-EG": "لا يمكن أن يكون مسار الدليل فارغا",
+    "pt-PT": "O caminho do diretório não pode estar vazio",
+    "ru-RU": "Путь к каталогу не может быть пустым",
+    "ja-JP": "ディレクトリパスを空にすることはできません",
+    "de-DE": "Der Verzeichnispfad darf nicht leer sein",
+    "fr-FR": "Le chemin du répertoire ne peut pas être vide",
+    "ko-KR": "디렉터리 경로를 비울 수 없습니다",
+    "$files": [
+      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(6813-6825)"
+    ],
+    "$id": 38307
+  },
+  "目录路径必须是绝对路径": {
+    "en-US": "The directory path must be an absolute path",
+    "es-ES": "La ruta del directorio debe ser una ruta absoluta",
+    "ar-EG": "يجب أن يكون مسار الدليل مسارا مطلقا",
+    "pt-PT": "O caminho do Diretório deve ser um caminho absoluto",
+    "ru-RU": "Путь к каталогу должен быть абсолютным",
+    "ja-JP": "ディレクトリパスは絶対パスである必要があります",
+    "de-DE": "Der Verzeichnispfad muss ein absoluter Pfad sein",
+    "fr-FR": "Le chemin du répertoire doit être un chemin absolu",
+    "ko-KR": "디렉터리 경로는 절대 경로여야 합니다",
+    "$files": [
+      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(6911-6926)"
+    ],
+    "$id": 38308
+  },
+  "所选目录不可写入，请更换其他目录": {
+    "en-US": "The selected directory is not writable, please replace it with another directory",
+    "es-ES": "El directorio seleccionado no se puede escribir, reemplácelo con otro directorio",
+    "ar-EG": "الدليل المحدد غير قابل للكتابة ، يرجى استبداله بدليل آخر",
+    "pt-PT": "O diretório selecionado não é gravável, substitua-o por outro diretório",
+    "ru-RU": "Выбранный каталог недоступен для записи, пожалуйста, замените его другим каталогом",
+    "ja-JP": "選択したディレクトリは書き込み可能ではありませんので、別のディレクトリに置き換えてください",
+    "de-DE": "Das ausgewählte Verzeichnis ist nicht beschreibbar, bitte ersetzen Sie es durch ein anderes Verzeichnis",
+    "fr-FR": "Le répertoire sélectionné n'est pas accessible en écriture, veuillez le remplacer par un autre répertoire",
+    "ko-KR": "선택한 디렉터리가 쓰기 불가능하므로 다른 디렉터리로 바꾸십시오",
+    "$files": [
+      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(9342-9362)",
+      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(9983-10003)",
+      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(16323-16343)"
+    ],
+    "$id": 38309
+  },
+  "更新缓存目录失败，请稍后重试": {
+    "en-US": "Updating the cache directory failed, please try again later",
+    "es-ES": "Error al actualizar el directorio de caché, inténtelo de nuevo más tarde",
+    "ar-EG": "فشل تحديث دليل ذاكرة التخزين المؤقت ، يرجى المحاولة مرة أخرى لاحقا",
+    "pt-PT": "Falha na atualização do Diretório de cache, tente novamente mais tarde",
+    "ru-RU": "Не удалось обновить каталог кэша, пожалуйста, повторите попытку позже",
+    "ja-JP": "キャッシュディレクトリの更新に失敗しました。",
+    "de-DE": "Aktualisierung des Cache-Verzeichnisses fehlgeschlagen, bitte versuchen Sie es später erneut",
+    "fr-FR": "La mise à jour du répertoire de cache a échoué, veuillez réessayer plus tard",
+    "ko-KR": "캐시 디렉터리 업데이트에 실패했으므로 나중에 다시 시도하십시오",
+    "$files": [
+      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(17222-17240)"
+    ],
+    "$id": 38310
   },
   "数据库连接未初始化": {
     "en-US": "Database connection not initialized",
@@ -22,7 +86,9 @@
     "de-DE": "Datenbankverbindung nicht initialisiert",
     "fr-FR": "La connexion à la base de données n'est pas initialisée",
     "ko-KR": "데이터베이스 연결이 초기화되지 않았습니다",
-    "$files": ["src/electron/runtime-services/filesystem/directory-context-service.ts(2118-2131)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/directory-context-service.ts(2118-2131)"
+    ],
     "$id": 8134
   },
   "100% 完全精确一致文件": {
@@ -291,8 +357,8 @@
     "fr-FR": "L'entrée de fichier { fileId } n'existe pas",
     "ko-KR": "파일 기록 { fileId }이(가) 존재하지 않습니다",
     "$files": [
-      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(872-895)",
-      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(6905-6928)"
+      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(7689-7712)",
+      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(13923-13946)"
     ],
     "$id": 3305
   },
@@ -342,7 +408,9 @@
     "de-DE": "Datum",
     "fr-FR": "Date",
     "ko-KR": "날짜",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5129-5135)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5129-5135)"
+    ],
     "$id": 10675
   },
   "文件类型前置，后接智能文件名与修改日期": {
@@ -355,7 +423,9 @@
     "de-DE": "Der Dateityp wird vorangestellt, gefolgt vom Namen der Smart-Datei und dem Änderungsdatum.",
     "fr-FR": "Le type de fichier est précédé du préfixe, suivi du nom du fichier intelligent et de la date de modification.",
     "ko-KR": "파일 형식 앞에는 스마트 파일 이름과 수정 날짜가 옵니다.",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5224-5247)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5224-5247)"
+    ],
     "$id": 10676
   },
   "修改日期": {
@@ -368,7 +438,9 @@
     "de-DE": "Änderungsdatum",
     "fr-FR": "Date de modification",
     "ko-KR": "수정일",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5271-5279)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5271-5279)"
+    ],
     "$id": 10677
   },
   "日期前缀，便于按时间排序": {
@@ -381,7 +453,9 @@
     "de-DE": "Datumspräfix zur Erleichterung der Sortierung nach Zeit",
     "fr-FR": "Préfixe de date pour faciliter le tri par heure",
     "ko-KR": "시간별로 쉽게 정렬할 수 있는 날짜 접두사",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5364-5380)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5364-5380)"
+    ],
     "$id": 10678
   },
   "题材维度": {
@@ -394,7 +468,9 @@
     "de-DE": "Themendimension",
     "fr-FR": "Dimension thématique",
     "ko-KR": "테마 차원",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5404-5412)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5404-5412)"
+    ],
     "$id": 10679
   },
   "题材": {
@@ -423,7 +499,9 @@
     "de-DE": "Betreff-Tags werden vorangestellt, um die Klassifizierungsattribute zu verstärken",
     "fr-FR": "Les balises de sujet sont placées devant pour renforcer les attributs de classification",
     "ko-KR": "분류 속성을 강화하기 위해 제목 태그를 앞에 배치합니다.",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5499-5516)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5499-5516)"
+    ],
     "$id": 10681
   },
   "作者": {
@@ -436,7 +514,9 @@
     "de-DE": "Autor",
     "fr-FR": "Auteur",
     "ko-KR": "작가",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5540-5546)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5540-5546)"
+    ],
     "$id": 10682
   },
   "作者或创作者前置": {
@@ -449,7 +529,9 @@
     "de-DE": "Präfix des Autors oder Erstellers",
     "fr-FR": "Préfixe d'auteur ou de créateur",
     "ko-KR": "작성자 또는 작성자 접두어",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5625-5637)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5625-5637)"
+    ],
     "$id": 10683
   },
   "分辨率": {
@@ -496,7 +578,9 @@
     "de-DE": "Multimodale medienspezifische Benennung",
     "fr-FR": "Dénomination spécifique aux médias multimodaux",
     "ko-KR": "다중 모드 미디어별 이름 지정",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5781-5794)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5781-5794)"
+    ],
     "$id": 10686
   },
   "创建日期": {
@@ -509,7 +593,9 @@
     "de-DE": "Erstellungsdatum",
     "fr-FR": "Date de création",
     "ko-KR": "생성일",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5818-5826)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5818-5826)"
+    ],
     "$id": 10687
   },
   "原文件名": {
@@ -522,7 +608,9 @@
     "de-DE": "Originaldateiname",
     "fr-FR": "Nom de fichier d'origine",
     "ko-KR": "원본 파일명",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5833-5841)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5833-5841)"
+    ],
     "$id": 10688
   },
   "保留原文件名与三位序号": {
@@ -535,7 +623,9 @@
     "de-DE": "Behalten Sie den ursprünglichen Dateinamen und die dreistellige Seriennummer bei",
     "fr-FR": "Conservez le nom de fichier d'origine et le numéro de série à trois chiffres",
     "ko-KR": "원본 파일명과 3자리 일련번호를 유지하세요.",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5934-5949)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5934-5949)"
+    ],
     "$id": 10689
   },
   "质量分": {
@@ -548,7 +638,9 @@
     "de-DE": "Qualitätspunkte",
     "fr-FR": "Points de qualité",
     "ko-KR": "품질 포인트",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5989-5996)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(5989-5996)"
+    ],
     "$id": 10690
   },
   "标记 AI 质量评分": {
@@ -561,7 +653,9 @@
     "de-DE": "Kennzeichnen Sie den KI-Qualitätsfaktor",
     "fr-FR": "Signaler le niveau de qualité de l'IA",
     "ko-KR": "AI 품질평가점수 신고",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6067-6081)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6067-6081)"
+    ],
     "$id": 10691
   },
   "全维度属性组合": {
@@ -574,7 +668,9 @@
     "de-DE": "Volldimensionale Attributkombination",
     "fr-FR": "Combinaison d'attributs pleine dimension",
     "ko-KR": "전체 차원 속성 조합",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6102-6113)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6102-6113)"
+    ],
     "$id": 10692
   },
   "题材、名称、日期与序号复合命名": {
@@ -587,7 +683,9 @@
     "de-DE": "Zusammengesetzte Benennung aus Betreff, Name, Datum und Seriennummer",
     "fr-FR": "Dénomination composée du sujet, du nom, de la date et du numéro de série",
     "ko-KR": "주체, 이름, 날짜, 일련번호를 복합적으로 명명하는 것",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6210-6229)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(6210-6229)"
+    ],
     "$id": 10693
   },
   "时长": {
@@ -664,7 +762,9 @@
     "de-DE": "Breite",
     "fr-FR": "Largeur",
     "ko-KR": "너비",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18841-18847)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18841-18847)"
+    ],
     "$id": 10699
   },
   "高度": {
@@ -677,7 +777,9 @@
     "de-DE": "Hoch",
     "fr-FR": "Haut",
     "ko-KR": "높은",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(19244-19250)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(19244-19250)"
+    ],
     "$id": 10700
   },
   "{hh}时{mm}分{ss}秒": {
@@ -690,7 +792,9 @@
     "de-DE": "{hh}Stunden{mm}Minuten{ss}Sekunden",
     "fr-FR": "{hh}heures{mm}minutes{ss}secondes",
     "ko-KR": "{hh}시간{mm}분{ss}초",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(23743-23762)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(23743-23762)"
+    ],
     "$id": 10701
   },
   "{mm}分{ss}秒": {
@@ -703,7 +807,9 @@
     "de-DE": "{mm}Minuten{ss}Sekunden",
     "fr-FR": "{mm}minutes{ss}secondes",
     "ko-KR": "{mm}분{ss}초",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(23813-23827)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(23813-23827)"
+    ],
     "$id": 10702
   },
   "生成新文件名异常": {
@@ -732,7 +838,9 @@
     "de-DE": "Ausnahme für intelligente Dateinamen aktualisieren",
     "fr-FR": "Mettre à jour l'exception de nom de fichier intelligent",
     "ko-KR": "스마트 파일 이름 예외 업데이트",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(47737-47750)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(47737-47750)"
+    ],
     "$id": 10706
   },
   "完成": {
@@ -745,7 +853,9 @@
     "de-DE": "Abgeschlossen",
     "fr-FR": "Terminé\r",
     "ko-KR": "완료",
-    "$files": ["src/electron/runtime-services/filesystem/organize-progress-tracker.ts(2452-2458)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/organize-progress-tracker.ts(2452-2458)"
+    ],
     "$id": 5895
   },
   "Simple 模式下跳过 PDF/Office 缩略图生成": {
@@ -758,7 +868,9 @@
     "de-DE": "Überspringen Sie die Erstellung von PDF-/Office-Miniaturansichten im einfachen Modus",
     "fr-FR": "Ignorer la génération de vignettes PDF/Office en mode simple",
     "ko-KR": "단순 모드에서 PDF/Office 축소판 생성 건너뛰기",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(10077-10110)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/thumbnail-service.ts(9110-9143)"
+    ],
     "$id": 11055
   },
   "文件不存在: {filePath}": {
@@ -771,7 +883,9 @@
     "de-DE": "Datei existiert nicht: {filePath}",
     "fr-FR": "Le fichier n'existe pas : {filePath}\r",
     "ko-KR": "파일이 존재하지 않음: {filePath}",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(10413-10434)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/thumbnail-service.ts(9433-9454)"
+    ],
     "$id": 5897
   },
   "所有缩略图生成方法都失败（缓存）": {
@@ -784,7 +898,9 @@
     "de-DE": "Alle Methoden zur Thumbnail-Generierung sind fehlgeschlagen (Cache)",
     "fr-FR": "Toutes les méthodes de génération de vignettes ont échoué (cache)",
     "ko-KR": "모든 썸네일 생성 방법이 실패했습니다 (캐시)",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(10728-10748)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/thumbnail-service.ts(9736-9756)"
+    ],
     "$id": 8032
   },
   "所有缩略图生成方法都失败": {
@@ -797,7 +913,9 @@
     "de-DE": "Alle Methoden zur Generierung von Miniaturbildern sind fehlgeschlagen",
     "fr-FR": "Toutes les méthodes de génération des miniatures ont échoué",
     "ko-KR": "모든 썸네일 생성 방법이 실패함",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(13095-13111)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/thumbnail-service.ts(11960-11976)"
+    ],
     "$id": 5898
   },
   "原文件不存在: {filePath}": {
@@ -810,7 +928,9 @@
     "de-DE": "Die Originaldatei existiert nicht: {filePath}",
     "fr-FR": "Le fichier d'origine n'existe pas : {filePath}",
     "ko-KR": "원본 파일이 존재하지 않습니다: {filePath}",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(15696-15718)"],
+    "$files": [
+      "src/electron/runtime-services/filesystem/thumbnail-service.ts(14530-14552)"
+    ],
     "$id": 11056
   },
   "端侧 HAC 智能聚类完成，共识别出 {count} 个主题目录 (耗时 {ms}ms)": {
@@ -885,7 +1005,7 @@
     "fr-FR": "Impossible de créer un répertoire virtuel: le nom \"{name}\" et tous ses noms dérivés sont déjà utilisés",
     "ko-KR": "가상 디렉터리를 생성할 수 없습니다: 이름 \"{name}\" 및 모든 파생 이름이 이미 사용 중입니다",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11119-11155)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10689-10725)"
     ],
     "$id": 8137
   },
@@ -900,7 +1020,7 @@
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11322-11333)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10887-10898)"
     ],
     "$id": 8138
   },
@@ -915,7 +1035,7 @@
     "fr-FR": "Impossible de mettre à jour le nom : le nom \"{name}\" est déjà utilisé",
     "ko-KR": "이름을 업데이트할 수 없습니다: 이름 \"{name}\"이(가) 이미 사용 중입니다",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(12173-12198)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11711-11736)"
     ],
     "$id": 8139
   }

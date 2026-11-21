@@ -36,6 +36,10 @@ const SYSTEM_CATEGORY_COMPONENTS: Array<{
   {
     category: SettingsCategory.EXTERNAL_API,
     Component: SETTINGS_COMPONENT_MAP.external_api
+  },
+  {
+    category: SettingsCategory.STORAGE_ENERGY,
+    Component: SETTINGS_COMPONENT_MAP.storage_energy
   }
 ]
 
@@ -44,7 +48,8 @@ const ICON_MAP: Record<string, string> = {
   settings_suggest: '✨',
   record_voice_over: '🎙️',
   filter: '🛡️',
-  share: '🔌'
+  share: '🔌',
+  hard_drive: '💾'
 }
 
 /**
@@ -144,11 +149,11 @@ export const SystemSettingsDialog: React.FC = () => {
           <div>
             <DialogTitle
               data-testid="settings-title"
-              data-i18n-key="系统设置" // i18n-disable-line
+              data-i18n-key="系统全局设置" // i18n-disable-line
               className="text-xl font-bold flex items-center gap-2"
             >
               <span>⚙️</span>
-              <span>{t('系统设置')}</span>
+              <span>{t('系统全局设置')}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground mt-0.5">
               {t('通用环境、界面风格、高级 AI 引擎与全局忽略规则')}
