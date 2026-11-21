@@ -436,4 +436,94 @@ describe('useOrganizeRescue 深度找补：保留既有文件与每批次动态�
 
     expect(mockIpcRenderer.listenerCount('virtual-directory/reorganize-progress')).toBe(0)
   })
+
+  it('点击「自动找补」时严禁并发重入：在当前找补未结束（及批次进度刷新 finalTree）期间，reorganize 只允许调用 1 次', async () => {
+    useOrganizeStore.setState({
+      stage: 'done',
+      finalTree: [
+        {
+          name: '技术资料',
+          files: [{ ...existingFile }],
+          subdirectories: [],
+          fileCount: 1
+        },
+        {
+          name: SENTINEL_NAMES.UNCLASSIFIED,
+          files: [{ ...rescueFile1 }, { ...rescueFile2 }],
+          subdirectories: [],
+          fileCount: 2
+        }
+      ],
+      draftTree: [
+        {
+          name: '技术资料',
+          files: [{ ...existingFile }],
+          subdirectories: [],
+          fileCount: 1
+        }
+      ],
+      hasRescueFailed: false
+    })
+
+    const { result } = renderHook(() => useOrganizeState(), { wrapper })
+
+    // 点击「自动找补」
+    let autoRescuePromise: Promise<void>
+    act(() => {
+      autoRescuePromise = result.current.handleAutoRescue()
+    })
+
+    // 关键断言 1：点击自动找补后，不得因为 useEffect 立即并发触发第 2 次 reorganize
+    expect(mockReorganize).toHaveBeenCalledTimes(1)
+
+    // 模拟第 1 批次进度回调更新 finalTree（此时仍在找补中）
+    act(() => {
+      mockIpcRenderer.emit('virtual-directory/reorganize-progress', {}, {
+        stage: 'ai-calling',
+        currentStep: 1,
+        totalSteps: 2,
+        isRescue: true,
+        message: '正在处理批次 1/2...',
+        currentTreePreview: [
+          {
+            name: '技术资料',
+            files: [{ fileId: 2, smartName: '待找补1.pdf' }],
+            subdirectories: [],
+            fileCount: 1
+          },
+          {
+            name: SENTINEL_NAMES.UNCLASSIFIED,
+            files: [{ fileId: 3, smartName: '待找补2.pdf' }],
+            subdirectories: [],
+            fileCount: 1
+          }
+        ]
+      })
+    })
+
+    // 关键断言 2：批次进度刷新 finalTree 期间，仍不得并发触发新的 reorganize
+    expect(mockReorganize).toHaveBeenCalledTimes(1)
+
+    // 结束本轮找补（全部归类完成）
+    await act(async () => {
+      resolveReorganize!({
+        success: true,
+        tree: [
+          {
+            name: '技术资料',
+            files: [
+              { fileId: 2, smartName: '待找补1.pdf' },
+              { fileId: 3, smartName: '待找补2.pdf' }
+            ],
+            subdirectories: [],
+            fileCount: 2
+          }
+        ]
+      })
+      await autoRescuePromise!
+    })
+
+    expect(mockReorganize).toHaveBeenCalledTimes(1)
+    expect(result.current.isAutoRescuing).toBe(false)
+  })
 })

@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import Database from 'better-sqlite3'
 import { GENESIS_V1_SCHEMA } from '../database'
 import { BuiltinModuleDao } from '../dao/modular-resource-dao'
 import { DEFAULT_CATALOG_SEEDS } from '../../system/modular-resource-service'
+import { ModularResourceService } from '../../system/modular-resource-service-core'
 import {
   BUILTIN_MODULE_CATALOG_META,
   BUILTIN_PLUGIN_CATALOG_META,
@@ -407,5 +409,82 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
         } as any)
       }).toThrow(/UNIQUE constraint failed/)
     })
+  })
+})
+
+describe('TC-SEED-ISO: 目录种子行级失败隔离（存量库 CHECK 固化防御）', () => {
+  /** 88de81e2 之前的 builtin_modules 建表 SQL（category CHECK 不含 media_enhance），模拟存量库 */
+  const LEGACY_BUILTIN_MODULES_DDL = `
+    CREATE TABLE builtin_modules (
+      id                TEXT PRIMARY KEY,
+      kind              TEXT NOT NULL DEFAULT 'builtin-module'
+                        CHECK (kind IN ('builtin-module', 'third-party-plugin')),
+      version           TEXT NOT NULL,
+      catalog_version   INTEGER NOT NULL DEFAULT 1,
+      category          TEXT NOT NULL
+                        CHECK (category IN ('ai-engine', 'perception', 'media', 'tool', 'parser', 'vfs-archive')),
+      author_code       TEXT NOT NULL DEFAULT 'official'
+                        CHECK (author_code IN ('official', 'community', 'third_party')),
+      author_name       TEXT,
+      availability      TEXT NOT NULL DEFAULT 'approved'
+                        CHECK (availability IN ('coming_soon', 'draft', 'approved', 'delisted')),
+      delist_reason     TEXT
+                        CHECK (delist_reason IS NULL OR delist_reason IN ('general_deprecation', 'security_violation')),
+      firecore_cost     INTEGER NOT NULL DEFAULT 0
+                        CHECK (firecore_cost >= 0),
+      total_bytes       INTEGER NOT NULL DEFAULT 0,
+      catalog_meta_json TEXT CHECK (catalog_meta_json IS NULL OR json_valid(catalog_meta_json) = 1),
+      config_schema     TEXT CHECK (config_schema IS NULL OR json_valid(config_schema) = 1),
+      user_config       TEXT CHECK (user_config IS NULL OR json_valid(user_config) = 1),
+      install_state     TEXT NOT NULL DEFAULT 'not_installed'
+                        CHECK (install_state IN ('not_installed', 'downloading', 'installed_inactive', 'active', 'error')),
+      selected_variant  TEXT,
+      install_path      TEXT,
+      installed_at      INTEGER,
+      last_activated_at INTEGER,
+      user_consent      INTEGER NOT NULL DEFAULT 0,
+      error_message     TEXT,
+      config_json       TEXT,
+      capability_slot   TEXT NOT NULL DEFAULT 'general',
+      slot_policy       TEXT NOT NULL DEFAULT 'multi_active'
+                        CHECK (slot_policy IN ('exclusive_required', 'exclusive_optional', 'multi_active')),
+      backend_type      TEXT NOT NULL DEFAULT 'omni_onnx'
+                        CHECK (backend_type IN ('omni_onnx', 'ai_engine', 'utility_process', 'builtin')),
+      CHECK (
+        (availability = 'delisted' AND delist_reason IS NOT NULL)
+        OR
+        (availability != 'delisted' AND delist_reason IS NULL)
+      )
+    );
+  `
+
+  it('老库 category CHECK 不含 media_enhance 时：单行约束失败被隔离，其余种子照常落地（严禁整批回滚）', () => {
+    const legacyDb = new Database(':memory:')
+    legacyDb.exec(LEGACY_BUILTIN_MODULES_DDL)
+    // 模拟存量：库中已有旧模块行
+    legacyDb
+      .prepare(
+        "INSERT INTO builtin_modules (id, version, category) VALUES ('engine_classic_light', '1.0.0', 'ai-engine')"
+      )
+      .run()
+
+    const tmpBase = fs.mkdtempSync(path.join(os.tmpdir(), 'mrc-seed-iso-'))
+    try {
+      const service = new ModularResourceService({ db: legacyDb, baseDir: tmpBase })
+      service.ensureDefaultSeeds()
+
+      const dao = new BuiltinModuleDao(legacyDb)
+      // 合法分类的新种子行照常落地（file_ai_cover 属 ai-engine，老 CHECK 放行）
+      expect(dao.findByIdSync('file_ai_cover')).not.toBeNull()
+      // media_enhance 三行被存量表 CHECK 拒绝（行级隔离，严禁拖垮整批）
+      expect(dao.findByIdSync('image_video_enhance')).toBeNull()
+      expect(dao.findByIdSync('image_video_deobfuscate')).toBeNull()
+      expect(dao.findByIdSync('image_video_dewatermark')).toBeNull()
+      // 存量旧模块行不受影响
+      expect(dao.findByIdSync('engine_classic_light')).not.toBeNull()
+    } finally {
+      legacyDb.close()
+      fs.rmSync(tmpBase, { recursive: true, force: true })
+    }
   })
 })

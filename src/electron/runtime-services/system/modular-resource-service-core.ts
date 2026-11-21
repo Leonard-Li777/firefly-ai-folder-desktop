@@ -1508,8 +1508,19 @@ export class ModularResourceService implements IModularResourceService {
   public ensureDefaultSeeds(): void {
     if (!this.seeded) {
       try {
-        this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
+        const { failedRows } = this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
         this.seeded = true
+        if (failedRows.length > 0) {
+          // 显式上报（禁止静默降级）：存量库 builtin_modules 表级 CHECK 于建表时固化，
+          // 创世基线扩充白名单（如 media_enhance）后老库无法 ALTER，须删除本地数据库文件
+          // 重建（应用未上线，无迁移兼容；GENESIS_V1_SCHEMA 为唯一创世基线）
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[catalog_seed_rows_rejected] ${failedRows.length} 行种子被存量表约束拒绝，` +
+              '请删除本地数据库文件后重建（应用未上线无迁移兼容，GENESIS_V1_SCHEMA 已更新）:',
+            failedRows.map(r => `${r.id}: ${r.error}`).join('; ')
+          )
+        }
       } catch (err) {
         logger.warn(LogCategory.SYSTEM, '[ModularResource] 初始化内置目录种子失败:', err)
       }
@@ -2814,99 +2825,114 @@ export class ModularResourceService implements IModularResourceService {
   private syncCatalogSync(entries: CatalogModuleEntry[]): {
     updated: number
     skippedRegression: number
+    /** 行级失败明细（存量库表级 CHECK 固化旧白名单等约束拒绝），显式上报严禁静默丢弃 */
+    failedRows: Array<{ id: string; error: string }>
   } {
     const db = this.getDb()
     const dao = this.getDao()
     let updated = 0
     let skippedRegression = 0
+    const failedRows: Array<{ id: string; error: string }> = []
 
     const tx = db.transaction((items: CatalogModuleEntry[]) => {
       for (const entry of items) {
-        const existing = dao.modules.findByIdSync(entry.id)
-        const incomingVersion = entry.catalog_version ?? 1
-        if (existing && incomingVersion < (existing.catalog_version ?? 1)) {
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[catalog_version_regression] 忽略低版本目录同步: ${entry.id} (remote=${incomingVersion} < local=${existing.catalog_version})`
-          )
-          skippedRegression++
-          continue
-        }
-
-        // 构造市场展示元数据 JSON（保存 name, description, icon, resources 定义）
-        let existingMeta: Record<string, unknown> = {}
-        if (existing?.catalog_meta_json) {
-          try {
-            existingMeta = JSON.parse(existing.catalog_meta_json)
-          } catch {
-            existingMeta = {}
+        // 行级失败隔离铁律：SQLite 表级 CHECK 于建表时固化（如 category 白名单落后于
+        // 创世基线扩充），单行约束失败严禁拖垮整批种子补灌（better-sqlite3 事务内
+        // catch 不触发回滚）；失败行显式收集，由调用方输出处置指引，严禁静默丢弃
+        try {
+          const existing = dao.modules.findByIdSync(entry.id)
+          const incomingVersion = entry.catalog_version ?? 1
+          if (existing && incomingVersion < (existing.catalog_version ?? 1)) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[catalog_version_regression] 忽略低版本目录同步: ${entry.id} (remote=${incomingVersion} < local=${existing.catalog_version})`
+            )
+            skippedRegression++
+            continue
           }
-        }
 
-        let incomingMeta: Record<string, unknown> = {}
-        if (typeof entry.catalog_meta_json === 'string' && entry.catalog_meta_json.trim()) {
-          try {
-            incomingMeta = JSON.parse(entry.catalog_meta_json)
-          } catch {
-            incomingMeta = {}
+          // 构造市场展示元数据 JSON（保存 name, description, icon, resources 定义）
+          let existingMeta: Record<string, unknown> = {}
+          if (existing?.catalog_meta_json) {
+            try {
+              existingMeta = JSON.parse(existing.catalog_meta_json)
+            } catch {
+              existingMeta = {}
+            }
           }
-        } else if (entry.catalog_meta_json && typeof entry.catalog_meta_json === 'object') {
-          incomingMeta = { ...(entry.catalog_meta_json as Record<string, unknown>) }
-        }
 
-        const mergedMeta: Record<string, unknown> = {
-          ...existingMeta,
-          ...incomingMeta,
-          ...(entry.name ? { name: entry.name } : {}),
-          ...(entry.description ? { description: entry.description } : {}),
-          ...(entry.icon ? { icon: entry.icon } : {}),
-          ...(entry.resources ? { resources: entry.resources } : {})
-        }
+          let incomingMeta: Record<string, unknown> = {}
+          if (typeof entry.catalog_meta_json === 'string' && entry.catalog_meta_json.trim()) {
+            try {
+              incomingMeta = JSON.parse(entry.catalog_meta_json)
+            } catch {
+              incomingMeta = {}
+            }
+          } else if (entry.catalog_meta_json && typeof entry.catalog_meta_json === 'object') {
+            incomingMeta = { ...(entry.catalog_meta_json as Record<string, unknown>) }
+          }
 
-        const configSchemaStr =
-          typeof entry.config_schema === 'string'
-            ? entry.config_schema
-            : entry.config_schema
-              ? JSON.stringify(entry.config_schema)
-              : (existing?.config_schema ?? null)
+          const mergedMeta: Record<string, unknown> = {
+            ...existingMeta,
+            ...incomingMeta,
+            ...(entry.name ? { name: entry.name } : {}),
+            ...(entry.description ? { description: entry.description } : {}),
+            ...(entry.icon ? { icon: entry.icon } : {}),
+            ...(entry.resources ? { resources: entry.resources } : {})
+          }
 
-        const didUpsert = dao.modules.upsertModuleSync({
-          id: entry.id,
-          kind: entry.kind ?? existing?.kind ?? 'builtin-module',
-          version: entry.version,
-          catalog_version: incomingVersion,
-          category: entry.category,
-          capability_slot: entry.capability_slot ?? existing?.capability_slot ?? 'general',
-          slot_policy: entry.slot_policy ?? existing?.slot_policy ?? 'multi_active',
-          backend_type: entry.backend_type ?? existing?.backend_type ?? 'omni_onnx',
-          author_code: entry.author_code ?? existing?.author_code ?? 'official',
-          author_name:
-            entry.author_name !== undefined ? entry.author_name : (existing?.author_name ?? null),
-          availability: entry.availability ?? existing?.availability ?? 'approved',
-          firecore_cost: entry.firecore_cost ?? existing?.firecore_cost ?? 0,
-          total_bytes: entry.total_bytes,
-          catalog_meta_json: JSON.stringify(mergedMeta),
-          config_schema: configSchemaStr,
-          // IN-04 铁律：绝不覆盖已存在的本地 install_state、user_config、config_json
-          install_state: existing
-            ? existing.install_state
-            : (entry.install_state ?? 'not_installed'),
-          user_config: existing ? existing.user_config : null,
-          config_json: existing ? existing.config_json : null,
-          selected_variant: existing ? existing.selected_variant : (entry.selected_variant ?? null),
-          install_path: existing ? existing.install_path : (entry.install_path ?? null)
-        })
+          const configSchemaStr =
+            typeof entry.config_schema === 'string'
+              ? entry.config_schema
+              : entry.config_schema
+                ? JSON.stringify(entry.config_schema)
+                : (existing?.config_schema ?? null)
 
-        if (didUpsert) {
-          updated++
-        } else {
-          skippedRegression++
+          const didUpsert = dao.modules.upsertModuleSync({
+            id: entry.id,
+            kind: entry.kind ?? existing?.kind ?? 'builtin-module',
+            version: entry.version,
+            catalog_version: incomingVersion,
+            category: entry.category,
+            capability_slot: entry.capability_slot ?? existing?.capability_slot ?? 'general',
+            slot_policy: entry.slot_policy ?? existing?.slot_policy ?? 'multi_active',
+            backend_type: entry.backend_type ?? existing?.backend_type ?? 'omni_onnx',
+            author_code: entry.author_code ?? existing?.author_code ?? 'official',
+            author_name:
+              entry.author_name !== undefined ? entry.author_name : (existing?.author_name ?? null),
+            availability: entry.availability ?? existing?.availability ?? 'approved',
+            firecore_cost: entry.firecore_cost ?? existing?.firecore_cost ?? 0,
+            total_bytes: entry.total_bytes,
+            catalog_meta_json: JSON.stringify(mergedMeta),
+            config_schema: configSchemaStr,
+            // IN-04 铁律：绝不覆盖已存在的本地 install_state、user_config、config_json
+            install_state: existing
+              ? existing.install_state
+              : (entry.install_state ?? 'not_installed'),
+            user_config: existing ? existing.user_config : null,
+            config_json: existing ? existing.config_json : null,
+            selected_variant: existing
+              ? existing.selected_variant
+              : (entry.selected_variant ?? null),
+            install_path: existing ? existing.install_path : (entry.install_path ?? null)
+          })
+
+          if (didUpsert) {
+            updated++
+          } else {
+            skippedRegression++
+          }
+        } catch (rowErr) {
+          failedRows.push({
+            id: entry.id,
+            error: rowErr instanceof Error ? rowErr.message : String(rowErr)
+          })
         }
       }
     })
 
     tx(entries)
-    return { updated, skippedRegression }
+    return { updated, skippedRegression, failedRows }
   }
 
   /**
@@ -2915,6 +2941,7 @@ export class ModularResourceService implements IModularResourceService {
   async syncCatalog(entries: CatalogModuleEntry[]): Promise<{
     updated: number
     skippedRegression: number
+    failedRows: Array<{ id: string; error: string }>
   }> {
     try {
       const targetEntries =
@@ -2925,7 +2952,7 @@ export class ModularResourceService implements IModularResourceService {
       try {
         return this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
       } catch {
-        return { updated: 0, skippedRegression: 0 }
+        return { updated: 0, skippedRegression: 0, failedRows: [] }
       }
     }
   }
