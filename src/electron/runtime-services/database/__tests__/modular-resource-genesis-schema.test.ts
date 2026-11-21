@@ -260,7 +260,10 @@ describe('Ticket 01: Genesis V1 Schema & Modular Resource DAO', () => {
         'chinese-clip',
         'mobile-clip'
       ])
-      expect(classicLight?.total_bytes).toBe(469558379)
+      // SSOT 锁值改为 META 派生：硬编码字节数快照会随资源清单演进过期（:240 循环已全量断言对齐）
+      expect(classicLight?.total_bytes).toBe(
+        BUILTIN_MODULE_CATALOG_META.engine_classic_light.totalBytes
+      )
       expect(DEFAULT_CATALOG_SEEDS.some(m => m.id === 'pocket-cpu-int8-onnx')).toBe(true)
       expect(DEFAULT_CATALOG_SEEDS.some(m => m.id === 'tts_m5_onnx')).toBe(true)
     })
