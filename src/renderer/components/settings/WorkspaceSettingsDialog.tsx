@@ -80,7 +80,8 @@ const MemoizedWorkspacePluginsTab = memo(WorkspacePluginsTab)
  *
  * 核心架构 (TASK-07 ~ TASK-11)：
  * 1. 物理层解耦：完全独立于系统设置，专属于具体工作目录的配置；
- * 2. 左侧一级工作目录列表：取代原顶部下拉，支持在所有已添加的工作目录之间自由切换（默认选中当前活动目录）；
+ * 2. 左侧一级导航为各配置项 Tab 竖向列表；右侧内容区顶部为工作目录列表横向切换条
+ *    （支持在所有已添加的工作目录之间自由切换，默认选中当前活动目录，两者位置互换对齐）；
  * 3. 右侧内容区二级 Tab 菜单：目录维护与安全重置（首个 Tab）、检索式引擎、文件内容萃取、文件准入与包含排除；
  * 4. 极简向导流转：
  *    - 当工作区为 pending 时，首先进入 WorkspaceSetupWizard；
@@ -661,37 +662,36 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           ) : (
             /* 2. 常态 4-Tab 高级设置视图 */
             <>
-              {/* 一级导航：左侧工作目录列表 */}
+              {/* 一级导航：左侧配置项 Tab 竖向列表（与工作目录列表互换位置） */}
               <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/10">
                 <div className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/40">
-                  {t('工作目录列表')}
+                  {t('配置项')}
                 </div>
                 <nav className="p-2 space-y-1 overflow-y-auto flex-1">
-                  {workspaceDirectories.map(ws => {
-                    const isActive = activeWorkspace?.id === ws.id
+                  {tabs.map(tab => {
+                    const isActive = activeTab === tab.id
                     return (
                       <Button
-                        key={ws.id}
+                        key={tab.id}
                         variant="ghost"
+                        title={tab.description}
                         className={cn(
                           'w-full justify-start text-left h-auto p-2.5 transition-all duration-200 border',
                           isActive
                             ? 'bg-primary/10 text-primary border-primary/30'
                             : 'border-transparent hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                         )}
-                        onClick={() => void handleWorkspaceChange(String(ws.id))}
+                        onClick={() => void handleTabChange(tab.id)}
                       >
                         <div className="flex items-center gap-2.5 w-full min-w-0">
-                          <FolderOpen
+                          <MaterialIcon
+                            icon={tab.icon}
                             className={cn(
-                              'w-4 h-4 shrink-0',
-                              isActive ? 'text-primary' : 'text-muted-foreground'
+                              'text-base shrink-0',
+                              !isActive && 'text-muted-foreground'
                             )}
                           />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-xs truncate">{ws.name}</div>
-                            <div className="text-[10px] truncate opacity-70 mt-0.5">{ws.path}</div>
-                          </div>
+                          <span className="font-semibold text-xs truncate">{tab.name}</span>
                         </div>
                       </Button>
                     )
@@ -699,30 +699,33 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 </nav>
               </div>
 
-              {/* 右侧内容区：二级 Tab 菜单 + Tab 内容 (Keep-Alive 保活) */}
+              {/* 右侧内容区：顶部工作目录列表（横向切换条） + Tab 内容 (Keep-Alive 保活) */}
               <div className="flex-1 flex flex-col overflow-hidden bg-background">
-                {/* 二级 Tab 菜单（横向标签栏） */}
+                {/* 工作目录列表（横向标签栏，与左侧配置项互换位置） */}
                 <div className="flex-shrink-0 px-4 pt-2.5 border-b border-border/60 overflow-x-auto">
-                  <div className="flex items-center gap-1">
-                    {tabs.map(tab => {
-                      const isActive = activeTab === tab.id
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground shrink-0 mr-1.5">
+                      {t('工作目录列表')}
+                    </span>
+                    {workspaceDirectories.map(ws => {
+                      const isActive = activeWorkspace?.id === ws.id
                       return (
                         <Button
-                          key={tab.id}
+                          key={ws.id}
                           variant="ghost"
                           size="sm"
-                          title={tab.description}
+                          title={ws.path}
                           className={cn(
                             'relative h-9 px-3.5 text-xs font-semibold whitespace-nowrap rounded-t-md rounded-b-none border-b-2 transition-all duration-200',
                             isActive
                               ? 'text-primary border-primary bg-primary/5'
                               : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60'
                           )}
-                          onClick={() => void handleTabChange(tab.id)}
+                          onClick={() => void handleWorkspaceChange(String(ws.id))}
                         >
                           <div className="flex items-center gap-1.5">
-                            <MaterialIcon icon={tab.icon} className="text-base" />
-                            <span>{tab.name}</span>
+                            <FolderOpen className="text-base shrink-0" />
+                            <span>{ws.name}</span>
                           </div>
                         </Button>
                       )
