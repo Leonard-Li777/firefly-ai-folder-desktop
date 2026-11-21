@@ -18,6 +18,7 @@ import {
   Power,
   Feather,
   Layers,
+  Palette,
   type LucideIcon
 } from 'lucide-react'
 import { Badge } from '../ui/badge'
@@ -76,7 +77,8 @@ export const PLUGIN_ICON_MAP: Record<string, LucideIcon> = {
   zap: Zap,
   cpu: Cpu,
   feather: Feather,
-  layers: Layers
+  layers: Layers,
+  palette: Palette
 }
 
 export function getPluginIcon(iconName?: string, moduleId?: string): LucideIcon {

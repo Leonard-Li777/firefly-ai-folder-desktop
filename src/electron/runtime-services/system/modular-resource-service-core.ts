@@ -1536,16 +1536,36 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
+   * 判定 builtin_modules 的 category CHECK 白名单是否落后于当前种子清单
+   *
+   * 判据必须语义化（检查种子用到的每个 category 是否出现在库表 CHECK 里），
+   * **严禁拿 sqlite_master.sql 与 GENESIS 原文做整段文本比对**——SQLite 存储时会
+   * 移除 `IF NOT EXISTS` 并规整尾部括号，文本比对恒不相等，会把「检测漂移」退化成
+   * 「每次启动无脑重建」（表数据虽回灌，但属高危操作且白做）。
+   *
+   * @returns true 表示确有 category 被旧 CHECK 挡住，需要表级重建
+   */
+  private isBuiltinModulesCategoryGateDrifted(tableSql: string): boolean {
+    const seedCategories = Array.from(
+      new Set(DEFAULT_CATALOG_SEEDS.map(entry => entry.category).filter(Boolean))
+    )
+    return seedCategories.some(category => !tableSql.includes(`'${category}'`))
+  }
+
+  /**
    * 表级自愈重建（创世基线漂移，仅供 ensureDefaultSeeds 失败分支调用，严禁扩作通用迁移路径）
    *
    * SQLite 表级 CHECK 于建表时固化，存量库的 builtin_modules 在 GENESIS 扩充约束白名单
    * （如新增 media_enhance 分类）后无法 ALTER，新种子行会被 CHECK 物理拒绝。
-   * builtin_modules 为纯派生表（种子元数据 + 本地安装状态），检测到库表 DDL 与创世基线漂移时：
+   * builtin_modules 为纯派生表（种子元数据 + 本地安装状态），检测到 category 白名单漂移时：
    * 备份本地状态行 → 临时关闭外键（防 DROP 级联清空 resource_downloads 等引用行）→
-   * DROP 后按 GENESIS_V1_SCHEMA 全量重建（IF NOT EXISTS 幂等，仅 builtin_modules 与其索引新建）→
-   * 本地状态行回灌 → 外键恢复。应用未上线无迁移兼容，GENESIS_V1_SCHEMA 为唯一创世基线。
+   * DROP 后按 GENESIS_V1_SCHEMA 全量重建 + 本地状态行回灌（单事务原子，失败整体回滚）→
+   * 外键恢复。应用未上线无迁移兼容，GENESIS_V1_SCHEMA 为唯一创世基线。
    *
-   * @returns 是否实际执行了重建（表 DDL 与创世基线一致时返回 false——失败另有原因，不做无谓重建）
+   * 幂等性由业务结果保证：重建并重试补灌成功后种子行全部在库，下次启动 upsert 不再被拒，
+   * failedRows 为空即不会再次进入本方法，无需额外持久化「已自愈」标记。
+   *
+   * @returns 是否实际执行了重建（category 白名单已完整时返回 false——失败另有原因，不做无谓重建）
    */
   private rebuildBuiltinModulesTableForGenesisDrift(): boolean {
     const db = this.getDb()
@@ -1557,14 +1577,7 @@ export class ModularResourceService implements IModularResourceService {
           )
           .get() as { sql?: string } | undefined
       )?.sql
-      const ddlStart = GENESIS_V1_SCHEMA.indexOf('CREATE TABLE IF NOT EXISTS builtin_modules')
-      const ddlEnd = GENESIS_V1_SCHEMA.indexOf('\n  );', ddlStart)
-      if (!tableSql || ddlStart < 0 || ddlEnd < 0) {
-        return false
-      }
-      // 规范化空白后比对：库表 DDL 与创世基线一致则失败另有原因，严禁无谓重建
-      const normalize = (s: string) => s.replace(/\s+/g, ' ').trim()
-      if (normalize(tableSql) === normalize(GENESIS_V1_SCHEMA.slice(ddlStart, ddlEnd))) {
+      if (!tableSql || !this.isBuiltinModulesCategoryGateDrifted(tableSql)) {
         return false
       }
 
@@ -1573,32 +1586,35 @@ export class ModularResourceService implements IModularResourceService {
         string,
         unknown
       >[]
-      // 2. 临时关闭外键：DROP 被引用表不得级联清空 resource_downloads / module_resource_downloads 引用行
+      // 2. 临时关闭外键：DROP 被引用表不得级联清空 resource_downloads / module_resource_downloads 引用行。
+      //    pragma 在事务内无效（必须位于事务外），故手动开关并由 finally 兜底恢复。
       db.pragma('foreign_keys = OFF')
       try {
-        db.exec('DROP TABLE builtin_modules')
-        // 3. 按创世基线全量重建（IF NOT EXISTS 幂等：仅 builtin_modules 与其索引新建）
-        db.exec(GENESIS_V1_SCHEMA)
-        // 4. 本地状态行回灌（旧数据行 category 均在新白名单内，逐行原样恢复）
-        const insertRow = db.prepare(
-          `INSERT OR REPLACE INTO builtin_modules (
-            id, kind, version, catalog_version, category, author_code, author_name,
-            availability, delist_reason, firecore_cost, total_bytes, catalog_meta_json,
-            config_schema, user_config, install_state, selected_variant, install_path,
-            installed_at, last_activated_at, user_consent, error_message, config_json,
-            capability_slot, slot_policy, backend_type
-          ) VALUES (
-            @id, @kind, @version, @catalog_version, @category, @author_code, @author_name,
-            @availability, @delist_reason, @firecore_cost, @total_bytes, @catalog_meta_json,
-            @config_schema, @user_config, @install_state, @selected_variant, @install_path,
-            @installed_at, @last_activated_at, @user_consent, @error_message, @config_json,
-            @capability_slot, @slot_policy, @backend_type
-          )`
-        )
-        const backfill = db.transaction((rows: Record<string, unknown>[]) => {
-          for (const row of rows) insertRow.run(row)
+        // 3. DROP + 重建 + 回灌必须单事务原子完成：SQLite 的 DDL 具备事务性，
+        //    回灌中途任一行失败即整体回滚、旧表原样保留，严禁留下「表已重建但只回灌了部分行」的破状态
+        const rebuildTx = db.transaction(() => {
+          db.exec('DROP TABLE builtin_modules')
+          // 按创世基线全量重建（IF NOT EXISTS 幂等：仅 builtin_modules 与其索引新建）
+          db.exec(GENESIS_V1_SCHEMA)
+          // 本地状态行回灌（旧数据行 category 均在新白名单内，逐行原样恢复）
+          const insertRow = db.prepare(
+            `INSERT OR REPLACE INTO builtin_modules (
+              id, kind, version, catalog_version, category, author_code, author_name,
+              availability, delist_reason, firecore_cost, total_bytes, catalog_meta_json,
+              config_schema, user_config, install_state, selected_variant, install_path,
+              installed_at, last_activated_at, user_consent, error_message, config_json,
+              capability_slot, slot_policy, backend_type
+            ) VALUES (
+              @id, @kind, @version, @catalog_version, @category, @author_code, @author_name,
+              @availability, @delist_reason, @firecore_cost, @total_bytes, @catalog_meta_json,
+              @config_schema, @user_config, @install_state, @selected_variant, @install_path,
+              @installed_at, @last_activated_at, @user_consent, @error_message, @config_json,
+              @capability_slot, @slot_policy, @backend_type
+            )`
+          )
+          for (const row of backupRows) insertRow.run(row)
         })
-        backfill(backupRows)
+        rebuildTx()
       } finally {
         db.pragma('foreign_keys = ON')
       }
