@@ -261,6 +261,14 @@ export class PluginHost {
 
         // 监听进程启动错误
         proc.on('error', (err: Error) => {
+          // 代际守卫：旧代际进程的迟到 error 不得误杀当前正在启动或运行的新进程
+          if (this.currentProcess && this.currentProcess !== proc) {
+            this.logger.warn(
+              `[PluginHost:${this.manifest.id}] 忽略旧代际进程的迟到错误事件:`,
+              err
+            )
+            return
+          }
           this.logger.error(`[PluginHost:${this.manifest.id}] Process error:`, err)
           if (this.stateMachine.state === 'STARTING') {
             this.clearHandshakeTimer()
@@ -335,7 +343,16 @@ export class PluginHost {
       this.logger.warn(
         `[PluginHost:${this.manifest.id}] 重复退出事件已忽略（退出屏障幂等守卫）: code=${String(code)}, signal=${String(signal)}`
       )
-      return this.lastExitDetails as ExitDetails
+      return (
+        this.lastExitDetails ?? {
+          code,
+          signal,
+          classification: 'NATIVE_CRASH',
+          stderrExcerpt: this.stderrBuffer,
+          isDegraded: false,
+          shouldRetry: false
+        }
+      )
     }
     this.exitBarrierSettled = true
     const details = this.settleProcessExit(code, signal)
