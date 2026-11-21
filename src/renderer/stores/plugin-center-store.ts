@@ -11,6 +11,7 @@ export type PluginCategory =
   | 'ai-engine'
   | 'perception'
   | 'media'
+  | 'media_enhance'
   | 'tool'
   | 'parser'
   | 'vfs-archive'
@@ -759,6 +760,94 @@ export function getInitialPlugins(): PluginModuleItem[] {
         text: t('配置要求低 · 普通电脑即可运行')
       },
       icon: 'KeyRound'
+    },
+    {
+      id: 'image_video_enhance',
+      name: t('图片视频高清化'),
+      version: '0.1.0',
+      category: 'media_enhance',
+      capability_slot: 'tool',
+      slot_policy: 'multi_active',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【低清照片视频一键变清晰】对低分辨率的图片和视频进行智能高清化，老照片、手机截屏、模糊视频放大后依然看得清。普通电脑即可运行。'
+      ),
+      hardware_requirement: {
+        level: 'minimal',
+        text: t('配置要求低 · 普通电脑流畅运行')
+      },
+      icon: 'Wand2'
+    },
+    {
+      id: 'image_video_deobfuscate',
+      name: t('图片视频去打码'),
+      version: '0.1.0',
+      category: 'media_enhance',
+      capability_slot: 'tool',
+      slot_policy: 'multi_active',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【识别并还原打码区域】自动找出图片、视频中被局部打码的位置，用智能修复技术尝试还原原内容。建议有独立显卡的电脑开启。'
+      ),
+      hardware_requirement: {
+        level: 'high',
+        text: t('较高配置 · 需要独立显卡')
+      },
+      icon: 'Eraser'
+    },
+    {
+      id: 'image_video_dewatermark',
+      name: t('图片视频去水印'),
+      version: '0.1.0',
+      category: 'media_enhance',
+      capability_slot: 'tool',
+      slot_policy: 'multi_active',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【识别并干净去除局部水印】自动找出图片、视频中的水印位置并干净抹除，画面自然不留痕。普通电脑即可运行。'
+      ),
+      hardware_requirement: {
+        level: 'minimal',
+        text: t('配置要求低 · 普通电脑流畅运行')
+      },
+      icon: 'Stamp'
+    },
+    {
+      id: 'file_ai_cover',
+      name: t('文件AI封面图'),
+      version: '0.1.0',
+      category: 'ai-engine',
+      capability_slot: 'advanced_ai_engine',
+      slot_policy: 'exclusive_optional',
+      author_code: 'official',
+      author_name: null,
+      availability: 'coming_soon',
+      delist_reason: null,
+      total_bytes: 0,
+      install_state: 'not_installed',
+      description: t(
+        '【无封面文档自动配图】为没有封面的文本类文件智能生成好看的AI封面图，浏览整理时一眼认出文件内容。建议有独立显卡的电脑开启。'
+      ),
+      hardware_requirement: {
+        level: 'high',
+        text: t('较高配置 · 需要独立显卡')
+      },
+      icon: 'FileImage'
     }
   ]
 }

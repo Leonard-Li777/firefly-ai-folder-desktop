@@ -14,6 +14,7 @@ export type ModuleCategory =
   | 'ai-engine'
   | 'perception'
   | 'media'
+  | 'media_enhance'
   | 'tool'
   | 'parser'
   | 'vfs-archive'

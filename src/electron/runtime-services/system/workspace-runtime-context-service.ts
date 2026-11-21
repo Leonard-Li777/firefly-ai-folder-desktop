@@ -34,16 +34,23 @@ export interface WorkspaceRuntimeContextSnapshotEnvelope extends SharedRuntimeCo
 const FOCUS_RECHECK_INTERVAL_MS = 30_000
 const MERGE_WINDOW_MS = 100
 
+/**
+ * 模块视图 → 全局插件运行态映射。
+ * 【枚举同源铁律】`install_state` 必须严格对齐 `ModuleInstallState` 权威枚举
+ * （modular-resource-dao.ts / GENESIS_V1_SCHEMA CHECK 约束）：
+ * 'not_installed' | 'downloading' | 'installed_inactive' | 'active' | 'error'。
+ * 历史缺陷：此处曾误判不存在的 'installed' 值与不存在的 is_active 列，
+ * 导致 install_state='active'（插件中心正常启用）被误映射为 'not_installed'，
+ * 三态 UI 出现「插件中心已启用、能力页显示尚未安装」的状态不同步。
+ */
 function mapModuleToGlobalState(mod: {
   install_state?: string
-  is_active?: number | boolean
   validation_status?: string
 }): GlobalPluginRuntimeState {
   if (mod.install_state === 'downloading') return 'downloading'
   if (mod.install_state === 'error' || mod.validation_status === 'pending_repair') return 'error'
-  if (mod.install_state === 'installed') {
-    return mod.is_active ? 'active' : 'installed_inactive'
-  }
+  if (mod.install_state === 'active') return 'active'
+  if (mod.install_state === 'installed_inactive') return 'installed_inactive'
   return 'not_installed'
 }
 
@@ -124,7 +131,10 @@ export class WorkspaceRuntimeContextService {
 
     ipcMain.handle(
       WORKSPACE_INCREMENTAL_RECOVERY_CHANNEL,
-      async (_event, workspaceId: number): Promise<{ success: boolean; queued?: number; error?: string }> => {
+      async (
+        _event,
+        workspaceId: number
+      ): Promise<{ success: boolean; queued?: number; error?: string }> => {
         try {
           if (!databaseService.db || !Number.isFinite(workspaceId)) {
             return { success: false, error: 'INVALID_WORKSPACE_OR_DB' }
@@ -150,7 +160,7 @@ export class WorkspaceRuntimeContextService {
       void this.recheckLibreOffice(true)
     })
 
-    subscribeRuntimeContextChange((reason) => {
+    subscribeRuntimeContextChange(reason => {
       this.notifyChanged(reason)
     })
 
@@ -205,7 +215,8 @@ export class WorkspaceRuntimeContextService {
   /** LibreOffice 手动复检入口（UI 可调用）：仅 installed 变化时触发 notifyChanged。 */
   async recheckLibreOffice(forceRefresh = true): Promise<boolean> {
     try {
-      const result: LibreOfficeDetectionResult = await libreOfficeDetector.detectLibreOffice(forceRefresh)
+      const result: LibreOfficeDetectionResult =
+        await libreOfficeDetector.detectLibreOffice(forceRefresh)
       const installed = Boolean(result?.installed)
       this.libreOfficeCheckedOnce = true
       if (installed !== this.libreOfficeInstalled) {
@@ -223,7 +234,8 @@ export class WorkspaceRuntimeContextService {
   /** 读取四大单例真实可观测状态并生成 `@firefly/shared` 标准 `WorkspaceRuntimeContext`。 */
   async refresh(reason = 'refresh'): Promise<void> {
     let isGenerativeAiEnabled = this.snapshot.isGenerativeAiEnabled
-    let globalEmbeddingProfile: 'classic_light' | 'gemma_unified' = this.snapshot.globalEmbeddingProfile
+    let globalEmbeddingProfile: 'classic_light' | 'gemma_unified' =
+      this.snapshot.globalEmbeddingProfile
     const globalPluginStates: Record<string, GlobalPluginRuntimeState> = {}
     let userTier: string | null = (this.snapshot.userTier as string) ?? 'free'
     let tierReady = Boolean(this.snapshot.tierReady)
@@ -234,7 +246,11 @@ export class WorkspaceRuntimeContextService {
       const llmSnapshot = llmGatewayService.getSnapshot()
       isGenerativeAiEnabled = llmSnapshot.effectiveMode !== 'disabled'
     } catch (error) {
-      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 LlmGatewayService 快照失败:', error)
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[WorkspaceRuntimeContext] 读取 LlmGatewayService 快照失败:',
+        error
+      )
     }
 
     // 2. 插件中心模块运行态与向量检索底座槽位（ModularResourceService）
@@ -249,11 +265,17 @@ export class WorkspaceRuntimeContextService {
       } else if (activeEmbedding?.id === 'engine_classic_light') {
         globalEmbeddingProfile = 'classic_light'
       } else {
-        const cfgProfile = ConfigOrchestrator.getInstance().getValue<string>('EMBEDDING_PROFILE' as any)
+        const cfgProfile = ConfigOrchestrator.getInstance().getValue<string>(
+          'EMBEDDING_PROFILE' as any
+        )
         globalEmbeddingProfile = cfgProfile === 'gemma_unified' ? 'gemma_unified' : 'classic_light'
       }
     } catch (error) {
-      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 ModularResourceService 模块态失败:', error)
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[WorkspaceRuntimeContext] 读取 ModularResourceService 模块态失败:',
+        error
+      )
     }
 
     // 3. 会员等级（UserTierService.getCachedData / getProfile）
@@ -270,7 +292,11 @@ export class WorkspaceRuntimeContextService {
         }
       }
     } catch (error) {
-      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 UserTierService 会员等级失败:', error)
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[WorkspaceRuntimeContext] 读取 UserTierService 会员等级失败:',
+        error
+      )
     }
 
     // 4. LibreOffice 检测结果（首次冷启动或事件回调时同步真实缓存）
@@ -281,12 +307,18 @@ export class WorkspaceRuntimeContextService {
         this.libreOfficeCheckedOnce = true
       }
     } catch (error) {
-      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 读取 LibreOffice 检测态失败:', error)
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[WorkspaceRuntimeContext] 读取 LibreOffice 检测态失败:',
+        error
+      )
     }
 
     // 5. 硬件探测快照（未知时保持 null 触发 unknown fail-open）
     try {
-      const hw = ConfigOrchestrator.getInstance().getValue<HardwareInfo | null>('HARDWARE_INFO' as any)
+      const hw = ConfigOrchestrator.getInstance().getValue<HardwareInfo | null>(
+        'HARDWARE_INFO' as any
+      )
       if (hw && typeof hw === 'object') {
         hardwareInfo = hw
       }

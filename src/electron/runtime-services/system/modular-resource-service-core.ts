@@ -1497,12 +1497,16 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 同步执行目录元数据更新（确保 DEFAULT_CATALOG_SEEDS 新增模块落地）
+   * 同步执行目录元数据更新（确保 DEFAULT_CATALOG_SEEDS 全量模块落地）
+   *
+   * 幂等补灌铁律：严禁以 `existing.length === 0`（空库）为灌库守卫——存量库新增内置模块
+   * （如 media_enhance 四个 coming_soon 预占位、file_ai_cover）依赖此处补行，否则插件中心
+   * 读库渲染将永久缺失新模块，而目录插件配置 Tab 读静态常量正常显示，两视图漂移。
+   * syncCatalogSync 自带 catalog_version 回归保护与 IN-04 铁律（绝不覆盖本地
+   * install_state/user_config/config_json），无条件执行安全；服务生命周期内单次执行。
    */
   public ensureDefaultSeeds(): void {
-    const dao = this.getDao()
-    const existing = dao.modules.listAllSync()
-    if (!this.seeded || existing.length === 0) {
+    if (!this.seeded) {
       try {
         this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
         this.seeded = true

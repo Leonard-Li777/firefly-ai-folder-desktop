@@ -516,7 +516,7 @@ export const GENESIS_V1_SCHEMA = `
     version           TEXT NOT NULL,                 -- 当前激活的版本号 (SemVer)
     catalog_version   INTEGER NOT NULL DEFAULT 1,    -- 市场元数据版本号 (单调递增，防云端旧版本回退覆盖)
     category          TEXT NOT NULL                  -- 模块分类
-                      CHECK (category IN ('ai-engine', 'perception', 'media', 'tool', 'parser', 'vfs-archive')),
+                      CHECK (category IN ('ai-engine', 'perception', 'media', 'media_enhance', 'tool', 'parser', 'vfs-archive')),
     author_code       TEXT NOT NULL DEFAULT 'official'
                       CHECK (author_code IN ('official', 'community', 'third_party')),
     author_name       TEXT,                          -- 第三方/社区开发者名称 (官方插件保持为 NULL，由前端 t('Firefly 官方') 动态国际化)

@@ -29,8 +29,10 @@ import { MaterialIcon, cn } from '../../lib/utils'
 import { toast } from '../common/Toast'
 import { getOcrModelSizeLabel } from './workspace/TriStateFieldFeedback'
 import { t } from '@app/languages'
-import { submitWorkspacePolicyMutation,
-  getMutationErrorText } from '../../lib/workspace-policy/workspace-ai-client'
+import {
+  submitWorkspacePolicyMutation,
+  getMutationErrorText
+} from '../../lib/workspace-policy/workspace-ai-client'
 import {
   Sparkles,
   ChevronDown,
@@ -197,7 +199,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     hasUserInteractedRef.current = true
     if (targetIntent === selectedIntent) return
     const hasCustomOverrides =
-      Object.keys(overrides).length > 0 ||
+      nonBaselineOverrideEntries.length > 0 ||
       Boolean(parsedConfig.status === 'ready' && parsedConfig.customExcludeRules?.length)
     if (hasCustomOverrides) {
       setPendingIntent(targetIntent)
@@ -277,6 +279,20 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     return mapIntentToParameters(selectedIntent, hardwareInfo, overrides)
   }, [selectedIntent, hardwareInfo, overrides])
 
+  // 等值回退计算：过滤掉与当前基线一致的覆盖键（算回默认态，不算用户自定义）。
+  // 等值基线单一事实源：已就绪配置以存储 baseAIConfig 为准（主进程对 intent 仅透传不重算基线，
+  // 意图派生值与仲裁基线异源会造成生效值静默跳变），仅 pending 首配（无存储基线）才退意图派生
+  const nonBaselineOverrideEntries = useMemo(() => {
+    const pureBaseline =
+      parsedConfig.status === 'ready' && parsedConfig.baseAIConfig
+        ? (parsedConfig.baseAIConfig as unknown as Record<string, unknown>)
+        : (mapIntentToParameters(selectedIntent, hardwareInfo, {}) as unknown as Record<
+            string,
+            unknown
+          >)
+    return Object.entries(overrides).filter(([key, value]) => value !== pureBaseline[key])
+  }, [parsedConfig, selectedIntent, hardwareInfo, overrides])
+
   // 推荐信息提示
   const isRecommended = useCallback(
     (intentId: WorkspaceConfigIntent) => {
@@ -295,10 +311,22 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
     }
     setIsSaving(true)
     try {
-      // 统一补丁通道：仅提交意图与用户触碰的覆盖项，基线由主进程仲裁内核派生
+      // 统一补丁通道：仅提交意图与非等值覆盖项，基线由主进程仲裁内核派生。
+      // 等值回退：覆盖值与当前意图+硬件派生基线一致的键改走 restoreOverrideFields 精确删除
+      // （算回默认态不算用户自定义，含存量等值覆盖一并清干净）
+      const nonBaselineOverrides = Object.fromEntries(
+        nonBaselineOverrideEntries
+      ) as Partial<TechnicalEngineParameters>
+      const nonBaselineKeySet = new Set(nonBaselineOverrideEntries.map(([k]) => k))
+      const equalKeys = Object.keys(overrides).filter(k => !nonBaselineKeySet.has(k)) as Array<
+        keyof TechnicalEngineParameters
+      >
       const res = await submitWorkspacePolicyMutation(workspace.id, {
         intent: selectedIntent,
-        ...(Object.keys(overrides).length > 0 ? { overridePatch: overrides } : {})
+        ...(Object.keys(nonBaselineOverrides).length > 0
+          ? { overridePatch: nonBaselineOverrides }
+          : {}),
+        ...(equalKeys.length > 0 ? { restoreOverrideFields: equalKeys } : {})
       })
       if (res.success) {
         toast.success(t('工作区配置已保存，AI 分析队列已就绪'))
@@ -484,8 +512,8 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
             <Sliders className="w-4 h-4 text-primary" />
             <span>{t('高级专家微调')}</span>
             <span className="text-xs font-normal text-muted-foreground">
-              {Object.keys(overrides).length > 0
-                ? t('(已覆盖 {count} 项参数)', { count: Object.keys(overrides).length })
+              {nonBaselineOverrideEntries.length > 0
+                ? t('(已覆盖 {count} 项参数)', { count: nonBaselineOverrideEntries.length })
                 : t('(默认继承策略推荐，无需改动)')}
             </span>
           </div>
@@ -515,9 +543,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground text-xs"
                 >
                   <option value="simple">{t('极速标准 - 基础标签与智能命名')}</option>
-                  <option value="quick_name">
-                    {t('增强润色 - 推荐，平衡速度与深度')}
-                  </option>
+                  <option value="quick_name">{t('增强润色 - 推荐，平衡速度与深度')}</option>
                   <option value="full">{t('全面深度 - 深度理解文档与画面细节')}</option>
                 </select>
               </div>
@@ -554,9 +580,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
             {/* 视频分析算力控制 */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <Label className="text-xs font-medium mb-1 block">
-                  {t('视频画面采样精度')}
-                </Label>
+                <Label className="text-xs font-medium mb-1 block">{t('视频画面采样精度')}</Label>
                 <select
                   value={effectiveParams.videoSoftTokenBudget}
                   onChange={e =>
