@@ -662,36 +662,40 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           ) : (
             /* 2. 常态 4-Tab 高级设置视图 */
             <>
-              {/* 一级导航：左侧配置项 Tab 竖向列表（与工作目录列表互换位置） */}
-              <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/10">
+              {/* 一级导航：左侧配置项 Tab 竖向列表（样式对齐全局设置页面主副标题导航） */}
+              <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/40">
                 <div className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/40">
                   {t('配置项')}
                 </div>
-                <nav className="p-2 space-y-1 overflow-y-auto flex-1">
+                <nav className="p-3 space-y-1.5 overflow-y-auto flex-1">
                   {tabs.map(tab => {
                     const isActive = activeTab === tab.id
                     return (
                       <Button
                         key={tab.id}
-                        variant="ghost"
+                        variant={isActive ? 'default' : 'ghost'}
                         title={tab.description}
                         className={cn(
-                          'w-full justify-start text-left h-auto p-2.5 transition-all duration-200 border',
-                          isActive
-                            ? 'bg-primary/10 text-primary border-primary/30'
-                            : 'border-transparent hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                          'w-full justify-start text-left h-auto p-2.5 whitespace-break-spaces transition-all duration-200',
+                          isActive && 'bg-primary text-primary-foreground shadow-sm scale-[1.01]',
+                          !isActive &&
+                            'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                         )}
                         onClick={() => void handleTabChange(tab.id)}
                       >
-                        <div className="flex items-center gap-2.5 w-full min-w-0">
-                          <MaterialIcon
-                            icon={tab.icon}
-                            className={cn(
-                              'text-base shrink-0',
-                              !isActive && 'text-muted-foreground'
-                            )}
-                          />
-                          <span className="font-semibold text-xs truncate">{tab.name}</span>
+                        <div className="flex items-start gap-2.5 w-full min-w-0">
+                          <MaterialIcon icon={tab.icon} className="text-base shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-xs leading-snug">{tab.name}</div>
+                            <div
+                              className={cn(
+                                'text-[11px] mt-0.5 line-clamp-1 opacity-80',
+                                isActive ? 'text-primary-foreground' : 'text-muted-foreground'
+                              )}
+                            >
+                              {tab.description}
+                            </div>
+                          </div>
                         </div>
                       </Button>
                     )
