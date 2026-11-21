@@ -203,11 +203,11 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
             defaultValue={defaultTab || 'spend'}
             className="flex-1 min-h-0 overflow-hidden flex flex-col"
           >
-            <TabsList className="grid w-full grid-cols-3 h-10 p-1 shrink-0 bg-muted/80 rounded-xl gap-1">
+            <TabsList className="grid w-full grid-cols-3 h-10 p-1 shrink-0 bg-slate-200/75 dark:bg-muted/80 border border-border/70 rounded-xl gap-1">
               <TabsTrigger
                 value="earn"
                 title={t('收集萤火')}
-                className="flex items-center justify-center gap-1.5 min-w-0 rounded-lg transition-all"
+                className="flex items-center justify-center gap-1.5 min-w-0 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-background/60 data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/80"
               >
                 <Firecores className="w-4 h-4 shrink-0 text-amber-500" />
                 <span className="truncate min-w-0 text-xs sm:text-sm font-semibold">
@@ -217,7 +217,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
               <TabsTrigger
                 value="consumption"
                 title={t('收支流水')}
-                className="flex items-center justify-center gap-1.5 min-w-0 rounded-lg transition-all"
+                className="flex items-center justify-center gap-1.5 min-w-0 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-background/60 data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/80"
               >
                 <ReceiptIndianRupee className="w-4 h-4 shrink-0 text-emerald-500" />
                 <span className="truncate min-w-0 text-xs sm:text-sm font-semibold">
@@ -227,7 +227,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
               <TabsTrigger
                 value="spend"
                 title={t('消费规则')}
-                className="flex items-center justify-center gap-1.5 min-w-0 rounded-lg transition-all"
+                className="flex items-center justify-center gap-1.5 min-w-0 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-background/60 data-[state=active]:bg-white dark:data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/80"
               >
                 <MaterialIcon icon="info" className="text-sm shrink-0 text-blue-500" />
                 <span className="truncate min-w-0 text-xs sm:text-sm font-semibold">
