@@ -11,8 +11,53 @@
  */
 
 import { deflateSync, inflateSync } from 'node:zlib'
-import { app } from 'electron'
-import { isLocalDevRuntime } from '../main/worktree-env'
+
+/**
+ * Stage2 S-B（ADR 0063）：本模块被 utilityProcess 写进程子入口经
+ * sqlite-connection-setup.ts（decompress_text SQL 函数）传递加载，
+ * 故顶层严禁 electron import——开发模式判定惰性解析（语义与 worktree-env.isLocalDevRuntime 逐条等价，
+ * 子进程无 electron 主 API 时按非开发模式处理，压缩保守生效）。
+ */
+let localDevRuntimeCache: boolean | null = null
+function resolveLocalDevRuntime(): boolean {
+  if (localDevRuntimeCache !== null) {
+    return localDevRuntimeCache
+  }
+  let isPackaged = false
+  let hasElectronMainApi = false
+  try {
+    // 惰性 require（严禁提升为顶层 import）：仅在主进程实际调用压缩旁路判定时触达 electron
+    const electronModule = require('electron') as
+      | { app?: { isPackaged?: boolean } }
+      | string
+      | undefined
+    const appLike = electronModule && typeof electronModule === 'object' ? electronModule.app : undefined
+    // R2 盲审建议 1：仅当拿到有效 electron 主 API（app 对象）才采信 isPackaged——
+    // require 失败或返回路径字符串（纯 Node/npm electron 形态，如 utilityProcess 子进程）
+    // 一律按非开发模式处理（压缩保守生效），兑现本模块头注释口径
+    if (appLike && typeof appLike.isPackaged === 'boolean') {
+      hasElectronMainApi = true
+      isPackaged = appLike.isPackaged
+    }
+  } catch {
+    hasElectronMainApi = false
+  }
+  if (!hasElectronMainApi) {
+    localDevRuntimeCache = false
+    return localDevRuntimeCache
+  }
+  // 一票否决制（与 worktree-env.isLocalDevRuntime 同语义）：
+  // 已打包 / NODE_ENV=production|test / VITEST / IS_INTEGRATION_TEST ⇒ 绝非本地热更开发环境
+  localDevRuntimeCache =
+    !isPackaged &&
+    !(
+      process.env.NODE_ENV === 'production' ||
+      process.env.NODE_ENV === 'test' ||
+      !!process.env.VITEST ||
+      process.env.IS_INTEGRATION_TEST === 'true'
+    )
+  return localDevRuntimeCache
+}
 
 /** 编码格式标识 */
 export const enum CompressionFormat {
@@ -42,7 +87,7 @@ export function isCompressionDisabled(): boolean {
     return false
   }
   // 开发模式判定（单点事实源：已打包或测试态绝不视为开发模式）
-  return isLocalDevRuntime()
+  return resolveLocalDevRuntime()
 }
 
 /**

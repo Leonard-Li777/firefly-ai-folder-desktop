@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events'
 import { Conf } from 'electron-conf'
 import fixPath from 'fix-path'
+import { setDisplayLocaleReader } from '../runtime-services/database/database-service/display-locale-seam'
 
 // 在 macOS 和 Linux 上修复 PATH 环境变量
 if (process.platform !== 'win32') {
@@ -157,6 +158,11 @@ export class ConfigOrchestrator extends EventEmitter {
 
     this.cachedConfig = this.rebuildCache()
     this.aiConfigManager = new AIServiceConfigManager(this)
+
+    // Stage2 S-B：向 FTS 展示 locale 纯缝注册真实读取器（fts-projection resolveDisplayName 消费），
+    // 使 fts-projection.ts 无需静态 import 本文件（本文件顶层 electron-conf 依赖链严禁卷入
+    // utilityProcess 写进程子入口）；写进程侧由 INIT 握手消息注入读取器覆盖。
+    setDisplayLocaleReader(() => this.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN')
   }
 
   static getInstance(): ConfigOrchestrator {

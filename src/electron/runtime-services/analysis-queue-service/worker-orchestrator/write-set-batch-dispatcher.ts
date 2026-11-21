@@ -44,6 +44,11 @@ export interface WriteSetBatchDispatcherDeps {
   onWakeCanonicalMaintenance?: (fingerprints: string[]) => void
   onTriggerCloudSync?: (delayMs: number) => void
   onWorkspaceDeletes?: (workspaceFileIds: number[]) => void
+  /**
+   * 单批写微事务执行完成回调（含 Pre-step stat 全程耗时，工单 05 ≤10ms 量化验收采集点）。
+   * 主进程宿主与 utilityProcess 写进程子入口均经此钩子上报 BATCH_METRICS。
+   */
+  onBatchExecuted?: (batchSize: number, durationMs: number) => void
   /** 可注入自定义 stat（便于单测隔离文件系统） */
   statFile?: (filePath: string) => Promise<{ size: number; mtimeMs: number }>
   coalesceWindowMs?: number
@@ -53,7 +58,8 @@ export interface WriteSetBatchDispatcherDeps {
 export class WriteSetBatchDispatcher {
   private pendingWriteSets: AnalysisWriteSet[] = []
   private coalesceTimer: ReturnType<typeof setTimeout> | null = null
-  private flushing = false
+  /** R2 盲审建议 3：在途 flush 的唯一 promise（flush 重入早退时返回它，保证退出路径等待真实在途批） */
+  private inFlightFlush: Promise<WriteAckItem[]> | null = null
   private pausedForUi = false
   private pauseResumeTimer: ReturnType<typeof setTimeout> | null = null
   private disposed = false
@@ -130,28 +136,48 @@ export class WriteSetBatchDispatcher {
 
   /** 立即冲刷当前缓冲（供单测与 dispose 调用） */
   async flush(): Promise<WriteAckItem[]> {
-    if (this.flushing || this.pausedForUi || this.pendingWriteSets.length === 0) {
+    // R2 盲审建议 3：重入早退时返回**在途 flush 的同一 promise**，
+    // 保证 SHUTDOWN 等退出路径 await flush() 必然等真实在途批完成（防关库竞态）
+    if (this.inFlightFlush) {
+      return this.inFlightFlush
+    }
+    if (this.pausedForUi || this.pendingWriteSets.length === 0) {
       return []
     }
     this.clearCoalesceTimer()
-    this.flushing = true
+    const flushPromise = this.doFlush()
+    this.inFlightFlush = flushPromise
+    try {
+      return await flushPromise
+    } finally {
+      this.inFlightFlush = null
+    }
+  }
+
+  private async doFlush(): Promise<WriteAckItem[]> {
     const allAcks: WriteAckItem[] = []
 
-    try {
-      while (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
-        const batch = this.pendingWriteSets.splice(0, MAX_WRITE_BATCH_SIZE)
-        const batchAcks = await this.executeBatch(batch)
-        allAcks.push(...batchAcks)
-        for (const ack of batchAcks) {
-          this.deps.onWriteAck?.(ack)
-        }
-        // Spec §8.3 / §9.3：每批写完让出事件循环一个 tick，确保 UI/IPC/TTS 响应
-        if (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
-          await new Promise<void>(resolve => setImmediate(resolve))
-        }
+    while (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
+      const batch = this.pendingWriteSets.splice(0, MAX_WRITE_BATCH_SIZE)
+      const batchStartMs = performance.now()
+      const batchAcks = await this.executeBatch(batch)
+      try {
+        this.deps.onBatchExecuted?.(batch.length, performance.now() - batchStartMs)
+      } catch (metricErr) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          '[WriteSetDispatcher] onBatchExecuted 指标回调异常:',
+          metricErr
+        )
       }
-    } finally {
-      this.flushing = false
+      allAcks.push(...batchAcks)
+      for (const ack of batchAcks) {
+        this.deps.onWriteAck?.(ack)
+      }
+      // Spec §8.3 / §9.3：每批写完让出事件循环一个 tick，确保 UI/IPC/TTS 响应
+      if (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
+        await new Promise<void>(resolve => setImmediate(resolve))
+      }
     }
     return allAcks
   }
