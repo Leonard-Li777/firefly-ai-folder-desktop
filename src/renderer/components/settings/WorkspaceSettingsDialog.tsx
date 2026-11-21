@@ -46,6 +46,7 @@ import {
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 import { WorkspacePluginsTab } from './workspace/WorkspacePluginsTab'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
+import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { useToastStore, toast } from '../common/Toast'
 import {
   computeLocalEffectiveConfig,
@@ -79,7 +80,8 @@ const MemoizedWorkspacePluginsTab = memo(WorkspacePluginsTab)
  *
  * 核心架构 (TASK-07 ~ TASK-11)：
  * 1. 物理层解耦：完全独立于系统设置，专属于具体工作目录的配置；
- * 2. 左侧一级工作目录列表：取代原顶部下拉，支持在所有已添加的工作目录之间自由切换（默认选中当前活动目录）；
+ * 2. 左侧一级导航为各配置项 Tab 竖向列表；右侧内容区顶部为工作目录列表横向切换条
+ *    （支持在所有已添加的工作目录之间自由切换，默认选中当前活动目录，两者位置互换对齐）；
  * 3. 右侧内容区二级 Tab 菜单：目录维护与安全重置（首个 Tab）、检索式引擎、文件内容萃取、文件准入与包含排除；
  * 4. 极简向导流转：
  *    - 当工作区为 pending 时，首先进入 WorkspaceSetupWizard；
@@ -399,16 +401,28 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   }, [])
 
   // 统一处理三态降级一键引导动作（插件中心 / 文档封面 Tab / 专业版升级）
-  const handleDegradationFixAction = (action: DegradationFixAction) => {
+  // 【跳转归一铁律】install/enable/fix_global_plugin 三类组件级修复必须直达
+  // 插件中心覆盖层（可带 pluginId 定位到对应插件详情），严禁误跳生成式 AI 引擎
+  // 设置页 —— 引擎页只有 open_generative_engine / switch_to_gemma_unified 两类
+  // 引擎级动作合法。
+  const handleDegradationFixAction = (action: DegradationFixAction, pluginId?: string) => {
     switch (action) {
       case 'open_generative_engine':
       case 'switch_to_gemma_unified':
-      case 'install_global_plugin':
-      case 'enable_global_plugin':
-      case 'fix_global_plugin':
         closeSettings()
         openSystemSettings(SettingsCategory.AI_ENGINE_CONFIG)
         break
+      case 'install_global_plugin':
+      case 'enable_global_plugin':
+      case 'fix_global_plugin': {
+        closeSettings()
+        void Promise.resolve(usePluginCenterStore.getState().openOverlay()).then(() => {
+          if (pluginId) {
+            usePluginCenterStore.getState().setConfiguringModuleId(pluginId)
+          }
+        })
+        break
+      }
       case 'install_libreoffice':
         setActiveTab('content_extraction')
         break
@@ -521,7 +535,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 </button>
               )}
 
-              {/* 全量重置按钮：已绑定显示「恢复工作流默认」，未绑定显示「恢复默认配置」 */}
+              {/* 全量重置按钮：已绑定显示「恢复工作流默认」，未绑定显示「恢复全局默认」 */}
               {parsedConfig.status === 'ready' && (
                 <Button
                   variant="ghost"
@@ -534,7 +548,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       .then(result => {
                         if (result.success) {
                           toast.success(
-                            hasBoundWorkflow ? t('已恢复工作流默认配置') : t('已恢复默认配置')
+                            hasBoundWorkflow ? t('已恢复工作流默认配置') : t('已恢复全局默认配置')
                           )
                           void refreshWorkspaceData()
                           void refreshRuntime()
@@ -549,7 +563,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   }}
                 >
                   <RotateCcw className="mr-1 h-3 w-3" />
-                  {hasBoundWorkflow ? t('恢复工作流默认') : t('恢复默认配置')}
+                  {hasBoundWorkflow ? t('恢复工作流默认') : t('恢复全局默认')}
                 </Button>
               )}
             </div>
@@ -648,36 +662,39 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           ) : (
             /* 2. 常态 4-Tab 高级设置视图 */
             <>
-              {/* 一级导航：左侧工作目录列表 */}
-              <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/10">
+              {/* 一级导航：左侧配置项 Tab 竖向列表（样式对齐全局设置页面主副标题导航） */}
+              <div className="w-56 border-r flex flex-col flex-shrink-0 bg-muted/40">
                 <div className="px-3 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground border-b border-border/40">
-                  {t('工作目录列表')}
+                  {t('配置项')}
                 </div>
-                <nav className="p-2 space-y-1 overflow-y-auto flex-1">
-                  {workspaceDirectories.map(ws => {
-                    const isActive = activeWorkspace?.id === ws.id
+                <nav className="p-3 space-y-1.5 overflow-y-auto flex-1">
+                  {tabs.map(tab => {
+                    const isActive = activeTab === tab.id
                     return (
                       <Button
-                        key={ws.id}
-                        variant="ghost"
+                        key={tab.id}
+                        variant={isActive ? 'default' : 'ghost'}
+                        title={tab.description}
                         className={cn(
-                          'w-full justify-start text-left h-auto p-2.5 transition-all duration-200 border',
-                          isActive
-                            ? 'bg-primary/10 text-primary border-primary/30'
-                            : 'border-transparent hover:bg-muted/60 text-muted-foreground hover:text-foreground'
+                          'w-full justify-start text-left h-auto p-2.5 whitespace-break-spaces transition-all duration-200',
+                          isActive && 'bg-primary text-primary-foreground shadow-sm scale-[1.01]',
+                          !isActive &&
+                            'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
                         )}
-                        onClick={() => void handleWorkspaceChange(String(ws.id))}
+                        onClick={() => void handleTabChange(tab.id)}
                       >
-                        <div className="flex items-center gap-2.5 w-full min-w-0">
-                          <FolderOpen
-                            className={cn(
-                              'w-4 h-4 shrink-0',
-                              isActive ? 'text-primary' : 'text-muted-foreground'
-                            )}
-                          />
+                        <div className="flex items-start gap-2.5 w-full min-w-0">
+                          <MaterialIcon icon={tab.icon} className="text-base shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-xs truncate">{ws.name}</div>
-                            <div className="text-[10px] truncate opacity-70 mt-0.5">{ws.path}</div>
+                            <div className="font-semibold text-xs leading-snug">{tab.name}</div>
+                            <div
+                              className={cn(
+                                'text-[11px] mt-0.5 line-clamp-1 opacity-80',
+                                isActive ? 'text-primary-foreground' : 'text-muted-foreground'
+                              )}
+                            >
+                              {tab.description}
+                            </div>
                           </div>
                         </div>
                       </Button>
@@ -686,30 +703,33 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                 </nav>
               </div>
 
-              {/* 右侧内容区：二级 Tab 菜单 + Tab 内容 (Keep-Alive 保活) */}
+              {/* 右侧内容区：顶部工作目录列表（横向切换条） + Tab 内容 (Keep-Alive 保活) */}
               <div className="flex-1 flex flex-col overflow-hidden bg-background">
-                {/* 二级 Tab 菜单（横向标签栏） */}
+                {/* 工作目录列表（横向标签栏，与左侧配置项互换位置） */}
                 <div className="flex-shrink-0 px-4 pt-2.5 border-b border-border/60 overflow-x-auto">
-                  <div className="flex items-center gap-1">
-                    {tabs.map(tab => {
-                      const isActive = activeTab === tab.id
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground shrink-0 mr-1.5">
+                      {t('工作目录列表')}
+                    </span>
+                    {workspaceDirectories.map(ws => {
+                      const isActive = activeWorkspace?.id === ws.id
                       return (
                         <Button
-                          key={tab.id}
+                          key={ws.id}
                           variant="ghost"
                           size="sm"
-                          title={tab.description}
+                          title={ws.path}
                           className={cn(
                             'relative h-9 px-3.5 text-xs font-semibold whitespace-nowrap rounded-t-md rounded-b-none border-b-2 transition-all duration-200',
                             isActive
                               ? 'text-primary border-primary bg-primary/5'
                               : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-muted/60'
                           )}
-                          onClick={() => void handleTabChange(tab.id)}
+                          onClick={() => void handleWorkspaceChange(String(ws.id))}
                         >
                           <div className="flex items-center gap-1.5">
-                            <MaterialIcon icon={tab.icon} className="text-base" />
-                            <span>{tab.name}</span>
+                            <FolderOpen className="text-base shrink-0" />
+                            <span>{ws.name}</span>
                           </div>
                         </Button>
                       )
@@ -719,108 +739,107 @@ export const WorkspaceSettingsDialog: React.FC = () => {
 
                 {/* Tab 内容区 (Keep-Alive 保活) */}
                 <div className="flex-1 flex flex-col overflow-hidden">
-                {visitedTabs.has('basic_ai_engine') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'basic_ai_engine' && 'hidden'
-                    )}
-                  >
-                    <MemoizedBasicAIEngineTab
-                      key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
-                      workspace={activeWorkspace}
-                      hardwareInfo={hardwareInfo}
-                      isActive={activeTab === 'basic_ai_engine'}
-                      onConfigSaved={refreshWorkspaceData}
-                      resolvedFields={resolvedEffectiveConfig?.fields}
-                      hasBoundWorkflow={hasBoundWorkflow}
-                      onFixAction={handleDegradationFixAction}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('content_extraction') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'content_extraction' && 'hidden'
-                    )}
-                  >
-                    <MemoizedContentExtractionTab
-                      key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
-                      workspace={activeWorkspace}
-                      hardwareInfo={hardwareInfo}
-                      isActive={activeTab === 'content_extraction'}
-                      onConfigSaved={refreshWorkspaceData}
-                      resolvedFields={resolvedEffectiveConfig?.fields}
-                      hasBoundWorkflow={hasBoundWorkflow}
-                      onFixAction={handleDegradationFixAction}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('ignore_rules') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'ignore_rules' && 'hidden'
-                    )}
-                  >
-                    <MemoizedWorkspaceAdmissionRulesTab
-                      ref={rulesTabRef}
-                      key={activeWorkspace.id}
-                      workspace={activeWorkspace}
-                      hardwareInfo={hardwareInfo}
-                      onConfigSaved={refreshWorkspaceData}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('maintenance') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-hidden',
-                      activeTab !== 'maintenance' && 'hidden'
-                    )}
-                  >
-                    <MemoizedWorkspaceMaintenanceTab
-                      workspace={activeWorkspace}
-                      onRerunWizard={() => setIsManualWizardMode(true)}
-                      onConfigSaved={refreshWorkspaceData}
-                    />
-                  </div>
-                )}
-
-                {visitedTabs.has('workspace_plugins') && (
-                  <div
-                    className={cn(
-                      'flex-1 flex flex-col overflow-y-auto',
-                      activeTab !== 'workspace_plugins' && 'hidden'
-                    )}
-                  >
-                    <div className="p-4">
-                      <MemoizedWorkspacePluginsTab
-                        key={activeWorkspace.id}
-                        workspaceId={activeWorkspace.id!}
-                        plugins={pluginsRecord}
+                  {visitedTabs.has('basic_ai_engine') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'basic_ai_engine' && 'hidden'
+                      )}
+                    >
+                      <MemoizedBasicAIEngineTab
+                        key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
+                        workspace={activeWorkspace}
+                        hardwareInfo={hardwareInfo}
+                        isActive={activeTab === 'basic_ai_engine'}
+                        onConfigSaved={refreshWorkspaceData}
+                        resolvedFields={resolvedEffectiveConfig?.fields}
                         hasBoundWorkflow={hasBoundWorkflow}
-                        onFixAction={action => handleDegradationFixAction(action)}
-                        onMutationSuccess={() => {
-                          void refreshWorkspaceData()
-                          void refreshRuntime()
-                        }}
-                        onMutationError={err => {
-                          // 显式上报并向用户提示失败，严禁静默吞掉
-                          console.warn(
-                            '[WorkspaceSettingsDialog] 目录插件开关提交失败:',
-                            err
-                          )
-                          toast.error(err || t('目录插件配置保存失败'))
-                        }}
+                        onFixAction={handleDegradationFixAction}
                       />
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {visitedTabs.has('content_extraction') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'content_extraction' && 'hidden'
+                      )}
+                    >
+                      <MemoizedContentExtractionTab
+                        key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
+                        workspace={activeWorkspace}
+                        hardwareInfo={hardwareInfo}
+                        isActive={activeTab === 'content_extraction'}
+                        onConfigSaved={refreshWorkspaceData}
+                        resolvedFields={resolvedEffectiveConfig?.fields}
+                        hasBoundWorkflow={hasBoundWorkflow}
+                        onFixAction={handleDegradationFixAction}
+                      />
+                    </div>
+                  )}
+
+                  {visitedTabs.has('ignore_rules') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'ignore_rules' && 'hidden'
+                      )}
+                    >
+                      <MemoizedWorkspaceAdmissionRulesTab
+                        ref={rulesTabRef}
+                        key={activeWorkspace.id}
+                        workspace={activeWorkspace}
+                        hardwareInfo={hardwareInfo}
+                        onConfigSaved={refreshWorkspaceData}
+                      />
+                    </div>
+                  )}
+
+                  {visitedTabs.has('maintenance') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'maintenance' && 'hidden'
+                      )}
+                    >
+                      <MemoizedWorkspaceMaintenanceTab
+                        workspace={activeWorkspace}
+                        onRerunWizard={() => setIsManualWizardMode(true)}
+                        onConfigSaved={refreshWorkspaceData}
+                      />
+                    </div>
+                  )}
+
+                  {visitedTabs.has('workspace_plugins') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-y-auto',
+                        activeTab !== 'workspace_plugins' && 'hidden'
+                      )}
+                    >
+                      <div className="p-4">
+                        <MemoizedWorkspacePluginsTab
+                          key={activeWorkspace.id}
+                          workspaceId={activeWorkspace.id!}
+                          plugins={pluginsRecord}
+                          hasBoundWorkflow={hasBoundWorkflow}
+                          onFixAction={(action, pluginId) =>
+                            handleDegradationFixAction(action, pluginId)
+                          }
+                          onMutationSuccess={() => {
+                            void refreshWorkspaceData()
+                            void refreshRuntime()
+                          }}
+                          onMutationError={err => {
+                            // 显式上报并向用户提示失败，严禁静默吞掉
+                            console.warn('[WorkspaceSettingsDialog] 目录插件开关提交失败:', err)
+                            toast.error(err || t('目录插件配置保存失败'))
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </>

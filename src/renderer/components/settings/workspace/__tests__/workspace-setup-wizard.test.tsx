@@ -459,13 +459,17 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /下一步/ }))
 
-    // 全局启用的 .tmp / Thumbs.db / .ds_store 必须被过滤，未启用全局规则的 .lnk 与工作区独有 Desktop_Old_Backups 保留展示
+    // 同型语义(D5 v0.3 定调):extension 与 file 匹配集互斥,严禁跨类型吸收
+    // - 全局 extension .tmp 同型吸收工作流 extension .tmp → 过滤
+    // - 全局 file thumbs.db 同型(大小写无感)吸收 file Thumbs.db → 过滤
+    // - 全局 file .DS_Store 不吸收 extension .ds_store(互斥匹配集) → 保留
+    // - 全局 .lnk 已停用 → 保留;工作区独有目录 → 保留
     expect(screen.getByText('当前工作区专属排除目录与规则')).toBeDefined()
     expect(screen.getByText('Desktop_Old_Backups')).toBeDefined()
     expect(screen.getByText('.lnk')).toBeDefined()
+    expect(screen.getByText('.ds_store')).toBeDefined()
     expect(screen.queryByText('.tmp')).toBeNull()
     expect(screen.queryByText('Thumbs.db')).toBeNull()
-    expect(screen.queryByText('.ds_store')).toBeNull()
 
     // 提交持久化配置时也应仅包含剔除全局规则后的独有规则
     fireEvent.click(screen.getByRole('button', { name: /立即应用并进入工作目录/ }))
@@ -475,13 +479,14 @@ describe('WorkspaceSetupWizard (Spec v1.1 §2.3, §3.3 & Ticket 04)', () => {
         expect.objectContaining({
           customExcludeRules: expect.arrayContaining([
             expect.objectContaining({ value: '.lnk' }),
+            expect.objectContaining({ value: '.ds_store' }),
             expect.objectContaining({ value: 'Desktop_Old_Backups' })
           ])
         })
       )
     })
     const committedIgnores = mockCommitWorkspacePolicy.mock.calls[0][1].customExcludeRules
-    expect(committedIgnores).toHaveLength(2)
+    expect(committedIgnores).toHaveLength(3)
   })
 
   it('当工作流排除规则与已启用全局规则完全重合时，隐藏当前工作区专属排除目录与规则卡片（兼容纯字符串规则）', async () => {

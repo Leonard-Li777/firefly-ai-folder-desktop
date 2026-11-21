@@ -1,7 +1,13 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
-import { decompressText } from '../../utils/text-compressor'
-import { detectTagLanguage, LogCategory, logger, SUPPORTED_LANGUAGES_KEY } from '@firefly/shared'
+import { registerAnalysisSqlFunctions, DEFAULT_SQLITE_PRAGMAS } from './database-service/sqlite-connection-setup'
+import { normalizeSupportedLocale } from './database-service/locale-whitelist'
+// 保持原导出路径兼容：实现已下沉至纯模块 locale-whitelist.ts（Stage2 S-B 子进程安全化）
+export {
+  normalizeSupportedLocale,
+  TAG_ALIASES_FALLBACK_LOCALE
+} from './database-service/locale-whitelist'
+import { detectTagLanguage, LogCategory, logger } from '@firefly/shared'
 import type { Database } from 'better-sqlite3'
 
 /**
@@ -510,7 +516,7 @@ export const GENESIS_V1_SCHEMA = `
     version           TEXT NOT NULL,                 -- 当前激活的版本号 (SemVer)
     catalog_version   INTEGER NOT NULL DEFAULT 1,    -- 市场元数据版本号 (单调递增，防云端旧版本回退覆盖)
     category          TEXT NOT NULL                  -- 模块分类
-                      CHECK (category IN ('ai-engine', 'perception', 'media', 'tool', 'parser', 'vfs-archive')),
+                      CHECK (category IN ('ai-engine', 'perception', 'media', 'media_enhance', 'tool', 'parser', 'vfs-archive')),
     author_code       TEXT NOT NULL DEFAULT 'official'
                       CHECK (author_code IN ('official', 'community', 'third_party')),
     author_name       TEXT,                          -- 第三方/社区开发者名称 (官方插件保持为 NULL，由前端 t('Firefly 官方') 动态国际化)
@@ -939,26 +945,9 @@ export function resolveAndMigrateDatabasePath(userDataPath: string, _language?: 
 }
 
 /**
- * 语言白名单兜底 locale（Issue 02：单表 tag_aliases 后 locale 为普通列值，仍须白名单校验防脏值入库）
+ * 语言白名单兜底 locale 与 normalizeSupportedLocale 已下沉至纯模块
+ * database-service/locale-whitelist.ts（Stage2 S-B 子进程安全化，见文件顶部 re-export）。
  */
-const TAG_ALIASES_FALLBACK_LOCALE = 'en-US'
-
-/**
- * 归一化受支持 locale（Issue 02 Step 1 / 取代原分表解析器）：
- * 命中 SUPPORTED_LANGUAGES_KEY 白名单原样返回，否则回退 en-US 并记 warn。
- * 单表 tag_aliases 下 locale 是普通列，本函数只做白名单校验，不再拼表名（杜绝 SQL 注入面）。
- * @param locale 如 zh-CN
- */
-export function normalizeSupportedLocale(locale: string): string {
-  if (!(SUPPORTED_LANGUAGES_KEY as readonly string[]).includes(locale)) {
-    logger.warn(
-      LogCategory.DATABASE,
-      `非法语言 locale "${locale}"，别名 locale 回退 ${TAG_ALIASES_FALLBACK_LOCALE}`
-    )
-    return TAG_ALIASES_FALLBACK_LOCALE
-  }
-  return locale
-}
 
 /**
  * R2-4 成对规范名 Upsert 唯一实现（Issue 02 Step 3）：
@@ -1181,18 +1170,9 @@ export function getDatabaseConfig(language?: string): IDatabaseConfig {
       maxBackups: 10,
       backupPath: path.join(userDataPath, 'backups')
     },
-    pragma: {
-      journal_mode: 'WAL',
-      synchronous: 'NORMAL',
-      cache_size: -64000,
-      mmap_size: 268435456,
-      temp_store: 'MEMORY',
-      foreign_keys: true,
-      busy_timeout: 5000,
-      // [Issue 04 Step 5 / R2-8] WAL 自动 checkpoint（1000 页）+ 文件大小上限（64MB），防主库 WAL 无界增长。
-      wal_autocheckpoint: 1000,
-      journal_size_limit: 67108864
-    }
+    // R1 盲审发现 5：PRAGMA 值单点引用 sqlite-connection-setup.DEFAULT_SQLITE_PRAGMAS
+    //（与 utilityProcess 写进程子连接同源，严禁两侧各自硬编码漂移）
+    pragma: { ...DEFAULT_SQLITE_PRAGMAS }
   }
 }
 
@@ -1207,19 +1187,14 @@ export function getBackupPath(timestamp?: string, language?: string): string {
 
 /**
  * 注册 SQLite 自定义函数（支持在触发器和 SQL 表达式中执行）
+ *
+ * Stage2 S-B 就地剥离：实现下沉至纯模块 database-service/sqlite-connection-setup.ts
+ * 的 registerAnalysisSqlFunctions（写进程子入口与主进程共用同一注册实现，严禁双轨），
+ * 本函数保留原导出路径作为兼容委托。
  * @param db better-sqlite3 数据库实例
  */
 export function registerDatabaseFunctions(db: any): void {
-  if (!db || typeof db.function !== 'function') return
-
-  // 注册解压缩函数，使 FTS 触发器在处理 content/multimodal_content/ocr/lrc 等 BLOB 时能透明解压为明文做 trigram 分词
-  try {
-    db.function('decompress_text', { deterministic: true }, (val: unknown) => {
-      return decompressText(val as any)
-    })
-  } catch {
-    // 忽略重复注册异常
-  }
+  registerAnalysisSqlFunctions(db)
 }
 
 /**

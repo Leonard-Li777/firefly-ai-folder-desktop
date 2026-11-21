@@ -100,8 +100,12 @@ export const WorkspaceSetupWizard: React.FC<WorkspaceSetupWizardProps> = ({
   const tier = useTierStore(s => s.tier)
   const isFreeTier = (tier ?? UserTier.FREE) === UserTier.FREE
 
-  // 全局排除规则（用于过滤当前工作区专属排除规则，仅展示工作目录独有配置项）
-  const globalIgnoreRules = useSettingsStore(s => s.ignoreRules)
+  // 全局排除规则的准入基准集：收敛为 isSystem:true 系统硬排除子集。
+  // isSystem:false 同值项是工作流「启用钉子」副本（无论全局启停该目录恒排除），
+  // 严禁纳入补集吸收基准，否则向导提交即物理清剿钉子副本（D3 语义破坏）。
+  // 注：严禁在选择器内 filter（每次返回新数组引用 → zustand 无限重渲染），须 useMemo 派生
+  const ignoreRulesAll = useSettingsStore(s => s.ignoreRules)
+  const globalIgnoreRules = useMemo(() => ignoreRulesAll.filter(r => r.isSystem), [ignoreRulesAll])
   const loadGlobalIgnoreRules = useSettingsStore(s => s.loadIgnoreRules)
 
   useEffect(() => {

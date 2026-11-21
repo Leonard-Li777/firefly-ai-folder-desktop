@@ -100,7 +100,10 @@ export function getRuleLabel(rule: WizardRuleEntry): string {
 
 /**
  * 过滤掉已包含在全局生效排除规则中的项，确保仅保留当前工作区独有排除规则
- * 复用 @firefly/shared 的 filterOutGlobalExclusionRules 与 getExclusionRuleKey，并兼容字符串及 file/extension 跨类型同名文件（如 .DS_Store）
+ * 复用 @firefly/shared 的 filterOutGlobalExclusionRules 与 getExclusionRuleKey。
+ * 同型语义:extension 与 file 的匹配集互斥(file 精确匹配点文件名本身,extension 匹配扩展名),
+ * 严禁跨类型吸收;`*.ds_store` 扩展文件的排除由基线 extension .ds_store(isSystem:true) 同型承担。
+ * 调用方须传入收敛后的准入基准集(isSystem:true 子集),isSystem:false 同值钉子副本严禁在此被剔除。
  */
 export function filterWorkspaceUniqueIgnoreEntries(
   globalRules: readonly IIgnoreRule[],
@@ -111,18 +114,12 @@ export function filterWorkspaceUniqueIgnoreEntries(
   if (activeGlobalRules.length === 0) return [...entries]
 
   const activeGlobalKeys = new Set(activeGlobalRules.map(rule => getExclusionRuleKey(rule)))
-  const activeGlobalFileOrExtValues = new Set<string>()
   const activeGlobalAllValues = new Set<string>()
 
   for (const rule of activeGlobalRules) {
     const valLower = (rule.value || '').trim().toLowerCase()
     if (!valLower) continue
     activeGlobalAllValues.add(valLower)
-    if (rule.type === 'file') {
-      activeGlobalFileOrExtValues.add(valLower)
-    } else if (rule.type === 'extension') {
-      activeGlobalFileOrExtValues.add(valLower.startsWith('.') ? valLower : `.${valLower}`)
-    }
   }
 
   return entries.filter(entry => {
@@ -131,6 +128,7 @@ export function filterWorkspaceUniqueIgnoreEntries(
       if (!rawVal) return false
       const lowerVal = rawVal.toLowerCase()
       if (activeGlobalAllValues.has(lowerVal)) return false
+      // 字符串规则无类型身份,按三类型键宽匹配(仅防预置重复,不涉跨型吸收)
       if (
         activeGlobalKeys.has(getExclusionRuleKey({ type: 'extension', value: rawVal })) ||
         activeGlobalKeys.has(getExclusionRuleKey({ type: 'file', value: rawVal })) ||
@@ -146,17 +144,6 @@ export function filterWorkspaceUniqueIgnoreEntries(
       entry as unknown as IIgnoreRule
     ])
     if (remaining.length === 0) return false
-
-    if (entry.type === 'file' || entry.type === 'extension') {
-      const valLower = (entry.value || '').trim().toLowerCase()
-      const normalizedFileOrExt =
-        entry.type === 'extension' && valLower && !valLower.startsWith('.')
-          ? `.${valLower}`
-          : valLower
-      if (normalizedFileOrExt && activeGlobalFileOrExtValues.has(normalizedFileOrExt)) {
-        return false
-      }
-    }
 
     return true
   })
@@ -298,7 +285,10 @@ export function mapWorkflowToIntent(workflowId: string): WorkspaceConfigIntent {
 }
 
 /** 22 项封闭推荐理由大白话映射函数 (符合 AGENTS.md §2.6 / Zero Jargon 铁律) */
-export function getWorkflowReasonDisplay(reasonCode?: RecommendReasonCode, fallbackText?: string): string {
+export function getWorkflowReasonDisplay(
+  reasonCode?: RecommendReasonCode,
+  fallbackText?: string
+): string {
   switch (reasonCode) {
     case 'photography_raw':
       return t('检测到高价值相机原片，适合专业摄影底片管理')

@@ -290,6 +290,7 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       { id: 'ai-engine', label: t('AI 引擎') },
       { id: 'perception', label: t('感知分析') },
       { id: 'media', label: t('多媒体') },
+      { id: 'media_enhance', label: t('图片视频AI精修') },
       { id: 'parser', label: t('格式解析') }
     ],
     [t]

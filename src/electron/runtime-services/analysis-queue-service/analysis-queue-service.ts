@@ -42,8 +42,12 @@ import { flushFtsSync } from './fts-sync-hooks'
 import {
   WorkerOrchestratorBridge,
   WriteSetBatchDispatcher,
-  type WorkerQueueItem
+  AnalysisDbWriterProcess,
+  type WorkerQueueItem,
+  type WorkerWriteSink,
+  type WriterTailHookPayload
 } from './worker-orchestrator'
+import { createWriterProcessStack, type WriterProcessStack } from './worker-orchestrator/writer-process-wiring'
 import {
   checkExtensionMismatchFiles,
   batchFixFileExtensions,
@@ -98,6 +102,11 @@ export class AnalysisQueueService {
   private engineHealth: EngineHealthTier
   private orphanWatchdog: OrphanWatchdog
   private writeSetBatchDispatcher: WriteSetBatchDispatcher
+  private dbWriterProcess: AnalysisDbWriterProcess
+  /** Stage2 S-B 数据面装配（宿主/本地执行器路由，见 writer-process-wiring.ts） */
+  private writerProcessStack: WriterProcessStack
+  /** Stage2 S-B 数据面路由：按 ANALYSIS_USE_DB_WRITER_PROCESS 特性开关在写进程与本地执行器间分派 */
+  private writerSink: WorkerWriteSink
   private workerBridge: WorkerOrchestratorBridge
   private currentAbortController: AbortController | null = null
 
@@ -122,9 +131,54 @@ export class AnalysisQueueService {
         cloudSyncWorker.triggerSync(delayMs)
       }
     })
+
+    // Stage2 S-B（工单 05）：utilityProcess 独立写进程宿主。
+    // 写连接移至子进程独立 PID（Spec Phase B），子进程复用同一 WriteSetBatchDispatcher
+    // 实现；崩溃由 watchdog 指数退避重启并在 READY 后原序回灌未确认写集（WRITE_SET 不丢），
+    // 连续崩溃超上限时经 onDegradedToLocal 显式降级回本地执行器（严禁静默丢写集）。
+    // 路由装配细节见 writer-process-wiring.ts（保持本文件 <1000 行红线）。
+    this.dbWriterProcess = new AnalysisDbWriterProcess({
+      getDbPath: () => databaseService.getDbPath(),
+      getDisplayLocale: () =>
+        ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN',
+      onWriteAck: ack => this.workerBridge.sendWriteAck(ack),
+      onTailHook: (payload: WriterTailHookPayload) => {
+        if (payload.canonicalWakeups.length > 0) {
+          void canonicalMaintenanceService.runMaintenance('stage2_write_set')
+        }
+        if (payload.workspaceDeletes.length > 0) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] 写进程回传 ${payload.workspaceDeletes.length} 条失效工作区文件删除记录（由 canonical 维护周期兜底收敛）`
+          )
+        }
+        if (payload.cloudSyncDelayMs !== undefined) {
+          cloudSyncWorker.triggerSync(payload.cloudSyncDelayMs)
+        }
+      },
+      onDegradedToLocal: (reason, entries) => {
+        logger.error(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列] 写进程不可用 (reason=${reason})，${entries.length} 个写集显式降级至主进程本地执行器`
+        )
+        this.writerProcessStack.handleDegraded(reason, entries)
+      }
+    })
+
+    // 特性开关热切换：true=写进程（Spec Phase B 绞杀者目标态）；false=主进程本地执行器。
+    const useDbWriterProcess = (): boolean =>
+      ConfigOrchestrator.getInstance().getValue<boolean>('ANALYSIS_USE_DB_WRITER_PROCESS') === true
+    this.writerProcessStack = createWriterProcessStack({
+      dbWriterProcess: this.dbWriterProcess,
+      localDispatcher: this.writeSetBatchDispatcher,
+      useDbWriterProcess,
+      onDegradedAck: ack => this.workerBridge.sendWriteAck(ack)
+    })
+    this.writerSink = this.writerProcessStack.sink
+
     this.workerBridge = new WorkerOrchestratorBridge({
       getDb: () => databaseService.db,
-      writeDispatcher: this.writeSetBatchDispatcher,
+      writeDispatcher: this.writerSink,
       onProgress: (queueId, stage, pct) => {
         this.writeDispatcher.updateItemStatus(queueId, 'analyzing', pct, undefined, {
           analysisStage: stage
@@ -857,6 +911,11 @@ export class AnalysisQueueService {
     return this.writeSetBatchDispatcher
   }
 
+  /** Stage2 S-B：获取 utilityProcess 写进程宿主（供量化验收与可观测性检查） */
+  public getDbWriterProcess(): AnalysisDbWriterProcess {
+    return this.dbWriterProcess
+  }
+
   /** 将文件任务投递至独立 Stage 2 worker_threads 编排线程（B1 生产入口） */
   public enqueueToWorkerOrchestrator(items: WorkerQueueItem[]): boolean {
     return this.workerBridge.enqueue(items)
@@ -879,6 +938,12 @@ export class AnalysisQueueService {
       await this.workerBridge.dispose()
     } catch (err) {
       logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出销毁 WorkerBridge 失败:', err)
+    }
+    try {
+      // Stage2 S-B：写进程随主服务退出优雅关停（SHUTDOWN → 冲刷在途写集 → 等待退出）
+      await this.dbWriterProcess.dispose()
+    } catch (err) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出销毁 DbWriterProcess 失败:', err)
     }
     try {
       this.writeSetBatchDispatcher.resumeFromUi()

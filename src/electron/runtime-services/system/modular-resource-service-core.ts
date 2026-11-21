@@ -52,6 +52,7 @@ import {
   type EmbeddingEpochRecord,
   type DownloadState
 } from '../database/dao/modular-resource-dao'
+import { GENESIS_V1_SCHEMA } from '../database/database'
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
 import { PluginProcessManager, getPluginProcessManager } from './plugin-process-manager'
@@ -1497,18 +1498,140 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 同步执行目录元数据更新（确保 DEFAULT_CATALOG_SEEDS 新增模块落地）
+   * 同步执行目录元数据更新（确保 DEFAULT_CATALOG_SEEDS 全量模块落地）
+   *
+   * 幂等补灌铁律：严禁以 `existing.length === 0`（空库）为灌库守卫——存量库新增内置模块
+   * （如 media_enhance 四个 coming_soon 预占位、file_ai_cover）依赖此处补行，否则插件中心
+   * 读库渲染将永久缺失新模块，而目录插件配置 Tab 读静态常量正常显示，两视图漂移。
+   * syncCatalogSync 自带 catalog_version 回归保护与 IN-04 铁律（绝不覆盖本地
+   * install_state/user_config/config_json），无条件执行安全；服务生命周期内单次执行。
    */
   public ensureDefaultSeeds(): void {
-    const dao = this.getDao()
-    const existing = dao.modules.listAllSync()
-    if (!this.seeded || existing.length === 0) {
+    if (!this.seeded) {
       try {
-        this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
+        let { failedRows } = this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
         this.seeded = true
+        if (failedRows.length > 0) {
+          // 存量库 builtin_modules 表级 CHECK 于建表时固化，创世基线扩充白名单（如
+          // media_enhance）后老库单行插入被拒且无法 ALTER —— 先尝试表级自愈重建
+          // （备份本地状态 → DROP → 按创世基线重建 → 状态回灌 → 重试补灌）
+          const healed = this.rebuildBuiltinModulesTableForGenesisDrift()
+          if (healed) {
+            failedRows = this.syncCatalogSync(DEFAULT_CATALOG_SEEDS).failedRows
+          }
+        }
+        if (failedRows.length > 0) {
+          // 显式上报（禁止静默降级）：自愈后仍被拒绝属真异常，转人工处置
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[catalog_seed_rows_rejected] ${failedRows.length} 行种子被存量表约束拒绝（自愈重建未生效或失败），` +
+              '请删除本地数据库文件后重建（应用未上线无迁移兼容，GENESIS_V1_SCHEMA 已更新）:',
+            failedRows.map(r => `${r.id}: ${r.error}`).join('; ')
+          )
+        }
       } catch (err) {
         logger.warn(LogCategory.SYSTEM, '[ModularResource] 初始化内置目录种子失败:', err)
       }
+    }
+  }
+
+  /**
+   * 判定 builtin_modules 的 category CHECK 白名单是否落后于当前种子清单
+   *
+   * 判据必须语义化（检查种子用到的每个 category 是否出现在库表 CHECK 里），
+   * **严禁拿 sqlite_master.sql 与 GENESIS 原文做整段文本比对**——SQLite 存储时会
+   * 移除 `IF NOT EXISTS` 并规整尾部括号，文本比对恒不相等，会把「检测漂移」退化成
+   * 「每次启动无脑重建」（表数据虽回灌，但属高危操作且白做）。
+   *
+   * @returns true 表示确有 category 被旧 CHECK 挡住，需要表级重建
+   */
+  private isBuiltinModulesCategoryGateDrifted(tableSql: string): boolean {
+    const seedCategories = Array.from(
+      new Set(DEFAULT_CATALOG_SEEDS.map(entry => entry.category).filter(Boolean))
+    )
+    return seedCategories.some(category => !tableSql.includes(`'${category}'`))
+  }
+
+  /**
+   * 表级自愈重建（创世基线漂移，仅供 ensureDefaultSeeds 失败分支调用，严禁扩作通用迁移路径）
+   *
+   * SQLite 表级 CHECK 于建表时固化，存量库的 builtin_modules 在 GENESIS 扩充约束白名单
+   * （如新增 media_enhance 分类）后无法 ALTER，新种子行会被 CHECK 物理拒绝。
+   * builtin_modules 为纯派生表（种子元数据 + 本地安装状态），检测到 category 白名单漂移时：
+   * 备份本地状态行 → 临时关闭外键（防 DROP 级联清空 resource_downloads 等引用行）→
+   * DROP 后按 GENESIS_V1_SCHEMA 全量重建 + 本地状态行回灌（单事务原子，失败整体回滚）→
+   * 外键恢复。应用未上线无迁移兼容，GENESIS_V1_SCHEMA 为唯一创世基线。
+   *
+   * 幂等性由业务结果保证：重建并重试补灌成功后种子行全部在库，下次启动 upsert 不再被拒，
+   * failedRows 为空即不会再次进入本方法，无需额外持久化「已自愈」标记。
+   *
+   * @returns 是否实际执行了重建（category 白名单已完整时返回 false——失败另有原因，不做无谓重建）
+   */
+  private rebuildBuiltinModulesTableForGenesisDrift(): boolean {
+    const db = this.getDb()
+    try {
+      const tableSql = (
+        db
+          .prepare(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'builtin_modules'"
+          )
+          .get() as { sql?: string } | undefined
+      )?.sql
+      if (!tableSql || !this.isBuiltinModulesCategoryGateDrifted(tableSql)) {
+        return false
+      }
+
+      // 1. 备份全部模块行（含本地安装状态与用户配置）
+      const backupRows = db.prepare('SELECT * FROM builtin_modules').all() as Record<
+        string,
+        unknown
+      >[]
+      // 2. 临时关闭外键：DROP 被引用表不得级联清空 resource_downloads / module_resource_downloads 引用行。
+      //    pragma 在事务内无效（必须位于事务外），故手动开关并由 finally 兜底恢复。
+      db.pragma('foreign_keys = OFF')
+      try {
+        // 3. DROP + 重建 + 回灌必须单事务原子完成：SQLite 的 DDL 具备事务性，
+        //    回灌中途任一行失败即整体回滚、旧表原样保留，严禁留下「表已重建但只回灌了部分行」的破状态
+        const rebuildTx = db.transaction(() => {
+          db.exec('DROP TABLE builtin_modules')
+          // 按创世基线全量重建（IF NOT EXISTS 幂等：仅 builtin_modules 与其索引新建）
+          db.exec(GENESIS_V1_SCHEMA)
+          // 本地状态行回灌（旧数据行 category 均在新白名单内，逐行原样恢复）
+          const insertRow = db.prepare(
+            `INSERT OR REPLACE INTO builtin_modules (
+              id, kind, version, catalog_version, category, author_code, author_name,
+              availability, delist_reason, firecore_cost, total_bytes, catalog_meta_json,
+              config_schema, user_config, install_state, selected_variant, install_path,
+              installed_at, last_activated_at, user_consent, error_message, config_json,
+              capability_slot, slot_policy, backend_type
+            ) VALUES (
+              @id, @kind, @version, @catalog_version, @category, @author_code, @author_name,
+              @availability, @delist_reason, @firecore_cost, @total_bytes, @catalog_meta_json,
+              @config_schema, @user_config, @install_state, @selected_variant, @install_path,
+              @installed_at, @last_activated_at, @user_consent, @error_message, @config_json,
+              @capability_slot, @slot_policy, @backend_type
+            )`
+          )
+          for (const row of backupRows) insertRow.run(row)
+        })
+        rebuildTx()
+      } finally {
+        db.pragma('foreign_keys = ON')
+      }
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[builtin_modules_schema_drift_healed] 检测到 builtin_modules 表 DDL 落后于创世基线` +
+          `（CHECK 白名单固化），已自愈重建并回灌 ${backupRows.length} 行本地状态；` +
+          '请重试此前被拒绝的操作'
+      )
+      return true
+    } catch (err) {
+      logger.error(
+        LogCategory.SYSTEM,
+        '[ModularResource] builtin_modules 表级自愈重建失败，请删除本地数据库文件重建:',
+        err
+      )
+      return false
     }
   }
 
@@ -2810,99 +2933,114 @@ export class ModularResourceService implements IModularResourceService {
   private syncCatalogSync(entries: CatalogModuleEntry[]): {
     updated: number
     skippedRegression: number
+    /** 行级失败明细（存量库表级 CHECK 固化旧白名单等约束拒绝），显式上报严禁静默丢弃 */
+    failedRows: Array<{ id: string; error: string }>
   } {
     const db = this.getDb()
     const dao = this.getDao()
     let updated = 0
     let skippedRegression = 0
+    const failedRows: Array<{ id: string; error: string }> = []
 
     const tx = db.transaction((items: CatalogModuleEntry[]) => {
       for (const entry of items) {
-        const existing = dao.modules.findByIdSync(entry.id)
-        const incomingVersion = entry.catalog_version ?? 1
-        if (existing && incomingVersion < (existing.catalog_version ?? 1)) {
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[catalog_version_regression] 忽略低版本目录同步: ${entry.id} (remote=${incomingVersion} < local=${existing.catalog_version})`
-          )
-          skippedRegression++
-          continue
-        }
-
-        // 构造市场展示元数据 JSON（保存 name, description, icon, resources 定义）
-        let existingMeta: Record<string, unknown> = {}
-        if (existing?.catalog_meta_json) {
-          try {
-            existingMeta = JSON.parse(existing.catalog_meta_json)
-          } catch {
-            existingMeta = {}
+        // 行级失败隔离铁律：SQLite 表级 CHECK 于建表时固化（如 category 白名单落后于
+        // 创世基线扩充），单行约束失败严禁拖垮整批种子补灌（better-sqlite3 事务内
+        // catch 不触发回滚）；失败行显式收集，由调用方输出处置指引，严禁静默丢弃
+        try {
+          const existing = dao.modules.findByIdSync(entry.id)
+          const incomingVersion = entry.catalog_version ?? 1
+          if (existing && incomingVersion < (existing.catalog_version ?? 1)) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[catalog_version_regression] 忽略低版本目录同步: ${entry.id} (remote=${incomingVersion} < local=${existing.catalog_version})`
+            )
+            skippedRegression++
+            continue
           }
-        }
 
-        let incomingMeta: Record<string, unknown> = {}
-        if (typeof entry.catalog_meta_json === 'string' && entry.catalog_meta_json.trim()) {
-          try {
-            incomingMeta = JSON.parse(entry.catalog_meta_json)
-          } catch {
-            incomingMeta = {}
+          // 构造市场展示元数据 JSON（保存 name, description, icon, resources 定义）
+          let existingMeta: Record<string, unknown> = {}
+          if (existing?.catalog_meta_json) {
+            try {
+              existingMeta = JSON.parse(existing.catalog_meta_json)
+            } catch {
+              existingMeta = {}
+            }
           }
-        } else if (entry.catalog_meta_json && typeof entry.catalog_meta_json === 'object') {
-          incomingMeta = { ...(entry.catalog_meta_json as Record<string, unknown>) }
-        }
 
-        const mergedMeta: Record<string, unknown> = {
-          ...existingMeta,
-          ...incomingMeta,
-          ...(entry.name ? { name: entry.name } : {}),
-          ...(entry.description ? { description: entry.description } : {}),
-          ...(entry.icon ? { icon: entry.icon } : {}),
-          ...(entry.resources ? { resources: entry.resources } : {})
-        }
+          let incomingMeta: Record<string, unknown> = {}
+          if (typeof entry.catalog_meta_json === 'string' && entry.catalog_meta_json.trim()) {
+            try {
+              incomingMeta = JSON.parse(entry.catalog_meta_json)
+            } catch {
+              incomingMeta = {}
+            }
+          } else if (entry.catalog_meta_json && typeof entry.catalog_meta_json === 'object') {
+            incomingMeta = { ...(entry.catalog_meta_json as Record<string, unknown>) }
+          }
 
-        const configSchemaStr =
-          typeof entry.config_schema === 'string'
-            ? entry.config_schema
-            : entry.config_schema
-              ? JSON.stringify(entry.config_schema)
-              : (existing?.config_schema ?? null)
+          const mergedMeta: Record<string, unknown> = {
+            ...existingMeta,
+            ...incomingMeta,
+            ...(entry.name ? { name: entry.name } : {}),
+            ...(entry.description ? { description: entry.description } : {}),
+            ...(entry.icon ? { icon: entry.icon } : {}),
+            ...(entry.resources ? { resources: entry.resources } : {})
+          }
 
-        const didUpsert = dao.modules.upsertModuleSync({
-          id: entry.id,
-          kind: entry.kind ?? existing?.kind ?? 'builtin-module',
-          version: entry.version,
-          catalog_version: incomingVersion,
-          category: entry.category,
-          capability_slot: entry.capability_slot ?? existing?.capability_slot ?? 'general',
-          slot_policy: entry.slot_policy ?? existing?.slot_policy ?? 'multi_active',
-          backend_type: entry.backend_type ?? existing?.backend_type ?? 'omni_onnx',
-          author_code: entry.author_code ?? existing?.author_code ?? 'official',
-          author_name:
-            entry.author_name !== undefined ? entry.author_name : (existing?.author_name ?? null),
-          availability: entry.availability ?? existing?.availability ?? 'approved',
-          firecore_cost: entry.firecore_cost ?? existing?.firecore_cost ?? 0,
-          total_bytes: entry.total_bytes,
-          catalog_meta_json: JSON.stringify(mergedMeta),
-          config_schema: configSchemaStr,
-          // IN-04 铁律：绝不覆盖已存在的本地 install_state、user_config、config_json
-          install_state: existing
-            ? existing.install_state
-            : (entry.install_state ?? 'not_installed'),
-          user_config: existing ? existing.user_config : null,
-          config_json: existing ? existing.config_json : null,
-          selected_variant: existing ? existing.selected_variant : (entry.selected_variant ?? null),
-          install_path: existing ? existing.install_path : (entry.install_path ?? null)
-        })
+          const configSchemaStr =
+            typeof entry.config_schema === 'string'
+              ? entry.config_schema
+              : entry.config_schema
+                ? JSON.stringify(entry.config_schema)
+                : (existing?.config_schema ?? null)
 
-        if (didUpsert) {
-          updated++
-        } else {
-          skippedRegression++
+          const didUpsert = dao.modules.upsertModuleSync({
+            id: entry.id,
+            kind: entry.kind ?? existing?.kind ?? 'builtin-module',
+            version: entry.version,
+            catalog_version: incomingVersion,
+            category: entry.category,
+            capability_slot: entry.capability_slot ?? existing?.capability_slot ?? 'general',
+            slot_policy: entry.slot_policy ?? existing?.slot_policy ?? 'multi_active',
+            backend_type: entry.backend_type ?? existing?.backend_type ?? 'omni_onnx',
+            author_code: entry.author_code ?? existing?.author_code ?? 'official',
+            author_name:
+              entry.author_name !== undefined ? entry.author_name : (existing?.author_name ?? null),
+            availability: entry.availability ?? existing?.availability ?? 'approved',
+            firecore_cost: entry.firecore_cost ?? existing?.firecore_cost ?? 0,
+            total_bytes: entry.total_bytes,
+            catalog_meta_json: JSON.stringify(mergedMeta),
+            config_schema: configSchemaStr,
+            // IN-04 铁律：绝不覆盖已存在的本地 install_state、user_config、config_json
+            install_state: existing
+              ? existing.install_state
+              : (entry.install_state ?? 'not_installed'),
+            user_config: existing ? existing.user_config : null,
+            config_json: existing ? existing.config_json : null,
+            selected_variant: existing
+              ? existing.selected_variant
+              : (entry.selected_variant ?? null),
+            install_path: existing ? existing.install_path : (entry.install_path ?? null)
+          })
+
+          if (didUpsert) {
+            updated++
+          } else {
+            skippedRegression++
+          }
+        } catch (rowErr) {
+          failedRows.push({
+            id: entry.id,
+            error: rowErr instanceof Error ? rowErr.message : String(rowErr)
+          })
         }
       }
     })
 
     tx(entries)
-    return { updated, skippedRegression }
+    return { updated, skippedRegression, failedRows }
   }
 
   /**
@@ -2911,6 +3049,7 @@ export class ModularResourceService implements IModularResourceService {
   async syncCatalog(entries: CatalogModuleEntry[]): Promise<{
     updated: number
     skippedRegression: number
+    failedRows: Array<{ id: string; error: string }>
   }> {
     try {
       const targetEntries =
@@ -2921,7 +3060,7 @@ export class ModularResourceService implements IModularResourceService {
       try {
         return this.syncCatalogSync(DEFAULT_CATALOG_SEEDS)
       } catch {
-        return { updated: 0, skippedRegression: 0 }
+        return { updated: 0, skippedRegression: 0, failedRows: [] }
       }
     }
   }

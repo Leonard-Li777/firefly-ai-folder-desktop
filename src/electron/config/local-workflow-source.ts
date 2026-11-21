@@ -45,7 +45,11 @@ export const WORKSPACE_CONFIGURABLE_PLUGIN_IDS = [
   'archive_vfs_parser',
   'face_recognition_tool',
   'object_detection_pro',
-  'password_vault_cracker'
+  'password_vault_cracker',
+  'image_video_enhance',
+  'image_video_deobfuscate',
+  'image_video_dewatermark',
+  'file_ai_cover'
 ] as const
 
 export type WorkspacePluginId = (typeof WORKSPACE_CONFIGURABLE_PLUGIN_IDS)[number]
@@ -373,7 +377,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 3, extractPages: 3 },
-    enabledWorkspacePlugins: ['perception_nsfw'],
+    enabledWorkspacePlugins: ['perception_nsfw']
   },
   {
     id: 'builtin.workflow.frontend-dev',
@@ -494,7 +498,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.backend-arch',
@@ -615,7 +619,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.para-universal',
@@ -709,7 +713,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.johnny-decimal',
@@ -807,7 +811,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.photography-raw',
@@ -940,7 +944,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'PHOTO_GALLERY',
-    enabledWorkspacePlugins: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.video-production',
@@ -1069,7 +1073,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'VIDEO_CREATOR',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.academic-thesis',
@@ -1179,7 +1188,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.finance-contract',
@@ -1288,20 +1297,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.finance-contract-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.finance-contract-ignore-3',
         type: 'extension',
         value: '.log',
@@ -1314,39 +1309,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.bak',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-7',
-        type: 'file',
-        value: 'thumbs.db',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.finance-contract-ignore-8',
-        type: 'file',
-        value: 'desktop.ini',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['password_vault_cracker'],
+    enabledWorkspacePlugins: ['password_vault_cracker']
   },
   {
     id: 'builtin.workflow.family-household',
@@ -1456,7 +1423,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5, enableOfficeCover: true },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.newmedia-content',
@@ -1573,8 +1545,19 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [],
     aiPresetKey: 'VIDEO_CREATOR',
-    aiOverrides: { enableImageOcr: true, maxDocumentOcrItems: 3, extractPages: 3, enableOfficeCover: true, videoQuotaMax: 64 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    aiOverrides: {
+      enableImageOcr: true,
+      maxDocumentOcrItems: 3,
+      extractPages: 3,
+      enableOfficeCover: true,
+      videoQuotaMax: 64
+    },
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.ecommerce-ops',
@@ -1676,7 +1659,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['object_detection_pro'],
+    enabledWorkspacePlugins: ['object_detection_pro']
   },
   {
     id: 'builtin.workflow.game-dev-assets',
@@ -1802,7 +1785,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 8, audioAnalysisDurationSec: 60 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.cross-border-ops',
@@ -1896,7 +1879,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     customExcludeRules: [],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['object_detection_pro'],
+    enabledWorkspacePlugins: ['object_detection_pro']
   },
   {
     id: 'builtin.workflow.legal-case-dossier',
@@ -2181,20 +2164,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.legal-case-dossier-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.legal-case-dossier-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.legal-case-dossier-ignore-3',
         type: 'extension',
         value: '.log',
@@ -2205,20 +2174,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.legal-case-dossier-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.legal-case-dossier-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.legal-case-dossier-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -2273,8 +2228,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { videoQuotaMax: 24, maxDocumentOcrItems: 20, extractPages: 15, videoAsrDurationSec: 60, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      videoQuotaMax: 24,
+      maxDocumentOcrItems: 20,
+      extractPages: 15,
+      videoAsrDurationSec: 60,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.clinical-medical-records',
@@ -2523,20 +2484,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.clinical-medical-records-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.clinical-medical-records-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.clinical-medical-records-ignore-3',
         type: 'extension',
         value: '.log',
@@ -2547,20 +2494,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.clinical-medical-records-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.clinical-medical-records-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.clinical-medical-records-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -2616,7 +2549,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.teacher-lesson-prep',
@@ -2857,20 +2790,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.teacher-lesson-prep-ignore-3',
         type: 'extension',
         value: '.log',
@@ -2881,20 +2800,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.teacher-lesson-prep-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.teacher-lesson-prep-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -2950,7 +2855,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 60, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.consulting-due-diligence',
@@ -3207,20 +3112,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.consulting-due-diligence-ignore-3',
         type: 'extension',
         value: '.log',
@@ -3231,20 +3122,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.consulting-due-diligence-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.consulting-due-diligence-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -3299,8 +3176,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      videoQuotaMax: 8,
+      maxDocumentOcrItems: 10,
+      extractPages: 10,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.architectural-cad-design',
@@ -3601,20 +3483,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.architectural-cad-design-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.architectural-cad-design-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.architectural-cad-design-ignore-3',
         type: 'extension',
         value: '.log',
@@ -3625,20 +3493,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.architectural-cad-design-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.architectural-cad-design-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.architectural-cad-design-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -3721,8 +3575,15 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
-    aiOverrides: { enableImageOcr: true, maxDocumentOcrItems: 3, extractPages: 5, enableOfficeCover: true, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      enableImageOcr: true,
+      maxDocumentOcrItems: 3,
+      extractPages: 5,
+      enableOfficeCover: true,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.writing-publishing-pipeline',
@@ -3927,20 +3788,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.writing-publishing-pipeline-ignore-3',
         type: 'extension',
         value: '.log',
@@ -3951,20 +3798,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.writing-publishing-pipeline-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.writing-publishing-pipeline-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -4020,7 +3853,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, extractPages: 10, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.wellness-health-portfolio',
@@ -4221,20 +4054,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.wellness-health-portfolio-ignore-3',
         type: 'extension',
         value: '.log',
@@ -4245,20 +4064,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.wellness-health-portfolio-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.wellness-health-portfolio-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -4314,7 +4119,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.pm-product-workflow',
@@ -4537,20 +4342,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pm-product-workflow-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pm-product-workflow-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pm-product-workflow-ignore-3',
         type: 'extension',
         value: '.log',
@@ -4561,20 +4352,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.pm-product-workflow-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pm-product-workflow-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pm-product-workflow-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -4630,7 +4407,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.data-science-analytics',
@@ -5013,20 +4790,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.data-science-analytics-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.data-science-analytics-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.data-science-analytics-ignore-3',
         type: 'extension',
         value: '.log',
@@ -5037,20 +4800,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.data-science-analytics-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.data-science-analytics-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.data-science-analytics-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -5120,7 +4869,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'CODE_DEVOPS',
     aiOverrides: { enableOfficeCover: true, extractPages: 3 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.qa-testing-lifecycle',
@@ -5463,37 +5212,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.qa-testing-lifecycle-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-4',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-lifecycle-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -5569,8 +5290,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      enableOfficeCover: false,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.sales-pipeline-crm',
@@ -5809,20 +5535,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.sales-pipeline-crm-ignore-3',
         type: 'extension',
         value: '.log',
@@ -5833,20 +5545,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.sales-pipeline-crm-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.sales-pipeline-crm-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -5901,8 +5599,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoQuotaMax: 8, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      maxDocumentOcrItems: 10,
+      extractPages: 5,
+      videoQuotaMax: 8,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.hr-people-operations',
@@ -6129,20 +5832,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.hr-people-operations-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.hr-people-operations-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.hr-people-operations-ignore-3',
         type: 'extension',
         value: '.log',
@@ -6153,20 +5842,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.hr-people-operations-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.hr-people-operations-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.hr-people-operations-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -6222,7 +5897,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.marketing-campaign-imc',
@@ -6537,20 +6212,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.marketing-campaign-imc-ignore-3',
         type: 'extension',
         value: '.log',
@@ -6561,20 +6222,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.marketing-campaign-imc-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.marketing-campaign-imc-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -6630,7 +6277,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 48, videoAsrDurationSec: 60, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.corporate-legal-compliance',
@@ -6893,20 +6540,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.corporate-legal-compliance-ignore-3',
         type: 'extension',
         value: '.log',
@@ -6917,20 +6550,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.corporate-legal-compliance-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.corporate-legal-compliance-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -6985,8 +6604,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { maxDocumentOcrItems: 20, extractPages: 15, videoQuotaMax: 8, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    aiOverrides: {
+      maxDocumentOcrItems: 20,
+      extractPages: 15,
+      videoQuotaMax: 8,
+      audioAnalysisDurationSec: 120
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.embedded-iot-firmware',
@@ -7281,30 +6905,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.embedded-iot-firmware-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-4',
-        type: 'extension',
-        value: '.swp',
         isActive: true,
         isSystem: true
       },
@@ -7342,18 +6945,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.pyc',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.embedded-iot-firmware-ignore-10',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
     aiOverrides: { extractPages: 3 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.creative-assets',
@@ -7656,20 +7252,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.creative-assets-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.creative-assets-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.creative-assets-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -7696,18 +7278,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.creative-assets-ignore-7',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 48, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.freelance-business-delivery',
@@ -7926,20 +7501,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.freelance-business-delivery-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -7950,20 +7511,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.freelance-business-delivery-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.freelance-business-delivery-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -7991,7 +7538,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.pkm-knowledge-vault',
@@ -8130,20 +7677,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pkm-knowledge-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8158,20 +7691,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pkm-knowledge-vault-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pkm-knowledge-vault-ignore-7',
         type: 'extension',
         value: '.exe',
@@ -8181,7 +7700,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { enableOfficeCover: false, extractPages: 10, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.gaming',
@@ -8480,20 +7999,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.gaming-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.gaming-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.gaming-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8504,13 +8009,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.gaming-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.gaming-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -8531,7 +8029,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.novel',
@@ -8694,20 +8192,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.novel-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.novel-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.novel-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -8718,13 +8202,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.novel-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.novel-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -8744,8 +8221,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { enableImageOcr: false, maxDocumentOcrItems: 0, extractPages: 15, enableOfficeCover: false, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser'],
+    aiOverrides: {
+      enableImageOcr: false,
+      maxDocumentOcrItems: 0,
+      extractPages: 15,
+      enableOfficeCover: false,
+      videoQuotaMax: 8
+    },
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.movie-cinema',
@@ -9023,20 +8506,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.movie-cinema-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.movie-cinema-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.movie-cinema-ignore-3',
         type: 'extension',
         value: '.part',
@@ -9058,13 +8527,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.movie-cinema-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.movie-cinema-ignore-7',
         type: 'extension',
         value: '.exe',
@@ -9074,7 +8536,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'VIDEO_CREATOR',
     aiOverrides: { videoQuotaMax: 64 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ],
     mediaFlags: { tsAsVideo: true }
   },
   {
@@ -9283,20 +8751,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.anime-comic-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.anime-comic-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.anime-comic-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9307,13 +8761,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.anime-comic-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.anime-comic-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9334,7 +8781,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 8, audioAnalysisDurationSec: 60 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.pc-hardware-gear',
@@ -9526,20 +8973,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pc-hardware-gear-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pc-hardware-gear-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pc-hardware-gear-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9550,13 +8983,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.pc-hardware-gear-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pc-hardware-gear-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -9577,7 +9003,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.cooking-recipes-vault',
@@ -9729,20 +9155,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.cooking-recipes-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cooking-recipes-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cooking-recipes-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9757,13 +9169,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.cooking-recipes-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cooking-recipes-vault-ignore-6',
         type: 'extension',
         value: '.exe',
@@ -9773,7 +9178,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.pet-care-diary',
@@ -9904,20 +9309,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.pet-care-diary-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.pet-care-diary-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pet-care-diary-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -9932,13 +9323,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.pet-care-diary-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.pet-care-diary-ignore-6',
         type: 'extension',
         value: '.exe',
@@ -9948,7 +9332,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.travel-outdoor-journey',
@@ -10196,20 +9580,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.travel-outdoor-journey-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.travel-outdoor-journey-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.travel-outdoor-journey-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -10220,13 +9590,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.travel-outdoor-journey-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.travel-outdoor-journey-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -10247,7 +9610,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 32, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.music-audio',
@@ -10530,20 +9897,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.music-audio-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.music-audio-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.music-audio-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -10554,13 +9907,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.music-audio-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.music-audio-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -10581,7 +9927,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'AUDIO_VOICE_RECORD',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.graphic-brand-design',
@@ -10798,20 +10144,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.graphic-brand-design-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.graphic-brand-design-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.graphic-brand-design-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -10824,25 +10156,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.graphic-brand-design-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.graphic-brand-design-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser', 'object_detection_pro'],
+    enabledWorkspacePlugins: ['archive_vfs_parser', 'object_detection_pro']
   },
   {
     id: 'builtin.workflow.illustration-cg-art',
@@ -11082,20 +10400,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.illustration-cg-art-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.illustration-cg-art-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.illustration-cg-art-ignore-3',
         type: 'extension',
         value: '.log',
@@ -11110,20 +10414,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.illustration-cg-art-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.illustration-cg-art-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.illustration-cg-art-ignore-7',
         type: 'extension',
         value: '.crdownload',
@@ -11132,7 +10422,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
-    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.mobile-app-dev',
@@ -11479,20 +10769,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.mobile-app-dev-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.mobile-app-dev-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -11503,20 +10779,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.mobile-app-dev-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.mobile-app-dev-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -11557,7 +10819,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.cloud-native-sre',
@@ -11840,37 +11102,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.cloud-native-sre-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cloud-native-sre-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cloud-native-sre-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cloud-native-sre-ignore-4',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cloud-native-sre-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -11905,7 +11139,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'CODE_DEVOPS',
     aiOverrides: { extractPages: 3 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.supply-chain-logistics',
@@ -12089,30 +11323,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.supply-chain-logistics-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.supply-chain-logistics-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.supply-chain-logistics-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.supply-chain-logistics-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -12133,7 +11346,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.study-abroad-application',
@@ -12272,30 +11485,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.study-abroad-application-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.study-abroad-application-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.study-abroad-application-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.study-abroad-application-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -12316,7 +11508,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: ['archive_vfs_parser', 'password_vault_cracker']
   },
   {
     id: 'builtin.workflow.desktop-declutter',
@@ -12560,30 +11752,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.desktop-declutter-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-declutter-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.desktop-declutter-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-declutter-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -12618,7 +11789,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { videoQuotaMax: 16, audioAnalysisDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.downloads-triage',
@@ -13093,27 +12264,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.downloads-triage-ignore-6',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.downloads-triage-ignore-7',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.downloads-triage-ignore-8',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.downloads-triage-ignore-9',
         type: 'extension',
         value: '.db',
@@ -13122,7 +12272,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
   },
   {
     id: 'builtin.workflow.inbox-staging-universal',
@@ -13316,30 +12471,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.inbox-staging-universal-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.inbox-staging-universal-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.inbox-staging-universal-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.inbox-staging-universal-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -13359,8 +12493,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5, enableOfficeCover: true, videoQuotaMax: 16 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    aiOverrides: {
+      maxDocumentOcrItems: 5,
+      extractPages: 5,
+      enableOfficeCover: true,
+      videoQuotaMax: 16
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.desktop-classic-classification',
@@ -13626,30 +12765,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.desktop-classic-classification-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-classic-classification-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.desktop-classic-classification-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.desktop-classic-classification-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -13677,7 +12795,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { videoQuotaMax: 16, audioAnalysisDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.qa-testing-asset-vault',
@@ -13966,37 +13084,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.qa-testing-asset-vault-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-4',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.qa-testing-asset-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14009,8 +13099,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', enableOfficeCover: false, videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      enableOfficeCover: false,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.k12-education-vault',
@@ -14224,30 +13319,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.k12-education-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-education-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.k12-education-vault-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-education-vault-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14274,8 +13348,15 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', maxDocumentOcrItems: 10, extractPages: 5, videoQuotaMax: 24, videoAsrDurationSec: 30, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      maxDocumentOcrItems: 10,
+      extractPages: 5,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 90
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.k12-school-term-pipeline',
@@ -14426,30 +13507,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.k12-school-term-pipeline-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-school-term-pipeline-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.k12-school-term-pipeline-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.k12-school-term-pipeline-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14469,8 +13529,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
-    aiOverrides: { ocrModelSize: 'small', maxDocumentOcrItems: 10, extractPages: 5, videoAsrDurationSec: 30, audioAnalysisDurationSec: 60 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    aiOverrides: {
+      ocrModelSize: 'small',
+      maxDocumentOcrItems: 10,
+      extractPages: 5,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 60
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.senior-life-archive',
@@ -14691,30 +13757,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.senior-life-archive-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-life-archive-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.senior-life-archive-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-life-archive-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14741,8 +13786,18 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'PHOTO_GALLERY',
-    aiOverrides: { extractPages: 3, videoQuotaMax: 24, videoAsrDurationSec: 30, audioAnalysisDurationSec: 90 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    aiOverrides: {
+      extractPages: 3,
+      videoQuotaMax: 24,
+      videoAsrDurationSec: 30,
+      audioAnalysisDurationSec: 90
+    },
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'archive_vfs_parser',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ]
   },
   {
     id: 'builtin.workflow.senior-medical-care-pipeline',
@@ -14883,30 +13938,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.senior-medical-care-pipeline-ignore-3',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.senior-medical-care-pipeline-ignore-4',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -14927,7 +13961,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['archive_vfs_parser'],
+    enabledWorkspacePlugins: ['archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.office-docs',
@@ -15100,20 +14134,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.office-docs-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-docs-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.office-docs-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -15126,25 +14146,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-docs-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-docs-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.office-document-dispatch-flow',
@@ -15293,20 +14299,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.office-document-dispatch-flow-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -15319,25 +14311,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.office-document-dispatch-flow-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.household-dossier-vault',
@@ -15482,20 +14460,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.household-dossier-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.household-dossier-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.household-dossier-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -15508,25 +14472,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.household-dossier-vault-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.household-dossier-vault-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: ['password_vault_cracker'],
+    enabledWorkspacePlugins: ['password_vault_cracker']
   },
   {
     id: 'builtin.workflow.media-collector-vault',
@@ -15821,20 +14771,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.media-collector-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.media-collector-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.media-collector-vault-ignore-3',
         type: 'extension',
         value: '.part',
@@ -15870,13 +14806,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.media-collector-vault-ignore-8',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.media-collector-vault-ignore-9',
         type: 'extension',
         value: '.exe',
@@ -15893,7 +14822,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'VIDEO_CREATOR',
     aiOverrides: { videoQuotaMax: 48, extractPages: 5, audioAnalysisDurationSec: 120 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'face_recognition_tool', 'object_detection_pro'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'face_recognition_tool',
+      'object_detection_pro'
+    ],
     mediaFlags: { tsAsVideo: true }
   },
   {
@@ -16200,37 +15135,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.code-asset-vault-ignore-2',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.code-asset-vault-ignore-3',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.code-asset-vault-ignore-4',
         type: 'extension',
         value: '.bak',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.code-asset-vault-ignore-5',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.code-asset-vault-ignore-6',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -16292,7 +15199,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.system-cache-appdata-vault',
@@ -16451,7 +15358,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'CODE_DEVOPS',
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.chat-software-vault',
@@ -16685,20 +15592,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.chat-software-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.chat-software-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.chat-software-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -16709,13 +15602,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.chat-software-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.chat-software-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -16757,7 +15643,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { maxDocumentOcrItems: 5, videoQuotaMax: 16 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
   },
   {
     id: 'builtin.workflow.cross-device-transfer-vault',
@@ -16991,20 +15882,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.cross-device-transfer-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cross-device-transfer-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.cross-device-transfer-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17015,13 +15892,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.cross-device-transfer-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.cross-device-transfer-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -17041,7 +15911,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
   },
   {
     id: 'builtin.workflow.screenshots-screenrecord-vault',
@@ -17149,20 +16019,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17173,13 +16029,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.screenshots-screenrecord-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -17199,8 +16048,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
-    aiOverrides: { maxDocumentOcrItems: 5, extractPages: 3, videoQuotaMax: 32, videoAsrDurationSec: 45 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw'],
+    aiOverrides: {
+      maxDocumentOcrItems: 5,
+      extractPages: 3,
+      videoQuotaMax: 32,
+      videoAsrDurationSec: 45
+    },
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw']
   },
   {
     id: 'builtin.workflow.scratchpad-drafts-vault',
@@ -17305,20 +16159,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.scratchpad-drafts-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17331,25 +16171,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scratchpad-drafts-vault-ignore-6',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { enableOfficeCover: false, maxDocumentOcrItems: 3, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.external-storage-vault',
@@ -17663,20 +16489,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.external-storage-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.external-storage-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.external-storage-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17687,20 +16499,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.external-storage-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.external-storage-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.external-storage-vault-ignore-6',
-        type: 'extension',
-        value: '.swp',
         isActive: true,
         isSystem: true
       },
@@ -17721,7 +16519,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'MIXED_INBOX',
     aiOverrides: { maxDocumentOcrItems: 5, extractPages: 5 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser', 'password_vault_cracker'],
+    enabledWorkspacePlugins: [
+      'asr_sensevoice_onnx',
+      'perception_nsfw',
+      'archive_vfs_parser',
+      'password_vault_cracker'
+    ]
   },
   {
     id: 'builtin.workflow.scanned-documents-vault',
@@ -17819,20 +16622,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.scanned-documents-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.scanned-documents-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.scanned-documents-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -17847,13 +16636,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         isSystem: true
       },
       {
-        id: 'builtin.workflow.scanned-documents-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.scanned-documents-vault-ignore-6',
         type: 'extension',
         value: '.gif',
@@ -17863,7 +16645,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'SCAN_DOSSIER_OCR',
     aiOverrides: { maxDocumentOcrItems: 20, extractPages: 15, videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.docs-office-vault',
@@ -18001,20 +16783,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.docs-office-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-office-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.docs-office-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -18027,25 +16795,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         value: '.log',
         isActive: true,
         isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-office-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-office-vault-ignore-6',
-        type: 'extension',
-        value: '.swp',
-        isActive: true,
-        isSystem: true
       }
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   },
   {
     id: 'builtin.workflow.docs-study-research-vault',
@@ -18247,20 +17001,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     customExcludeRules: [
       {
-        id: 'builtin.workflow.docs-study-research-vault-ignore-1',
-        type: 'extension',
-        value: '.tmp',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-study-research-vault-ignore-2',
-        type: 'extension',
-        value: '.temp',
-        isActive: true,
-        isSystem: true
-      },
-      {
         id: 'builtin.workflow.docs-study-research-vault-ignore-3',
         type: 'extension',
         value: '.bak',
@@ -18271,13 +17011,6 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
         id: 'builtin.workflow.docs-study-research-vault-ignore-4',
         type: 'extension',
         value: '.log',
-        isActive: true,
-        isSystem: true
-      },
-      {
-        id: 'builtin.workflow.docs-study-research-vault-ignore-5',
-        type: 'extension',
-        value: '.ds_store',
         isActive: true,
         isSystem: true
       },
@@ -18305,32 +17038,83 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     aiOverrides: { videoQuotaMax: 8, maxDocumentOcrItems: 10, extractPages: 10 },
-    enabledWorkspacePlugins: [],
+    enabledWorkspacePlugins: []
   }
 ]
 
-
 /** 纯音频媒介扩展集合（排除纯乐谱 .mid/.midi，§3.2 冻结清单） */
 const AUDIO_MEDIA_EXTS: ReadonlySet<string> = new Set([
-  '.mp3', '.wav', '.flac', '.m4a', '.m4b', '.aac', '.ogg', '.wma', '.opus',
-  '.amr', '.ape', '.dsf', '.dff', '.aif', '.aiff', '.caf', '.wv', '.mka'
+  '.mp3',
+  '.wav',
+  '.flac',
+  '.m4a',
+  '.m4b',
+  '.aac',
+  '.ogg',
+  '.wma',
+  '.opus',
+  '.amr',
+  '.ape',
+  '.dsf',
+  '.dff',
+  '.aif',
+  '.aiff',
+  '.caf',
+  '.wv',
+  '.mka'
 ])
 
 /** 视频媒介扩展集合（.ts 仅在 mediaFlags.tsAsVideo 白名单下计入，§3.2 冻结清单） */
 const VIDEO_MEDIA_EXTS: ReadonlySet<string> = new Set([
-  '.mp4', '.mov', '.mkv', '.avi', '.wmv', '.flv', '.webm', '.rmvb', '.m2ts',
-  '.mts', '.3gp', '.m4v', '.insv', '.vob', '.f4v', '.divx', '.rm'
+  '.mp4',
+  '.mov',
+  '.mkv',
+  '.avi',
+  '.wmv',
+  '.flv',
+  '.webm',
+  '.rmvb',
+  '.m2ts',
+  '.mts',
+  '.3gp',
+  '.m4v',
+  '.insv',
+  '.vob',
+  '.f4v',
+  '.divx',
+  '.rm'
 ])
 
 /** Office 文档媒介扩展集合（§3.2 冻结清单） */
 const OFFICE_MEDIA_EXTS: ReadonlySet<string> = new Set([
-  '.doc', '.docx', '.docm', '.ppt', '.pptx', '.pptm', '.pps', '.ppsx',
-  '.xls', '.xlsx', '.xlsm', '.xlsb', '.wps', '.et', '.dps', '.odt', '.ods', '.odp'
+  '.doc',
+  '.docx',
+  '.docm',
+  '.ppt',
+  '.pptx',
+  '.pptm',
+  '.pps',
+  '.ppsx',
+  '.xls',
+  '.xlsx',
+  '.xlsm',
+  '.xlsb',
+  '.wps',
+  '.et',
+  '.dps',
+  '.odt',
+  '.ods',
+  '.odp'
 ])
 
 /** 多义/非媒介消歧后缀：一律不参与媒介猜想（防 .dts 等后缀误触发 ASR，§3.2） */
 const NON_MEDIA_AMBIGUOUS_EXTS: ReadonlySet<string> = new Set([
-  '.dts', '.mod', '.dat', '.svg', '.svgz', '.iso'
+  '.dts',
+  '.mod',
+  '.dat',
+  '.svg',
+  '.svgz',
+  '.iso'
 ])
 
 /** 门禁自动填充常量 (§3.2 [V12-E12]) */
@@ -18463,9 +17247,7 @@ export function validateWorkflowMediaConsistency(
         final.baseAIConfig.audioAnalysisDurationSec > 0
       )
     ) {
-      throw new Error(
-        `[WorkflowMediaGate] 工作流 ${def.id} 含音视频扩展但视频/音频 ASR 时长均为 0`
-      )
+      throw new Error(`[WorkflowMediaGate] 工作流 ${def.id} 含音视频扩展但视频/音频 ASR 时长均为 0`)
     }
   }
   if (!media.hasOffice && final.baseAIConfig.enableOfficeCover) {
