@@ -1851,7 +1851,7 @@
     "$files": ["src/renderer/components/settings/analysis-exclusion-rules-settings.tsx(5872-5922)"],
     "$id": 28550
   },
-  "忽略规则列表": {
+  "排除规则列表": {
     "en-US": "Ignore Rules List",
     "es-ES": "Lista de reglas a ignorar",
     "ar-EG": "تجاهل قائمة القواعد",

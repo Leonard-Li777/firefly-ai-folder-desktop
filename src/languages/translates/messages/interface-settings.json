@@ -314,7 +314,7 @@
     "$files": ["src/renderer/components/settings/interface-settings.tsx(21765-21773)"],
     "$id": 3137
   },
-  "插件与模型存储目录": {
+  "插件存储目录": {
     "en-US": "Plug-in and model storage directory",
     "es-ES": "Directorio de almacenamiento de modelos y complementos",
     "ar-EG": "دليل تخزين المكونات الإضافية والنماذج",

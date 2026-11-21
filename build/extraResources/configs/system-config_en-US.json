@@ -11,12 +11,14 @@
       "[File tag upgrade] Enrich fact tag types, the tags are more accurate and interpretable, and the tag tree supports 10 levels of expansion",
       "[Creator Material Optimization] For designers and self-media, special optimization of audio, video and picture material sorting",
       "[Enhanced Sensitive Content Detection] Segmentally identify pornographic, violent, terrorist, political, abusive, bloody and other illegal content and its subcategories",
-      "[Five major batch sorting modes] Identity blueprint / intelligent clustering / external AI generated directory / file derivation directory tree / custom directory tree, processing thousands of files in seconds",
+      "【工作流】内置70+套工作流适配文件整理的各种场景，无需复杂配置,轻松上手文件整理",
+      "【五大批量整理模式】身份蓝图、智能聚类... 等全新整理模式，秒级处理数千文件",
       "[Identity Blueprint (Recommended)] Select industry roles, four-stage optimization, and classify all files in milliseconds on the client side",
       "[Intelligent Clustering] End-side HAC unsupervised clustering, generate directory trees in milliseconds, classify all files in seconds, and support real-time fine-tuning",
       "[External AI generated directory] Copy prompt words to Doubao, Kimi, ChatGPT with one click, and preview and organize the results in real time",
       "[Deriving directory trees from files] The advanced AI engine outputs 3 sets of directory candidates at a time, and automatic classification is selected",
       "[Customized directory tree] Paste Markdown directory, double-column real-time preview, and build exclusive organizing rules",
+      "【智能休眠】智能感知用户操作，在低内存水位线，功能闲置时自动释放内存占用",
       "[In-depth UI optimization] Reconstruct the setting page structure, add a new guide and help entrance, and make the operation more intuitive."
     ],
     "forceUpdate": false

@@ -1252,7 +1252,7 @@
     "$files": ["src/renderer/components/settings/analysis-settings.tsx(58526-58543)"],
     "$id": 2684
   },
-  "AI分析忽略规则": {
+  "文件排除规则": {
     "en-US": "AI Analysis Ignore Rules  ",
     "es-ES": "Reglas de exclusión para análisis de IA",
     "ar-EG": "قواعد تجاهل تحليل الذكاء الاصطناعي  ",
