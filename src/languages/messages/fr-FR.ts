@@ -12650,5 +12650,14 @@ export default {
   '38604': 'Libération totale: environ {size}',
   '38605': 'Libéré',
   '38606':
-    'Démarrer le moteur de recherche pour la première fois et tester la fonction de recherche, cela prend généralement environ 1 minute, veuillez patienter...'
+    'Démarrer le moteur de recherche pour la première fois et tester la fonction de recherche, cela prend généralement environ 1 minute, veuillez patienter...',
+  '38607': 'Flux de travail lié : {name}',
+  '38608': 'Aucun flux de travail lié, configuration globale par défaut actuellement utilisée',
+  '38609':
+    'Ce dossier est organisé selon les paramètres d’analyse et les règles de fichiers définis par le flux de travail',
+  '38610': 'Aucun plan dédié n’a encore été attribué à ce dossier',
+  '38611': '{count} paramètres personnalisés en plus',
+  '38612': 'Choisir un nouveau flux de travail et remplacer le plan actuel',
+  '38613': 'Ouvrir l’assistant pour choisir un plan d’organisation adapté à ce dossier',
+  '38614': 'Relier à nouveau le flux de travail'
 }

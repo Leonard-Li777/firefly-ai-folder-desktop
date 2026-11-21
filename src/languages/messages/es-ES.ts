@@ -12613,5 +12613,14 @@ export default {
   '38604': 'Liberación total: aproximadamente {size}',
   '38605': 'Liberado',
   '38606':
-    'Al iniciar el motor de búsqueda por primera vez y probar la función de búsqueda, generalmente toma alrededor de 1 minuto, espere...'
+    'Al iniciar el motor de búsqueda por primera vez y probar la función de búsqueda, generalmente toma alrededor de 1 minuto, espere...',
+  '38607': 'Flujo de trabajo vinculado: {name}',
+  '38608': 'Ningún flujo de trabajo vinculado; se usa la configuración predeterminada global',
+  '38609':
+    'Esta carpeta se organiza según los parámetros de análisis y las reglas de archivo del flujo de trabajo',
+  '38610': 'Aún no se ha asignado un plan dedicado a esta carpeta',
+  '38611': '{count} configuraciones personalizadas adicionales',
+  '38612': 'Elegir un nuevo flujo de trabajo y reemplazar el plan actual',
+  '38613': 'Abrir el asistente para elegir un plan de organización adecuado para esta carpeta',
+  '38614': 'Volver a vincular el flujo de trabajo'
 }

@@ -12548,5 +12548,14 @@ export default {
   '38604': 'Libertação Total: aproximadamente {size}',
   '38605': 'Lançado',
   '38606':
-    'Iniciando o mecanismo de pesquisa pela primeira vez e testando a função de pesquisa, geralmente leva cerca de 1 minuto, aguarde...'
+    'Iniciando o mecanismo de pesquisa pela primeira vez e testando a função de pesquisa, geralmente leva cerca de 1 minuto, aguarde...',
+  '38607': 'Fluxo de trabalho vinculado: {name}',
+  '38608': 'Nenhum fluxo de trabalho vinculado; usando a configuração padrão global',
+  '38609':
+    'Esta pasta é organizada pelos parâmetros de análise e regras de arquivo definidos pelo fluxo de trabalho',
+  '38610': 'Nenhum plano dedicado foi atribuído a esta pasta ainda',
+  '38611': 'Mais {count} configurações personalizadas',
+  '38612': 'Escolher um novo fluxo de trabalho e substituir o plano atual',
+  '38613': 'Abrir o assistente para escolher um plano de organização adequado para esta pasta',
+  '38614': 'Vincular novamente o fluxo de trabalho'
 }

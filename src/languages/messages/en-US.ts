@@ -12424,5 +12424,13 @@ export default {
   '38604': 'Total release: approximately {size}',
   '38605': 'Released',
   '38606':
-    'Starting the search engine for the first time and testing the search function, it usually takes about 1 minute, please wait...'
+    'Starting the search engine for the first time and testing the search function, it usually takes about 1 minute, please wait...',
+  '38607': 'Bound workflow: {name}',
+  '38608': 'No workflow bound, currently using the global default configuration',
+  '38609': 'This folder is organized by the analysis parameters and file rules set by the workflow',
+  '38610': 'No dedicated plan has been assigned to this folder yet',
+  '38611': '{count} custom settings in addition',
+  '38612': 'Pick a new workflow and replace the current plan',
+  '38613': 'Open the wizard to pick a suitable organization plan for this folder',
+  '38614': 'Rebind workflow'
 }

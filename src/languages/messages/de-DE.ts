@@ -12624,5 +12624,14 @@ export default {
   '38604': 'Gesamtfreigabe: ungefähr {size}',
   '38605': 'Freigegeben',
   '38606':
-    'Das erste Starten der Suchmaschine und das Testen der Suchfunktion dauert in der Regel etwa 1 Minute, bitte warten Sie...'
+    'Das erste Starten der Suchmaschine und das Testen der Suchfunktion dauert in der Regel etwa 1 Minute, bitte warten Sie...',
+  '38607': 'Gebundener Workflow: {name}',
+  '38608': 'Kein Workflow gebunden, derzeit wird die globale Standardkonfiguration verwendet',
+  '38609':
+    'Dieser Ordner wird nach den vom Workflow festgelegten Analyseparametern und Dateiregeln sortiert',
+  '38610': 'Für diesen Ordner ist noch kein eigener Plan festgelegt',
+  '38611': '{count} weitere benutzerdefinierte Einstellungen',
+  '38612': 'Neuen Workflow wählen und den aktuellen Plan ersetzen',
+  '38613': 'Assistent öffnen, um einen passenden Sortierplan für diesen Ordner zu wählen',
+  '38614': 'Workflow erneut binden'
 }
