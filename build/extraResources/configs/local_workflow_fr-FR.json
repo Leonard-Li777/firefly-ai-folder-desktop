@@ -23160,6 +23160,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier complet de planification de mariage",
@@ -23468,6 +23469,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier du cycle de vie complet du véhicule",
@@ -23673,7 +23675,7 @@
             "name": "Dossier d'inspection annuelle"
           },
           {
-            "name": "车船税"
+            "name": "Taxe sur les véhicules et les bateaux"
           }
         ]
       },
@@ -23731,6 +23733,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier de croissance et d'éducation de l'enfant",
@@ -23974,6 +23977,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Gestion financière familiale et comptabilité des investissements",
@@ -24255,6 +24259,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Centre des polices d'assurance habitation",
@@ -24519,6 +24524,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Production de podcasts et d'émissions audio",
@@ -24833,6 +24839,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Atelier d'impression 3D et de fabrication créative",
@@ -25109,6 +25116,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier des figurines et des objets de collection",
@@ -25359,7 +25367,7 @@
             "name": "Enregistrement des échanges"
           },
           {
-            "name": "市场行情"
+            "name": "Conditions du marché"
           }
         ]
       }
@@ -25369,13 +25377,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "Contenu généré par l'IA et lexique d'invite",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "Créateur de contenu lourd généré par l'IA et ingénieur de mots rapides",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "Les gros utilisateurs d'IA, MJ et SD, dessinent des images, des vidéos d'IA, des produits de dialogue GPT, génèrent des vidéos d'images, des paramètres de mots d'invite, la configuration du flux de travail de la version du modèle et l'archivage de portefeuille sélectionné, le nouvel actif qui connaît la croissance la plus rapide en ce moment.",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25594,72 +25603,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-Générer une image",
         "children": [
           {
-            "name": "文生图"
+            "name": "Image vincentienne"
           },
           {
-            "name": "图生图"
+            "name": "Tu Sheng Tu"
           },
           {
-            "name": "局部重绘"
+            "name": "redessiner partiellement"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-Générer une vidéo",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "La vidéo IA dans les films"
           },
           {
-            "name": "图生视频"
+            "name": "vidéo Tusheng"
           },
           {
-            "name": "视频工作流"
+            "name": "Flux de travail vidéo"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-Mots et paramètres d'invite",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "mots indicateurs positifs"
           },
           {
-            "name": "反向提示词"
+            "name": "mot d'invite inversé"
           },
           {
-            "name": "种子参数"
+            "name": "Paramètres de départ"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-Modèle et flux de travail",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "Poids des grands modèles"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "Configuration du flux de travail"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-Collection d'œuvres sélectionnées",
         "children": [
           {
-            "name": "精选图集"
+            "name": "Galerie en vedette"
           },
           {
-            "name": "作品标注"
+            "name": "Annotation de travail"
           },
           {
-            "name": "复现参数"
+            "name": "Paramètres de reproduction"
           }
         ]
       }

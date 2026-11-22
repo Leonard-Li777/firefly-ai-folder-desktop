@@ -23160,6 +23160,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "ملف خطة حفل الزفاف الكاملة",
@@ -23468,6 +23469,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "سجل دورة حياة السيارة بالكامل",
@@ -23731,6 +23733,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "سجل نمو الطفل وتربيته",
@@ -23916,7 +23919,7 @@
         "name": "02- اللقاحات والفحوصات الطبية",
         "children": [
           {
-            "name": "疫苗本扫描"
+            "name": "مسح كتاب اللقاحات"
           },
           {
             "name": "نموذج الفحص الطبي لرعاية الطفل"
@@ -23974,6 +23977,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "الإدارة المالية للأسرة وتسجيل الاستثمارات",
@@ -24255,6 +24259,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "مركز وثائق التأمين الأسري",
@@ -24519,6 +24524,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "إنتاج البودكاست والبرامج الصوتية",
@@ -24833,6 +24839,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "الطباعة ثلاثية الأبعاد وورشة العمل لصانعي المنتجات",
@@ -25109,6 +25116,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "ملف المجسمات والمقتنيات",
@@ -25369,13 +25377,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "محتوى تم إنشاؤه بواسطة الذكاء الاصطناعي ومعجم سريع",
     "version": "1.0.0",
     "persona": "重度AI生成内容创作者与提示词工程师",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "يقوم مستخدمو الذكاء الاصطناعي الثقيل MJ وSD برسم الصور ومقاطع فيديو الذكاء الاصطناعي ومنتجات حوار GPT وإنشاء مقاطع فيديو مصورة ومعلمات الكلمات السريعة وتكوين سير عمل إصدار النموذج وأرشفة المحفظة المحددة، وهو الأصل الجديد الأسرع نموًا في الوقت الحالي",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25594,13 +25603,13 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-إنشاء صورة",
         "children": [
           {
-            "name": "文生图"
+            "name": "صورة فنسنتية"
           },
           {
-            "name": "图生图"
+            "name": "تو شنغ تو"
           },
           {
             "name": "局部重绘"
@@ -25608,58 +25617,58 @@
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-إنشاء فيديو",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "تحويل الفيديو بالذكاء الاصطناعي إلى أفلام"
           },
           {
-            "name": "图生视频"
+            "name": "فيديو توشينج"
           },
           {
-            "name": "视频工作流"
+            "name": "سير عمل الفيديو"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-كلمات ومعلمات سريعة",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "الكلمات الإيجابية"
           },
           {
-            "name": "反向提示词"
+            "name": "عكس كلمة موجه"
           },
           {
-            "name": "种子参数"
+            "name": "معلمات البذور"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04- النموذج وسير العمل",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "أوزان النماذج الكبيرة"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "تكوين سير العمل"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-مجموعة المؤلفات المختارة",
         "children": [
           {
-            "name": "精选图集"
+            "name": "معرض مميز"
           },
           {
-            "name": "作品标注"
+            "name": "شرح العمل"
           },
           {
-            "name": "复现参数"
+            "name": "معلمات الاستنساخ"
           }
         ]
       }

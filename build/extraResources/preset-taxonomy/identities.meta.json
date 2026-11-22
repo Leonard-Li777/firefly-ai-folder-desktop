@@ -6,8 +6,8 @@
     "gemma": 512
   },
   "dtype": "float32",
-  "canonical_sha256": "62c5dfa6d093e34e94147acdaf34201f28b83401ce084a7ebd82c0020ba0e7f7",
-  "bake_fingerprint": "c9c3de85735a2b92610635fc4c62fac4316890681175dc5fc10adbbd8dbf7f68",
+  "canonical_sha256": "ea3905fa99ec782cd3aecac0371377f925727657fd929a940f41feb4a5df4bff",
+  "bake_fingerprint": "dd4ac78d65e36f304c589d73c48dd4112964745adb03e6315e367f902c081705",
   "domains": [
     {
       "domain_id": "domain_universal_cleanup",

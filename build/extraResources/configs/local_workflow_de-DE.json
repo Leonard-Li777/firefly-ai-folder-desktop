@@ -91,7 +91,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -816,7 +818,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -1613,7 +1617,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -2169,7 +2175,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2366,7 +2374,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2544,7 +2555,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -3311,7 +3324,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3678,7 +3694,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -4516,7 +4535,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4862,7 +4884,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -5191,7 +5217,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5531,7 +5560,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -6041,7 +6073,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6528,7 +6562,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -8514,7 +8551,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -9865,7 +9904,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -10139,7 +10182,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10828,7 +10874,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -11116,7 +11166,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11361,7 +11413,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11586,7 +11641,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -12289,7 +12347,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12598,7 +12659,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12926,7 +12990,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13375,7 +13442,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13767,7 +13836,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -14053,7 +14124,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -14285,7 +14358,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14616,7 +14692,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -15489,7 +15569,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15801,7 +15885,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -16165,7 +16253,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -16492,7 +16583,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16734,7 +16828,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -17273,7 +17370,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17980,7 +18079,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -19709,7 +19810,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -19914,7 +20019,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -21624,7 +21732,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".png": 0.34,
         ".jpg": 0.3,
@@ -21841,7 +21952,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.4,
         ".docx": 0.22,
@@ -22090,7 +22203,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.3,
         ".mov": 0.1,
@@ -22328,7 +22444,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.34,
         ".flv": 0.12,
@@ -22564,7 +22683,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.32,
         ".jpeg": 0.12,
@@ -22821,7 +22944,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.26,
         ".jpeg": 0.08,
@@ -23053,7 +23180,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.18,
@@ -23160,6 +23291,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Vollständige Unterlagen zur Hochzeitsplanung",
@@ -23350,7 +23482,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.2,
         ".jpeg": 0.04,
@@ -23468,6 +23604,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Akten zum gesamten Lebenszyklus des Fahrzeugs",
@@ -23623,7 +23760,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.32,
         ".jpg": 0.16,
@@ -23731,6 +23872,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Entwicklungs- und Erziehungsakte des Babys",
@@ -23879,7 +24021,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.3,
         ".jpeg": 0.05,
@@ -23974,6 +24120,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Haushaltsfinanzen und Anlagebuchhaltung",
@@ -24157,7 +24304,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.24,
         ".xls": 0.04,
@@ -24203,7 +24353,7 @@
             "name": "Krypto-Wallet"
           },
           {
-            "name": "券商月报"
+            "name": "Monatlicher Maklerbericht"
           }
         ]
       },
@@ -24255,6 +24405,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Zentrale für Hausratversicherungspolicen",
@@ -24431,7 +24582,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.42,
         ".jpg": 0.12,
@@ -24519,6 +24672,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Produktion von Podcasts und Audioprogrammen",
@@ -24716,7 +24870,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".wav": 0.11,
         ".mp3": 0.25,
@@ -24795,7 +24952,7 @@
             "name": "Untertitel der Zeitleiste"
           },
           {
-            "name": "Shownotes"
+            "name": "shownotes"
           }
         ]
       },
@@ -24833,6 +24990,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "3D-Druck und Maker-Workshop",
@@ -25009,7 +25167,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".3mf": 0.16,
         ".gcode": 0.12,
@@ -25085,7 +25247,7 @@
             "name": "Raspberry-Pi-Skript"
           },
           {
-            "name": "Gezeichnet wurde."
+            "name": "gezeichnet wurde."
           }
         ]
       },
@@ -25109,6 +25271,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Archiv für Figuren und Sammlerstücke",
@@ -25271,7 +25434,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.24,
         ".jpeg": 0.06,
@@ -25359,7 +25526,7 @@
             "name": "Austausch von Aufzeichnungen"
           },
           {
-            "name": "市场行情"
+            "name": "Marktbedingungen"
           }
         ]
       }
@@ -25369,13 +25536,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "KI-generierte Inhalte und Eingabeaufforderungslexikon",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "Ersteller umfangreicher KI-generierter Inhalte und Programmierer für schnelle Wörter",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "Starke KI-Benutzer MJ und SD zeichnen Bilder, KI-Videos, GPT-Dialogprodukte, generieren Bildvideos, fordern Wortparameter, Modellversions-Workflow-Konfiguration und ausgewählte Portfolio-Archivierung an, das derzeit am schnellsten wachsende neue Asset",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25566,7 +25734,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".png": 0.2,
         ".jpg": 0.08,
@@ -25594,16 +25766,16 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-Bild erstellen",
         "children": [
           {
-            "name": "文生图"
+            "name": "Vinzentinisches Bild"
           },
           {
-            "name": "图生图"
+            "name": "Tu Sheng Tu"
           },
           {
-            "name": "局部重绘"
+            "name": "Teilweise Neuzeichnung"
           }
         ]
       },
@@ -25611,55 +25783,55 @@
         "name": "02-生成视频",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "KI-Video in Filme umwandeln"
           },
           {
-            "name": "图生视频"
+            "name": "Tusheng-Video"
           },
           {
-            "name": "视频工作流"
+            "name": "Video-Workflow"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-Eingabeaufforderungswörter und Parameter",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "positive Stichworte"
           },
           {
-            "name": "反向提示词"
+            "name": "umgekehrtes Aufforderungswort"
           },
           {
-            "name": "种子参数"
+            "name": "Saatparameter"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-Modell und Workflow",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "Große Modellgewichte"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "Workflow-Konfiguration"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-Sammlung ausgewählter Werke",
         "children": [
           {
-            "name": "精选图集"
+            "name": "Ausgewählte Galerie"
           },
           {
-            "name": "作品标注"
+            "name": "Werkanmerkung"
           },
           {
-            "name": "复现参数"
+            "name": "Reproduktionsparameter"
           }
         ]
       }

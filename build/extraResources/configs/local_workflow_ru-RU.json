@@ -23160,6 +23160,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Полный пакет документов по организации свадьбы",
@@ -23468,6 +23469,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Архив полного жизненного цикла автомобиля",
@@ -23731,6 +23733,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Досье о развитии и воспитании ребенка",
@@ -23974,6 +23977,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Управление семейными финансами и учет инвестиций",
@@ -24255,6 +24259,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Центр страховых полисов для семьи",
@@ -24519,6 +24524,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Создание подкастов и аудиопрограмм",
@@ -24764,7 +24770,7 @@
             "name": "Многодорожечный проектный файл"
           },
           {
-            "name": "混音导出"
+            "name": "Микс-экспорт"
           },
           {
             "name": "Резервное копирование с шумоподавлением"
@@ -24833,6 +24839,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "3D-печать и мастерская для творческих людей",
@@ -25109,6 +25116,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Архив фигурок и коллекционных предметов",
@@ -25369,13 +25377,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "ИИ генерирует контент и подсказки",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "Создатель контента, созданного тяжелым искусственным интеллектом, и инженер по быстрым словам",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "Активные пользователи ИИ, MJ и SD, рисуют изображения, видеоролики ИИ, диалоговые продукты GPT, генерируют видеоизображения, подсказывают параметры слов, конфигурируют рабочий процесс версии модели и архивируют выбранное портфолио, самый быстрорастущий новый актив на данный момент.",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25594,72 +25603,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-Создать изображение",
         "children": [
           {
-            "name": "文生图"
+            "name": "Винсентианская картина"
           },
           {
-            "name": "图生图"
+            "name": "Ту Шэн Ту"
           },
           {
-            "name": "局部重绘"
+            "name": "частичная перерисовка"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-Создать видео",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "AI-видео в кино"
           },
           {
-            "name": "图生视频"
+            "name": "тушэн видео"
           },
           {
-            "name": "视频工作流"
+            "name": "Видео рабочий процесс"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-Подсказка слов и параметров",
         "children": [
           {
             "name": "正向提示词"
           },
           {
-            "name": "反向提示词"
+            "name": "обратное слово-подсказка"
           },
           {
-            "name": "种子参数"
+            "name": "Параметры семян"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-Модель и рабочий процесс",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "Большой вес модели."
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "Конфигурация рабочего процесса"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-Сборник избранных произведений",
         "children": [
           {
-            "name": "精选图集"
+            "name": "Рекомендуемая галерея"
           },
           {
-            "name": "作品标注"
+            "name": "Рабочая аннотация"
           },
           {
-            "name": "复现参数"
+            "name": "Параметры воспроизводства"
           }
         ]
       }

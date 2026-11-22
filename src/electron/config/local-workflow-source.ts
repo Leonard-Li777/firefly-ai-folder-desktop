@@ -18768,6 +18768,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
 {
     id: 'builtin.workflow.wedding-planning',
+    templateId: 'tpl_wedding_planning',
     name: t('婚礼策划全案档案'),
     summary: t('备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档'),
     version: '1.0.0',
@@ -19010,6 +19011,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.car-lifecycle',
+    templateId: 'tpl_car_lifecycle',
     name: t('汽车全生命周期档案'),
     summary: t('私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链'),
     version: '1.0.0',
@@ -19207,6 +19209,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.baby-growth-archive',
+    templateId: 'tpl_baby_growth_archive',
     name: t('宝宝成长与育儿档案'),
     summary: t('0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口'),
     version: '1.0.0',
@@ -19392,6 +19395,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.personal-finance-invest',
+    templateId: 'tpl_personal_finance_invest',
     name: t('家庭理财与投资记账'),
     summary: t('个人与家庭理财全链路，账户对账单、投资持仓、个税汇算、贷款负债与家庭预算表归档，与企业财务finance-contract形成个人线互补'),
     version: '1.0.0',
@@ -19615,6 +19619,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.insurance-policy-vault',
+    templateId: 'tpl_insurance_policy_vault',
     name: t('家庭保险保单中枢'),
     summary: t('给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单'),
     version: '1.0.0',
@@ -19823,6 +19828,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.podcast-production',
+    templateId: 'tpl_podcast_production',
     name: t('播客与音频节目制作'),
     summary: t('播客主播有声书配音创作者，原始录音、多轨工程、逐字稿shownotes、封面视觉与分发成片归档，区别于音乐制作与影视收藏的创作向空缺'),
     version: '1.0.0',
@@ -20073,6 +20079,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.3dprint-maker',
+    templateId: 'tpl_3dprint_maker',
     name: t('3D打印与创客工坊'),
     summary: t('3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰'),
     version: '1.0.0',
@@ -20291,6 +20298,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.collectible-model-archive',
+    templateId: 'tpl_collectible_model_archive',
     name: t('模型手办与收藏品档案'),
     summary: t('高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线'),
     version: '1.0.0',
@@ -20493,6 +20501,7 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.ai-generated-content',
+    templateId: 'tpl_ai_generated_content',
     name: t('AI生成内容与提示词库'),
     summary: t('重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产'),
     version: '1.0.0',

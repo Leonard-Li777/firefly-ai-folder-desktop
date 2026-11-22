@@ -23160,6 +23160,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "웨딩 플래닝 전체 기획서 파일",
@@ -23468,6 +23469,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "자동차 전체 수명 주기 기록",
@@ -23684,7 +23686,7 @@
             "name": "유지보수 매뉴얼"
           },
           {
-            "name": "4S保养工单"
+            "name": "4S 유지보수 작업 순서"
           },
           {
             "name": "제3자 수리"
@@ -23731,6 +23733,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "아기 성장 및 육아 기록",
@@ -23974,6 +23977,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "가정 재무 관리 및 투자 장부 기록",
@@ -24255,6 +24259,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "가정 보험 증권 센터",
@@ -24519,6 +24524,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "팟캐스트 및 오디오 프로그램 제작",
@@ -24833,6 +24839,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "3D 프린팅 및 메이커 워크숍",
@@ -25109,6 +25116,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "피규어 및 컬렉션 아카이브",
@@ -25359,7 +25367,7 @@
             "name": "교환 기록"
           },
           {
-            "name": "市场行情"
+            "name": "시장 상황"
           }
         ]
       }
@@ -25369,13 +25377,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "AI 생성 콘텐츠 및 프롬프트 어휘집",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "Heavy AI 기반 콘텐츠 제작자 및 프롬프트 워드 엔지니어",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "AI 헤비 사용자 MJ 및 SD는 그림 그리기, AI 비디오, GPT 대화 제품, 그림 비디오 생성, 프롬프트 단어 매개변수, 모델 버전 워크플로 구성 및 선택된 포트폴리오 보관 등 현재 가장 빠르게 성장하는 새로운 자산입니다.",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25594,72 +25603,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-이미지 생성",
         "children": [
           {
-            "name": "文生图"
+            "name": "빈첸시안 그림"
           },
           {
-            "name": "图生图"
+            "name": "투 셩 투"
           },
           {
-            "name": "局部重绘"
+            "name": "부분 다시 그리기"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-영상 생성",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "AI 영상을 영화로"
           },
           {
-            "name": "图生视频"
+            "name": "투셍 비디오"
           },
           {
-            "name": "视频工作流"
+            "name": "비디오 워크플로"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-프롬프트 단어 및 매개변수",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "긍정적인 단서 단어"
           },
           {
-            "name": "反向提示词"
+            "name": "역방향 프롬프트 단어"
           },
           {
-            "name": "种子参数"
+            "name": "시드 매개변수"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-모델 및 작업 흐름",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "큰 모델 가중치"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "워크플로 구성"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05 – 작품집 선정",
         "children": [
           {
-            "name": "精选图集"
+            "name": "주요 갤러리"
           },
           {
-            "name": "作品标注"
+            "name": "작품 주석"
           },
           {
-            "name": "复现参数"
+            "name": "재생 매개변수"
           }
         ]
       }

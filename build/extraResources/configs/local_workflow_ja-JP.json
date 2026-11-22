@@ -23160,6 +23160,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "ウェディングプランニングの全案件ファイル",
@@ -23468,6 +23469,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "自動車のライフサイクル全体に関する記録",
@@ -23731,6 +23733,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "赤ちゃんの成長と育児記録",
@@ -23974,6 +23977,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "家計管理と投資の記帳",
@@ -24255,6 +24259,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "家庭保険契約センター",
@@ -24519,6 +24524,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "ポッドキャストとオーディオ番組の制作",
@@ -24833,6 +24839,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "3Dプリントとメイカーズワークショップ",
@@ -25109,6 +25116,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "フィギュアとコレクターズアイテムのアーカイブ",
@@ -25369,13 +25377,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "AI が生成したコンテンツとプロンプト語彙集",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "AI が生成するヘビーなコンテンツ クリエイターおよびプロンプト ワード エンジニア",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "ヘビー AI ユーザーの MJ と SD は、絵、AI ビデオ、GPT ダイアログ製品を描画し、画像ビデオを生成し、プロンプトワードパラメータ、モデルバージョンのワークフロー構成、および選択されたポートフォリオのアーカイブ、現時点で最も急速に成長している新しい資産です",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25594,72 +25603,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-画像の生成",
         "children": [
           {
-            "name": "文生图"
+            "name": "ヴィンセントの絵"
           },
           {
-            "name": "图生图"
+            "name": "トゥ・シェン・トゥ"
           },
           {
-            "name": "局部重绘"
+            "name": "部分的な再描画"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02 - ビデオの生成",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "AIビデオを映画に"
           },
           {
-            "name": "图生视频"
+            "name": "トゥシェンビデオ"
           },
           {
-            "name": "视频工作流"
+            "name": "ビデオワークフロー"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-プロンプトワードとパラメータ",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "ポジティブな合図の言葉"
           },
           {
-            "name": "反向提示词"
+            "name": "逆プロンプトの単語"
           },
           {
-            "name": "种子参数"
+            "name": "シードパラメータ"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-モデルとワークフロー",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "大きなモデルの重量"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "ワークフロー構成"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-厳選作品集",
         "children": [
           {
-            "name": "精选图集"
+            "name": "注目のギャラリー"
           },
           {
-            "name": "作品标注"
+            "name": "作品注釈"
           },
           {
-            "name": "复现参数"
+            "name": "再現パラメータ"
           }
         ]
       }

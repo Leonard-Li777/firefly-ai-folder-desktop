@@ -23160,6 +23160,7 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Arquivo completo do planejamento do casamento",
@@ -23468,6 +23469,7 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Arquivo do ciclo de vida completo do veículo",
@@ -23731,6 +23733,7 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Registro de crescimento e desenvolvimento do bebê",
@@ -23974,6 +23977,7 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Gestão financeira familiar e registro de investimentos",
@@ -24255,6 +24259,7 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Central de apólices de seguro residencial",
@@ -24519,6 +24524,7 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Produção de podcasts e programas de áudio",
@@ -24833,6 +24839,7 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Impressão 3D e oficina de makers",
@@ -25043,7 +25050,7 @@
             "name": "Projeto 3MF"
           },
           {
-            "name": "源文件"
+            "name": "arquivo de origem"
           }
         ]
       },
@@ -25109,6 +25116,7 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Arquivo de modelos e colecionáveis",
@@ -25308,7 +25316,7 @@
         ]
       },
       {
-        "name": "02-制作过程",
+        "name": "02-Processo de produção",
         "children": [
           {
             "name": "Progresso do grupo de elementos"
@@ -25345,7 +25353,7 @@
             "name": "Foto 3x4"
           },
           {
-            "name": "配件清单"
+            "name": "Lista de acessórios"
           }
         ]
       },
@@ -25359,7 +25367,7 @@
             "name": "Registro de troca"
           },
           {
-            "name": "市场行情"
+            "name": "Condições de mercado"
           }
         ]
       }
@@ -25369,13 +25377,14 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "Conteúdo gerado por IA e léxico imediato",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "Criador de conteúdo pesado gerado por IA e engenheiro de palavras imediatas",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "Usuários pesados ​​de IA MJ e SD desenham imagens, vídeos de IA, produtos de diálogo GPT, geram vídeos de imagens, solicitam parâmetros de palavras, configuração de fluxo de trabalho de versão de modelo e arquivamento de portfólio selecionado, o novo ativo de crescimento mais rápido no momento",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25594,72 +25603,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-Gerar imagem",
         "children": [
           {
-            "name": "文生图"
+            "name": "Imagem Vicentina"
           },
           {
-            "name": "图生图"
+            "name": "Tu Sheng Tu"
           },
           {
-            "name": "局部重绘"
+            "name": "redesenho parcial"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-Gerar vídeo",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "Vídeo AI em filmes"
           },
           {
-            "name": "图生视频"
+            "name": "vídeo tusheng"
           },
           {
-            "name": "视频工作流"
+            "name": "Fluxo de trabalho de vídeo"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-Prompt de palavras e parâmetros",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "palavras positivas"
           },
           {
-            "name": "反向提示词"
+            "name": "palavra de prompt reverso"
           },
           {
-            "name": "种子参数"
+            "name": "Parâmetros de sementes"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-Modelo e Fluxo de Trabalho",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "Grandes pesos de modelo"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "Configuração do fluxo de trabalho"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-Coleção de Obras Selecionadas",
         "children": [
           {
-            "name": "精选图集"
+            "name": "Galeria em destaque"
           },
           {
-            "name": "作品标注"
+            "name": "Anotação de trabalho"
           },
           {
-            "name": "复现参数"
+            "name": "Parâmetros de reprodução"
           }
         ]
       }
