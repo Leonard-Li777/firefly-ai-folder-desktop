@@ -153,7 +153,7 @@
     "ko-KR": "무제한 파일 분석 할당량",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(7202-7214)",
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7942-7954)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(7940-7952)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2798-2810)"
     ],
     "$id": 11025
@@ -214,7 +214,7 @@
     "de-DE": "Umfassende Analyse langer Videos (unterstützt lange Videos von mehr als 2 Stunden, kostenlose Version auf die ersten 5 Minuten beschränkt)",
     "fr-FR": "Analyse complète et approfondie des vidéos longues (prend en charge les vidéos longues de plus de 2 heures, version gratuite limitée aux 5 premières minutes)",
     "ko-KR": "장편 영상에 대한 심층 분석 (2시간 이상의 장편 영상 지원, 무료 버전은 처음 5분만 지원)",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7889-7927)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7889-7925)"],
     "$id": 23451
   },
   "无限极速目录槽位": {
@@ -228,7 +228,7 @@
     "fr-FR": "Emplacements de répertoire rapides illimités",
     "ko-KR": "무제한 빠른 디렉터리 슬롯",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7969-7981)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(7967-7979)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2821-2833)"
     ],
     "$id": 11026
@@ -244,7 +244,7 @@
     "fr-FR": "Emplacements de répertoires privés illimités",
     "ko-KR": "무제한 개인 디렉토리 슬롯",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(7996-8008)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(7994-8006)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2844-2856)"
     ],
     "$id": 11027
@@ -260,7 +260,7 @@
     "fr-FR": "Emplacements de répertoire virtuel illimités",
     "ko-KR": "무제한 가상 디렉터리 슬롯",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(8023-8035)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(8021-8033)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2867-2879)"
     ],
     "$id": 11028
@@ -276,7 +276,7 @@
     "fr-FR": "Exportation illimitée",
     "ko-KR": "무제한 내보내기",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(8050-8058)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(8048-8056)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2890-2898)"
     ],
     "$id": 11029
@@ -292,8 +292,8 @@
     "fr-FR": "Assistance technique professionnelle",
     "ko-KR": "전문적인 기술 지원",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(8073-8083)",
-      "src/renderer/components/tier/AccountManagementDialog.tsx(8804-8814)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(8071-8081)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(8802-8812)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2408-2418)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2909-2919)"
     ],
@@ -310,7 +310,7 @@
     "fr-FR": "Version gratuite",
     "ko-KR": "무료 버전",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(8155-8162)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(8153-8160)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(38844-38851)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(4323-4330)",
       "src/renderer/components/tier/UserTierBadge.tsx(1251-1258)"
@@ -328,7 +328,7 @@
     "fr-FR": "Convient pour un usage personnel et léger",
     "ko-KR": "개인적이고 가벼운 사용에 적합",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(8184-8196)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(8182-8194)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(1923-1935)"
     ],
     "$id": 11012
@@ -343,7 +343,7 @@
     "de-DE": "Extrem schnelle verzeichnisunbegrenzte Dateianalyse",
     "fr-FR": "Analyse de fichiers illimitée de répertoire extrêmement rapide",
     "ko-KR": "매우 빠른 디렉터리 무제한 파일 분석",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8657-8671)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8655-8669)"],
     "$id": 11489
   },
   "私有目录有限文件分析": {
@@ -356,7 +356,7 @@
     "de-DE": "Eingeschränkte Dateianalyse privater Verzeichnisse",
     "fr-FR": "Analyse limitée des fichiers des répertoires privés",
     "ko-KR": "개인 디렉토리에 대한 제한된 파일 분석",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8686-8700)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8684-8698)"],
     "$id": 11490
   },
   "有限极速/私有/虚拟目录槽位": {
@@ -369,7 +369,7 @@
     "de-DE": "Begrenzte Anzahl an Hochgeschwindigkeits-/privaten/virtuellen Verzeichnispunkten",
     "fr-FR": "Nombre limité / Privé / Emplacements de répertoires virtuels",
     "ko-KR": "제한된 고속/전용/가상 디렉토리 슬롯",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8715-8733)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8713-8731)"],
     "$id": 11491
   },
   "有限导出": {
@@ -382,7 +382,7 @@
     "de-DE": "Begrenzter Export",
     "fr-FR": "Exportation limitée",
     "ko-KR": "제한된 수출",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8748-8756)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8746-8754)"],
     "$id": 11492
   },
   "收集萤火获取等同Pro的权益": {
@@ -395,7 +395,7 @@
     "de-DE": "Sammle Glühwürmchen, um Vorteile zu erhalten, die denen von Pro entsprechen",
     "fr-FR": "Collectez des lucioles pour obtenir des avantages équivalents à Pro",
     "ko-KR": "반딧불을 모아 Pro와 동등한 혜택을 받으세요",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8771-8789)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(8769-8787)"],
     "$id": 11493
   },
   "终身会员": {
@@ -408,7 +408,7 @@
     "de-DE": "Lebenslanges Mitglied",
     "fr-FR": "Membre à vie",
     "ko-KR": "평생회원",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9579-9587)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9577-9585)"],
     "$id": 23452
   },
   "年付周期": {
@@ -421,7 +421,7 @@
     "de-DE": "Jährlicher Zahlungszyklus",
     "fr-FR": "Fréquence de paiement annuelle",
     "ko-KR": "연간 납부 주기",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9650-9658)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9648-9656)"],
     "$id": 11494
   },
   "半年付周期": {
@@ -434,7 +434,7 @@
     "de-DE": "Halbjährlicher Zahlungsrhythmus",
     "fr-FR": "Paiement semestriel",
     "ko-KR": "반년 단위 납부 주기",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9760-9769)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9758-9767)"],
     "$id": 11495
   },
   "季付周期": {
@@ -447,7 +447,7 @@
     "de-DE": "Quartalszahlungszyklus",
     "fr-FR": "Fréquence de paiement trimestrielle",
     "ko-KR": "분기별 지불 주기",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9866-9874)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9864-9872)"],
     "$id": 11496
   },
   "月付周期": {
@@ -460,7 +460,7 @@
     "de-DE": "Monatlicher Zahlungszyklus",
     "fr-FR": "Fréquence de paiement mensuel",
     "ko-KR": "월별 납부 주기",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9914-9922)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9912-9920)"],
     "$id": 11497
   },
   "周期授权": {
@@ -473,7 +473,7 @@
     "de-DE": "Periodische Lizenzierung",
     "fr-FR": "Autorisation périodique",
     "ko-KR": "주기별 라이선스",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9935-9943)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(9933-9941)"],
     "$id": 11498
   },
   "Firefly Enterprise 企业版": {
@@ -487,8 +487,8 @@
     "fr-FR": "Firefly Enterprise - Édition Entreprise",
     "ko-KR": "Firefly Enterprise 엔터프라이즈 에디션",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(13064-13090)",
-      "src/renderer/components/tier/AccountManagementDialog.tsx(14039-14065)"
+      "src/renderer/components/tier/AccountManagementDialog.tsx(13062-13088)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(14037-14063)"
     ],
     "$id": 11499
   },
@@ -503,9 +503,9 @@
     "fr-FR": "Firefly Pro Édition professionnelle",
     "ko-KR": "Firefly Pro 프로 버전",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(13094-13113)",
-      "src/renderer/components/tier/AccountManagementDialog.tsx(14069-14088)",
-      "src/renderer/components/tier/AccountManagementDialog.tsx(14822-14841)"
+      "src/renderer/components/tier/AccountManagementDialog.tsx(13092-13111)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(14067-14086)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(14820-14839)"
     ],
     "$id": 11500
   },
@@ -519,7 +519,7 @@
     "de-DE": "Weitergeltung von Ansprüchen",
     "fr-FR": "Maintien des droits et avantages",
     "ko-KR": "연속 보장 권리",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(14979-14989)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(14977-14987)"],
     "$id": 11501
   },
   "账户与订阅中心": {
@@ -532,7 +532,7 @@
     "de-DE": "Konto- und Abonnementcenter",
     "fr-FR": "Centre de gestion des comptes et des abonnements",
     "ko-KR": "계정 및 구독 센터",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(15889-15900)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(15887-15898)"],
     "$id": 11502
   },
   "管理您的多方案会员权益、独立计费周期与自动续费状态": {
@@ -545,7 +545,7 @@
     "de-DE": "Verwalten Sie Ihre Mitgliedschaftsvorteile für mehrere Tarife, individuelle Abrechnungszeiträume und den Status der automatischen Verlängerung",
     "fr-FR": "Gérez vos avantages d'abonnement multi-formules, vos cycles de facturation indépendants et le statut de renouvellement automatique",
     "ko-KR": "여러 요금제별 회원 혜택, 개별 청구 주기 및 자동 갱신 상태 관리",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(16057-16086)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(16055-16084)"],
     "$id": 11503
   },
   "执行中": {
@@ -558,7 +558,7 @@
     "de-DE": "Wird ausgeführt",
     "fr-FR": "En cours d'exécution",
     "ko-KR": "실행 중",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20148-20155)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20146-20153)"],
     "$id": 11504
   },
   "已退款": {
@@ -572,7 +572,7 @@
     "fr-FR": "Remboursé",
     "ko-KR": "환불 완료됨",
     "$files": [
-      "src/renderer/components/tier/AccountManagementDialog.tsx(20581-20588)",
+      "src/renderer/components/tier/AccountManagementDialog.tsx(20579-20586)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(53513-53520)"
     ],
     "$id": 11505
@@ -587,7 +587,7 @@
     "de-DE": "Im Ruhezustand",
     "fr-FR": "En veille",
     "ko-KR": "휴면 중",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20980-20987)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(20978-20985)"],
     "$id": 11506
   },
   "有效期至：": {
@@ -600,7 +600,7 @@
     "de-DE": "Gültig bis:",
     "fr-FR": "Valable jusqu'au :",
     "ko-KR": "유효 기간:",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21720-21729)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21718-21727)"],
     "$id": 11507
   },
   "永久有效": {
@@ -613,7 +613,7 @@
     "de-DE": "Unbegrenzt gültig",
     "fr-FR": "Valable indéfiniment",
     "ko-KR": "영구적으로 유효함",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21923-21931)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(21921-21929)"],
     "$id": 11508
   },
   "款项已原路退回，方案权益已终止": {
@@ -626,7 +626,7 @@
     "de-DE": "Der Betrag wurde auf dem ursprünglichen Zahlungsweg zurückerstattet, und die Ansprüche aus dem Programm sind erloschen.",
     "fr-FR": "Le montant a été remboursé par le même moyen de paiement et les avantages liés au contrat ont pris fin.",
     "ko-KR": "금액은 원래 결제 수단으로 환불되었으며, 상품의 혜택은 종료되었습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(22295-22314)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(22293-22312)"],
     "$id": 11509
   },
   "权益已完整封存保留，待执行计划到期后起算": {
@@ -639,7 +639,7 @@
     "de-DE": "Die Ansprüche wurden vollständig gesichert und werden nach Ablauf des Vollstreckungsplans geltend gemacht.",
     "fr-FR": "Les droits ont été intégralement gelés et conservés ; leur délai de validité commencera à courir à l'expiration du plan d'exécution.",
     "ko-KR": "권리는 완전히 보존되어 있으며, 집행 계획의 만료 시점이 지나면 그 시점부터 기산됩니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(22625-22649)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(22623-22647)"],
     "$id": 11510
   },
   "订阅已终结": {
@@ -652,7 +652,7 @@
     "de-DE": "Das Abonnement ist abgelaufen.",
     "fr-FR": "L'abonnement a pris fin",
     "ko-KR": "구독이 종료되었습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23168-23177)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23166-23175)"],
     "$id": 11511
   },
   "自动续订中": {
@@ -665,7 +665,7 @@
     "de-DE": "Automatische Verlängerung läuft",
     "fr-FR": "Renouvellement automatique en cours",
     "ko-KR": "자동 갱신 중",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23495-23504)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23493-23502)"],
     "$id": 11512
   },
   "已关闭自动续费": {
@@ -678,7 +678,7 @@
     "de-DE": "Die automatische Verlängerung wurde deaktiviert.",
     "fr-FR": "Le renouvellement automatique a été désactivé",
     "ko-KR": "자동 갱신이 해제되었습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23798-23809)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(23796-23807)"],
     "$id": 11513
   },
   "免费版方案": {
@@ -691,7 +691,7 @@
     "de-DE": "Kostenloses Angebot",
     "fr-FR": "Formule gratuite",
     "ko-KR": "무료 버전 플랜",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(24961-24970)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(24959-24968)"],
     "$id": 11514
   },
   "基础服务": {
@@ -704,7 +704,7 @@
     "de-DE": "Grundlegende Dienste",
     "fr-FR": "Services de base",
     "ko-KR": "기본 서비스",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(25167-25175)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(25165-25173)"],
     "$id": 11515
   },
   "当前正在使用基础版服务，您可以通过升级 Pro 或 Enterprise 解锁全功能与无限文件处理。": {
@@ -717,7 +717,7 @@
     "de-DE": "Derzeit nutzen Sie die Basisversion des Dienstes. Durch ein Upgrade auf die Pro- oder Enterprise-Version können Sie den vollen Funktionsumfang sowie die unbegrenzte Dateiverarbeitung freischalten.",
     "fr-FR": "Vous utilisez actuellement la version de base du service. Vous pouvez débloquer l'ensemble des fonctionnalités et le traitement illimité de fichiers en passant à la version Pro ou Enterprise.",
     "ko-KR": "현재 기본 버전의 서비스를 이용 중입니다. Pro 또는 Enterprise로 업그레이드하시면 모든 기능과 무제한 파일 처리를 이용하실 수 있습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(25308-25383)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(25306-25381)"],
     "$id": 11516
   },
   "设备标识码：": {
@@ -730,7 +730,7 @@
     "de-DE": "Gerätekennnummer:",
     "fr-FR": "Code d'identification de l'équipement :",
     "ko-KR": "장비 식별 번호:",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(26386-26396)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(26384-26394)"],
     "$id": 11517
   },
   "设备已受安全授权保护": {
@@ -743,7 +743,7 @@
     "de-DE": "Das Gerät ist durch eine Sicherheitsautorisierung geschützt.",
     "fr-FR": "L'appareil est protégé par une autorisation de sécurité",
     "ko-KR": "이 장비는 보안 권한으로 보호되고 있습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(26827-26841)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(26825-26839)"],
     "$id": 11518
   },
   "复制设备识别码": {
@@ -756,7 +756,7 @@
     "de-DE": "Gerätekennung kopieren",
     "fr-FR": "Copier le code d'identification de l'appareil",
     "ko-KR": "장치 식별 코드 복사",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(27513-27524)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(27511-27522)"],
     "$id": 11519
   },
   "已绑定设备与席位": {
@@ -769,7 +769,7 @@
     "de-DE": "Geräte und Sitzplätze wurden gebunden",
     "fr-FR": "Les appareils et les sièges ont été liés",
     "ko-KR": "장치와 좌석이 바인딩되었습니다",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28350-28362)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28348-28360)"],
     "$id": 31705
   },
   "最多支持 {count} 台设备同时登录与席位管理": {
@@ -782,7 +782,7 @@
     "de-DE": "Unterstützt bis zu {count} Geräte zur gleichzeitigen Anmeldung und Sitzplatzverwaltung",
     "fr-FR": "Prend en charge jusqu'à {count} appareils pour se connecter et gérer les sièges en même temps",
     "ko-KR": "동시에 로그인 및 좌석 관리{count}장치까지 지원",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28486-28515)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(28484-28513)"],
     "$id": 38327
   },
   "管理设备席位": {
@@ -795,7 +795,7 @@
     "de-DE": "Gerätesitze verwalten",
     "fr-FR": "Gérer les sièges des appareils",
     "ko-KR": "장치 시트 관리",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29080-29090)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29078-29088)"],
     "$id": 31707
   },
   "确定要解绑本机吗？解绑后本机需重新扫码授权才能使用完整权益。": {
@@ -808,7 +808,7 @@
     "de-DE": "Sind Sie sicher, dass Sie die Bindung dieser Maschine aufheben möchten? Nach dem Aufheben der Bindung muss das Gerät den QR-Code erneut scannen, um die Berechtigung zur Nutzung aller Rechte zu erhalten.",
     "fr-FR": "Êtes-vous sûr de vouloir dissocier cette machine ? Après la dissociation, la machine doit scanner à nouveau le code QR pour obtenir l'autorisation d'utiliser tous les droits.",
     "ko-KR": "이 컴퓨터의 바인딩을 해제하시겠습니까? 바인딩을 해제한 후 기기는 전체 권한을 사용하려면 승인을 위해 QR 코드를 다시 스캔해야 합니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29367-29401)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29365-29399)"],
     "$id": 31708
   },
   "本机已解绑成功": {
@@ -821,7 +821,7 @@
     "de-DE": "Die Maschine wurde erfolgreich entbunden",
     "fr-FR": "La machine a été déliée avec succès",
     "ko-KR": "머신이 성공적으로 바인딩 해제되었습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29708-29719)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29706-29717)"],
     "$id": 31709
   },
   "解绑失败，请重试": {
@@ -834,7 +834,7 @@
     "de-DE": "Das Aufheben der Bindung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "Échec de la dissociation, veuillez réessayer",
     "ko-KR": "바인딩 해제에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29911-29923)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(29909-29921)"],
     "$id": 31710
   },
   "网络连接失败，请检查网络后重试": {
@@ -847,7 +847,7 @@
     "de-DE": "Die Netzwerkverbindung ist fehlgeschlagen. Bitte überprüfen Sie das Netzwerk und versuchen Sie es erneut",
     "fr-FR": "La connexion réseau a échoué, veuillez vérifier le réseau et réessayer",
     "ko-KR": "네트워크 연결에 실패했습니다. 네트워크를 확인한 후 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(30041-30060)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(30039-30058)"],
     "$id": 31711
   },
   "解绑中...": {
@@ -860,7 +860,7 @@
     "de-DE": "Entbindung...",
     "fr-FR": "Délier...",
     "ko-KR": "바인딩 해제...",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(30446-30456)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(30444-30454)"],
     "$id": 31712
   },
   "解绑本机": {
@@ -873,7 +873,7 @@
     "de-DE": "Binden Sie diese Maschine ab",
     "fr-FR": "Dissocier cette machine",
     "ko-KR": "이 머신 바인딩 해제",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(30460-30468)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(30458-30466)"],
     "$id": 31713
   },
   "自主账单与自动续费服务 (Customer Portal)": {
@@ -886,7 +886,7 @@
     "de-DE": "Selbstverwaltungsrechnungen und automatische Verlängerung (Kundenportal)",
     "fr-FR": "Service de facturation en ligne et de renouvellement automatique (Portail client)",
     "ko-KR": "사용자 지정 청구서 및 자동 갱신 서비스 (고객 포털)",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(31116-31149)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(31114-31147)"],
     "$id": 11520
   },
   "您可以通过 Creem 国际客户门户随时下载往期发票收据、更新支付信用卡或关闭下期自动续费。关闭后当前计费周期内所有会员权益不受影响。": {
@@ -899,7 +899,7 @@
     "de-DE": "Über das internationale Kundenportal von Creem können Sie jederzeit frühere Rechnungen und Quittungen herunterladen, die für die Zahlung verwendete Kreditkarte aktualisieren oder die automatische Verlängerung für den nächsten Abrechnungszeitraum deaktivieren. Nach der Deaktivierung bleiben alle Mitgliedervorteile für den laufenden Abrechnungszeitraum unbeeinträchtigt.",
     "fr-FR": "Vous pouvez à tout moment, via le portail client international de Creem, télécharger vos factures et reçus antérieurs, mettre à jour votre carte de crédit ou désactiver le renouvellement automatique pour la prochaine période. La désactivation n'aura aucune incidence sur les avantages liés à votre abonnement pour la période de facturation en cours.",
     "ko-KR": "Creem 국제 고객 포털을 통해 언제든지 과거 청구서 및 영수증을 다운로드하거나, 결제용 신용카드를 업데이트하거나, 다음 기간의 자동 갱신을 해지할 수 있습니다. 자동 갱신을 해지하더라도 현재 청구 주기 내의 모든 회원 혜택에는 영향을 미치지 않습니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(31352-31448)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(31350-31446)"],
     "$id": 11521
   },
   "前往国际结算门户管理账单与续订": {
@@ -912,7 +912,7 @@
     "de-DE": "Zum Portal für internationale Abrechnungen, um Rechnungen zu verwalten und zu verlängern",
     "fr-FR": "Accéder au portail de paiement international pour gérer vos factures et vos renouvellements",
     "ko-KR": "국제 결제 포털로 이동하여 청구서 관리 및 갱신하기",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32097-32116)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32095-32114)"],
     "$id": 11522
   },
   "从云端立即刷新最新订阅状态": {
@@ -925,7 +925,7 @@
     "de-DE": "Den aktuellen Abonnementstatus sofort aus der Cloud abrufen",
     "fr-FR": "Actualiser immédiatement l'état des abonnements depuis le cloud",
     "ko-KR": "클라우드에서 최신 구독 상태를 즉시 갱신합니다.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32660-32677)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32658-32675)"],
     "$id": 11523
   },
   "同步中...": {
@@ -938,7 +938,7 @@
     "de-DE": "Wird synchronisiert...",
     "fr-FR": "Synchronisation en cours...",
     "ko-KR": "동기화 중...",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32877-32887)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32875-32885)"],
     "$id": 11524
   },
   "刷新状态": {
@@ -951,7 +951,7 @@
     "de-DE": "Status aktualisieren",
     "fr-FR": "Actualiser l'état",
     "ko-KR": "상태 새로고침",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32891-32899)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(32889-32897)"],
     "$id": 11525
   },
   "固定周期授权保障": {
@@ -964,7 +964,7 @@
     "de-DE": "Garantie für die Lizenzierung in festen Zyklen",
     "fr-FR": "Garantie d'autorisation à fréquence fixe",
     "ko-KR": "정기적인 라이선스 보장",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(33275-33287)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(33273-33285)"],
     "$id": 11526
   },
   "当前授权为无绑卡固定周期模式，绝无任何自动扣费与扣款风险。授权到期后系统将平滑降级为免费版，不会产生任何额外账单，如需延期请联系客服。": {
@@ -977,7 +977,7 @@
     "de-DE": "Die aktuelle Autorisierung erfolgt im Modus „ohne Kartenbindung mit festem Abrechnungszeitraum“, sodass keinerlei Risiko einer automatischen Abbuchung oder eines Zahlungsabzugs besteht. Nach Ablauf der Autorisierung wird das System nahtlos auf die kostenlose Version zurückgestuft, ohne dass zusätzliche Kosten anfallen. Wenn Sie die Laufzeit verlängern möchten, wenden Sie sich bitte an den Kundenservice.",
     "fr-FR": "L'autorisation actuelle correspond à un mode à durée fixe sans carte bancaire associée ; il n'y a absolument aucun risque de prélèvement automatique. À l'expiration de l'autorisation, le système passera en douceur à la version gratuite, sans générer de facturation supplémentaire. Si vous souhaitez prolonger votre abonnement, veuillez contacter le service client.",
     "ko-KR": "현재 권한은 카드 미연동 고정 주기 방식으로 설정되어 있으며, 어떠한 자동 결제나 출금 위험도 전혀 없습니다. 권한 만료 후 시스템은 무료로 원활하게 전환되며, 추가 요금이 발생하지 않습니다. 기간 연장을 원하시면 고객센터로 문의해 주십시오.",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(33415-33505)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(33413-33503)"],
     "$id": 11527
   },
   "售后支持：": {
@@ -990,7 +990,7 @@
     "de-DE": "Kundendienst:",
     "fr-FR": "Assistance après-vente :",
     "ko-KR": "사후 지원:",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(33981-33990)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(33979-33988)"],
     "$id": 11528
   },
   "复制客服邮箱": {
@@ -1003,7 +1003,7 @@
     "de-DE": "E-Mail-Adresse des Kundendienstes kopieren",
     "fr-FR": "Copier l'adresse e-mail du service client",
     "ko-KR": "고객센터 이메일 주소 복사",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(34424-34434)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(34422-34432)"],
     "$id": 11529
   },
   "隐私政策": {
@@ -1016,7 +1016,7 @@
     "de-DE": "Datenschutzrichtlinie",
     "fr-FR": "Politique de confidentialité",
     "ko-KR": "개인 정보 보호 정책",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(35654-35662)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(35652-35660)"],
     "$id": 9533
   },
   "服务条款与权益须知": {
@@ -1029,7 +1029,7 @@
     "de-DE": "Nutzungsbedingungen und Hinweise zu Ihren Rechten",
     "fr-FR": "Conditions générales d'utilisation et informations relatives aux droits des utilisateurs",
     "ko-KR": "이용 약관 및 권리 안내",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(35942-35955)"],
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(35940-35953)"],
     "$id": 11530
   },
   "企业版专属": {

@@ -284,7 +284,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3352-3432)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(23756-23837)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(23080-23160)"
     ],
     "$id": 11053
   },
@@ -300,7 +300,7 @@
     "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10321-10339)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(129147-129165)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(131141-131159)"
     ],
     "$id": 2977
   },
@@ -394,7 +394,7 @@
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(129188-129215)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(131181-131208)"
     ],
     "$id": 11054
   },

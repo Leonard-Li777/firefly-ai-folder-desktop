@@ -37,7 +37,10 @@
           "40-设计灵感与竞品归档/02-设计灵感收藏",
           "40-设计灵感与竞品归档/03-行业案例参考"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -66,7 +69,9 @@
           "05-测试报告与缺陷排查/02-E2E测试报告",
           "05-测试报告与缺陷排查/03-缺陷跟踪清单"
         ],
-        "tags": ["{TAG:编程语言}"],
+        "tags": [
+          "{TAG:编程语言}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -92,7 +97,10 @@
           "04-性能监控与排障/链路追踪",
           "04-性能监控与排障/告警规则"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -118,7 +126,9 @@
           "04-Archives (历史封存归档)/2025结项归档",
           "04-Archives (历史封存归档)/归档索引"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -144,7 +154,9 @@
           "40-49 资产采购与行政/42-采购验收",
           "40-49 资产采购与行政/43-资产处置"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -173,7 +185,9 @@
           "05-网络展示Web/社交媒体尺寸",
           "05-网络展示Web/网络展示九宫格"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -202,7 +216,9 @@
           "05-成片渲染Exports/多平台竖版切片",
           "05-成片渲染Exports/成片字幕版本"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -231,7 +247,9 @@
           "05-审稿意见与最终定稿/盲审版PDF",
           "05-审稿意见与最终定稿/归档说明"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -260,7 +278,9 @@
           "05-年度审计报告/审计底稿",
           "05-年度审计报告/审计意见书"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -289,7 +309,9 @@
           "05-生活电器与售后/保修卡与说明书",
           "05-生活电器与售后/家电购买凭证"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -318,7 +340,9 @@
           "05-数据复盘与报告/转化漏斗分析",
           "05-数据复盘与报告/竞品对标"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -347,7 +371,9 @@
           "05-大促复盘与售后/客诉分析",
           "05-大促复盘与售后/售后处理单"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -376,7 +402,11 @@
           "05-测试包发布Builds/发行安装包",
           "05-测试包发布Builds/版本说明"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}", "{TAG:模型格式}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}",
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -402,7 +432,9 @@
           "04-订单售后与财务对账/利润核算表",
           "04-订单售后与财务对账/多店铺财务汇总"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -428,7 +460,9 @@
           "04-判决与执行/执行申请与进展",
           "04-判决与执行/结案归档清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -454,7 +488,9 @@
           "04-统计分析与论文/论文草稿与投稿",
           "04-统计分析与论文/图表与审稿意见"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -480,7 +516,9 @@
           "04-教研与进修/公开课与课题",
           "04-教研与进修/培训学习笔记"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -509,7 +547,9 @@
           "05-汇报与交付/最终报告与建议",
           "05-汇报与交付/项目复盘"
         ],
-        "tags": ["{TAG:模型格式}"],
+        "tags": [
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -535,7 +575,9 @@
           "04-材料与造价/工程量与预算表",
           "04-材料与造价/供应商报价"
         ],
-        "tags": ["{TAG:模型格式}"],
+        "tags": [
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -561,7 +603,9 @@
           "04-投稿与出版/编辑审校意见",
           "04-投稿与出版/封面与成书文件"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -587,7 +631,9 @@
           "04-阶段总结与回访/回访记录",
           "04-阶段总结与回访/下一阶段计划"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -616,7 +662,9 @@
           "05-迭代与上线/上线公告",
           "05-迭代与上线/迭代复盘"
         ],
-        "tags": ["{TAG:文档类型}"],
+        "tags": [
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -645,7 +693,11 @@
           "05-看板与汇报/分析报告",
           "05-看板与汇报/汇报幻灯片"
         ],
-        "tags": ["{TAG:文件类型}", "{TAG:模型格式}", "{TAG:文档类型}"],
+        "tags": [
+          "{TAG:文件类型}",
+          "{TAG:模型格式}",
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -674,7 +726,9 @@
           "05-测试报告与发布/上线检查与复盘",
           "05-测试报告与发布/遗留问题清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -703,7 +757,9 @@
           "05-回款与客户维护/对账单",
           "05-回款与客户维护/回访与续约记录"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -732,7 +788,9 @@
           "05-培训与员工活动/培训记录与考核",
           "05-培训与员工活动/团建与关怀活动"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -761,7 +819,9 @@
           "05-数据与复盘/转化数据明细",
           "05-数据与复盘/结案复盘报告"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -790,7 +850,9 @@
           "05-纠纷与诉讼/判决与和解协议",
           "05-纠纷与诉讼/案件进展记录"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -815,7 +877,9 @@
           "05-量产与交付/量产固件烧录包",
           "05-量产与交付/烧录说明与产测指导"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -840,7 +904,9 @@
           "05-渲染与成片/分层渲染序列",
           "05-渲染与成片/合成调色与最终成片"
         ],
-        "tags": ["{TAG:模型格式}"],
+        "tags": [
+          "{TAG:模型格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -864,7 +930,9 @@
           "05-作品集与个人品牌/案例展示与作品集",
           "05-作品集与个人品牌/服务介绍与报价手册"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -888,7 +956,9 @@
           "05-复盘与输出/月度与年度复盘",
           "05-复盘与输出/已发布的文章博客"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -912,7 +982,9 @@
           "05-攻略与设定集/通关攻略与收集地图",
           "05-攻略与设定集/电子设定集与原画"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -936,7 +1008,9 @@
           "05-精校收藏版/已校对精排电子书",
           "06-书单与书评/私人书单与五星书评"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -960,7 +1034,9 @@
           "05-字幕与海报信息/外挂字幕",
           "05-字幕与海报信息/海报与影片简介"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -983,7 +1059,9 @@
           "05-同人志与展会/同人志收藏",
           "05-同人志与展会/展会购物清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1006,7 +1084,9 @@
           "05-说明书与保修/产品说明书",
           "05-说明书与保修/发票与保修凭证"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1029,7 +1109,9 @@
           "05-探店与宴客菜单/探店打卡记录",
           "05-探店与宴客菜单/宴客菜单规划"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1051,7 +1133,9 @@
           "05-用品与出行/用品说明书",
           "05-用品与出行/寄养协议与出行证明"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1075,7 +1159,9 @@
           "05-票根与游记/门票票根",
           "05-票根与游记/旅行手账与游记"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1099,7 +1185,9 @@
           "05-版权与授权/音效授权证书",
           "05-版权与授权/分账与合作合同"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1123,7 +1211,9 @@
           "05-交付与版权/客户确认单",
           "05-交付与版权/版权协议与授权书"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1147,7 +1237,9 @@
           "05-成稿与交付/高清成图",
           "05-成稿与交付/小样与水印预览"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1171,7 +1263,9 @@
           "05-打包与上架材料/安装包归档",
           "05-打包与上架材料/商店截图与文案"
         ],
-        "tags": ["{TAG:图片格式}"],
+        "tags": [
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1195,7 +1289,9 @@
           "05-巡检与故障复盘/例行巡检报告",
           "05-巡检与故障复盘/故障复盘记录"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1219,7 +1315,9 @@
           "05-物流与报关/运单与提单",
           "05-物流与报关/报关单据"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1243,7 +1341,9 @@
           "05-录取与签证/录取通知书",
           "05-录取与签证/签证表格与面签材料"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1268,7 +1368,11 @@
           "05-软件安装包与压缩包/压缩包与已解压临时文件",
           "06-旧桌面历史打包存档/往期桌面文件集中封存"
         ],
-        "tags": ["{TAG:文档类型}", "{TAG:文件类型}", "{TAG:图片格式}"],
+        "tags": [
+          "{TAG:文档类型}",
+          "{TAG:文件类型}",
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1292,7 +1396,11 @@
           "05-过期文件待清理/长期未用的旧下载",
           "05-过期文件待清理/重复下载与残留"
         ],
-        "tags": ["{TAG:文档类型}", "{TAG:图片格式}", "{TAG:音频格式}"],
+        "tags": [
+          "{TAG:文档类型}",
+          "{TAG:图片格式}",
+          "{TAG:音频格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1304,8 +1412,16 @@
         "slug": "inbox-staging-universal",
         "name": "个人文件收件箱与待办整理",
         "summary": "基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转",
-        "paths": ["01-收件箱", "02-马上要办", "03-等人回复", "04-常用参考", "05-办完归档"],
-        "tags": ["{TAG:文件类型}"],
+        "paths": [
+          "01-收件箱",
+          "02-马上要办",
+          "03-等人回复",
+          "04-常用参考",
+          "05-办完归档"
+        ],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1332,7 +1448,11 @@
           "04-安装包与压缩包/软件安装包",
           "04-安装包与压缩包/压缩文件"
         ],
-        "tags": ["{TAG:设计软件}", "{TAG:文档类型}", "{TAG:图片格式}"],
+        "tags": [
+          "{TAG:设计软件}",
+          "{TAG:文档类型}",
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1358,7 +1478,9 @@
           "05-发布质量检查/上线检查清单",
           "05-发布质量检查/版本质量统计"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1381,7 +1503,9 @@
           "04-兴趣与成长记录/书法绘画与考级",
           "04-兴趣与成长记录/体育与实践活动"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1403,7 +1527,9 @@
           "04-寒暑假/假期作业与实践",
           "04-寒暑假/假期阅读与拓展"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1425,7 +1551,9 @@
           "04-证件与重要备忘/证件复印件",
           "04-证件与重要备忘/重要事项备忘"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1447,7 +1575,9 @@
           "04-复诊与长期档案/复诊提醒与医嘱",
           "04-复诊与长期档案/年度体检汇总"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1473,7 +1603,9 @@
           "04-合同与用印/常用合同模板",
           "04-合同与用印/用印登记"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1499,7 +1631,9 @@
           "04-办结归档/往年归档",
           "04-办结归档/办结清单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1525,7 +1659,9 @@
           "04-缴费与银行单据/银行对账单",
           "04-缴费与银行单据/存款与理财凭证"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1551,7 +1687,9 @@
           "04-电子书与漫画/漫画",
           "04-电子书与漫画/杂志"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1577,7 +1715,9 @@
           "04-实用脚本/自动化运维脚本",
           "04-实用脚本/数据转换脚本"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1596,7 +1736,9 @@
           "04-过期备份残留",
           "05-确认后可删除"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1608,8 +1750,18 @@
         "slug": "chat-software-vault",
         "name": "聊天接收文件库",
         "summary": "针对微信WeChat Files、QQ、钉钉接收文档、发票、音视频与压缩包的结构化收敛体系",
-        "paths": ["01-文档与表格", "02-图片", "03-视频与语音", "04-压缩包", "05-待处理暂存"],
-        "tags": ["{TAG:文档类型}", "{TAG:文件类型}", "{TAG:图片格式}"],
+        "paths": [
+          "01-文档与表格",
+          "02-图片",
+          "03-视频与语音",
+          "04-压缩包",
+          "05-待处理暂存"
+        ],
+        "tags": [
+          "{TAG:文档类型}",
+          "{TAG:文件类型}",
+          "{TAG:图片格式}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1628,7 +1780,9 @@
           "04-电脑发往手机",
           "05-临时中转暂存"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1647,7 +1801,9 @@
           "04-报错与问题记录",
           "05-看完可删的临时截图"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1659,8 +1815,15 @@
         "slug": "scratchpad-drafts-vault",
         "name": "草稿与便签收纳箱",
         "summary": "针对散落的新建文本文档、未命名表格、副本文件与随手记事草稿的收敛急救体系",
-        "paths": ["01-随手记的便签", "02-写了一半的草稿", "03-摘抄与素材", "04-写完待归档"],
-        "tags": ["{TAG:文件类型}"],
+        "paths": [
+          "01-随手记的便签",
+          "02-写了一半的草稿",
+          "03-摘抄与素材",
+          "04-写完待归档"
+        ],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1679,7 +1842,9 @@
           "04-系统安装盘",
           "05-旧文件暂存"
         ],
-        "tags": ["{TAG:文档类型}"],
+        "tags": [
+          "{TAG:文档类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1698,7 +1863,9 @@
           "04-书信与资料翻拍",
           "05-待识别文字的文件"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1717,7 +1884,9 @@
           "04-制度与参考资料",
           "05-草稿与待办"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1736,7 +1905,9 @@
           "04-题目与练习",
           "05-课题与研究报告"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1771,7 +1942,9 @@
           "06-入住与保修/家电家具发票",
           "06-入住与保修/物业与钥匙交接"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1800,7 +1973,9 @@
           "05-灵感素材与拼贴/排版与构图参考",
           "05-灵感素材与拼贴/moodboard情绪板"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1832,7 +2007,9 @@
           "06-背调与入职材料/学历证明",
           "06-背调与入职材料/入职材料"
         ],
-        "tags": ["{TAG:设计软件}"],
+        "tags": [
+          "{TAG:设计软件}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1864,7 +2041,9 @@
           "06-交付与分发版本/平台分发版",
           "06-交付与分发版本/宣传片"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1896,7 +2075,9 @@
           "06-复盘报告/转化复盘",
           "06-复盘报告/改进计划"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1928,7 +2109,9 @@
           "06-平台分发与数据/数据复盘",
           "06-平台分发与数据/商单合作"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1960,7 +2143,9 @@
           "06-平台分发与商单/数据复盘",
           "06-平台分发与商单/品牌商单"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1992,7 +2177,9 @@
           "06-结营与复盘/复盘报告",
           "06-结营与复盘/家长反馈"
         ],
-        "tags": ["{TAG:文件类型}"],
+        "tags": [
+          "{TAG:文件类型}"
+        ],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
