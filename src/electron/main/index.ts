@@ -52,14 +52,13 @@ import {
   logger,
   LogCategory,
   ErrorNormalizer,
-  APP_PORTS,
-  getWorktreeDebugPortBase,
   PluginPathResolver
 } from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
 // 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
 import '../runtime-services/system/geo-adapter'
 import { touchActiveWorktree, resolveAppRegion } from './worktree-env'
+import { DesktopDevRuntimeController, extractDevServerPort } from './dev-runtime-cdp'
 
 // 注入客户端全局应用级区域常量单例 (Spec §2.2 / §4.4)
 process.env.APP_REGION = resolveAppRegion()
@@ -100,11 +99,33 @@ if (!gotSingleInstanceLock) {
 // 文件里的 PID 就是它的活子进程 —— 提前清理会把正在运行的实例的引擎直接杀掉。
 processReaper.cleanupStaleProcesses()
 
+// 3.1 本地开发运行时 CDP 端口治理与镜像发布控制器（严格置于单实例锁成功之后）
+const devRuntimeController = new DesktopDevRuntimeController({
+  worktreeName: worktreeInfo.worktreeName,
+  userDataDir: app.getPath('userData'),
+  deps: {
+    appendSwitch: (name, value) => app.commandLine.appendSwitch(name, value),
+    relaunch: opts => app.relaunch(opts),
+    exit: code => app.exit(code)
+  }
+})
+
 // 记录本 Worktree 实例活跃状态
-touchActiveWorktree(worktreeInfo.worktreeName)
+touchActiveWorktree(worktreeInfo.worktreeName, {
+  platform: process.platform,
+  devServerPort: extractDevServerPort(),
+  userDataDir: app.getPath('userData')
+})
 
 app.on('second-instance', (_event, commandLine) => {
-  touchActiveWorktree(worktreeInfo.worktreeName)
+  touchActiveWorktree(worktreeInfo.worktreeName, {
+    platform: process.platform,
+    devServerPort: extractDevServerPort(),
+    userDataDir: app.getPath('userData')
+  })
+  void devRuntimeController.republishOnSecondInstance().catch(err => {
+    logger.warn(LogCategory.MAIN, '[DevRuntime] second-instance 重发布开发运行时镜像失败:', err)
+  })
   const win = getMainWindow()
   if (win && !win.isDestroyed()) {
     if (win.isMinimized()) win.restore()
@@ -225,53 +246,9 @@ app.on('open-url', (event, url) => {
   }
 })()
 
-// 为不同平台或命令行指定的参数设置远程调试端口，每个 Worktree 独立专属滑动段
-const debuggingPortArg = process.argv.find(arg => arg.includes('--remote-debugging-port'))
-if (debuggingPortArg) {
-  const portMatch = debuggingPortArg.match(/--remote-debugging-port=(\d+)/)
-  if (portMatch && portMatch[1]) {
-    app.commandLine.appendSwitch('remote-debugging-port', portMatch[1])
-  }
-} else if (process.env.REMOTE_DEBUGGING_PORT) {
-  app.commandLine.appendSwitch('remote-debugging-port', process.env.REMOTE_DEBUGGING_PORT)
-} else if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
-  // 查找当前 Worktree 专属隔离段内的空闲调试端口
-  const isPortFreeSync = (port: number): boolean => {
-    try {
-      if (process.platform === 'win32') {
-        const out = require('child_process').execSync('netstat -ano -p tcp', {
-          encoding: 'utf8',
-          windowsHide: true,
-          stdio: ['pipe', 'pipe', 'ignore']
-        })
-        const regex = new RegExp(`:${port}\\s+`)
-        return !regex.test(out)
-      } else {
-        const out = require('child_process').execSync(`lsof -i :${port}`, {
-          encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'ignore']
-        })
-        return !out || out.trim().length === 0
-      }
-    } catch {
-      return true
-    }
-  }
-
-  const worktreePortBase = getWorktreeDebugPortBase(worktreeInfo.worktreeName)
-  let debugPort = worktreePortBase
-  for (let p = worktreePortBase; p < worktreePortBase + APP_PORTS.REMOTE_DEBUGGING_SLOT_SIZE; p++) {
-    if (isPortFreeSync(p)) {
-      debugPort = p
-      break
-    }
-  }
-  app.commandLine.appendSwitch('remote-debugging-port', String(debugPort))
-  loggingService.info(
-    LogCategory.STARTUP,
-    `[Chromium] Worktree: ${worktreeInfo.worktreeName} 独占远程调试端口: ${debugPort} (段: ${worktreePortBase}~${worktreePortBase + APP_PORTS.REMOTE_DEBUGGING_SLOT_SIZE - 1})`
-  )
-}
+// 开发模式下清理陈旧 DevToolsActivePort 与孤儿 desktop-dev-config.json，
+// 并基于平台有界子槽位 + 单次快照选定候选 CDP 端口（子槽位耗尽则自动切入 --remote-debugging-port=0）
+devRuntimeController.prepareBeforeReady()
 
 // 检测代理环境变量并配置 Electron Chromium 网络栈
 // Electron 的 net.request/net.fetch 使用 Chromium 网络栈，不读取 HTTP_PROXY/HTTPS_PROXY 环境变量
@@ -791,6 +768,17 @@ ConfigOrchestrator.getInstance().onValueChange('HARDWARE_GPU_INFO', () => {
 // =================================================================
 
 app.on('ready', async () => {
+  // 本地开发模式：建窗前完成 DevToolsActivePort + /json/version 真值核验与镜像发布；
+  // 若发生 TOCTOU 抢占导致绑定失败，静默 relaunch 切入 --remote-debugging-port=0 后立即返回
+  try {
+    const cdpVerify = await devRuntimeController.verifyAndPublishOnReady()
+    if (cdpVerify.relaunched) {
+      return
+    }
+  } catch (err) {
+    logger.warn(LogCategory.STARTUP, '[DevRuntime] 开发模式 CDP 真值核验与镜像发布异常:', err)
+  }
+
   // E2E 模式：安装出站网络拦截守卫并挂载主进程受控探针与故障总线 (Ticket 02 Spec §4.7 / §5.3)
   if (process.env.FF_E2E_MODE === '1') {
     const { session } = require('electron')
@@ -1076,7 +1064,7 @@ app.on('before-quit', event => {
     try {
       await omniService.stop()
       const { engineBridgeService } = await import('../runtime-services/engine-bridge')
-      engineBridgeService.stop()
+      await engineBridgeService.stop()
       // 关闭图标提取子进程，避免遗留孤儿子进程
       iconExtractorClient.dispose()
       await fileWatcherService.cleanup()
@@ -1092,6 +1080,8 @@ app.on('before-quit', event => {
       }
       // 确保 PostHog 挂起事件在退出前全部发送
       await postHogMain.shutdown()
+      // 撤销开发模式 desktop-dev-config.json 与工作区 .firefly-dev-runtime 镜像（严禁挂 will-quit，因 app.exit 会跳过）
+      await devRuntimeController.revokeAsync()
       // 精准清理所有名下登记的子进程
       processReaper.cleanup()
       logger.info(LogCategory.MAIN, '资源清理完成')
@@ -1144,9 +1134,10 @@ process.on('unhandledRejection', reason => {
 // 处理终端终止信号 (Ctrl+C / 进程管理器杀进程)，确保 omni 等所有常驻子服务彻底释放
 const handleProcessTermination = () => {
   try {
+    devRuntimeController.revokeSync()
     omniService.stopImmediatelySync()
     const { engineBridgeService } = require('../runtime-services/engine-bridge')
-    engineBridgeService.stop()
+    engineBridgeService.stopSyncForSignal()
   } catch {}
   process.exit(0)
 }

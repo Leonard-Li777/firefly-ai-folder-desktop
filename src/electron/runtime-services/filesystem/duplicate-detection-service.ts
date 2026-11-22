@@ -10,8 +10,9 @@ import {
   DuplicateFixAction,
   DuplicateFixResult
 } from '@firefly/types'
-import { LogCategory, logger, APP_PORTS, normalizeFileExtension } from '@firefly/shared'
+import { LogCategory, logger, normalizeFileExtension } from '@firefly/shared'
 import { databaseService } from '../database'
+import { omniService } from '../system/omni-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { t } from '@app/languages'
 import { decompressJson, decompressText } from '../../utils/text-compressor'
@@ -73,15 +74,11 @@ export class DuplicateDetectionService {
   }
 
   /**
-   * Omni API 基础 URL：优先读取 omni-service 实际绑定端口（由 OMNI_ACTUAL_PORT 环境变量写入），
-   * 兜底使用统一冷门端口段基准 APP_PORTS.OMNI_SERVER (38200)。
-   * 旧端口 9190 已废弃迁移，禁止硬编码。
+   * Omni API 基础 URL：统一委托给 omniService.getBaseUrl() 单一事实源（由服务发现文件与 SSE 动态维护），
+   * 已彻底退役脆弱的 OMNI_ACTUAL_PORT 环境变量读取依赖。
    */
   private get omniApiUrl(): string {
-    const port = process.env.OMNI_ACTUAL_PORT
-      ? Number(process.env.OMNI_ACTUAL_PORT)
-      : APP_PORTS.OMNI_SERVER
-    return `http://127.0.0.1:${port}`
+    return omniService.getBaseUrl()
   }
 
   /**

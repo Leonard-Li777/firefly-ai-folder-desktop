@@ -15,17 +15,22 @@ import { describe, expect, it } from 'vitest'
 const servicePath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
+  'engine-bridge-service',
   'engine-bridge-service.ts'
 )
 
 describe('EngineBridgeService 引擎拉起契约', () => {
   const source = readFileSync(servicePath, 'utf-8')
 
-  it('引擎子进程必须保留 stdin 管道，不得退化为 ignore', () => {
-    expect(source).toMatch(/stdio:\s*\[\s*'pipe',\s*'ignore',\s*'ignore'\s*\]/)
+  it('引擎子进程必须保留 stdin 管道，不得退化为 ignore（stdout 用于 FIREFLY_READY 快路径）', () => {
+    expect(source).toMatch(/stdio:\s*\[\s*'pipe',\s*'pipe',\s*'ignore'\s*\]/)
   })
 
   it('必须以 ENGINE_WATCH_STDIN=1 声明宿主生命周期守护', () => {
     expect(source).toMatch(/ENGINE_WATCH_STDIN:\s*'1'/)
+  })
+
+  it('必须注入 FIREFLY_USER_DATA_DIR 以支撑 userData/run/engine-config.json 同源发现', () => {
+    expect(source).toMatch(/FIREFLY_USER_DATA_DIR:\s*this\.userDataPath/)
   })
 })

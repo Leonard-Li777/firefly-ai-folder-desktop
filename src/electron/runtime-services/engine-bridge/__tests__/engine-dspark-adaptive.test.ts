@@ -15,35 +15,43 @@ import { describe, expect, it } from 'vitest'
 const servicePath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
+  'engine-bridge-service',
   'engine-bridge-service.ts'
+)
+const resolverPath = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '..',
+  'engine-model-catalog-resolver.ts'
 )
 
 describe('EngineBridgeService isDSparkActive 契约护栏', () => {
   const source = readFileSync(servicePath, 'utf-8')
+  const resolverSource = readFileSync(resolverPath, 'utf-8')
 
-  it('必须声明 public isDSparkActive(): boolean 方法', () => {
+  it('必须声明 public isDSparkActive(): boolean 方法并委托给 EngineModelCatalogResolver', () => {
     expect(source).toMatch(/public\s+isDSparkActive\(\):\s*boolean/)
+    expect(source).toMatch(/EngineModelCatalogResolver\.isDSparkActive\(this\.lastRawStatus\)/)
   })
 
   it('无状态或离线时必须防御性返回 false', () => {
-    const idx = source.indexOf('public isDSparkActive(): boolean')
+    const idx = resolverSource.indexOf('public static isDSparkActive(')
     expect(idx).toBeGreaterThan(-1)
-    const block = source.slice(idx, source.indexOf('\n  }', idx))
-    expect(block).toMatch(/const\s+raw\s*=\s*this\.lastRawStatus/)
-    expect(block).toMatch(/if\s*\(!raw\)\s*\{\s*return false\s*\}/)
+    const block = resolverSource.slice(idx, resolverSource.indexOf('\n  }', idx))
+    expect(block).toMatch(/if\s*\(!statusRaw\s*\|\|\s*typeof statusRaw !== 'object'\)/)
+    expect(block).toMatch(/return false/)
   })
 
   it('优先采纳 runtime_params 中的草稿自适应真实生效状态', () => {
-    const idx = source.indexOf('public isDSparkActive(): boolean')
-    const block = source.slice(idx, source.indexOf('\n  }', idx))
+    const idx = resolverSource.indexOf('public static isDSparkActive(')
+    const block = resolverSource.slice(idx, resolverSource.indexOf('\n  }', idx))
     expect(block).toMatch(/runtime_params/)
     expect(block).toMatch(/effective_enable_draft/)
     expect(block).toMatch(/enable_draft/)
   })
 
   it('降级匹配激活模型与槽位中的 spark/draft 标记', () => {
-    const idx = source.indexOf('public isDSparkActive(): boolean')
-    const block = source.slice(idx, source.indexOf('\n  }', idx))
+    const idx = resolverSource.indexOf('public static isDSparkActive(')
+    const block = resolverSource.slice(idx, resolverSource.indexOf('\n  }', idx))
     expect(block).toMatch(/current_model/)
     expect(block).toMatch(/active_language_model/)
     expect(block).toMatch(/\/\(\?:dspark\|spark\|draft\)\/i/)

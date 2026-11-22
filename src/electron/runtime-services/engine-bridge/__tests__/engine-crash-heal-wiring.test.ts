@@ -14,7 +14,10 @@ import { describe, expect, it } from 'vitest'
  * 防止后续重构把自愈调用、主动 kill 标记、配额清理悄悄摘掉。
  */
 const here = path.dirname(fileURLToPath(import.meta.url))
-const serviceSource = readFileSync(path.resolve(here, '..', 'engine-bridge-service.ts'), 'utf-8')
+const serviceSource = readFileSync(
+  path.resolve(here, '..', 'engine-bridge-service', 'engine-bridge-service.ts'),
+  'utf-8'
+)
 const managerSource = readFileSync(
   path.resolve(here, '..', '..', 'analysis-queue-service', 'ai-service-manager.ts'),
   'utf-8'
@@ -46,7 +49,7 @@ describe('EngineBridgeService 崩溃自愈接线', () => {
   })
 
   it('stop / shutdown 必须撤销待执行的自愈，避免停用后被自己拉起', () => {
-    for (const method of ['public stop(): void', 'public async shutdown(']) {
+    for (const method of ['public async stop(): Promise<void>', 'public async shutdown(']) {
       const start = serviceSource.indexOf(method)
       expect(start).toBeGreaterThan(-1)
       const body = serviceSource.slice(start, start + 900)

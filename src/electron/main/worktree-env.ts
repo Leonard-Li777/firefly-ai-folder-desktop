@@ -127,14 +127,49 @@ function sanitizeName(name: string): string {
   return name.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase()
 }
 
+export interface ActiveWorktreeMeta {
+  platform?: NodeJS.Platform
+  cdpPort?: number
+  devServerPort?: number
+  userDataDir?: string
+}
+
 /**
- * 注册当前 Worktree 实例为活跃状态（记录 PID 与时间戳）
+ * 解析当前工作区（Monorepo / Worktree）根目录：
+ * 优先定位包含 pnpm-workspace.yaml 的顶层目录，避免从 apps/desktop 子模块目录启动时误命中子模块 .git
  */
-export function touchActiveWorktree(worktreeName: string): void {
+export function resolveWorkspaceRootDir(startDir: string = process.cwd()): string {
+  try {
+    let currentDir = path.resolve(startDir)
+    let outermostGitDir: string | null = null
+    for (let i = 0; i < 6; i++) {
+      if (fs.existsSync(path.join(currentDir, 'pnpm-workspace.yaml'))) {
+        return currentDir
+      }
+      if (fs.existsSync(path.join(currentDir, '.git'))) {
+        outermostGitDir = currentDir
+      }
+      const parent = path.dirname(currentDir)
+      if (parent === currentDir) break
+      currentDir = parent
+    }
+    if (outermostGitDir) {
+      return outermostGitDir
+    }
+  } catch {
+    // 忽略探测异常并回退 startDir
+  }
+  return path.resolve(startDir)
+}
+
+/**
+ * 注册当前 Worktree 实例为活跃状态（记录 PID、时间戳及平台/CDP/DevServer/userData 元数据）
+ */
+export function touchActiveWorktree(worktreeName: string, meta?: ActiveWorktreeMeta): void {
   // 该文件仅被开发模式的 detectWorktreeName 回退逻辑读取（该处已有 !app.isPackaged 保护）。
   // 打包模式下写入只会在 appData 下创建裸 firefly-ai-folder 目录，污染用户数据目录，
   // 因此打包模式直接跳过，确保 prod 运行仅使用 firefly-ai-folder-[region]
-  if (app.isPackaged || process.env.NODE_ENV === 'production') return
+  if (!isLocalDevRuntime()) return
   try {
     const commonDir = path.join(app.getPath('appData'), 'firefly-ai-folder')
     if (!fs.existsSync(commonDir)) {
@@ -147,9 +182,16 @@ export function touchActiveWorktree(worktreeName: string): void {
         map = JSON.parse(fs.readFileSync(activeFile, 'utf-8'))
       } catch {}
     }
+    const prev =
+      map[worktreeName] && typeof map[worktreeName] === 'object' ? map[worktreeName] : {}
     map[worktreeName] = {
+      ...prev,
       pid: process.pid,
-      lastActive: Date.now()
+      lastActive: Date.now(),
+      platform: meta?.platform ?? prev.platform ?? process.platform,
+      ...(meta?.cdpPort !== undefined ? { cdpPort: meta.cdpPort } : {}),
+      ...(meta?.devServerPort !== undefined ? { devServerPort: meta.devServerPort } : {}),
+      ...(meta?.userDataDir !== undefined ? { userDataDir: meta.userDataDir } : {})
     }
     fs.writeFileSync(activeFile, JSON.stringify(map, null, 2), 'utf-8')
   } catch {}

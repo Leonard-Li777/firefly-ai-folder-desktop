@@ -1,16 +1,19 @@
 import { t } from '@app/languages'
 import * as http from 'node:http'
-import * as fs from 'node:fs/promises'
-import * as fsSync from 'node:fs'
 import * as crypto from 'node:crypto'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
-import { logger, LogCategory, APP_PORTS } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  APP_PORTS,
+  ServiceDiscoveryFile,
+  isPidAlive
+} from '@firefly/shared'
 import * as iconv from 'iconv-lite'
 import {
   type ExternalApiActivityInfo,
   type ExternalApiTestResultDTO,
-  type AiSkillDiscoveryFileV1,
   EXTERNAL_API_CAPABILITIES
 } from '@firefly/types'
 import { databaseService } from './database/database-service'
@@ -204,6 +207,9 @@ export class AISkillApiService {
   private configuredPort: number = APP_PORTS.AI_SKILL_API
   private actualPort = 0
   private configFilePath = ''
+  private discoveryFile: ServiceDiscoveryFile | null = null
+  private readonly instanceId: string = crypto.randomUUID()
+  private discoveryRevision = 0
   private inFlightAbortControllers: Set<AbortController> = new Set()
   private activeSearchesCount = 0
 
@@ -237,73 +243,28 @@ export class AISkillApiService {
     // 默认排空预算 800ms + 强制关闭 1000ms = 1800ms，严格受控于 before-quit 2500ms 守护时限内
     this.drainBudgetMs = options?.drainBudgetMs ?? 800
     this.stopBudgetMs = options?.stopBudgetMs ?? 1000
-    if (userDataPath) {
-      this.configFilePath = path.join(userDataPath, 'ai-skill-config.json')
-    } else {
+    let resolvedUserDataPath = userDataPath
+    if (!resolvedUserDataPath) {
       try {
         const { app } = require('electron')
         if (app && typeof app.getPath === 'function') {
-          this.configFilePath = path.join(app.getPath('userData'), 'ai-skill-config.json')
+          resolvedUserDataPath = app.getPath('userData')
         }
       } catch {
         // 非 Electron / 单测环境
       }
     }
+    if (resolvedUserDataPath) {
+      this.discoveryFile = new ServiceDiscoveryFile({
+        fileName: 'ai-skill-config.json',
+        serviceId: 'firefly-ai-skill-api',
+        userDataPath: resolvedUserDataPath,
+        legacyFallbackRead: true
+      })
+      this.configFilePath = this.discoveryFile.getFilePath()
+    }
     // 启动期安全自愈：清理损坏或孤儿发现文件 (TEST-EXT-10 / Spec §2.2)
-    this.cleanupOrphanDiscoveryOnStartup()
-  }
-
-  /**
-   * 启动期安全清理孤儿或损坏发现文件
-   */
-  private cleanupOrphanDiscoveryOnStartup(): void {
-    try {
-      if (!this.configFilePath || !fsSync.existsSync(this.configFilePath)) return
-      const content = fsSync.readFileSync(this.configFilePath, 'utf8')
-      let config: any
-      try {
-        config = JSON.parse(content)
-      } catch {
-        // 非法 JSON 损坏文件，直接清理 (TEST-EXT-10)
-        logger.warn(LogCategory.SYSTEM, `[AISkillApi] 清理损坏的发现文件: ${this.configFilePath}`)
-        fsSync.unlinkSync(this.configFilePath)
-        return
-      }
-
-      if (config.service !== 'firefly-ai-skill-api') {
-        logger.warn(
-          LogCategory.SYSTEM,
-          `[AISkillApi] 发现文件 service 不匹配 (${config.service})，拒绝覆盖或删除`
-        )
-        return
-      }
-
-      if (config.pid === process.pid) return // 本进程有效
-
-      // D-03: 单实例互斥锁下，属于本服务的旧发现文件必属旧残留
-      // isPidAlive 仅用于日志精确分类 (CRASH_RESIDUE vs ZOMBIE_OR_REUSED_PID)，不作为保留死文件的依据
-      const isAlive = this.isPidAlive(config.pid)
-      const residueType = isAlive ? 'ZOMBIE_OR_REUSED_PID' : 'CRASH_RESIDUE'
-      logger.warn(
-        LogCategory.SYSTEM,
-        `[AISkillApi] 清理孤儿发现文件 (分类: ${residueType}, 原PID: ${config.pid}): ${this.configFilePath}`
-      )
-      fsSync.unlinkSync(this.configFilePath)
-    } catch (err: any) {
-      if (err.code !== 'ENOENT') {
-        logger.warn(LogCategory.SYSTEM, '[AISkillApi] 启动期检查旧发现文件异常:', err)
-      }
-    }
-  }
-
-  private isPidAlive(pid: number): boolean {
-    if (!pid || typeof pid !== 'number') return false
-    try {
-      process.kill(pid, 0)
-      return true
-    } catch (e: any) {
-      return e.code === 'EPERM'
-    }
+    this.discoveryFile?.cleanupOrphanOnStartup({ preserveAliveExternalPid: false })
   }
 
   getActualPort(): number {
@@ -378,21 +339,17 @@ export class AISkillApiService {
   async start(): Promise<void> {
     if (this.server) return
 
-    // 检查是否有粘性端口可复用 (38300 ~ 38319)
+    // 检查是否有粘性端口可复用 (38300 ~ 38319)，兼容旧路径 legacyFallbackRead 迁移
     let stickyPort: number | null = null
     try {
-      if (this.configFilePath && fsSync.existsSync(this.configFilePath)) {
-        const raw = fsSync.readFileSync(this.configFilePath, 'utf-8')
-        const parsed = JSON.parse(raw)
-        if (
-          parsed.service === 'firefly-ai-skill-api' &&
-          typeof parsed.port === 'number' &&
-          parsed.port >= APP_PORTS.AI_SKILL_API &&
-          parsed.port < APP_PORTS.AI_SKILL_API + 20 &&
-          !this.isPidAlive(parsed.pid)
-        ) {
-          stickyPort = parsed.port
-        }
+      const parsed = this.discoveryFile?.read({ verifyPid: false })
+      if (
+        parsed &&
+        parsed.port >= APP_PORTS.AI_SKILL_API &&
+        parsed.port < APP_PORTS.AI_SKILL_API + 20 &&
+        !isPidAlive(parsed.pid)
+      ) {
+        stickyPort = parsed.port
       }
     } catch {}
 
@@ -514,15 +471,7 @@ export class AISkillApiService {
       this.discoveryPresent = false
 
       // D-05: 发布失败回滚时，确保不保留任何指向已关闭服务的死发现文件
-      try {
-        if (this.configFilePath && fsSync.existsSync(this.configFilePath)) {
-          const raw = fsSync.readFileSync(this.configFilePath, 'utf-8')
-          const parsed = JSON.parse(raw)
-          if (parsed.service === 'firefly-ai-skill-api') {
-            fsSync.unlinkSync(this.configFilePath)
-          }
-        }
-      } catch {}
+      this.discoveryFile?.revokeSync({ pid: process.pid, instanceId: this.instanceId })
 
       await new Promise<void>(r => {
         try {
@@ -603,54 +552,20 @@ export class AISkillApiService {
   }
 
   /**
-   * Windows 文件锁退避原子写 (V1 Schema)
+   * Windows 文件锁退避原子写 (V1 Schema，复用 @firefly/shared ServiceDiscoveryFile)
    */
   private async atomicPublishDiscoveryFile(): Promise<void> {
-    if (!this.configFilePath) return
-    const tmpPath = `${this.configFilePath}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2)}.tmp`
-    const config: AiSkillDiscoveryFileV1 = {
-      schemaVersion: 1,
-      service: 'firefly-ai-skill-api',
+    if (!this.discoveryFile) return
+    await this.discoveryFile.publish({
+      instanceId: this.instanceId,
+      revision: ++this.discoveryRevision,
       host: '127.0.0.1',
       port: this.actualPort,
-      baseUrl: `http://127.0.0.1:${this.actualPort}`,
       pid: process.pid,
       startedAt: (this.startedAt || new Date()).toISOString(),
+      userDataDir: this.discoveryFile.getUserDataPath(),
       capabilities: EXTERNAL_API_CAPABILITIES
-    }
-    const payload = JSON.stringify(config, null, 2)
-    await fs.writeFile(tmpPath, payload, 'utf-8')
-
-    // Windows 文件锁指数退避重试 (20, 40, 80, 160, 320ms)
-    const backoffs = [20, 40, 80, 160, 320]
-    let renamed = false
-    let lastRenameErr: any = null
-
-    for (const delayMs of backoffs) {
-      try {
-        await fs.rename(tmpPath, this.configFilePath)
-        renamed = true
-        break
-      } catch (err: any) {
-        lastRenameErr = err
-        if (err.code === 'EBUSY' || err.code === 'EPERM' || err.code === 'EACCES') {
-          await new Promise(r => setTimeout(r, delayMs))
-        } else {
-          break
-        }
-      }
-    }
-
-    if (!renamed) {
-      try {
-        await fs.unlink(tmpPath)
-      } catch {}
-      const err = new Error(
-        `写入发现文件失败: ${lastRenameErr?.message || '重试耗尽'}`
-      )
-      ;(err as any).code = 'DISCOVERY_WRITE_FAILED'
-      throw err
-    }
+    })
 
     this.discoveryPresent = true
     logger.info(
@@ -660,27 +575,15 @@ export class AISkillApiService {
   }
 
   private async removeConfigFile(): Promise<void> {
-    if (!this.configFilePath) return
-    try {
-      await fs.unlink(this.configFilePath)
-    } catch {
-      // 文件不存在则忽略
-    }
+    if (!this.discoveryFile) return
+    await this.discoveryFile.revoke({ pid: process.pid, instanceId: this.instanceId })
   }
 
   /**
    * 进程退出时的同步清理兜底 (DoD 10)
    */
   syncCleanupOnExit(): void {
-    try {
-      if (this.configFilePath && fsSync.existsSync(this.configFilePath)) {
-        const raw = fsSync.readFileSync(this.configFilePath, 'utf-8')
-        const parsed = JSON.parse(raw)
-        if (parsed.service === 'firefly-ai-skill-api' && parsed.pid === process.pid) {
-          fsSync.unlinkSync(this.configFilePath)
-        }
-      }
-    } catch {}
+    this.discoveryFile?.revokeSync({ pid: process.pid, instanceId: this.instanceId })
   }
 
   /**

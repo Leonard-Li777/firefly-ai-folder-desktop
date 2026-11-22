@@ -6,6 +6,14 @@ import type { EngineMetricsSnapshot } from '../engine-swapping-coordinator'
  */
 export interface Tier2EngineStatus {
   running?: boolean
+  /** 引擎宿主进程 PID（firefly-ai-engine `EngineStatus.pid`） */
+  pid?: number
+  /** 引擎进程启动期生成的唯一实例 ID（UUID v4，`EngineStatus.instance_id`） */
+  instance_id?: string
+  /** 引擎状态变更单调递增版本号（`EngineStatus.revision`） */
+  revision?: number
+  /** 引擎所属 Desktop userData 目录（供 isPathEqual 同源校验，`EngineStatus.user_data_dir`） */
+  user_data_dir?: string
   version?: string
   backend?: string
   active_backend?: string
@@ -28,7 +36,7 @@ export interface Tier2EngineStatus {
    * 但推理服务仍是 `stopped` —— 这正是 2026-10-30 事故中 87 分钟 503 的根因，
    * 故必须显式声明为联合类型，禁止用 `any` 兜底（拼错字面量会静默失效）。
    */
-  status?: 'starting' | 'ready' | 'processing' | 'error' | 'stopped'
+  status?: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' | 'stopping'
   error?: string
   /**
    * 引擎实际生效的运行时参数（来自 EngineStatus.runtime_params）。
@@ -106,4 +114,18 @@ export interface EngineBridgeSnapshot {
   activeMmproj?: string | null
   /** 是否激活 D-Spark 双模型协同加速 */
   isDSparkActive?: boolean
+}
+
+/**
+ * EngineBridgeService 可选构造参数（主要用于单测隔离与注入自定义 userDataPath）
+ */
+export interface EngineBridgeServiceOptions {
+  /** 自定义 userData 目录路径（缺省时取 app.getPath('userData')，无 Electron 时安全回退至临时目录） */
+  userDataPath?: string
+  /** 是否禁用构造期自动清理/监听/条件自引导（单测按需手动驱动） */
+  disableAutoBootstrap?: boolean
+  /** 是否禁用开发态二进制热更新监听 */
+  disableDevBinaryWatch?: boolean
+  /** 是否禁用进程级生命周期钩子注册（避免单测多实例污染全局 app/process 监听） */
+  disableLifecycleHooks?: boolean
 }

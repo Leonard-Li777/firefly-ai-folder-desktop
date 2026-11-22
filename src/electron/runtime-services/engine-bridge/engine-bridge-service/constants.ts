@@ -79,8 +79,6 @@ export const READY_WAIT_LIMIT_MS = 40_000
  * 只有真正稳定存活满 1 分钟，才算这次自愈成功、下次崩溃仍有 1 次机会。
  */
 export const STABLE_RUN_RESET_MS = 60_000
-/** 状态轮询间隔（毫秒） */
-export const POLL_INTERVAL_MS = 5_000
 /**
  * 轮询判定离线所需的连续失败次数（迟滞阈值）。
  * 单次探活超时（STATUS_TIMEOUT_MS=1.5s）在引擎忙时（/api/models 持有共享 config 锁、

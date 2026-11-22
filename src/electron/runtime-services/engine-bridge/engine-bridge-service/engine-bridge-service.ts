@@ -5,8 +5,24 @@
 import { ChildProcess, spawn, execSync } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import { app, BrowserWindow } from 'electron'
-import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
+import * as os from 'node:os'
+import { app, BrowserWindow, powerMonitor } from 'electron'
+import {
+  ResourceLocator,
+  logger,
+  LogCategory,
+  APP_PORTS,
+  ServiceDiscoveryFile,
+  type ServiceDiscoveryFileV1,
+  SSE_CONNECT_TIMEOUT_MS,
+  SSE_READ_WATCHDOG_MS,
+  DORMANT_MAX_ATTEMPTS,
+  SseWatchdogTimeoutError,
+  type ConnectedTargetIdentity,
+  readWithWatchdog,
+  sleepCancellable,
+  isPathEqual
+} from '@firefly/shared'
 import { Tier2CircuitBreaker, Tier2CircuitState } from '../tier2-circuit-breaker'
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from '../crash-heal-policy'
 import { isServiceUsableStatus, shouldTriggerServiceStartAt } from '../service-start-policy'
@@ -54,12 +70,20 @@ import {
   PORT_RELEASE_WAIT_MS,
   READY_WAIT_LIMIT_MS,
   STABLE_RUN_RESET_MS,
-  POLL_INTERVAL_MS,
   OFFLINE_CONFIRM_FAILURES,
   ENGINE_BIN_DIR_NAME,
   DEV_BINARY_WATCH_INTERVAL_MS
 } from './constants'
-import type { Tier2EngineStatus, EngineBridgeSnapshot } from './types'
+import type { Tier2EngineStatus, EngineBridgeSnapshot, EngineBridgeServiceOptions } from './types'
+
+/** 有界指数退避基础延迟序列（1s, 2s, 4s, 8s, 16s；附加 0~500ms 随机微抖动） */
+const STREAM_RECONNECT_BACKOFFS_MS = [1_000, 2_000, 4_000, 8_000, 16_000] as const
+/** 受管子进程 stdout 行缓冲上限，防止异常长输出引发内存堆积 */
+const STDOUT_BUFFER_MAX_BYTES = 64 * 1024
+/** 受管子进程优雅退出等待上限（超时后强杀） */
+const STOP_CHILD_EXIT_WAIT_MS = 1_500
+/** stdout 快路径前缀（与 firefly-ai-engine server/mod.rs READY_STDOUT_PREFIX 严格对齐） */
+const FIREFLY_READY_PREFIX = 'FIREFLY_READY:'
 
 export class EngineBridgeService {
   private static instance: EngineBridgeService
@@ -96,13 +120,36 @@ export class EngineBridgeService {
   public hasInstalledEngines: boolean | null = null
   /** 最近一次「隐式触发」启动的时刻（0 = 从未触发）；见 `service-start-policy.ts` */
   private lastImplicitStartAt = 0
-  private pollTimer: NodeJS.Timeout | null = null
-  /** 轮询探活单飞标志，避免全端口探测耗时超过轮询间隔时发生并发重入 */
-  private pollInFlight = false
-  /** 轮询连续探活失败计数，达到 OFFLINE_CONFIRM_FAILURES 才判定离线（见该常量说明） */
-  private consecutiveProbeFailures = 0
-  /** 服务停止代际计数，每次 stop() 递增以拦截在途异步探活回写已停止状态 */
+  /** 服务停止代际计数，每次 stop() 递增以拦截在途异步探活与 SSE 流回写已停止状态 */
   private stopEpoch = 0
+  /** SSE 连接代际计数，每次新循环或抢占重连递增，8 切面严格双代际门控 */
+  private connectionEpoch = 0
+  /** 当前活跃单循环 `runStreamLoop` 所属连接代际（null 表示处于 Dormant 静默挂起态） */
+  private activeLoopEpoch: number | null = null
+  /** 停机中止控制器：`stop()` 时 abort，`doStart()` 重入时重建 */
+  private stopController: AbortController = new AbortController()
+  /** 是否正处于 `stop()` 执行窗口（期间抑制 `applyOffline` 重复广播闪烁） */
+  private isStopping = false
+  /** 在途 `stop()` Promise，供并发 `stop()` 合并及 `doStart()` 串行等待 */
+  private stopPromise: Promise<void> | null = null
+  /** 当前已建连（或正在建连）目标三元组，用于同端口重启身份变化识别 */
+  private connectedTarget: ConnectedTargetIdentity | null = null
+  /** 连续连接失败计数（达 OFFLINE_CONFIRM_FAILURES=3 判离线，达 DORMANT_MAX_ATTEMPTS=5 转 Dormant） */
+  private consecutiveFailures = 0
+  /** 最近一次已采纳的引擎状态单调版本号（用于丢弃乱序旧快照） */
+  private lastAppliedRevision = 0
+  /** 最近一次已采纳的引擎实例 ID（切换新实例时重置 lastAppliedRevision = 0） */
+  private lastAppliedInstanceId: string | null = null
+  /** 当前桌面实例的 userData 目录路径（用于 isPathEqual 同源校验与发现文件定位） */
+  private readonly userDataPath: string
+  /** 跨模块服务发现文件（userData/run/engine-config.json） */
+  private readonly discoveryFile: ServiceDiscoveryFile
+  /** DirWatcher 订阅取消函数 */
+  private discoveryWatchUnsubscribe: (() => void) | null = null
+  /** 退避 sleep 阶段的中止控制器（被 kickEventStreamReconnect / stop 立即打断） */
+  private reconnectAbortController: AbortController | null = null
+  /** 启动期 stdout FIREFLY_READY 快路径回调集合（用于即时唤醒 waitForReady） */
+  private readySignalResolvers = new Set<() => void>()
   private lastRawStatus: Tier2EngineStatus | null = null
   private versionCache: string | null = null
   private lastError: string | null = null
@@ -203,13 +250,27 @@ export class EngineBridgeService {
     return this.autoHealAttempts >= CRASH_HEAL_MAX_ATTEMPTS && !this.process && !this.lastRawStatus
   }
 
-  private constructor() {
-    this.setupLifecycleHooks()
+  private constructor(options?: EngineBridgeServiceOptions) {
+    this.userDataPath = this.resolveUserDataPath(options?.userDataPath)
+    this.discoveryFile = new ServiceDiscoveryFile({
+      fileName: 'engine-config.json',
+      serviceId: 'firefly-engine-bridge',
+      userDataPath: this.userDataPath
+    })
+    if (!options?.disableLifecycleHooks) {
+      this.setupLifecycleHooks()
+    }
     this.setupThinkingConfigSync()
-    // 启动常驻状态轮询（10秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
-    this.startPolling(10000)
+    if (!options?.disableAutoBootstrap) {
+      // 启动期清理孤儿发现文件与陈旧 *.tmp.*（保留同源存活的外部引擎实例）
+      this.discoveryFile.cleanupOrphanOnStartup({ preserveAliveExternalPid: true })
+      // 启动 userData/run/engine-config.json 单例 DirWatcher 监听（纯事件驱动，0 周期定时器）
+      this.armDiscoveryWatcher()
+      // 条件式自引导：仅当同源发现文件存在且 PID 存活时建连；否则保持 Dormant 静默态（0 定时器、0 请求）
+      this.bootstrapFromDiscoveryFile()
+    }
     // 开发模式下开机常驻监听引擎二进制热更新（感知 engine:deploy:watch 重编译与部署）
-    if (this.isDevMode()) {
+    if (!options?.disableDevBinaryWatch && this.isDevMode()) {
       this.startDevBinaryWatch()
     }
   }
@@ -221,16 +282,56 @@ export class EngineBridgeService {
     return EngineBridgeService.instance
   }
 
+  /**
+   * 仅供单元测试构造隔离实例（注入自定义 userDataPath，避免污染全局单例）
+   */
+  public static createForTest(options?: EngineBridgeServiceOptions): EngineBridgeService {
+    return new EngineBridgeService({
+      disableDevBinaryWatch: true,
+      disableLifecycleHooks: true,
+      ...options
+    })
+  }
+
+  private resolveUserDataPath(override?: string): string {
+    if (override && override.trim()) {
+      return override
+    }
+    try {
+      const resolved = app && typeof app.getPath === 'function' ? app.getPath('userData') : ''
+      if (resolved && resolved.trim()) {
+        return resolved
+      }
+    } catch {
+      // 无 Electron 上下文（如独立单测环境）时回退临时目录
+    }
+    return path.join(os.tmpdir(), 'firefly-ai-folder-engine-bridge')
+  }
+
   private setupLifecycleHooks(): void {
     try {
       if (app && typeof app.on === 'function') {
-        app.on('will-quit', () => this.stop())
-        app.on('before-quit', () => this.stop())
+        app.on('will-quit', () => {
+          void this.stop()
+        })
+        app.on('before-quit', () => {
+          void this.stop()
+        })
+        // 唤醒源 6：主窗口获焦时单次重读发现文件（作为 fs.watch 极端丢事件的最终自愈网）
+        app.on('browser-window-focus', () => {
+          this.handleWindowFocusRefresh()
+        })
       }
-      const cleanExit = () => this.stop()
-      process.once('exit', cleanExit)
-      process.once('SIGINT', cleanExit)
-      process.once('SIGTERM', cleanExit)
+      // 唤醒源 5：系统休眠唤醒后主动重读发现文件并无闪烁重建 SSE 连接
+      if (powerMonitor && typeof powerMonitor.on === 'function') {
+        powerMonitor.on('resume', () => {
+          this.handleSystemResume()
+        })
+      }
+      const cleanExitSync = () => this.stopSyncForSignal()
+      process.once('exit', cleanExitSync)
+      process.once('SIGINT', cleanExitSync)
+      process.once('SIGTERM', cleanExitSync)
     } catch (err) {
       // 生命周期钩子注册失败仅意味着退出回收依赖 Electron 默认行为，记日志便于排查残留进程
       logger.warn(LogCategory.SYSTEM, '[EngineBridge] 注册退出清理钩子失败:', err)
@@ -749,14 +850,235 @@ export class EngineBridgeService {
       if (!res.ok) {
         return null
       }
-      return (await res.json()) as Tier2EngineStatus
+      const data = (await res.json()) as Tier2EngineStatus
+      if (!this.isSameOriginUserDataDir(data?.user_data_dir)) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 探测端口 ${port} 命中跨 Worktree 引擎实例 (user_data_dir=${data?.user_data_dir} !== ${this.userDataPath})，拒绝采纳`
+        )
+        return null
+      }
+      return data
     } catch (err) {
       return null
     }
   }
 
+  /**
+   * 核验发现文件或引擎状态上报的 userDataDir 是否与当前桌面实例同源（isPathEqual）
+   * - 若字段非空且路径不等，视为其他 Worktree 实例，严禁采纳
+   */
+  private isSameOriginUserDataDir(candidate?: string | null): boolean {
+    if (typeof candidate !== 'string' || !candidate.trim()) {
+      return true
+    }
+    return isPathEqual(candidate, this.userDataPath)
+  }
+
+  /**
+   * 读取并校验同源发现文件（userData/run/engine-config.json）
+   */
+  private readSameOriginDiscovery(): ServiceDiscoveryFileV1 | null {
+    const info = this.discoveryFile.read({ verifyPid: true })
+    if (!info) {
+      return null
+    }
+    if (!this.isSameOriginUserDataDir(info.userDataDir)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 发现文件 userDataDir 不同源 (${info.userDataDir} !== ${this.userDataPath})，拒绝采纳`
+      )
+      return null
+    }
+    return info
+  }
+
+  /**
+   * 挂载 userData/run/engine-config.json 目录监听器（纯事件驱动，支持 stop -> doStart 重臂）
+   */
+  private armDiscoveryWatcher(): void {
+    if (this.discoveryWatchUnsubscribe) {
+      return
+    }
+    try {
+      this.discoveryWatchUnsubscribe = this.discoveryFile.watch(info => {
+        this.handleDiscoveryFileChange(info)
+      })
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 挂载 engine-config.json 目录监听失败:', err)
+    }
+  }
+
+  /**
+   * 卸载 DirWatcher 订阅（stop 同步段调用）
+   */
+  private disarmDiscoveryWatcher(): void {
+    if (this.discoveryWatchUnsubscribe) {
+      try {
+        this.discoveryWatchUnsubscribe()
+      } catch {
+        // 忽略退订异常
+      }
+      this.discoveryWatchUnsubscribe = null
+    }
+  }
+
+  /**
+   * 构造期条件式自引导：仅当同源发现文件存在且 PID 存活时启动单循环建连；
+   * 否则保持 Dormant 静默态（0 定时器、0 网络请求）。
+   */
+  private bootstrapFromDiscoveryFile(): void {
+    const info = this.readSameOriginDiscovery()
+    if (!info) {
+      return
+    }
+    this.activePort = info.port
+    this.kickEventStreamReconnect({
+      expectedTarget: {
+        baseUrl: info.baseUrl,
+        pid: info.pid,
+        instanceId: info.instanceId
+      },
+      resetFailures: true
+    })
+  }
+
+  /**
+   * 唤醒源 3：处理 userData/run/engine-config.json 变更事件（绕过熔断器 canExecute 门控）
+   */
+  public handleDiscoveryFileChange(info: ServiceDiscoveryFileV1 | null): void {
+    if (this.stopController.signal.aborted) {
+      return
+    }
+    if (!info) {
+      return
+    }
+    if (!this.isSameOriginUserDataDir(info.userDataDir)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 忽略跨 Worktree 发现文件变更 (${info.userDataDir} !== ${this.userDataPath})`
+      )
+      return
+    }
+    this.activePort = info.port
+    this.kickEventStreamReconnect({
+      expectedTarget: {
+        baseUrl: info.baseUrl,
+        pid: info.pid,
+        instanceId: info.instanceId
+      },
+      resetFailures: true
+    })
+  }
+
+  /**
+   * 唤醒源 5：系统休眠唤醒（powerMonitor.on('resume')）无闪烁重建 SSE 连接
+   */
+  public handleSystemResume(): void {
+    if (this.stopController.signal.aborted) {
+      return
+    }
+    this.discoveryFile.rearmWatcher()
+    const info = this.readSameOriginDiscovery()
+    if (info) {
+      this.activePort = info.port
+      // 系统唤醒后底层 TCP 可能已半开：先强制清空旧 connectedTarget 再抢占重建，期间不调用 applyOffline 避免 UI 闪烁
+      this.connectedTarget = null
+      this.kickEventStreamReconnect({
+        expectedTarget: {
+          baseUrl: info.baseUrl,
+          pid: info.pid,
+          instanceId: info.instanceId
+        },
+        resetFailures: true
+      })
+      return
+    }
+    if (this.lastRawStatus !== null || this.process !== null || this.connectedTarget !== null) {
+      this.connectedTarget = null
+      this.kickEventStreamReconnect({ resetFailures: true })
+    }
+  }
+
+  /**
+   * 唤醒源 6：主窗口获焦（browser-window-focus）或显式刷新时单次重读发现文件
+   * 仅当 instanceId / revision / port 变化或当前离线而文件显示存活时触发重连
+   */
+  public handleWindowFocusRefresh(): void {
+    if (this.stopController.signal.aborted) {
+      return
+    }
+    this.discoveryFile.rearmWatcher()
+    const info = this.readSameOriginDiscovery()
+    if (!info) {
+      return
+    }
+    const needsKick =
+      this.lastRawStatus === null ||
+      !this.isCurrentTargetHealthy() ||
+      info.port !== this.activePort ||
+      (Boolean(info.instanceId) && info.instanceId !== this.connectedTarget?.instanceId) ||
+      info.revision > this.lastAppliedRevision
+    if (!needsKick) {
+      return
+    }
+    this.activePort = info.port
+    this.kickEventStreamReconnect({
+      expectedTarget: {
+        baseUrl: info.baseUrl,
+        pid: info.pid,
+        instanceId: info.instanceId
+      },
+      resetFailures: true
+    })
+  }
+
+  /** 获取当前 SSE 状态机所处阶段（供可观测性日志与单元测试断言） */
+  public getStreamState(): 'dormant' | 'streaming' | 'reconnecting' {
+    if (this.isCurrentTargetHealthy()) {
+      return 'streaming'
+    }
+    if (this.activeLoopEpoch !== null) {
+      return 'reconnecting'
+    }
+    return 'dormant'
+  }
+
+  /** 获取当前连接的引擎目标身份三元组（供测试与诊断） */
+  public getConnectedTarget(): ConnectedTargetIdentity | null {
+    return this.connectedTarget ? { ...this.connectedTarget } : null
+  }
+
+  /** 获取本实例关联的 ServiceDiscoveryFile（供测试断言与诊断） */
+  public getDiscoveryFile(): ServiceDiscoveryFile {
+    return this.discoveryFile
+  }
+
   /** 采纳探活结果：刷新版本缓存与原始状态，并异步刷新模型计数 */
   public applyStatus(data: Tier2EngineStatus): void {
+    // 1. 同源身份核验：若携带 user_data_dir 且与当前实例不一致，严禁采纳
+    if (!this.isSameOriginUserDataDir(data.user_data_dir)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 拒绝采纳异源引擎状态 (user_data_dir=${data.user_data_dir} !== ${this.userDataPath})`
+      )
+      return
+    }
+
+    // 2. instance_id 切换时重置 lastAppliedRevision = 0，随后执行 revision 单调保序
+    if (typeof data.instance_id === 'string' && data.instance_id.length > 0) {
+      if (this.lastAppliedInstanceId !== null && this.lastAppliedInstanceId !== data.instance_id) {
+        this.lastAppliedRevision = 0
+      }
+      this.lastAppliedInstanceId = data.instance_id
+    }
+    if (typeof data.revision === 'number' && Number.isFinite(data.revision) && data.revision > 0) {
+      if (data.revision <= this.lastAppliedRevision) {
+        return
+      }
+      this.lastAppliedRevision = data.revision
+    }
+
     if (typeof data.version === 'string' && data.version) {
       this.versionCache = data.version
     }
@@ -765,7 +1087,7 @@ export class EngineBridgeService {
     const currentModel = data.current_model || data.model || data.loaded_models?.[0] || null
     const modelChanged = currentModel !== null && currentModel !== prevModel
     // 槽位变更检测：引擎 UI 切换嵌入/语言模型时 current_model 可能不变或置空，
-    // 若只检测 current_model 会漏播广播，渲染层只能等下个轮询 tick —— Footer 模型状态「不同步」的延迟根因
+    // 若只检测 current_model 会漏播广播，渲染层只能等下个状态刷新 —— Footer 模型状态「不同步」的延迟根因
     const langSlotChanged =
       (data.active_language_model || null) !== (this.lastRawStatus?.active_language_model || null)
     const embSlotChanged =
@@ -793,25 +1115,27 @@ export class EngineBridgeService {
       this.broadcastStatus()
     }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径。
-    // 该端点每次请求都要引擎侧全盘扫描，故按 TTL 节流，不跟随 5s 心跳无脑重扫（见 shouldRefreshModelCount）
-    if (this.shouldRefreshModelCount()) {
+    // 该端点每次请求都要引擎侧全盘扫描，故按 TTL 节流，不跟随高频事件无脑重扫（见 shouldRefreshModelCount）
+    if (data.status !== 'stopping' && this.shouldRefreshModelCount()) {
       void this.refreshModelCount()
     }
     // 异步刷新当前引擎适配类型（Footer「兼容模式」标记依据），不阻塞探活关键路径
-    void this.refreshBackendMatchType()
-    // 异步对齐思考模式（引擎 UI 变更后 desktop 请求级/Footer 需感知），不阻塞探活关键路径
-    void this.syncThinkingModeFromEngine()
-    // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
-    this.ensureEventStream()
+    if (data.status !== 'stopping') {
+      void this.refreshBackendMatchType()
+      // 异步对齐思考模式（引擎 UI 变更后 desktop 请求级/Footer 需感知），不阻塞探活关键路径
+      void this.syncThinkingModeFromEngine()
+      // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
+      this.ensureEventStream()
+    }
 
-    // 联动模型置换门闩：若引擎处于 Failed 状态则永久中止，若 stopped 则可重试中止
+    // 联动模型置换门闩：若引擎处于 Failed 状态则永久中止，若 stopped/stopping 则可重试中止
     if (data.status === 'error' || (data as any).reason === 'ProcessStatus::Failed') {
       engineSwappingCoordinator.abortSwapping({
         kind: 'permanent',
         code: 'engine_failed',
         message: 'AI engine failed to start (ProcessStatus::Failed)'
       })
-    } else if (data.status === 'stopped') {
+    } else if (data.status === 'stopped' || data.status === 'stopping') {
       engineSwappingCoordinator.abortSwapping({
         kind: 'retryable',
         code: 'engine_stopped',
@@ -848,15 +1172,15 @@ export class EngineBridgeService {
    *   引擎是否真的"在用"（有活跃租约 / 队列任务）由协调器的
    *   reconcileLiveStates（读真实进程态 + connected/ready/processing + 队列忙碌态）
    *   与 lease-registry 的活跃租约计数权威判定，bridge 不越权代劳。
-   * - stopped/error 仍需 notifyModuleHibernated：引擎真下线要如实通知，
+   * - stopped/error/stopping 仍需 notifyModuleHibernated：引擎真下线要如实通知，
    *   避免协调器 runtimeStore 残留 resident 状态（UI 显示"已释放"的状态撒谎）。
    */
   private syncEngineStateToCoordinator(
-    status: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' | undefined
+    status: 'starting' | 'ready' | 'processing' | 'error' | 'stopped' | 'stopping' | undefined
   ): void {
     try {
       // 仅在下线时通知协调器；在线状态交还租约 + reconcileLiveStates 判定
-      if (status === 'stopped' || status === 'error') {
+      if (status === 'stopped' || status === 'error' || status === 'stopping') {
         moduleHibernationCoordinator.notifyModuleHibernated('firefly-ai-engine')
       }
     } catch {
@@ -877,66 +1201,397 @@ export class EngineBridgeService {
       this.eventStreamAbortController.abort()
       this.eventStreamAbortController = null
     }
+    this.connectedTarget = null
     const wasOnline = this.lastRawStatus !== null
     this.lastRawStatus = null
-    if (wasOnline) {
+    if (wasOnline && !this.isStopping) {
       this.broadcastStatus()
     }
     // 引擎离线时同步通知协调器（确保 UI 显示已释放而非常驻）
     this.syncEngineStateToCoordinator('stopped')
   }
 
+  /** 8 切面严格双代际所有权门控 */
+  private isCurrentOwner(myEpoch: number, myStopEpoch: number): boolean {
+    return (
+      myEpoch === this.connectionEpoch &&
+      myStopEpoch === this.stopEpoch &&
+      !this.stopController.signal.aborted
+    )
+  }
+
+  /** 判断当前 SSE 连接是否已健康绑定在目标身份上 */
+  private isCurrentTargetHealthy(expectedTarget?: ConnectedTargetIdentity): boolean {
+    if (this.eventStreamAbortController === null || this.eventStreamAbortController.signal.aborted) {
+      return false
+    }
+    if (this.connectedTarget === null || this.connectedTarget.baseUrl !== this.baseUrl) {
+      return false
+    }
+    if (expectedTarget) {
+      if (expectedTarget.baseUrl !== this.connectedTarget.baseUrl) {
+        return false
+      }
+      if (expectedTarget.pid !== undefined && expectedTarget.pid !== this.connectedTarget.pid) {
+        return false
+      }
+      if (
+        expectedTarget.instanceId !== undefined &&
+        expectedTarget.instanceId !== this.connectedTarget.instanceId
+      ) {
+        return false
+      }
+    }
+    return true
+  }
+
   /**
-   * 建立与引擎 /api/engine/events 的 SSE 实时长连接，
-   * 使得引擎 API 开始/结束工作时的状态切换能够毫秒级推送到 desktop
+   * 确保单一 SSE 状态流循环处于运行态（Spec §3.3）：
+   * 1. stopController 已 abort → 早返
+   * 2. 当前目标已健康 STREAMING → 早返复用
+   * 3. 已有单循环在跑 → 早返让路
+   * 4. 启动单循环 runStreamLoop(myEpoch, stopEpoch)
    */
-  private ensureEventStream(): void {
-    if (this.eventStreamAbortController) {
+  public ensureEventStream(): void {
+    if (this.stopController.signal.aborted) {
       return
     }
-    const ac = new AbortController()
-    this.eventStreamAbortController = ac
-    const url = `${this.baseUrl}/api/engine/events`
+    if (this.isCurrentTargetHealthy()) {
+      return
+    }
+    if (this.activeLoopEpoch !== null) {
+      return
+    }
+    const myEpoch = ++this.connectionEpoch
+    this.activeLoopEpoch = myEpoch
+    void this.runStreamLoop(myEpoch, this.stopEpoch)
+  }
 
-    ;(async () => {
+  /**
+   * 抢占式重连入口（Spec §3.3）：
+   * - 若未传新 expectedTarget（或三元组全等）且当前连接已健康 STREAMING → no-op
+   * - 同端口重启（pid / instanceId 变化）绝不误入 no-op，立即中断旧连接并启动新代际单循环
+   * - 绕过 circuitBreaker.canExecute() 门控（open-circuit 豁免语义）
+   */
+  public kickEventStreamReconnect(options?: {
+    expectedTarget?: ConnectedTargetIdentity
+    resetFailures?: boolean
+  }): void {
+    if (this.stopController.signal.aborted) {
+      return
+    }
+    if (options?.expectedTarget?.baseUrl) {
       try {
-        const res = await fetch(url, { signal: ac.signal })
-        if (!res.ok || !res.body) {
-          this.eventStreamAbortController = null
-          return
+        const parsed = new URL(options.expectedTarget.baseUrl)
+        const parsedPort = Number(parsed.port)
+        if (Number.isInteger(parsedPort) && parsedPort >= 1 && parsedPort <= 65535) {
+          this.activePort = parsedPort
         }
-        const reader = res.body.getReader()
-        const decoder = new TextDecoder()
-        let buffer = ''
+      } catch {
+        // 非法 URL 忽略，沿用当前 activePort
+      }
+    }
+    if (this.isCurrentTargetHealthy(options?.expectedTarget)) {
+      return
+    }
+    if (options?.resetFailures) {
+      this.consecutiveFailures = 0
+    }
+    // 同 tick 抢占重建：先中断旧连接与旧退避 sleep，再递增 connectionEpoch 启动新循环
+    this.eventStreamAbortController?.abort()
+    this.reconnectAbortController?.abort()
+    this.connectedTarget = null
+    const myEpoch = ++this.connectionEpoch
+    this.activeLoopEpoch = myEpoch
+    void this.runStreamLoop(myEpoch, this.stopEpoch, options?.expectedTarget)
+  }
 
-        while (!ac.signal.aborted) {
-          const { done, value } = await reader.read()
-          if (done) break
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() || ''
+  /**
+   * 单一 SSE 流循环驱动器（Spec §2.1 机制 1/2/3）：
+   * - 8 个异步切面强制校验 isCurrentOwner(myEpoch, myStopEpoch)
+   * - 主动 abort 不计入失败
+   * - 连续 DORMANT_MAX_ATTEMPTS = 5 次失败后强制退出循环进入 Dormant 静默态（0 定时器、0 请求）
+   */
+  private async runStreamLoop(
+    myEpoch: number,
+    myStopEpoch: number,
+    initialExpectedTarget?: ConnectedTargetIdentity
+  ): Promise<void> {
+    let pendingTarget = initialExpectedTarget
+    let hasAttemptedFallbackScan = false
 
-          for (const line of lines) {
-            const trimmed = line.trim()
-            if (trimmed.startsWith('data:')) {
-              const jsonStr = trimmed.slice(5).trim()
-              if (jsonStr) {
-                try {
-                  const statusData = JSON.parse(jsonStr)
-                  this.applyStatus(statusData)
-                } catch {}
-              }
+    try {
+      while (this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        const discBeforeConnect = this.readSameOriginDiscovery()
+        if (discBeforeConnect) {
+          this.activePort = discBeforeConnect.port
+        }
+        const target: ConnectedTargetIdentity = {
+          baseUrl: this.baseUrl,
+          pid: pendingTarget?.pid ?? discBeforeConnect?.pid,
+          instanceId: pendingTarget?.instanceId ?? discBeforeConnect?.instanceId
+        }
+        pendingTarget = undefined
+
+        const outcome = await this.connectOnce(myEpoch, myStopEpoch, target)
+
+        // 主动 abort 或已失权：绝不计入失败，绝不覆盖新连接状态
+        if (outcome === 'aborted' || !this.isCurrentOwner(myEpoch, myStopEpoch)) {
+          break
+        }
+
+        // 引擎已发送 stopping 终帧后优雅闭合：不盲目无限重连，直接判定离线转 Dormant
+        if (outcome === 'stopping') {
+          if (this.isCurrentOwner(myEpoch, myStopEpoch) && !this.isStopping) {
+            this.applyOffline()
+          }
+          break
+        }
+
+        this.consecutiveFailures++
+
+        // Dormant 快速准入：无受管子进程且发现文件缺失或 PID 已死 → 仅做 1 次单轮降级扫描
+        const discAfterFailure = this.readSameOriginDiscovery()
+        if (this.process === null && discAfterFailure === null) {
+          if (!hasAttemptedFallbackScan) {
+            hasAttemptedFallbackScan = true
+            const adopted = await this.adoptRunningEnginePort(myStopEpoch)
+            if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+              break
+            }
+            if (adopted) {
+              this.consecutiveFailures = 0
+              continue
             }
           }
+          // 切面 4：确认仍是当前代际所有权后判离线并立即转 Dormant（0 定时器、0 请求）
+          if (this.isCurrentOwner(myEpoch, myStopEpoch) && !this.isStopping) {
+            this.applyOffline()
+          }
+          break
         }
-      } catch (err: any) {
-        // 连接断开或异常重置 controller，等待后续探活自动重试
-      } finally {
-        if (this.eventStreamAbortController === ac) {
-          this.eventStreamAbortController = null
+
+        // 连续 OFFLINE_CONFIRM_FAILURES (3) 次失败确认离线
+        if (this.consecutiveFailures >= OFFLINE_CONFIRM_FAILURES) {
+          if (this.isCurrentOwner(myEpoch, myStopEpoch) && !this.isStopping) {
+            this.applyOffline()
+          }
+        }
+
+        // 连续 DORMANT_MAX_ATTEMPTS (5) 次失败：强制退出循环进入 Dormant 静默态，绝不无限退避轮询
+        if (this.consecutiveFailures >= DORMANT_MAX_ATTEMPTS) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[EngineBridge] SSE 连续 ${this.consecutiveFailures} 次连接失败，转入 Dormant 静默挂起态（等待事件唤醒）`
+          )
+          if (this.isCurrentOwner(myEpoch, myStopEpoch) && !this.isStopping) {
+            this.applyOffline()
+          }
+          break
+        }
+
+        // 有界指数退避（1s, 2s, 4s, 8s, 16s + 0~500ms 抖动）
+        const baseDelay =
+          STREAM_RECONNECT_BACKOFFS_MS[
+            Math.min(this.consecutiveFailures - 1, STREAM_RECONNECT_BACKOFFS_MS.length - 1)
+          ]
+        const jitterMs = Math.floor(Math.random() * 500)
+        const sleepAc = new AbortController()
+        this.reconnectAbortController = sleepAc
+        const sleepSignal = AbortSignal.any([sleepAc.signal, this.stopController.signal])
+        const completed = await sleepCancellable(baseDelay + jitterMs, sleepSignal)
+        if (this.reconnectAbortController === sleepAc) {
+          this.reconnectAbortController = null
+        }
+
+        // 切面 5：退避 sleep 唤醒后再次校验双代际所有权
+        if (!completed || !this.isCurrentOwner(myEpoch, myStopEpoch)) {
+          break
         }
       }
-    })().catch(() => {})
+    } finally {
+      // 切面 6：仅当自身仍为 activeLoopEpoch 时复位，绝不误清已抢占的新循环
+      if (this.activeLoopEpoch === myEpoch) {
+        this.activeLoopEpoch = null
+      }
+    }
+  }
+
+  /**
+   * 单次 SSE 建连与读流（含 10s 建连看门狗 + 35s 读流看门狗 + 锁死释放顺序）
+   */
+  private async connectOnce(
+    myEpoch: number,
+    myStopEpoch: number,
+    target: ConnectedTargetIdentity
+  ): Promise<'aborted' | 'eof' | 'failed' | 'stopping'> {
+    if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+      return 'aborted'
+    }
+
+    const myAc = new AbortController()
+    this.eventStreamAbortController = myAc
+    const url = `${target.baseUrl}/api/engine/events`
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
+    let receivedStoppingFrame = false
+
+    // 阶段一：建连 10s 看门狗（使用可显式 clearTimeout 的 controller，确保进入 STREAMING 态后活跃 Timer 严格为 1）
+    const connectTimeoutAc = new AbortController()
+    let connectTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+      connectTimer = null
+      connectTimeoutAc.abort(new SseWatchdogTimeoutError('connect', SSE_CONNECT_TIMEOUT_MS))
+    }, SSE_CONNECT_TIMEOUT_MS)
+
+    try {
+      const fetchSignal = AbortSignal.any([myAc.signal, connectTimeoutAc.signal])
+      let res: Response
+      try {
+        res = await fetch(url, { signal: fetchSignal })
+      } finally {
+        if (connectTimer !== null) {
+          clearTimeout(connectTimer)
+          connectTimer = null
+        }
+      }
+
+      // 切面 1：建连返回后立即校验双代际所有权
+      if (!this.isCurrentOwner(myEpoch, myStopEpoch) || myAc.signal.aborted) {
+        if (res.body) {
+          void res.body.cancel().catch(() => {})
+        }
+        return 'aborted'
+      }
+
+      if (!res.ok || !res.body) {
+        return 'failed'
+      }
+
+      reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let firstFrameValidated = false
+
+      // 阶段二：流内每次 reader.read() 独立 35s 读超时看门狗
+      while (this.isCurrentOwner(myEpoch, myStopEpoch) && !myAc.signal.aborted) {
+        const { done, value } = await readWithWatchdog(reader, SSE_READ_WATCHDOG_MS, myAc.signal)
+        if (done) {
+          break
+        }
+        if (!value || value.byteLength === 0) {
+          continue
+        }
+
+        // 切面 3 前置门控：收到字节后校验所有权
+        if (!this.isCurrentOwner(myEpoch, myStopEpoch) || myAc.signal.aborted) {
+          return 'aborted'
+        }
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed.startsWith('data:')) {
+            continue
+          }
+          const jsonStr = trimmed.slice(5).trim()
+          if (!jsonStr) {
+            continue
+          }
+
+          let statusData: Tier2EngineStatus
+          try {
+            statusData = JSON.parse(jsonStr) as Tier2EngineStatus
+          } catch {
+            continue
+          }
+
+          // 切面 2：首帧与后续帧强制同源身份核验
+          if (!this.isSameOriginUserDataDir(statusData.user_data_dir)) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[EngineBridge] SSE 状态帧 user_data_dir 不同源 (${statusData.user_data_dir} !== ${this.userDataPath})，断开连接`
+            )
+            return 'failed'
+          }
+
+          // 切面 3：applyStatus 前严格校验双代际所有权
+          if (!this.isCurrentOwner(myEpoch, myStopEpoch) || myAc.signal.aborted) {
+            return 'aborted'
+          }
+
+          if (!firstFrameValidated) {
+            firstFrameValidated = true
+            this.connectedTarget = {
+              baseUrl: target.baseUrl,
+              pid: typeof statusData.pid === 'number' ? statusData.pid : target.pid,
+              instanceId:
+                typeof statusData.instance_id === 'string' && statusData.instance_id
+                  ? statusData.instance_id
+                  : target.instanceId
+            }
+            this.consecutiveFailures = 0
+            // 保留熔断器 open-circuit 豁免语义：首帧通过同源校验后复位熔断器
+            this.circuitBreaker.recordSuccess()
+          }
+
+          this.applyStatus(statusData)
+          if (statusData.status === 'stopping') {
+            receivedStoppingFrame = true
+          }
+        }
+
+        if (receivedStoppingFrame) {
+          break
+        }
+      }
+
+      if (!this.isCurrentOwner(myEpoch, myStopEpoch) || myAc.signal.aborted) {
+        return 'aborted'
+      }
+      return receivedStoppingFrame ? 'stopping' : 'eof'
+    } catch (err: any) {
+      if (connectTimer !== null) {
+        clearTimeout(connectTimer)
+        connectTimer = null
+      }
+      // 主动 abort（非建连超时）不计入失败
+      if (myAc.signal.aborted || !this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        return 'aborted'
+      }
+      if (err instanceof SseWatchdogTimeoutError) {
+        logger.warn(LogCategory.SYSTEM, `[EngineBridge] ${err.message} (${url})`)
+      } else {
+        logger.debug(LogCategory.SYSTEM, `[EngineBridge] SSE 连接异常 (${url}):`, err)
+      }
+      return 'failed'
+    } finally {
+      if (connectTimer !== null) {
+        clearTimeout(connectTimer)
+        connectTimer = null
+      }
+      // 锁死释放顺序：myAc.abort() -> await reader.cancel().catch(() => {}) -> try { reader.releaseLock() } catch {}
+      if (!myAc.signal.aborted) {
+        myAc.abort()
+      }
+      if (reader) {
+        await reader.cancel().catch(() => {})
+        try {
+          reader.releaseLock()
+        } catch {
+          // 忽略已释放或流已关闭导致的异常
+        }
+      }
+      // 切面 7：仅当自身仍持有 eventStreamAbortController 时清理 connectedTarget
+      if (this.eventStreamAbortController === myAc) {
+        if (this.isCurrentOwner(myEpoch, myStopEpoch)) {
+          this.connectedTarget = null
+        }
+        // 切面 8：仅当引用相等时清理 eventStreamAbortController
+        this.eventStreamAbortController = null
+      }
+    }
   }
 
   /**
@@ -1389,6 +2044,19 @@ export class EngineBridgeService {
   }
 
   private async doStart(): Promise<boolean> {
+    // 1. 重入保护：若 stop() 尚在途，先串行等待停机闭环彻底完成
+    if (this.stopPromise) {
+      await this.stopPromise
+    }
+    // 2. 重入重置：重建已中止的 stopController、重臂 DirWatcher、清零失败与版本状态
+    if (this.stopController.signal.aborted) {
+      this.stopController = new AbortController()
+    }
+    this.armDiscoveryWatcher()
+    this.consecutiveFailures = 0
+    this.lastAppliedRevision = 0
+    this.lastAppliedInstanceId = null
+
     this.isStarting = true
     const exePath = this.resolveEngineExecutable()
     if (!exePath) {
@@ -1418,25 +2086,27 @@ export class EngineBridgeService {
       logger.info(LogCategory.SYSTEM, `[EngineBridge] 静默拉起 Tier 2 引擎: ${exePath}`)
       // ENGINE_PORT 仅作前向兼容提示：引擎当前从自身 %APPDATA%/com.firefly.ai-engine/config.json
       // 的 base_port 取基准端口，并在被占用时于 38400~38419 内顺延；
-      // desktop 侧由 healthCheck 的滑动区间探测兜底，不依赖该环境变量。
+      // FIREFLY_USER_DATA_DIR 显式传递当前 Desktop userData 目录，供引擎写入 userData/run/engine-config.json 并做同源校验。
       const env = {
         ...process.env,
         ENGINE_PORT: String(TIER2_ENGINE_PORT),
+        FIREFLY_USER_DATA_DIR: this.userDataPath,
         // 宿主生命周期守护：以管道方式提供 stdin（见下方 stdio），桌面端进程一旦消失
         // （正常退出 / 崩溃 / 任务管理器强杀），管道写端由内核关闭，引擎读到 EOF 后
         // 主动退出并带走 llama-server。与 firefly-omni 的 OMNI_WATCH_STDIN 同一约定。
         ENGINE_WATCH_STDIN: '1'
       }
       // windowsHide: 抑制 Windows 控制台窗口闪烁（debug 构建的引擎为控制台子系统）
-      // stdio[0] 必须保留 'pipe'：'ignore' 会让引擎拿到 NUL 设备句柄而永远读不到 EOF，
-      // 宿主被强杀后引擎无法感知自身已成孤儿，正是此前「desktop 已结束但引擎仍在跑」的根因。
+      // stdio[0] 必须保留 'pipe'：'ignore' 会让引擎拿到 NUL 设备句柄而永远读不到 EOF；
+      // stdio[1] 改为 'pipe'：用于 <1ms 解析引擎 stdout FIREFLY_READY 快路径（必须持续消费以防缓冲区阻塞）。
       const child = spawn(exePath, ['--silent', '--tray'], {
         detached: true,
-        stdio: ['pipe', 'ignore', 'ignore'],
+        stdio: ['pipe', 'pipe', 'ignore'],
         windowsHide: true,
         env
       })
       this.process = child
+      this.attachStdoutReadyListener(child)
       child.unref()
 
       // 登记进全局精准进程回收器
@@ -1454,11 +2124,18 @@ export class EngineBridgeService {
       this.startDevBinaryWatch()
 
       child.once('error', err => {
+        if (this.process !== child) {
+          return
+        }
         this.lastError = `引擎子进程异常: ${err.message}`
         logger.error(LogCategory.SYSTEM, '[EngineBridge] 引擎子进程异常:', err)
         this.broadcastStatus()
       })
       child.once('exit', (code, signal) => {
+        // 严格身份绑定：旧子进程延迟到达的 exit 绝不允许清空新拉起的 this.process 或覆盖新状态
+        if (this.process !== child) {
+          return
+        }
         // 区分「开发态二进制热部署的预期内退出」与真正的崩溃：
         // 部署脚本替换 exe 前会先强杀进程（退出码 -1），若按崩溃记录会让用户看到「引擎异常」，
         // 并在分析中途触发上层错误恢复（再次重启），放大成连环重启。
@@ -1504,7 +2181,7 @@ export class EngineBridgeService {
         void this.scheduleCrashHeal(deploying, code)
       })
 
-      // 等待引擎就绪（轮询 /api/engine/status）
+      // 等待引擎就绪（支持 stdout FIREFLY_READY 即时唤醒 + /api/engine/status 兜底）
       const ready = await this.waitForReady(READY_WAIT_LIMIT_MS)
       this.isStarting = false
       // 就绪窗口结束后再做一次终确认：引擎可能在临界点刚起来，
@@ -1541,6 +2218,90 @@ export class EngineBridgeService {
   }
 
   /**
+   * 唤醒源 2：监听受管子进程 stdout 输出 `FIREFLY_READY:{"port":...,"pid":...,"instanceId":"..."}`
+   * 实现 <1ms 零延迟唤醒与端口切换（绕过熔断器 canExecute 门控）
+   */
+  private attachStdoutReadyListener(child: ChildProcess): void {
+    const stdout = child.stdout
+    if (!stdout) {
+      return
+    }
+    let lineBuffer = ''
+    stdout.on('data', (chunk: Buffer | string) => {
+      if (this.process !== child || this.stopController.signal.aborted) {
+        return
+      }
+      const text = typeof chunk === 'string' ? chunk : chunk.toString('utf8')
+      lineBuffer += text
+      if (lineBuffer.length > STDOUT_BUFFER_MAX_BYTES) {
+        lineBuffer = lineBuffer.slice(-STDOUT_BUFFER_MAX_BYTES)
+      }
+      const lines = lineBuffer.split(/\r?\n/)
+      lineBuffer = lines.pop() ?? ''
+      for (const line of lines) {
+        const idx = line.indexOf(FIREFLY_READY_PREFIX)
+        if (idx === -1) {
+          continue
+        }
+        const jsonPart = line.slice(idx + FIREFLY_READY_PREFIX.length).trim()
+        if (!jsonPart) {
+          continue
+        }
+        try {
+          const payload = JSON.parse(jsonPart) as {
+            port?: unknown
+            pid?: unknown
+            instanceId?: unknown
+            userDataDir?: unknown
+          }
+          const port = payload.port
+          if (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535) {
+            continue
+          }
+          if (
+            typeof payload.userDataDir === 'string' &&
+            !this.isSameOriginUserDataDir(payload.userDataDir)
+          ) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[EngineBridge] 忽略跨 Worktree stdout FIREFLY_READY 帧 (${payload.userDataDir})`
+            )
+            continue
+          }
+          const pid =
+            typeof payload.pid === 'number' && Number.isInteger(payload.pid) && payload.pid > 0
+              ? payload.pid
+              : child.pid
+          const instanceId =
+            typeof payload.instanceId === 'string' && payload.instanceId
+              ? payload.instanceId
+              : undefined
+          logger.info(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 通过 stdout FIREFLY_READY 快路径感知引擎就绪: port=${port}, pid=${pid ?? 'unknown'}`
+          )
+          this.activePort = port
+          this.kickEventStreamReconnect({
+            expectedTarget: {
+              baseUrl: `http://127.0.0.1:${port}`,
+              pid,
+              instanceId
+            },
+            resetFailures: true
+          })
+          // 立即唤醒所有等待中的 waitForReady
+          for (const resolve of this.readySignalResolvers) {
+            resolve()
+          }
+          this.readySignalResolvers.clear()
+        } catch {
+          // 忽略非 JSON 格式行
+        }
+      }
+    })
+  }
+
+  /**
    * 等待引擎 HTTP 就绪。
    *
    * **不得将启动期失败计入熔断器**：拉起后的启动窗口内探活失败是预期现象（引擎仍在初始化），
@@ -1550,12 +2311,26 @@ export class EngineBridgeService {
   private async waitForReady(limitMs: number): Promise<boolean> {
     const start = Date.now()
     while (Date.now() - start < limitMs) {
+      if (this.stopController.signal.aborted) {
+        return false
+      }
       // 裸探活：失败不记入熔断器，成功复位熔断器并兼容基准端口与 38400~38419 滑动端口
       const status = await this.healthCheck({ recordFailure: false })
       if (status) {
         return true
       }
-      await new Promise(resolve => setTimeout(resolve, 1200))
+      await new Promise<void>(resolve => {
+        let settled = false
+        const done = () => {
+          if (settled) return
+          settled = true
+          clearTimeout(timer)
+          this.readySignalResolvers.delete(done)
+          resolve()
+        }
+        const timer = setTimeout(done, 1200)
+        this.readySignalResolvers.add(done)
+      })
     }
     return false
   }
@@ -2201,61 +2976,6 @@ export class EngineBridgeService {
   }
 
   /**
-   * 启动周期性状态轮询（设置页打开后生效）
-   */
-  public startPolling(intervalMs: number = POLL_INTERVAL_MS): void {
-    if (this.pollTimer) {
-      clearInterval(this.pollTimer)
-    }
-    this.pollInFlight = false
-    this.consecutiveProbeFailures = 0
-    const timer = setInterval(async () => {
-      if (this.pollInFlight || this.isStarting) {
-        return
-      }
-      this.pollInFlight = true
-      try {
-        // 轮询走裸探活（脱离 canExecute 门控）：熔断 open 期仍探测基准端口与滑动端口以消除端口漂移自锁，
-        // 探活失败不记入熔断器（避免冲垮 half-open 重试窗口），探活成功在 healthCheck 内自动 recordSuccess()
-        const status = await this.healthCheck({ recordFailure: false })
-        if (this.pollTimer !== timer) {
-          return
-        }
-        if (!status && !this.isStarting) {
-          // 连续失败迟滞：单次瞬时超时不立即判离线，避免 Footer「就绪/未运行」交替抖动
-          this.consecutiveProbeFailures++
-          if (this.consecutiveProbeFailures >= OFFLINE_CONFIRM_FAILURES) {
-            this.lastRawStatus = null
-          }
-        } else {
-          this.consecutiveProbeFailures = 0
-        }
-        this.broadcastStatus()
-      } catch (err) {
-        logger.debug(LogCategory.SYSTEM, '[EngineBridge] 轮询 tick 异常:', err)
-      } finally {
-        if (this.pollTimer === timer) {
-          this.pollInFlight = false
-        }
-      }
-    }, intervalMs)
-    this.pollTimer = timer
-    this.pollTimer.unref?.()
-  }
-
-  /**
-   * 停止周期性状态轮询
-   */
-  public stopPolling(): void {
-    if (this.pollTimer) {
-      clearInterval(this.pollTimer)
-      this.pollTimer = null
-    }
-    this.pollInFlight = false
-    this.consecutiveProbeFailures = 0
-  }
-
-  /**
    * 订阅桥接状态变化
    * @returns 取消订阅函数
    */
@@ -2393,10 +3113,47 @@ export class EngineBridgeService {
   }
 
   /**
-   * 停止服务：停轮询、清理子进程、复位熔断器
+   * 停止服务同步前置段（供 stop() 与 SIGINT/SIGTERM stopSyncForSignal() 共同复用）：
+   * ① 首步局部捕获 childPid 与 lastInstanceId（严禁清空 connectedTarget 后再读）
+   * ② 置 isStopping = true
+   * ③ 递增 ++stopEpoch 且 ++connectionEpoch
+   * ④ abort stopController
+   * ⑤ 关闭 DirWatcher 订阅
+   * ⑥ 中断客户端 SSE 流（先于关子进程，配合服务端 CancellationToken 双重防挂死）
+   * ⑦ 中断退避 sleep
+   * ⑧ 清空 activeLoopEpoch 与 connectedTarget
    */
-  public stop(): void {
+  private beginStopSync(): {
+    childPid: number | undefined
+    lastInstanceId: string | undefined
+    proc: ChildProcess | null
+  } {
+    const proc = this.process
+    const childPid = proc?.pid
+    const lastInstanceId = this.connectedTarget?.instanceId
+
+    this.isStopping = true
     this.stopEpoch++
+    this.connectionEpoch++
+    if (!this.stopController.signal.aborted) {
+      this.stopController.abort()
+    }
+    this.disarmDiscoveryWatcher()
+    if (this.eventStreamAbortController) {
+      this.eventStreamAbortController.abort()
+      this.eventStreamAbortController = null
+    }
+    if (this.reconnectAbortController) {
+      this.reconnectAbortController.abort()
+      this.reconnectAbortController = null
+    }
+    this.activeLoopEpoch = null
+    this.connectedTarget = null
+    for (const resolve of this.readySignalResolvers) {
+      resolve()
+    }
+    this.readySignalResolvers.clear()
+
     // 联动模型置换门闩：主动停止时取消所有等待中的置换请求
     engineSwappingCoordinator.abortSwapping({
       kind: 'cancelled',
@@ -2413,14 +3170,11 @@ export class EngineBridgeService {
       this.stableResetTimer = null
     }
     this.autoHealAttempts = 0
-    if (this.eventStreamAbortController) {
-      this.eventStreamAbortController.abort()
-      this.eventStreamAbortController = null
-    }
-    this.stopPolling()
     this.stopDevBinaryWatch()
-    // 思考模式配置订阅保持进程级存活（stop 亦被单例测试复用，退订后无法恢复）
-    this.killOwnProcess()
+    return { childPid, lastInstanceId, proc }
+  }
+
+  private resetStateAfterStop(): void {
     this.activePort = TIER2_ENGINE_PORT
     this.spawnedBinarySignature = null
     this.lastRawStatus = null
@@ -2440,7 +3194,91 @@ export class EngineBridgeService {
     // 重置节流状态：下次拉起引擎后必须立即重扫，不能沿用停止前的 TTL 窗口
     this.lastModelCountFetchAt = 0
     this.lastModelCountFetchOk = false
+    this.consecutiveFailures = 0
+    this.lastAppliedRevision = 0
+    this.lastAppliedInstanceId = null
     this.circuitBreaker.reset()
+  }
+
+  /**
+   * 进程收到 SIGINT/SIGTERM/exit 时的同步退场路径（复用 stop 同步段 + 同步撤销发现文件）
+   */
+  public stopSyncForSignal(): void {
+    const { childPid, lastInstanceId } = this.beginStopSync()
+    this.killOwnProcess()
+    if (childPid) {
+      this.discoveryFile.revokeSync({ pid: childPid, instanceId: lastInstanceId })
+    }
+    this.resetStateAfterStop()
+    this.isStopping = false
+  }
+
+  /**
+   * 停止服务（异步可重入闭环，Spec §2.1 机制 5）：
+   * 同步段切断所有 SSE / watcher / 定时器并捕获 childPid + lastInstanceId；
+   * 异步段等待受管子进程退出（带 bounded 超时强杀）并安全撤销发现文件，随后复位 isStopping。
+   */
+  public async stop(): Promise<void> {
+    if (this.stopPromise) {
+      return this.stopPromise
+    }
+
+    const { childPid, lastInstanceId, proc } = this.beginStopSync()
+    // 显式保留在 stop() 主体内，便于静态契约护栏验证（实际清理由 beginStopSync 已执行）
+    if (this.autoHealTimer) {
+      clearTimeout(this.autoHealTimer)
+      this.autoHealTimer = null
+    }
+    this.autoHealAttempts = 0
+
+    const runAsyncStop = async () => {
+      try {
+        if (proc && !proc.killed && proc.exitCode === null) {
+          // 先关闭 stdin 管道触发引擎优雅退出，等待有界超时后强杀
+          try {
+            proc.stdin?.end()
+          } catch {
+            // 忽略 stdin 已关闭
+          }
+          const exitedGracefully = await new Promise<boolean>(resolve => {
+            let settled = false
+            const done = (ok: boolean) => {
+              if (settled) return
+              settled = true
+              clearTimeout(timer)
+              proc.off('exit', onExit)
+              resolve(ok)
+            }
+            const onExit = () => done(true)
+            const timer = setTimeout(() => done(false), STOP_CHILD_EXIT_WAIT_MS)
+            proc.once('exit', onExit)
+          })
+          if (!exitedGracefully) {
+            this.killOwnProcess()
+          } else {
+            // 进程已优雅退出，仍需更新主动 kill 标记与清理在途表
+            if (this.process === proc) {
+              this.process = null
+            }
+            this.lastSelfKillAt = Date.now()
+            this.startServiceInFlight.clear()
+          }
+        } else {
+          this.killOwnProcess()
+        }
+
+        if (childPid) {
+          await this.discoveryFile.revoke({ pid: childPid, instanceId: lastInstanceId })
+        }
+        this.resetStateAfterStop()
+      } finally {
+        this.isStopping = false
+        this.stopPromise = null
+      }
+    }
+
+    this.stopPromise = runAsyncStop()
+    return this.stopPromise
   }
 
   // ==========================================

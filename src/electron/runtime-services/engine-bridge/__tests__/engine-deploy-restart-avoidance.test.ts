@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest'
 const servicePath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
+  'engine-bridge-service',
   'engine-bridge-service.ts'
 )
 

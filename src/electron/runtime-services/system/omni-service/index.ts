@@ -4,4 +4,5 @@
  */
 export * from './types'
 export * from './helpers'
+export * from './omni-status-contract'
 export * from './omni-service'

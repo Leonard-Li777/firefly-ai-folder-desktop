@@ -6,8 +6,12 @@ import obfuscator from 'vite-plugin-javascript-obfuscator'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'fs'
-import { execSync, spawnSync } from 'child_process'
 import { createRequire } from 'module'
+import {
+  getRendererDevPortSlot,
+  getOccupiedTcpPortsSync,
+  selectAvailablePortInSlotSync
+} from './pro/packages/shared/src/utils/port-utils'
 
 const require = createRequire(import.meta.url)
 const jszipMinPath = require.resolve('jszip/dist/jszip.min.js')
@@ -82,49 +86,6 @@ try {
     const fallbackPath = require.resolve('jieba-wasm')
     jiebaWasmPath = path.resolve(path.dirname(fallbackPath), 'jieba_rs_wasm_bg.wasm')
   } catch {}
-}
-
-/**
- * 释放指定端口上占用的进程，兼容 Windows / macOS / Linux
- * 仅在 dev 模式下调用，防止因端口冲突导致启动失败
- */
-function killPort(port: number): void {
-  try {
-    if (process.platform === 'win32') {
-      const result = execSync(`netstat -ano | findstr ":${port} "`, {
-        encoding: 'utf8',
-        windowsHide: true
-      })
-      const pids = new Set<string>()
-      for (const line of result.split('\n').filter(Boolean)) {
-        const match = line.trim().match(/\s+(\d+)\s*$/)
-        if (match) pids.add(match[1])
-      }
-      for (const pid of pids) {
-        if (pid === '0') continue
-        try {
-          spawnSync('taskkill', ['/F', '/T', '/PID', pid], { windowsHide: true })
-          console.log(`[vite-config] ✅ 已释放端口 ${port}，kill 进程树 PID=${pid}`)
-        } catch {
-          /* 忽略单个 kill 失败 */
-        }
-      }
-    } else {
-      const result = execSync(`lsof -ti tcp:${port}`, { encoding: 'utf8' }).trim()
-      if (result) {
-        for (const pid of result.split('\n').filter(Boolean)) {
-          try {
-            execSync(`kill -9 ${pid}`)
-            console.log(`[vite-config] ✅ 已释放端口 ${port}，kill PID=${pid}`)
-          } catch {
-            /* 忽略单个 kill 失败 */
-          }
-        }
-      }
-    }
-  } catch {
-    // 端口未被占用时 netstat/lsof 会报错，属正常情况，静默忽略
-  }
 }
 
 /**
@@ -286,30 +247,42 @@ export default defineConfig(({ command, mode }) => {
   const regionLabel = (process.env.BUILD_REGION || 'CN').toUpperCase()
   const __BUILD_LABEL__ = `${regionLabel} - ${buildEnvLabel} - ${detectWorktreeBranch()}`
 
-  const isPortFreeSync = (port: number): boolean => {
-    try {
-      const net = require('net')
-      const server = net.createServer()
-      server.unref()
-      let free = false
-      server.listen({ port, host: '127.0.0.1', exclusive: true })
-      free = true
-      server.close()
-      return free
-    } catch {
-      return false
+  const rawCliPort = process.env.PORT?.trim()
+  const parsedCliPort = rawCliPort ? parseInt(rawCliPort, 10) : NaN
+  const hasExplicitNonSlotPort =
+    Number.isInteger(parsedCliPort) &&
+    parsedCliPort >= 1 &&
+    parsedCliPort <= 65535 &&
+    parsedCliPort % 10 !== 0
+
+  const rawBasePort = parseInt(process.env.PORT || env.PORT || '38100', 10)
+  const basePort =
+    Number.isInteger(rawBasePort) && rawBasePort >= 1 && rawBasePort <= 65535
+      ? rawBasePort
+      : 38100
+
+  let devPort: number
+  if (hasExplicitNonSlotPort) {
+    devPort = parsedCliPort
+  } else {
+    // 统一 Vite 平台有界子槽位：主仓 38100 与特性分支 (如 pay 38110) 按平台 +0/+3/+6 切分，严禁跨槽位越界
+    const slot = getRendererDevPortSlot(basePort, process.platform)
+    if (command === 'serve') {
+      const occupiedPorts = getOccupiedTcpPortsSync(process.platform)
+      const selectedPort = selectAvailablePortInSlotSync({
+        slot,
+        occupiedPorts
+      })
+      if (selectedPort === null) {
+        throw new Error(
+          `[electron-vite] 当前平台 (${process.platform}) 的 Renderer Dev Server 子槽位 [${slot.basePort}~${slot.maxPort}] 已全部被占用（基准槽位 ${basePort}），请释放占用进程或通过非 10 倍数 PORT 环境变量显式指定端口。`
+        )
+      }
+      devPort = selectedPort
+    } else {
+      devPort = slot.basePort
     }
   }
-
-  const findFreeDevPort = (basePort: number, attempts = 20): number => {
-    for (let p = basePort; p < basePort + attempts; p++) {
-      if (isPortFreeSync(p)) return p
-    }
-    return basePort
-  }
-
-  const basePort = parseInt(process.env.PORT || env.PORT || '38100', 10)
-  const devPort = command === 'serve' ? findFreeDevPort(basePort) : basePort
   process.env.PORT = String(devPort)
   console.log(`🌐 [electron-vite] Renderer Dev Server 绑定端口: ${devPort}`)
 

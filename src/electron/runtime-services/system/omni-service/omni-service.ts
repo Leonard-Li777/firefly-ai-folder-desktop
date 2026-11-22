@@ -6,7 +6,7 @@ import { ChildProcess, spawn } from 'node:child_process'
 import * as crypto from 'node:crypto'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import { app, BrowserWindow, dialog, shell } from 'electron'
+import { app, BrowserWindow, dialog, powerMonitor, shell } from 'electron'
 import {
   ResourceLocator,
   logger,
@@ -18,7 +18,17 @@ import {
   resolveActiveModelPaths,
   BUILTIN_PLUGIN_CATALOG_META,
   BuiltinSharedResourceId,
-  CHILD_MODEL_ENV_KEYS_TO_PURGE
+  CHILD_MODEL_ENV_KEYS_TO_PURGE,
+  ServiceDiscoveryFile,
+  ServiceDiscoveryFileV1,
+  isPidAlive,
+  SSE_CONNECT_TIMEOUT_MS,
+  SSE_READ_WATCHDOG_MS,
+  DORMANT_MAX_ATTEMPTS,
+  ConnectedTargetIdentity,
+  readWithWatchdog,
+  sleepCancellable,
+  SseWatchdogTimeoutError
 } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from '../analysis-timeout-policy'
@@ -74,6 +84,13 @@ import type {
   InspectControlledTagsResponse
 } from './types'
 import { broadcastOmniStatus } from './helpers'
+import {
+  OmniStatusEvent,
+  FireflyReadyFrame,
+  parseOmniStatusEvent,
+  parseFireflyReadyLine,
+  verifyOmniSameOrigin
+} from './omni-status-contract'
 import {
   buildCoverUrl,
   buildExtractRequestBody,
@@ -135,6 +152,27 @@ export class OmniService {
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
   /** 密钥代次失配防重复弹窗标志 */
   private isKeyEpochMismatchPrompted = false
+
+  // —— 跨模块服务发现与零轮询 SSE 单循环状态机字段 (Spec v2.3) ——
+  private static readonly OFFLINE_CONFIRM_FAILURES = 3
+  private discoveryFile: ServiceDiscoveryFile | null = null
+  private discoveryWatchDispose: (() => void) | null = null
+  private stopController: AbortController = new AbortController()
+  private stopEpoch = 0
+  private connectionEpoch = 0
+  private activeLoopEpoch: number | null = null
+  private eventStreamAbortController: AbortController | null = null
+  private reconnectAbortController: AbortController | null = null
+  private connectedTarget: ConnectedTargetIdentity | null = null
+  private expectedIdentity: { pid?: number; instanceId?: string; port?: number } | null = null
+  private consecutiveFailures = 0
+  private lastAppliedRevision = 0
+  private lastAppliedInstanceId: string | null = null
+  private lastStatusEvent: OmniStatusEvent | null = null
+  private stopPromise: Promise<void> | null = null
+  private expectedMasterDbPath: string | null = null
+  private expectedVectorsDir: string | null = null
+  private powerResumeListener: (() => void) | null = null
 
   /** 解析并缓存 DirectML 崩溃标记文件路径（与主库同级；dbPath 未知时沿用上次缓存）。 */
   private resolveDmlCrashMarker(dbPath: string | null | undefined): string | null {
@@ -225,7 +263,9 @@ export class OmniService {
         })
         app.on('before-quit', () => {
           this.stopDevBinaryWatch()
-          this.stopImmediatelySync()
+          // 正常退出走两阶段优雅停机（与 main/index.ts 中的 await omniService.stop() 通过 stopPromise 合并去重），
+          // 避免抢跑强杀短路 Rust 侧 stopping 终帧与 omni-config.json 自删
+          void this.stop()
         })
       }
 
@@ -237,6 +277,10 @@ export class OmniService {
       process.once('exit', cleanExit)
       process.once('SIGINT', cleanExit)
       process.once('SIGTERM', cleanExit)
+
+      // 注册系统休眠唤醒（powerMonitor.resume）与 userData/run/omni-config.json 目录监听
+      this.registerPowerResumeWakeup()
+      this.mountDiscoveryWatcher()
 
       // 开发模式下开机常驻监听 Omni 原生二进制热更新（感知 omni-build-to-desktop.js --watch 的重编译与部署）
       if (isLocalDevRuntime()) {
@@ -310,18 +354,524 @@ export class OmniService {
     return this.baseUrl
   }
 
+  /** 获取最近一次经 SSE 采纳的 Omni 状态事件快照 */
+  public getLastStatusEvent(): OmniStatusEvent | null {
+    return this.lastStatusEvent
+  }
+
+  /** 当前是否处于 Dormant 静默挂起态（无活跃 SSE 流循环） */
+  public isDormant(): boolean {
+    return this.activeLoopEpoch === null && this.connectedTarget === null
+  }
+
+  /** 解析 Desktop userData 绝对路径 */
+  private resolveUserDataDir(): string | null {
+    try {
+      if (app && typeof app.getPath === 'function') {
+        const dir = app.getPath('userData')
+        if (dir) return dir
+      }
+    } catch {}
+    if (process.env.FIREFLY_USER_DATA_DIR?.trim()) {
+      return process.env.FIREFLY_USER_DATA_DIR.trim()
+    }
+    return null
+  }
+
+  /** 惰性获取 `userData/run/omni-config.json` 发现文件管理器 */
+  private getDiscoveryFile(): ServiceDiscoveryFile | null {
+    if (this.discoveryFile) {
+      return this.discoveryFile
+    }
+    const userDataPath = this.resolveUserDataDir()
+    if (!userDataPath) {
+      return null
+    }
+    this.discoveryFile = new ServiceDiscoveryFile({
+      fileName: 'omni-config.json',
+      serviceId: 'firefly-omni-server',
+      userDataPath
+    })
+    return this.discoveryFile
+  }
+
+  /** 挂载 `userData/run/omni-config.json` 单例 DirWatcher 监听 */
+  private mountDiscoveryWatcher(): void {
+    if (this.discoveryWatchDispose) {
+      return
+    }
+    const df = this.getDiscoveryFile()
+    if (!df) {
+      return
+    }
+    this.discoveryWatchDispose = df.watch(info => {
+      this.handleDiscoveryFileChanged(info)
+    })
+  }
+
+  /** 卸载 `userData/run/omni-config.json` 目录监听 */
+  private unmountDiscoveryWatcher(): void {
+    if (this.discoveryWatchDispose) {
+      try {
+        this.discoveryWatchDispose()
+      } catch {}
+      this.discoveryWatchDispose = null
+    }
+  }
+
+  /** 注册系统休眠唤醒（powerMonitor.resume）纯事件唤醒源 */
+  private registerPowerResumeWakeup(): void {
+    if (this.powerResumeListener) return
+    try {
+      if (powerMonitor && typeof powerMonitor.on === 'function') {
+        const listener = () => {
+          logger.info(
+            LogCategory.SYSTEM,
+            '[OmniService] 检测到系统从休眠唤醒 (powerMonitor.resume)，重读发现文件并唤醒 SSE'
+          )
+          this.mountDiscoveryWatcher()
+          this.syncFromDiscoveryFileOnce({ resetFailures: true })
+        }
+        this.powerResumeListener = listener
+        powerMonitor.on('resume', listener)
+      }
+    } catch {}
+  }
+
+  /** 单次重读 `userData/run/omni-config.json` 并按需触发 SSE 重连（供 resume / 焦点刷新等事件源使用） */
+  public syncFromDiscoveryFileOnce(options?: { resetFailures?: boolean }): void {
+    if (this.stopController.signal.aborted || this.isIntentionalStopping) {
+      return
+    }
+    const df = this.getDiscoveryFile()
+    const info = df?.read({ verifyPid: true }) ?? null
+    if (info) {
+      this.handleDiscoveryFileChanged(info, options?.resetFailures ?? true)
+    } else if (this.process && !this.process.killed) {
+      this.kickEventStreamReconnect({ resetFailures: options?.resetFailures ?? true })
+    }
+  }
+
+  /** 处理发现文件变更事件：严格按「校验同源 → 先更新端口与预期身份 → 后 kick」顺序执行 */
+  private handleDiscoveryFileChanged(
+    info: ServiceDiscoveryFileV1 | null,
+    resetFailures = true
+  ): void {
+    if (this.stopController.signal.aborted || this.isIntentionalStopping) {
+      return
+    }
+
+    if (!info) {
+      // 文件被删除：若当前 SSE 仍健康在线，不立刻中断健康连接；若已断开且无受管进程则转离线 Dormant
+      if (!this.isCurrentTargetHealthy() && (!this.process || this.process.killed)) {
+        this.applyOffline()
+      }
+      return
+    }
+
+    const originCheck = verifyOmniSameOrigin(
+      {
+        port: info.port,
+        pid: info.pid,
+        userDataDir: info.userDataDir,
+        masterDbPath: info.masterDbPath,
+        targetVectorsDir: info.targetVectorsDir
+      },
+      {
+        userDataDir: this.resolveUserDataDir(),
+        masterDbPath: this.expectedMasterDbPath,
+        targetVectorsDir: this.expectedVectorsDir
+      }
+    )
+    if (!originCheck.ok) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 发现文件同源校验未通过，拒绝采纳 (port=${info.port}, pid=${info.pid}): ${originCheck.reason}`
+      )
+      return
+    }
+    if (originCheck.warning) {
+      logger.warn(LogCategory.SYSTEM, `[OmniService] ${originCheck.warning}`)
+    }
+
+    // 严禁先 kick 后改端口导致被 no-op 守卫吞掉
+    this.actualPort = info.port
+    this.baseUrl = info.baseUrl
+    this.expectedIdentity = {
+      pid: info.pid,
+      instanceId: info.instanceId,
+      port: info.port
+    }
+    this.kickEventStreamReconnect({
+      expectedTarget: {
+        baseUrl: info.baseUrl,
+        pid: info.pid,
+        instanceId: info.instanceId
+      },
+      resetFailures
+    })
+  }
+
+  /** 8 阶段双代际归属校验：彻底阻断旧连接延迟回调覆盖新连接状态 */
+  private isCurrentOwner(myEpoch: number, myStopEpoch: number): boolean {
+    return (
+      myEpoch === this.connectionEpoch &&
+      myStopEpoch === this.stopEpoch &&
+      !this.stopController.signal.aborted
+    )
+  }
+
+  /** 判断当前 SSE 连接是否针对当前目标健康在线 */
+  private isCurrentTargetHealthy(expectedTarget?: ConnectedTargetIdentity): boolean {
+    if (!this.eventStreamAbortController || this.eventStreamAbortController.signal.aborted) {
+      return false
+    }
+    if (!this.connectedTarget) {
+      return false
+    }
+    if (!expectedTarget) {
+      return this.connectedTarget.baseUrl === this.baseUrl
+    }
+    if (this.connectedTarget.baseUrl !== expectedTarget.baseUrl) {
+      return false
+    }
+    if (
+      typeof expectedTarget.pid === 'number' &&
+      this.connectedTarget.pid !== expectedTarget.pid
+    ) {
+      return false
+    }
+    if (expectedTarget.instanceId && this.connectedTarget.instanceId !== expectedTarget.instanceId) {
+      return false
+    }
+    return true
+  }
+
+  /** 确保单循环 SSE 状态流已建立（幂等入口） */
+  public ensureEventStream(): void {
+    if (this.stopController.signal.aborted || this.isIntentionalStopping) {
+      return
+    }
+    if (this.isCurrentTargetHealthy()) {
+      return
+    }
+    if (this.activeLoopEpoch !== null) {
+      return
+    }
+    const myEpoch = ++this.connectionEpoch
+    this.activeLoopEpoch = myEpoch
+    void this.runStreamLoop(myEpoch, this.stopEpoch)
+  }
+
+  /** 事件驱动抢占重连（支持三元组身份比对与失败计数重置） */
+  public kickEventStreamReconnect(options?: {
+    expectedTarget?: ConnectedTargetIdentity
+    resetFailures?: boolean
+  }): void {
+    if (this.stopController.signal.aborted || this.isIntentionalStopping) {
+      return
+    }
+    if (this.isCurrentTargetHealthy(options?.expectedTarget)) {
+      return
+    }
+    if (options?.resetFailures) {
+      this.consecutiveFailures = 0
+    }
+    this.eventStreamAbortController?.abort()
+    this.reconnectAbortController?.abort()
+    this.connectedTarget = null
+    const myEpoch = ++this.connectionEpoch
+    this.activeLoopEpoch = myEpoch
+    void this.runStreamLoop(myEpoch, this.stopEpoch)
+  }
+
+  /** 单循环 SSE 状态驱动器（10s Connect + 35s Read 双阶看门狗 + DORMANT_MAX_ATTEMPTS=5 有界退避） */
+  private async runStreamLoop(myEpoch: number, myStopEpoch: number): Promise<void> {
+    try {
+      while (this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        const outcome = await this.connectOnce(myEpoch, myStopEpoch)
+        if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+          return
+        }
+
+        if (outcome === 'stopping') {
+          // 收到服务端 stopping 终帧：立即离线并进入 Dormant，不再对正在停机的进程做退避重连
+          this.applyOffline()
+          return
+        }
+
+        if (outcome === 'eof') {
+          // 正常 EOF 后：先检查受管进程或发现文件是否仍存活
+          const dfInfo = this.getDiscoveryFile()?.read({ verifyPid: true }) ?? null
+          const hasManagedChild = Boolean(this.process && !this.process.killed && this.process.exitCode === null)
+          if (!hasManagedChild && !dfInfo) {
+            this.applyOffline()
+            return
+          }
+        }
+
+        this.consecutiveFailures++
+
+        // Dormant 准入判断 1：无受管子进程且发现文件缺失或 PID 已失活 → 立即转离线 Dormant（0 定时器、0 网络请求）
+        const hasManagedChild = Boolean(
+          this.process && !this.process.killed && this.process.exitCode === null
+        )
+        const dfInfo = this.getDiscoveryFile()?.read({ verifyPid: false }) ?? null
+        const discoveryPidAlive = dfInfo ? isPidAlive(dfInfo.pid) : false
+        if (!hasManagedChild && (!dfInfo || !discoveryPidAlive)) {
+          this.applyOffline()
+          return
+        }
+
+        if (this.consecutiveFailures >= OmniService.OFFLINE_CONFIRM_FAILURES) {
+          this.applyOffline()
+        }
+
+        // Dormant 准入判断 2：达到 DORMANT_MAX_ATTEMPTS (5) 次有界退避上限 → 强制退出循环转静默 Dormant
+        if (this.consecutiveFailures >= DORMANT_MAX_ATTEMPTS) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] SSE 连续重连失败达上限 (${DORMANT_MAX_ATTEMPTS} 次)，进入 Dormant 静默挂起态等待事件唤醒`
+          )
+          this.applyOffline()
+          return
+        }
+
+        const baseDelay = Math.min(1000 * Math.pow(2, this.consecutiveFailures - 1), 16_000)
+        const jitter = Math.floor(Math.random() * 500)
+        const reconnectAc = new AbortController()
+        this.reconnectAbortController = reconnectAc
+        const stopSignal = this.stopController.signal
+        const onStop = () => reconnectAc.abort()
+        stopSignal.addEventListener('abort', onStop, { once: true })
+
+        let wokeNaturally = false
+        try {
+          wokeNaturally = await sleepCancellable(baseDelay + jitter, reconnectAc.signal)
+        } finally {
+          stopSignal.removeEventListener('abort', onStop)
+          if (this.reconnectAbortController === reconnectAc) {
+            this.reconnectAbortController = null
+          }
+        }
+
+        if (!wokeNaturally || !this.isCurrentOwner(myEpoch, myStopEpoch)) {
+          return
+        }
+      }
+    } finally {
+      if (this.activeLoopEpoch === myEpoch) {
+        this.activeLoopEpoch = null
+      }
+    }
+  }
+
+  /** 执行单次 SSE 建连与流读取（严格落实 10s Connect + 35s Read 看门狗与锁释放顺序） */
+  private async connectOnce(
+    myEpoch: number,
+    myStopEpoch: number
+  ): Promise<'stopping' | 'eof' | 'failed'> {
+    if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+      return 'failed'
+    }
+
+    const targetBaseUrl = this.baseUrl
+    const targetPort = this.actualPort
+    const expectedPid = this.expectedIdentity?.pid ?? this.process?.pid
+    const myAc = new AbortController()
+    this.eventStreamAbortController = myAc
+
+    const stopSignal = this.stopController.signal
+    const onStop = () => myAc.abort()
+    stopSignal.addEventListener('abort', onStop, { once: true })
+
+    // 阶段一：建连 10s 一次性看门狗（显式 setTimeout 兼容 Vitest fake timers）
+    let connectTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+      myAc.abort(new SseWatchdogTimeoutError('connect', SSE_CONNECT_TIMEOUT_MS))
+    }, SSE_CONNECT_TIMEOUT_MS)
+
+    let reader: ReadableStreamDefaultReader<Uint8Array> | null = null
+    let receivedValidFrame = false
+
+    try {
+      const res = await fetch(`${targetBaseUrl}/api/v1/omni/events`, {
+        headers: { Accept: 'text/event-stream' },
+        signal: myAc.signal
+      })
+
+      if (connectTimer !== null) {
+        clearTimeout(connectTimer)
+        connectTimer = null
+      }
+
+      if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        return 'failed'
+      }
+      if (!res.ok || !res.body) {
+        return 'failed'
+      }
+
+      reader = res.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let lineBuffer = ''
+      let dataLines: string[] = []
+
+      while (this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        // 阶段二：流内每次 reader.read() 独立 35s 看门狗
+        const { done, value } = await readWithWatchdog(reader, SSE_READ_WATCHDOG_MS, myAc.signal)
+        if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+          return receivedValidFrame ? 'eof' : 'failed'
+        }
+        if (done) {
+          return receivedValidFrame ? 'eof' : 'failed'
+        }
+        if (!value || value.byteLength === 0) {
+          continue
+        }
+
+        lineBuffer += decoder.decode(value, { stream: true })
+        const lines = lineBuffer.split(/\r?\n/)
+        lineBuffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (line === '') {
+            if (dataLines.length > 0) {
+              const payloadStr = dataLines.join('\n')
+              dataLines = []
+              const evt = parseOmniStatusEvent(payloadStr)
+              if (!evt) {
+                continue
+              }
+
+              // 同源身份强制校验（防跨 Worktree 串连与 PID 复用）
+              const originCheck = verifyOmniSameOrigin(
+                {
+                  port: evt.port,
+                  pid: evt.pid,
+                  userDataDir: evt.userDataDir,
+                  masterDbPath: evt.masterDbPath,
+                  targetVectorsDir: evt.targetVectorsDir
+                },
+                {
+                  expectedPort: targetPort,
+                  expectedPid,
+                  userDataDir: this.resolveUserDataDir(),
+                  masterDbPath: this.expectedMasterDbPath,
+                  targetVectorsDir: this.expectedVectorsDir
+                }
+              )
+              if (!originCheck.ok) {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[OmniService] SSE 状态帧同源校验失败，拒绝采纳并断开连接: ${originCheck.reason}`
+                )
+                return 'failed'
+              }
+              if (originCheck.warning) {
+                logger.warn(LogCategory.SYSTEM, `[OmniService] ${originCheck.warning}`)
+              }
+
+              if (!this.isCurrentOwner(myEpoch, myStopEpoch)) {
+                return receivedValidFrame ? 'eof' : 'failed'
+              }
+
+              receivedValidFrame = true
+              this.applyStatusEvent(evt, targetBaseUrl)
+              if (evt.status === 'stopping') {
+                return 'stopping'
+              }
+            }
+          } else if (line.startsWith('data:')) {
+            dataLines.push(line.slice(5).trimStart())
+          }
+          // 以 ':' 开头的空注释帧 (:\n\n) 已通过 byteLength > 0 刷新 35s 读看门狗，无需额外解析
+        }
+      }
+
+      return receivedValidFrame ? 'eof' : 'failed'
+    } catch (err: any) {
+      if (this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[OmniService] SSE 连接中断 (${targetBaseUrl}): ${err?.message || err}`
+        )
+      }
+      return receivedValidFrame ? 'eof' : 'failed'
+    } finally {
+      if (connectTimer !== null) {
+        clearTimeout(connectTimer)
+        connectTimer = null
+      }
+      stopSignal.removeEventListener('abort', onStop)
+      // 锁死释放顺序：myAc.abort() -> await reader.cancel().catch() -> reader.releaseLock()
+      myAc.abort()
+      if (reader) {
+        await reader.cancel().catch(() => {})
+        try {
+          reader.releaseLock()
+        } catch {}
+      }
+      if (this.eventStreamAbortController === myAc) {
+        this.eventStreamAbortController = null
+      }
+      if (this.isCurrentOwner(myEpoch, myStopEpoch)) {
+        this.connectedTarget = null
+      }
+    }
+  }
+
+  /** 应用经同源校验的 SSE 状态帧：按 instanceId + revision 严格保序 */
+  private applyStatusEvent(evt: OmniStatusEvent, targetBaseUrl: string): void {
+    if (evt.instanceId !== this.lastAppliedInstanceId) {
+      this.lastAppliedInstanceId = evt.instanceId
+      this.lastAppliedRevision = 0
+    }
+    if (evt.revision <= this.lastAppliedRevision) {
+      return
+    }
+
+    this.lastAppliedRevision = evt.revision
+    this.lastStatusEvent = evt
+    this.consecutiveFailures = 0
+    this.connectedTarget = {
+      baseUrl: targetBaseUrl,
+      pid: evt.pid,
+      instanceId: evt.instanceId
+    }
+
+    const running = evt.status === 'ok'
+    if (running && evt.version) {
+      this.cachedVersion = evt.version
+    }
+    broadcastOmniStatus({
+      running,
+      version: running && evt.version && evt.version !== '0.1.0' ? evt.version : null
+    })
+  }
+
+  /** 标记离线并向渲染进程广播（stop 期间抑制重复闪烁） */
+  private applyOffline(): void {
+    this.connectedTarget = null
+    this.lastStatusEvent = null
+    if (!this.isIntentionalStopping) {
+      broadcastOmniStatus({ running: false, version: null })
+    }
+  }
+
   /**
-   * 探活并主动推送当前状态至渲染进程（omni:status-changed）
-   * 附带版本号缓存刷新，供 Footer 等展示基础AI引擎的启动/连接状态
+   * 基于当前状态快照推送至渲染进程（omni:status-changed），不再主动发起周期轮询探活
    */
   private async pushStatus(): Promise<void> {
+    if (this.lastStatusEvent && this.lastStatusEvent.status === 'ok') {
+      const v = this.lastStatusEvent.version
+      broadcastOmniStatus({ running: true, version: v && v !== '0.1.0' ? v : null })
+      return
+    }
     const running = await this.checkHealth()
     let version: string | null = null
     if (running) {
-      try {
-        const v = await this.getVersion()
-        version = v && v !== '0.1.0' ? v : null
-      } catch {}
+      const v = this.cachedVersion
+      version = v && v !== '0.1.0' ? v : null
     }
     broadcastOmniStatus({ running, version })
   }
@@ -696,6 +1246,16 @@ export class OmniService {
   }
 
   private async doStart(): Promise<boolean> {
+    if (this.stopPromise) {
+      await this.stopPromise.catch(() => {})
+    }
+    if (this.stopController.signal.aborted) {
+      this.stopController = new AbortController()
+    }
+    this.mountDiscoveryWatcher()
+    this.consecutiveFailures = 0
+    this.lastAppliedRevision = 0
+    this.lastAppliedInstanceId = null
     this.managedLifecycleActive = true
     this.isIntentionalStopping = false
     this.isStarting = true
@@ -737,64 +1297,139 @@ export class OmniService {
       const { databaseService } = await import('../../database/database-service')
       const dbPath = databaseService.getDbPath()
       const expectedVectorsDir = dbPath ? path.join(path.dirname(dbPath), 'vectors') : null
+      const userDataDir = this.resolveUserDataDir()
+      this.expectedMasterDbPath = dbPath || null
+      this.expectedVectorsDir = expectedVectorsDir
 
-      const verifyOmniInstance = async (port: number): Promise<boolean> => {
+      const verifyOmniInstance = async (
+        port: number,
+        expectedPid?: number
+      ): Promise<{ ok: boolean; data?: Record<string, any> }> => {
         try {
           const res = await fetch(`http://127.0.0.1:${port}/api/v1/engine/status`, {
             signal: AbortSignal.timeout(1000)
           })
-          if (!res.ok) return false
+          if (!res.ok) return { ok: false }
           const data = await res.json()
-          if (!data || data.status !== 'ok') return false
+          if (!data || data.status !== 'ok') return { ok: false }
 
-          // 若当前处于开发或 Worktree 隔离环境，严格校验向量库与主库路径一致性，绝不盲目跨 Worktree 复用
-          if (expectedVectorsDir) {
-            if (!data.targetVectorsDir) {
-              logger.warn(
-                LogCategory.SYSTEM,
-                `[OmniService] 端口 ${port} 上的 Omni 未透出 targetVectorsDir（可能为遗留旧版本），当前期望 "${expectedVectorsDir}"，拒绝盲目复用`
-              )
-              return false
+          const originCheck = verifyOmniSameOrigin(
+            {
+              port: typeof data.port === 'number' ? data.port : port,
+              pid: typeof data.pid === 'number' ? data.pid : undefined,
+              userDataDir: typeof data.userDataDir === 'string' ? data.userDataDir : null,
+              masterDbPath: typeof data.masterDbPath === 'string' ? data.masterDbPath : null,
+              targetVectorsDir:
+                typeof data.targetVectorsDir === 'string' ? data.targetVectorsDir : null
+            },
+            {
+              expectedPort: port,
+              expectedPid,
+              userDataDir,
+              masterDbPath: dbPath || null,
+              targetVectorsDir: expectedVectorsDir
             }
-            if (!isPathEqual(data.targetVectorsDir, expectedVectorsDir)) {
-              logger.warn(
-                LogCategory.SYSTEM,
-                `[OmniService] 端口 ${port} 上的 Omni 向量目录不匹配: 当前期望 "${expectedVectorsDir}", 远程服务绑定 "${data.targetVectorsDir}"，拒绝盲目复用`
-              )
-              return false
-            }
+          )
+          if (!originCheck.ok) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[OmniService] 端口 ${port} 上的 Omni 实例同源校验未通过，拒绝盲目复用: ${originCheck.reason}`
+            )
+            return { ok: false }
           }
-          if (dbPath && data.masterDbPath) {
-            if (!isPathEqual(data.masterDbPath, dbPath)) {
-              logger.warn(
-                LogCategory.SYSTEM,
-                `[OmniService] 端口 ${port} 上的 Omni 主库路径不匹配: 当前期望 "${dbPath}", 远程服务绑定 "${data.masterDbPath}"，拒绝盲目复用`
-              )
-              return false
-            }
+          if (originCheck.warning) {
+            logger.warn(LogCategory.SYSTEM, `[OmniService] ${originCheck.warning}`)
           }
-          return true
+          return { ok: true, data }
         } catch {
-          return false
+          return { ok: false }
         }
       }
 
-      // 探活检查：在冷门段 38200~38219 寻找属于当前 Worktree 的运行中 Omni 实例
+      // 优先读取 userData/run/omni-config.json 零扫描复用（通过 PID 存活 + 同源校验）
       let matchedPort: number | null = null
-      for (let p = this.basePort; p < this.basePort + APP_PORTS.MAX_ATTEMPTS; p++) {
-        if (await verifyOmniInstance(p)) {
-          matchedPort = p
-          break
+      let matchedData: Record<string, any> | undefined
+      let matchedFromDiscovery = false
+      const df = this.getDiscoveryFile()
+      const discovered = df?.read({ verifyPid: true }) ?? null
+      if (discovered) {
+        const dfOrigin = verifyOmniSameOrigin(
+          {
+            port: discovered.port,
+            pid: discovered.pid,
+            userDataDir: discovered.userDataDir,
+            masterDbPath: discovered.masterDbPath,
+            targetVectorsDir: discovered.targetVectorsDir
+          },
+          {
+            userDataDir,
+            masterDbPath: dbPath || null,
+            targetVectorsDir: expectedVectorsDir
+          }
+        )
+        if (dfOrigin.ok) {
+          const verified = await verifyOmniInstance(discovered.port, discovered.pid)
+          if (verified.ok) {
+            matchedPort = discovered.port
+            matchedData = verified.data
+            matchedFromDiscovery = true
+          }
+        } else {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 发现文件同源校验未通过，忽略并跳过复用: ${dfOrigin.reason}`
+          )
+        }
+      }
+
+      // 仅当发现文件未命中时，做 1 次单轮降级扫描 38200~38219 寻找属于当前 Worktree 的运行中 Omni 实例
+      if (matchedPort === null) {
+        for (let p = this.basePort; p < this.basePort + APP_PORTS.MAX_ATTEMPTS; p++) {
+          const verified = await verifyOmniInstance(p)
+          if (verified.ok) {
+            matchedPort = p
+            matchedData = verified.data
+            break
+          }
         }
       }
 
       if (matchedPort !== null) {
         this.actualPort = matchedPort
         this.baseUrl = `http://127.0.0.1:${matchedPort}`
-        process.env.OMNI_ACTUAL_PORT = String(matchedPort)
+        const adoptedPid =
+          typeof matchedData?.pid === 'number'
+            ? matchedData.pid
+            : discovered?.pid
+        const adoptedInstanceId =
+          typeof matchedData?.instanceId === 'string'
+            ? matchedData.instanceId
+            : discovered?.instanceId
+        this.expectedIdentity = {
+          pid: adoptedPid,
+          instanceId: adoptedInstanceId,
+          port: matchedPort
+        }
+        // 仅当发现文件缺失且通过验证采纳外部未写盘实例时回填发现文件
+        if (!matchedFromDiscovery && df && !discovered && adoptedPid && adoptedInstanceId) {
+          void df
+            .publish({
+              instanceId: adoptedInstanceId,
+              revision: typeof matchedData?.revision === 'number' ? matchedData.revision : 1,
+              host: '127.0.0.1',
+              port: matchedPort,
+              pid: adoptedPid,
+              startedAt: new Date().toISOString(),
+              userDataDir: userDataDir || undefined,
+              capabilities: [],
+              masterDbPath: dbPath || undefined,
+              targetVectorsDir: expectedVectorsDir || undefined
+            })
+            .catch(() => {})
+        }
         logger.info(
           LogCategory.SYSTEM,
-          `[OmniService] 成功匹配并复用当前 Worktree 专属 Omni 服务 (Port: ${matchedPort}, ${this.baseUrl})，同步最新配置`
+          `[OmniService] 成功匹配并复用当前 Worktree 专属 Omni 服务 (Port: ${matchedPort}, ${this.baseUrl})，接入 SSE 状态流`
         )
         this.restartAttempts = 0
         this.isStarting = false
@@ -804,8 +1439,15 @@ export class OmniService {
         this.pendingUpdateSince = 0
         this.startDevBinaryWatch()
         this.syncConfigFromDesktop().catch(() => {})
+        this.kickEventStreamReconnect({
+          expectedTarget: {
+            baseUrl: this.baseUrl,
+            pid: adoptedPid,
+            instanceId: adoptedInstanceId
+          },
+          resetFailures: true
+        })
         this.notifyReady()
-        this.pushStatus().catch(() => {})
         return true
       }
 
@@ -816,12 +1458,10 @@ export class OmniService {
       }
       this.isStarting = true
 
-      // 寻找可用端口（支持冷门段 38200~38219 自动滑动，避让其他 Worktree 的 Omni 服务）
+      // 寻找可用端口作为建议基准（Rust 侧 bind-first 仍支持 38200..=38219 原子滑动）
       const port = await findAvailablePort(this.basePort, APP_PORTS.MAX_ATTEMPTS)
       this.actualPort = port
       this.baseUrl = `http://127.0.0.1:${port}`
-      // 将实际端口写入环境变量，供 DuplicateDetectionService 等跨服务读取
-      process.env.OMNI_ACTUAL_PORT = String(port)
 
       logger.info(
         LogCategory.SYSTEM,
@@ -859,6 +1499,7 @@ export class OmniService {
         OMNI_PORT: String(port),
         OMNI_DEV_MODE: isDevMode ? '1' : '0',
         FIREFLY_RUN_DIR: runDir,
+        ...(userDataDir ? { FIREFLY_USER_DATA_DIR: userDataDir } : {}),
         FIREFLY_OMNI_TOKEN: tokenPayload.token,
         RUST_LOG:
           process.env.RUST_LOG ||
@@ -1279,8 +1920,50 @@ export class OmniService {
       const stripAnsi = (buf: Buffer): string =>
         buf.toString().replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '')
 
+      // 受管子进程 stdout `<1ms` FIREFLY_READY 快路径信号 Promise
+      let resolveReadyFrame: ((frame: FireflyReadyFrame) => void) | null = null
+      let readyFrameReceived = false
+      const readyFramePromise = new Promise<FireflyReadyFrame>(resolve => {
+        resolveReadyFrame = resolve
+      })
+      let stdoutLineBuf = ''
+
       child.stdout?.on('data', data => {
-        const str = stripAnsi(data).trim()
+        const rawChunk = stripAnsi(data)
+        // 行缓冲解析 FIREFLY_READY:{"port":...,"pid":...,"instanceId":"..."} 快路径
+        stdoutLineBuf += rawChunk
+        const splitLines = stdoutLineBuf.split(/\r?\n/)
+        stdoutLineBuf = splitLines.pop() ?? ''
+        for (const line of splitLines) {
+          const readyFrame = parseFireflyReadyLine(line)
+          if (readyFrame && this.process === child && !this.isIntentionalStopping) {
+            this.actualPort = readyFrame.port
+            this.baseUrl = `http://127.0.0.1:${readyFrame.port}`
+            this.expectedIdentity = {
+              pid: readyFrame.pid,
+              instanceId: readyFrame.instanceId,
+              port: readyFrame.port
+            }
+            logger.info(
+              LogCategory.SYSTEM,
+              `[OmniService] ⚡ 捕获 stdout FIREFLY_READY 快路径 (port=${readyFrame.port}, pid=${readyFrame.pid}, instanceId=${readyFrame.instanceId})`
+            )
+            this.kickEventStreamReconnect({
+              expectedTarget: {
+                baseUrl: this.baseUrl,
+                pid: readyFrame.pid,
+                instanceId: readyFrame.instanceId
+              },
+              resetFailures: true
+            })
+            if (!readyFrameReceived) {
+              readyFrameReceived = true
+              resolveReadyFrame?.(readyFrame)
+            }
+          }
+        }
+
+        const str = rawChunk.trim()
         if (str && !isCzkawkaDump(str)) {
           // 若子进程输出为 INFO 级别或包含多模态关键业务日志，以 info 输出至控制台；其余以 debug 输出
           const isInfoMsg =
@@ -1373,7 +2056,7 @@ export class OmniService {
 
       this.process = child
 
-      // 等待服务就绪探活 (最多 400 次 * 200ms = 80秒，容纳多模型并发加载时间)
+      // 等待服务就绪（优先由 stdout FIREFLY_READY 快路径 <1ms 唤醒，兜底最多 400 次 * 200ms = 80s 兼容旧二进制）
       for (let i = 0; i < 400; i++) {
         // 关键防御：若子进程在探活期间提前退出或被终止，立即中止等待，拒绝僵尸死等 80s 阻塞系统
         if (
@@ -1390,7 +2073,11 @@ export class OmniService {
           return false
         }
 
-        await new Promise(r => setTimeout(r, 200))
+        if (!readyFrameReceived) {
+          await Promise.race([readyFramePromise, new Promise(r => setTimeout(r, 200))])
+        } else if (i > 0) {
+          await new Promise(r => setTimeout(r, 200))
+        }
         if (await this.checkHealth()) {
           const verifyRes = await this.verifyMountManifestStatus(expectedMountsSnapshot)
           if (!verifyRes.ok) {
@@ -1410,7 +2097,6 @@ export class OmniService {
               )
               await this.stop()
               this.isStarting = false
-              this.pushStatus().catch(() => {})
               return false
             }
           }
@@ -1428,8 +2114,8 @@ export class OmniService {
           this.startDevBinaryWatch()
           // 探活就绪后，立即同步一次当前配置（ENABLE_IMAGE_OCR, OCR_MODEL_SIZE 等）
           this.syncConfigFromDesktop().catch(() => {})
-          // 主动推送"运行中"状态至渲染进程（基础AI引擎 Footer 展示）
-          this.pushStatus().catch(() => {})
+          // 确保单循环 SSE 状态流已建立，实时推送状态至渲染进程
+          this.ensureEventStream()
           this.notifyReady()
           return true
         }
@@ -1511,15 +2197,35 @@ export class OmniService {
    * 同步立即终结当前持有的 firefly-omni 进程树（仅用于 process.once('exit') / 信号强制退出）
    */
   public stopImmediatelySync(): void {
+    // 同步段第一步：先局部捕获 childPid 与 lastInstanceId，再清空状态
+    const child = this.process
+    const childPid = child?.pid
+    const lastInstanceId =
+      this.connectedTarget?.instanceId || this.expectedIdentity?.instanceId || undefined
+
     this.isIntentionalStopping = true
     this.isStarting = false
+    ++this.stopEpoch
+    ++this.connectionEpoch
+    this.stopController.abort()
+    this.unmountDiscoveryWatcher()
+    this.eventStreamAbortController?.abort()
+    this.reconnectAbortController?.abort()
+    this.activeLoopEpoch = null
+    this.connectedTarget = null
+    this.expectedIdentity = null
+    this.lastStatusEvent = null
+
     if (this.restartTimeout) {
       clearTimeout(this.restartTimeout)
       this.restartTimeout = null
     }
-    const child = this.process
     this.process = null
     this.forceKillProcessTree(child)
+
+    if (childPid) {
+      this.getDiscoveryFile()?.revokeSync({ pid: childPid, instanceId: lastInstanceId })
+    }
 
     if (this.instanceLock) {
       this.instanceLock.release()
@@ -1803,11 +2509,33 @@ export class OmniService {
   }
 
   /**
-   * 两阶段停机协议：SIGTERM 优雅落盘（<=1.5s）-> taskkill /T /F + SIGKILL -> 等待关闭与端口释放
+   * 两阶段停机协议：同步段先捕获身份并断开 SSE / watcher -> SIGTERM 优雅落盘（<=1.5s）-> taskkill /T /F + SIGKILL -> 按 pid/instanceId 撤销发现文件
    */
   public async stop(): Promise<void> {
+    // 并发重入合并：若已有停机流程在途，直接复用同一 Promise，防止后发空 stop() 覆盖 stopPromise 并提前复位 isIntentionalStopping
+    if (this.stopPromise) {
+      return this.stopPromise
+    }
+
+    // 同步段：先局部捕获 childPid 与 lastInstanceId，再清空连接状态并递增代际
+    const child = this.process
+    const childPid = child?.pid
+    const lastInstanceId =
+      this.connectedTarget?.instanceId || this.expectedIdentity?.instanceId || undefined
+
     this.isIntentionalStopping = true
     this.isStarting = false
+    ++this.stopEpoch
+    ++this.connectionEpoch
+    this.stopController.abort()
+    this.unmountDiscoveryWatcher()
+    this.eventStreamAbortController?.abort()
+    this.reconnectAbortController?.abort()
+    this.activeLoopEpoch = null
+    this.connectedTarget = null
+    this.expectedIdentity = null
+    this.lastStatusEvent = null
+
     if (this.restartTimeout) {
       clearTimeout(this.restartTimeout)
       this.restartTimeout = null
@@ -1815,54 +2543,76 @@ export class OmniService {
     const manifestToCleanup = this.currentMountManifestPath
     this.currentMountManifestPath = null
 
-    const child = this.process
-    if (child) {
-      const pid = child.pid
-      this.process = null
+    const runAsyncStop = async (): Promise<void> => {
       try {
-        const { processReaper } = require('../../../main/process-reaper')
-        processReaper.unregisterChild(pid)
-      } catch {}
+        if (child) {
+          const pid = child.pid
+          this.process = null
+          try {
+            const { processReaper } = require('../../../main/process-reaper')
+            processReaper.unregisterChild(pid)
+          } catch {}
 
-      const waitChildClose = new Promise<void>(resolve => {
-        if (child.exitCode !== null || child.signalCode !== null) {
-          resolve()
-          return
+          const waitChildClose = new Promise<void>(resolve => {
+            if (child.exitCode !== null || child.signalCode !== null) {
+              resolve()
+              return
+            }
+            const onDone = () => resolve()
+            child.once('close', onDone)
+            child.once('exit', onDone)
+          })
+
+          try {
+            if (child.exitCode === null && child.signalCode === null) {
+              child.kill('SIGTERM')
+            }
+          } catch {}
+
+          await Promise.race([
+            waitChildClose,
+            new Promise<void>(resolve => setTimeout(resolve, 1500))
+          ])
+
+          if (child.exitCode === null && child.signalCode === null) {
+            this.forceKillProcessTree(child)
+            await Promise.race([
+              waitChildClose,
+              new Promise<void>(resolve => setTimeout(resolve, 2000))
+            ])
+          }
         }
-        const onDone = () => resolve()
-        child.once('close', onDone)
-        child.once('exit', onDone)
-      })
 
-      try {
-        if (child.exitCode === null && child.signalCode === null) {
-          child.kill('SIGTERM')
+        if (childPid) {
+          await this.getDiscoveryFile()?.revoke({ pid: childPid, instanceId: lastInstanceId })
         }
-      } catch {}
 
-      await Promise.race([waitChildClose, new Promise<void>(resolve => setTimeout(resolve, 1500))])
-
-      if (child.exitCode === null && child.signalCode === null) {
-        this.forceKillProcessTree(child)
-        await Promise.race([
-          waitChildClose,
-          new Promise<void>(resolve => setTimeout(resolve, 2000))
-        ])
+        if (this.instanceLock) {
+          this.instanceLock.release()
+          this.instanceLock = null
+        }
+        if (this.tokenManager) {
+          this.tokenManager.removeToken()
+          this.tokenManager = null
+        }
+        this.unlinkManifestSafe(manifestToCleanup)
+        await this.waitForPortReleased(3000)
+        // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
+        broadcastOmniStatus({ running: false, version: null })
+      } finally {
+        this.isIntentionalStopping = false
       }
     }
 
-    if (this.instanceLock) {
-      this.instanceLock.release()
-      this.instanceLock = null
+    const p = runAsyncStop()
+    this.stopPromise = p
+    try {
+      await p
+    } finally {
+      if (this.stopPromise === p) {
+        this.stopPromise = null
+      }
     }
-    if (this.tokenManager) {
-      this.tokenManager.removeToken()
-      this.tokenManager = null
-    }
-    this.unlinkManifestSafe(manifestToCleanup)
-    await this.waitForPortReleased(3000)
-    // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
-    broadcastOmniStatus({ running: false, version: null })
   }
 
   /**
@@ -3371,4 +4121,14 @@ export class OmniService {
   }
 }
 
-export const omniService = OmniService.getInstance()
+export const omniService: OmniService = new Proxy({} as OmniService, {
+  get(_target, prop, receiver) {
+    const inst = OmniService.getInstance()
+    const val = Reflect.get(inst as any, prop, receiver)
+    return typeof val === 'function' ? val.bind(inst) : val
+  },
+  set(_target, prop, value, receiver) {
+    const inst = OmniService.getInstance()
+    return Reflect.set(inst as any, prop, value, receiver)
+  }
+})

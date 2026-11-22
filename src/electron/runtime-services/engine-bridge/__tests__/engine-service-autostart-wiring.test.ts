@@ -22,6 +22,7 @@ import { describe, expect, it } from 'vitest'
 const servicePath = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
+  'engine-bridge-service',
   'engine-bridge-service.ts'
 )
 
@@ -39,7 +40,7 @@ function methodBody(signature: string): string {
 describe('判定逻辑必须委托纯模块（不得内联分叉）', () => {
   it('服务文件必须 import 纯模块的判定函数', () => {
     expect(source).toMatch(
-      /import\s*\{\s*isServiceUsableStatus,\s*shouldTriggerServiceStartAt\s*\}\s*from\s*'\.\/service-start-policy'/
+      /import\s*\{\s*isServiceUsableStatus,\s*shouldTriggerServiceStartAt\s*\}\s*from\s*'\.\.?\/service-start-policy'/
     )
   })
 
