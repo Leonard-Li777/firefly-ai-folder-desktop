@@ -24,7 +24,10 @@ import { cloudAnalysisService } from '@firefly/server'
 import { userTierService } from '../../runtime-services/user-tier/user-tier-service'
 import { invitationService } from '../../runtime-services/invitation/invitation-service'
 import { libreOfficeDetector } from '../../runtime-services/system/libreoffice-detector'
-import { registerFfmpegIpcHandlers } from '../../runtime-services/ipc'
+import {
+  registerFfmpegIpcHandlers,
+  registerVideoStreamIpcHandlers
+} from '../../runtime-services/ipc'
 import { t } from '@app/languages'
 import { coreEngine, fileCleanupService, orphanGcScheduler } from '../state'
 import { initializeHardwareDetection as initializeHardwareDetectionFn } from '../initialization'
@@ -432,6 +435,7 @@ export function registerMiscIPCHandlers() {
   })
 
   registerFfmpegIpcHandlers()
+  registerVideoStreamIpcHandlers()
 
   ipcMain.handle('get-machine-id', async () => SystemIdentityService.getInstance().getMachineId())
   ipcMain.handle('license/get-status', async () => {
