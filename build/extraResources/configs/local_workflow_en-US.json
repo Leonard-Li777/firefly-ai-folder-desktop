@@ -23591,7 +23591,7 @@
             "name": "General Budget Table"
           },
           {
-            "name": "supplier contract"
+            "name": "Supplier contract"
           },
           {
             "name": "Payment Milestone"
@@ -24687,7 +24687,7 @@
         "name": "02-Terms and Responsibilities",
         "children": [
           {
-            "name": "insurance clause"
+            "name": "Insurance clause"
           },
           {
             "name": "<g id=\"Bold\">EXCLUSIONS </g>"
@@ -25016,7 +25016,7 @@
             "name": "Timeline Subtitles"
           },
           {
-            "name": "shownotes"
+            "name": "Shownotes"
           }
         ]
       },
@@ -25617,11 +25617,11 @@
     ],
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI generated content and prompt lexicon",
+    "name": "AI-generated content and prompt thesaurus",
     "version": "1.0.0",
     "persona": "Heavy AI-generated content creator and prompt word engineer",
     "category": "entertainment",
-    "summary": "Heavy AI users MJ and SD draw pictures, AI videos, GPT dialogue products, generate picture videos, prompt word parameters, model version workflow configuration and selected portfolio archiving, the fastest growing new asset at the moment",
+    "summary": "Heavy AI users MJ and SD produce pictures, AI videos, and GPT dialogue products, generate picture videos, prompt word parameters, model version workflow configuration, and archive selected works, the fastest growing new asset at the moment",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25847,13 +25847,13 @@
         "name": "01-Generate image",
         "children": [
           {
-            "name": "Vincentian picture"
+            "name": "Wensheng Map"
           },
           {
-            "name": "图生图"
+            "name": "Picture life picture"
           },
           {
-            "name": "partial redraw"
+            "name": "Partial redraw"
           }
         ]
       },
@@ -25861,10 +25861,10 @@
         "name": "02-Generate video",
         "children": [
           {
-            "name": "AI video into movies"
+            "name": "AI video into a film"
           },
           {
-            "name": "tusheng video"
+            "name": "Graphic video"
           },
           {
             "name": "Video workflow"
@@ -25872,13 +25872,13 @@
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-Prompt words and parameters",
         "children": [
           {
-            "name": "positive cue words"
+            "name": "Forward prompt word"
           },
           {
-            "name": "reverse prompt word"
+            "name": "Reverse prompt word"
           },
           {
             "name": "Seed parameters"
@@ -25889,7 +25889,7 @@
         "name": "04-Model and Workflow",
         "children": [
           {
-            "name": "Large model weights"
+            "name": "Large model weight"
           },
           {
             "name": "LoRA"
@@ -25903,7 +25903,7 @@
         "name": "05-Selected Works Collection",
         "children": [
           {
-            "name": "Featured Gallery"
+            "name": "Featured Atlas"
           },
           {
             "name": "Work annotation"

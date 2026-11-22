@@ -91,7 +91,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -816,7 +818,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -1613,7 +1617,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -2169,7 +2175,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2370,7 +2378,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2548,7 +2559,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -3315,7 +3328,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3682,7 +3698,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -4520,7 +4539,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4866,7 +4888,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -5195,7 +5221,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5535,7 +5564,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -6045,7 +6077,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6532,7 +6566,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -8518,7 +8555,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -9869,7 +9908,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -10143,7 +10186,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10832,7 +10878,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -11120,7 +11170,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11365,7 +11417,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11590,7 +11645,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -12293,7 +12351,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12602,7 +12663,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12930,7 +12994,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13379,7 +13446,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13771,7 +13840,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -14057,7 +14128,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -14289,7 +14362,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14620,7 +14696,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -15493,7 +15573,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15805,7 +15889,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -16169,7 +16257,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -16496,7 +16587,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16738,7 +16832,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -17277,7 +17374,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17984,7 +18083,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -19713,7 +19814,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -19918,7 +20023,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -21637,7 +21745,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".png": 0.34,
         ".jpg": 0.3,
@@ -21858,7 +21969,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.4,
         ".docx": 0.22,
@@ -22111,7 +22224,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.3,
         ".mov": 0.1,
@@ -22354,7 +22470,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.34,
         ".flv": 0.12,
@@ -22594,7 +22713,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.32,
         ".jpeg": 0.12,
@@ -22856,7 +22979,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.26,
         ".jpeg": 0.08,
@@ -23092,7 +23219,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.18,
@@ -23393,7 +23524,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.2,
         ".jpeg": 0.04,
@@ -23671,7 +23806,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.32,
         ".jpg": 0.16,
@@ -23932,7 +24071,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.3,
         ".jpeg": 0.05,
@@ -23969,7 +24112,7 @@
         "name": "02- اللقاحات والفحوصات الطبية",
         "children": [
           {
-            "name": "مسح كتاب اللقاحات"
+            "name": "فحص اللقاح"
           },
           {
             "name": "نموذج الفحص الطبي لرعاية الطفل"
@@ -24216,7 +24359,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.24,
         ".xls": 0.04,
@@ -24495,7 +24641,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.42,
         ".jpg": 0.12,
@@ -24786,7 +24934,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".wav": 0.11,
         ".mp3": 0.25,
@@ -25085,7 +25236,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".3mf": 0.16,
         ".gcode": 0.12,
@@ -25352,7 +25507,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.24,
         ".jpeg": 0.06,
@@ -25458,11 +25617,11 @@
     ],
     "user_id": null,
     "author": "Firefly Official",
-    "name": "محتوى تم إنشاؤه بواسطة الذكاء الاصطناعي ومعجم سريع",
+    "name": "المحتوى الذي تم إنشاؤه بواسطة الذكاء الاصطناعي وقاموس المرادفات الفوري",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "منشئ محتوى ثقيل تم إنشاؤه بواسطة الذكاء الاصطناعي ومهندس كلمات سريع",
     "category": "entertainment",
-    "summary": "يقوم مستخدمو الذكاء الاصطناعي الثقيل MJ وSD برسم الصور ومقاطع فيديو الذكاء الاصطناعي ومنتجات حوار GPT وإنشاء مقاطع فيديو مصورة ومعلمات الكلمات السريعة وتكوين سير عمل إصدار النموذج وأرشفة المحفظة المحددة، وهو الأصل الجديد الأسرع نموًا في الوقت الحالي",
+    "summary": "المستخدمين منظمة العفو الدولية الثقيلة مج و سد تنتج الصور والفيديو منظمة العفو الدولية ، ومنتجات الحوار غت ، وتوليد أشرطة الفيديو الصورة ، المعلمات كلمة سريعة ، تكوين سير العمل نسخة النموذج ، وأرشفة الأعمال المختارة ، والأصول الجديدة الأسرع نموا في الوقت الراهن",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25653,7 +25812,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".png": 0.2,
         ".jpg": 0.08,
@@ -25681,27 +25844,27 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-إنشاء صورة",
+        "name": "01-توليد صورة",
         "children": [
           {
-            "name": "صورة فنسنتية"
+            "name": "خريطة ون شنغ"
           },
           {
-            "name": "تو شنغ تو"
+            "name": "صورة صورة الحياة"
           },
           {
-            "name": "局部重绘"
+            "name": "إعادة رسم جزئي"
           }
         ]
       },
       {
-        "name": "02-إنشاء فيديو",
+        "name": "02-توليد الفيديو",
         "children": [
           {
-            "name": "تحويل الفيديو بالذكاء الاصطناعي إلى أفلام"
+            "name": "فيديو الذكاء الاصطناعي في فيلم"
           },
           {
-            "name": "فيديو توشينج"
+            "name": "فيديو رسومي"
           },
           {
             "name": "سير عمل الفيديو"
@@ -25709,10 +25872,10 @@
         ]
       },
       {
-        "name": "03-كلمات ومعلمات سريعة",
+        "name": "03-الكلمات والمعلمات السريعة",
         "children": [
           {
-            "name": "الكلمات الإيجابية"
+            "name": "كلمة موجه إلى الأمام"
           },
           {
             "name": "عكس كلمة موجه"
@@ -25723,10 +25886,10 @@
         ]
       },
       {
-        "name": "04- النموذج وسير العمل",
+        "name": "04-نموذج وسير العمل",
         "children": [
           {
-            "name": "أوزان النماذج الكبيرة"
+            "name": "وزن نموذج كبير"
           },
           {
             "name": "LoRA"
@@ -25737,10 +25900,10 @@
         ]
       },
       {
-        "name": "05-مجموعة المؤلفات المختارة",
+        "name": "05-مجموعة أعمال مختارة",
         "children": [
           {
-            "name": "معرض مميز"
+            "name": "أطلس المميز"
           },
           {
             "name": "شرح العمل"

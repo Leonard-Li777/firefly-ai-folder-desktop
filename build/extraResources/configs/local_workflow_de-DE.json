@@ -24408,7 +24408,7 @@
             "name": "Krypto-Wallet"
           },
           {
-            "name": "Monatlicher Maklerbericht"
+            "name": "Brokerage Monatsbericht"
           }
         ]
       },
@@ -25016,7 +25016,7 @@
             "name": "Untertitel der Zeitleiste"
           },
           {
-            "name": "shownotes"
+            "name": "Shownotes"
           }
         ]
       },
@@ -25316,7 +25316,7 @@
             "name": "Raspberry-Pi-Skript"
           },
           {
-            "name": "gezeichnet wurde."
+            "name": "Gezeichnet wurde."
           }
         ]
       },
@@ -25617,11 +25617,11 @@
     ],
     "user_id": null,
     "author": "Firefly Official",
-    "name": "KI-generierte Inhalte und Eingabeaufforderungslexikon",
+    "name": "KI-generierter Inhalt und prompter Thesaurus",
     "version": "1.0.0",
-    "persona": "Ersteller umfangreicher KI-generierter Inhalte und Programmierer für schnelle Wörter",
+    "persona": "Starker KI-generierter Inhaltsersteller und prompter Wortingenieur",
     "category": "entertainment",
-    "summary": "Starke KI-Benutzer MJ und SD zeichnen Bilder, KI-Videos, GPT-Dialogprodukte, generieren Bildvideos, fordern Wortparameter, Modellversions-Workflow-Konfiguration und ausgewählte Portfolio-Archivierung an, das derzeit am schnellsten wachsende neue Asset",
+    "summary": "Starke KI-Benutzer MJ und SD produzieren Bilder, KI-Videos und GPT-Dialogprodukte, generieren Bildvideos, fordern Wortparameter, Konfiguration des Modellversions-Workflows und archivieren ausgewählte Werke, das derzeit am schnellsten wachsende neue Asset",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25844,41 +25844,41 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-Bild erstellen",
+        "name": "01-Bild generieren",
         "children": [
           {
-            "name": "Vinzentinisches Bild"
+            "name": "Wensheng Karte"
           },
           {
-            "name": "Tu Sheng Tu"
+            "name": "Bild Lebensbild"
           },
           {
-            "name": "Teilweise Neuzeichnung"
+            "name": "Teilweises Neuzeichnen"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-Video erstellen",
         "children": [
           {
-            "name": "KI-Video in Filme umwandeln"
+            "name": "KI-Video in einen Film verwandeln"
           },
           {
-            "name": "Tusheng-Video"
+            "name": "Grafisches Video"
           },
           {
-            "name": "Video-Workflow"
+            "name": "Video-Arbeitsablauf"
           }
         ]
       },
       {
-        "name": "03-Eingabeaufforderungswörter und Parameter",
+        "name": "03-Eingabeaufforderungswörter und -parameter",
         "children": [
           {
-            "name": "positive Stichworte"
+            "name": "Aufforderungswort weiterleiten"
           },
           {
-            "name": "umgekehrtes Aufforderungswort"
+            "name": "Eingabeaufforderungswort umkehren"
           },
           {
             "name": "Saatparameter"
@@ -25889,7 +25889,7 @@
         "name": "04-Modell und Workflow",
         "children": [
           {
-            "name": "Große Modellgewichte"
+            "name": "Großes Modellgewicht"
           },
           {
             "name": "LoRA"
@@ -25900,13 +25900,13 @@
         ]
       },
       {
-        "name": "05-Sammlung ausgewählter Werke",
+        "name": "05-Sammlung Ausgewählter Werke",
         "children": [
           {
-            "name": "Ausgewählte Galerie"
+            "name": "Vorgestellter Atlas"
           },
           {
-            "name": "Werkanmerkung"
+            "name": "Arbeitsanmerkung"
           },
           {
             "name": "Reproduktionsparameter"

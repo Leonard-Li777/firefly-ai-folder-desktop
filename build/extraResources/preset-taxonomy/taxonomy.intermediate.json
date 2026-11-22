@@ -4937,27 +4937,27 @@
         "mrl_dimension": 0,
         "name_i18n": {
           "zh-CN": "AI生成内容与提示词库",
-          "en-US": "AI generated content and prompt lexicon",
-          "ja-JP": "AI が生成したコンテンツとプロンプト語彙集",
-          "fr-FR": "Contenu généré par l'IA et lexique d'invite",
-          "de-DE": "KI-generierte Inhalte und Eingabeaufforderungslexikon",
-          "es-ES": "Contenido generado por IA y léxico rápido",
-          "ko-KR": "AI 생성 콘텐츠 및 프롬프트 어휘집",
-          "pt-PT": "Conteúdo gerado por IA e léxico imediato",
-          "ru-RU": "ИИ генерирует контент и подсказки",
-          "ar-EG": "محتوى تم إنشاؤه بواسطة الذكاء الاصطناعي ومعجم سريع"
+          "en-US": "AI-generated content and prompt thesaurus",
+          "ja-JP": "AIで生成されたコンテンツとプロンプトシソーラス",
+          "fr-FR": "Contenu généré par l'IA et thésaurus rapide",
+          "de-DE": "KI-generierter Inhalt und prompter Thesaurus",
+          "es-ES": "Tesauro de contenido e indicaciones generado por IA",
+          "ko-KR": "인공 지능 생성 콘텐츠 및 프롬프트 동의어 사전",
+          "pt-PT": "Conteúdo gerado por IA e Tesauro rápido",
+          "ru-RU": "Контент, созданный с помощью искусственного интеллекта, и оперативный тезаурус",
+          "ar-EG": "المحتوى الذي تم إنشاؤه بواسطة الذكاء الاصطناعي وقاموس المرادفات الفوري"
         },
         "summary_i18n": {
           "zh-CN": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
-          "en-US": "Heavy AI users MJ and SD draw pictures, AI videos, GPT dialogue products, generate picture videos, prompt word parameters, model version workflow configuration and selected portfolio archiving, the fastest growing new asset at the moment",
-          "ja-JP": "ヘビー AI ユーザーの MJ と SD は、絵、AI ビデオ、GPT ダイアログ製品を描画し、画像ビデオを生成し、プロンプトワードパラメータ、モデルバージョンのワークフロー構成、および選択されたポートフォリオのアーカイブ、現時点で最も急速に成長している新しい資産です",
-          "fr-FR": "Les gros utilisateurs d'IA, MJ et SD, dessinent des images, des vidéos d'IA, des produits de dialogue GPT, génèrent des vidéos d'images, des paramètres de mots d'invite, la configuration du flux de travail de la version du modèle et l'archivage de portefeuille sélectionné, le nouvel actif qui connaît la croissance la plus rapide en ce moment.",
-          "de-DE": "Starke KI-Benutzer MJ und SD zeichnen Bilder, KI-Videos, GPT-Dialogprodukte, generieren Bildvideos, fordern Wortparameter, Modellversions-Workflow-Konfiguration und ausgewählte Portfolio-Archivierung an, das derzeit am schnellsten wachsende neue Asset",
-          "es-ES": "Los usuarios intensivos de IA, MJ y SD, dibujan imágenes, videos de IA, productos de diálogo GPT, generan videos con imágenes, solicitan parámetros de palabras, configuran el flujo de trabajo de la versión del modelo y archivan carteras seleccionadas, el nuevo activo de más rápido crecimiento en este momento.",
-          "ko-KR": "AI 헤비 사용자 MJ 및 SD는 그림 그리기, AI 비디오, GPT 대화 제품, 그림 비디오 생성, 프롬프트 단어 매개변수, 모델 버전 워크플로 구성 및 선택된 포트폴리오 보관 등 현재 가장 빠르게 성장하는 새로운 자산입니다.",
-          "pt-PT": "Usuários pesados ​​de IA MJ e SD desenham imagens, vídeos de IA, produtos de diálogo GPT, geram vídeos de imagens, solicitam parâmetros de palavras, configuração de fluxo de trabalho de versão de modelo e arquivamento de portfólio selecionado, o novo ativo de crescimento mais rápido no momento",
-          "ru-RU": "Активные пользователи ИИ, MJ и SD, рисуют изображения, видеоролики ИИ, диалоговые продукты GPT, генерируют видеоизображения, подсказывают параметры слов, конфигурируют рабочий процесс версии модели и архивируют выбранное портфолио, самый быстрорастущий новый актив на данный момент.",
-          "ar-EG": "يقوم مستخدمو الذكاء الاصطناعي الثقيل MJ وSD برسم الصور ومقاطع فيديو الذكاء الاصطناعي ومنتجات حوار GPT وإنشاء مقاطع فيديو مصورة ومعلمات الكلمات السريعة وتكوين سير عمل إصدار النموذج وأرشفة المحفظة المحددة، وهو الأصل الجديد الأسرع نموًا في الوقت الحالي"
+          "en-US": "Heavy AI users MJ and SD produce pictures, AI videos, and GPT dialogue products, generate picture videos, prompt word parameters, model version workflow configuration, and archive selected works, the fastest growing new asset at the moment",
+          "ja-JP": "重いAIユーザー MJとSDは、画像、AIビデオ、GPT対話製品を生成し、画像ビデオを生成し、プロンプトの単語パラメータ、モデルバージョンワークフロー設定、および選択した作品をアーカイブし、現時点で最も急速に成長している新しい資産",
+          "fr-FR": "Les gros utilisateurs d'IA MJ et SD produisent des images, des vidéos d'IA et des produits de dialogue GPT, génèrent des vidéos d'images, des paramètres de mots rapides, une configuration du flux de travail de la version du modèle et archivent les œuvres sélectionnées, le nouvel actif à la croissance la plus rapide pour le moment",
+          "de-DE": "Starke KI-Benutzer MJ und SD produzieren Bilder, KI-Videos und GPT-Dialogprodukte, generieren Bildvideos, fordern Wortparameter, Konfiguration des Modellversions-Workflows und archivieren ausgewählte Werke, das derzeit am schnellsten wachsende neue Asset",
+          "es-ES": "Los usuarios intensivos de IA, MJ y SD, producen imágenes, videos de IA y productos de diálogo GPT, generan videos con imágenes, solicitan parámetros de word, configuran el flujo de trabajo de la versión del modelo y archivan trabajos seleccionados, el nuevo activo de más rápido crecimiento en este momento",
+          "ko-KR": "현재 가장 빠르게 성장하는 새로운 자산인 사진,인공지능 비디오 및 지피티 대화 제품,사진 비디오 생성,프롬프트 단어 매개 변수,모델 버전 워크플로 구성 및 선택된 작품 보관",
+          "pt-PT": "Usuários pesados de IA MJ e SD produzem imagens, vídeos de IA e produtos de diálogo GPT, geram vídeos de imagens, parâmetros de palavras rápidas, configuração do fluxo de trabalho da versão do modelo e arquivam trabalhos selecionados, o novo ativo que mais cresce no momento",
+          "ru-RU": "Опытные пользователи искусственного интеллекта MJ и SD создают изображения, видео с искусственным интеллектом и диалоговые продукты GPT, создают графические видеоролики, запрашивают параметры word, настраивают рабочий процесс версии модели и архивируют выбранные работы - это самый быстрорастущий новый ресурс на данный момент",
+          "ar-EG": "المستخدمين منظمة العفو الدولية الثقيلة مج و سد تنتج الصور والفيديو منظمة العفو الدولية ، ومنتجات الحوار غت ، وتوليد أشرطة الفيديو الصورة ، المعلمات كلمة سريعة ، تكوين سير العمل نسخة النموذج ، وأرشفة الأعمال المختارة ، والأصول الجديدة الأسرع نموا في الوقت الراهن"
         }
       }
     ]

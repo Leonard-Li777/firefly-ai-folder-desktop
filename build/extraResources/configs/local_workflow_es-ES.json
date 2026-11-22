@@ -25016,7 +25016,7 @@
             "name": "Subtítulos de la línea temporal"
           },
           {
-            "name": "shownotes"
+            "name": "Shownotes"
           }
         ]
       },
@@ -25599,7 +25599,7 @@
             "name": "Registro de intercambios"
           },
           {
-            "name": "cotizaciones de mercado."
+            "name": "Cotizaciones de mercado."
           }
         ]
       }
@@ -25617,11 +25617,11 @@
     ],
     "user_id": null,
     "author": "Firefly Official",
-    "name": "Contenido generado por IA y léxico rápido",
+    "name": "Tesauro de contenido e indicaciones generado por IA",
     "version": "1.0.0",
     "persona": "Creador de contenido pesado generado por IA e ingeniero de palabras rápidas",
     "category": "entertainment",
-    "summary": "Los usuarios intensivos de IA, MJ y SD, dibujan imágenes, videos de IA, productos de diálogo GPT, generan videos con imágenes, solicitan parámetros de palabras, configuran el flujo de trabajo de la versión del modelo y archivan carteras seleccionadas, el nuevo activo de más rápido crecimiento en este momento.",
+    "summary": "Los usuarios intensivos de IA, MJ y SD, producen imágenes, videos de IA y productos de diálogo GPT, generan videos con imágenes, solicitan parámetros de word, configuran el flujo de trabajo de la versión del modelo y archivan trabajos seleccionados, el nuevo activo de más rápido crecimiento en este momento",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25847,41 +25847,41 @@
         "name": "01-Generar imagen",
         "children": [
           {
-            "name": "Cuadro vicenciano"
+            "name": "Mapa de Wensheng"
           },
           {
-            "name": "Tu Sheng Tu"
+            "name": "Imagen imagen de la vida"
           },
           {
-            "name": "rediseño parcial"
+            "name": "Redibujado parcial"
           }
         ]
       },
       {
-        "name": "02-Generar vídeo",
+        "name": "02-Generar video",
         "children": [
           {
-            "name": "Vídeo con IA en películas"
+            "name": "Video de IA en una película"
           },
           {
-            "name": "vídeo de tusheng"
+            "name": "Vídeo gráfico"
           },
           {
-            "name": "Flujo de trabajo de vídeo"
+            "name": "Flujo de trabajo de video"
           }
         ]
       },
       {
-        "name": "03-Palabras y parámetros de aviso",
+        "name": "03-Palabras y parámetros de solicitud",
         "children": [
           {
-            "name": "palabras clave positivas"
+            "name": "Palabra rápida hacia adelante"
           },
           {
-            "name": "palabra invertida"
+            "name": "Palabra de aviso inversa"
           },
           {
-            "name": "Parámetros de semillas"
+            "name": "Parámetros de semilla"
           }
         ]
       },
@@ -25889,7 +25889,7 @@
         "name": "04-Modelo y flujo de trabajo",
         "children": [
           {
-            "name": "Pesos de modelos grandes"
+            "name": "Peso del modelo grande"
           },
           {
             "name": "LoRA"
@@ -25903,13 +25903,13 @@
         "name": "05-Colección de Obras Seleccionadas",
         "children": [
           {
-            "name": "Galería destacada"
+            "name": "Atlas Destacado"
           },
           {
             "name": "Anotación de trabajo"
           },
           {
-            "name": "复现参数"
+            "name": "Parámetros de reproducción"
           }
         ]
       }
