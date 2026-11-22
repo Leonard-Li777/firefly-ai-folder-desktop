@@ -18621,44 +18621,44 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-购车文件'),
         children: [
-          { name: t('购车合同') }
-          { name: t('发票与合格证') }
-          { name: t('登记证书') }
+          { name: t('购车合同') },
+          { name: t('发票与合格证') },
+          { name: t('登记证书') },
           { name: t('购置税完税') }
         ]
       },
       {
         name: t('02-保险与年检'),
         children: [
-          { name: t('交强险保单') }
-          { name: t('商业险保单') }
-          { name: t('年检记录') }
+          { name: t('交强险保单') },
+          { name: t('商业险保单') },
+          { name: t('年检记录') },
           { name: t('车船税') }
         ]
       },
       {
         name: t('03-保养维修'),
         children: [
-          { name: t('保养手册') }
-          { name: t('4S保养工单') }
-          { name: t('第三方维修') }
+          { name: t('保养手册') },
+          { name: t('4S保养工单') },
+          { name: t('第三方维修') },
           { name: t('易损件更换') }
         ]
       },
       {
         name: t('04-事故与理赔'),
         children: [
-          { name: t('事故现场照片') }
-          { name: t('交警责任认定') }
-          { name: t('理赔材料') }
+          { name: t('事故现场照片') },
+          { name: t('交警责任认定') },
+          { name: t('理赔材料') },
           { name: t('维修定损') }
         ]
       },
       {
         name: t('05-改装与加装'),
         children: [
-          { name: t('加装清单') }
-          { name: t('改装发票') }
+          { name: t('加装清单') },
+          { name: t('改装发票') },
           { name: t('改装备案') }
         ]
       },
@@ -18818,40 +18818,40 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-成长照片视频'),
         children: [
-          { name: t('满月百天周岁') }
-          { name: t('日常随手拍') }
+          { name: t('满月百天周岁') },
+          { name: t('日常随手拍') },
           { name: t('成长视频') }
         ]
       },
       {
         name: t('02-疫苗与体检'),
         children: [
-          { name: t('疫苗本扫描') }
-          { name: t('儿保体检单') }
+          { name: t('疫苗本扫描') },
+          { name: t('儿保体检单') },
           { name: t('生长曲线') }
         ]
       },
       {
         name: t('03-医疗就诊'),
         children: [
-          { name: t('门诊病历') }
-          { name: t('用药记录') }
+          { name: t('门诊病历') },
+          { name: t('用药记录') },
           { name: t('检查报告') }
         ]
       },
       {
         name: t('04-教育与早教'),
         children: [
-          { name: t('早教课程') }
-          { name: t('启蒙素材') }
+          { name: t('早教课程') },
+          { name: t('启蒙素材') },
           { name: t('亲子活动') }
         ]
       },
       {
         name: t('05-成长纪念册'),
         children: [
-          { name: t('纪念册排版') }
-          { name: t('成长语录') }
+          { name: t('纪念册排版') },
+          { name: t('成长语录') },
           { name: t('亲子合影') }
         ]
       },
@@ -19003,40 +19003,40 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-账户与对账单'),
         children: [
-          { name: t('银行对账单') }
-          { name: t('信用卡账单') }
+          { name: t('银行对账单') },
+          { name: t('信用卡账单') },
           { name: t('支付账户') }
         ]
       },
       {
         name: t('02-投资持仓'),
         children: [
-          { name: t('基金股票持仓截图') }
-          { name: t('加密钱包') }
+          { name: t('基金股票持仓截图') },
+          { name: t('加密钱包') },
           { name: t('券商月报') }
         ]
       },
       {
         name: t('03-个税与汇算'),
         children: [
-          { name: t('年度汇算') }
-          { name: t('个税凭证') }
+          { name: t('年度汇算') },
+          { name: t('个税凭证') },
           { name: t('专项扣除') }
         ]
       },
       {
         name: t('04-贷款与负债'),
         children: [
-          { name: t('房贷还款表') }
-          { name: t('消费贷') }
+          { name: t('房贷还款表') },
+          { name: t('消费贷') },
           { name: t('负债汇总') }
         ]
       },
       {
         name: t('05-家庭预算'),
         children: [
-          { name: t('月度预算表') }
-          { name: t('年度预算') }
+          { name: t('月度预算表') },
+          { name: t('年度预算') },
           { name: t('记账凭证') }
         ]
       },
@@ -19226,34 +19226,34 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-保单电子件'),
         children: [
-          { name: t('重疾险') }
-          { name: t('医疗险') }
-          { name: t('意外险') }
-          { name: t('寿险') }
+          { name: t('重疾险') },
+          { name: t('医疗险') },
+          { name: t('意外险') },
+          { name: t('寿险') },
           { name: t('车险家财险') }
         ]
       },
       {
         name: t('02-条款与责任'),
         children: [
-          { name: t('保险条款') }
-          { name: t('责任免除') }
+          { name: t('保险条款') },
+          { name: t('责任免除') },
           { name: t('现金价值表') }
         ]
       },
       {
         name: t('03-缴费与续保'),
         children: [
-          { name: t('缴费记录') }
-          { name: t('续保提醒') }
+          { name: t('缴费记录') },
+          { name: t('续保提醒') },
           { name: t('保全变更') }
         ]
       },
       {
         name: t('04-理赔材料'),
         children: [
-          { name: t('理赔申请') }
-          { name: t('病历资料') }
+          { name: t('理赔申请') },
+          { name: t('病历资料') },
           { name: t('理赔进度') }
         ]
       },
@@ -19434,48 +19434,48 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-原始录音'),
         children: [
-          { name: t('单集原始音轨') }
-          { name: t('访谈素材') }
+          { name: t('单集原始音轨') },
+          { name: t('访谈素材') },
           { name: t('环境音') }
         ]
       },
       {
         name: t('02-剪辑工程'),
         children: [
-          { name: t('多轨工程文件') }
-          { name: t('混音导出') }
+          { name: t('多轨工程文件') },
+          { name: t('混音导出') },
           { name: t('降噪备份') }
         ]
       },
       {
         name: t('03-音乐与音效'),
         children: [
-          { name: t('片头片尾曲') }
-          { name: t('转场音效') }
+          { name: t('片头片尾曲') },
+          { name: t('转场音效') },
           { name: t('BGM授权') }
         ]
       },
       {
         name: t('04-逐字稿与shownotes'),
         children: [
-          { name: t('逐字稿') }
-          { name: t('时间轴字幕') }
+          { name: t('逐字稿') },
+          { name: t('时间轴字幕') },
           { name: t('shownotes') }
         ]
       },
       {
         name: t('05-封面视觉'),
         children: [
-          { name: t('单集封面') }
-          { name: t('节目主视觉') }
+          { name: t('单集封面') },
+          { name: t('节目主视觉') },
           { name: t('宣发图') }
         ]
       },
       {
         name: t('06-分发成片'),
         children: [
-          { name: t('各平台成片') }
-          { name: t('平台元数据') }
+          { name: t('各平台成片') },
+          { name: t('平台元数据') },
           { name: t('发布记录') }
         ]
       },
@@ -19684,40 +19684,40 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-模型文件'),
         children: [
-          { name: t('STL模型') }
-          { name: t('3MF项目') }
+          { name: t('STL模型') },
+          { name: t('3MF项目') },
           { name: t('源文件') }
         ]
       },
       {
         name: t('02-打印参数'),
         children: [
-          { name: t('切片配置') }
-          { name: t('耗材档案') }
+          { name: t('切片配置') },
+          { name: t('耗材档案') },
           { name: t('打印机配置') }
         ]
       },
       {
         name: t('03-成品与复盘'),
         children: [
-          { name: t('成品照片') }
-          { name: t('失败件复盘') }
+          { name: t('成品照片') },
+          { name: t('失败件复盘') },
           { name: t('打印记录') }
         ]
       },
       {
         name: t('04-电子项目'),
         children: [
-          { name: t('Arduino固件') }
-          { name: t('树莓派脚本') }
+          { name: t('Arduino固件') },
+          { name: t('树莓派脚本') },
           { name: t('电路图') }
         ]
       },
       {
         name: t('05-工具与耗材'),
         children: [
-          { name: t('工具清单') }
-          { name: t('耗材库存') }
+          { name: t('工具清单') },
+          { name: t('耗材库存') },
           { name: t('采购记录') }
         ]
       },
@@ -19902,40 +19902,40 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-藏品清单'),
         children: [
-          { name: t('藏品总表') }
-          { name: t('估值记录') }
+          { name: t('藏品总表') },
+          { name: t('估值记录') },
           { name: t('系列图鉴') }
         ]
       },
       {
         name: t('02-制作过程'),
         children: [
-          { name: t('素组进度') }
-          { name: t('涂装过程') }
+          { name: t('素组进度') },
+          { name: t('涂装过程') },
           { name: t('改造记录') }
         ]
       },
       {
         name: t('03-成品展示'),
         children: [
-          { name: t('成品照') }
-          { name: t('场景照') }
+          { name: t('成品照') },
+          { name: t('场景照') },
           { name: t('对比照') }
         ]
       },
       {
         name: t('04-购买凭证'),
         children: [
-          { name: t('购买发票') }
-          { name: t('盒照') }
+          { name: t('购买发票') },
+          { name: t('盒照') },
           { name: t('配件清单') }
         ]
       },
       {
         name: t('05-交换出售'),
         children: [
-          { name: t('出售记录') }
-          { name: t('交换记录') }
+          { name: t('出售记录') },
+          { name: t('交换记录') },
           { name: t('市场行情') }
         ]
       },
@@ -20104,40 +20104,40 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       {
         name: t('01-生成图像'),
         children: [
-          { name: t('文生图') }
-          { name: t('图生图') }
+          { name: t('文生图') },
+          { name: t('图生图') },
           { name: t('局部重绘') }
         ]
       },
       {
         name: t('02-生成视频'),
         children: [
-          { name: t('AI视频成片') }
-          { name: t('图生视频') }
+          { name: t('AI视频成片') },
+          { name: t('图生视频') },
           { name: t('视频工作流') }
         ]
       },
       {
         name: t('03-提示词与参数'),
         children: [
-          { name: t('正向提示词') }
-          { name: t('反向提示词') }
+          { name: t('正向提示词') },
+          { name: t('反向提示词') },
           { name: t('种子参数') }
         ]
       },
       {
         name: t('04-模型与工作流'),
         children: [
-          { name: t('大模型权重') }
-          { name: t('LoRA') }
+          { name: t('大模型权重') },
+          { name: t('LoRA') },
           { name: t('工作流配置') }
         ]
       },
       {
         name: t('05-精选作品集'),
         children: [
-          { name: t('精选图集') }
-          { name: t('作品标注') }
+          { name: t('精选图集') },
+          { name: t('作品标注') },
           { name: t('复现参数') }
         ]
       },

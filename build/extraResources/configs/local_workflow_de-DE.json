@@ -85,9 +85,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw"],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -762,9 +760,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -1529,9 +1525,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "password_vault_cracker"
-      ],
+      "workflowPluginDefaults": ["password_vault_cracker"],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -2066,9 +2060,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["object_detection_pro"],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2264,10 +2256,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2438,9 +2427,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["object_detection_pro"],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -3195,10 +3182,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3560,10 +3544,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -4388,10 +4369,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4731,11 +4709,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -5057,10 +5031,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5395,10 +5366,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5903,9 +5871,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6388,10 +6354,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -8353,9 +8316,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -9684,11 +9645,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -9958,10 +9915,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10640,11 +10594,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -10928,9 +10878,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11170,10 +11118,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11394,10 +11339,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -12091,10 +12033,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12397,10 +12336,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser", "object_detection_pro"],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12723,10 +12659,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13171,9 +13104,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13561,9 +13492,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -13845,9 +13774,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -14075,10 +14002,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser",
-        "password_vault_cracker"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser", "password_vault_cracker"],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14405,11 +14329,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -15267,11 +15187,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15579,11 +15495,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -15943,10 +15855,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -16269,10 +16178,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16510,10 +16416,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -17044,9 +16947,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17739,9 +17640,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "password_vault_cracker"
-      ],
+      "workflowPluginDefaults": ["password_vault_cracker"],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -19444,11 +19343,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -19649,10 +19544,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -21340,10 +21232,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
       "extensionWeights": {
         ".png": 0.34,
         ".jpg": 0.3,
@@ -21559,9 +21448,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw"],
       "extensionWeights": {
         ".pdf": 0.4,
         ".docx": 0.22,
@@ -21809,10 +21696,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".mp4": 0.3,
         ".mov": 0.1,
@@ -22049,10 +21933,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".mp4": 0.34,
         ".flv": 0.12,
@@ -22287,11 +22168,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.32,
         ".jpeg": 0.12,
@@ -22547,11 +22424,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.26,
         ".jpeg": 0.08,
@@ -22782,11 +22655,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.18,
@@ -22895,11 +22764,11 @@
     "id": "builtin.workflow.wedding-planning",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "婚礼策划全案档案",
+    "name": "Vollständige Unterlagen zur Hochzeitsplanung",
     "version": "1.0.0",
-    "persona": "正在筹备婚礼的新人与婚礼策划师",
+    "persona": "Brautpaare, die ihre Hochzeit planen, und Hochzeitsplaner",
     "category": "office",
-    "summary": "备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档",
+    "summary": "Der gesamte Zeitraum der Hochzeitsvorbereitung beträgt 6–12 Monate. Retuschierte Originale der Hochzeitsfotos, Anbieter von Veranstaltungsorten, Budgetverträge, Gestaltung der Einladungskarten und das Material der Begleitfotografie am Hochzeitstag werden an einem Ort archiviert.",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -23083,11 +22952,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.2,
         ".jpeg": 0.04,
@@ -23113,89 +22978,89 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-婚纱照原片与精修",
+        "name": "01-Originale und retuschierte Hochzeitsfotos",
         "children": [
           {
-            "name": "原片RAW"
+            "name": "RAW-Datei"
           },
           {
-            "name": "精修成片"
+            "name": "Professionell bearbeitete Bilder"
           },
           {
-            "name": "选片对比"
+            "name": "Bildauswahl zum Vergleich"
           }
         ]
       },
       {
-        "name": "02-场地与供应商",
+        "name": "02 – Standort und Lieferanten",
         "children": [
           {
-            "name": "场地对比"
+            "name": "Vergleich der Standorte"
           },
           {
-            "name": "摄影摄像"
+            "name": "Fotografie und Videografie"
           },
           {
-            "name": "司仪化妆"
+            "name": "Make-up für den Zeremonienmeister"
           },
           {
-            "name": "婚庆布置"
+            "name": "Hochzeitsdekoration"
           }
         ]
       },
       {
-        "name": "03-预算与合同",
+        "name": "03 – Budget und Vertrag",
         "children": [
           {
-            "name": "总预算表"
+            "name": "Gesamtbudgettabelle"
           },
           {
-            "name": "供应商合同"
+            "name": "Lieferantenvertrag"
           },
           {
-            "name": "付款节点"
+            "name": "Zahlungszeitpunkt"
           }
         ]
       },
       {
-        "name": "04-请柬与视觉物料",
+        "name": "04 – Einladungen und visuelle Materialien",
         "children": [
           {
-            "name": "请柬设计源文件"
+            "name": "Quelldatei für das Einladungsdesign"
           },
           {
-            "name": "席位卡桌卡"
+            "name": "Platzkarte Tischkarte"
           },
           {
-            "name": "迎宾海报"
+            "name": "Willkommensplakat"
           }
         ]
       },
       {
-        "name": "05-当天素材与跟拍",
+        "name": "05 – Material und Begleitaufnahmen des Tages",
         "children": [
           {
-            "name": "跟拍视频"
+            "name": "Video mit Verfolgungsaufnahme"
           },
           {
-            "name": "仪式照片"
+            "name": "Fotos von der Zeremonie"
           },
           {
-            "name": "快剪成片"
+            "name": "Schneller Schnitt zu einem Film"
           }
         ]
       },
       {
-        "name": "06-蜜月与收尾",
+        "name": "06 – Flitterwochen und Abschluss",
         "children": [
           {
-            "name": "蜜月行程"
+            "name": "Flitterwochen-Reise"
           },
           {
-            "name": "婚礼结算"
+            "name": "Hochzeitsabrechnung"
           },
           {
-            "name": "致谢与回礼"
+            "name": "Danksagung und Gegengeschenk"
           }
         ]
       }
@@ -23207,11 +23072,11 @@
     "id": "builtin.workflow.car-lifecycle",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "汽车全生命周期档案",
+    "name": "Akten zum gesamten Lebenszyklus des Fahrzeugs",
     "version": "1.0.0",
-    "persona": "私家车主与家庭用车管理人",
+    "persona": "Eigentümer von Privatfahrzeugen und Verwalter von Familienfahrzeugen",
     "category": "office",
-    "summary": "私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链",
+    "summary": "Vom Kauf eines Privatwagens bis zum Verkauf des Fahrzeugs nach 5–10 Jahren werden Kaufvertrag, Versicherung, jährliche Inspektion, Wartung, Reparatur, Schadensregulierung und Umbauberichte an einem Ort aufbewahrt. Die vollständige Beweiskette ist beim Verkauf des Fahrzeugs am wertvollsten.",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -23360,11 +23225,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".pdf": 0.32,
         ".jpg": 0.16,
@@ -23385,84 +23246,84 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-购车文件",
+        "name": "01 – Fahrzeugkaufunterlagen",
         "children": [
           {
-            "name": "购车合同"
+            "name": "Fahrzeugkaufvertrag"
           },
           {
-            "name": "发票与合格证"
+            "name": "Rechnung und Konformitätsbescheinigung"
           },
           {
-            "name": "登记证书"
+            "name": "Handelsregisterauszug"
           },
           {
-            "name": "购置税完税"
+            "name": "Zahlung der Kaufsteuer"
           }
         ]
       },
       {
-        "name": "02-保险与年检",
+        "name": "02 – Versicherung und Hauptuntersuchung",
         "children": [
           {
-            "name": "交强险保单"
+            "name": "Police der Kfz-Haftpflichtversicherung"
           },
           {
-            "name": "商业险保单"
+            "name": "Gewerbliche Versicherungspolice"
           },
           {
-            "name": "年检记录"
+            "name": "Protokoll der jährlichen Inspektion"
           },
           {
-            "name": "车船税"
+            "name": "Fahrzeug- und Schiffssteuer"
           }
         ]
       },
       {
-        "name": "03-保养维修",
+        "name": "03 – Wartung und Instandhaltung",
         "children": [
           {
-            "name": "保养手册"
+            "name": "Wartungshandbuch"
           },
           {
-            "name": "4S保养工单"
+            "name": "4S-Wartungsauftrag"
           },
           {
-            "name": "第三方维修"
+            "name": "Wartung durch Dritte"
           },
           {
-            "name": "易损件更换"
+            "name": "Austausch von Verschleißteilen"
           }
         ]
       },
       {
-        "name": "04-事故与理赔",
+        "name": "04 – Unfälle und Schadensregulierung",
         "children": [
           {
-            "name": "事故现场照片"
+            "name": "Fotos vom Unfallort"
           },
           {
-            "name": "交警责任认定"
+            "name": "Feststellung der Verantwortung durch die Verkehrspolizei"
           },
           {
-            "name": "理赔材料"
+            "name": "Unterlagen für die Schadensregulierung"
           },
           {
-            "name": "维修定损"
+            "name": "Reparatur-Schadensfeststellung"
           }
         ]
       },
       {
-        "name": "05-改装与加装",
+        "name": "05 – Umbau und Nachrüstung",
         "children": [
           {
-            "name": "加装清单"
+            "name": "Liste der zusätzlichen Ausstattungen"
           },
           {
-            "name": "改装发票"
+            "name": "Rechnung für Umbau"
           },
           {
-            "name": "改装备案"
+            "name": "Anmeldung der Umrüstung"
           }
         ]
       }
@@ -23474,11 +23335,11 @@
     "id": "builtin.workflow.baby-growth-archive",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "宝宝成长与育儿档案",
+    "name": "Entwicklungs- und Erziehungsakte des Babys",
     "version": "1.0.0",
-    "persona": "0-6岁婴幼儿父母与家庭照护人",
+    "persona": "Eltern und Betreuungspersonen von Kleinkindern im Alter von 0–6 Jahren",
     "category": "office",
-    "summary": "0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口",
+    "summary": "Eltern von Kindern im Alter von 0–6 Jahren, Archivierung von Fotos und Videos der Entwicklung, Impfungen, Vorsorgeuntersuchungen, Arztbesuchen, Aufzeichnungen zur frühkindlichen Bildung und Erinnerungsalben zur Entwicklung, um die Lücke bei Kleinkindern im Bereich „senior-life-archive“ zu schließen",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -23620,11 +23481,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.3,
         ".jpeg": 0.05,
@@ -23644,72 +23501,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-成长照片视频",
+        "name": "01-Video mit Bildern aus der Kindheit",
         "children": [
           {
-            "name": "满月百天周岁"
+            "name": "Ein Monat, hundert Tage, ein Jahr"
           },
           {
-            "name": "日常随手拍"
+            "name": "Schnappschüsse aus dem Alltag"
           },
           {
-            "name": "成长视频"
+            "name": "Wachstumsvideo"
           }
         ]
       },
       {
-        "name": "02-疫苗与体检",
+        "name": "02-Impfungen und ärztliche Untersuchungen",
         "children": [
           {
-            "name": "疫苗本扫描"
+            "name": "Scan des Impfpasses"
           },
           {
-            "name": "儿保体检单"
+            "name": "Untersuchungsbogen für die Kinderbetreuung"
           },
           {
-            "name": "生长曲线"
+            "name": "Wachstumskurve"
           }
         ]
       },
       {
-        "name": "03-医疗就诊",
+        "name": "03 – Arztbesuch",
         "children": [
           {
-            "name": "门诊病历"
+            "name": "Ambulante Krankenakten"
           },
           {
-            "name": "用药记录"
+            "name": "Medikationsprotokoll"
           },
           {
-            "name": "检查报告"
+            "name": "Inspektionsbericht"
           }
         ]
       },
       {
-        "name": "04-教育与早教",
+        "name": "04 – Bildung und frühkindliche Bildung",
         "children": [
           {
-            "name": "早教课程"
+            "name": "Frühförderungskurse"
           },
           {
-            "name": "启蒙素材"
+            "name": "Einführungsmaterial"
           },
           {
-            "name": "亲子活动"
+            "name": "Aktivitäten für Eltern und Kinder"
           }
         ]
       },
       {
-        "name": "05-成长纪念册",
+        "name": "05 – Erinnerungsalbum an die Entwicklung",
         "children": [
           {
-            "name": "纪念册排版"
+            "name": "Layout des Erinnerungsalbums"
           },
           {
-            "name": "成长语录"
+            "name": "Zitate zum Thema Wachstum"
           },
           {
-            "name": "亲子合影"
+            "name": "Familienfoto"
           }
         ]
       }
@@ -23721,11 +23578,11 @@
     "id": "builtin.workflow.personal-finance-invest",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "家庭理财与投资记账",
+    "name": "Haushaltsfinanzen und Anlagebuchhaltung",
     "version": "1.0.0",
-    "persona": "有理财习惯的家庭与个人投资者",
+    "persona": "Familien und Privatanleger mit finanziellen Gewohnheiten",
     "category": "office",
-    "summary": "个人与家庭理财全链路，账户对账单、投资持仓、个税汇算、贷款负债与家庭预算表归档，与企业财务finance-contract形成个人线互补",
+    "summary": "Komplette Kette der persönlichen und familiären Finanzverwaltung, Archivierung von Kontoauszügen, Anlagepositionen, Einkommensteuererklärungen, Kreditverbindlichkeiten und Familienbudgets, Ergänzung der Unternehmensfinanzierung durch persönliche Finanzverwaltung",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -23902,10 +23759,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
       "extensionWeights": {
         ".xlsx": 0.24,
         ".xls": 0.04,
@@ -23928,27 +23782,27 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-账户与对账单",
+        "name": "01 – Konto und Kontoauszug",
         "children": [
           {
             "name": "Kontoauszug"
           },
           {
-            "name": "信用卡账单"
+            "name": "Kreditkartenabrechnung"
           },
           {
-            "name": "支付账户"
+            "name": "Zahlungskonten"
           }
         ]
       },
       {
-        "name": "02-投资持仓",
+        "name": "02 – Anlagepositionen",
         "children": [
           {
-            "name": "基金股票持仓截图"
+            "name": "Screenshot der Aktienpositionen des Fonds"
           },
           {
-            "name": "加密钱包"
+            "name": "Krypto-Wallet"
           },
           {
             "name": "券商月报"
@@ -23956,44 +23810,44 @@
         ]
       },
       {
-        "name": "03-个税与汇算",
+        "name": "03-Einkommensteuer und Veranlagung",
         "children": [
           {
-            "name": "年度汇算"
+            "name": "Jährliche Abrechnung"
           },
           {
-            "name": "个税凭证"
+            "name": "Einkommensteuerbescheinigung"
           },
           {
-            "name": "专项扣除"
+            "name": "Sonderabzug"
           }
         ]
       },
       {
-        "name": "04-贷款与负债",
+        "name": "04 – Kredite und Verbindlichkeiten",
         "children": [
           {
-            "name": "房贷还款表"
+            "name": "Tilgungsplan für Hypothekendarlehen"
           },
           {
-            "name": "消费贷"
+            "name": "Verbraucherdarlehen"
           },
           {
-            "name": "负债汇总"
+            "name": "Verbindlichkeiten insgesamt"
           }
         ]
       },
       {
-        "name": "05-家庭预算",
+        "name": "05-Haushaltsbudget",
         "children": [
           {
-            "name": "月度预算表"
+            "name": "Monatlicher Haushaltsplan"
           },
           {
-            "name": "年度预算"
+            "name": "Jährliches Budget"
           },
           {
-            "name": "记账凭证"
+            "name": "Buchungsbeleg"
           }
         ]
       }
@@ -24005,11 +23859,11 @@
     "id": "builtin.workflow.insurance-policy-vault",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "家庭保险保单中枢",
+    "name": "Zentrale für Hausratversicherungspolicen",
     "version": "1.0.0",
-    "persona": "家庭保险配置决策人与投保人",
+    "persona": "Entscheidungsträger und Versicherungsnehmer der Familienversicherung",
     "category": "office",
-    "summary": "给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单",
+    "summary": "Entscheidungsträger für die Versicherung der gesamten Familie. Zentralisierte Verwaltung von elektronischen Versicherungspolicen, Versicherungsbedingungen, Prämienzahlungen, Vertragsverlängerungen und Schadensunterlagen für Krankenkassen-, Schwerkranken-, Unfall-, Lebens-, Kfz- und Hausratversicherungen. Bei Eintritt eines Versicherungsfalls wird die Versicherungspolice innerhalb von Sekunden abgerufen.",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -24179,9 +24033,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw"],
       "extensionWeights": {
         ".pdf": 0.42,
         ".jpg": 0.12,
@@ -24202,64 +24054,64 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-保单电子件",
+        "name": "01-Elektronische Versicherungspolice",
         "children": [
           {
-            "name": "重疾险"
+            "name": "Schwerkrankenversicherung"
           },
           {
-            "name": "医疗险"
+            "name": "Krankenversicherung"
           },
           {
-            "name": "意外险"
+            "name": "Unfallversicherung"
           },
           {
-            "name": "寿险"
+            "name": "Lebensversicherung"
           },
           {
-            "name": "车险家财险"
+            "name": "Kfz-Versicherung und Hausratversicherung"
           }
         ]
       },
       {
-        "name": "02-条款与责任",
+        "name": "02 – Bedingungen und Verantwortlichkeiten",
         "children": [
           {
-            "name": "保险条款"
+            "name": "Versicherungsbedingungen"
           },
           {
-            "name": "责任免除"
+            "name": "Haftungsausschluss"
           },
           {
-            "name": "现金价值表"
+            "name": "Tabelle der Barwerte"
           }
         ]
       },
       {
-        "name": "03-缴费与续保",
+        "name": "03-Beitragszahlung und Verlängerung des Versicherungsschutzes",
         "children": [
           {
             "name": "Zahlungsmoral"
           },
           {
-            "name": "续保提醒"
+            "name": "Erinnerung an die Versicherungsverlängerung"
           },
           {
-            "name": "保全变更"
+            "name": "Sicherheitsänderung"
           }
         ]
       },
       {
-        "name": "04-理赔材料",
+        "name": "04-Unterlagen zur Schadensregulierung",
         "children": [
           {
-            "name": "理赔申请"
+            "name": "Schadensersatzantrag"
           },
           {
-            "name": "病历资料"
+            "name": "Krankenakten"
           },
           {
-            "name": "理赔进度"
+            "name": "Fortschritt der Schadensregulierung"
           }
         ]
       }
@@ -24271,11 +24123,11 @@
     "id": "builtin.workflow.podcast-production",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "播客与音频节目制作",
+    "name": "Produktion von Podcasts und Audioprogrammen",
     "version": "1.0.0",
-    "persona": "播客主播、有声书与配音创作者",
+    "persona": "Podcast-Moderator*innen, Hörbuch- und Synchronsprecher*innen",
     "category": "entertainment",
-    "summary": "播客主播有声书配音创作者，原始录音、多轨工程、逐字稿shownotes、封面视觉与分发成片归档，区别于音乐制作与影视收藏的创作向空缺",
+    "summary": "Podcaster, Hörbuchsprecher und Voiceover-Künstler, Originalaufnahmen, Mehrspurprojekte, Transkripte, Shownotes, Coverbilder und Archivierung fertiger Produktionen, abseits der kreativen Lücken in der Musikproduktion und in Film- und Fernsehsammlungen",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -24466,10 +24318,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".wav": 0.11,
         ".mp3": 0.25,
@@ -24497,86 +24346,86 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-原始录音",
+        "name": "01 – Originalaufnahme",
         "children": [
           {
-            "name": "单集原始音轨"
+            "name": "Original-Tonspur der einzelnen Folge"
           },
           {
-            "name": "访谈素材"
+            "name": "Interviewmaterial"
           },
           {
-            "name": "环境音"
+            "name": "Umgebungsgeräusche"
           }
         ]
       },
       {
-        "name": "02-剪辑工程",
+        "name": "02 – Schnittprojekt",
         "children": [
           {
-            "name": "多轨工程文件"
+            "name": "Mehrspur-Projektdatei"
           },
           {
-            "name": "混音导出"
+            "name": "Mix-Export"
           },
           {
-            "name": "降噪备份"
+            "name": "Rauschunterdrückung Backup"
           }
         ]
       },
       {
-        "name": "03-音乐与音效",
+        "name": "03 – Musik und Soundeffekte",
         "children": [
           {
-            "name": "片头片尾曲"
+            "name": "Opening- und End-Song"
           },
           {
-            "name": "转场音效"
+            "name": "Übergangseffekt"
           },
           {
-            "name": "BGM授权"
+            "name": "BGM-Lizenzierung"
           }
         ]
       },
       {
-        "name": "04-逐字稿与shownotes",
+        "name": "04 – Transkription und Shownotes",
         "children": [
           {
             "name": "Wörtlich"
           },
           {
-            "name": "时间轴字幕"
+            "name": "Untertitel der Zeitleiste"
           },
           {
-            "name": "shownotes"
+            "name": "Shownotes"
           }
         ]
       },
       {
-        "name": "05-封面视觉",
+        "name": "05 – Titelbild",
         "children": [
           {
-            "name": "单集封面"
+            "name": "Cover der Einzelepisode"
           },
           {
-            "name": "节目主视觉"
+            "name": "Hauptmotiv der Sendung"
           },
           {
-            "name": "宣发图"
+            "name": "Werbebild"
           }
         ]
       },
       {
-        "name": "06-分发成片",
+        "name": "06-Verteilung des fertigen Films",
         "children": [
           {
-            "name": "各平台成片"
+            "name": "Fertige Filme für verschiedene Plattformen"
           },
           {
-            "name": "平台元数据"
+            "name": "Plattform-Metadaten"
           },
           {
-            "name": "发布记录"
+            "name": "Veröffentlichungsaufzeichnung"
           }
         ]
       }
@@ -24588,11 +24437,11 @@
     "id": "builtin.workflow.3dprint-maker",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "3D打印与创客工坊",
+    "name": "3D-Druck und Maker-Workshop",
     "version": "1.0.0",
-    "persona": "3D打印爱好者与开源硬件创客",
+    "persona": "3D-Druck-Enthusiasten und Open-Source-Hardware-Macher",
     "category": "entertainment",
-    "summary": "3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰",
+    "summary": "Archivierung von Modelldateien, Slicing-Parametern, Fotos von fehlgeschlagenen Druckvorgängen, Open-Source-Elektronikprojekten und Verbrauchsmateriallisten für 3D-Druck-Enthusiasten und Arduino-Raspberry-Pi-Maker, mit klarer Abgrenzung zu Engineering-Entwicklung und Animationsrendering",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -24762,11 +24611,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".3mf": 0.16,
         ".gcode": 0.12,
@@ -24791,72 +24636,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-模型文件",
+        "name": "01 – Modelldatei",
         "children": [
           {
-            "name": "STL模型"
+            "name": "STL-Modell"
           },
           {
-            "name": "3MF项目"
+            "name": "3MF-Projekt"
           },
           {
-            "name": "源文件"
+            "name": "Quelldatei"
           }
         ]
       },
       {
-        "name": "02-打印参数",
+        "name": "02-Druckparameter",
         "children": [
           {
-            "name": "切片配置"
+            "name": "Slice-Konfiguration"
           },
           {
-            "name": "耗材档案"
+            "name": "Verbrauchsmaterialdatei"
           },
           {
-            "name": "打印机配置"
+            "name": "Druckerkonfiguration"
           }
         ]
       },
       {
-        "name": "03-成品与复盘",
+        "name": "03 – Fertiges Produkt und Nachbesprechung",
         "children": [
           {
-            "name": "成品照片"
+            "name": "Foto des fertigen Produkts"
           },
           {
-            "name": "失败件复盘"
+            "name": "Analyse fehlerhafter Teile"
           },
           {
-            "name": "打印记录"
+            "name": "Protokoll drucken"
           }
         ]
       },
       {
-        "name": "04-电子项目",
+        "name": "04-Elektronikprojekte",
         "children": [
           {
-            "name": "Arduino固件"
+            "name": "Arduino-Firmware"
           },
           {
-            "name": "树莓派脚本"
+            "name": "Raspberry-Pi-Skript"
           },
           {
-            "name": "电路图"
+            "name": "Gezeichnet wurde."
           }
         ]
       },
       {
-        "name": "05-工具与耗材",
+        "name": "05 – Werkzeuge und Verbrauchsmaterialien",
         "children": [
           {
-            "name": "工具清单"
+            "name": "Werkzeugliste:"
           },
           {
-            "name": "耗材库存"
+            "name": "Lagerbestand an Verbrauchsmaterialien"
           },
           {
-            "name": "采购记录"
+            "name": "Einkaufsaufzeichnungen"
           }
         ]
       }
@@ -24868,11 +24713,11 @@
     "id": "builtin.workflow.collectible-model-archive",
     "user_id": null,
     "author": "Firefly Official",
-    "name": "模型手办与收藏品档案",
+    "name": "Archiv für Figuren und Sammlerstücke",
     "version": "1.0.0",
-    "persona": "模型手办与潮玩收藏爱好者",
+    "persona": "Sammler von Figuren und Trendspielzeug",
     "category": "entertainment",
-    "summary": "高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线",
+    "summary": "Sammler von High-End-LEGO-Figuren, Statuen und Sneakern, die Fotos vom Zusammenbaufortschritt, von den lackierten fertigen Produkten, von den Verpackungen, von den Kaufbelegen und von der Auflistung der Sammlerstücke mit Schätzungen archivieren, im Unterschied zu den physischen Sammlungen, die zu den Spielerdaten gehören",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25028,11 +24873,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.24,
         ".jpeg": 0.06,
@@ -25055,69 +24896,69 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-藏品清单",
+        "name": "01 – Liste der Exponate",
         "children": [
           {
-            "name": "藏品总表"
+            "name": "Gesamtliste der Exponate"
           },
           {
-            "name": "估值记录"
+            "name": "Bewertungsaufzeichnung"
           },
           {
-            "name": "系列图鉴"
+            "name": "Serien-Galerie"
           }
         ]
       },
       {
-        "name": "02-制作过程",
+        "name": "02 – Herstellungsprozess",
         "children": [
           {
-            "name": "素组进度"
+            "name": "Fortschritt der Elementgruppe"
           },
           {
-            "name": "涂装过程"
+            "name": "Lackierprozess"
           },
           {
-            "name": "改造记录"
+            "name": "Umbauprotokoll"
           }
         ]
       },
       {
-        "name": "03-成品展示",
+        "name": "03 – Präsentation des fertigen Produkts",
         "children": [
           {
-            "name": "成品照"
+            "name": "Foto des fertigen Produkts"
           },
           {
-            "name": "场景照"
+            "name": "Szenenfoto"
           },
           {
-            "name": "对比照"
+            "name": "Vergleichsbild"
           }
         ]
       },
       {
-        "name": "04-购买凭证",
+        "name": "04 – Kaufbeleg",
         "children": [
           {
-            "name": "购买发票"
+            "name": "Rechnung für den Kauf"
           },
           {
-            "name": "盒照"
+            "name": "Passbild"
           },
           {
-            "name": "配件清单"
+            "name": "Teilliste :"
           }
         ]
       },
       {
-        "name": "05-交换出售",
+        "name": "05 – Tauschverkauf",
         "children": [
           {
-            "name": "出售记录"
+            "name": "Verkaufsaufzeichnungen"
           },
           {
-            "name": "交换记录"
+            "name": "Austausch von Aufzeichnungen"
           },
           {
             "name": "市场行情"
@@ -25327,11 +25168,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".png": 0.2,
         ".jpg": 0.08,

@@ -71,8 +71,7 @@
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
     "$files": [
-      "src/renderer/components/settings/about-dialog.tsx(4272-4283)",
-      "src/renderer/components/settings/external-api-settings.tsx(2110-2121)"
+      "src/renderer/components/settings/about-dialog.tsx(4272-4283)"
     ],
     "$id": 10543
   },
@@ -3969,186 +3968,546 @@
     ],
     "$id": 30558
   },
-  "多模态检索": {
-    "en-US": "Multimodal retrieval",
-    "es-ES": "Recuperación multimodal",
-    "ar-EG": "استرجاع متعدد الوسائط",
-    "pt-PT": "Recuperação multimodal",
-    "ru-RU": "Мультимодальный поиск",
-    "ja-JP": "マルチモーダル検索",
-    "de-DE": "Multimodaler Abruf",
-    "fr-FR": "Récupération multimodale",
-    "ko-KR": "다중 모드 검색",
+  "智能查找文件": {
+    "en-US": "智能查找文件",
+    "es-ES": "智能查找文件",
+    "ar-EG": "智能查找文件",
+    "pt-PT": "智能查找文件",
+    "ru-RU": "智能查找文件",
+    "ja-JP": "智能查找文件",
+    "de-DE": "智能查找文件",
+    "fr-FR": "智能查找文件",
+    "ko-KR": "智能查找文件",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1509-1518)"
+      "src/renderer/components/settings/external-api-settings.tsx(2511-2521)"
     ],
-    "$id": 28373
+    "$id": 39476
   },
-  "支持 FTS5 BM25 + Omni 向量语义检索": {
-    "en-US": "Support FTS5 BM25 + Omni vector semantic retrieval",
-    "es-ES": "Admite recuperación semántica de vector FTS5 BM25 + Omni",
-    "ar-EG": "دعم FTS5 BM25 + استرجاع الدلالي ناقلات أومني",
-    "pt-PT": "Suporta recuperação semântica vetorial FTS5 BM25 + Omni",
-    "ru-RU": "Поддержка FTS5 BM25 + омнивекторный семантический поиск",
-    "ja-JP": "FTS5 BM25 + オムニベクトルセマンティック検索をサポート",
-    "de-DE": "Unterstützt den semantischen Abruf von FTS5 BM25 + Omni-Vektoren",
-    "fr-FR": "Prise en charge de la récupération sémantique vectorielle FTS5 BM25 + Omni",
-    "ko-KR": "FTS5 BM25 + 옴니 벡터 의미 검색 지원",
+  "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件": {
+    "en-US": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "es-ES": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "ar-EG": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "pt-PT": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "ru-RU": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "ja-JP": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "de-DE": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "fr-FR": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
+    "ko-KR": "不仅能搜文件名，更凭模糊记忆或对白一秒找到想要的文件",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1535-1565)"
+      "src/renderer/components/settings/external-api-settings.tsx(2538-2568)"
     ],
-    "$id": 28374
+    "$id": 39477
   },
-  "视频时序切片": {
-    "en-US": "Video timing slices",
-    "es-ES": "Porciones de sincronización de vídeo",
-    "ar-EG": "شرائح توقيت الفيديو",
-    "pt-PT": "Fatias de tempo de vídeo",
-    "ru-RU": "Временные фрагменты видео",
-    "ja-JP": "ビデオ タイミング スライス",
-    "de-DE": "Video-Timing-Slices",
-    "fr-FR": "Tranches de timing vidéo",
-    "ko-KR": "비디오 타이밍 슬라이스",
+  "智能分类与整理建议": {
+    "en-US": "智能分类与整理建议",
+    "es-ES": "智能分类与整理建议",
+    "ar-EG": "智能分类与整理建议",
+    "pt-PT": "智能分类与整理建议",
+    "ru-RU": "智能分类与整理建议",
+    "ja-JP": "智能分类与整理建议",
+    "de-DE": "智能分类与整理建议",
+    "fr-FR": "智能分类与整理建议",
+    "ko-KR": "智能分类与整理建议",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1625-1635)"
+      "src/renderer/components/settings/external-api-settings.tsx(2666-2679)"
     ],
-    "$id": 28375
+    "$id": 39478
   },
-  "精准定位镜头起止秒数与高光跳轴": {
-    "en-US": "Precise positioning of lens start and end seconds and highlight jump axis",
-    "es-ES": "Posicionamiento preciso de los segundos iniciales y finales de la lente y resalta el eje de salto",
-    "ar-EG": "تحديد موضع دقيق لثواني بداية ونهاية العدسة وإبراز محور القفز",
-    "pt-PT": "Posicionamento preciso dos segundos iniciais e finais da lente e destaque do eixo de salto",
-    "ru-RU": "Точное позиционирование начальной и конечной секунд объектива и выделение оси перехода.",
-    "ja-JP": "レンズの開始秒と終了秒、およびハイライトジャンプ軸の正確な位置決め",
-    "de-DE": "Präzise Positionierung der Start- und Endsekunden des Objektivs sowie der Highlight-Sprungachse",
-    "fr-FR": "Positionnement précis des secondes de début et de fin de l'objectif et mise en évidence de l'axe de saut",
-    "ko-KR": "렌즈 시작 및 종료 초와 하이라이트 점프 축의 정확한 위치 지정",
+  "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件": {
+    "en-US": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "es-ES": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "ar-EG": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "pt-PT": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "ru-RU": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "ja-JP": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "de-DE": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "fr-FR": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
+    "ko-KR": "助手提供整理方案草案，由你点击确认后才生效，绝不乱动文件",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1652-1671)"
+      "src/renderer/components/settings/external-api-settings.tsx(2696-2728)"
     ],
-    "$id": 28376
+    "$id": 39479
   },
-  "分析队列监控": {
-    "en-US": "Analyze queue monitoring",
-    "es-ES": "Analizar el seguimiento de colas",
-    "ar-EG": "تحليل مراقبة قائمة الانتظار",
-    "pt-PT": "Analise o monitoramento de filas",
-    "ru-RU": "Анализ мониторинга очереди",
-    "ja-JP": "キュー監視を分析する",
-    "de-DE": "Analysieren Sie die Warteschlangenüberwachung",
-    "fr-FR": "Analyser la surveillance des files d'attente",
-    "ko-KR": "대기열 모니터링 분석",
+  "视频画面与镜头定位": {
+    "en-US": "视频画面与镜头定位",
+    "es-ES": "视频画面与镜头定位",
+    "ar-EG": "视频画面与镜头定位",
+    "pt-PT": "视频画面与镜头定位",
+    "ru-RU": "视频画面与镜头定位",
+    "ja-JP": "视频画面与镜头定位",
+    "de-DE": "视频画面与镜头定位",
+    "fr-FR": "视频画面与镜头定位",
+    "ko-KR": "视频画面与镜头定位",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1731-1741)"
+      "src/renderer/components/settings/external-api-settings.tsx(2814-2827)"
     ],
-    "$id": 28377
+    "$id": 39480
   },
-  "实时感知后台 AI 推理负载与积压数": {
-    "en-US": "Real-time awareness of background AI inference load and backlog",
-    "es-ES": "Conciencia en tiempo real de la carga y el trabajo pendiente de inferencia de IA en segundo plano",
-    "ar-EG": "الوعي في الوقت الحقيقي بحمل الاستدلال الخلفي للذكاء الاصطناعي والتراكم",
-    "pt-PT": "Conscientização em tempo real da carga e backlog de inferência de IA em segundo plano",
-    "ru-RU": "Осведомленность в режиме реального времени о нагрузке и невыполненной работе по фоновым выводам ИИ",
-    "ja-JP": "バックグラウンドの AI 推論の負荷とバックログをリアルタイムで認識",
-    "de-DE": "Echtzeiterkennung der Hintergrund-KI-Inferenzlast und des Rückstands",
-    "fr-FR": "Connaissance en temps réel de la charge et du retard d'inférence de l'IA en arrière-plan",
-    "ko-KR": "배경 AI 추론 로드 및 백로그에 대한 실시간 인식",
+  "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数": {
+    "en-US": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "es-ES": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "ar-EG": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "pt-PT": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "ru-RU": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "ja-JP": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "de-DE": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "fr-FR": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
+    "ko-KR": "精准定位到视频里某个画面、精彩镜头或人物出现的具体秒数",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1758-1780)"
+      "src/renderer/components/settings/external-api-settings.tsx(2844-2875)"
     ],
-    "$id": 28378
+    "$id": 39481
   },
-  "虚拟目录推送": {
-    "en-US": "Virtual directory push",
-    "es-ES": "Empuje de directorio virtual",
-    "ar-EG": "دفع الدليل الظاهري",
-    "pt-PT": "Envio de diretório virtual",
-    "ru-RU": "Отправка виртуального каталога",
-    "ja-JP": "仮想ディレクトリのプッシュ",
-    "de-DE": "Virtuelles Verzeichnis-Push",
-    "fr-FR": "Push de répertoire virtuel",
-    "ko-KR": "가상 디렉터리 푸시",
+  "后台分析进度感知": {
+    "en-US": "后台分析进度感知",
+    "es-ES": "后台分析进度感知",
+    "ar-EG": "后台分析进度感知",
+    "pt-PT": "后台分析进度感知",
+    "ru-RU": "后台分析进度感知",
+    "ja-JP": "后台分析进度感知",
+    "de-DE": "后台分析进度感知",
+    "fr-FR": "后台分析进度感知",
+    "ko-KR": "后台分析进度感知",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1852-1862)"
+      "src/renderer/components/settings/external-api-settings.tsx(2961-2973)"
     ],
-    "$id": 28379
+    "$id": 39482
   },
-  "多视角整理方案草案推送 (需客户端人工二次确认)": {
-    "en-US": "Pushing the draft of multi-perspective arrangement plan (requires manual second confirmation by the client)",
-    "es-ES": "Impulsar el borrador del plan de acuerdo con múltiples perspectivas (requiere una segunda confirmación manual por parte del cliente)",
-    "ar-EG": "دفع مسودة خطة الترتيب متعددة وجهات النظر (يتطلب تأكيدًا يدويًا ثانيًا من قبل العميل)",
-    "pt-PT": "Enviar o rascunho do plano de acordo multiperspectiva (requer uma segunda confirmação manual por parte do cliente)",
-    "ru-RU": "Продвижение проекта многоперспективного плана обустройства (требуется второе подтверждение со стороны клиента)",
-    "ja-JP": "複数の観点からの配置計画の草案を推進する (クライアントによる手動による 2 回目の確認が必要)",
-    "de-DE": "Den Entwurf eines multiperspektivischen Arrangementplans vorantreiben (erfordert eine zweite manuelle Bestätigung durch den Kunden)",
-    "fr-FR": "Pousser l'ébauche du plan d'arrangement multi-perspectives (nécessite une deuxième confirmation manuelle par le client)",
-    "ko-KR": "다관점 배치안 초안 푸시(고객의 2차 수동 확인 필요)",
+  "让助手知晓当前电脑的后台分析进度，不打扰正常工作": {
+    "en-US": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "es-ES": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "ar-EG": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "pt-PT": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "ru-RU": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "ja-JP": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "de-DE": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "fr-FR": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
+    "ko-KR": "让助手知晓当前电脑的后台分析进度，不打扰正常工作",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1879-1907)"
+      "src/renderer/components/settings/external-api-settings.tsx(2990-3018)"
     ],
-    "$id": 28380
+    "$id": 39483
   },
-  "文字识别提取": {
-    "en-US": "Text recognition and extraction",
-    "es-ES": "Reconocimiento y extracción de texto.",
-    "ar-EG": "التعرف على النص واستخراجه",
-    "pt-PT": "Reconhecimento e extração de texto",
-    "ru-RU": "Распознавание и извлечение текста",
-    "ja-JP": "テキストの認識と抽出",
-    "de-DE": "Texterkennung und -extraktion",
-    "fr-FR": "Reconnaissance et extraction de texte",
-    "ko-KR": "텍스트 인식 및 추출",
+  "图片与文档文字提取": {
+    "en-US": "图片与文档文字提取",
+    "es-ES": "图片与文档文字提取",
+    "ar-EG": "图片与文档文字提取",
+    "pt-PT": "图片与文档文字提取",
+    "ru-RU": "图片与文档文字提取",
+    "ja-JP": "图片与文档文字提取",
+    "de-DE": "图片与文档文字提取",
+    "fr-FR": "图片与文档文字提取",
+    "ko-KR": "图片与文档文字提取",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1962-1972)"
+      "src/renderer/components/settings/external-api-settings.tsx(3099-3112)"
     ],
-    "$id": 28381
+    "$id": 39484
   },
-  "从已索引图片与多格式文档中提取文字内容": {
-    "en-US": "Extract text content from indexed images and multi-format documents",
-    "es-ES": "Extraiga contenido de texto de imágenes indexadas y documentos multiformato",
-    "ar-EG": "استخراج محتوى النص من الصور المفهرسة والمستندات متعددة التنسيق",
-    "pt-PT": "Extraia conteúdo de texto de imagens indexadas e documentos multiformato",
-    "ru-RU": "Извлекайте текстовое содержимое из индексированных изображений и многоформатных документов.",
-    "ja-JP": "インデックス付き画像やマルチフォーマットドキュメントからテキストコンテンツを抽出",
-    "de-DE": "Extrahieren Sie Textinhalte aus indizierten Bildern und Dokumenten in mehreren Formaten",
-    "fr-FR": "Extraire le contenu textuel des images indexées et des documents multiformats",
-    "ko-KR": "인덱스 이미지 및 다중 형식 문서에서 텍스트 콘텐츠 추출",
+  "看懂图片、截图和文档里的文字，提取为可复制编辑的内容": {
+    "en-US": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "es-ES": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "ar-EG": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "pt-PT": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "ru-RU": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "ja-JP": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "de-DE": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "fr-FR": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
+    "ko-KR": "看懂图片、截图和文档里的文字，提取为可复制编辑的内容",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(1989-2012)"
+      "src/renderer/components/settings/external-api-settings.tsx(3129-3159)"
     ],
-    "$id": 28382
+    "$id": 39485
   },
-  "萤核整理": {
-    "en-US": "Fluorescent nucleus finishing",
-    "es-ES": "Acabado de núcleos fluorescentes",
-    "ar-EG": "الانتهاء من نواة الفلورسنت",
-    "pt-PT": "Acabamento do núcleo fluorescente",
-    "ru-RU": "Отделка флуоресцентным ядром",
-    "ja-JP": "蛍光核仕上げ",
-    "de-DE": "Fluoreszierendes Kernfinishing",
-    "fr-FR": "Finition du noyau fluorescent",
-    "ko-KR": "형광 핵 마무리",
+  "语音转文字与台词提取": {
+    "en-US": "语音转文字与台词提取",
+    "es-ES": "语音转文字与台词提取",
+    "ar-EG": "语音转文字与台词提取",
+    "pt-PT": "语音转文字与台词提取",
+    "ru-RU": "语音转文字与台词提取",
+    "ja-JP": "语音转文字与台词提取",
+    "de-DE": "语音转文字与台词提取",
+    "fr-FR": "语音转文字与台词提取",
+    "ko-KR": "语音转文字与台词提取",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(2126-2134)"
+      "src/renderer/components/settings/external-api-settings.tsx(3295-3309)"
     ],
-    "$id": 38340
+    "$id": 39486
   },
-  "萤核对外接口启动失败，请检查端口占用或手动重试": {
-    "en-US": "The external interface of Firefly failed to start. Please check the port occupancy or try again manually.",
-    "es-ES": "La interfaz externa de Firefly no pudo iniciarse. Verifique la ocupación del puerto o vuelva a intentarlo manualmente.",
-    "ar-EG": "فشلت الواجهة الخارجية لـ Firefly في البدء. يرجى التحقق من إشغال المنفذ أو المحاولة مرة أخرى يدويًا.",
-    "pt-PT": "A interface externa do Firefly falhou ao iniciar. Verifique a ocupação da porta ou tente novamente manualmente.",
-    "ru-RU": "Внешний интерфейс Firefly не запустился. Проверьте занятость порта или повторите попытку вручную.",
-    "ja-JP": "Firefly の外部インターフェイスの起動に失敗しました。ポートの占有状況を確認するか、手動で再試行してください。",
-    "de-DE": "Die externe Schnittstelle von Firefly konnte nicht gestartet werden. Bitte überprüfen Sie die Portbelegung oder versuchen Sie es manuell erneut.",
-    "fr-FR": "L'interface externe de Firefly n'a pas réussi à démarrer. Veuillez vérifier l'occupation du port ou réessayer manuellement.",
-    "ko-KR": "Firefly의 외부 인터페이스를 시작하지 못했습니다. 포트 점유율을 확인하거나 수동으로 다시 시도하십시오.",
+  "听懂视频和音频录音里的说话内容，自动生成逐句文字台词": {
+    "en-US": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "es-ES": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "ar-EG": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "pt-PT": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "ru-RU": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "ja-JP": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "de-DE": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "fr-FR": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
+    "ko-KR": "听懂视频和音频录音里的说话内容，自动生成逐句文字台词",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(3187-3214)",
-      "src/renderer/components/settings/external-api-settings.tsx(3613-3640)"
+      "src/renderer/components/settings/external-api-settings.tsx(3326-3356)"
     ],
-    "$id": 28383
+    "$id": 39487
+  },
+  "真人语音朗读": {
+    "en-US": "真人语音朗读",
+    "es-ES": "真人语音朗读",
+    "ar-EG": "真人语音朗读",
+    "pt-PT": "真人语音朗读",
+    "ru-RU": "真人语音朗读",
+    "ja-JP": "真人语音朗读",
+    "de-DE": "真人语音朗读",
+    "fr-FR": "真人语音朗读",
+    "ko-KR": "真人语音朗读",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(3484-3494)"
+    ],
+    "$id": 39488
+  },
+  "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话": {
+    "en-US": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "es-ES": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "ar-EG": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "pt-PT": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "ru-RU": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "ja-JP": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "de-DE": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "fr-FR": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "ko-KR": "用自然流畅的声音朗读文档与摘要，让 AI 助手开口说话",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(3511-3542)"
+    ],
+    "$id": 39489
+  },
+  "隐私与敏感内容把关": {
+    "en-US": "隐私与敏感内容把关",
+    "es-ES": "隐私与敏感内容把关",
+    "ar-EG": "隐私与敏感内容把关",
+    "pt-PT": "隐私与敏感内容把关",
+    "ru-RU": "隐私与敏感内容把关",
+    "ja-JP": "隐私与敏感内容把关",
+    "de-DE": "隐私与敏感内容把关",
+    "fr-FR": "隐私与敏感内容把关",
+    "ko-KR": "隐私与敏感内容把关",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(3676-3689)"
+    ],
+    "$id": 39490
+  },
+  "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险": {
+    "en-US": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "es-ES": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "ar-EG": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "pt-PT": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "ru-RU": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "ja-JP": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "de-DE": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "fr-FR": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "ko-KR": "支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(3706-3765)"
+    ],
+    "$id": 39491
+  },
+  "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件": {
+    "en-US": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "es-ES": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "ar-EG": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "pt-PT": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "ru-RU": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "ja-JP": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "de-DE": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "fr-FR": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "ko-KR": "- 智能查找文件: 凭借模糊记忆、内容与对白快速定位文件",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4204-4236)"
+    ],
+    "$id": 39492
+  },
+  "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数": {
+    "en-US": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "es-ES": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "ar-EG": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "pt-PT": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "ru-RU": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "ja-JP": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "de-DE": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "fr-FR": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "ko-KR": "- 视频画面与镜头定位: 精准定位视频中的精彩镜头与人物出现秒数",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4310-4346)"
+    ],
+    "$id": 39493
+  },
+  "- 后台分析进度感知: 查询当前电脑的后台文件分析进度": {
+    "en-US": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "es-ES": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "ar-EG": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "pt-PT": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "ru-RU": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "ja-JP": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "de-DE": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "fr-FR": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "ko-KR": "- 后台分析进度感知: 查询当前电脑的后台文件分析进度",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4420-4451)"
+    ],
+    "$id": 39494
+  },
+  "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容": {
+    "en-US": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "es-ES": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "ar-EG": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "pt-PT": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "ru-RU": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "ja-JP": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "de-DE": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "fr-FR": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "ko-KR": "- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4520-4568)"
+    ],
+    "$id": 39495
+  },
+  "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳": {
+    "en-US": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "es-ES": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "ar-EG": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "pt-PT": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "ru-RU": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "ja-JP": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "de-DE": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "fr-FR": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "ko-KR": "- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4637-4686)"
+    ],
+    "$id": 39496
+  },
+  "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）": {
+    "en-US": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "es-ES": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "ar-EG": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "pt-PT": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "ru-RU": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "ja-JP": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "de-DE": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "fr-FR": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "ko-KR": "- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4755-4809)"
+    ],
+    "$id": 39497
+  },
+  "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别": {
+    "en-US": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "es-ES": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "ar-EG": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "pt-PT": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "ru-RU": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "ja-JP": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "de-DE": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "fr-FR": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "ko-KR": "- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(4891-4967)"
+    ],
+    "$id": 39498
+  },
+  "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效": {
+    "en-US": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "es-ES": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "ar-EG": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "pt-PT": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "ru-RU": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "ja-JP": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "de-DE": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "fr-FR": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "ko-KR": "- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5065-5104)"
+    ],
+    "$id": 39499
+  },
+  "你现在是我的本地个人知识库与文件智能助手。": {
+    "en-US": "你现在是我的本地个人知识库与文件智能助手。",
+    "es-ES": "你现在是我的本地个人知识库与文件智能助手。",
+    "ar-EG": "你现在是我的本地个人知识库与文件智能助手。",
+    "pt-PT": "你现在是我的本地个人知识库与文件智能助手。",
+    "ru-RU": "你现在是我的本地个人知识库与文件智能助手。",
+    "ja-JP": "你现在是我的本地个人知识库与文件智能助手。",
+    "de-DE": "你现在是我的本地个人知识库与文件智能助手。",
+    "fr-FR": "你现在是我的本地个人知识库与文件智能助手。",
+    "ko-KR": "你现在是我的本地个人知识库与文件智能助手。",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5124-5149)"
+    ],
+    "$id": 39500
+  },
+  "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。": {
+    "en-US": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "es-ES": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "ar-EG": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "pt-PT": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "ru-RU": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "ja-JP": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "de-DE": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "fr-FR": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "ko-KR": "我已经在本地电脑上运行了「萤核智能文件夹」桌面端，它为你提供了强大的本地文件理解与处理能力。",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5154-5204)"
+    ],
+    "$id": 39501
+  },
+  "【服务连接信息】": {
+    "en-US": "【服务连接信息】",
+    "es-ES": "【服务连接信息】",
+    "ar-EG": "【服务连接信息】",
+    "pt-PT": "【服务连接信息】",
+    "ru-RU": "【服务连接信息】",
+    "ja-JP": "【服务连接信息】",
+    "de-DE": "【服务连接信息】",
+    "fr-FR": "【服务连接信息】",
+    "ko-KR": "【服务连接信息】",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5210-5222)"
+    ],
+    "$id": 39502
+  },
+  "本地接口基址:": {
+    "en-US": "本地接口基址:",
+    "es-ES": "本地接口基址:",
+    "ar-EG": "本地接口基址:",
+    "pt-PT": "本地接口基址:",
+    "ru-RU": "本地接口基址:",
+    "ja-JP": "本地接口基址:",
+    "de-DE": "本地接口基址:",
+    "fr-FR": "本地接口基址:",
+    "ko-KR": "本地接口基址:",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5229-5240)"
+    ],
+    "$id": 39503
+  },
+  "服务发现文件:": {
+    "en-US": "服务发现文件:",
+    "es-ES": "服务发现文件:",
+    "ar-EG": "服务发现文件:",
+    "pt-PT": "服务发现文件:",
+    "ru-RU": "服务发现文件:",
+    "ja-JP": "服务发现文件:",
+    "de-DE": "服务发现文件:",
+    "fr-FR": "服务发现文件:",
+    "ko-KR": "服务发现文件:",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5258-5269)"
+    ],
+    "$id": 39504
+  },
+  "【当前已为你解锁的本地能力】": {
+    "en-US": "【当前已为你解锁的本地能力】",
+    "es-ES": "【当前已为你解锁的本地能力】",
+    "ar-EG": "【当前已为你解锁的本地能力】",
+    "pt-PT": "【当前已为你解锁的本地能力】",
+    "ru-RU": "【当前已为你解锁的本地能力】",
+    "ja-JP": "【当前已为你解锁的本地能力】",
+    "de-DE": "【当前已为你解锁的本地能力】",
+    "fr-FR": "【当前已为你解锁的本地能力】",
+    "ko-KR": "【当前已为你解锁的本地能力】",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5292-5310)"
+    ],
+    "$id": 39505
+  },
+  "【安全屏障】": {
+    "en-US": "【安全屏障】",
+    "es-ES": "【安全屏障】",
+    "ar-EG": "【安全屏障】",
+    "pt-PT": "【安全屏障】",
+    "ru-RU": "【安全屏障】",
+    "ja-JP": "【安全屏障】",
+    "de-DE": "【安全屏障】",
+    "fr-FR": "【安全屏障】",
+    "ko-KR": "【安全屏障】",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5339-5349)"
+    ],
+    "$id": 39506
+  },
+  "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。": {
+    "en-US": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "es-ES": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "ar-EG": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "pt-PT": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "ru-RU": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "ja-JP": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "de-DE": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "fr-FR": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "ko-KR": "本服务仅供你只读查询分析与提交整理草案，你绝无直接修改或删除我物理文件的权限。",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5354-5397)"
+    ],
+    "$id": 39507
+  },
+  "【快速握手与自动发现】": {
+    "en-US": "【快速握手与自动发现】",
+    "es-ES": "【快速握手与自动发现】",
+    "ar-EG": "【快速握手与自动发现】",
+    "pt-PT": "【快速握手与自动发现】",
+    "ru-RU": "【快速握手与自动发现】",
+    "ja-JP": "【快速握手与自动发现】",
+    "de-DE": "【快速握手与自动发现】",
+    "fr-FR": "【快速握手与自动发现】",
+    "ko-KR": "【快速握手与自动发现】",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5403-5418)"
+    ],
+    "$id": 39508
+  },
+  "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：": {
+    "en-US": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "es-ES": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "ar-EG": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "pt-PT": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "ru-RU": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "ja-JP": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "de-DE": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "fr-FR": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "ko-KR": "请首先请求以下接口完成连通测试，并获取全部实时可用的接口路径与参数说明：",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5423-5463)"
+    ],
+    "$id": 39509
+  },
+  "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。": {
+    "en-US": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "es-ES": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "ar-EG": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "pt-PT": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "ru-RU": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "ja-JP": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "de-DE": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "fr-FR": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "ko-KR": "确认连通后，请回复「已成功连接萤核本地服务」，并简要说明你能如何帮我处理与整理文件。",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(5500-5546)"
+    ],
+    "$id": 39510
+  },
+  "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断": {
+    "en-US": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "es-ES": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "ar-EG": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "pt-PT": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "ru-RU": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "ja-JP": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "de-DE": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "fr-FR": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "ko-KR": "外部 AI 助手连接服务启动失败，请点击重试或展开下方高级诊断",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(6678-6713)",
+      "src/renderer/components/settings/external-api-settings.tsx(7078-7113)"
+    ],
+    "$id": 39511
   },
   "自检失败": {
     "en-US": "Self-test failed",
@@ -4161,54 +4520,39 @@
     "fr-FR": "Échec de l'autotest",
     "ko-KR": "자체 테스트 실패",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(5745-5753)"
+      "src/renderer/components/settings/external-api-settings.tsx(9285-9293)"
     ],
     "$id": 38341
   },
-  "请使用开源的 ai-folder-organize skill 连接本地萤核智能文件夹桌面端。": {
-    "en-US": "Please use the open source ai-folder-organize skill to connect to the local Firefly smart folder desktop.",
-    "es-ES": "Utilice la habilidad de organización de carpetas ai de código abierto para conectarse al escritorio de la carpeta inteligente local de Firefly.",
-    "ar-EG": "يرجى استخدام مهارة تنظيم المجلدات مفتوحة المصدر للاتصال بسطح مكتب Firefly AI Folder المحلي.",
-    "pt-PT": "Use a habilidade de organização de pastas ai de código aberto para conectar-se à área de trabalho da Firefly AI Folder local.",
-    "ru-RU": "Пожалуйста, используйте навык ai-folder-organize с открытым исходным кодом, чтобы подключиться к локальному рабочему столу смарт-папок Firefly.",
-    "ja-JP": "オープンソースの ai-folder-organize スキルを使用して、ローカルの Firefly AI Folder デスクトップに接続してください。",
-    "de-DE": "Bitte verwenden Sie den Open-Source-Skill „ai-folder-organize“, um eine Verbindung zum lokalen Firefly-Smart-Ordner-Desktop herzustellen.",
-    "fr-FR": "Veuillez utiliser la compétence open source ai-folder-organize pour vous connecter au bureau local du Firefly AI Folder.",
-    "ko-KR": "오픈 소스 ai-folder-organize 기술을 사용하여 로컬 Firefly AI Folder 데스크탑에 연결하세요.",
+  "已开启图片与文档文字提取能力": {
+    "en-US": "已开启图片与文档文字提取能力",
+    "es-ES": "已开启图片与文档文字提取能力",
+    "ar-EG": "已开启图片与文档文字提取能力",
+    "pt-PT": "已开启图片与文档文字提取能力",
+    "ru-RU": "已开启图片与文档文字提取能力",
+    "ja-JP": "已开启图片与文档文字提取能力",
+    "de-DE": "已开启图片与文档文字提取能力",
+    "fr-FR": "已开启图片与文档文字提取能力",
+    "ko-KR": "已开启图片与文档文字提取能力",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(5972-6023)"
+      "src/renderer/components/settings/external-api-settings.tsx(9864-9882)"
     ],
-    "$id": 28384
+    "$id": 39512
   },
-  "服务发现配置文件路径:": {
-    "en-US": "Service discovery configuration file path:",
-    "es-ES": "Ruta del archivo de configuración de descubrimiento de servicios:",
-    "ar-EG": "مسار ملف تكوين اكتشاف الخدمة:",
-    "pt-PT": "Caminho do arquivo de configuração de descoberta de serviço:",
-    "ru-RU": "Путь к файлу конфигурации обнаружения служб:",
-    "ja-JP": "サービス検出構成ファイルのパス:",
-    "de-DE": "Pfad der Service Discovery-Konfigurationsdatei:",
-    "fr-FR": "Chemin du fichier de configuration de découverte de service :",
-    "ko-KR": "서비스 검색 구성 파일 경로:",
+  "开启失败，请稍后重试": {
+    "en-US": "开启失败，请稍后重试",
+    "es-ES": "开启失败，请稍后重试",
+    "ar-EG": "开启失败，请稍后重试",
+    "pt-PT": "开启失败，请稍后重试",
+    "ru-RU": "开启失败，请稍后重试",
+    "ja-JP": "开启失败，请稍后重试",
+    "de-DE": "开启失败，请稍后重试",
+    "fr-FR": "开启失败，请稍后重试",
+    "ko-KR": "开启失败，请稍后重试",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(6028-6043)"
+      "src/renderer/components/settings/external-api-settings.tsx(9963-9977)"
     ],
-    "$id": 28385
-  },
-  "技能主页:": {
-    "en-US": "Skills Home Page:",
-    "es-ES": "Página de inicio de habilidades:",
-    "ar-EG": "الصفحة الرئيسية للمهارات:",
-    "pt-PT": "Página inicial de habilidades:",
-    "ru-RU": "Домашняя страница навыков:",
-    "ja-JP": "スキルのホームページ:",
-    "de-DE": "Startseite für Kompetenzen:",
-    "fr-FR": "Page d'accueil des compétences :",
-    "ko-KR": "기술 홈 페이지:",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(6069-6078)"
-    ],
-    "$id": 28386
+    "$id": 39513
   },
   "服务运行中": {
     "en-US": "Service is running",
@@ -4221,249 +4565,477 @@
     "fr-FR": "Le service est en cours d'exécution",
     "ko-KR": "서비스가 실행 중입니다.",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(6701-6710)"
+      "src/renderer/components/settings/external-api-settings.tsx(11153-11162)"
     ],
     "$id": 28387
   },
-  "启动异常 (降级)": {
-    "en-US": "Startup exception (downgrade)",
-    "es-ES": "Excepción de inicio (bajar de categoría)",
-    "ar-EG": "استثناء بدء التشغيل (الرجوع إلى إصدار سابق)",
-    "pt-PT": "Exceção de inicialização (downgrade)",
-    "ru-RU": "Исключение при запуске (понижение версии)",
-    "ja-JP": "起動例外（ダウングレード）",
-    "de-DE": "Startausnahme (Downgrade)",
-    "fr-FR": "Exception de démarrage (rétrogradation)",
-    "ko-KR": "시작 예외(다운그레이드)",
+  "启动异常": {
+    "en-US": "Startup exception",
+    "es-ES": "Excepción de inicio",
+    "ar-EG": "استثناء بدء التشغيل",
+    "pt-PT": "Exceção de inicialização",
+    "ru-RU": "Исключение при запуске",
+    "ja-JP": "启动异常",
+    "de-DE": "Startausnahme",
+    "fr-FR": "Exception de démarrage",
+    "ko-KR": "시작 예외",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(7020-7033)"
+      "src/renderer/components/settings/external-api-settings.tsx(11472-11480)"
     ],
-    "$id": 28388
+    "$id": 39514
   },
-  "正在启动...": {
-    "en-US": "Starting...",
-    "es-ES": "A partir de...",
-    "ar-EG": "جارٍ البدء...",
-    "pt-PT": "Começando...",
-    "ru-RU": "Начало...",
-    "ja-JP": "開始中...",
-    "de-DE": "Beginnt...",
-    "fr-FR": "Départ...",
-    "ko-KR": "시작 중...",
+  "正在开启...": {
+    "en-US": "正在开启...",
+    "es-ES": "正在开启...",
+    "ar-EG": "正在开启...",
+    "pt-PT": "正在开启...",
+    "ru-RU": "正在开启...",
+    "ja-JP": "正在开启...",
+    "de-DE": "正在开启...",
+    "fr-FR": "正在开启...",
+    "ko-KR": "正在开启...",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(7347-7358)"
+      "src/renderer/components/settings/external-api-settings.tsx(11794-11805)"
     ],
-    "$id": 28389
+    "$id": 39515
   },
-  "正在停止...": {
-    "en-US": "Stopping...",
-    "es-ES": "Parada...",
-    "ar-EG": "وقف...",
-    "pt-PT": "Parando...",
-    "ru-RU": "Остановка...",
-    "ja-JP": "停止中...",
-    "de-DE": "Stoppen...",
-    "fr-FR": "Arrêt...",
-    "ko-KR": "멎는...",
+  "正在关闭...": {
+    "en-US": "正在关闭...",
+    "es-ES": "正在关闭...",
+    "ar-EG": "正在关闭...",
+    "pt-PT": "正在关闭...",
+    "ru-RU": "正在关闭...",
+    "ja-JP": "正在关闭...",
+    "de-DE": "正在关闭...",
+    "fr-FR": "正在关闭...",
+    "ko-KR": "正在关闭...",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(7682-7693)"
+      "src/renderer/components/settings/external-api-settings.tsx(12129-12140)"
     ],
-    "$id": 28390
+    "$id": 39516
   },
-  "服务已停止": {
-    "en-US": "Service has stopped",
-    "es-ES": "El servicio se ha detenido",
-    "ar-EG": "توقفت الخدمة",
-    "pt-PT": "O serviço parou",
-    "ru-RU": "Служба остановлена",
-    "ja-JP": "サービスが停止されました",
-    "de-DE": "Der Dienst wurde gestoppt",
-    "fr-FR": "Le service s'est arrêté",
-    "ko-KR": "서비스가 중지되었습니다",
+  "服务已休眠": {
+    "en-US": "服务已休眠",
+    "es-ES": "服务已休眠",
+    "ar-EG": "服务已休眠",
+    "pt-PT": "服务已休眠",
+    "ru-RU": "服务已休眠",
+    "ja-JP": "服务已休眠",
+    "de-DE": "服务已休眠",
+    "fr-FR": "服务已休眠",
+    "ko-KR": "服务已休眠",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(7954-7963)"
+      "src/renderer/components/settings/external-api-settings.tsx(12401-12410)"
     ],
-    "$id": 28391
+    "$id": 39517
   },
-  "无活跃通信": {
-    "en-US": "No active communication",
-    "es-ES": "Sin comunicación activa",
-    "ar-EG": "لا يوجد اتصال نشط",
-    "pt-PT": "Nenhuma comunicação ativa",
-    "ru-RU": "Нет активного общения",
-    "ja-JP": "活発なコミュニケーションが取れない",
-    "de-DE": "Keine aktive Kommunikation",
-    "fr-FR": "Aucune communication active",
-    "ko-KR": "활성화된 의사소통 없음",
+  "当前未连接外部助手": {
+    "en-US": "当前未连接外部助手",
+    "es-ES": "当前未连接外部助手",
+    "ar-EG": "当前未连接外部助手",
+    "pt-PT": "当前未连接外部助手",
+    "ru-RU": "当前未连接外部助手",
+    "ja-JP": "当前未连接外部助手",
+    "de-DE": "当前未连接外部助手",
+    "fr-FR": "当前未连接外部助手",
+    "ko-KR": "当前未连接外部助手",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(8339-8348)"
+      "src/renderer/components/settings/external-api-settings.tsx(12786-12799)"
     ],
-    "$id": 28392
+    "$id": 39518
   },
-  "就绪待命 (等待外部智能体首次调用)": {
-    "en-US": "Ready (waiting for the first call from an external agent)",
-    "es-ES": "Listo (esperando la primera llamada de un agente externo)",
-    "ar-EG": "جاهز (في انتظار المكالمة الأولى من وكيل خارجي)",
-    "pt-PT": "Pronto (aguardando a primeira chamada de um agente externo)",
-    "ru-RU": "Готов (ожидание первого звонка от внешнего агента)",
-    "ja-JP": "準備完了 (外部エージェントからの最初のコールを待っています)",
-    "de-DE": "Bereit (Warten auf den ersten Anruf eines externen Agenten)",
-    "fr-FR": "Prêt (en attente du premier appel d'un agent externe)",
-    "ko-KR": "준비됨(외부 상담원의 첫 번째 통화를 기다리는 중)",
+  "就绪待命（等待 AI 助手首次连接）": {
+    "en-US": "就绪待命（等待 AI 助手首次连接）",
+    "es-ES": "就绪待命（等待 AI 助手首次连接）",
+    "ar-EG": "就绪待命（等待 AI 助手首次连接）",
+    "pt-PT": "就绪待命（等待 AI 助手首次连接）",
+    "ru-RU": "就绪待命（等待 AI 助手首次连接）",
+    "ja-JP": "就绪待命（等待 AI 助手首次连接）",
+    "de-DE": "就绪待命（等待 AI 助手首次连接）",
+    "fr-FR": "就绪待命（等待 AI 助手首次连接）",
+    "ko-KR": "就绪待命（等待 AI 助手首次连接）",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(8629-8651)"
+      "src/renderer/components/settings/external-api-settings.tsx(13080-13102)"
     ],
-    "$id": 28393
+    "$id": 39519
   },
-  "活跃通信中 (最近调用在 {0} 秒前)": {
-    "en-US": "Active communication (last called {0} seconds ago)",
-    "es-ES": "Comunicación activa (última llamada hace {0} segundos)",
-    "ar-EG": "اتصال نشط (تم الاتصال آخر مرة منذ {0} ثانية)",
-    "pt-PT": "Comunicação ativa (última chamada há {0} segundos)",
-    "ru-RU": "Активное общение (последний звонок: {0} секунд назад)",
-    "ja-JP": "アクティブな通信 (最後に呼び出されたのは {0} 秒前)",
-    "de-DE": "Aktive Kommunikation (letzter Anruf vor {0} Sekunden)",
-    "fr-FR": "Communication active (dernier appel il y a {0} secondes)",
-    "ko-KR": "활성 통신({0}초 전에 마지막으로 호출됨)",
+  "助手活跃通信中（{0} 秒前）": {
+    "en-US": "助手活跃通信中（{0} 秒前）",
+    "es-ES": "助手活跃通信中（{0} 秒前）",
+    "ar-EG": "助手活跃通信中（{0} 秒前）",
+    "pt-PT": "助手活跃通信中（{0} 秒前）",
+    "ru-RU": "助手活跃通信中（{0} 秒前）",
+    "ja-JP": "助手活跃通信中（{0} 秒前）",
+    "de-DE": "助手活跃通信中（{0} 秒前）",
+    "fr-FR": "助手活跃通信中（{0} 秒前）",
+    "ko-KR": "助手活跃通信中（{0} 秒前）",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(9006-9030)"
+      "src/renderer/components/settings/external-api-settings.tsx(13457-13476)"
     ],
-    "$id": 28394
+    "$id": 39520
   },
-  "空闲待机 (距离上次调用约 {0} 分钟)": {
-    "en-US": "Idle standby (about {0} minutes since last call)",
-    "es-ES": "Espera inactiva (aproximadamente {0} minutos desde la última llamada)",
-    "ar-EG": "وضع الاستعداد الخامل (حوالي {0} دقيقة منذ آخر مكالمة)",
-    "pt-PT": "Espera inativa (cerca de {0} minutos desde a última chamada)",
-    "ru-RU": "Режим ожидания (около {0} минут с момента последнего звонка)",
-    "ja-JP": "アイドル スタンバイ（最後の通話から約 {0} 分）",
-    "de-DE": "Leerlauf-Standby (ca. {0} Minuten seit dem letzten Anruf)",
-    "fr-FR": "Veille inactive (environ {0} minutes depuis le dernier appel)",
-    "ko-KR": "유휴 대기(마지막 통화 이후 약 {0}분)",
+  "空闲待机（上次通信约 {0} 分钟前）": {
+    "en-US": "空闲待机（上次通信约 {0} 分钟前）",
+    "es-ES": "空闲待机（上次通信约 {0} 分钟前）",
+    "ar-EG": "空闲待机（上次通信约 {0} 分钟前）",
+    "pt-PT": "空闲待机（上次通信约 {0} 分钟前）",
+    "ru-RU": "空闲待机（上次通信约 {0} 分钟前）",
+    "ja-JP": "空闲待机（上次通信约 {0} 分钟前）",
+    "de-DE": "空闲待机（上次通信约 {0} 分钟前）",
+    "fr-FR": "空闲待机（上次通信约 {0} 分钟前）",
+    "ko-KR": "空闲待机（上次通信约 {0} 分钟前）",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(9355-9380)"
+      "src/renderer/components/settings/external-api-settings.tsx(13801-13824)"
     ],
-    "$id": 28395
+    "$id": 39521
   },
-  "启用外部智能体与 Skill 接口": {
-    "en-US": "Enable external agents and Skill interfaces",
-    "es-ES": "Habilitar agentes externos e interfaces de habilidades",
-    "ar-EG": "تمكين الوكلاء الخارجيين وواجهات المهارات",
-    "pt-PT": "Habilitar agentes externos e interfaces de habilidades",
-    "ru-RU": "Включить внешних агентов и интерфейсы навыков",
-    "ja-JP": "外部エージェントとスキルインターフェースを有効にする",
-    "de-DE": "Aktivieren Sie externe Agenten und Skill-Schnittstellen",
-    "fr-FR": "Activer les agents externes et les interfaces de compétences",
-    "ko-KR": "외부 에이전트 및 스킬 인터페이스 활성화",
+  "对外开放萤核能力给外部 AI 助手": {
+    "en-US": "对外开放萤核能力给外部 AI 助手",
+    "es-ES": "对外开放萤核能力给外部 AI 助手",
+    "ar-EG": "对外开放萤核能力给外部 AI 助手",
+    "pt-PT": "对外开放萤核能力给外部 AI 助手",
+    "ru-RU": "对外开放萤核能力给外部 AI 助手",
+    "ja-JP": "对外开放萤核能力给外部 AI 助手",
+    "de-DE": "对外开放萤核能力给外部 AI 助手",
+    "fr-FR": "对外开放萤核能力给外部 AI 助手",
+    "ko-KR": "对外开放萤核能力给外部 AI 助手",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(10040-10061)"
+      "src/renderer/components/settings/external-api-settings.tsx(14643-14664)"
     ],
-    "$id": 28396
+    "$id": 39522
   },
-  "开启后，桌面端将在本地 127.0.0.1 提供 HTTP 接口，供开源整理 Skill (ai-folder-organize) 或本机 AI 智能体跨进程通信。": {
-    "en-US": "Once enabled, the desktop will provide an HTTP interface locally at 127.0.0.1 for cross-process communication between the open source organization Skill (ai-folder-organize) or the native AI agent.",
-    "es-ES": "Una vez habilitado, el escritorio proporcionará una interfaz HTTP localmente en 127.0.0.1 para la comunicación entre procesos entre la organización de código abierto Skill (ai-folder-organize) o el agente de IA nativo.",
-    "ar-EG": "بمجرد التمكين، سيوفر سطح المكتب واجهة HTTP محليًا على 127.0.0.1 للاتصال عبر العمليات بين مؤسسة مفتوحة المصدر Skill (ai-folder-organize) أو وكيل AI الأصلي.",
-    "pt-PT": "Uma vez ativado, o desktop fornecerá uma interface HTTP localmente em 127.0.0.1 para comunicação entre processos entre a habilidade da organização de código aberto (ai-folder-organize) ou o agente de IA nativo.",
-    "ru-RU": "После включения рабочий стол будет предоставлять локальный HTTP-интерфейс по адресу 127.0.0.1 для межпроцессного взаимодействия между Skill организации с открытым исходным кодом (ai-folder-organize) или собственным агентом AI.",
-    "ja-JP": "有効にすると、デスクトップは、オープン ソース組織スキル (ai-folder-organize) またはネイティブ AI エージェント間のプロセス間通信用に HTTP インターフェイスを 127.0.0.1 でローカルに提供します。",
-    "de-DE": "Nach der Aktivierung stellt der Desktop lokal unter 127.0.0.1 eine HTTP-Schnittstelle für die prozessübergreifende Kommunikation zwischen dem Open-Source-Organisations-Skill (ai-folder-organize) oder dem nativen KI-Agenten bereit.",
-    "fr-FR": "Une fois activé, le bureau fournira une interface HTTP localement à l'adresse 127.0.0.1 pour la communication inter-processus entre la compétence de l'organisation open source (ai-folder-organize) ou l'agent IA natif.",
-    "ko-KR": "활성화되면 데스크탑은 오픈 소스 조직 Skill(ai-folder-organize) 또는 기본 AI 에이전트 간의 프로세스 간 통신을 위해 127.0.0.1에서 로컬로 HTTP 인터페이스를 제공합니다.",
+  "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。": {
+    "en-US": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "es-ES": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "ar-EG": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "pt-PT": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "ru-RU": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "ja-JP": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "de-DE": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "fr-FR": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
+    "ko-KR": "开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(10230-10333)"
+      "src/renderer/components/settings/external-api-settings.tsx(14833-14940)"
     ],
-    "$id": 28397
+    "$id": 39523
   },
-  "启动失败归因：": {
-    "en-US": "Attribution of startup failure:",
-    "es-ES": "Atribución del fracaso de inicio:",
-    "ar-EG": "إسناد فشل بدء التشغيل:",
-    "pt-PT": "Atribuição de falha de inicialização:",
-    "ru-RU": "Атрибуция неудачного запуска:",
-    "ja-JP": "起動失敗の原因:",
-    "de-DE": "Ursache des Startfehlers:",
-    "fr-FR": "Attribution de l'échec du démarrage :",
-    "ko-KR": "시작 실패의 원인:",
+  "启动失败原因：": {
+    "en-US": "启动失败原因：",
+    "es-ES": "启动失败原因：",
+    "ar-EG": "启动失败原因：",
+    "pt-PT": "启动失败原因：",
+    "ru-RU": "启动失败原因：",
+    "ja-JP": "启动失败原因：",
+    "de-DE": "启动失败原因：",
+    "fr-FR": "启动失败原因：",
+    "ko-KR": "启动失败原因：",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(11039-11050)"
+      "src/renderer/components/settings/external-api-settings.tsx(15646-15657)"
     ],
-    "$id": 28398
+    "$id": 39524
   },
-  "预设端口段 (38300~38319) 均被占用": {
-    "en-US": "The default port segments (38300~38319) are all occupied",
-    "es-ES": "Los segmentos de puerto predeterminados (38300~38319) están todos ocupados",
-    "ar-EG": "قطاعات المنفذ الافتراضية (38300~38319) كلها مشغولة",
-    "pt-PT": "Os segmentos de porta padrão (38300~38319) estão todos ocupados",
-    "ru-RU": "Все сегменты порта по умолчанию (38300~38319) заняты.",
-    "ja-JP": "デフォルトのポートセグメント（38300～38319）はすべて占有されています",
-    "de-DE": "Die Standard-Portsegmente (38300~38319) sind alle belegt",
-    "fr-FR": "Les segments de port par défaut (38300~38319) sont tous occupés",
-    "ko-KR": "기본 포트 세그먼트(38300~38319)가 모두 점유되어 있습니다.",
+  "本地可用通道已被其他程序占满": {
+    "en-US": "本地可用通道已被其他程序占满",
+    "es-ES": "本地可用通道已被其他程序占满",
+    "ar-EG": "本地可用通道已被其他程序占满",
+    "pt-PT": "本地可用通道已被其他程序占满",
+    "ru-RU": "本地可用通道已被其他程序占满",
+    "ja-JP": "本地可用通道已被其他程序占满",
+    "de-DE": "本地可用通道已被其他程序占满",
+    "fr-FR": "本地可用通道已被其他程序占满",
+    "ko-KR": "本地可用通道已被其他程序占满",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(11171-11199)"
+      "src/renderer/components/settings/external-api-settings.tsx(15778-15796)"
     ],
-    "$id": 28399
+    "$id": 39525
   },
-  "写入发现文件失败 (文件锁竞争)": {
-    "en-US": "Failed to write to discovered file (file lock contention)",
-    "es-ES": "No se pudo escribir en el archivo descubierto (contención de bloqueo de archivo)",
-    "ar-EG": "فشلت الكتابة إلى الملف الذي تم اكتشافه (تنافس قفل الملف)",
-    "pt-PT": "Falha ao gravar no arquivo descoberto (contenção de bloqueio de arquivo)",
-    "ru-RU": "Не удалось записать обнаруженный файл (конфликт за блокировку файла).",
-    "ja-JP": "検出されたファイルへの書き込みに失敗しました (ファイル ロックの競合)",
-    "de-DE": "Schreiben in die erkannte Datei fehlgeschlagen (Dateisperrkonflikt)",
-    "fr-FR": "Échec de l'écriture dans le fichier découvert (conflit de verrouillage de fichier)",
-    "ko-KR": "검색된 파일에 쓰지 못했습니다(파일 잠금 경합).",
+  "本地连接配置文件写入受阻": {
+    "en-US": "本地连接配置文件写入受阻",
+    "es-ES": "本地连接配置文件写入受阻",
+    "ar-EG": "本地连接配置文件写入受阻",
+    "pt-PT": "本地连接配置文件写入受阻",
+    "ru-RU": "本地连接配置文件写入受阻",
+    "ja-JP": "本地连接配置文件写入受阻",
+    "de-DE": "本地连接配置文件写入受阻",
+    "fr-FR": "本地连接配置文件写入受阻",
+    "ko-KR": "本地连接配置文件写入受阻",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(11302-11322)"
+      "src/renderer/components/settings/external-api-settings.tsx(15899-15915)"
     ],
-    "$id": 28400
+    "$id": 39526
   },
-  "本地环回绑定失败": {
-    "en-US": "Local loopback binding failed",
-    "es-ES": "Error en el enlace de loopback local",
-    "ar-EG": "فشل ربط الاسترجاع المحلي",
-    "pt-PT": "Falha na vinculação de loopback local",
-    "ru-RU": "Не удалось привязать локальную петлю",
-    "ja-JP": "ローカル ループバック バインディングが失敗しました",
-    "de-DE": "Die lokale Loopback-Bindung ist fehlgeschlagen",
-    "fr-FR": "Échec de la liaison de bouclage local",
-    "ko-KR": "로컬 루프백 바인딩 실패",
+  "本地服务启动受阻": {
+    "en-US": "本地服务启动受阻",
+    "es-ES": "本地服务启动受阻",
+    "ar-EG": "本地服务启动受阻",
+    "pt-PT": "本地服务启动受阻",
+    "ru-RU": "本地服务启动受阻",
+    "ja-JP": "本地服务启动受阻",
+    "de-DE": "本地服务启动受阻",
+    "fr-FR": "本地服务启动受阻",
+    "ko-KR": "本地服务启动受阻",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(11348-11360)"
+      "src/renderer/components/settings/external-api-settings.tsx(15941-15953)"
     ],
-    "$id": 28401
+    "$id": 39527
   },
-  "重试启动": {
-    "en-US": "Retry startup",
-    "es-ES": "Reintentar inicio",
-    "ar-EG": "أعد محاولة بدء التشغيل",
-    "pt-PT": "Tentar novamente a inicialização",
-    "ru-RU": "Повторить запуск",
-    "ja-JP": "起動を再試行する",
-    "de-DE": "Versuchen Sie den Start erneut",
-    "fr-FR": "Réessayez le démarrage",
-    "ko-KR": "시동 재시도",
+  "重试开启": {
+    "en-US": "重试开启",
+    "es-ES": "重试开启",
+    "ar-EG": "重试开启",
+    "pt-PT": "重试开启",
+    "ru-RU": "重试开启",
+    "ja-JP": "重试开启",
+    "de-DE": "重试开启",
+    "fr-FR": "重试开启",
+    "ko-KR": "重试开启",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(11892-11900)"
+      "src/renderer/components/settings/external-api-settings.tsx(16485-16493)"
     ],
-    "$id": 28402
+    "$id": 39528
   },
-  "接口地址与自检通道": {
-    "en-US": "Interface address and self-test channel",
-    "es-ES": "Dirección de interfaz y canal de autoprueba",
-    "ar-EG": "عنوان الواجهة وقناة الاختبار الذاتي",
-    "pt-PT": "Endereço da interface e canal de autoteste",
-    "ru-RU": "Адрес интерфейса и канал самотестирования",
-    "ja-JP": "インターフェイスアドレスとセルフテストチャネル",
-    "de-DE": "Schnittstellenadresse und Selbsttestkanal",
-    "fr-FR": "Adresse d'interface et canal d'autotest",
-    "ko-KR": "인터페이스 주소 및 자체 테스트 채널",
+  "第一步：一键复制提示词，发给你的 AI 助手": {
+    "en-US": "第一步：一键复制提示词，发给你的 AI 助手",
+    "es-ES": "第一步：一键复制提示词，发给你的 AI 助手",
+    "ar-EG": "第一步：一键复制提示词，发给你的 AI 助手",
+    "pt-PT": "第一步：一键复制提示词，发给你的 AI 助手",
+    "ru-RU": "第一步：一键复制提示词，发给你的 AI 助手",
+    "ja-JP": "第一步：一键复制提示词，发给你的 AI 助手",
+    "de-DE": "第一步：一键复制提示词，发给你的 AI 助手",
+    "fr-FR": "第一步：一键复制提示词，发给你的 AI 助手",
+    "ko-KR": "第一步：一键复制提示词，发给你的 AI 助手",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(12326-12339)"
+      "src/renderer/components/settings/external-api-settings.tsx(17075-17101)"
     ],
-    "$id": 28403
+    "$id": 39529
+  },
+  "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活": {
+    "en-US": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "es-ES": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "ar-EG": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "pt-PT": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "ru-RU": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "ja-JP": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "de-DE": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "fr-FR": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "ko-KR": "① 复制下方提示词 ➔ ② 发送给你常用的 AI 助手 ➔ ③ 助手自动完成连接并开始帮你干活",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(17203-17254)"
+    ],
+    "$id": 39530
+  },
+  "提示词已复制，直接粘贴发送给你的 AI 助手即可": {
+    "en-US": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "es-ES": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "ar-EG": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "pt-PT": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "ru-RU": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "ja-JP": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "de-DE": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "fr-FR": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "ko-KR": "提示词已复制，直接粘贴发送给你的 AI 助手即可",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(17634-17662)"
+    ],
+    "$id": 39531
+  },
+  "已复制到剪贴板": {
+    "en-US": "Copied to clipboard",
+    "es-ES": "Copiado al portapapeles",
+    "ar-EG": "تم النسخ إلى الحافظة",
+    "pt-PT": "Copiado para a área de transferência",
+    "ru-RU": "Скопировано в буфер обмена",
+    "ja-JP": "クリップボードにコピーされました",
+    "de-DE": "In die Zwischenablage kopiert",
+    "fr-FR": "Copié dans le presse-papiers",
+    "ko-KR": "클립보드에 복사됨",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(17960-17971)"
+    ],
+    "$id": 28426
+  },
+  "一键复制接入提示词": {
+    "en-US": "一键复制接入提示词",
+    "es-ES": "一键复制接入提示词",
+    "ar-EG": "一键复制接入提示词",
+    "pt-PT": "一键复制接入提示词",
+    "ru-RU": "一键复制接入提示词",
+    "ja-JP": "一键复制接入提示词",
+    "de-DE": "一键复制接入提示词",
+    "fr-FR": "一键复制接入提示词",
+    "ko-KR": "一键复制接入提示词",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(17975-17988)"
+    ],
+    "$id": 39532
+  },
+  "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。": {
+    "en-US": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "es-ES": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "ar-EG": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "pt-PT": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "ru-RU": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "ja-JP": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "de-DE": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "fr-FR": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "ko-KR": "请先开启上方总开关，系统将自动为你生成专属的 AI 助手接入提示词。",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(18666-18704)"
+    ],
+    "$id": 39533
+  },
+  "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件": {
+    "en-US": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "es-ES": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "ar-EG": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "pt-PT": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "ru-RU": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "ja-JP": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "de-DE": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "fr-FR": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "ko-KR": "安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(19166-19212)"
+    ],
+    "$id": 39534
+  },
+  "第二步：查看与解锁可共享的本地能力": {
+    "en-US": "第二步：查看与解锁可共享的本地能力",
+    "es-ES": "第二步：查看与解锁可共享的本地能力",
+    "ar-EG": "第二步：查看与解锁可共享的本地能力",
+    "pt-PT": "第二步：查看与解锁可共享的本地能力",
+    "ru-RU": "第二步：查看与解锁可共享的本地能力",
+    "ja-JP": "第二步：查看与解锁可共享的本地能力",
+    "de-DE": "第二步：查看与解锁可共享的本地能力",
+    "fr-FR": "第二步：查看与解锁可共享的本地能力",
+    "ko-KR": "第二步：查看与解锁可共享的本地能力",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(19725-19746)"
+    ],
+    "$id": 39535
+  },
+  "已解锁 {0} / {1} 项能力": {
+    "en-US": "已解锁 {0} / {1} 项能力",
+    "es-ES": "已解锁 {0} / {1} 项能力",
+    "ar-EG": "已解锁 {0} / {1} 项能力",
+    "pt-PT": "已解锁 {0} / {1} 项能力",
+    "ru-RU": "已解锁 {0} / {1} 项能力",
+    "ja-JP": "已解锁 {0} / {1} 项能力",
+    "de-DE": "已解锁 {0} / {1} 项能力",
+    "fr-FR": "已解锁 {0} / {1} 项能力",
+    "ko-KR": "已解锁 {0} / {1} 项能力",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(19848-19869)"
+    ],
+    "$id": 39536
+  },
+  "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。": {
+    "en-US": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "es-ES": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "ar-EG": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "pt-PT": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "ru-RU": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "ja-JP": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "de-DE": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "fr-FR": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "ko-KR": "下方已就绪的能力会自动开放给你的 AI 助手；后续新装插件或开启功能后，助手会自动发现新能力，无需重新配置。",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(20020-20091)"
+    ],
+    "$id": 39537
+  },
+  "已就绪": {
+    "en-US": "Ready",
+    "es-ES": "Listo",
+    "ar-EG": "مستعد",
+    "pt-PT": "Preparar",
+    "ru-RU": "Готовый",
+    "ja-JP": "準備ができて",
+    "de-DE": "Bereit",
+    "fr-FR": "Prêt",
+    "ko-KR": "준비가 된",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(21548-21555)",
+      "src/renderer/components/settings/WorkspaceConfigPanel.tsx(11559-11566)",
+      "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(16278-16285)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14955-14962)"
+    ],
+    "$id": 23076
+  },
+  "需安装插件": {
+    "en-US": "需安装插件",
+    "es-ES": "需安装插件",
+    "ar-EG": "需安装插件",
+    "pt-PT": "需安装插件",
+    "ru-RU": "需安装插件",
+    "ja-JP": "需安装插件",
+    "de-DE": "需安装插件",
+    "fr-FR": "需安装插件",
+    "ko-KR": "需安装插件",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(21897-21906)"
+    ],
+    "$id": 39538
+  },
+  "未开启": {
+    "en-US": "未开启",
+    "es-ES": "未开启",
+    "ar-EG": "未开启",
+    "pt-PT": "未开启",
+    "ru-RU": "未开启",
+    "ja-JP": "未开启",
+    "de-DE": "未开启",
+    "fr-FR": "未开启",
+    "ko-KR": "未开启",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(22209-22216)"
+    ],
+    "$id": 39539
+  },
+  "去安装": {
+    "en-US": "去安装",
+    "es-ES": "去安装",
+    "ar-EG": "去安装",
+    "pt-PT": "去安装",
+    "ru-RU": "去安装",
+    "ja-JP": "去安装",
+    "de-DE": "去安装",
+    "fr-FR": "去安装",
+    "ko-KR": "去安装",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(22992-22999)"
+    ],
+    "$id": 39540
+  },
+  "一键开启": {
+    "en-US": "一键开启",
+    "es-ES": "一键开启",
+    "ar-EG": "一键开启",
+    "pt-PT": "一键开启",
+    "ru-RU": "一键开启",
+    "ja-JP": "一键开启",
+    "de-DE": "一键开启",
+    "fr-FR": "一键开启",
+    "ko-KR": "一键开启",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(23548-23556)"
+    ],
+    "$id": 39541
+  },
+  "第三步：高级连接参数与连通性自检": {
+    "en-US": "第三步：高级连接参数与连通性自检",
+    "es-ES": "第三步：高级连接参数与连通性自检",
+    "ar-EG": "第三步：高级连接参数与连通性自检",
+    "pt-PT": "第三步：高级连接参数与连通性自检",
+    "ru-RU": "第三步：高级连接参数与连通性自检",
+    "ja-JP": "第三步：高级连接参数与连通性自检",
+    "de-DE": "第三步：高级连接参数与连通性自检",
+    "fr-FR": "第三步：高级连接参数与连通性自检",
+    "ko-KR": "第三步：高级连接参数与连通性自检",
+    "$files": [
+      "src/renderer/components/settings/external-api-settings.tsx(24335-24355)"
+    ],
+    "$id": 39542
   },
   "测试本地连接": {
     "en-US": "Test local connection",
@@ -4476,39 +5048,39 @@
     "fr-FR": "Tester la connexion locale",
     "ko-KR": "로컬 연결 테스트",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(12752-12762)"
+      "src/renderer/components/settings/external-api-settings.tsx(25354-25364)"
     ],
     "$id": 28404
   },
-  "环回测试成功！响应延迟: {0} ms (HTTP {1})": {
-    "en-US": "Loopback test successful! Response delay: {0} ms (HTTP {1})",
-    "es-ES": "¡Prueba de bucle invertido exitosa! Retraso de respuesta: {0} ms (HTTP {1})",
-    "ar-EG": "اختبار الاسترجاع ناجح! تأخير الاستجابة: {0} مللي ثانية (HTTP {1})",
-    "pt-PT": "Teste de loopback bem-sucedido! Atraso de resposta: {0} ms (HTTP {1})",
-    "ru-RU": "Петлевая проверка прошла успешно! Задержка ответа: {0} мс (HTTP {1})",
-    "ja-JP": "ループバックテストは成功しました!応答遅延: {0} ミリ秒 (HTTP {1})",
-    "de-DE": "Loopback-Test erfolgreich! Antwortverzögerung: {0} ms (HTTP {1})",
-    "fr-FR": "Test de bouclage réussi ! Délai de réponse : {0} ms (HTTP {1})",
-    "ko-KR": "루프백 테스트 성공! 응답 지연: {0}ms(HTTP {1})",
+  "本地连接正常！响应耗时：{0} 毫秒": {
+    "en-US": "本地连接正常！响应耗时：{0} 毫秒",
+    "es-ES": "本地连接正常！响应耗时：{0} 毫秒",
+    "ar-EG": "本地连接正常！响应耗时：{0} 毫秒",
+    "pt-PT": "本地连接正常！响应耗时：{0} 毫秒",
+    "ru-RU": "本地连接正常！响应耗时：{0} 毫秒",
+    "ja-JP": "本地连接正常！响应耗时：{0} 毫秒",
+    "de-DE": "本地连接正常！响应耗时：{0} 毫秒",
+    "fr-FR": "本地连接正常！响应耗时：{0} 毫秒",
+    "ko-KR": "本地连接正常！响应耗时：{0} 毫秒",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(13560-13594)"
+      "src/renderer/components/settings/external-api-settings.tsx(27255-27277)"
     ],
-    "$id": 28405
+    "$id": 39543
   },
-  "环回测试失败: {0}": {
-    "en-US": "Loopback test failed: {0}",
-    "es-ES": "La prueba de bucle invertido falló: {0}",
-    "ar-EG": "فشل اختبار الاسترجاع: {0}",
-    "pt-PT": "Falha no teste de loopback: {0}",
-    "ru-RU": "Проверка обратной связи не удалась: {0}",
-    "ja-JP": "ループバック テストが失敗しました: {0}",
-    "de-DE": "Loopback-Test fehlgeschlagen: {0}",
-    "fr-FR": "Échec du test de bouclage : {0}",
-    "ko-KR": "루프백 테스트 실패: {0}",
+  "本地连接测试失败：{0}": {
+    "en-US": "本地连接测试失败：{0}",
+    "es-ES": "本地连接测试失败：{0}",
+    "ar-EG": "本地连接测试失败：{0}",
+    "pt-PT": "本地连接测试失败：{0}",
+    "ru-RU": "本地连接测试失败：{0}",
+    "ja-JP": "本地连接测试失败：{0}",
+    "de-DE": "本地连接测试失败：{0}",
+    "fr-FR": "本地连接测试失败：{0}",
+    "ko-KR": "本地连接测试失败：{0}",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(13741-13756)"
+      "src/renderer/components/settings/external-api-settings.tsx(27332-27348)"
     ],
-    "$id": 28406
+    "$id": 39544
   },
   "连接未建立": {
     "en-US": "Connection not established",
@@ -4521,39 +5093,39 @@
     "fr-FR": "Connexion non établie",
     "ko-KR": "연결이 설정되지 않았습니다.",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(13788-13797)"
+      "src/renderer/components/settings/external-api-settings.tsx(27380-27389)"
     ],
     "$id": 28407
   },
-  "当前服务地址": {
-    "en-US": "Current service address",
-    "es-ES": "Dirección de servicio actual",
-    "ar-EG": "عنوان الخدمة الحالي",
-    "pt-PT": "Endereço de serviço atual",
-    "ru-RU": "Текущий адрес обслуживания",
-    "ja-JP": "現在のサービスアドレス",
-    "de-DE": "Aktuelle Serviceadresse",
-    "fr-FR": "Adresse de service actuelle",
-    "ko-KR": "현재 서비스 주소",
+  "本地服务地址": {
+    "en-US": "本地服务地址",
+    "es-ES": "本地服务地址",
+    "ar-EG": "本地服务地址",
+    "pt-PT": "本地服务地址",
+    "ru-RU": "本地服务地址",
+    "ja-JP": "本地服务地址",
+    "de-DE": "本地服务地址",
+    "fr-FR": "本地服务地址",
+    "ko-KR": "本地服务地址",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(14179-14189)"
+      "src/renderer/components/settings/external-api-settings.tsx(27808-27818)"
     ],
-    "$id": 28408
+    "$id": 39545
   },
-  "监听端口与运行时间": {
-    "en-US": "Listening port and running time",
-    "es-ES": "Puerto de escucha y tiempo de ejecución",
-    "ar-EG": "منفذ الاستماع ووقت التشغيل",
-    "pt-PT": "Porta de escuta e tempo de execução",
-    "ru-RU": "Порт прослушивания и время работы",
-    "ja-JP": "リスニングポートと実行時間",
-    "de-DE": "Abhörport und Laufzeit",
-    "fr-FR": "Port d'écoute et durée d'exécution",
-    "ko-KR": "청취 포트 및 실행 시간",
+  "通信端口与运行时长": {
+    "en-US": "通信端口与运行时长",
+    "es-ES": "通信端口与运行时长",
+    "ar-EG": "通信端口与运行时长",
+    "pt-PT": "通信端口与运行时长",
+    "ru-RU": "通信端口与运行时长",
+    "ja-JP": "通信端口与运行时长",
+    "de-DE": "通信端口与运行时长",
+    "fr-FR": "通信端口与运行时长",
+    "ko-KR": "通信端口与运行时长",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(15141-15154)"
+      "src/renderer/components/settings/external-api-settings.tsx(28832-28845)"
     ],
-    "$id": 28409
+    "$id": 39546
   },
   "未分配": {
     "en-US": "Not assigned",
@@ -4566,24 +5138,24 @@
     "fr-FR": "Non attribué",
     "ko-KR": "할당되지 않음",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(15360-15367)"
+      "src/renderer/components/settings/external-api-settings.tsx(29057-29064)"
     ],
     "$id": 28410
   },
-  "服务发现配置 (ai-skill-config.json)": {
-    "en-US": "Service discovery configuration (ai-skill-config.json)",
-    "es-ES": "Configuración de descubrimiento de servicios (ai-skill-config.json)",
-    "ar-EG": "تكوين اكتشاف الخدمة (ai-skill-config.json)",
-    "pt-PT": "Configuração de descoberta de serviço (ai-skill-config.json)",
-    "ru-RU": "Конфигурация обнаружения службы (ai-skill-config.json)",
-    "ja-JP": "サービス検出構成 (ai-skill-config.json)",
-    "de-DE": "Service-Discovery-Konfiguration (ai-skill-config.json)",
-    "fr-FR": "Configuration de la découverte de services (ai-skill-config.json)",
-    "ko-KR": "서비스 검색 구성(ai-skill-config.json)",
+  "自动发现配置文件路径": {
+    "en-US": "自动发现配置文件路径",
+    "es-ES": "自动发现配置文件路径",
+    "ar-EG": "自动发现配置文件路径",
+    "pt-PT": "自动发现配置文件路径",
+    "ru-RU": "自动发现配置文件路径",
+    "ja-JP": "自动发现配置文件路径",
+    "de-DE": "自动发现配置文件路径",
+    "fr-FR": "自动发现配置文件路径",
+    "ko-KR": "自动发现配置文件路径",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(16071-16104)"
+      "src/renderer/components/settings/external-api-settings.tsx(29884-29898)"
     ],
-    "$id": 28411
+    "$id": 39547
   },
   "未定位": {
     "en-US": "Not located",
@@ -4596,7 +5168,7 @@
     "fr-FR": "Non localisé",
     "ko-KR": "찾을 수 없음",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(16262-16269)"
+      "src/renderer/components/settings/external-api-settings.tsx(30051-30058)"
     ],
     "$id": 28412
   },
@@ -4611,7 +5183,7 @@
     "fr-FR": "Copié",
     "ko-KR": "복사됨",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(16864-16871)"
+      "src/renderer/components/settings/external-api-settings.tsx(30713-30720)"
     ],
     "$id": 28413
   },
@@ -4626,54 +5198,39 @@
     "fr-FR": "Copier le chemin",
     "ko-KR": "경로 복사",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(16875-16883)"
+      "src/renderer/components/settings/external-api-settings.tsx(30724-30732)"
     ],
     "$id": 28414
   },
-  "智能体连接状态与调用感知": {
-    "en-US": "Agent connection status and call awareness",
-    "es-ES": "Estado de conexión del agente y reconocimiento de llamadas",
-    "ar-EG": "حالة اتصال الوكيل والتوعية بالمكالمات",
-    "pt-PT": "Status de conexão do agente e reconhecimento de chamada",
-    "ru-RU": "Статус подключения агента и осведомленность о вызовах",
-    "ja-JP": "エージェントの接続ステータスと通話認識",
-    "de-DE": "Agentenverbindungsstatus und Anruferkennung",
-    "fr-FR": "État de connexion de l'agent et détection des appels",
-    "ko-KR": "상담원 연결 상태 및 통화 인식",
+  "累计协作次数": {
+    "en-US": "累计协作次数",
+    "es-ES": "累计协作次数",
+    "ar-EG": "累计协作次数",
+    "pt-PT": "累计协作次数",
+    "ru-RU": "累计协作次数",
+    "ja-JP": "累计协作次数",
+    "de-DE": "累计协作次数",
+    "fr-FR": "累计协作次数",
+    "ko-KR": "累计协作次数",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(17321-17337)"
+      "src/renderer/components/settings/external-api-settings.tsx(31066-31076)"
     ],
-    "$id": 28415
+    "$id": 39548
   },
-  "累计处理请求": {
-    "en-US": "Cumulative processing requests",
-    "es-ES": "Solicitudes de procesamiento acumuladas",
-    "ar-EG": "طلبات المعالجة التراكمية",
-    "pt-PT": "Solicitações de processamento cumulativo",
-    "ru-RU": "Суммарная обработка запросов",
-    "ja-JP": "累積処理リクエスト",
-    "de-DE": "Kumulierte Bearbeitungsanfragen",
-    "fr-FR": "Demandes de traitement cumulées",
-    "ko-KR": "누적 처리 요청",
+  "最近连接助手": {
+    "en-US": "最近连接助手",
+    "es-ES": "最近连接助手",
+    "ar-EG": "最近连接助手",
+    "pt-PT": "最近连接助手",
+    "ru-RU": "最近连接助手",
+    "ja-JP": "最近连接助手",
+    "de-DE": "最近连接助手",
+    "fr-FR": "最近连接助手",
+    "ko-KR": "最近连接助手",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(17631-17641)"
+      "src/renderer/components/settings/external-api-settings.tsx(31427-31437)"
     ],
-    "$id": 28416
-  },
-  "调用方标识 (自报)": {
-    "en-US": "Caller ID (self-reported)",
-    "es-ES": "Identificador de llamadas (autoinformado)",
-    "ar-EG": "معرف المتصل (الإبلاغ الذاتي)",
-    "pt-PT": "ID do chamador (auto-relatado)",
-    "ru-RU": "Идентификатор вызывающего абонента (сообщенный самостоятельно)",
-    "ja-JP": "発信者ID（自己申告）",
-    "de-DE": "Anrufer-ID (selbst gemeldet)",
-    "fr-FR": "Identification de l'appelant (autodéclaré)",
-    "ko-KR": "발신자 ID(자체 보고)",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(17981-17995)"
-    ],
-    "$id": 28417
+    "$id": 39549
   },
   "无": {
     "en-US": "None",
@@ -4686,177 +5243,57 @@
     "fr-FR": "Aucun",
     "ko-KR": "없음",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(18239-18244)",
-      "src/renderer/components/settings/external-api-settings.tsx(18680-18685)",
-      "src/renderer/components/settings/external-api-settings.tsx(19028-19033)",
-      "src/renderer/components/settings/external-api-settings.tsx(19430-19435)"
+      "src/renderer/components/settings/external-api-settings.tsx(31688-31693)",
+      "src/renderer/components/settings/external-api-settings.tsx(32165-32170)",
+      "src/renderer/components/settings/external-api-settings.tsx(32532-32537)",
+      "src/renderer/components/settings/external-api-settings.tsx(32957-32962)"
     ],
     "$id": 28418
   },
-  "最近调用路径": {
-    "en-US": "Recently called path",
-    "es-ES": "Ruta llamada recientemente",
-    "ar-EG": "تم استدعاء المسار مؤخرًا",
-    "pt-PT": "Caminho chamado recentemente",
-    "ru-RU": "Недавно вызванный путь",
-    "ja-JP": "最近呼び出したパス",
-    "de-DE": "Kürzlich aufgerufener Pfad",
-    "fr-FR": "Chemin récemment appelé",
-    "ko-KR": "최근 호출된 경로",
+  "最近调用功能": {
+    "en-US": "最近调用功能",
+    "es-ES": "最近调用功能",
+    "ar-EG": "最近调用功能",
+    "pt-PT": "最近调用功能",
+    "ru-RU": "最近调用功能",
+    "ja-JP": "最近调用功能",
+    "de-DE": "最近调用功能",
+    "fr-FR": "最近调用功能",
+    "ko-KR": "最近调用功能",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(18435-18445)"
+      "src/renderer/components/settings/external-api-settings.tsx(31900-31910)"
     ],
-    "$id": 28419
+    "$id": 39550
   },
-  "最近 HTTP 响应码": {
-    "en-US": "Recent HTTP response codes",
-    "es-ES": "Códigos de respuesta HTTP recientes",
-    "ar-EG": "رموز استجابة HTTP الأخيرة",
-    "pt-PT": "Códigos de resposta HTTP recentes",
-    "ru-RU": "Последние коды ответа HTTP",
-    "ja-JP": "最近の HTTP 応答コード",
-    "de-DE": "Aktuelle HTTP-Antwortcodes",
-    "fr-FR": "Codes de réponse HTTP récents",
-    "ko-KR": "최근 HTTP 응답 코드",
+  "最近响应状态": {
+    "en-US": "最近响应状态",
+    "es-ES": "最近响应状态",
+    "ar-EG": "最近响应状态",
+    "pt-PT": "最近响应状态",
+    "ru-RU": "最近响应状态",
+    "ja-JP": "最近响应状态",
+    "de-DE": "最近响应状态",
+    "fr-FR": "最近响应状态",
+    "ko-KR": "最近响应状态",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(18876-18891)"
+      "src/renderer/components/settings/external-api-settings.tsx(32377-32387)"
     ],
-    "$id": 28420
+    "$id": 39551
   },
-  "上一次会话痕迹": {
-    "en-US": "Last session trace",
-    "es-ES": "Seguimiento de la última sesión",
-    "ar-EG": "تتبع الجلسة الأخيرة",
-    "pt-PT": "Rastreamento da última sessão",
-    "ru-RU": "Трассировка последней сессии",
-    "ja-JP": "最後のセッショントレース",
-    "de-DE": "Letzte Sitzungsverfolgung",
-    "fr-FR": "Trace de la dernière session",
-    "ko-KR": "마지막 세션 추적",
+  "上次连接记录": {
+    "en-US": "上次连接记录",
+    "es-ES": "上次连接记录",
+    "ar-EG": "上次连接记录",
+    "pt-PT": "上次连接记录",
+    "ru-RU": "上次连接记录",
+    "ja-JP": "上次连接记录",
+    "de-DE": "上次连接记录",
+    "fr-FR": "上次连接记录",
+    "ko-KR": "上次连接记录",
     "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(19376-19387)"
+      "src/renderer/components/settings/external-api-settings.tsx(32904-32914)"
     ],
-    "$id": 28421
-  },
-  "对外开放的核心数据与整理能力": {
-    "en-US": "Core data and compilation capabilities open to the outside world",
-    "es-ES": "Capacidades básicas de compilación y datos abiertas al mundo exterior.",
-    "ar-EG": "البيانات الأساسية وقدرات التجميع مفتوحة للعالم الخارجي",
-    "pt-PT": "Dados básicos e recursos de compilação abertos ao mundo exterior",
-    "ru-RU": "Основные данные и возможности компиляции открыты для внешнего мира",
-    "ja-JP": "コアデータとコンパイル機能を外部に公開",
-    "de-DE": "Kerndaten- und Kompilierungsfunktionen sind für die Außenwelt offen",
-    "fr-FR": "Données de base et capacités de compilation ouvertes sur le monde extérieur",
-    "ko-KR": "외부 세계에 공개되는 핵심 데이터 및 편집 기능",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(20137-20155)"
-    ],
-    "$id": 28422
-  },
-  "开源技能支持与 Agent 接入指引": {
-    "en-US": "Open source skills support and Agent access guide",
-    "es-ES": "Soporte de habilidades de código abierto y guía de acceso para agentes",
-    "ar-EG": "دعم المهارات مفتوحة المصدر ودليل وصول الوكيل",
-    "pt-PT": "Suporte para habilidades de código aberto e guia de acesso do agente",
-    "ru-RU": "Поддержка навыков открытого исходного кода и руководство по доступу к агентам",
-    "ja-JP": "オープンソースのスキルサポートとエージェントアクセスガイド",
-    "de-DE": "Unterstützung für Open-Source-Kenntnisse und Leitfaden für den Agentenzugriff",
-    "fr-FR": "Prise en charge des compétences open source et guide d'accès aux agents",
-    "ko-KR": "오픈소스 기술 지원 및 에이전트 액세스 가이드",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(21383-21405)"
-    ],
-    "$id": 28423
-  },
-  "各 Agent 平台搜索关键字：": {
-    "en-US": "Search keywords for each Agent platform:",
-    "es-ES": "Busque palabras clave para cada plataforma de Agente:",
-    "ar-EG": "البحث عن الكلمات الرئيسية لكل منصة وكيل:",
-    "pt-PT": "Palavras-chave de pesquisa para cada plataforma de agente:",
-    "ru-RU": "Ключевые слова поиска для каждой платформы агента:",
-    "ja-JP": "各エージェント プラットフォームの検索キーワード:",
-    "de-DE": "Suchbegriffe für jede Agent-Plattform:",
-    "fr-FR": "Mots-clés de recherche pour chaque plateforme d'agent :",
-    "ko-KR": "각 에이전트 플랫폼에 대한 검색 키워드:",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(22484-22504)"
-    ],
-    "$id": 28424
-  },
-  "Agent 快捷配置提示词 (一键复制到聊天对话中)：": {
-    "en-US": "Agent quick configuration prompt word (copy to chat conversation with one click):",
-    "es-ES": "Palabra de aviso de configuración rápida del agente (copie a la conversación de chat con un clic):",
-    "ar-EG": "كلمة موجه التكوين السريع للوكيل (نسخ إلى محادثة الدردشة بنقرة واحدة):",
-    "pt-PT": "Palavra de prompt de configuração rápida do agente (copiar para conversa de bate-papo com um clique):",
-    "ru-RU": "Слово быстрой настройки агента (скопируйте в чат одним щелчком мыши):",
-    "ja-JP": "エージェントのクイック設定プロンプトの単語 (ワンクリックでチャット会話にコピー):",
-    "de-DE": "Eingabeaufforderungswort für die Agenten-Schnellkonfiguration (mit einem Klick in die Chat-Konversation kopieren):",
-    "fr-FR": "Mot d'invite de configuration rapide de l'agent (copie dans la conversation de chat en un seul clic) :",
-    "ko-KR": "에이전트 빠른 구성 프롬프트 단어(한 번의 클릭으로 채팅 대화에 복사):",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(23390-23421)"
-    ],
-    "$id": 28425
-  },
-  "已复制到剪贴板": {
-    "en-US": "Copied to clipboard",
-    "es-ES": "Copiado al portapapeles",
-    "ar-EG": "تم النسخ إلى الحافظة",
-    "pt-PT": "Copiado para a área de transferência",
-    "ru-RU": "Скопировано в буфер обмена",
-    "ja-JP": "クリップボードにコピーされました",
-    "de-DE": "In die Zwischenablage kopiert",
-    "fr-FR": "Copié dans le presse-papiers",
-    "ko-KR": "클립보드에 복사됨",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(23904-23915)"
-    ],
-    "$id": 28426
-  },
-  "复制接入提示词": {
-    "en-US": "Copy access prompt word",
-    "es-ES": "Copiar palabra de solicitud de acceso",
-    "ar-EG": "نسخ كلمة الوصول السريع",
-    "pt-PT": "Copiar palavra de prompt de acesso",
-    "ru-RU": "Скопировать слово приглашения доступа",
-    "ja-JP": "アクセスプロンプトワードをコピーする",
-    "de-DE": "Zugriffsaufforderungswort kopieren",
-    "fr-FR": "Copier le mot d'invite d'accès",
-    "ko-KR": "액세스 프롬프트 단어 복사",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(23919-23930)"
-    ],
-    "$id": 28427
-  },
-  "本地接口最小权限与安全说明": {
-    "en-US": "Minimum permissions and security instructions for local interfaces",
-    "es-ES": "Permisos mínimos e instrucciones de seguridad para interfaces locales.",
-    "ar-EG": "الحد الأدنى من الأذونات وتعليمات الأمان للواجهات المحلية",
-    "pt-PT": "Permissões mínimas e instruções de segurança para interfaces locais",
-    "ru-RU": "Минимальные разрешения и инструкции по безопасности для локальных интерфейсов",
-    "ja-JP": "ローカル インターフェイスの最小限のアクセス許可とセキュリティに関する指示",
-    "de-DE": "Mindestberechtigungen und Sicherheitshinweise für lokale Schnittstellen",
-    "fr-FR": "Autorisations minimales et instructions de sécurité pour les interfaces locales",
-    "ko-KR": "로컬 인터페이스에 대한 최소 권한 및 보안 지침",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(24542-24559)"
-    ],
-    "$id": 28428
-  },
-  "本地开放接口仅供本机已授权智能体查询文件分析元数据与推送多维整理草案，绝无直接改写或删除物理文件的权限。外部智能体推送的所有整理方案均作为草案提交，必须由您在桌面端显式确认后方可落地生效。": {
-    "en-US": "The local open interface is only for local authorized agents to query file analysis metadata and push multi-dimensional editing drafts. It has no authority to directly rewrite or delete physical files. All organizing plans pushed by external agents are submitted as drafts and must be explicitly confirmed by you on the desktop before they can be implemented.",
-    "es-ES": "La interfaz abierta local es solo para que los agentes locales autorizados consulten metadatos de análisis de archivos y envíen borradores de edición multidimensional. No tiene autoridad para reescribir o eliminar archivos físicos directamente. Todos los planes de organización impulsados ​​por agentes externos se envían como borradores y usted debe confirmarlos explícitamente en el escritorio antes de que puedan implementarse.",
-    "ar-EG": "الواجهة المحلية المفتوحة مخصصة فقط للوكلاء المحليين المعتمدين للاستعلام عن بيانات تعريف تحليل الملفات ودفع مسودات التحرير متعددة الأبعاد. ليس لديه سلطة إعادة كتابة الملفات الفعلية أو حذفها مباشرة. يتم إرسال جميع الخطط التنظيمية التي يدفعها وكلاء خارجيون كمسودات ويجب تأكيدها صراحةً على سطح المكتب قبل أن يتم تنفيذها.",
-    "pt-PT": "A interface aberta local é apenas para agentes autorizados locais consultarem metadados de análise de arquivos e enviarem rascunhos de edição multidimensionais. Não tem autoridade para reescrever ou excluir diretamente arquivos físicos. Todos os planos de organização enviados por agentes externos são enviados como rascunhos e devem ser explicitamente confirmados por você no desktop antes de serem implementados.",
-    "ru-RU": "Локальный открытый интерфейс предназначен только для местных авторизованных агентов, которые могут запрашивать метаданные анализа файлов и отправлять черновики многомерного редактирования. Он не имеет права напрямую перезаписывать или удалять физические файлы. Все организационные планы, предложенные внешними агентами, представляются в виде черновиков и должны быть явно подтверждены вами на рабочем столе, прежде чем они могут быть реализованы.",
-    "ja-JP": "ローカル オープン インターフェイスは、ローカルの承認されたエージェントのみがファイル分析メタデータをクエリし、多次元編集ドラフトをプッシュするために使用されます。物理ファイルを直接書き換えたり削除したりする権限はありません。外部エージェントによってプッシュされたすべての組織計画はドラフトとして提出され、実装する前にデスクトップ上で明示的に確認する必要があります。",
-    "de-DE": "Die lokal offene Schnittstelle ist nur für lokal autorisierte Agenten zum Abfragen von Dateianalyse-Metadaten und zum Pushen mehrdimensionaler Bearbeitungsentwürfe vorgesehen. Es hat keine Befugnis, physische Dateien direkt umzuschreiben oder zu löschen. Alle von externen Agenten vorangetriebenen Organisationspläne werden als Entwürfe eingereicht und müssen von Ihnen auf dem Desktop ausdrücklich bestätigt werden, bevor sie umgesetzt werden können.",
-    "fr-FR": "L'interface ouverte locale est réservée aux agents locaux autorisés pour interroger les métadonnées d'analyse de fichiers et publier des brouillons d'édition multidimensionnels. Il n’a aucune autorité pour réécrire ou supprimer directement des fichiers physiques. Tous les plans d'organisation poussés par des agents externes sont soumis sous forme de brouillons et doivent être explicitement confirmés par vous sur le bureau avant de pouvoir être mis en œuvre.",
-    "ko-KR": "로컬 개방형 인터페이스는 파일 분석 메타데이터를 쿼리하고 다차원 편집 초안을 푸시하는 로컬 공인 에이전트만을 위한 것입니다. 물리적 파일을 직접 다시 쓰거나 삭제할 수 있는 권한은 없습니다. 외부 에이전트가 푸시한 모든 구성 계획은 초안으로 제출되며 구현되기 전에 데스크톱에서 귀하가 명시적으로 확인해야 합니다.",
-    "$files": [
-      "src/renderer/components/settings/external-api-settings.tsx(24621-24734)"
-    ],
-    "$id": 28429
+    "$id": 39552
   },
   "中文": {
     "en-US": "Chinese",
@@ -7764,23 +8201,6 @@
       "src/renderer/components/settings/WorkspaceConfigPanel.tsx(10388-10401)"
     ],
     "$id": 23075
-  },
-  "已就绪": {
-    "en-US": "Ready",
-    "es-ES": "Listo",
-    "ar-EG": "مستعد",
-    "pt-PT": "Preparar",
-    "ru-RU": "Готовый",
-    "ja-JP": "準備ができて",
-    "de-DE": "Bereit",
-    "fr-FR": "Prêt",
-    "ko-KR": "준비가 된",
-    "$files": [
-      "src/renderer/components/settings/WorkspaceConfigPanel.tsx(11559-11566)",
-      "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(16278-16285)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14955-14962)"
-    ],
-    "$id": 23076
   },
   "待配置 (队列挂起)": {
     "en-US": "Pending configuration (queue pending)",
@@ -13749,7 +14169,7 @@
     ],
     "$id": 38489
   },
-  "本主题推荐开启": {
+  "本工作流推荐开启": {
     "en-US": "This topic is recommended to open",
     "es-ES": "Se recomienda abrir este tema",
     "ar-EG": "يوصى بفتح هذا الموضوع",
