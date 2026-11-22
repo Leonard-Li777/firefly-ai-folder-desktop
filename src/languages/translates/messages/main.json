@@ -280,7 +280,7 @@
     "de-DE": "Die Dateiinformationen wurden im Arbeitsbereich nicht gefunden",
     "fr-FR": "Les informations du fichier sont introuvables dans l'espace de travail",
     "ko-KR": "작업공간에서 파일정보를 찾을 수 없습니다",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(7919-7936)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7955-7972)"],
     "$id": 7671
   },
   "不支持的图片格式": {
@@ -293,7 +293,7 @@
     "de-DE": "Nicht unterstütztes Bildformat",
     "fr-FR": "Format d'image non pris en charge",
     "ko-KR": "지원되지 않는 이미지 형식",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(8299-8311)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(8335-8347)"],
     "$id": 22246
   },
   "未知错误": {
@@ -306,7 +306,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(14663-14671)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(14699-14707)"],
     "$id": 10180
   },
   "文件清理服务未初始化": {
@@ -320,8 +320,8 @@
     "fr-FR": "Service de nettoyage de fichiers non initialisé",
     "ko-KR": "파일 정리 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(14824-14838)",
-      "src/electron/main/ipc-handlers/misc.ts(15172-15186)"
+      "src/electron/main/ipc-handlers/misc.ts(14860-14874)",
+      "src/electron/main/ipc-handlers/misc.ts(15208-15222)"
     ],
     "$id": 7673
   },
@@ -336,8 +336,8 @@
     "fr-FR": "Base de données non connectée",
     "ko-KR": "데이터베이스가 연결되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(15550-15560)",
-      "src/electron/main/ipc-handlers/misc.ts(15958-15968)"
+      "src/electron/main/ipc-handlers/misc.ts(15586-15596)",
+      "src/electron/main/ipc-handlers/misc.ts(15994-16004)"
     ],
     "$id": 7674
   },
@@ -351,7 +351,7 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen",
     "fr-FR": "La connexion réseau a échoué",
     "ko-KR": "네트워크 연결 실패",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(16897-16907)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(16968-16978)"],
     "$id": 10181
   },
   "仅允许 http: 和 https: 协议": {
@@ -364,7 +364,7 @@
     "de-DE": "Es sind nur die Protokolle http: und https: zulässig",
     "fr-FR": "Seuls les protocoles http: et https: sont autorisés",
     "ko-KR": "http: 및 https: 프로토콜만 허용됩니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(23489-23514)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(23560-23585)"],
     "$id": 10182
   },
   "无效的 URL": {
@@ -377,7 +377,7 @@
     "de-DE": "Ungültige URL",
     "fr-FR": "URL invalide",
     "ko-KR": "잘못된 URL",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(23641-23652)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(23712-23723)"],
     "$id": 10183
   },
   "核心引擎未初始化": {
@@ -391,11 +391,11 @@
     "fr-FR": "Moteur principal non initialisé",
     "ko-KR": "코어 엔진이 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(23888-23900)",
-      "src/electron/main/ipc-handlers/misc.ts(24072-24084)",
-      "src/electron/main/ipc-handlers/misc.ts(24257-24269)",
-      "src/electron/main/ipc-handlers/misc.ts(24419-24431)",
-      "src/electron/main/ipc-handlers/misc.ts(24567-24579)"
+      "src/electron/main/ipc-handlers/misc.ts(23959-23971)",
+      "src/electron/main/ipc-handlers/misc.ts(24143-24155)",
+      "src/electron/main/ipc-handlers/misc.ts(24328-24340)",
+      "src/electron/main/ipc-handlers/misc.ts(24490-24502)",
+      "src/electron/main/ipc-handlers/misc.ts(24638-24650)"
     ],
     "$id": 7675
   },
@@ -410,9 +410,9 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(27824-27835)",
-      "src/electron/main/ipc-handlers/misc.ts(28070-28081)",
-      "src/electron/main/ipc-handlers/misc.ts(28316-28327)"
+      "src/electron/main/ipc-handlers/misc.ts(27895-27906)",
+      "src/electron/main/ipc-handlers/misc.ts(28141-28152)",
+      "src/electron/main/ipc-handlers/misc.ts(28387-28398)"
     ],
     "$id": 7676
   },

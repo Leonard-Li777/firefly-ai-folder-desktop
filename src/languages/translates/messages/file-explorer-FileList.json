@@ -707,8 +707,8 @@
     "fr-FR": "Similarité",
     "ko-KR": "유사성",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4590-4597)",
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9145-9152)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4297-4304)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8935-8942)"
     ],
     "$id": 21857
   },
@@ -723,7 +723,7 @@
     "fr-FR": "Cliquer pour afficher la vignette statique et effectuer un saut dans le lecteur externe",
     "ko-KR": "클릭하여 정적 썸네일을 표시하고 외부 플레이어에서 타임라인을 이동합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4661-4682)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4368-4389)"
     ],
     "$id": 38932
   },
@@ -738,7 +738,7 @@
     "fr-FR": "Cliquez sur l'axe de saut pour prévisualiser, double-cliquez sur le lecteur externe pour l'ouvrir",
     "ko-KR": "미리 볼 점프 축을 클릭하고 열 외부 플레이어를 두 번 클릭합니다",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4692-4712)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4399-4419)"
     ],
     "$id": 21858
   },
@@ -753,8 +753,8 @@
     "fr-FR": "Aucune application externe prenant en charge un positionnement précis n'a été détectée et elle a été ouverte de la manière par défaut",
     "ko-KR": "정확한 위치를 지원하는 외부 응용 프로그램이 검색되지 않았으며 기본 방식으로 열렸습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(5187-5215)",
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9870-9898)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4894-4922)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9660-9688)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8819-8847)"
     ],
     "$id": 21986
@@ -770,8 +770,8 @@
     "fr-FR": "Échec de l'ouverture du fichier",
     "ko-KR": "파일을 열지 못했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(5334-5344)",
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(10019-10029)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(5041-5051)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9809-9819)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8076-8086)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9018-9028)"
     ],
@@ -788,7 +788,7 @@
     "fr-FR": "Cliquez sur l'axe de saut pour écouter, double-cliquez sur le lecteur externe pour l'ouvrir",
     "ko-KR": "점프 축을 클릭하여 듣고, 외부 플레이어를 두 번 클릭하여 엽니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9230-9250)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9020-9040)"
     ],
     "$id": 22002
   },
@@ -803,8 +803,8 @@
     "fr-FR": "Rappel sémantique",
     "ko-KR": "의미적 회상",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(16812-16820)",
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(16841-16849)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(16602-16610)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(16631-16639)"
     ],
     "$id": 21280
   },
@@ -819,8 +819,8 @@
     "fr-FR": "Impossible de rejoindre la file d'attente d'analyse: {message}",
     "ko-KR": "분석 큐에 가입하지 못했습니다:{message}",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(18785-18808)",
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(19634-19657)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(18575-18598)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(19424-19447)"
     ],
     "$id": 20125
   },
@@ -835,7 +835,7 @@
     "fr-FR": "Déjà ajouté à la file d'attente d'analyse",
     "ko-KR": "분석 대기열에 이미 추가됨",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(19261-19272)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(19051-19062)"
     ],
     "$id": 8542
   },
@@ -850,7 +850,7 @@
     "fr-FR": "La version gratuite n'organise que les 5 premières minutes, passez à Pro pour débloquer les {total} minutes complètes",
     "ko-KR": "무료 버전은 처음 5분만 구성하고, Pro로 업그레이드하여 전체 {total}분을 잠금 해제하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(25055-25094)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(24845-24884)"
     ],
     "$id": 23457
   },
@@ -865,7 +865,7 @@
     "fr-FR": "Développement pinyin: {cand}",
     "ko-KR": "병음 확장:{cand}",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(26127-26143)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(25917-25933)"
     ],
     "$id": 21866
   },
@@ -880,7 +880,7 @@
     "fr-FR": "Rappel sémantique vectoriel",
     "ko-KR": "벡터 시맨틱 리콜",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(26765-26775)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(26555-26565)"
     ],
     "$id": 21283
   },
@@ -895,7 +895,7 @@
     "fr-FR": "Description de l'IA",
     "ko-KR": "AI 설명",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(31921-31929)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(31711-31719)"
     ],
     "$id": 22003
   },
@@ -910,7 +910,7 @@
     "fr-FR": "L'analyse approfondie de l'IA n'a pas été effectuée, appuyez sur le nom du fichier",
     "ko-KR": "인공 지능에 대한 심층 분석이 수행되지 않은,파일 이름을 누르십시오",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32263-32285)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32053-32075)"
     ],
     "$id": 20126
   },
@@ -925,7 +925,7 @@
     "fr-FR": "Soumis",
     "ko-KR": "제출",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32755-32762)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32545-32552)"
     ],
     "$id": 21282
   },
@@ -940,7 +940,7 @@
     "fr-FR": "Analyser immédiatement",
     "ko-KR": "즉시 분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32766-32774)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32556-32564)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10478-10486)"
     ],
     "$id": 8544
@@ -956,7 +956,7 @@
     "fr-FR": "Aucune information contextuelle supplémentaire",
     "ko-KR": "추가 상황 정보 없음",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(34285-34297)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(34075-34087)"
     ],
     "$id": 22004
   },
