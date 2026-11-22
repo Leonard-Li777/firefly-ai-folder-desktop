@@ -9,9 +9,18 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { shell } from 'electron'
 import { getE2EConfig, RuntimePathResolver, type TrashPort } from '../e2e/e2e-gate'
+import { localVideoStreamService } from '../system/local-video-stream-service'
+
+async function ensureVideoStreamReleased(filePath: string): Promise<void> {
+  const released = await localVideoStreamService.releaseByFilePath(filePath)
+  if (!released) {
+    throw new Error('文件正在被占用，请稍后再试')
+  }
+}
 
 export class SystemTrashPort implements TrashPort {
   async trash(filePath: string): Promise<string> {
+    await ensureVideoStreamReleased(filePath)
     await shell.trashItem(filePath)
     return filePath
   }
@@ -21,6 +30,7 @@ export class SandboxTrashPort implements TrashPort {
   constructor(private readonly explicitTrashDir?: string) {}
 
   async trash(filePath: string): Promise<string> {
+    await ensureVideoStreamReleased(filePath)
     const trashDir = this.explicitTrashDir ?? RuntimePathResolver.resolve('trashDir')
     if (!fs.existsSync(trashDir)) {
       fs.mkdirSync(trashDir, { recursive: true })

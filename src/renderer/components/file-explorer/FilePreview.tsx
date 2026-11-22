@@ -35,6 +35,14 @@ interface StreamPlaybackSession {
 }
 
 const STREAM_STALL_TIMEOUT_MS = 8_000
+const STREAM_STARTUP_PLAYABLE_TIMEOUT_MS = 12_000
+
+type WatchdogState =
+  | 'BACKGROUND_HIDDEN'
+  | 'PAUSED'
+  | 'SEEKING'
+  | 'BUFFERING_WAITING'
+  | 'PLAYING_HEALTHY'
 
 interface FilePreviewProps {
   filePath: string
@@ -106,11 +114,16 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const pendingSeekRef = useRef(false)
   /** 8s 停滞看门狗仅在 loadeddata 后启用，避免冷启动与后端 10s 看门狗竞态 */
   const streamLoadedRef = useRef(false)
+  const [streamLoaded, setStreamLoaded] = useState(false)
   const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const seekOpGenRef = useRef(0)
+  const watchdogGenRef = useRef(0)
   const nativeErrorHandledRef = useRef(false)
 
   // 切换文件路径时重置视频时长、流式会话与抽帧降级状态
   useEffect(() => {
+    seekOpGenRef.current += 1
+    watchdogGenRef.current += 1
     const previous = streamSessionRef.current
     if (previous) {
       Promise.resolve(window.electronAPI?.utils?.releaseVideoStream?.(previous.streamId)).catch(
@@ -123,6 +136,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setStreamLogicalTime(0)
     pendingSeekRef.current = false
     streamLoadedRef.current = false
+    setStreamLoaded(false)
     if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current)
     nativeErrorHandledRef.current = false
     setVideoDuration(0)
@@ -137,6 +151,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   /** Level 2 失败统一回落 Level 3：先释放会话，再复用 v1.7 静态帧 + 外部跳轴 */
   const fallbackToStatic = () => {
+    seekOpGenRef.current += 1
+    watchdogGenRef.current += 1
     const session = streamSessionRef.current
     if (session) {
       Promise.resolve(window.electronAPI?.utils?.releaseVideoStream?.(session.streamId)).catch(
@@ -149,6 +165,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setStreamPlaying(false)
     pendingSeekRef.current = false
     streamLoadedRef.current = false
+    setStreamLoaded(false)
     // 原生 error 已写入的快照必须保留；只有 Stream 模式才用逻辑时间覆盖
     if (hadStreamSession && logicalTimeRef.current > 0) {
       degradeSeekSnapshotRef.current = {
@@ -163,8 +180,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const startStreamPlayback = async (startSec: number) => {
     if (nativeErrorHandledRef.current) return
     nativeErrorHandledRef.current = true
+    const myOpGen = ++seekOpGenRef.current
     try {
       const result = await window.electronAPI?.utils?.prepareVideoStream?.(filePath, startSec)
+      if (myOpGen !== seekOpGenRef.current) return
       if (!result?.success || !result.streamId || !result.streamUrl) {
         logger.warn(LogCategory.RENDERER, '[视频预览] 流式播放准备失败:', result?.error)
         fallbackToStatic()
@@ -183,29 +202,45 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       lastStreamActivityRef.current = Date.now()
       pendingSeekRef.current = true
       streamLoadedRef.current = false
+      setStreamLoaded(false)
       streamSessionRef.current = session
       setVideoDuration(session.durationSec ?? 0)
       setStreamSession(session)
     } catch (err: unknown) {
+      if (myOpGen !== seekOpGenRef.current) return
       logger.warn(LogCategory.RENDERER, '[视频预览] 流式播放准备异常:', err)
       fallbackToStatic()
     }
   }
 
-  /** Seek 唯一入口：200ms 防抖，先拿新 URL 与逻辑基线再切 src */
+  /** Seek 唯一入口：200ms 防抖，代际守卫 + 三错误码细分收敛 */
   const handleStreamSeek = (targetSec: number) => {
     if (!streamSessionRef.current) return
+    pendingSeekRef.current = true
+    streamLoadedRef.current = false
+    setStreamLoaded(false)
     if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current)
+    const mySeekGen = ++seekOpGenRef.current
     seekDebounceRef.current = setTimeout(() => {
       void (async () => {
+        if (mySeekGen !== seekOpGenRef.current) return
         const current = streamSessionRef.current
-        if (!current) return
+        if (!current) {
+          if (mySeekGen === seekOpGenRef.current) pendingSeekRef.current = false
+          return
+        }
         try {
           const result = await window.electronAPI?.utils?.seekVideoStream?.(
             current.streamId,
             targetSec
           )
+          // 仅旧代际或显式 SEEK_REQUEST_SUPERSEDED 静默忽略，且绝不清理新代际 pendingSeekRef
+          if (mySeekGen !== seekOpGenRef.current || result?.error === 'SEEK_REQUEST_SUPERSEDED') {
+            return
+          }
           if (!result?.success || !result.streamUrl) {
+            logger.warn(LogCategory.RENDERER, '[视频预览] 流式 Seek 失败，收敛降级:', result?.error)
+            pendingSeekRef.current = false
             fallbackToStatic()
             return
           }
@@ -215,6 +250,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
           setStreamLogicalTime(actualStartSec)
           pendingSeekRef.current = true
           streamLoadedRef.current = false
+          setStreamLoaded(false)
           lastStreamActivityRef.current = Date.now()
           const next: StreamPlaybackSession = {
             ...current,
@@ -225,30 +261,153 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
           streamSessionRef.current = next
           setStreamSession(next)
         } catch (err: unknown) {
+          if (mySeekGen !== seekOpGenRef.current) return
           logger.warn(LogCategory.RENDERER, '[视频预览] 流式 Seek 异常:', err)
+          pendingSeekRef.current = false
           fallbackToStatic()
         }
       })()
     }, 200)
   }
 
-  // 非暂停态下长时间无数据推进即视为流卡死，回落 Level 3
+  // 门槛 A：独立 12s 起播看门狗（从 <video key="stream-video"> 挂载且 src 赋值开始计时，代际绑定）
   useEffect(() => {
-    if (!streamSession) return
-    const timer = setInterval(() => {
-      const video = videoRef.current
-      if (!video || video.paused) return
-      if (
-        streamLoadedRef.current &&
-        video.readyState < 3 &&
-        Date.now() - lastStreamActivityRef.current > STREAM_STALL_TIMEOUT_MS
-      ) {
-        logger.warn(LogCategory.RENDERER, '[视频预览] 流式中途停滞，回落静态预览')
-        fallbackToStatic()
+    if (!streamSession || streamLoaded) return
+    const myGen = ++watchdogGenRef.current
+    const startupTimer = setTimeout(() => {
+      if (watchdogGenRef.current !== myGen || streamLoadedRef.current) return
+      logger.warn(LogCategory.RENDERER, '[视频预览] 12s 内未触发 loadeddata，起播超时降级 Level 3')
+      fallbackToStatic()
+    }, STREAM_STARTUP_PLAYABLE_TIMEOUT_MS)
+    return () => {
+      clearTimeout(startupTimer)
+    }
+  }, [streamSession?.streamId, streamSession?.streamUrl, streamLoaded])
+
+  // 门槛 B：rVFC 链式自重注册 + 1s 独立定时器实时读五态 Watchdog（Frozen v1.7 Approved / R12-01）
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video || !streamSession || !streamLoaded) return
+
+    const myGen = ++watchdogGenRef.current
+    let disposed = false
+    let degraded = false
+    let rvfcHandle: number | null = null
+    let lastPresentedFrames = -1
+    let lastPlayheadTime = video.currentTime
+    let lastAdvanceAt = performance.now()
+    let isWaitingOrStalled = false
+    let rvfcActive = typeof (video as any).requestVideoFrameCallback === 'function'
+
+    const cancelRvfcSafe = () => {
+      if (rvfcHandle !== null && typeof (video as any).cancelVideoFrameCallback === 'function') {
+        try {
+          ;(video as any).cancelVideoFrameCallback(rvfcHandle)
+        } catch {}
+      }
+      rvfcHandle = null
+    }
+
+    const scheduleNextFrameCallback = () => {
+      if (disposed || degraded || watchdogGenRef.current !== myGen || !rvfcActive) return
+      try {
+        rvfcHandle = (video as any).requestVideoFrameCallback(
+          (_now: number, meta: { presentedFrames: number }) => {
+            if (disposed || degraded || watchdogGenRef.current !== myGen) return
+            if (meta.presentedFrames > lastPresentedFrames) {
+              lastPresentedFrames = meta.presentedFrames
+              lastAdvanceAt = performance.now()
+            }
+            scheduleNextFrameCallback()
+          }
+        )
+      } catch (err) {
+        rvfcActive = false
+        rvfcHandle = null
+        logger.warn(LogCategory.RENDERER, `[视频预览] rVFC 注册失败，回退 currentTime 停滞检测: ${String(err)}`)
+      }
+    }
+    if (rvfcActive) scheduleNextFrameCallback()
+
+    const resetBaseline = () => {
+      lastAdvanceAt = performance.now()
+      lastPlayheadTime = video.currentTime
+    }
+    const onWaiting = () => {
+      isWaitingOrStalled = true
+    }
+    const onPlayingOrCanPlay = () => {
+      isWaitingOrStalled = false
+      resetBaseline()
+    }
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') resetBaseline()
+    }
+
+    video.addEventListener('waiting', onWaiting)
+    video.addEventListener('stalled', onWaiting)
+    video.addEventListener('playing', onPlayingOrCanPlay)
+    video.addEventListener('canplay', onPlayingOrCanPlay)
+    video.addEventListener('play', resetBaseline)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    const resolveWatchdogState = (): WatchdogState => {
+      if (document.visibilityState !== 'visible') return 'BACKGROUND_HIDDEN'
+      if (video.paused || video.ended) return 'PAUSED'
+      if (video.seeking || pendingSeekRef.current) return 'SEEKING'
+      if (isWaitingOrStalled || video.readyState < 3) return 'BUFFERING_WAITING'
+      return 'PLAYING_HEALTHY'
+    }
+
+    let intervalId: ReturnType<typeof setInterval> | null = null
+    const degradeOnce = (reason: string) => {
+      if (disposed || degraded || watchdogGenRef.current !== myGen) return
+      degraded = true
+      if (intervalId !== null) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+      cancelRvfcSafe()
+      logger.warn(LogCategory.RENDERER, reason)
+      fallbackToStatic()
+    }
+
+    intervalId = setInterval(() => {
+      if (disposed || degraded || watchdogGenRef.current !== myGen) return
+      if (resolveWatchdogState() !== 'PLAYING_HEALTHY') {
+        resetBaseline()
+        return
+      }
+      if (rvfcActive) {
+        if (performance.now() - lastAdvanceAt >= STREAM_STALL_TIMEOUT_MS) {
+          degradeOnce(
+            `[视频预览] rVFC 8s 无新帧呈现，降级 Level 3 (frames=${lastPresentedFrames}, diagTime=${video.currentTime.toFixed(3)})`
+          )
+        }
+      } else {
+        if (video.currentTime !== lastPlayheadTime) {
+          lastPlayheadTime = video.currentTime
+          lastAdvanceAt = performance.now()
+        } else if (performance.now() - lastAdvanceAt >= STREAM_STALL_TIMEOUT_MS) {
+          degradeOnce(
+            `[视频预览] currentTime 8s 无推进(回退模式)，降级 Level 3 (time=${video.currentTime.toFixed(3)})`
+          )
+        }
       }
     }, 1000)
-    return () => clearInterval(timer)
-  }, [streamSession, filePath, currentTime])
+
+    return () => {
+      disposed = true
+      if (intervalId !== null) clearInterval(intervalId)
+      cancelRvfcSafe()
+      video.removeEventListener('waiting', onWaiting)
+      video.removeEventListener('stalled', onWaiting)
+      video.removeEventListener('playing', onPlayingOrCanPlay)
+      video.removeEventListener('canplay', onPlayingOrCanPlay)
+      video.removeEventListener('play', resetBaseline)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [streamSession?.streamId, streamSession?.streamUrl, streamLoaded])
 
   const jumpToTime = (targetTime: number) => {
     const session = streamSessionRef.current
@@ -654,6 +813,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 /* 浏览器无法解码原生文件：本地 HTTP 双路流式播放 + 受控播放条 */
                 <div className="flex flex-col items-center gap-2 max-w-full w-full">
                   <video
+                    key="stream-video"
                     ref={videoRef}
                     src={streamSession.streamUrl}
                     controls={false}
@@ -665,6 +825,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       markStreamActivity()
                       pendingSeekRef.current = false
                       streamLoadedRef.current = true
+                      setStreamLoaded(true)
                     }}
                     onPlay={() => setStreamPlaying(true)}
                     onPause={() => setStreamPlaying(false)}
@@ -690,6 +851,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 </div>
               ) : (
                 <video
+                  key="native-video"
                   ref={videoRef}
                   src={fileUrl}
                   controls

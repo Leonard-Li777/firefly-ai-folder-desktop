@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from 'crypto'
+import { createHash, randomBytes, timingSafeEqual } from 'crypto'
 import { execFile, spawn, type ChildProcess } from 'child_process'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'http'
 import fs from 'fs'
@@ -8,25 +8,30 @@ import { app } from 'electron'
 import { FileCategory, getFileCategory, logger, LogCategory } from '@firefly/shared'
 
 import { ffmpegService } from './ffmpeg-service'
+import {
+  buildVideoFilter,
+  extractRawStartPtsByStreamIndex,
+  formatSecToFixed6,
+  hasStartTimeOriginMismatch,
+  isRemuxable,
+  maskPathsInStderr,
+  normalizeRotation,
+  parsePositiveRatio,
+  parseSideDataRotation,
+  selectKeyframeFromCsv,
+  type RationalTime,
+  type StreamMode,
+  type VideoProbeMeta
+} from './video-stream-media-utils'
+import {
+  attachProcessLifecycleListeners,
+  terminateInstanceAndWait,
+  type ManagedStreamInstance,
+  type TerminateTimeouts
+} from './video-stream-process-reaper'
 
-export type StreamMode = 'remux' | 'transcode'
-
-/** 媒体探测元数据（跳过 attached_pic 封面流后的首个真实视频流） */
-export interface VideoProbeMeta {
-  durationSec: number | null
-  videoCodec: string | null
-  audioCodec: string | null
-  hasAudio: boolean
-  width: number | null
-  height: number | null
-  pixFmt: string | null
-  bitsPerRawSample: number | null
-  videoProfile: string | null
-  /** 0/90/180/270 为直角，其他非直角保留原始度数，null 表示解析异常（均强制 transcode） */
-  rotationDeg: number | null
-  /** ffprobe 绝对 stream.index，跳过封面流后的真实视频流 */
-  videoStreamIndex: number | null
-}
+export type { RationalTime, StreamMode, VideoProbeMeta }
+export type ShutdownResult = 'CLEAN' | 'CLEANUP_FAILED'
 
 export interface PrepareStreamResult {
   success: boolean
@@ -55,19 +60,12 @@ interface PendingSeekPlan {
   sid: number
   targetSec: number
   actualStartSec: number
+  /** 直接传给 FFmpeg -ss 的 6 位小数定点数字符串（绝不二次扣除起点） */
+  inputSeekSecStr: string
   mode: StreamMode
 }
 
 type SeekPlanDraft = Omit<PendingSeekPlan, 'sid'>
-
-interface ActiveStreamInstance {
-  requestId: string
-  generation: number
-  process: ChildProcess
-  res: ServerResponse
-  startupTimer?: NodeJS.Timeout
-  intentionalKill: boolean
-}
 
 interface StreamSession {
   streamId: string
@@ -82,63 +80,31 @@ interface StreamSession {
   createdAt: number
   lastActivityAt: number
   generation: number
-  activeInstance?: ActiveStreamInstance
+  closed: boolean
+  /** 支持同 sid 受控双实例只读并发（单会话上限 2），按 requestId 索引 */
+  activeInstances: Map<string, ManagedStreamInstance>
+  /** 同 sid 满载（2 实例）时的单槽位等待唤醒回调 */
+  slotWaiter?: () => void
 }
 
 const STARTUP_TIMEOUT_MS = 10_000
 const PROBE_TIMEOUT_MS = 3_000
-const IDLE_TTL_MS = 5 * 60_000
+const IDLE_TTL_MS = 15 * 60_000
 const MAX_SESSION_TTL_MS = 2 * 60 * 60_000
 const SWEEP_INTERVAL_MS = 60_000
-const MAX_ACTIVE_STREAMS = 2
+const MAX_ACTIVE_SESSIONS = 2
+const MAX_INSTANCES_PER_SESSION = 2
+const MAX_GLOBAL_STREAM_PROCESSES = 4
+const COALESCING_WAIT_MS = 200
+const SLOT_WAIT_TIMEOUT_MS = 3_000
 const PROBE_CACHE_MAX = 200
 const KEYFRAME_CACHE_MAX = 500
 const STDERR_TAIL_MAX = 4096
+const RESERVED_PORT_MIN = 38100
+const RESERVED_PORT_MAX = 38859
 
-function normalizeRotation(raw: unknown): number | null {
-  const num = Number(raw)
-  if (!Number.isFinite(num)) return null
-  let deg = Math.round(num) % 360
-  if (deg < 0) deg += 360
-  return deg
-}
-
-function parseSideDataRotation(stream: any): number | null {
-  const side = Array.isArray(stream?.side_data_list)
-    ? stream.side_data_list.find((item: any) =>
-        /display\s*matrix/i.test(String(item?.side_data_type ?? ''))
-      )
-    : null
-  if (side && Number.isFinite(Number(side.rotation))) {
-    // ffprobe 新版 side_data 的 rotation 为顺时针角度，统一取反为逆时针
-    return normalizeRotation(-Number(side.rotation))
-  }
-  if (stream?.tags && stream.tags.rotate !== undefined) return normalizeRotation(stream.tags.rotate)
-  return null
-}
-
-function isRemuxable(meta: VideoProbeMeta): boolean {
-  if (meta.videoStreamIndex === null) return false
-  if (meta.rotationDeg !== 0) return false
-  if (meta.pixFmt !== 'yuv420p') return false
-  if (meta.bitsPerRawSample !== null && meta.bitsPerRawSample !== 8) return false
-  if (meta.videoCodec !== 'h264' && meta.videoCodec !== 'avc1') return false
-  if (/high\s*10|\b(10|12)\b|4:2:2|4:4:4/i.test(meta.videoProfile ?? '')) return false
-  return true
-}
-
-function buildVideoFilter(rotation: number | null): string {
-  let rot = ''
-  if (rotation === 90) rot = 'transpose=1,'
-  else if (rotation === 270) rot = 'transpose=2,'
-  else if (rotation === 180) rot = 'hflip,vflip,'
-  else if (rotation != null && rotation !== 0) rot = `rotate=${rotation}*PI/180,`
-  // 先旋转再按长边 <= 1280 缩放；逗号必须转义，因为 argv 不经过 shell
-  return `${rot}scale=w=if(gte(iw\\,ih)\\,trunc(min(1280\\,iw)/2)*2\\,-2):h=if(gte(iw\\,ih)\\,-2\\,trunc(min(1280\\,ih)/2)*2),setsar=1`
-}
-
-function verifyToken(expected: string, provided: string | null): boolean {
-  if (!provided) return false
+function verifyToken(expected: string, provided: unknown): boolean {
+  if (typeof provided !== 'string' || provided.length === 0) return false
   const a = Buffer.from(expected, 'utf8')
   const b = Buffer.from(provided, 'utf8')
   return a.length === b.length && timingSafeEqual(a, b)
@@ -166,8 +132,14 @@ function basenameForLog(filePath: string): string {
   }
 }
 
+function isVideoPathAllowed(filePath: string): boolean {
+  if (getFileCategory(filePath) === FileCategory.VIDEO) return true
+  // .ts 在部分共享配置中可能被归类为 TypeScript，门禁层对 .ts 扩展名放行交由 ffprobe 核验
+  return /\.ts$/i.test(filePath)
+}
+
 /**
- * 本地 HTTP 智能双路视频流式播放服务（主进程单例）。
+ * 本地 HTTP 智能双路视频流式播放服务（主进程单例，Frozen v1.7 Approved）。
  * 仅在 FilePreview 原生 <video> 解码失败后按需启用：快车道 remux（-c:v copy）+ 兼容车道轻量转码，
  * 经 127.0.0.1 随机端口 fMP4 流式直出，零落盘、零 Schema 改动。
  */
@@ -175,14 +147,28 @@ export class LocalVideoStreamService {
   private static instance: LocalVideoStreamService | null = null
   /** 仅供单测缩短首字节看门狗；生产恒为 10s */
   private static startupTimeoutMs = STARTUP_TIMEOUT_MS
+  /** 仅供单测缩短合并/排队/终止超时；生产使用默认契约值 */
+  private static testTimingOverrides: {
+    coalescingMs?: number
+    slotWaitMs?: number
+    terminate?: TerminateTimeouts
+  } = {}
 
   private server: Server | null = null
+  private serverStarting: Promise<void> | null = null
   private serverPort = 0
   private sessions = new Map<string, StreamSession>()
   private probeCache = new Map<string, VideoProbeMeta>()
-  private keyframeCache = new Map<string, number | null>()
+  private keyframeCache = new Map<
+    string,
+    { inputSeekSecStr: string; actualStartSec: number } | null
+  >()
   private sweepTimer: NodeJS.Timeout | null = null
   private quitHookInstalled = false
+  private isShuttingDown = false
+  private shutdownComplete = false
+  /** 全局并发 FFmpeg 推流进程原子计数（上限 MAX_GLOBAL_STREAM_PROCESSES = 4） */
+  private reservedGlobalSlots = 0
 
   static getInstance(): LocalVideoStreamService {
     if (!LocalVideoStreamService.instance) {
@@ -195,11 +181,25 @@ export class LocalVideoStreamService {
   static resetForTest(): void {
     LocalVideoStreamService.instance = null
     LocalVideoStreamService.startupTimeoutMs = STARTUP_TIMEOUT_MS
+    LocalVideoStreamService.testTimingOverrides = {}
   }
 
   static setStartupTimeoutForTest(ms: number): void {
     LocalVideoStreamService.startupTimeoutMs =
       Number.isFinite(ms) && ms > 0 ? ms : STARTUP_TIMEOUT_MS
+  }
+
+  static setTestTimings(overrides: {
+    coalescingMs?: number
+    slotWaitMs?: number
+    terminate?: TerminateTimeouts
+  }): void {
+    LocalVideoStreamService.testTimingOverrides = overrides
+  }
+
+  /** 供单测/诊断观测当前全局预留槽位数 */
+  getReservedGlobalSlots(): number {
+    return this.reservedGlobalSlots
   }
 
   async prepare(filePath: string, startSec = 0): Promise<PrepareStreamResult> {
@@ -217,7 +217,7 @@ export class LocalVideoStreamService {
     } catch {
       return { success: false, error: '文件不存在或不可访问' }
     }
-    if (getFileCategory(filePath) !== FileCategory.VIDEO) {
+    if (!isVideoPathAllowed(filePath)) {
       return { success: false, error: '目标不是视频文件' }
     }
     const ffmpegPath = ffmpegService.getFfmpegPath()
@@ -238,29 +238,24 @@ export class LocalVideoStreamService {
       return this.toPrepareResult(existing)
     }
 
-    if (this.sessions.size >= MAX_ACTIVE_STREAMS) {
+    if (this.sessions.size >= MAX_ACTIVE_SESSIONS) {
       const idle = this.oldestIdleSession()
       if (!idle) {
         logger.warn(LogCategory.MAIN, '[视频流] 会话已满且无空闲会话可驱逐')
         return { success: false, error: 'STREAM_CAPACITY_EXCEEDED' }
       }
-      this.terminateSession(idle)
+      idle.closed = true
       this.sessions.delete(idle.streamId)
       logger.warn(
         LogCategory.MAIN,
-        `[视频流] 活跃流达上限 ${MAX_ACTIVE_STREAMS}，淘汰空闲会话 ${idle.streamId}`
+        `[视频流] 活跃流达上限 ${MAX_ACTIVE_SESSIONS}，淘汰空闲会话 ${idle.streamId}`
       )
     }
 
     await this.ensureServer()
 
-    const streamId = createHash('sha256')
-      .update(`${fileKey}|${Date.now()}|${Math.random()}`)
-      .digest('hex')
-      .slice(0, 24)
-    const token = createHash('sha256')
-      .update(`${streamId}|${Date.now()}|${Math.random()}`)
-      .digest('hex')
+    const streamId = randomBytes(12).toString('hex')
+    const token = randomBytes(16).toString('hex')
     const session: StreamSession = {
       streamId,
       filePath,
@@ -272,13 +267,16 @@ export class LocalVideoStreamService {
         sid: 1,
         targetSec: plan.targetSec,
         actualStartSec: plan.actualStartSec,
+        inputSeekSecStr: plan.inputSeekSecStr,
         mode: plan.mode
       },
       seekSeq: 1,
       streamUrl: '',
       createdAt: Date.now(),
       lastActivityAt: Date.now(),
-      generation: 0
+      generation: 0,
+      closed: false,
+      activeInstances: new Map()
     }
     session.streamUrl = this.buildStreamUrl(session)
     this.sessions.set(streamId, session)
@@ -293,15 +291,17 @@ export class LocalVideoStreamService {
 
   /**
    * Seek 唯一强制入口：只计算计划与拼接新 URL，绝不 spawn 子进程。
-   * 新 URL 携带递增的 sid 规避 Chromium 媒体缓存复用旧流。
+   * 细分为三错误码：SESSION_CLOSED / SESSION_REPLACED / SEEK_REQUEST_SUPERSEDED。
    */
   async seek(streamId: string, targetSec: number): Promise<SeekStreamResult> {
     const session = this.sessions.get(streamId)
-    if (!session) return { success: false, error: '会话不存在或已释放' }
+    if (!session) return { success: false, error: 'SESSION_CLOSED' }
+    if (session.closed) return { success: false, error: 'SESSION_CLOSED' }
     if (typeof targetSec !== 'number' || !Number.isFinite(targetSec) || targetSec < 0) {
       return { success: false, error: 'INVALID_SEEK_PARAM' }
     }
 
+    const requestSeq = ++session.seekSeq
     const clamped = clampTargetSec(targetSec, session.probeMeta.durationSec)
     const plan = await this.buildSeekPlan(
       session.filePath,
@@ -309,6 +309,18 @@ export class LocalVideoStreamService {
       session.probeMeta,
       clamped
     )
+
+    // 三条件对象身份守卫（R11-04：精准区分会话失效与请求过期）
+    if (session.closed) {
+      return { success: false, error: 'SESSION_CLOSED' }
+    }
+    if (this.sessions.get(streamId) !== session) {
+      return { success: false, error: 'SESSION_REPLACED' }
+    }
+    if (session.seekSeq !== requestSeq) {
+      return { success: false, error: 'SEEK_REQUEST_SUPERSEDED' }
+    }
+
     session.lastActivityAt = Date.now()
     this.applySeek(session, plan)
     logger.info(
@@ -328,30 +340,109 @@ export class LocalVideoStreamService {
       return { success: false, error: 'streamId 为空' }
     }
     const session = this.sessions.get(streamId)
-    if (!session) return { success: true } // 幂等：未知 streamId 亦成功
-    this.terminateSession(session)
+    if (!session) return { success: true } // 幂等
+    session.closed = true
     this.sessions.delete(streamId)
+    this.wakeSlotWaiter(session)
+    void this.terminateSessionInstances(session)
     return { success: true }
   }
 
-  shutdown(): void {
+  /**
+   * 文件占用释放确权契约：文件管理器执行重命名/移动/删除前必须 await 本方法；
+   * 仅当所有匹配会话的受管 FFmpeg 直接子进程全部确认退出且 stdio 关闭后才返回 true。
+   */
+  async releaseByFilePath(filePath: string): Promise<boolean> {
+    if (typeof filePath !== 'string' || filePath.length === 0) return true
+    const matched: StreamSession[] = []
+    for (const session of this.sessions.values()) {
+      if (session.filePath === filePath) matched.push(session)
+    }
+    if (matched.length === 0) return true
+
+    const results = await Promise.all(
+      matched.map(async session => {
+        session.closed = true
+        this.sessions.delete(session.streamId)
+        this.wakeSlotWaiter(session)
+        return await this.terminateSessionInstances(session)
+      })
+    )
+    return results.every(Boolean)
+  }
+
+  /**
+   * 应用退出清理契约（公开终态仅 'CLEAN' | 'CLEANUP_FAILED'）：
+   * 异步等待所有受管直接子进程确权关闭 + HTTP Server 关闭。
+   */
+  async shutdown(): Promise<ShutdownResult> {
     if (this.sweepTimer) {
       clearInterval(this.sweepTimer)
       this.sweepTimer = null
     }
-    for (const session of this.sessions.values()) this.terminateSession(session)
+    const allSessions = Array.from(this.sessions.values())
     this.sessions.clear()
+
+    const sessionResults = await Promise.all(
+      allSessions.map(async session => {
+        session.closed = true
+        this.wakeSlotWaiter(session)
+        return await this.terminateSessionInstances(session)
+      })
+    )
+
+    let serverClosed = true
     if (this.server) {
-      this.server.close()
+      const srv = this.server
       this.server = null
+      this.serverPort = 0
+      serverClosed = await new Promise<boolean>(resolve => {
+        const timer = setTimeout(() => resolve(false), 1500)
+        try {
+          srv.close(err => {
+            clearTimeout(timer)
+            resolve(!err)
+          })
+        } catch {
+          clearTimeout(timer)
+          resolve(false)
+        }
+      })
     }
+
+    return sessionResults.every(Boolean) && serverClosed ? 'CLEAN' : 'CLEANUP_FAILED'
   }
 
-  /** 挂载 app.before-quit，幂等 */
+  /** 挂载两段式防重入 app.before-quit（幂等；仅当外部未统一接管时兜底） */
   installQuitHook(): void {
     if (this.quitHookInstalled) return
     this.quitHookInstalled = true
-    app.on('before-quit', () => this.shutdown())
+    app.on('before-quit', (e: Electron.Event) => {
+      if (this.shutdownComplete) return
+      e.preventDefault()
+      if (this.isShuttingDown) return
+      this.isShuttingDown = true
+
+      void (async () => {
+        try {
+          const result = await this.shutdown()
+          if (result === 'CLEAN') {
+            this.shutdownComplete = true
+            app.quit()
+          } else {
+            // app.exit(1) 是宿主防死锁的异常失败终止路径，严禁伪装为 CLEAN
+            logger.error(
+              LogCategory.MAIN,
+              '[视频流] 退出清理未确权 (CLEANUP_FAILED)，以异常退出码 1 终止宿主'
+            )
+            app.exit(1)
+          }
+        } catch (err) {
+          logger.error(LogCategory.MAIN, '[视频流] 退出清理致命异常:', err)
+          app.exit(1)
+        }
+      })()
+    })
   }
 
   // ---------------- 私有实现 ----------------
@@ -367,20 +458,25 @@ export class LocalVideoStreamService {
     }
   }
 
-  /** idleOnly=true 时仅复用无活跃连接的同文件会话，支持双窗格同文件同时播放 */
   private findByFilePath(filePath: string, idleOnly = false): StreamSession | null {
     for (const session of this.sessions.values()) {
-      if (session.filePath === filePath && (!idleOnly || !session.activeInstance)) return session
+      if (
+        session.filePath === filePath &&
+        (!idleOnly || (session.activeInstances.size === 0 && !session.slotWaiter))
+      ) {
+        return session
+      }
     }
     return null
   }
 
   private applySeek(session: StreamSession, plan: SeekPlanDraft): void {
-    session.seekSeq += 1
+    const nextSid = session.pendingSeekPlan.sid + 1
     session.pendingSeekPlan = {
-      sid: session.seekSeq,
+      sid: nextSid,
       targetSec: plan.targetSec,
       actualStartSec: plan.actualStartSec,
+      inputSeekSecStr: plan.inputSeekSecStr,
       mode: plan.mode
     }
     session.streamUrl = this.buildStreamUrl(session)
@@ -401,7 +497,7 @@ export class LocalVideoStreamService {
     return `${real}|${stat.size ?? ''}|${stat.mtimeMs ?? ''}`
   }
 
-  /** 只在 remux 快车道探测关键帧；探测异常/探空统一降级 transcode，绝不虚报 actualStartSec */
+  /** 只在 remux 快车道探测关键帧；探测异常/探空/负偏移/pts!==dts 统一降级 transcode */
   private async buildSeekPlan(
     filePath: string,
     fileKey: string,
@@ -409,46 +505,83 @@ export class LocalVideoStreamService {
     targetSec: number
   ): Promise<SeekPlanDraft> {
     let mode: StreamMode = isRemuxable(meta) ? 'remux' : 'transcode'
-    if (mode === 'remux') {
-      const index = meta.videoStreamIndex
-      const keyframePts =
-        index === null
-          ? null
-          : await this.findNearestKeyframeBefore(filePath, fileKey, index, targetSec)
-      if (keyframePts === null) {
-        logger.warn(LogCategory.MAIN, '[视频流] 关键帧探测失败/探空，本次流降级 transcode')
+    if (mode === 'remux' && meta.videoStreamIndex !== null && meta.timeBase && meta.startPts !== null) {
+      const kf = await this.findNearestKeyframeBefore(
+        filePath,
+        fileKey,
+        meta.videoStreamIndex,
+        meta.startPts,
+        meta.timeBase,
+        meta.startTimeSec,
+        targetSec
+      )
+      if (!kf) {
+        logger.warn(LogCategory.MAIN, '[视频流] 关键帧探测失败/探空/不满足锚点约束，降级 transcode')
         mode = 'transcode'
       } else {
-        return { targetSec, actualStartSec: keyframePts, mode }
+        return {
+          targetSec,
+          actualStartSec: kf.actualStartSec,
+          inputSeekSecStr: kf.inputSeekSecStr,
+          mode
+        }
       }
     }
-    return { targetSec, actualStartSec: targetSec, mode }
+    return {
+      targetSec,
+      actualStartSec: targetSec,
+      inputSeekSecStr: formatSecToFixed6(targetSec),
+      mode
+    }
   }
 
   private async ensureServer(): Promise<void> {
     if (this.server) return
-    this.server = createServer((req, res) => this.handleHttp(req, res))
-    this.server.on('error', err =>
-      logger.warn(LogCategory.MAIN, `[视频流] HTTP 服务错误: ${String(err)}`)
-    )
-    this.server.on('clientError', (_err, socket) => {
-      if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
+    if (this.serverStarting) return this.serverStarting
+
+    this.serverStarting = (async () => {
+      const maxAttempts = 5
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const srv = createServer((req, res) => {
+          void this.handleHttp(req, res)
+        })
+        srv.on('error', err =>
+          logger.warn(LogCategory.MAIN, `[视频流] HTTP 服务错误: ${String(err)}`)
+        )
+        srv.on('clientError', (_err, socket) => {
+          if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\n\r\n')
+        })
+
+        const port = await new Promise<number>((resolve, reject) => {
+          const onError = (err: Error) => reject(err)
+          srv.once('error', onError)
+          srv.listen(0, '127.0.0.1', () => {
+            const addr = srv.address()
+            srv.removeListener('error', onError)
+            resolve(addr && typeof addr === 'object' ? addr.port : 0)
+          })
+        })
+
+        // 规避 38100~38859 开发保留端口段
+        if (port >= RESERVED_PORT_MIN && port <= RESERVED_PORT_MAX && attempt < maxAttempts - 1) {
+          await new Promise<void>(r => srv.close(() => r()))
+          continue
+        }
+
+        this.server = srv
+        this.serverPort = port
+        logger.info(LogCategory.MAIN, `[视频流] 回环 HTTP 服务已启动: 127.0.0.1:${this.serverPort}`)
+        return
+      }
+    })().finally(() => {
+      this.serverStarting = null
     })
-    await new Promise<void>((resolve, reject) => {
-      const onError = (err: Error) => reject(err)
-      this.server!.once('error', onError)
-      this.server!.listen(0, '127.0.0.1', () => {
-        const addr = this.server!.address()
-        if (addr && typeof addr === 'object') this.serverPort = addr.port
-        this.server!.removeListener('error', onError)
-        resolve()
-      })
-    })
-    logger.info(LogCategory.MAIN, `[视频流] 回环 HTTP 服务已启动: 127.0.0.1:${this.serverPort}`)
+
+    return this.serverStarting
   }
 
-  private handleHttp(req: IncomingMessage, res: ServerResponse): void {
-    // 显式忽略 Range：Chromium 媒体加载默认带 Range: bytes=0-，恒返 200 流式响应
+  private async handleHttp(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    // 显式忽略 Range：实时 fMP4 流无总字节长，恒返 200 流式响应，严禁返 416
     void req.headers.range
 
     const url = new URL(req.url || '', `http://127.0.0.1:${this.serverPort}`)
@@ -458,7 +591,7 @@ export class LocalVideoStreamService {
       return
     }
     const session = this.sessions.get(match[1])
-    if (!session) {
+    if (!session || session.closed) {
       res.writeHead(404).end('Not Found')
       return
     }
@@ -472,27 +605,141 @@ export class LocalVideoStreamService {
       this.writeJsonError(res, 400, 'INVALID_SEEK_PARAM')
       return
     }
+
+    // 入口同步拦截过期/迟到 sid（R12-03：绝不在 spawn 后才检查）
     const requestedSid = Number(url.searchParams.get('sid') ?? '')
     if (!Number.isFinite(requestedSid) || requestedSid !== session.pendingSeekPlan.sid) {
       this.writeJsonError(res, 409, 'STALE_STREAM_URL')
       return
     }
 
-    session.lastActivityAt = Date.now()
-    const myGen = ++session.generation
-    const old = session.activeInstance
-    if (old) {
-      old.intentionalKill = true
-      this.terminateInstance(old)
+    const plan = session.pendingSeekPlan
+
+    // HEAD 请求：直接读取预计算 pendingSeekPlan 返回与 GET 一致的 200 头，不 spawn
+    if (req.method === 'HEAD') {
+      res.writeHead(200, {
+        'Content-Type': 'video/mp4',
+        'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*',
+        Connection: 'close',
+        'X-Stream-Actual-Start-Sec': plan.actualStartSec.toFixed(3)
+      })
+      res.end()
+      return
     }
 
-    // 直接消费预计算计划：HTTP 路径绝不再次运行 ffprobe
-    const plan = session.pendingSeekPlan
+    if (req.method !== 'GET') {
+      res.writeHead(405).end('Method Not Allowed')
+      return
+    }
+
+    session.lastActivityAt = Date.now()
+
+    // 跨 sid 换流清扫：仅限定同一 session.streamId 且 inst.sid < requestedSid（R12-03）
+    const staleOldInstances: ManagedStreamInstance[] = []
+    for (const inst of session.activeInstances.values()) {
+      if (inst.streamId === session.streamId && inst.sid < requestedSid) {
+        inst.intentionalKill = true
+        staleOldInstances.push(inst)
+      }
+    }
+    const staleCleanupPromises = staleOldInstances.map(old => {
+      session.activeInstances.delete(old.requestId)
+      return terminateInstanceAndWait(old, LocalVideoStreamService.testTimingOverrides.terminate)
+    })
+
+    // 清理同 sid 下已断开的残留实例
+    for (const [reqId, inst] of Array.from(session.activeInstances.entries())) {
+      if (inst.res.destroyed || inst.res.writableEnded || inst.closed) {
+        session.activeInstances.delete(reqId)
+        void terminateInstanceAndWait(inst, LocalVideoStreamService.testTimingOverrides.terminate)
+      }
+    }
+
+    // 情形 B：同 sid 已有 1 个健康在途实例，执行 200ms 启发式断连合并等待
+    if (session.activeInstances.size === 1) {
+      const existing = session.activeInstances.values().next().value as ManagedStreamInstance
+      const coalescingMs =
+        LocalVideoStreamService.testTimingOverrides.coalescingMs ?? COALESCING_WAIT_MS
+      if (coalescingMs > 0 && !existing.res.destroyed && !existing.res.writableEnded) {
+        await this.waitForResponseClose(existing.res, res, coalescingMs)
+        if (res.destroyed || res.writableEnded || session.closed) return
+        if (existing.res.destroyed || existing.res.writableEnded || existing.closed) {
+          session.activeInstances.delete(existing.requestId)
+          await terminateInstanceAndWait(
+            existing,
+            LocalVideoStreamService.testTimingOverrides.terminate
+          )
+        }
+      }
+    }
+
+    // 情形 C：同 sid 已有 2 个健康在途实例满载 -> 绝不驱逐健康流，第 3 请求单槽位排队等待至多 3000ms
+    if (session.activeInstances.size >= MAX_INSTANCES_PER_SESSION) {
+      if (session.slotWaiter) {
+        this.writeJsonError(res, 503, 'STREAM_INSTANCE_CAPACITY_LIMIT')
+        return
+      }
+      const slotWaitMs =
+        LocalVideoStreamService.testTimingOverrides.slotWaitMs ?? SLOT_WAIT_TIMEOUT_MS
+      const acquired = await this.waitForSessionSlot(session, res, slotWaitMs)
+      if (!acquired) {
+        if (!res.destroyed && !res.writableEnded) {
+          this.writeJsonError(res, 503, 'STREAM_INSTANCE_CAPACITY_LIMIT')
+        }
+        return
+      }
+    }
+
+    // 二次同步校验（await 期间会话可能关闭或推进了新 sid）
+    if (session.closed || this.sessions.get(session.streamId) !== session) {
+      this.writeJsonError(res, 404, 'SESSION_CLOSED')
+      return
+    }
+    if (requestedSid !== session.pendingSeekPlan.sid) {
+      this.writeJsonError(res, 409, 'STALE_STREAM_URL')
+      return
+    }
+    if (res.destroyed || res.writableEnded) return
+
+    // 全局并发槽位原子预留：若因旧实例正在异步回收导致暂满，先 await 旧实例释放槽位
+    if (
+      this.reservedGlobalSlots >= MAX_GLOBAL_STREAM_PROCESSES &&
+      staleCleanupPromises.length > 0
+    ) {
+      await Promise.all(staleCleanupPromises)
+      if (session.closed || res.destroyed || res.writableEnded) return
+      if (requestedSid !== session.pendingSeekPlan.sid) {
+        this.writeJsonError(res, 409, 'STALE_STREAM_URL')
+        return
+      }
+    }
+
+    // 同步无 await 原子预留槽位，防并发 Seek 突破全局 4 进程上限
+    if (this.reservedGlobalSlots >= MAX_GLOBAL_STREAM_PROCESSES) {
+      this.writeJsonError(res, 503, 'GLOBAL_STREAM_CAPACITY_LIMIT')
+      return
+    }
+    this.reservedGlobalSlots += 1
+    let slotReleased = false
+    const releaseSlotOnce = () => {
+      if (slotReleased) return
+      slotReleased = true
+      this.reservedGlobalSlots = Math.max(0, this.reservedGlobalSlots - 1)
+    }
+
     const ffmpegPath = ffmpegService.getFfmpegPath()
     if (!ffmpegPath) {
+      releaseSlotOnce()
       this.writeJsonError(res, 502, 'FFMPEG_NOT_READY')
       return
     }
+
+    const myGen = ++session.generation
+    const requestId = createHash('sha256')
+      .update(`${session.streamId}|${requestedSid}|${myGen}|${Date.now()}|${Math.random()}`)
+      .digest('hex')
+      .slice(0, 16)
 
     const args = this.buildStreamArgs(session, plan)
     let proc: ChildProcess
@@ -503,30 +750,31 @@ export class LocalVideoStreamService {
         stdio: ['ignore', 'pipe', 'pipe']
       })
     } catch (err) {
+      releaseSlotOnce()
       logger.warn(LogCategory.MAIN, `[视频流] spawn 失败: ${String(err)}`)
       this.writeJsonError(res, 502, 'SPAWN_FAILED')
       return
     }
 
-    const requestId = createHash('sha256')
-      .update(`${session.streamId}|${myGen}|${Date.now()}`)
-      .digest('hex')
-      .slice(0, 16)
-    const instance: ActiveStreamInstance = {
+    const instance: ManagedStreamInstance = {
       requestId,
+      streamId: session.streamId,
+      sid: requestedSid,
       generation: myGen,
       process: proc,
       res,
-      intentionalKill: false
+      intentionalKill: false,
+      spawnFailed: false,
+      exited: false,
+      closed: false,
+      slotReleased: false,
+      releaseSlot: () => {
+        instance.slotReleased = true
+        releaseSlotOnce()
+      }
     }
-
-    // 二次校验：spawn 期间若已被更新一代抢占，立即回收孤儿，绝不覆盖新一代 activeInstance
-    if (myGen !== session.generation) {
-      instance.intentionalKill = true
-      this.terminateInstance(instance)
-      return
-    }
-    session.activeInstance = instance
+    attachProcessLifecycleListeners(instance)
+    session.activeInstances.set(requestId, instance)
 
     let stderrTail = ''
     proc.stderr?.on('data', chunk => {
@@ -535,24 +783,26 @@ export class LocalVideoStreamService {
 
     let gotFirstByte = false
     instance.startupTimer = setTimeout(() => {
-      if (!gotFirstByte && !instance.intentionalKill && session.generation === myGen) {
+      if (!gotFirstByte && !instance.intentionalKill && session.activeInstances.has(requestId)) {
         logger.warn(LogCategory.MAIN, `[视频流] 首字节超时，终止实例 ${requestId}`)
         instance.intentionalKill = true
-        // 先写 502 再回收，否则 terminateInstance 的 res.end() 会先冲出空 200
         if (!res.headersSent && !res.writableEnded && !res.destroyed) {
           this.writeJsonError(res, 502, 'STREAM_START_TIMEOUT')
         }
-        this.terminateInstance(instance)
+        session.activeInstances.delete(requestId)
+        void terminateInstanceAndWait(
+          instance,
+          LocalVideoStreamService.testTimingOverrides.terminate
+        ).finally(() => this.wakeSlotWaiter(session))
       }
     }, LocalVideoStreamService.startupTimeoutMs)
 
-    // 200 响应头延迟到首字节写出：超时时才能合法返回 502，而非已 flush 后再改状态码
     proc.stdout?.on('data', chunk => {
       if (!gotFirstByte) {
         gotFirstByte = true
         this.clearStartupTimer(instance)
       }
-      if (session.generation !== myGen || instance.intentionalKill) return
+      if (instance.intentionalKill || !session.activeInstances.has(requestId)) return
       if (res.writableEnded || res.destroyed) return
       if (!res.headersSent) {
         res.writeHead(200, {
@@ -565,6 +815,7 @@ export class LocalVideoStreamService {
       }
       res.write(chunk)
     })
+
     proc.stdout?.on('error', err => {
       this.clearStartupTimer(instance)
       if ((err as NodeJS.ErrnoException).code !== 'ECONNRESET') {
@@ -575,34 +826,124 @@ export class LocalVideoStreamService {
     proc.on('error', err => {
       this.clearStartupTimer(instance)
       logger.warn(LogCategory.MAIN, `[视频流] ffmpeg 进程错误: ${String(err)}`)
+      if (!res.headersSent && !res.writableEnded && !res.destroyed) {
+        this.writeJsonError(res, 502, 'SPAWN_ERROR')
+      }
+      session.activeInstances.delete(requestId)
+      instance.releaseSlot()
+      this.wakeSlotWaiter(session)
     })
-    proc.on('exit', code => {
+    proc.on('close', code => {
       this.clearStartupTimer(instance)
+      session.activeInstances.delete(requestId)
+      instance.releaseSlot()
+      this.wakeSlotWaiter(session)
+
       if (instance.intentionalKill) return
       if (!res.headersSent && !res.writableEnded && !res.destroyed) {
         this.writeJsonError(res, 502, 'STREAM_EXIT_EARLY')
-        this.terminateInstance(instance)
         return
       }
-      if (code !== 0 && session.activeInstance?.requestId === instance.requestId) {
-        logger.warn(
-          LogCategory.MAIN,
-          `[视频流] ffmpeg 异常退出 code=${code}: ${stderrTail.slice(-200)}`
-        )
+      if (code !== 0) {
+        const masked = maskPathsInStderr(stderrTail.slice(-200), session.filePath)
+        logger.warn(LogCategory.MAIN, `[视频流] ffmpeg 异常退出 code=${code}: ${masked}`)
         if (!res.writableEnded && !res.destroyed) res.destroy()
+      } else if (!res.writableEnded && !res.destroyed) {
+        res.end()
       }
     })
 
     res.on('close', () => {
       this.clearStartupTimer(instance)
-      if (
-        session.activeInstance?.requestId === instance.requestId &&
-        session.generation === myGen
-      ) {
-        this.terminateInstance(instance)
-        session.activeInstance = undefined
+      if (session.activeInstances.has(requestId)) {
+        session.activeInstances.delete(requestId)
+        void terminateInstanceAndWait(
+          instance,
+          LocalVideoStreamService.testTimingOverrides.terminate
+        ).finally(() => this.wakeSlotWaiter(session))
       }
     })
+  }
+
+  private waitForResponseClose(
+    targetRes: ServerResponse,
+    incomingRes: ServerResponse,
+    timeoutMs: number
+  ): Promise<void> {
+    return new Promise(resolve => {
+      if (
+        targetRes.destroyed ||
+        targetRes.writableEnded ||
+        incomingRes.destroyed ||
+        incomingRes.writableEnded
+      ) {
+        resolve()
+        return
+      }
+      const done = () => {
+        clearTimeout(timer)
+        targetRes.removeListener('close', done)
+        incomingRes.removeListener('close', done)
+        resolve()
+      }
+      const timer = setTimeout(done, timeoutMs)
+      targetRes.once('close', done)
+      incomingRes.once('close', done)
+    })
+  }
+
+  private waitForSessionSlot(
+    session: StreamSession,
+    incomingRes: ServerResponse,
+    timeoutMs: number
+  ): Promise<boolean> {
+    return new Promise(resolve => {
+      if (session.activeInstances.size < MAX_INSTANCES_PER_SESSION) {
+        resolve(true)
+        return
+      }
+      let settled = false
+      const finish = (ok: boolean) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        if (session.slotWaiter === onWake) session.slotWaiter = undefined
+        incomingRes.removeListener('close', onClientAbort)
+        resolve(ok)
+      }
+      const onWake = () => {
+        finish(
+          !session.closed &&
+            !incomingRes.destroyed &&
+            !incomingRes.writableEnded &&
+            session.activeInstances.size < MAX_INSTANCES_PER_SESSION
+        )
+      }
+      const onClientAbort = () => finish(false)
+      const timer = setTimeout(() => finish(false), timeoutMs)
+      session.slotWaiter = onWake
+      incomingRes.once('close', onClientAbort)
+    })
+  }
+
+  private wakeSlotWaiter(session: StreamSession): void {
+    const waiter = session.slotWaiter
+    if (waiter) {
+      session.slotWaiter = undefined
+      waiter()
+    }
+  }
+
+  private async terminateSessionInstances(session: StreamSession): Promise<boolean> {
+    const instances = Array.from(session.activeInstances.values())
+    session.activeInstances.clear()
+    if (instances.length === 0) return true
+    const results = await Promise.all(
+      instances.map(inst =>
+        terminateInstanceAndWait(inst, LocalVideoStreamService.testTimingOverrides.terminate)
+      )
+    )
+    return results.every(Boolean)
   }
 
   private writeJsonError(res: ServerResponse, status: number, error: string): void {
@@ -611,7 +952,7 @@ export class LocalVideoStreamService {
     res.end(JSON.stringify({ success: false, error }))
   }
 
-  private clearStartupTimer(instance: ActiveStreamInstance): void {
+  private clearStartupTimer(instance: ManagedStreamInstance): void {
     if (instance.startupTimer) {
       clearTimeout(instance.startupTimer)
       instance.startupTimer = undefined
@@ -620,7 +961,7 @@ export class LocalVideoStreamService {
 
   private buildStreamArgs(session: StreamSession, plan: PendingSeekPlan): string[] {
     const meta = session.probeMeta
-    const index = meta.videoStreamIndex ?? 0
+    const videoMap = meta.videoStreamIndex !== null ? `0:${meta.videoStreamIndex}` : '0:V:0'
     const common = [
       '-hide_banner',
       '-loglevel',
@@ -631,7 +972,8 @@ export class LocalVideoStreamService {
       '-fflags',
       '+genpts'
     ]
-    const maps = ['-map', `0:${index}`, ...(meta.hasAudio ? ['-map', '0:a:0'] : []), '-sn', '-dn']
+    const maps = ['-map', videoMap, ...(meta.hasAudio ? ['-map', '0:a:0?'] : []), '-sn', '-dn']
+    // 移除 first_pts=0，保留 -af aresample=async=1 以保全源流 A/V 相对偏移
     const audio = meta.hasAudio
       ? [
           '-c:a',
@@ -645,7 +987,7 @@ export class LocalVideoStreamService {
           '-b:a',
           '128k',
           '-af',
-          'aresample=async=1:first_pts=0'
+          'aresample=async=1'
         ]
       : ['-an']
     const mux = [
@@ -666,7 +1008,7 @@ export class LocalVideoStreamService {
       return [
         ...common,
         '-ss',
-        plan.actualStartSec.toFixed(3),
+        plan.inputSeekSecStr,
         '-i',
         session.filePath,
         ...maps,
@@ -681,7 +1023,7 @@ export class LocalVideoStreamService {
       ...common,
       '-noautorotate',
       '-ss',
-      plan.targetSec.toFixed(3),
+      plan.inputSeekSecStr,
       '-i',
       session.filePath,
       ...maps,
@@ -696,7 +1038,9 @@ export class LocalVideoStreamService {
       '-pix_fmt',
       'yuv420p',
       '-vf',
-      buildVideoFilter(meta.rotationDeg),
+      buildVideoFilter(meta),
+      '-metadata:s:v:0',
+      'rotate=0',
       '-force_key_frames',
       'expr:gte(t,n_forced*2)',
       '-g',
@@ -724,7 +1068,7 @@ export class LocalVideoStreamService {
       '-protocol_whitelist',
       'file',
       '-show_entries',
-      'stream=index,codec_type,codec_name,width,height,pix_fmt,bits_per_raw_sample,profile:stream_tags=rotate:stream_side_data=rotation:format=duration',
+      'stream=index,codec_type,codec_name,width,height,pix_fmt,bits_per_raw_sample,profile,time_base,start_pts,start_time,sample_aspect_ratio,display_aspect_ratio:stream_disposition=attached_pic:stream_tags=rotate:stream_side_data=rotation:format=duration,start_time',
       '-of',
       'json',
       filePath
@@ -769,18 +1113,39 @@ export class LocalVideoStreamService {
     const audio = streams.find(s => s.codec_type === 'audio') ?? null
     const durationNum = Number(data?.format?.duration ?? video?.duration ?? NaN)
     const bits = Number(video?.bits_per_raw_sample)
+    const videoIndex = video && Number.isFinite(video.index) ? Number(video.index) : null
+
+    const timeBase = video ? parsePositiveRatio(video.time_base) : null
+    // 优先从原始 JSON 文本提取 start_pts 防大整数精度丢失；缺失则置 null（严禁从 start_time=0 乐观推导 0n）
+    const startPts =
+      videoIndex !== null ? extractRawStartPtsByStreamIndex(json, videoIndex) : null
+    const rawStartTime = Number(video?.start_time ?? data?.format?.start_time ?? 0)
+    const startTimeSec = Number.isFinite(rawStartTime) ? rawStartTime : 0
+    const startTimeOriginMismatch = hasStartTimeOriginMismatch(
+      data?.format?.start_time,
+      video?.start_time
+    )
+
     return {
+      startPts,
+      timeBase,
+      startTimeSec,
+      startTimeOriginMismatch,
       durationSec: Number.isFinite(durationNum) && durationNum > 0 ? durationNum : null,
       videoCodec: video?.codec_name ?? null,
       audioCodec: audio?.codec_name ?? null,
       hasAudio: Boolean(audio),
-      width: Number.isFinite(video?.width) ? video.width : null,
-      height: Number.isFinite(video?.height) ? video.height : null,
+      width: Number.isFinite(video?.width) ? Number(video.width) : null,
+      height: Number.isFinite(video?.height) ? Number(video.height) : null,
       pixFmt: video?.pix_fmt ?? null,
       bitsPerRawSample: Number.isFinite(bits) && bits > 0 ? bits : null,
       videoProfile: video?.profile ?? null,
+      sampleAspectRatio:
+        typeof video?.sample_aspect_ratio === 'string' ? video.sample_aspect_ratio : null,
+      displayAspectRatio:
+        typeof video?.display_aspect_ratio === 'string' ? video.display_aspect_ratio : null,
       rotationDeg: video ? parseSideDataRotation(video) : null,
-      videoStreamIndex: video && Number.isFinite(video.index) ? video.index : null
+      videoStreamIndex: videoIndex
     }
   }
 
@@ -802,6 +1167,10 @@ export class LocalVideoStreamService {
     const pixFmt = /Video:.*?,\s*(\w*(?:420|422|444|p10|10le)\w*)/.exec(text)?.[1] ?? null
     const rotationMatch = /rotation\s*:\s*(-?\d+)/i.exec(text)
     const meta: VideoProbeMeta = {
+      startPts: null,
+      timeBase: null,
+      startTimeSec: 0,
+      startTimeOriginMismatch: false,
       durationSec,
       videoCodec: codec,
       audioCodec: audio,
@@ -811,6 +1180,8 @@ export class LocalVideoStreamService {
       pixFmt,
       bitsPerRawSample: pixFmt && /10|12/.test(pixFmt) ? 10 : pixFmt ? 8 : null,
       videoProfile: null,
+      sampleAspectRatio: null,
+      displayAspectRatio: null,
       rotationDeg: rotationMatch ? normalizeRotation(rotationMatch[1]) : 0,
       videoStreamIndex: codec ? 0 : null
     }
@@ -820,6 +1191,10 @@ export class LocalVideoStreamService {
 
   private emptyMeta(): VideoProbeMeta {
     return {
+      startPts: null,
+      timeBase: null,
+      startTimeSec: 0,
+      startTimeOriginMismatch: false,
       durationSec: null,
       videoCodec: null,
       audioCodec: null,
@@ -829,6 +1204,8 @@ export class LocalVideoStreamService {
       pixFmt: null,
       bitsPerRawSample: null,
       videoProfile: null,
+      sampleAspectRatio: null,
+      displayAspectRatio: null,
       rotationDeg: null,
       videoStreamIndex: null
     }
@@ -842,22 +1219,28 @@ export class LocalVideoStreamService {
     this.probeCache.set(fileKey, meta)
   }
 
-  /** 纯封装层关键帧探测：两轮扩窗，只认 flags 含 K 的 packet，探空返回 null */
+  /** 纯封装层关键帧探测：CSV 3 列 [pts,dts,flags] 直转 BigInt，探空/异常/负偏移返回 null */
   private async findNearestKeyframeBefore(
     filePath: string,
     fileKey: string,
     videoStreamIndex: number,
+    streamStartPts: bigint,
+    timeBase: RationalTime,
+    startTimeSec: number,
     targetSec: number
-  ): Promise<number | null> {
-    const key = `${fileKey}|${videoStreamIndex}|kf@${Math.floor(targetSec)}`
+  ): Promise<{ inputSeekSecStr: string; actualStartSec: number } | null> {
+    const key = `${fileKey}|${videoStreamIndex}|${streamStartPts.toString()}|${timeBase.num}/${timeBase.den}|kf@${Math.floor(targetSec)}`
     const cached = this.keyframeCache.get(key)
-    // 同秒桶缓存也可能越过更精确的 targetSec，必须二次校验
-    if (cached !== undefined && (cached === null || cached <= targetSec)) return cached
+    if (cached !== undefined && (cached === null || cached.actualStartSec <= targetSec)) {
+      return cached
+    }
     const ffprobePath = ffmpegService.getFfprobePath()
     if (!ffprobePath) return null
 
+    const targetMicros = BigInt(Math.round(targetSec * 1_000_000))
     for (const window of [15, 60]) {
-      const start = Math.max(0, targetSec - window)
+      const readStart = Math.max(0, startTimeSec + Math.max(0, targetSec - window))
+      const readEnd = Math.max(readStart + 0.001, startTimeSec + targetSec + 0.001)
       const args = [
         '-v',
         'error',
@@ -866,35 +1249,38 @@ export class LocalVideoStreamService {
         '-select_streams',
         String(videoStreamIndex),
         '-show_entries',
-        'packet=pts_time,flags',
+        'packet=pts,dts,flags',
         '-of',
         'csv=p=0',
         '-read_intervals',
-        `${start.toFixed(3)}%${(targetSec + 0.001).toFixed(3)}`,
+        `${readStart.toFixed(6)}%${readEnd.toFixed(6)}`,
         filePath
       ]
       try {
         const stdout = await this.execFileText(ffprobePath, args)
-        let nearest = -1
-        for (const line of stdout.split(/\r?\n/)) {
-          const [ptsRaw, flagsRaw = ''] = line.trim().split(',')
-          if (!flagsRaw.includes('K')) continue
-          const pts = Number(ptsRaw)
-          if (Number.isFinite(pts) && pts <= targetSec && pts > nearest) nearest = pts
-        }
-        if (nearest >= 0) {
-          this.putKeyframeCache(key, nearest)
-          return nearest
+        const selected = selectKeyframeFromCsv(stdout, streamStartPts, timeBase, targetMicros)
+        if (selected) {
+          const entry = {
+            inputSeekSecStr: selected.inputSeekSecStr,
+            actualStartSec: selected.actualStartSec
+          }
+          this.putKeyframeCache(key, entry)
+          return entry
         }
       } catch (err) {
         logger.warn(LogCategory.MAIN, `[视频流] 关键帧探测失败: ${String(err)}`)
+        // 非零退出或超时：整次探测失败，绝不采信残缺输出
+        return null
       }
     }
     this.putKeyframeCache(key, null)
     return null
   }
 
-  private putKeyframeCache(key: string, value: number | null): void {
+  private putKeyframeCache(
+    key: string,
+    value: { inputSeekSecStr: string; actualStartSec: number } | null
+  ): void {
     if (this.keyframeCache.size >= KEYFRAME_CACHE_MAX) {
       const oldest = this.keyframeCache.keys().next().value
       if (oldest !== undefined) this.keyframeCache.delete(oldest)
@@ -902,38 +1288,13 @@ export class LocalVideoStreamService {
     this.keyframeCache.set(key, value)
   }
 
-  /** 仅从无活跃连接的空闲会话中挑最早活动的；活跃长片绝不作为驱逐候选 */
   private oldestIdleSession(): StreamSession | null {
     let oldest: StreamSession | null = null
     for (const s of this.sessions.values()) {
-      if (s.activeInstance) continue
+      if (s.activeInstances.size > 0 || s.slotWaiter) continue
       if (!oldest || s.lastActivityAt < oldest.lastActivityAt) oldest = s
     }
     return oldest
-  }
-
-  private terminateSession(session: StreamSession): void {
-    if (session.activeInstance) {
-      session.activeInstance.intentionalKill = true
-      this.terminateInstance(session.activeInstance)
-      session.activeInstance = undefined
-    }
-  }
-
-  private terminateInstance(instance: ActiveStreamInstance): void {
-    const { process: proc, res } = instance
-    this.clearStartupTimer(instance)
-    try {
-      proc.stdout?.unpipe(res)
-      proc.stdout?.destroy()
-      proc.stderr?.destroy()
-    } catch {}
-    try {
-      if (!res.writableEnded && !res.destroyed) res.end()
-    } catch {}
-    try {
-      if (!proc.killed) proc.kill('SIGKILL')
-    } catch {}
   }
 
   private ensureSweepTimer(): void {
@@ -945,14 +1306,13 @@ export class LocalVideoStreamService {
   private sweepSessions(): void {
     const now = Date.now()
     for (const [id, session] of this.sessions.entries()) {
-      // 正在活跃播放的长片不受 2h 上限影响
-      if (session.activeInstance) continue
+      if (session.activeInstances.size > 0 || session.slotWaiter) continue
       const idleTooLong = now - session.lastActivityAt > IDLE_TTL_MS
       const totalTooLong = now - session.createdAt > MAX_SESSION_TTL_MS
       if (idleTooLong || totalTooLong) {
-        this.terminateSession(session)
+        session.closed = true
         this.sessions.delete(id)
-        logger.info(LogCategory.MAIN, `[视频流] TTL 清扫会话: ${id}`)
+        logger.info(LogCategory.MAIN, `[视频流] TTL 清扫空闲会话: ${id}`)
       }
     }
     if (this.sessions.size === 0 && this.sweepTimer) {

@@ -1067,6 +1067,13 @@ app.on('before-quit', event => {
       await engineBridgeService.stop()
       // 关闭图标提取子进程，避免遗留孤儿子进程
       iconExtractorClient.dispose()
+      // 确权关闭本地 HTTP 视频流子进程与回环网关，未确权时标记 cleanupFailed
+      const { localVideoStreamService } = await import('../runtime-services/system/local-video-stream-service')
+      const videoStreamShutdown = await localVideoStreamService.shutdown()
+      if (videoStreamShutdown !== 'CLEAN') {
+        cleanupFailed = true
+        logger.error(LogCategory.MAIN, '[视频流] before-quit 清理未确权 (CLEANUP_FAILED)')
+      }
       await fileWatcherService.cleanup()
       await systemHealthService.stop()
       // 退出关库前优雅关停分析队列、Worker 线程、孤儿 watchdog 并冲刷防抖 FTS 与尾钩子，防止末批漏索引
