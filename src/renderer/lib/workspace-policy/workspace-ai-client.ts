@@ -142,7 +142,7 @@ export interface ResolvedPluginTriState {
   applicability: ConfigApplicability
   /** 插件目录可用性（来自 BUILTIN_MODULE_CATALOG_META.availability） */
   availability: 'approved' | 'coming_soon' | 'draft' | 'delisted'
-  /** 工作流推荐标识：本主题推荐开启 / 本主题默认关闭 / 默认关闭 */
+  /** 工作流推荐标识：本工作流推荐开启 / 本主题默认关闭 / 默认关闭 */
   workflowRecommendation: 'workflow_recommended_on' | 'workflow_default_off' | 'system_default_off'
   /** 关联的能力槽（如 voice_asr / perception_nsfw） */
   capabilitySlot?: string

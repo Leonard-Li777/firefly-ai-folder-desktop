@@ -95,7 +95,7 @@ function renderRecommendationLabel(
   if (!p) return t('默认关闭')
   switch (p.workflowRecommendation) {
     case 'workflow_recommended_on':
-      return t('本主题推荐开启')
+      return t('本工作流推荐开启')
     case 'workflow_default_off':
       return t('本主题默认关闭')
     case 'system_default_off':
