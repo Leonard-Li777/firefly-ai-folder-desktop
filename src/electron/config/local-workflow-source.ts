@@ -18363,7 +18363,1974 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'OFFICE_RESEARCH_DOC',
     enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
-  }
+  },
+{
+    id: 'builtin.workflow.wedding-planning',
+    name: t('婚礼策划全案档案'),
+    summary: t('备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档'),
+    version: '1.0.0',
+    persona: t('正在筹备婚礼的新人与婚礼策划师'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-婚纱照原片与精修'),
+        children: [
+          { name: t('原片RAW') },
+          { name: t('精修成片') },
+          { name: t('选片对比') }
+        ]
+      },
+      {
+        name: t('02-场地与供应商'),
+        children: [
+          { name: t('场地对比') },
+          { name: t('摄影摄像') },
+          { name: t('司仪化妆') },
+          { name: t('婚庆布置') }
+        ]
+      },
+      {
+        name: t('03-预算与合同'),
+        children: [
+          { name: t('总预算表') },
+          { name: t('供应商合同') },
+          { name: t('付款节点') }
+        ]
+      },
+      {
+        name: t('04-请柬与视觉物料'),
+        children: [
+          { name: t('请柬设计源文件') },
+          { name: t('席位卡桌卡') },
+          { name: t('迎宾海报') }
+        ]
+      },
+      {
+        name: t('05-当天素材与跟拍'),
+        children: [
+          { name: t('跟拍视频') },
+          { name: t('仪式照片') },
+          { name: t('快剪成片') }
+        ]
+      },
+      {
+        name: t('06-蜜月与收尾'),
+        children: [
+          { name: t('蜜月行程') },
+          { name: t('婚礼结算') },
+          { name: t('致谢与回礼') }
+        ]
+      }
+    ],
+    extensionWeights: {
+      '.jpg': 0.2,
+      '.jpeg': 0.04,
+      '.png': 0.08,
+      '.heic': 0.03,
+      '.raw': 0.02,
+      '.cr2': 0.02,
+      '.nef': 0.02,
+      '.mp4': 0.14,
+      '.mov': 0.03,
+      '.psd': 0.05,
+      '.ai': 0.04,
+      '.indd': 0.02,
+      '.pdf': 0.12,
+      '.xlsx': 0.1,
+      '.docx': 0.04,
+      '.zip': 0.03,
+      '.rar': 0.02
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.wedding-planning-exclusive-1',
+        type: 'extension',
+        value: '.raw',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-1',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-2',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-3',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-4',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-5',
+        type: 'extension',
+        value: '.cr2',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-6',
+        type: 'extension',
+        value: '.nef',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-7',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-8',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-9',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-10',
+        type: 'extension',
+        value: '.ai',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-11',
+        type: 'extension',
+        value: '.indd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-12',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-13',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-14',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-15',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-common-16',
+        type: 'extension',
+        value: '.rar',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.wedding-planning-ignore-1',
+        type: 'extension',
+        value: '.cr3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-ignore-2',
+        type: 'extension',
+        value: '.arw',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-ignore-3',
+        type: 'extension',
+        value: '.srw',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-ignore-4',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.wedding-planning-ignore-5',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      }
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.car-lifecycle',
+    name: t('汽车全生命周期档案'),
+    summary: t('私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链'),
+    version: '1.0.0',
+    persona: t('私家车主与家庭用车管理人'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14M6 17l-1-5 2-5h10l2 5-1 5"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-购车文件'),
+        children: [
+          { name: t('购车合同') }
+          { name: t('发票与合格证') }
+          { name: t('登记证书') }
+          { name: t('购置税完税') }
+        ]
+      },
+      {
+        name: t('02-保险与年检'),
+        children: [
+          { name: t('交强险保单') }
+          { name: t('商业险保单') }
+          { name: t('年检记录') }
+          { name: t('车船税') }
+        ]
+      },
+      {
+        name: t('03-保养维修'),
+        children: [
+          { name: t('保养手册') }
+          { name: t('4S保养工单') }
+          { name: t('第三方维修') }
+          { name: t('易损件更换') }
+        ]
+      },
+      {
+        name: t('04-事故与理赔'),
+        children: [
+          { name: t('事故现场照片') }
+          { name: t('交警责任认定') }
+          { name: t('理赔材料') }
+          { name: t('维修定损') }
+        ]
+      },
+      {
+        name: t('05-改装与加装'),
+        children: [
+          { name: t('加装清单') }
+          { name: t('改装发票') }
+          { name: t('改装备案') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.pdf': 0.32,
+      '.jpg': 0.16,
+      '.jpeg': 0.03,
+      '.png': 0.07,
+      '.heic': 0.02,
+      '.docx': 0.1,
+      '.xlsx': 0.12,
+      '.mp4': 0.06,
+      '.mov': 0.02,
+      '.zip': 0.02,
+      '.eml': 0.04,
+      '.csv': 0.04,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.car-lifecycle-common-1',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-2',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-3',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-4',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-5',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-6',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-7',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-8',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-9',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-10',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-11',
+        type: 'extension',
+        value: '.eml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-common-12',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.car-lifecycle-ignore-1',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-ignore-2',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-ignore-3',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-ignore-4',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.car-lifecycle-ignore-5',
+        type: 'extension',
+        value: '.blend',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.baby-growth-archive',
+    name: t('宝宝成长与育儿档案'),
+    summary: t('0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口'),
+    version: '1.0.0',
+    persona: t('0-6岁婴幼儿父母与家庭照护人'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/><path d="M9 8h.01M15 8h.01"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-成长照片视频'),
+        children: [
+          { name: t('满月百天周岁') }
+          { name: t('日常随手拍') }
+          { name: t('成长视频') }
+        ]
+      },
+      {
+        name: t('02-疫苗与体检'),
+        children: [
+          { name: t('疫苗本扫描') }
+          { name: t('儿保体检单') }
+          { name: t('生长曲线') }
+        ]
+      },
+      {
+        name: t('03-医疗就诊'),
+        children: [
+          { name: t('门诊病历') }
+          { name: t('用药记录') }
+          { name: t('检查报告') }
+        ]
+      },
+      {
+        name: t('04-教育与早教'),
+        children: [
+          { name: t('早教课程') }
+          { name: t('启蒙素材') }
+          { name: t('亲子活动') }
+        ]
+      },
+      {
+        name: t('05-成长纪念册'),
+        children: [
+          { name: t('纪念册排版') }
+          { name: t('成长语录') }
+          { name: t('亲子合影') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.jpg': 0.3,
+      '.jpeg': 0.05,
+      '.png': 0.07,
+      '.heic': 0.04,
+      '.mp4': 0.16,
+      '.mov': 0.05,
+      '.pdf': 0.17,
+      '.docx': 0.05,
+      '.xlsx': 0.06,
+      '.txt': 0.02,
+      '.zip': 0.03,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-1',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-2',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-3',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-4',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-5',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-6',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-7',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-8',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-9',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-10',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-common-11',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.baby-growth-archive-ignore-1',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-ignore-2',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-ignore-3',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-ignore-4',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.baby-growth-archive-ignore-5',
+        type: 'extension',
+        value: '.blend',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.personal-finance-invest',
+    name: t('家庭理财与投资记账'),
+    summary: t('个人与家庭理财全链路，账户对账单、投资持仓、个税汇算、贷款负债与家庭预算表归档，与企业财务finance-contract形成个人线互补'),
+    version: '1.0.0',
+    persona: t('有理财习惯的家庭与个人投资者'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 4 3 5-7"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-账户与对账单'),
+        children: [
+          { name: t('银行对账单') }
+          { name: t('信用卡账单') }
+          { name: t('支付账户') }
+        ]
+      },
+      {
+        name: t('02-投资持仓'),
+        children: [
+          { name: t('基金股票持仓截图') }
+          { name: t('加密钱包') }
+          { name: t('券商月报') }
+        ]
+      },
+      {
+        name: t('03-个税与汇算'),
+        children: [
+          { name: t('年度汇算') }
+          { name: t('个税凭证') }
+          { name: t('专项扣除') }
+        ]
+      },
+      {
+        name: t('04-贷款与负债'),
+        children: [
+          { name: t('房贷还款表') }
+          { name: t('消费贷') }
+          { name: t('负债汇总') }
+        ]
+      },
+      {
+        name: t('05-家庭预算'),
+        children: [
+          { name: t('月度预算表') }
+          { name: t('年度预算') }
+          { name: t('记账凭证') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.xlsx': 0.24,
+      '.xls': 0.04,
+      '.pdf': 0.26,
+      '.csv': 0.12,
+      '.docx': 0.06,
+      '.png': 0.08,
+      '.jpg': 0.04,
+      '.jpeg': 0.01,
+      '.txt': 0.02,
+      '.zip': 0.02,
+      '.eml': 0.05,
+      '.qif': 0.02,
+      '.ofx': 0.02,
+      '.json': 0.02,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.personal-finance-invest-exclusive-1',
+        type: 'extension',
+        value: '.qif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-exclusive-2',
+        type: 'extension',
+        value: '.ofx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-3',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-4',
+        type: 'extension',
+        value: '.xls',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-5',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-6',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-7',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-8',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-9',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-10',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-11',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-12',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-13',
+        type: 'extension',
+        value: '.eml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-common-14',
+        type: 'extension',
+        value: '.json',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-1',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-2',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-3',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-4',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-5',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-6',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.personal-finance-invest-ignore-7',
+        type: 'extension',
+        value: '.blend',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'OFFICE_RESEARCH_DOC',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.insurance-policy-vault',
+    name: t('家庭保险保单中枢'),
+    summary: t('给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单'),
+    version: '1.0.0',
+    persona: t('家庭保险配置决策人与投保人'),
+    category: 'office',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-保单电子件'),
+        children: [
+          { name: t('重疾险') }
+          { name: t('医疗险') }
+          { name: t('意外险') }
+          { name: t('寿险') }
+          { name: t('车险家财险') }
+        ]
+      },
+      {
+        name: t('02-条款与责任'),
+        children: [
+          { name: t('保险条款') }
+          { name: t('责任免除') }
+          { name: t('现金价值表') }
+        ]
+      },
+      {
+        name: t('03-缴费与续保'),
+        children: [
+          { name: t('缴费记录') }
+          { name: t('续保提醒') }
+          { name: t('保全变更') }
+        ]
+      },
+      {
+        name: t('04-理赔材料'),
+        children: [
+          { name: t('理赔申请') }
+          { name: t('病历资料') }
+          { name: t('理赔进度') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.pdf': 0.42,
+      '.jpg': 0.12,
+      '.jpeg': 0.04,
+      '.png': 0.06,
+      '.heic': 0.02,
+      '.docx': 0.1,
+      '.xlsx': 0.1,
+      '.txt': 0.02,
+      '.eml': 0.06,
+      '.zip': 0.02,
+      '.msg': 0.02,
+      '.rtf': 0.02,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-1',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-2',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-3',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-4',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-5',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-6',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-7',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-8',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-9',
+        type: 'extension',
+        value: '.eml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-10',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-11',
+        type: 'extension',
+        value: '.msg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-common-12',
+        type: 'extension',
+        value: '.rtf',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-1',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-2',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-3',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-4',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-5',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-6',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-7',
+        type: 'extension',
+        value: '.blend',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.insurance-policy-vault-ignore-8',
+        type: 'extension',
+        value: '.stl',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'SCAN_DOSSIER_OCR',
+    enabledWorkspacePlugins: ['perception_nsfw']
+  },
+  {
+    id: 'builtin.workflow.podcast-production',
+    name: t('播客与音频节目制作'),
+    summary: t('播客主播有声书配音创作者，原始录音、多轨工程、逐字稿shownotes、封面视觉与分发成片归档，区别于音乐制作与影视收藏的创作向空缺'),
+    version: '1.0.0',
+    persona: t('播客主播、有声书与配音创作者'),
+    category: 'entertainment',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v1a7 7 0 0 0 14 0v-1"/><path d="M12 18v4"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-原始录音'),
+        children: [
+          { name: t('单集原始音轨') }
+          { name: t('访谈素材') }
+          { name: t('环境音') }
+        ]
+      },
+      {
+        name: t('02-剪辑工程'),
+        children: [
+          { name: t('多轨工程文件') }
+          { name: t('混音导出') }
+          { name: t('降噪备份') }
+        ]
+      },
+      {
+        name: t('03-音乐与音效'),
+        children: [
+          { name: t('片头片尾曲') }
+          { name: t('转场音效') }
+          { name: t('BGM授权') }
+        ]
+      },
+      {
+        name: t('04-逐字稿与shownotes'),
+        children: [
+          { name: t('逐字稿') }
+          { name: t('时间轴字幕') }
+          { name: t('shownotes') }
+        ]
+      },
+      {
+        name: t('05-封面视觉'),
+        children: [
+          { name: t('单集封面') }
+          { name: t('节目主视觉') }
+          { name: t('宣发图') }
+        ]
+      },
+      {
+        name: t('06-分发成片'),
+        children: [
+          { name: t('各平台成片') }
+          { name: t('平台元数据') }
+          { name: t('发布记录') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.wav': 0.11,
+      '.mp3': 0.25,
+      '.m4a': 0.05,
+      '.aac': 0.02,
+      '.ogg': 0.02,
+      '.flac': 0.03,
+      '.aup3': 0.06,
+      '.sesx': 0.04,
+      '.srt': 0.05,
+      '.vtt': 0.02,
+      '.txt': 0.04,
+      '.docx': 0.03,
+      '.mp4': 0.07,
+      '.mov': 0.03,
+      '.png': 0.06,
+      '.jpg': 0.03,
+      '.psd': 0.03,
+      '.pdf': 0.04,
+      '.zip': 0.02,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.podcast-production-exclusive-1',
+        type: 'extension',
+        value: '.aup3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-exclusive-2',
+        type: 'extension',
+        value: '.sesx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-3',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-4',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-5',
+        type: 'extension',
+        value: '.m4a',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-6',
+        type: 'extension',
+        value: '.aac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-7',
+        type: 'extension',
+        value: '.ogg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-8',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-9',
+        type: 'extension',
+        value: '.srt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-10',
+        type: 'extension',
+        value: '.vtt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-11',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-12',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-13',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-14',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-15',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-16',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-17',
+        type: 'extension',
+        value: '.psd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-18',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-common-19',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.podcast-production-ignore-1',
+        type: 'extension',
+        value: '.cbz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-ignore-2',
+        type: 'extension',
+        value: '.cbr',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-ignore-3',
+        type: 'extension',
+        value: '.blend',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.podcast-production-ignore-4',
+        type: 'extension',
+        value: '.dwg',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'AUDIO_VOICE_RECORD',
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw']
+  },
+  {
+    id: 'builtin.workflow.3dprint-maker',
+    name: t('3D打印与创客工坊'),
+    summary: t('3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰'),
+    version: '1.0.0',
+    persona: t('3D打印爱好者与开源硬件创客'),
+    category: 'entertainment',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4.5v9L12 20l-8-4.5v-9z"/><path d="M12 11l8-4.5M12 11v9M12 11L4 6.5"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-模型文件'),
+        children: [
+          { name: t('STL模型') }
+          { name: t('3MF项目') }
+          { name: t('源文件') }
+        ]
+      },
+      {
+        name: t('02-打印参数'),
+        children: [
+          { name: t('切片配置') }
+          { name: t('耗材档案') }
+          { name: t('打印机配置') }
+        ]
+      },
+      {
+        name: t('03-成品与复盘'),
+        children: [
+          { name: t('成品照片') }
+          { name: t('失败件复盘') }
+          { name: t('打印记录') }
+        ]
+      },
+      {
+        name: t('04-电子项目'),
+        children: [
+          { name: t('Arduino固件') }
+          { name: t('树莓派脚本') }
+          { name: t('电路图') }
+        ]
+      },
+      {
+        name: t('05-工具与耗材'),
+        children: [
+          { name: t('工具清单') }
+          { name: t('耗材库存') }
+          { name: t('采购记录') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.3mf': 0.16,
+      '.gcode': 0.12,
+      '.stl': 0.06,
+      '.obj': 0.04,
+      '.step': 0.04,
+      '.fcstd': 0.05,
+      '.png': 0.11,
+      '.jpg': 0.08,
+      '.jpeg': 0.02,
+      '.mp4': 0.06,
+      '.ino': 0.03,
+      '.pdf': 0.06,
+      '.xlsx': 0.06,
+      '.txt': 0.03,
+      '.json': 0.03,
+      '.zip': 0.05,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.3dprint-maker-exclusive-1',
+        type: 'extension',
+        value: '.3mf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-exclusive-2',
+        type: 'extension',
+        value: '.gcode',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-exclusive-3',
+        type: 'extension',
+        value: '.fcstd',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-4',
+        type: 'extension',
+        value: '.stl',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-5',
+        type: 'extension',
+        value: '.obj',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-6',
+        type: 'extension',
+        value: '.step',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-7',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-8',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-9',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-10',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-11',
+        type: 'extension',
+        value: '.ino',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-12',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-13',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-14',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-15',
+        type: 'extension',
+        value: '.json',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-common-16',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.3dprint-maker-ignore-1',
+        type: 'extension',
+        value: '.cbz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-ignore-2',
+        type: 'extension',
+        value: '.cbr',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-ignore-3',
+        type: 'extension',
+        value: '.flp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.3dprint-maker-ignore-4',
+        type: 'extension',
+        value: '.als',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'CODE_DEVOPS',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.collectible-model-archive',
+    name: t('模型手办与收藏品档案'),
+    summary: t('高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线'),
+    version: '1.0.0',
+    persona: t('模型手办与潮玩收藏爱好者'),
+    category: 'entertainment',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-藏品清单'),
+        children: [
+          { name: t('藏品总表') }
+          { name: t('估值记录') }
+          { name: t('系列图鉴') }
+        ]
+      },
+      {
+        name: t('02-制作过程'),
+        children: [
+          { name: t('素组进度') }
+          { name: t('涂装过程') }
+          { name: t('改造记录') }
+        ]
+      },
+      {
+        name: t('03-成品展示'),
+        children: [
+          { name: t('成品照') }
+          { name: t('场景照') }
+          { name: t('对比照') }
+        ]
+      },
+      {
+        name: t('04-购买凭证'),
+        children: [
+          { name: t('购买发票') }
+          { name: t('盒照') }
+          { name: t('配件清单') }
+        ]
+      },
+      {
+        name: t('05-交换出售'),
+        children: [
+          { name: t('出售记录') }
+          { name: t('交换记录') }
+          { name: t('市场行情') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.jpg': 0.24,
+      '.jpeg': 0.06,
+      '.png': 0.12,
+      '.heic': 0.03,
+      '.webp': 0.02,
+      '.pdf': 0.14,
+      '.xlsx': 0.1,
+      '.docx': 0.04,
+      '.csv': 0.05,
+      '.mp4': 0.06,
+      '.mov': 0.02,
+      '.txt': 0.02,
+      '.zip': 0.05,
+      '.rar': 0.05,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-1',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-2',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-3',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-4',
+        type: 'extension',
+        value: '.heic',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-5',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-6',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-7',
+        type: 'extension',
+        value: '.xlsx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-8',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-9',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-10',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-11',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-12',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-13',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-common-14',
+        type: 'extension',
+        value: '.rar',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.collectible-model-archive-ignore-1',
+        type: 'extension',
+        value: '.mp3',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-ignore-2',
+        type: 'extension',
+        value: '.flac',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-ignore-3',
+        type: 'extension',
+        value: '.wav',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.collectible-model-archive-ignore-4',
+        type: 'extension',
+        value: '.blend',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
+  {
+    id: 'builtin.workflow.ai-generated-content',
+    name: t('AI生成内容与提示词库'),
+    summary: t('重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产'),
+    version: '1.0.0',
+    persona: t('重度AI生成内容创作者与提示词工程师'),
+    category: 'entertainment',
+    icon_svg:
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z"/></svg>',
+    naming_pattern: t('YYYYMMDD_主题_描述'),
+    naming_template: t('{date}_{topic}_{desc}'),
+    preset_directory_tree: [
+      {
+        name: t('01-生成图像'),
+        children: [
+          { name: t('文生图') }
+          { name: t('图生图') }
+          { name: t('局部重绘') }
+        ]
+      },
+      {
+        name: t('02-生成视频'),
+        children: [
+          { name: t('AI视频成片') }
+          { name: t('图生视频') }
+          { name: t('视频工作流') }
+        ]
+      },
+      {
+        name: t('03-提示词与参数'),
+        children: [
+          { name: t('正向提示词') }
+          { name: t('反向提示词') }
+          { name: t('种子参数') }
+        ]
+      },
+      {
+        name: t('04-模型与工作流'),
+        children: [
+          { name: t('大模型权重') }
+          { name: t('LoRA') }
+          { name: t('工作流配置') }
+        ]
+      },
+      {
+        name: t('05-精选作品集'),
+        children: [
+          { name: t('精选图集') }
+          { name: t('作品标注') }
+          { name: t('复现参数') }
+        ]
+      },
+    ],
+    extensionWeights: {
+      '.png': 0.2,
+      '.jpg': 0.08,
+      '.jpeg': 0.02,
+      '.webp': 0.02,
+      '.mp4': 0.12,
+      '.mov': 0.03,
+      '.webm': 0.02,
+      '.gif': 0.02,
+      '.safetensors': 0.06,
+      '.ckpt': 0.04,
+      '.gguf': 0.03,
+      '.sai': 0.03,
+      '.txt': 0.1,
+      '.json': 0.07,
+      '.csv': 0.03,
+      '.yaml': 0.02,
+      '.pdf': 0.04,
+      '.docx': 0.02,
+      '.zip': 0.05,
+    },
+    customIncludeRules: [
+      {
+        id: 'builtin.workflow.ai-generated-content-exclusive-1',
+        type: 'extension',
+        value: '.safetensors',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-exclusive-2',
+        type: 'extension',
+        value: '.ckpt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-exclusive-3',
+        type: 'extension',
+        value: '.gguf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-4',
+        type: 'extension',
+        value: '.sai',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-5',
+        type: 'extension',
+        value: '.png',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-6',
+        type: 'extension',
+        value: '.jpg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-7',
+        type: 'extension',
+        value: '.jpeg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-8',
+        type: 'extension',
+        value: '.webp',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-9',
+        type: 'extension',
+        value: '.mp4',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-10',
+        type: 'extension',
+        value: '.mov',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-11',
+        type: 'extension',
+        value: '.webm',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-12',
+        type: 'extension',
+        value: '.gif',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-13',
+        type: 'extension',
+        value: '.txt',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-14',
+        type: 'extension',
+        value: '.json',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-15',
+        type: 'extension',
+        value: '.csv',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-16',
+        type: 'extension',
+        value: '.yaml',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-17',
+        type: 'extension',
+        value: '.pdf',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-18',
+        type: 'extension',
+        value: '.docx',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-common-19',
+        type: 'extension',
+        value: '.zip',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    customExcludeRules: [
+      {
+        id: 'builtin.workflow.ai-generated-content-ignore-1',
+        type: 'extension',
+        value: '.cbz',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-ignore-2',
+        type: 'extension',
+        value: '.cbr',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-ignore-3',
+        type: 'extension',
+        value: '.dwg',
+        isActive: true,
+        isSystem: true
+      },
+      {
+        id: 'builtin.workflow.ai-generated-content-ignore-4',
+        type: 'extension',
+        value: '.flp',
+        isActive: true,
+        isSystem: true
+      },
+    ],
+    aiPresetKey: 'PHOTO_GALLERY',
+    enabledWorkspacePlugins: ['perception_nsfw', 'object_detection_pro']
+  },
 ]
 
 /** 纯音频媒介扩展集合（排除纯乐谱 .mid/.midi，§3.2 冻结清单） */
