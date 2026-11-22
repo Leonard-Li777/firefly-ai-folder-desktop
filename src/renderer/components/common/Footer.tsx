@@ -29,7 +29,6 @@ import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
 import { useWorkspaceRuntimeContext } from '@/renderer/stores/workspace-runtime-context-store'
-import { triggerWorkspaceIncrementalRecovery } from '@/renderer/lib/workspace-policy/workspace-ai-client'
 import { EnvRecoveryBanner } from './EnvRecoveryBanner'
 import { toast } from '@/renderer/components/common/Toast'
 import {
@@ -275,7 +274,6 @@ export function Footer() {
   const initializeRuntimeContext = useWorkspaceRuntimeContext(s => s.initialize)
   const disposeRuntimeContext = useWorkspaceRuntimeContext(s => s.dispose)
   const refreshRuntimeContext = useWorkspaceRuntimeContext(s => s.refresh)
-  const [isTriggeringRecovery, setIsTriggeringRecovery] = useState(false)
 
   // 常驻握手工作区运行时上下文（引用计数保护，与设置弹窗共享同一底层推送订阅）
   useEffect(() => {
@@ -319,29 +317,6 @@ export function Footer() {
       void openSettings(SettingsCategory.WORKSPACE_CONFIG)
     }
   }, [currentWorkspaceDirectory?.id, openWorkspaceSettings, openSettings])
-
-  const handleTriggerIncrementalRecovery = async () => {
-    const wsId = currentWorkspaceDirectory?.id
-    if (!wsId || isTriggeringRecovery) return
-    setIsTriggeringRecovery(true)
-    try {
-      const res = await triggerWorkspaceIncrementalRecovery(wsId)
-      if (res.success) {
-        toast.success(
-          t('已将 {count} 个历史文件加入补全队列，正在后台自动处理', {
-            count: res.queued ?? recoverableCount
-          })
-        )
-        void refreshRuntimeContext()
-      } else {
-        toast.error(res.error || t('增量补全触发失败，请稍后重试'))
-      }
-    } catch (err: any) {
-      toast.error(err?.message || t('增量补全触发异常'))
-    } finally {
-      setIsTriggeringRecovery(false)
-    }
-  }
 
   const runningWorkspace = useMemo(() => {
     if (!analyzing?.workspaceId) return null
@@ -953,369 +928,362 @@ export function Footer() {
   }
 
   return (
-    <footer className="relative z-30 bg-card border-t border-border px-6 py-3 flex justify-between items-center text-sm text-foreground gap-2">
-      {/* 左侧AI状态区：min-w-0+shrink 允许在空间不足时收缩，防止撑破footer布局 */}
-      <div className="flex items-center gap-4 min-w-0 shrink">
-        <div className="flex items-center space-x-6 min-w-0">
-          <div className="flex items-center space-x-2 group min-w-0">
-            <MaterialIcon
-              icon={finalAiServiceInfo.icon}
-              className={`${finalAiServiceInfo.color} ${finalAiServiceInfo.animate || ''} text-sm`}
-            />
-            {/* min-w-0 允许内部文字截断 */}
-            <div className="min-w-0">
-              <button
-                className={`${
-                  finalAiServiceInfo.color
-                } transition-all duration-200 hover:underline cursor-pointer truncate max-w-[480px] block`}
-                onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-                title={finalAiServiceInfo.text}
-              >
-                {' '}
-                {finalAiServiceInfo.text}
-              </button>
-              {/* min-w-0 保护：次级提示行在西文语种下可能很长，需允许截断而非撑破footer */}
+    <>
+      {/* 待补全通栏横幅：独立一行，渲染在 Footer 上方（区别于 footer 内部行内状态） */}
+      {recoverableCount > 0 && currentWorkspaceDirectory?.id != null && (
+        <EnvRecoveryBanner
+          workspaceId={currentWorkspaceDirectory.id}
+          nonVideoCount={recoverableNonVideoCount}
+          pendingVideoCount={recoverablePendingVideoCount}
+          onRefresh={() => void refreshRuntimeContext()}
+          onOpenRecoveryQueue={handleOpenRecoveryQueue}
+          className="border-t-0"
+        />
+      )}
+      <footer className="relative z-30 bg-card border-t border-border px-6 py-3 flex justify-between items-center text-sm text-foreground gap-2">
+        {/* 左侧AI状态区：min-w-0+shrink 允许在空间不足时收缩，防止撑破footer布局 */}
+        <div className="flex items-center gap-4 min-w-0 shrink">
+          <div className="flex items-center space-x-6 min-w-0">
+            <div className="flex items-center space-x-2 group min-w-0">
+              <MaterialIcon
+                icon={finalAiServiceInfo.icon}
+                className={`${finalAiServiceInfo.color} ${finalAiServiceInfo.animate || ''} text-sm`}
+              />
+              {/* min-w-0 允许内部文字截断 */}
               <div className="min-w-0">
-                {showAiError && (
-                  <div className="mt-0.5 truncate max-w-[480px] block">
-                    <PersistentTooltip
-                      id={`ai_footer_error_${isCpuMode ? 'cpu' : error?.code || (error as any)?.type || 'general'}`}
-                      content={t('AI服务出现异常，点击查看详情与修复方案')}
-                      position="top"
-                      visible={true}
-                    >
-                      <button
-                        className="text-xs leading-tight text-red-500 font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left"
-                        onClick={() =>
-                          isCpuMode
-                            ? openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-                            : openErrorDialog()
-                        }
-                        title={t('点击查看AI服务错误详情')}
+                <button
+                  className={`${
+                    finalAiServiceInfo.color
+                  } transition-all duration-200 hover:underline cursor-pointer truncate max-w-[480px] block`}
+                  onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
+                  title={finalAiServiceInfo.text}
+                >
+                  {' '}
+                  {finalAiServiceInfo.text}
+                </button>
+                {/* min-w-0 保护：次级提示行在西文语种下可能很长，需允许截断而非撑破footer */}
+                <div className="min-w-0">
+                  {showAiError && (
+                    <div className="mt-0.5 truncate max-w-[480px] block">
+                      <PersistentTooltip
+                        id={`ai_footer_error_${isCpuMode ? 'cpu' : error?.code || (error as any)?.type || 'general'}`}
+                        content={t('AI服务出现异常，点击查看详情与修复方案')}
+                        position="top"
+                        visible={true}
                       >
-                        <MaterialIcon
-                          icon="error_outline"
-                          className="text-xs shrink-0 animate-pulse"
-                        />
-                        <span className="">
-                          {finalErrorMessage}，{t('点击查看原因')}
-                        </span>
-                      </button>
-                    </PersistentTooltip>
-                  </div>
-                )}
-                {showRecommendation && (
-                  <button
-                    className="text-xs leading-tight text-red-500/90 font-medium transition-all duration-200 hover:underline cursor-pointer block truncate max-w-[480px]"
-                    onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-                    title={t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
-                  >
-                    {t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
-                  </button>
-                )}
-                {showEngineGuide && (
-                  <button
-                    data-testid="engine-guide-bar"
-                    className="text-xs leading-tight text-primary font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left block truncate max-w-[480px]"
-                    onClick={handleEngineGuideClick}
-                    title={t(
-                      '当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。'
-                    )}
-                  >
-                    <MaterialIcon icon="rocket_launch" className="text-xs shrink-0" />
-                    <span>
-                      {t('当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果')}
-                    </span>
-                  </button>
-                )}
-                {recoverableCount > 0 && currentWorkspaceDirectory?.id != null && (
-                  <div
-                    data-testid="env-recovery-banner"
-                    className="mt-0.5 flex items-center gap-2 text-xs leading-tight text-amber-700 dark:text-amber-300"
-                  >
-                    <MaterialIcon icon="auto_fix_high" className="text-xs shrink-0" />
-                    <span className="truncate max-w-[340px]">
-                      {t('环境能力已恢复，有 {count} 个历史文件可补全更完整的内容', {
-                        count: recoverableCount
-                      })}
-                    </span>
+                        <button
+                          className="text-xs leading-tight text-red-500 font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left"
+                          onClick={() =>
+                            isCpuMode
+                              ? openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+                              : openErrorDialog()
+                          }
+                          title={t('点击查看AI服务错误详情')}
+                        >
+                          <MaterialIcon
+                            icon="error_outline"
+                            className="text-xs shrink-0 animate-pulse"
+                          />
+                          <span className="">
+                            {finalErrorMessage}，{t('点击查看原因')}
+                          </span>
+                        </button>
+                      </PersistentTooltip>
+                    </div>
+                  )}
+                  {showRecommendation && (
                     <button
-                      type="button"
-                      disabled={isTriggeringRecovery}
-                      onClick={() => void handleTriggerIncrementalRecovery()}
-                      className="shrink-0 font-semibold text-primary underline underline-offset-2 hover:opacity-80 cursor-pointer disabled:opacity-50"
+                      className="text-xs leading-tight text-red-500/90 font-medium transition-all duration-200 hover:underline cursor-pointer block truncate max-w-[480px]"
+                      onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
+                      title={t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
                     >
-                      {t('立即补全')}
+                      {t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
                     </button>
-                  </div>
-                )}
+                  )}
+                  {showEngineGuide && (
+                    <button
+                      data-testid="engine-guide-bar"
+                      className="text-xs leading-tight text-primary font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left block truncate max-w-[480px]"
+                      onClick={handleEngineGuideClick}
+                      title={t(
+                        '当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果。点击进入配置。'
+                      )}
+                    >
+                      <MaterialIcon icon="rocket_launch" className="text-xs shrink-0" />
+                      <span>
+                        {t('当前为内置检索式引擎，建议配置生成式引擎，配置后可以增强分析结果')}
+                      </span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
-        <DialogContent className="max-w-[650px] w-full">
-          <DialogHeader className="text-foreground/80">
-            <DialogTitle className="flex items-center gap-2">
-              <MaterialIcon icon="update" className="text-blue-500" />
-              {t('萤核智能文件夹 - 更新日志')}
-            </DialogTitle>
-          </DialogHeader>
+        <Dialog open={showUpdateModal} onOpenChange={setShowUpdateModal}>
+          <DialogContent className="max-w-[650px] w-full">
+            <DialogHeader className="text-foreground/80">
+              <DialogTitle className="flex items-center gap-2">
+                <MaterialIcon icon="update" className="text-blue-500" />
+                {t('萤核智能文件夹 - 更新日志')}
+              </DialogTitle>
+            </DialogHeader>
 
-          <div className="py-4">
-            <div className="text-sm font-medium mb-3 text-muted-foreground">
-              {t('最新版本: v{version}', { version: nextVersion?.version })}
+            <div className="py-4">
+              <div className="text-sm font-medium mb-3 text-muted-foreground">
+                {t('最新版本: v{version}', { version: nextVersion?.version })}
+              </div>
+              <div className="rounded-md border p-4 bg-muted/30 text-sm">
+                <ul className="space-y-2 list-disc pl-4 text-foreground/80">
+                  {nextVersion?.releaseNotes?.map((note: string, index: number) => (
+                    <li key={index} className="leading-relaxed">
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-            <div className="rounded-md border p-4 bg-muted/30 text-sm">
-              <ul className="space-y-2 list-disc pl-4 text-foreground/80">
-                {nextVersion?.releaseNotes?.map((note: string, index: number) => (
-                  <li key={index} className="leading-relaxed">
-                    {note}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
 
-          <DialogFooter className="flex gap-2 sm:justify-end">
-            <Button
-              variant="ghost"
-              onClick={() => setShowUpdateModal(false)}
-              className="text-foreground/80"
-            >
-              {t('稍后再说')}
-            </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => {
-                openExternalLink(`${getOfficialSiteOrigin()}/download`, {
-                  errorTitle: t('无法打开下载页面')
-                })
-                setShowUpdateModal(false)
-              }}
-            >
-              <MaterialIcon icon="download" className="mr-2 h-4 w-4" />
-              {t('去官网下载新版')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* 右侧按钮组：shrink-0 防止被左侧内容挤压换行 */}
-      <div className="flex items-center shrink-0">
-        <button
-          className="relative overflow-hidden rounded-lg px-2.5 py-1 text-xs font-medium cursor-pointer transition-all border border-border/60 bg-muted/30 hover:bg-muted/60 hover:border-primary/40 dark:border-border/40 dark:bg-card/40 dark:hover:bg-muted/40 shadow-xs flex items-center group"
-          onClick={handleQueueButtonClick}
-          title={
-            displayItem
-              ? t('查看分析队列 - 当前: {ws}{name}', {
-                  ws: displayItem.workspaceName ? `【${displayItem.workspaceName}】` : '',
-                  name: displayItem.name
-                })
-              : backfillCurrent
-                ? `${t('视频分析：已完成 {done}/{total} 个片段', {
-                    done: backfillCurrent.completedSlices,
-                    total: backfillCurrent.targetSlices
-                  })} · ${t('导入新文件会自动暂停让路')}`
-                : t('查看分析队列 - {count} 个文件等待中', { count: waiting })
-          }
-        >
-          {/* 背景进度条层：主队列自适应进度条 / 独立视频补全进度条（互不干扰） */}
-          {displayItem ? (
-            <div
-              className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
-              style={{
-                transform: `scaleX(${animScale})`,
-                transformOrigin: 'left',
-                transition: !enableTransition
-                  ? 'none'
-                  : displayedProgress >= 100
-                    ? 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)'
-                    : displayItem.stage === 1
-                      ? 'transform 0.15s ease-out'
-                      : displayItem.stage === 2
-                        ? config?.analysisMode === 'simple' || config?.analysisMode === 'sample'
-                          ? 'transform 3.5s cubic-bezier(0.08, 0.82, 0.17, 1)'
-                          : 'transform 5.0s cubic-bezier(0.05, 0.7, 0.15, 1)'
-                        : displayItem.stage === 3
-                          ? 'transform 3.5s cubic-bezier(0.08, 0.82, 0.17, 1)'
-                          : 'transform 5.5s cubic-bezier(0.08, 0.82, 0.17, 1)'
-              }}
-            >
-              {/* 进度底色：自适应明暗的双色渐变 */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/15 via-sky-500/20 to-blue-600/20 dark:from-blue-600/25 dark:via-indigo-500/30 dark:to-sky-400/30" />
-
-              {/* AI 思考中流光扫描动效 */}
-              <div
-                className="absolute inset-0 pointer-events-none opacity-70 dark:opacity-80"
-                style={{
-                  background:
-                    'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 35%, rgba(186,230,253,0.3) 50%, rgba(255,255,255,0.2) 65%, transparent 100%)',
-                  backgroundSize: '800px 100%',
-                  animation: 'shimmer 2.4s infinite ease-in-out'
+            <DialogFooter className="flex gap-2 sm:justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setShowUpdateModal(false)}
+                className="text-foreground/80"
+              >
+                {t('稍后再说')}
+              </Button>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={() => {
+                  openExternalLink(`${getOfficialSiteOrigin()}/download`, {
+                    errorTitle: t('无法打开下载页面')
+                  })
+                  setShowUpdateModal(false)
                 }}
-              />
+              >
+                <MaterialIcon icon="download" className="mr-2 h-4 w-4" />
+                {t('去官网下载新版')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-              {/* 头部先导光标线 */}
-              <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-gradient-to-b from-sky-400/50 via-sky-400/90 to-sky-400/50 dark:from-sky-300/60 dark:via-white/90 dark:to-sky-300/60 shadow-[0_0_6px_rgba(56,189,248,0.5)]" />
-            </div>
-          ) : backfillCurrent ? (
-            <div
-              data-testid="footer-video-backfill-bar"
-              className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
-              style={{
-                transform: `scaleX(${backfillScale})`,
-                transformOrigin: 'left',
-                transition: 'transform 0.4s ease-out'
-              }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/15 via-sky-500/20 to-cyan-600/20 dark:from-cyan-600/25 dark:via-sky-500/30 dark:to-cyan-400/30" />
-              <div
-                className="absolute inset-0 pointer-events-none opacity-70 dark:opacity-80"
-                style={{
-                  background:
-                    'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 35%, rgba(165,243,252,0.3) 50%, rgba(255,255,255,0.2) 65%, transparent 100%)',
-                  backgroundSize: '800px 100%',
-                  animation: 'shimmer 2.4s infinite ease-in-out'
-                }}
-              />
-              <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-gradient-to-b from-cyan-400/50 via-cyan-400/90 to-cyan-400/50" />
-            </div>
-          ) : null}
-
-          {/* 前景文字内容 */}
-          <span className="relative z-10 text-foreground dark:text-foreground flex items-center gap-1.5">
-            {/* 状态指示小圆点 */}
-            <span
-              className={`inline-block w-1.5 h-1.5 rounded-full transition-colors ${
-                displayItem
-                  ? 'bg-blue-500 dark:bg-sky-400 animate-pulse shadow-[0_0_6px_rgba(59,130,246,0.6)]'
-                  : backfillCurrent
-                    ? 'bg-cyan-500 dark:bg-cyan-400 animate-pulse shadow-[0_0_6px_rgba(6,182,212,0.6)]'
-                    : 'bg-muted-foreground/40'
-              }`}
-            />
-
-            {displayItem ? (
-              <>
-                <span className="text-blue-600 dark:text-sky-400 font-semibold tracking-tight">
-                  {getStageLabel('analyzing', displayItem.stage)}:
-                </span>
-                <span className="max-w-[220px] truncate text-foreground/90 font-medium">
-                  {displayItem.workspaceName ? `【${displayItem.workspaceName}】` : ''}
-                  {displayItem.name}
-                </span>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="text-muted-foreground font-normal">
-                  {t('等待: {count}', { count: waiting })}
-                </span>
-              </>
-            ) : backfillCurrent ? (
-              <>
-                <span className="text-cyan-600 dark:text-cyan-400 font-semibold tracking-tight">
-                  {t('视频补全')} ({backfillCurrent.completedSlices}/{backfillCurrent.targetSlices}):
-                </span>
-                <span className="max-w-[220px] truncate text-foreground/90 font-medium">
-                  {backfillCurrent.workspaceName ? `【${backfillCurrent.workspaceName}】` : ''}
-                  {backfillCurrent.fileName}
-                </span>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="text-muted-foreground font-normal">
-                  {t('待补: {count}', { count: videoBackfill?.pendingVideoCount ?? 0 })}
-                </span>
-              </>
-            ) : isPaused ? (
-              <span className="text-yellow-500 font-medium">{t('队列暂停')}</span>
-            ) : (
-              <>
-                <span className="text-muted-foreground font-medium">{t('空闲')}</span>
-                <span className="text-muted-foreground/40">·</span>
-                <span className="text-muted-foreground font-normal">
-                  {videoBackfill?.userPaused && (videoBackfill?.pendingVideoCount ?? 0) > 0
-                    ? t('待补暂停: {count}', { count: videoBackfill.pendingVideoCount })
-                    : t('等待: {count}', { count: waiting })}
-                </span>
-              </>
-            )}
-          </span>
-        </button>
-        <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
-        <EnergyTransparencyBadge />
-        <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
-        <button
-          onClick={() =>
-            openSettings(SettingsCategory.WORKSPACE_CONFIG, {
-              workspaceId: currentWorkspaceDirectory?.id
-            })
-          }
-          className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
-          title={
-            currentWorkspaceDirectory
-              ? t('点击配置当前工作区AI策略与分析模式: {name}', {
-                  name: currentWorkspaceDirectory.name
-                })
-              : t('点击打开工作区配置')
-          }
-        >
-          <span
-            className={`font-bold px-1.5 py-0.5 rounded ${
-              displayAnalysisMode === 'simple'
-                ? 'text-orange-500 bg-orange-500/10'
-                : displayAnalysisMode === 'quick_name'
-                  ? 'text-blue-500 bg-blue-500/10'
-                  : 'text-green-500 bg-green-500/10'
-            }`}
-          >
-            {displayAnalysisMode === 'simple'
-              ? t('标准分析')
-              : displayAnalysisMode === 'quick_name'
-                ? t('增强分析')
-                : t('全面分析')}
-          </span>
-        </button>
-        <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
-        <button
-          onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-          className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
-          title={t('点击打开AI引擎配置')}
-        >
-          <span className="opacity-50">{t('思考')}:</span>{' '}
-          <span
-            className={`font-bold px-1.5 py-0.5 rounded ${config?.enableThinkingMode ? 'text-green-500 bg-green-500/10' : 'text-orange-500 bg-orange-500/10'}`}
-          >
-            {config?.enableThinkingMode ? 'ON' : 'OFF'}
-          </span>
-        </button>
-        <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
-        <span className="text-xs text-muted-foreground opacity-50 pr-2">v{__APP_VERSION__}</span>
-        {__IS_DEV__ && (
-          <>
-            <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
-            {/* 开发模式标识：区域 - 环境 - Worktree/分支名，便于区分多 Worktree 并发实例 */}
-            <span
-              className="text-xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium pr-2"
-              title={t('开发模式标识：区域 - 环境 - 分支')}
-            >
-              {getDevBuildLabel(t)}
-            </span>
-          </>
-        )}
-        {hasUpdate && (
+        {/* 右侧按钮组：shrink-0 防止被左侧内容挤压换行 */}
+        <div className="flex items-center shrink-0">
           <button
-            onClick={() => setShowUpdateModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-full transition-all duration-300 animate-pulse border border-blue-500/20 group cursor-pointer"
+            className="relative overflow-hidden rounded-lg px-2.5 py-1 text-xs font-medium cursor-pointer transition-all border border-border/60 bg-muted/30 hover:bg-muted/60 hover:border-primary/40 dark:border-border/40 dark:bg-card/40 dark:hover:bg-muted/40 shadow-xs flex items-center group"
+            onClick={handleQueueButtonClick}
+            title={
+              displayItem
+                ? t('查看分析队列 - 当前: {ws}{name}', {
+                    ws: displayItem.workspaceName ? `【${displayItem.workspaceName}】` : '',
+                    name: displayItem.name
+                  })
+                : backfillCurrent
+                  ? `${t('视频分析：已完成 {done}/{total} 个片段', {
+                      done: backfillCurrent.completedSlices,
+                      total: backfillCurrent.targetSlices
+                    })} · ${t('导入新文件会自动暂停让路')}`
+                  : t('查看分析队列 - {count} 个文件等待中', { count: waiting })
+            }
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            <span className="font-medium">
-              ⚡️ {t('发现新版本 v{version}', { version: nextVersion.version })}
+            {/* 背景进度条层：主队列自适应进度条 / 独立视频补全进度条（互不干扰） */}
+            {displayItem ? (
+              <div
+                className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
+                style={{
+                  transform: `scaleX(${animScale})`,
+                  transformOrigin: 'left',
+                  transition: !enableTransition
+                    ? 'none'
+                    : displayedProgress >= 100
+                      ? 'transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1)'
+                      : displayItem.stage === 1
+                        ? 'transform 0.15s ease-out'
+                        : displayItem.stage === 2
+                          ? config?.analysisMode === 'simple' || config?.analysisMode === 'sample'
+                            ? 'transform 3.5s cubic-bezier(0.08, 0.82, 0.17, 1)'
+                            : 'transform 5.0s cubic-bezier(0.05, 0.7, 0.15, 1)'
+                          : displayItem.stage === 3
+                            ? 'transform 3.5s cubic-bezier(0.08, 0.82, 0.17, 1)'
+                            : 'transform 5.5s cubic-bezier(0.08, 0.82, 0.17, 1)'
+                }}
+              >
+                {/* 进度底色：自适应明暗的双色渐变 */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/15 via-sky-500/20 to-blue-600/20 dark:from-blue-600/25 dark:via-indigo-500/30 dark:to-sky-400/30" />
+
+                {/* AI 思考中流光扫描动效 */}
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-70 dark:opacity-80"
+                  style={{
+                    background:
+                      'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 35%, rgba(186,230,253,0.3) 50%, rgba(255,255,255,0.2) 65%, transparent 100%)',
+                    backgroundSize: '800px 100%',
+                    animation: 'shimmer 2.4s infinite ease-in-out'
+                  }}
+                />
+
+                {/* 头部先导光标线 */}
+                <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-gradient-to-b from-sky-400/50 via-sky-400/90 to-sky-400/50 dark:from-sky-300/60 dark:via-white/90 dark:to-sky-300/60 shadow-[0_0_6px_rgba(56,189,248,0.5)]" />
+              </div>
+            ) : backfillCurrent ? (
+              <div
+                data-testid="footer-video-backfill-bar"
+                className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
+                style={{
+                  transform: `scaleX(${backfillScale})`,
+                  transformOrigin: 'left',
+                  transition: 'transform 0.4s ease-out'
+                }}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/15 via-sky-500/20 to-cyan-600/20 dark:from-cyan-600/25 dark:via-sky-500/30 dark:to-cyan-400/30" />
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-70 dark:opacity-80"
+                  style={{
+                    background:
+                      'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 35%, rgba(165,243,252,0.3) 50%, rgba(255,255,255,0.2) 65%, transparent 100%)',
+                    backgroundSize: '800px 100%',
+                    animation: 'shimmer 2.4s infinite ease-in-out'
+                  }}
+                />
+                <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-gradient-to-b from-cyan-400/50 via-cyan-400/90 to-cyan-400/50" />
+              </div>
+            ) : null}
+
+            {/* 前景文字内容 */}
+            <span className="relative z-10 text-foreground dark:text-foreground flex items-center gap-1.5">
+              {/* 状态指示小圆点 */}
+              <span
+                className={`inline-block w-1.5 h-1.5 rounded-full transition-colors ${
+                  displayItem
+                    ? 'bg-blue-500 dark:bg-sky-400 animate-pulse shadow-[0_0_6px_rgba(59,130,246,0.6)]'
+                    : backfillCurrent
+                      ? 'bg-cyan-500 dark:bg-cyan-400 animate-pulse shadow-[0_0_6px_rgba(6,182,212,0.6)]'
+                      : 'bg-muted-foreground/40'
+                }`}
+              />
+
+              {displayItem ? (
+                <>
+                  <span className="text-blue-600 dark:text-sky-400 font-semibold tracking-tight">
+                    {getStageLabel('analyzing', displayItem.stage)}:
+                  </span>
+                  <span className="max-w-[220px] truncate text-foreground/90 font-medium">
+                    {displayItem.workspaceName ? `【${displayItem.workspaceName}】` : ''}
+                    {displayItem.name}
+                  </span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground font-normal">
+                    {t('等待: {count}', { count: waiting })}
+                  </span>
+                </>
+              ) : backfillCurrent ? (
+                <>
+                  <span className="text-cyan-600 dark:text-cyan-400 font-semibold tracking-tight">
+                    {t('视频补全')} ({backfillCurrent.completedSlices}/
+                    {backfillCurrent.targetSlices}):
+                  </span>
+                  <span className="max-w-[220px] truncate text-foreground/90 font-medium">
+                    {backfillCurrent.workspaceName ? `【${backfillCurrent.workspaceName}】` : ''}
+                    {backfillCurrent.fileName}
+                  </span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground font-normal">
+                    {t('待补: {count}', { count: videoBackfill?.pendingVideoCount ?? 0 })}
+                  </span>
+                </>
+              ) : isPaused ? (
+                <span className="text-yellow-500 font-medium">{t('队列暂停')}</span>
+              ) : (
+                <>
+                  <span className="text-muted-foreground font-medium">{t('空闲')}</span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground font-normal">
+                    {videoBackfill?.userPaused && (videoBackfill?.pendingVideoCount ?? 0) > 0
+                      ? t('待补暂停: {count}', { count: videoBackfill.pendingVideoCount })
+                      : t('等待: {count}', { count: waiting })}
+                  </span>
+                </>
+              )}
             </span>
           </button>
-        )}
-      </div>
-    </footer>
+          <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
+          <EnergyTransparencyBadge />
+          <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
+          <button
+            onClick={() =>
+              openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                workspaceId: currentWorkspaceDirectory?.id
+              })
+            }
+            className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
+            title={
+              currentWorkspaceDirectory
+                ? t('点击配置当前工作区AI策略与分析模式: {name}', {
+                    name: currentWorkspaceDirectory.name
+                  })
+                : t('点击打开工作区配置')
+            }
+          >
+            <span
+              className={`font-bold px-1.5 py-0.5 rounded ${
+                displayAnalysisMode === 'simple'
+                  ? 'text-orange-500 bg-orange-500/10'
+                  : displayAnalysisMode === 'quick_name'
+                    ? 'text-blue-500 bg-blue-500/10'
+                    : 'text-green-500 bg-green-500/10'
+              }`}
+            >
+              {displayAnalysisMode === 'simple'
+                ? t('标准分析')
+                : displayAnalysisMode === 'quick_name'
+                  ? t('增强分析')
+                  : t('全面分析')}
+            </span>
+          </button>
+          <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
+          <button
+            onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
+            className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
+            title={t('点击打开AI引擎配置')}
+          >
+            <span className="opacity-50">{t('思考')}:</span>{' '}
+            <span
+              className={`font-bold px-1.5 py-0.5 rounded ${config?.enableThinkingMode ? 'text-green-500 bg-green-500/10' : 'text-orange-500 bg-orange-500/10'}`}
+            >
+              {config?.enableThinkingMode ? 'ON' : 'OFF'}
+            </span>
+          </button>
+          <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
+          <span className="text-xs text-muted-foreground opacity-50 pr-2">v{__APP_VERSION__}</span>
+          {__IS_DEV__ && (
+            <>
+              <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
+              {/* 开发模式标识：区域 - 环境 - Worktree/分支名，便于区分多 Worktree 并发实例 */}
+              <span
+                className="text-xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium pr-2"
+                title={t('开发模式标识：区域 - 环境 - 分支')}
+              >
+                {getDevBuildLabel(t)}
+              </span>
+            </>
+          )}
+          {hasUpdate && (
+            <button
+              onClick={() => setShowUpdateModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 rounded-full transition-all duration-300 animate-pulse border border-blue-500/20 group cursor-pointer"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
+              <span className="font-medium">
+                ⚡️ {t('发现新版本 v{version}', { version: nextVersion.version })}
+              </span>
+            </button>
+          )}
+        </div>
+      </footer>
+    </>
   )
 }
