@@ -628,6 +628,29 @@ declare global {
           filePath: string,
           timestampSec: number
         ) => Promise<{ success: boolean; dataUrl?: string; error?: string }>
+        prepareVideoStream: (
+          filePath: string,
+          startSec?: number
+        ) => Promise<{
+          success: boolean
+          streamId?: string
+          streamUrl?: string
+          durationSec?: number | null
+          actualStartSec?: number
+          mode?: 'remux' | 'transcode'
+          error?: string
+        }>
+        seekVideoStream: (
+          streamId: string,
+          targetSec: number
+        ) => Promise<{
+          success: boolean
+          streamUrl?: string
+          actualStartSec?: number
+          mode?: 'remux' | 'transcode'
+          error?: string
+        }>
+        releaseVideoStream: (streamId: string) => Promise<{ success: boolean }>
         detectFfprobe: () => Promise<{ available: boolean; path: string | null }>
         openExternal: (url: string) => Promise<void>
         readFileBase64: (filePath: string) => Promise<string>

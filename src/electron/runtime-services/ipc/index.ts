@@ -4,3 +4,4 @@ export { registerLlmGatewayIPCHandlers } from './llm-gateway-ipc-handler'
 // PRD-0044（S5）：registerLocalModelConfigIPCHandlers（llama/migrate-* 模型迁移 IPC）
 // 随模型目录引擎独占管理清退，导出已删除
 export { registerFfmpegIpcHandlers } from './ffmpeg-ipc-handler'
+export { registerVideoStreamIpcHandlers } from './video-stream-ipc-handler'

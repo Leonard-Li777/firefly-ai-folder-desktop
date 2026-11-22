@@ -151,6 +151,34 @@ export const filesApi = {
       error?: string
     }> => ipcRenderer.invoke('ffmpeg:extract-frame', { filePath, timestampSec }),
 
+    // 本地 HTTP 双路流式播放：准备/定位/释放会话
+    prepareVideoStream: (
+      filePath: string,
+      startSec = 0
+    ): Promise<{
+      success: boolean
+      streamId?: string
+      streamUrl?: string
+      durationSec?: number | null
+      actualStartSec?: number
+      mode?: 'remux' | 'transcode'
+      error?: string
+    }> => ipcRenderer.invoke('video-stream:prepare', { filePath, startSec }),
+
+    seekVideoStream: (
+      streamId: string,
+      targetSec: number
+    ): Promise<{
+      success: boolean
+      streamUrl?: string
+      actualStartSec?: number
+      mode?: 'remux' | 'transcode'
+      error?: string
+    }> => ipcRenderer.invoke('video-stream:seek', { streamId, targetSec }),
+
+    releaseVideoStream: (streamId: string): Promise<{ success: boolean }> =>
+      ipcRenderer.invoke('video-stream:release', { streamId }),
+
     // ffprobe 外部依赖检测 (Issue #738 深度清理中心显式门禁)
     detectFfprobe: (): Promise<{ available: boolean; path: string | null }> =>
       ipcRenderer.invoke('ffmpeg:check-ffprobe'),
