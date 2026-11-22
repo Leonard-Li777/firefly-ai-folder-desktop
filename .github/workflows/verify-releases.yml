@@ -1,8 +1,6 @@
 name: Verify Release Artifacts (Multi-Platform Smoke Test)
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag_name:

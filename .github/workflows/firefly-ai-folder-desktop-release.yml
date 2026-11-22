@@ -1,110 +1,155 @@
 name: firefly-ai-folder-desktop-release
 
 on:
+  push:
+    branches:
+      - release
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
   workflow_dispatch:
     inputs:
+      sha:
+        description: '指定构建的精确 Commit SHA (留空则取当前分支 HEAD)'
+        required: false
+        type: string
+        default: ''
+      force_rebuild_candidate:
+        description: '允许在纯候选态重编同版本号候选包'
+        required: false
+        type: boolean
+        default: false
       platform_macos:
-        description: '构建 macOS 平台'
+        description: '[仅 master dev 通道生效] 构建 macOS 平台'
         required: false
         type: boolean
         default: true
       platform_windows:
-        description: '构建 Windows 平台'
+        description: '[仅 master dev 通道生效] 构建 Windows 平台'
         required: false
         type: boolean
         default: true
       platform_linux:
-        description: '构建 Linux 平台'
+        description: '[仅 master dev 通道生效] 构建 Linux 平台'
         required: false
         type: boolean
         default: true
       download_latest_llama:
         description: '是否重新下载并更新最新的 llama.cpp 核心依赖包 (默认为 true)'
-        required: true
+        required: false
         type: boolean
         default: true
       linux_runner:
         description: '选择 Linux 构建的运行 Runner 环境 (默认 ubuntu-latest)'
-        required: true
+        required: false
         type: choice
         default: 'ubuntu-latest'
         options:
           - 'ubuntu-latest'
           - 'self-hosted'
       build_region:
-        description: '构建区域 (国际版 INTL 或 国内版 CN)'
-        required: true
+        description: '构建区域 (release 通道沿用单母包 dualChannels 输出双清单)'
+        required: false
         type: choice
         default: 'CN'
         options:
           - 'CN'
           - 'INTL'
-      update_omni_lock:
-        description: '是否先拉取并同步最新的 firefly-omni 引擎版本到 preset-resources.lock.json (默认 false)'
-        required: false
-        type: boolean
-        default: false
-  push:
-    tags:
-      - 'v*'
 
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
-  prepare-sync:
-    name: 同步最新引擎版本 (preset-resources.lock.json)
+  # ==============================================================================
+  # Stage A: Fail-Closed 冻结态预检、Lockfile 校验与通道规划 (plan)
+  # ==============================================================================
+  plan:
+    name: 预检与发布通道规划 (Stage A)
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.update_omni_lock == 'true' || github.event.inputs.update_omni_lock == true)
+    outputs:
+      target_sha: ${{ steps.decide.outputs.target_sha }}
+      pkg_version: ${{ steps.decide.outputs.pkg_version }}
+      release_tag: ${{ steps.decide.outputs.release_tag }}
+      release_channel: ${{ steps.decide.outputs.release_channel }}
+      build_windows: ${{ steps.decide.outputs.build_windows }}
+      build_macos: ${{ steps.decide.outputs.build_macos }}
+      build_linux: ${{ steps.decide.outputs.build_linux }}
+      force_rebuild: ${{ steps.decide.outputs.force_rebuild }}
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: 校验专用凭据非空（严禁回退链）
+        shell: bash
+        env:
+          PRO_TOKEN: ${{ secrets.PRO_SUBMODULE_TOKEN }}
+          PROMOTE_TOKEN: ${{ secrets.RELEASE_PROMOTE_TOKEN }}
+        run: |
+          if [ -z "$PRO_TOKEN" ] || [ -z "$PROMOTE_TOKEN" ]; then
+            echo "::error::缺失 PRO_SUBMODULE_TOKEN 或 RELEASE_PROMOTE_TOKEN 专用凭据！"
+            exit 1
+          fi
+
+      - name: Checkout Open-Source Desktop Code (Full History for Ancestor Check)
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
-      - name: Checkout Private Pro Module
+      - name: 解析 pro gitlink SHA（git ls-tree 四重断言）
+        id: resolve_pro
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          ENTRY=$(git ls-tree HEAD pro)
+          [ -n "$ENTRY" ] || { echo "::error::未找到 pro gitlink"; exit 1; }
+          MODE=$(echo "$ENTRY" | awk '{print $1}')
+          TYPE=$(echo "$ENTRY" | awk '{print $2}')
+          PRO_SHA=$(echo "$ENTRY" | awk '{print $3}')
+          [ "$MODE" = "160000" ] && [ "$TYPE" = "commit" ] && [[ "$PRO_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::pro gitlink 四重断言失败: $ENTRY"; exit 1;
+          }
+          echo "pro_sha=$PRO_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Private Pro Module (Pinned to Gitlink SHA)
         uses: actions/checkout@v4
         with:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN }}
           path: pro
-          ref: master
+          ref: ${{ steps.resolve_pro.outputs.pro_sha }}
+
+      - name: 二次比对 pro HEAD 一致性
+        shell: bash
+        env:
+          EXPECTED_PRO_SHA: ${{ steps.resolve_pro.outputs.pro_sha }}
+        run: |
+          ACTUAL=$(git -C pro rev-parse HEAD)
+          [ "$ACTUAL" = "$EXPECTED_PRO_SHA" ] || { echo "::error::pro HEAD 漂移: $ACTUAL != $EXPECTED_PRO_SHA"; exit 1; }
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24.15.0'
 
-      - name: 更新 preset-resources.lock.json 中的 firefly-omni
+      - name: Fail-Closed 冻结态联合探测与 Lockfile 离线校验
+        id: decide
         shell: bash
-        run: |
-          echo "🔄 正在检查并更新 firefly-omni 引擎到最新版本..."
-          node pro/scripts/run.js update-preset-resources-lock.js --engine firefly-omni
         env:
-          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-
-      - name: 提交并推回更新后的 lock.json
-        shell: bash
+          RELEASE_PROMOTE_TOKEN: ${{ secrets.RELEASE_PROMOTE_TOKEN }}
+          R2_PUBLIC_BASE: https://download.iocn.cn/firefly-ai-folder
+          INPUT_SHA: ${{ github.event.inputs.sha }}
+          FORCE_REBUILD: ${{ github.event.inputs.force_rebuild_candidate }}
+          INPUT_PLATFORM_WINDOWS: ${{ github.event.inputs.platform_windows }}
+          INPUT_PLATFORM_MACOS: ${{ github.event.inputs.platform_macos }}
+          INPUT_PLATFORM_LINUX: ${{ github.event.inputs.platform_linux }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          if [ -n "$(git status --porcelain build/extraResources/configs/preset-resources.lock.json)" ]; then
-            echo "📝 检测到 preset-resources.lock.json 有更新，正在提交并推送..."
-            git add build/extraResources/configs/preset-resources.lock.json
-            git commit -m "chore(resources): update firefly-omni in preset-resources.lock.json [skip ci]"
-            git push origin HEAD:${{ github.ref_name }}
-          else
-            echo "✅ preset-resources.lock.json 已是最新，无需提交。"
-          fi
+          node pro/scripts/ci/plan-freeze-check.js
 
   build-macos:
     name: Build macOS (${{ matrix.name }})
-    needs: [prepare-sync]
-    if: |
-      always() &&
-      (needs.prepare-sync.result == 'success' || needs.prepare-sync.result == 'skipped') &&
-      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_macos == 'true' || github.event.inputs.platform_macos == true)))
+    needs: [plan]
+    if: needs.plan.outputs.build_macos == 'true'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -120,16 +165,47 @@ jobs:
             arch: x64
             name: Intel (x64)
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Open-Source Desktop Code (Pinned to target_sha)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.target_sha }}
 
-      - name: Checkout Private Pro Module
+      - name: 解析 pro gitlink SHA（git ls-tree 四重断言）
+        id: resolve_pro
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          ENTRY=$(git ls-tree HEAD pro)
+          [ -n "$ENTRY" ] || { echo "::error::未找到 pro gitlink"; exit 1; }
+          MODE=$(echo "$ENTRY" | awk '{print $1}')
+          TYPE=$(echo "$ENTRY" | awk '{print $2}')
+          PRO_SHA=$(echo "$ENTRY" | awk '{print $3}')
+          [ "$MODE" = "160000" ] && [ "$TYPE" = "commit" ] && [[ "$PRO_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::pro gitlink 四重断言失败: $ENTRY"; exit 1;
+          }
+          echo "pro_sha=$PRO_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Private Pro Module (Pinned to Gitlink SHA)
         uses: actions/checkout@v4
         with:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN }}
           path: pro
-          ref: master
+          ref: ${{ steps.resolve_pro.outputs.pro_sha }}
+
+      - name: 二次比对 pro HEAD 并按 dev 通道临时注入版本号
+        shell: bash
+        env:
+          EXPECTED_PRO_SHA: ${{ steps.resolve_pro.outputs.pro_sha }}
+          RELEASE_CHANNEL: ${{ needs.plan.outputs.release_channel }}
+          PKG_VER: ${{ needs.plan.outputs.pkg_version }}
+          RUN_NUM: ${{ github.run_number }}
+        run: |
+          ACTUAL=$(git -C pro rev-parse HEAD)
+          [ "$ACTUAL" = "$EXPECTED_PRO_SHA" ] || { echo "::error::pro HEAD 漂移"; exit 1; }
+          if [ "$RELEASE_CHANNEL" = "dev" ]; then
+            node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.PKG_VER+'-dev.'+process.env.RUN_NUM;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
+          fi
 
       - name: Install macOS Dependencies
         shell: bash
@@ -382,7 +458,8 @@ jobs:
           echo "📝 生成自动更新渠道清单..."
           node pro/scripts/run.js generate-channel-manifest.js --assert-isolation
 
-      - name: Publish to Cloudflare R2
+      - name: Publish Candidate to Cloudflare R2 (Fail-Fast)
+        if: needs.plan.outputs.release_channel == 'candidate'
         shell: bash
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -390,62 +467,71 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.pkg_version }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
-          echo "📤 Uploading package to Cloudflare R2..."
-          pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
+          echo "📤 Uploading macOS candidate artifacts to R2 candidates/..."
+          pnpm run publish:r2
 
-      - name: Publish to GitHub Release
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
-          git config --global --add safe.directory /__w/firefly-ai-folder-desktop/firefly-ai-folder-desktop || true
-
-          # 计算 Release Tag：如果是 refs/tags/v* 触发，使用 GITHUB_REF_NAME；如果是分支（如 master），回退使用 package.json 的版本号 vX.Y.Z
-          if [[ "$GITHUB_REF_NAME" == v* ]]; then
-            TAG="$GITHUB_REF_NAME"
-          else
-            PKG_VER=$(node -p "require('./package.json').version")
-            TAG="v${PKG_VER#v}"
-          fi
-          echo "🏷️ 当前发布版本 Tag: $TAG"
-          gh release view "$TAG" 2>/dev/null || gh release create "$TAG" --title "$TAG" --generate-notes || true
-
-          FILES=()
-          while IFS= read -r -d '' f; do
-            FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" \) -print0 2>/dev/null)
-
-          if [ ${#FILES[@]} -gt 0 ]; then
-            echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
-            gh release upload "$TAG" "${FILES[@]}" --clobber
-            echo "✅ GitHub Release 产物发布成功"
-          else
-            echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
-          fi
+      - name: Upload Dev Artifacts (Skip R2)
+        if: needs.plan.outputs.release_channel == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-macos-${{ matrix.arch }}
+          retention-days: 7
+          path: |
+            out/make/**/*.dmg
+            out/make/**/*.zip
+            out/make/**/*.blockmap
+            out/make/**/*.yml
 
   build-windows:
     name: Build Windows
-    needs: [prepare-sync]
-    if: |
-      always() &&
-      (needs.prepare-sync.result == 'success' || needs.prepare-sync.result == 'skipped') &&
-      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_windows == 'true' || github.event.inputs.platform_windows == true)))
+    needs: [plan]
+    if: needs.plan.outputs.build_windows == 'true'
     runs-on: windows-2022
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Open-Source Desktop Code (Pinned to target_sha)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.target_sha }}
 
-      - name: Checkout Private Pro Module
+      - name: 解析 pro gitlink SHA（git ls-tree 四重断言）
+        id: resolve_pro
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          ENTRY=$(git ls-tree HEAD pro)
+          [ -n "$ENTRY" ] || { echo "::error::未找到 pro gitlink"; exit 1; }
+          MODE=$(echo "$ENTRY" | awk '{print $1}')
+          TYPE=$(echo "$ENTRY" | awk '{print $2}')
+          PRO_SHA=$(echo "$ENTRY" | awk '{print $3}')
+          [ "$MODE" = "160000" ] && [ "$TYPE" = "commit" ] && [[ "$PRO_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::pro gitlink 四重断言失败: $ENTRY"; exit 1;
+          }
+          echo "pro_sha=$PRO_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Private Pro Module (Pinned to Gitlink SHA)
         uses: actions/checkout@v4
         with:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN }}
           path: pro
-          ref: master
+          ref: ${{ steps.resolve_pro.outputs.pro_sha }}
+
+      - name: 二次比对 pro HEAD 并按 dev 通道临时注入版本号
+        shell: bash
+        env:
+          EXPECTED_PRO_SHA: ${{ steps.resolve_pro.outputs.pro_sha }}
+          RELEASE_CHANNEL: ${{ needs.plan.outputs.release_channel }}
+          PKG_VER: ${{ needs.plan.outputs.pkg_version }}
+          RUN_NUM: ${{ github.run_number }}
+        run: |
+          ACTUAL=$(git -C pro rev-parse HEAD)
+          [ "$ACTUAL" = "$EXPECTED_PRO_SHA" ] || { echo "::error::pro HEAD 漂移"; exit 1; }
+          if [ "$RELEASE_CHANNEL" = "dev" ]; then
+            node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.PKG_VER+'-dev.'+process.env.RUN_NUM;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
+          fi
 
       - name: Install gh CLI
         shell: bash
@@ -767,7 +853,8 @@ jobs:
 
           Write-Host "✅ 在线引导安装器编译完成！"
 
-      - name: Publish to Cloudflare R2
+      - name: Publish Candidate to Cloudflare R2 (Fail-Fast)
+        if: needs.plan.outputs.release_channel == 'candidate'
         shell: bash
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -775,49 +862,28 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.pkg_version }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
-          echo "📤 Uploading package to Cloudflare R2..."
-          pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
+          echo "📤 Uploading Windows candidate artifacts to R2 candidates/..."
+          pnpm run publish:r2
 
-      - name: Publish to GitHub Release
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
-
-          # 计算 Release Tag：如果是 refs/tags/v* 触发，使用 GITHUB_REF_NAME；如果是分支（如 master），回退使用 package.json 的版本号 vX.Y.Z
-          if [[ "$GITHUB_REF_NAME" == v* ]]; then
-            TAG="$GITHUB_REF_NAME"
-          else
-            PKG_VER=$(node -p "require('./package.json').version")
-            TAG="v${PKG_VER#v}"
-          fi
-          echo "🏷️ 当前发布版本 Tag: $TAG"
-          gh release view "$TAG" 2>/dev/null || gh release create "$TAG" --title "$TAG" --generate-notes || true
-
-          FILES=()
-          while IFS= read -r -d '' f; do
-            FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" -o -name "*.ini" \) -print0 2>/dev/null)
-
-          if [ ${#FILES[@]} -gt 0 ]; then
-            echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
-            gh release upload "$TAG" "${FILES[@]}" --clobber
-            echo "✅ GitHub Release 产物发布成功"
-          else
-            echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
-          fi
+      - name: Upload Dev Artifacts (Skip R2)
+        if: needs.plan.outputs.release_channel == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-windows
+          retention-days: 7
+          path: |
+            out/make/**/*.exe
+            out/make/**/*.blockmap
+            out/make/**/*.yml
+            out/make/**/*.ini
 
   build-linux:
     name: Build Linux (${{ matrix.maker }})
-    needs: [prepare-sync]
-    if: |
-      always() &&
-      (needs.prepare-sync.result == 'success' || needs.prepare-sync.result == 'skipped') &&
-      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_linux == 'true' || github.event.inputs.platform_linux == true)))
+    needs: [plan]
+    if: needs.plan.outputs.build_linux == 'true'
     runs-on: ${{ github.event.inputs.linux_runner || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
@@ -832,16 +898,47 @@ jobs:
       PYTHON: python3
       LINUX_MAKER: ${{ matrix.maker }}
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Open-Source Desktop Code (Pinned to target_sha)
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.target_sha }}
 
-      - name: Checkout Private Pro Module
+      - name: 解析 pro gitlink SHA（git ls-tree 四重断言）
+        id: resolve_pro
+        shell: bash
+        working-directory: ${{ github.workspace }}
+        run: |
+          ENTRY=$(git ls-tree HEAD pro)
+          [ -n "$ENTRY" ] || { echo "::error::未找到 pro gitlink"; exit 1; }
+          MODE=$(echo "$ENTRY" | awk '{print $1}')
+          TYPE=$(echo "$ENTRY" | awk '{print $2}')
+          PRO_SHA=$(echo "$ENTRY" | awk '{print $3}')
+          [ "$MODE" = "160000" ] && [ "$TYPE" = "commit" ] && [[ "$PRO_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::pro gitlink 四重断言失败: $ENTRY"; exit 1;
+          }
+          echo "pro_sha=$PRO_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Private Pro Module (Pinned to Gitlink SHA)
         uses: actions/checkout@v4
         with:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN }}
           path: pro
-          ref: master
+          ref: ${{ steps.resolve_pro.outputs.pro_sha }}
+
+      - name: 二次比对 pro HEAD 并按 dev 通道临时注入版本号
+        shell: bash
+        env:
+          EXPECTED_PRO_SHA: ${{ steps.resolve_pro.outputs.pro_sha }}
+          RELEASE_CHANNEL: ${{ needs.plan.outputs.release_channel }}
+          PKG_VER: ${{ needs.plan.outputs.pkg_version }}
+          RUN_NUM: ${{ github.run_number }}
+        run: |
+          ACTUAL=$(git -C pro rev-parse HEAD)
+          [ "$ACTUAL" = "$EXPECTED_PRO_SHA" ] || { echo "::error::pro HEAD 漂移"; exit 1; }
+          if [ "$RELEASE_CHANNEL" = "dev" ]; then
+            node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.PKG_VER+'-dev.'+process.env.RUN_NUM;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
+          fi
 
       - name: Install System Build Dependencies (Linux)
         run: |
@@ -1110,7 +1207,8 @@ jobs:
           echo "📝 生成自动更新渠道清单..."
           node pro/scripts/run.js generate-channel-manifest.js --assert-isolation
 
-      - name: Publish to Cloudflare R2
+      - name: Publish Candidate to Cloudflare R2 (Fail-Fast)
+        if: needs.plan.outputs.release_channel == 'candidate'
         shell: bash
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -1118,109 +1216,102 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.pkg_version }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
-          echo "📤 Uploading package to Cloudflare R2..."
-          pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
+          echo "📤 Uploading Linux candidate artifacts to R2 candidates/..."
+          pnpm run publish:r2
 
-      - name: Publish to GitHub Release
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE" || true
-          git config --global --add safe.directory /__w/firefly-ai-folder-desktop/firefly-ai-folder-desktop || true
-          git config --global --add safe.directory '*' || true
-
-          # 计算 Release Tag：如果是 refs/tags/v* 触发，使用 GITHUB_REF_NAME；如果是分支（如 master），回退使用 package.json 的版本号 vX.Y.Z
-          if [[ "$GITHUB_REF_NAME" == v* ]]; then
-            TAG="$GITHUB_REF_NAME"
-          else
-            PKG_VER=$(node -p "require('./package.json').version")
-            TAG="v${PKG_VER#v}"
-          fi
-          echo "🏷️ 当前发布版本 Tag: $TAG"
-          gh release view "$TAG" 2>/dev/null || gh release create "$TAG" --title "$TAG" --generate-notes || true
-
-          FILES=()
-          while IFS= read -r -d '' f; do
-            FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" \) -print0 2>/dev/null)
-
-          if [ ${#FILES[@]} -gt 0 ]; then
-            echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
-            gh release upload "$TAG" "${FILES[@]}" --clobber
-            echo "✅ GitHub Release 产物发布成功"
-          else
-            echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
-          fi
+      - name: Upload Dev Artifacts (Skip R2)
+        if: needs.plan.outputs.release_channel == 'dev'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-linux-${{ matrix.maker }}
+          retention-days: 7
+          path: |
+            out/make/**/*.deb
+            out/make/**/*.rpm
+            out/make/**/*.AppImage
+            out/make/**/*.blockmap
+            out/make/**/*.yml
 
   # ==============================================================================
-  # Trigger E2E Test Workflow
+  # Stage C: 统一收口原子提交 (finalize) — 仅全平台绿灯时单点操作 GitHub Release
   # ==============================================================================
-  trigger-e2e-test:
-    name: 联动触发 Release E2E 功能测试
-    needs: [build-macos, build-windows, build-linux]
+  finalize:
+    name: 原子收口发布 (Stage C)
+    needs: [plan, build-macos, build-windows, build-linux]
     if: |
       always() &&
-      (needs.build-macos.result == 'success' || needs.build-macos.result == 'skipped') &&
-      (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped') &&
-      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
-      !(needs.build-macos.result == 'failure' || needs.build-windows.result == 'failure' || needs.build-linux.result == 'failure') &&
-      !(needs.build-macos.result == 'cancelled' || needs.build-windows.result == 'cancelled' || needs.build-linux.result == 'cancelled')
+      needs.plan.result == 'success' &&
+      (
+        (needs.plan.outputs.release_channel == 'candidate' &&
+         needs.build-macos.result == 'success' &&
+         needs.build-windows.result == 'success' &&
+         needs.build-linux.result == 'success') ||
+        (needs.plan.outputs.release_channel == 'dev' &&
+         (needs.build-macos.result == 'success' || needs.build-macos.result == 'skipped') &&
+         (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped') &&
+         (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
+         !(needs.build-macos.result == 'failure' || needs.build-windows.result == 'failure' || needs.build-linux.result == 'failure') &&
+         !(needs.build-macos.result == 'cancelled' || needs.build-windows.result == 'cancelled' || needs.build-linux.result == 'cancelled'))
+      )
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Desktop Code (获取版本号)
+      - name: Checkout Open-Source Desktop Code (Pinned to target_sha)
         uses: actions/checkout@v4
-
-      - name: 计算 Release Tag 并触发 e2e-release-test.yml
-        uses: actions/github-script@v7
-        env:
-          HAS_CUSTOM_PAT: ${{ !!(secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT) }}
-          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
         with:
-          # github-script v7 运行时不再暴露 @octokit/rest，自定义 Token 必须通过 github-token 输入注入
-          github-token: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            let tag = '';
-            const refName = process.env.GITHUB_REF_NAME || '';
-            if (refName.startsWith('v')) {
-              tag = refName;
-            } else {
-              try {
-                const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-                tag = 'v' + pkg.version.replace(/^v/, '');
-              } catch (e) {
-                core.warning(`读取 package.json 失败: ${e.message}`);
-              }
-            }
+          ref: ${{ needs.plan.outputs.target_sha }}
 
-            const region = (process.env.BUILD_REGION || 'CN').toLowerCase();
-            const targetOwner = context.repo.owner;
-            const targetRepo = context.repo.repo;
-            const workflowId = 'e2e-release-test.yml';
+      - name: 解析并检出 pro 子模块（git ls-tree 四重断言）
+        id: resolve_pro
+        shell: bash
+        run: |
+          ENTRY=$(git ls-tree HEAD pro)
+          [ -n "$ENTRY" ] || { echo "::error::未找到 pro gitlink"; exit 1; }
+          MODE=$(echo "$ENTRY" | awk '{print $1}')
+          TYPE=$(echo "$ENTRY" | awk '{print $2}')
+          PRO_SHA=$(echo "$ENTRY" | awk '{print $3}')
+          [ "$MODE" = "160000" ] && [ "$TYPE" = "commit" ] && [[ "$PRO_SHA" =~ ^[0-9a-f]{40}$ ]] || {
+            echo "::error::pro gitlink 四重断言失败: $ENTRY"; exit 1;
+          }
+          echo "pro_sha=$PRO_SHA" >> "$GITHUB_OUTPUT"
 
-            core.info(`🎯 桌面端发布完成！正在触发 E2E 测试: ${targetOwner}/${targetRepo} -> ${workflowId}`);
-            core.info(`📌 参数: tag_name=${tag}, region=${region}`);
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN }}
+          path: pro
+          ref: ${{ steps.resolve_pro.outputs.pro_sha }}
 
-            if (process.env.HAS_CUSTOM_PAT !== 'true') {
-              core.warning('⚠️ 未配置跨仓库 PAT（UNISOURCE_RELEASE_TOKEN / PRO_SUBMODULE_TOKEN 等），回退使用 GITHUB_TOKEN，跨仓库触发可能返回 401/403。');
-            }
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
 
-            try {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: targetOwner,
-                repo: targetRepo,
-                workflow_id: workflowId,
-                ref: context.ref,
-                inputs: {
-                  tag_name: tag,
-                  region: region,
-                  platform_scope: 'all-platforms'
-                }
-              });
-              core.info('✅ 成功触发 E2E 功能测试工作流！');
-            } catch (error) {
-              core.setFailed(`❌ 触发 E2E 测试工作流失败: ${error.message}`);
-            }
+      - name: Download Dev Artifacts (仅 dev 通道)
+        if: needs.plan.outputs.release_channel == 'dev'
+        uses: actions/download-artifact@v4
+        with:
+          pattern: dev-*
+          path: dist-dev-artifacts
+          merge-multiple: true
+
+      - name: 执行 Stage C 原子收口 (finalize-release.js)
+        shell: bash
+        env:
+          RELEASE_CHANNEL: ${{ needs.plan.outputs.release_channel }}
+          PKG_VERSION: ${{ needs.plan.outputs.pkg_version }}
+          TARGET_SHA: ${{ needs.plan.outputs.target_sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          RELEASE_PROMOTE_TOKEN: ${{ secrets.RELEASE_PROMOTE_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PROMOTE_TOKEN }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+        run: |
+          node pro/scripts/ci/finalize-release.js

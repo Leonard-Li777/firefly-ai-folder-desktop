@@ -144,6 +144,7 @@ export class AutoUpdateService {
     autoUpdater.autoDownload = false // 静默发现后由状态机控制下载
     autoUpdater.autoInstallOnAppQuit = true // 默认允许用户退出应用时自动应用更新
     autoUpdater.disableWebInstaller = true
+    autoUpdater.allowPrerelease = false // 路线 B 硬门禁：严禁正式/测试客户端跨通道消费 -dev 预发布包
     autoUpdater.logger = {
       info: (msg: any) => logger.debug(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
       warn: (msg: any) => logger.warn(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
@@ -206,18 +207,35 @@ export class AutoUpdateService {
     return this.state.currentTrack
   }
 
+  private static readonly SAFE_FEED_BASE_PATH_RE = /^[a-zA-Z0-9._-]+(?:\/[a-zA-Z0-9._-]+)*$/
+  private static readonly POINTER_MAX_BYTES = 64 * 1024
+
   /**
-   * 配置下载源 Feed URL
+   * 校验 R2 单对象指针中的 feedBasePath 是否为安全相对路径（支持单段 4.0.0 与多段 candidates/4.0.0/run-123）
    */
-  public configureFeedUrl(track: UpdateTrack): void {
+  public static isSafeFeedBasePath(feedBasePath: unknown): feedBasePath is string {
+    if (typeof feedBasePath !== 'string' || !feedBasePath) return false
+    if (!AutoUpdateService.SAFE_FEED_BASE_PATH_RE.test(feedBasePath)) return false
+    const segments = feedBasePath.split('/')
+    return segments.every(seg => seg !== '.' && seg !== '..')
+  }
+
+  /**
+   * 配置下载源 Feed URL（第二参数可选，保持与既有调用及单测向后兼容）
+   */
+  public configureFeedUrl(track: UpdateTrack, feedBasePath?: string): void {
     this.state.currentTrack = track
     const channel = resolveAppRegion()
 
     try {
       if (track === 'r2') {
+        const targetUrl =
+          feedBasePath && AutoUpdateService.isSafeFeedBasePath(feedBasePath)
+            ? `${this.R2_BASE_URL}/${feedBasePath}`
+            : this.R2_BASE_URL
         autoUpdater.setFeedURL({
           provider: 'generic',
-          url: this.R2_BASE_URL,
+          url: targetUrl,
           channel,
           // 工单 08 · P0-2：R2 generic provider 关闭多范围并行下载。
           // Electron-Builder 多范围请求在 CDN/对象存储偶发返回 416 Range Not Satisfiable，
@@ -226,7 +244,7 @@ export class AutoUpdateService {
         })
         logger.debug(
           LogCategory.SYSTEM,
-          `[AutoUpdater] 已切换更新源至 R2: ${this.R2_BASE_URL} (channel=${channel})`
+          `[AutoUpdater] 已切换更新源至 R2: ${targetUrl} (channel=${channel})`
         )
       } else {
         autoUpdater.setFeedURL({
@@ -247,14 +265,16 @@ export class AutoUpdateService {
 
   /**
    * 检查网络连通性探针（2500ms 硬超时）
-   * 返回 'alive'（域可达，含频道不存在）/ 'missing'（频道 yml 404/410，无新版）/ 'down'（真不可达）。
-   * 区分 missing 与 down 是为了避免「无新版」被误判为源故障而触发无谓 failover。
+   * 路线 B：当 track === 'r2' 时单次 GET 单对象指针（latest.json / staging.json），
+   * 解析合法 feedBasePath 后即时调用 configureFeedUrl('r2', feedBasePath)，避免双倍请求并保持既有单测 Mock 兼容。
+   * 返回 'alive'（域可达且指针合法）/ 'missing'（404/410 暂无可用版本）/ 'down'（不可达或指针损坏）。
    */
   public async probeEndpoint(track: UpdateTrack): Promise<'alive' | 'missing' | 'down'> {
-    const channel = resolveAppRegion()
+    const pointerFile =
+      process.env.FIREFLY_UPDATE_CHANNEL === 'staging' ? 'staging.json' : 'latest.json'
     const probeUrl =
       track === 'r2'
-        ? `${this.R2_BASE_URL}/${channel}.yml`
+        ? `${this.R2_BASE_URL}/${pointerFile}`
         : `https://github.com/${this.GITHUB_OWNER}/${this.GITHUB_REPO}/releases`
 
     return new Promise<'alive' | 'missing' | 'down'>(resolve => {
@@ -279,30 +299,92 @@ export class AutoUpdateService {
       try {
         const req = client.request(
           probeUrl,
-          { method: 'HEAD', timeout: this.PROBE_TIMEOUT_MS },
+          {
+            method: track === 'r2' ? 'GET' : 'HEAD',
+            timeout: this.PROBE_TIMEOUT_MS,
+            headers: track === 'r2' ? { 'Cache-Control': 'no-cache' } : undefined
+          },
           res => {
-            res.resume()
-            req.destroy()
             const statusCode = res.statusCode || 0
-            // 404/410 表示域名可达但频道清单不存在（通常为已是最新版无该频道包），视为 alive 而非源故障
+            // 404/410 表示域名可达但指针尚不存在（暂无可用版本），视为 missing 而非源故障
             if (statusCode === 404 || statusCode === 410) {
+              res.resume()
+              req.destroy()
               logger.debug(
                 LogCategory.SYSTEM,
-                `[AutoUpdater] 探针频道不存在 (${statusCode}): ${probeUrl}`
+                `[AutoUpdater] 探针指针不存在 (${statusCode}): ${probeUrl}`
               )
               finish('missing')
               return
             }
-            // 2xx 或 3xx 均视为网络通畅
-            if (statusCode > 0 && statusCode < 500) {
-              finish('alive')
+
+            if (track !== 'r2') {
+              res.resume()
+              req.destroy()
+              if (statusCode > 0 && statusCode < 500) {
+                finish('alive')
+                return
+              }
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[AutoUpdater] 探针服务端异常 (${statusCode}): ${probeUrl}`
+              )
+              finish('down')
               return
             }
-            logger.warn(
-              LogCategory.SYSTEM,
-              `[AutoUpdater] 探针服务端异常 (${statusCode}): ${probeUrl}`
-            )
-            finish('down')
+
+            if (statusCode < 200 || statusCode >= 300) {
+              res.resume()
+              req.destroy()
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[AutoUpdater] R2 指针请求异常 (${statusCode}): ${probeUrl}`
+              )
+              finish('down')
+              return
+            }
+
+            const chunks: Buffer[] = []
+            let totalBytes = 0
+            res.on('data', (chunk: Buffer | string) => {
+              const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+              totalBytes += buf.length
+              if (totalBytes > AutoUpdateService.POINTER_MAX_BYTES) {
+                req.destroy()
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[AutoUpdater] R2 指针响应体超过 64KB 上限: ${probeUrl}`
+                )
+                finish('down')
+                return
+              }
+              chunks.push(buf)
+            })
+
+            res.on('end', () => {
+              if (isResolved) return
+              try {
+                const raw = Buffer.concat(chunks).toString('utf8')
+                const parsed = JSON.parse(raw)
+                const rawFeedPath = parsed?.feedBasePath || parsed?.version
+                if (!AutoUpdateService.isSafeFeedBasePath(rawFeedPath)) {
+                  logger.warn(
+                    LogCategory.SYSTEM,
+                    `[AutoUpdater] R2 指针 feedBasePath/version 非法: ${String(rawFeedPath)} (${probeUrl})`
+                  )
+                  finish('down')
+                  return
+                }
+                this.configureFeedUrl('r2', rawFeedPath)
+                finish('alive')
+              } catch (parseErr: any) {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[AutoUpdater] R2 指针 JSON 解析失败: ${parseErr?.message ?? parseErr} (${probeUrl})`
+                )
+                finish('down')
+              }
+            })
           }
         )
 
@@ -368,7 +450,7 @@ export class AutoUpdateService {
       }
 
       // 探针健康预检：仅当首选源「真不可达」且本轮尚未探查时，静默平滑降级。
-      // missing（频道不存在/无新版）不算源故障，避免无谓切源（修复 P0-7）。
+      // missing（指针不存在/暂无可用版本）不算源故障，避免无谓切源（修复 P0-7 / R2-04）。
       const probeResult = await this.probeEndpoint(this.state.currentTrack)
       if (probeResult === 'down' && !this.hasTriedFailover) {
         const fallbackTrack: UpdateTrack = this.state.currentTrack === 'r2' ? 'github' : 'r2'
@@ -377,12 +459,29 @@ export class AutoUpdateService {
           `[AutoUpdater] 首选源 ${this.state.currentTrack} 探针不可达，平滑降级至备用源 ${fallbackTrack}`
         )
         this.hasTriedFailover = true
-        this.configureFeedUrl(fallbackTrack)
+        if (fallbackTrack === 'r2') {
+          // R2-03：INTL 降级至 R2 前必须先异步解析单对象指针
+          const fallbackProbe = await this.probeEndpoint('r2')
+          if (fallbackProbe === 'missing') {
+            this.updateState({ status: 'not-available', isMandatory: false, error: null })
+            return this.getState()
+          }
+          if (fallbackProbe === 'down') {
+            throw new Error('备用源 R2 单对象指针不可达或解析失败')
+          }
+        } else {
+          this.configureFeedUrl(fallbackTrack)
+        }
       } else if (probeResult === 'missing') {
         logger.debug(
           LogCategory.SYSTEM,
-          `[AutoUpdater] 首选源 ${this.state.currentTrack} 频道清单不存在（可能已最新），保持当前源`
+          `[AutoUpdater] 首选源 ${this.state.currentTrack} 指针不存在（暂无可用版本），保持当前源`
         )
+        if (this.state.currentTrack === 'r2') {
+          // R2-04：路线 B 下 R2 指针 404 时提前返回 not-available，严禁继续请求已废除的根路径 yml
+          this.updateState({ status: 'not-available', isMandatory: false, error: null })
+          return this.getState()
+        }
       }
 
       await autoUpdater.checkForUpdates()
@@ -750,13 +849,30 @@ export class AutoUpdateService {
       this.hasTriedFailover = true
       this.isFullDownloadFallback = false
       autoUpdater.disableDifferentialDownload = false
-      this.configureFeedUrl(fallbackTrack)
 
-      try {
-        await autoUpdater.checkForUpdates()
-        return
-      } catch (failoverErr) {
-        logger.error(LogCategory.SYSTEM, '[AutoUpdater] 备用源重试依然失败:', failoverErr)
+      if (fallbackTrack === 'r2') {
+        // R2-03：错误降级切换至 R2 前必须先异步解析单对象指针
+        const fallbackProbe = await this.probeEndpoint('r2')
+        if (fallbackProbe === 'missing') {
+          this.updateState({ status: 'not-available', isMandatory: false, error: null })
+          return
+        }
+        if (fallbackProbe === 'alive') {
+          try {
+            await autoUpdater.checkForUpdates()
+            return
+          } catch (failoverErr) {
+            logger.error(LogCategory.SYSTEM, '[AutoUpdater] 备用源 R2 重试依然失败:', failoverErr)
+          }
+        }
+      } else {
+        this.configureFeedUrl(fallbackTrack)
+        try {
+          await autoUpdater.checkForUpdates()
+          return
+        } catch (failoverErr) {
+          logger.error(LogCategory.SYSTEM, '[AutoUpdater] 备用源重试依然失败:', failoverErr)
+        }
       }
     }
 
