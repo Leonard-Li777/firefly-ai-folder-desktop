@@ -5,13 +5,7 @@ import * as os from 'node:os'
 import * as crypto from 'node:crypto'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
-import {
-  logger,
-  LogCategory,
-  APP_PORTS,
-  ServiceDiscoveryFile,
-  isPidAlive
-} from '@firefly/shared'
+import { logger, LogCategory, APP_PORTS, ServiceDiscoveryFile, isPidAlive } from '@firefly/shared'
 import * as iconv from 'iconv-lite'
 import {
   type ExternalApiActivityInfo,
@@ -1001,14 +995,16 @@ export class AISkillApiService {
 
       if (method === 'GET' && pathname === '/api/analysis/queue-status') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
-        const status = await (analysisQueueService as any).getQueueStatus()
+        const workspaceId = query.workspaceId ? Number(query.workspaceId) : undefined
+        const status = analysisQueueService.getQueueStatus(workspaceId)
         this.sendSuccess(res, status)
         return true
       }
 
       if (method === 'GET' && pathname === '/api/analysis/progress') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
-        const progress = await (analysisQueueService as any).getProgress()
+        const workspaceId = query.workspaceId ? Number(query.workspaceId) : undefined
+        const progress = analysisQueueService.getProgress(workspaceId)
         this.sendSuccess(res, progress)
         return true
       }
@@ -1016,12 +1012,14 @@ export class AISkillApiService {
       if (method === 'GET' && pathname === '/api/files/analysis-data') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
         const fileId = query.fileId ? Number(query.fileId) : undefined
+        const filePath = query.filePath ? String(query.filePath) : undefined
         const fields = query.fields ? (query.fields as string).split(',') : undefined
         const limit = Number(query.limit) || 20
         const offset = Number(query.offset) || 0
 
-        if (fileId) {
-          const file = await (databaseService as any).getFileAnalysisData(fileId, fields)
+        const target = filePath || fileId
+        if (target) {
+          const file = await databaseService.getFileAnalysisData(target, fields)
           if (!file) {
             this.sendError(res, 404, t('文件未找到'))
             return true
@@ -1030,7 +1028,7 @@ export class AISkillApiService {
           return true
         }
 
-        const files = await (databaseService as any).getPagedFileAnalysisData(limit, offset, fields)
+        const files = await databaseService.getPagedFileAnalysisData(limit, offset, fields)
         this.sendSuccess(
           res,
           files.map((f: any) => this.filterInfrastructureFields(f))
@@ -1411,7 +1409,8 @@ export class AISkillApiService {
         id: 'tts',
         method: 'POST',
         path: '/api/ai/synthesize',
-        description: '将文本或本地文本文件内容合成为自然流畅的 WAV 语音（支持返回文件路径或 Base64）',
+        description:
+          '将文本或本地文本文件内容合成为自然流畅的 WAV 语音（支持返回文件路径或 Base64）',
         inputSchema: {
           text: 'string (optional, 1-10000 chars)',
           filePath: 'string (optional, local text file path)',
@@ -1517,7 +1516,8 @@ export class AISkillApiService {
       }
 
       if (pathname === '/api/ai/ocr') {
-        const ocrEnabled = ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
+        const ocrEnabled =
+          ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
         if (!ocrEnabled) {
           this.sendStructuredError(res, 400, {
             error: 'FEATURE_DISABLED',
@@ -1696,13 +1696,16 @@ export class AISkillApiService {
         if (!text || text.length > 10000) {
           this.sendStructuredError(res, 400, {
             error: 'INVALID_ARGUMENT',
-            message: text ? '朗读文本长度超过 10,000 字符上限' : '至少需要提供 text 或 filePath 之一'
+            message: text
+              ? '朗读文本长度超过 10,000 字符上限'
+              : '至少需要提供 text 或 filePath 之一'
           })
           return true
         }
 
         const voiceId = typeof body?.voiceId === 'string' ? body.voiceId.trim() : undefined
-        const speed = typeof body?.speed === 'number' && Number.isFinite(body.speed) ? body.speed : undefined
+        const speed =
+          typeof body?.speed === 'number' && Number.isFinite(body.speed) ? body.speed : undefined
         const responseFormat = body?.responseFormat === 'base64' ? 'base64' : 'file'
 
         try {

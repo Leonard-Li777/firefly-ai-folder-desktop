@@ -476,6 +476,30 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     return this.fileDao.getFileByPath(p)
   }
   /**
+   * 按文件 ID 或路径获取文件分析数据（供外部 API 与技能调用）
+   */
+  async getFileAnalysisData(fileIdOrPath: number | string, _fields?: string[]) {
+    if (
+      typeof fileIdOrPath === 'string' &&
+      (fileIdOrPath.includes('/') || fileIdOrPath.includes('\\'))
+    ) {
+      return this.fileDao.getFileByPath(fileIdOrPath)
+    }
+    const id = Number(fileIdOrPath)
+    if (!id || isNaN(id)) return null
+    const row = this.fileDao.db.prepare('SELECT path FROM workspace_files WHERE id = ?').get(id) as
+      | { path?: string }
+      | undefined
+    if (!row?.path) return null
+    return this.fileDao.getFileByPath(row.path)
+  }
+  /**
+   * 分页获取文件分析数据（供外部 API 与技能调用）
+   */
+  async getPagedFileAnalysisData(limit = 20, offset = 0, _fields?: string[]) {
+    return this.fileDao.getAllFiles(limit, offset)
+  }
+  /**
    * 按工作区路径取文件指纹（轻量查询，不加载 contents）。
    *
    * 供只有路径、需要指纹的场景使用（如 Stage 5 高维修正解析队列项指纹）。

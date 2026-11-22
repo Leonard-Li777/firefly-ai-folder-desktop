@@ -87,9 +87,7 @@ const CAPABILITY_DISPLAY_ORDER: readonly ExternalApiCapabilityId[] = [
  * - 面向用户的文案必须通过函数动态返回静态 t(...)，严禁动态传参
  * - 严格零技术黑话（不含 FTS5/BM25/向量/推理负载/OCR/ASR/TTS 等底层术语与缩写）
  */
-export const getCapabilityDisplayMeta = (
-  id: ExternalApiCapabilityId
-): CapabilityDisplayMeta => {
+export const getCapabilityDisplayMeta = (id: ExternalApiCapabilityId): CapabilityDisplayMeta => {
   switch (id) {
     case 'search':
       return {
@@ -171,10 +169,14 @@ export function buildUniversalAgentPrompt(
     capLines.push(t('- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容'))
   }
   if (activeCapabilities.includes('asr')) {
-    capLines.push(t('- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳'))
+    capLines.push(
+      t('- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳')
+    )
   }
   if (activeCapabilities.includes('tts')) {
-    capLines.push(t('- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）'))
+    capLines.push(
+      t('- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）')
+    )
   }
   if (activeCapabilities.includes('sensitive')) {
     capLines.push(
@@ -362,7 +364,8 @@ export const ExternalApiSettingsTab: React.FC = () => {
 
   // 当前已激活能力列表（兼容旧快照兜底基础 4 项）
   const activeCapabilities: readonly ExternalApiCapabilityId[] =
-    status?.activeCapabilities ?? (['search', 'timeline', 'progress', 'virtual-folder-draft'] as const)
+    status?.activeCapabilities ??
+    (['search', 'timeline', 'progress', 'virtual-folder-draft'] as const)
   const activeCapSet = new Set<ExternalApiCapabilityId>(activeCapabilities)
 
   const canGeneratePrompt = isRunning && Boolean(status?.baseUrl)
@@ -490,7 +493,7 @@ export const ExternalApiSettingsTab: React.FC = () => {
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed pl-11">
               {t(
-                '开启后，你常用的外部 AI 助手（如 Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。'
+                '开启后，你常用的外部 AI 助手（如Workbuddy、Deepseek、Cursor、Claude 及各类桌面智能体）就能直接调用萤核的本地文件查找、读文字、转台词、朗读与整理能力，完全在你的电脑本地运行。'
               )}
             </p>
           </div>

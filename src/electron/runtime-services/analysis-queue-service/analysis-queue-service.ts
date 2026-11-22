@@ -55,7 +55,10 @@ import {
   type WorkerWriteSink,
   type WriterTailHookPayload
 } from './worker-orchestrator'
-import { createWriterProcessStack, type WriterProcessStack } from './worker-orchestrator/writer-process-wiring'
+import {
+  createWriterProcessStack,
+  type WriterProcessStack
+} from './worker-orchestrator/writer-process-wiring'
 import {
   checkExtensionMismatchFiles,
   batchFixFileExtensions,
@@ -286,7 +289,12 @@ export class AnalysisQueueService {
         databaseService.getWorkspacePendingBackfillVideos(wsId, effectiveLimitSec),
       resetFailedVideoSegmentsForWorkspace: (wsId, effectiveLimitSec) =>
         databaseService.resetFailedVideoSegmentsForWorkspace(wsId, effectiveLimitSec),
-      resetUpgradedVideoSegmentsForWorkspace: (wsId, effectiveLimitSec, expectedHash, isReusableFn) =>
+      resetUpgradedVideoSegmentsForWorkspace: (
+        wsId,
+        effectiveLimitSec,
+        expectedHash,
+        isReusableFn
+      ) =>
         databaseService.resetUpgradedVideoSegmentsForWorkspace(
           wsId,
           effectiveLimitSec,
@@ -1127,7 +1135,10 @@ export class AnalysisQueueService {
   }
 
   public startVideoBackfill(reason = 'manual'): boolean {
-    return this.videoSegmentBackfillWorker.resumeByUser() || this.videoSegmentBackfillWorker.scheduleStart(reason)
+    return (
+      this.videoSegmentBackfillWorker.resumeByUser() ||
+      this.videoSegmentBackfillWorker.scheduleStart(reason)
+    )
   }
 
   public async pauseVideoBackfill(): Promise<void> {
@@ -1194,6 +1205,93 @@ export class AnalysisQueueService {
       currentAnalyzingItem,
       status: queueStatus,
       videoBackfill: this.videoSegmentBackfillWorker.getSnapshot()
+    }
+  }
+
+  /**
+   * 获取分析队列简要状态（供对外 HTTP API 及状态监测使用）
+   */
+  public getQueueStatus(workspaceId?: number): {
+    systemIdle: boolean
+    queueLength: number
+    currentProcessingFile: string | null
+    total: number
+    pending: number
+    processing: number
+    completed: number
+    failed: number
+  } {
+    const snapshot = this.getSnapshot(workspaceId)
+    const items = snapshot.items || []
+    const pendingItems = items.filter(i => i.status === 'pending')
+    const analyzingItem = snapshot.currentAnalyzingItem || items.find(i => i.status === 'analyzing')
+    const completedItems = items.filter(i => i.status === 'completed')
+    const failedItems = items.filter(i => i.status === 'failed')
+
+    const queueLength = pendingItems.length + (analyzingItem ? 1 : 0)
+    const systemIdle = !snapshot.running && queueLength === 0
+
+    return {
+      systemIdle,
+      queueLength,
+      currentProcessingFile: analyzingItem?.path || null,
+      total: items.length,
+      pending: pendingItems.length,
+      processing: analyzingItem ? 1 : 0,
+      completed: completedItems.length,
+      failed: failedItems.length
+    }
+  }
+
+  /**
+   * 获取分析总体进度（供对外 HTTP API 及状态监测使用）
+   */
+  public getProgress(workspaceId?: number): {
+    isIdle: boolean
+    percentage: number
+    analysis: {
+      status: 'idle' | 'processing' | 'paused'
+      progressPercentage: number
+    }
+    organizePage: {
+      status: 'idle' | 'processing'
+      progressPercentage: number
+    }
+  } {
+    const queueStatus = this.getQueueStatus(workspaceId)
+    const snapshot = this.getSnapshot(workspaceId)
+    const items = snapshot.items || []
+    const total = items.length
+
+    let progressPercentage = 100
+    if (total > 0) {
+      const analyzingItem =
+        snapshot.currentAnalyzingItem || items.find(i => i.status === 'analyzing')
+      const doneCount = queueStatus.completed + queueStatus.failed
+      const partial = analyzingItem ? (analyzingItem.progress || 0) / 100 : 0
+      progressPercentage = Number(
+        Math.min(100, Math.max(0, ((doneCount + partial) / total) * 100)).toFixed(1)
+      )
+    }
+
+    const analysisStatus: 'idle' | 'processing' | 'paused' =
+      snapshot.status === 'running' || queueStatus.processing > 0
+        ? 'processing'
+        : snapshot.status === 'paused'
+          ? 'paused'
+          : 'idle'
+
+    return {
+      isIdle: queueStatus.systemIdle,
+      percentage: progressPercentage,
+      analysis: {
+        status: analysisStatus,
+        progressPercentage
+      },
+      organizePage: {
+        status: 'idle',
+        progressPercentage: 0
+      }
     }
   }
 
