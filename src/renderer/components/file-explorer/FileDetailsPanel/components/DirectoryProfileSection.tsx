@@ -702,17 +702,10 @@ const DirectoryProfileSectionComponent: React.FC<{
                           </div>
                         ))}
                       </div>
-                      <div className="pt-1 text-[11px] font-mono text-muted-foreground/80 border-t border-primary/10 flex flex-wrap items-center gap-1">
-                        <span>{t('格式示例：')}</span>
-                        <span className="font-semibold text-foreground/90">[xxx]xxx</span>
-                        <span className="text-muted-foreground/70">
-                          ([{t('领域')}]{t('内容描述')})
-                        </span>
-                        <span className="text-muted-foreground/40">|</span>
-                        <span className="font-semibold text-foreground/90">xxx_xxx</span>
-                        <span className="text-muted-foreground/70">
-                          ({t('内容描述')}_{t('角色名')}、{t('领域')}_{t('内容描述')})
-                        </span>
+                      <div className="pt-1 text-[11px] text-muted-foreground/80 border-t border-primary/10 leading-relaxed">
+                        {t(
+                          '将复制的提示词提交给外部 AI（如豆包、ChatGPT 等），与之交流你想要的智能文件名，它会为你生成符合格式的智能文件名'
+                        )}
                       </div>
                     </div>
 

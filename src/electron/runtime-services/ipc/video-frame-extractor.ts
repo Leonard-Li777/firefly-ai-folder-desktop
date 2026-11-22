@@ -33,6 +33,12 @@ const FRAME_CACHE_MAX = 300
 
 /** 全局同时运行的 ffmpeg 抽帧进程上限；搜索页多切片场景避免 CPU/内存瞬时打满 */
 const FRAME_CONCURRENCY_LIMIT = 3
+/**
+ * 独立于子进程退出的硬超时（execFile timeout + 5s）。
+ * execFile 的 timeout 只发 killSignal，若 ffmpeg 卡在不可中断 I/O，回调可能永不触发；
+ * 硬超时保证请求一定 settle、闸门许可一定归还，避免局部故障放大为全局排队瘫痪。
+ */
+const FRAME_HARD_TIMEOUT_MS = 20_000
 let activeFrameJobs = 0
 const frameJobQueue: Array<() => void> = []
 
@@ -106,11 +112,39 @@ export async function extractVideoFrameAsWebp(
     await acquireFrameSlot()
     try {
       return await new Promise<ExtractVideoFrameResult>(resolve => {
+        let settled = false
+        let hardTimer: NodeJS.Timeout | undefined
+        // 幂等收口：子进程回调与硬超时谁先到谁生效，保证槽位只归还一次
+        const finish = (result: ExtractVideoFrameResult) => {
+          if (settled) return
+          settled = true
+          if (hardTimer) clearTimeout(hardTimer)
+          resolve(result)
+        }
+        hardTimer = setTimeout(() => {
+          logger.warn(LogCategory.MAIN, `[视频抽帧] 硬超时强制结束: ${filePath} @ ${safeSec}s`)
+          finish({ success: false, error: '抽帧硬超时' })
+        }, FRAME_HARD_TIMEOUT_MS)
+
         execFile(
           ffmpegPath,
           args,
-          { windowsHide: true, encoding: 'buffer', maxBuffer: 12 * 1024 * 1024, timeout: 15000 },
+          {
+            windowsHide: true,
+            encoding: 'buffer',
+            maxBuffer: 12 * 1024 * 1024,
+            timeout: 15000,
+            killSignal: 'SIGKILL'
+          },
           (error, stdout, stderr) => {
+            if (settled) {
+              // 硬超时后的迟到回调：丢弃，不写缓存、不再次归还许可
+              logger.warn(
+                LogCategory.MAIN,
+                `[视频抽帧] 丢弃硬超时后的迟到回调: ${filePath} @ ${safeSec}s`
+              )
+              return
+            }
             if (error) {
               const detail = (stderr?.toString() || error.message || '').trim().slice(0, 400)
               const reason =
@@ -118,14 +152,14 @@ export async function extractVideoFrameAsWebp(
                   ? '抽帧超时'
                   : `抽帧失败: ${detail || error.message}`
               logger.warn(LogCategory.MAIN, `[视频抽帧] ${reason}`)
-              resolve({ success: false, error: reason })
+              finish({ success: false, error: reason })
               return
             }
 
             const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout ?? '')
             if (bytes.length === 0) {
               logger.warn(LogCategory.MAIN, `[视频抽帧] ffmpeg 返回空帧: ${filePath} @ ${safeSec}s`)
-              resolve({ success: false, error: '抽帧结果为空' })
+              finish({ success: false, error: '抽帧结果为空' })
               return
             }
 
@@ -140,7 +174,7 @@ export async function extractVideoFrameAsWebp(
                 LogCategory.MAIN,
                 `[视频抽帧] ffmpeg 返回非完整 WebP: ${filePath} @ ${safeSec}s`
               )
-              resolve({ success: false, error: '抽帧结果不是有效 WebP' })
+              finish({ success: false, error: '抽帧结果不是有效 WebP' })
               return
             }
 
@@ -149,8 +183,9 @@ export async function extractVideoFrameAsWebp(
               const oldestKey = frameCache.keys().next().value
               if (oldestKey !== undefined) frameCache.delete(oldestKey)
             }
+            // cache.set 先于 Promise settle；inFlight 在外部 .finally 删除，两者之间无空窗
             frameCache.set(cacheKey, dataUrl)
-            resolve({ success: true, dataUrl })
+            finish({ success: true, dataUrl })
           }
         )
       })

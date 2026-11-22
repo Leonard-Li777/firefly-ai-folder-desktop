@@ -19,6 +19,12 @@ import {
   getCurrentVideoPlaybackTime
 } from '../../stores/preview-overlay-store'
 
+/** 降级抽帧/外部跳轴时间点：优先用进入降级瞬间快照的最后播放位置，否则回退 props */
+function pickFallbackSeekSec(snapshot: number | null, propTime: number | undefined): number {
+  if (typeof snapshot === 'number' && Number.isFinite(snapshot) && snapshot >= 0) return snapshot
+  return typeof propTime === 'number' && Number.isFinite(propTime) ? propTime : 0
+}
+
 interface FilePreviewProps {
   filePath: string
   fileName: string
@@ -66,6 +72,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [frameKey, setFrameKey] = useState<string | null>(null)
   /** 已发起抽帧请求的 key，防止切点后旧请求晚到覆盖新帧或重复发起同 key 请求 */
   const requestedFrameKeyRef = useRef<string | null>(null)
+  /** 进入降级瞬间从非响应式播放进度单例快照的时间点，避免中途 error 丢失播放位置 */
+  const degradeSeekSecRef = useRef<number | null>(null)
 
   // 切换文件路径时重置视频时长与抽帧降级状态
   useEffect(() => {
@@ -74,14 +82,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setStaticFrameUrl(null)
     setFrameKey(null)
     requestedFrameKeyRef.current = null
+    degradeSeekSecRef.current = null
   }, [filePath])
 
   // 视频解码失败时，实时调用 ffmpeg 在当前时间点抽帧作为静态预览图
   // 时间点变化（点击同一文件不同的命中切片）时以新 key 重新抽帧，避免停留在旧帧
   useEffect(() => {
     if (!videoDecodeFailed || !filePath) return
-    const seekSec =
-      typeof currentTime === 'number' && Number.isFinite(currentTime) ? currentTime : 0
+    const seekSec = pickFallbackSeekSec(degradeSeekSecRef.current, currentTime)
     const nextKey = `${filePath}|${seekSec.toFixed(3)}`
     if (frameKey === nextKey && staticFrameUrl) return
     if (requestedFrameKeyRef.current === nextKey) return
@@ -232,8 +240,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
         filePath,
         category: 'video',
-        seekSeconds:
-          typeof currentTime === 'number' && Number.isFinite(currentTime) ? currentTime : 0
+        seekSeconds: pickFallbackSeekSec(degradeSeekSecRef.current, currentTime)
       })
       if (outcome?.fallbackToDefault) {
         toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
@@ -436,9 +443,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   onCanPlay={handleCanPlay}
                   onTimeUpdate={handleTimeUpdate}
                   onError={() => {
+                    const liveTime = getCurrentVideoPlaybackTime()
+                    degradeSeekSecRef.current =
+                      typeof liveTime === 'number' && Number.isFinite(liveTime) && liveTime >= 0
+                        ? liveTime
+                        : null
                     logger.warn(
                       LogCategory.RENDERER,
-                      `[视频预览] 浏览器无法解码视频，切换静态抽帧: ${filePath}`
+                      `[视频预览] 浏览器无法解码视频，切换静态抽帧: ${filePath} @ ${degradeSeekSecRef.current ?? currentTime ?? 0}s`
                     )
                     setVideoDecodeFailed(true)
                   }}

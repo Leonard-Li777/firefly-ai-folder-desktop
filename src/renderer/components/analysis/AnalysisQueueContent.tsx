@@ -31,7 +31,8 @@ const ListComponent: any = isReactWindowV2
   ? ReactWindow.List || ReactWindowModule.List
   : ReactWindow.FixedSizeList || ReactWindowModule.FixedSizeList || ReactWindow
 
-const ROW_HEIGHT = 48
+// 行高：紧凑布局，避免整行过高浪费纵向空间
+const ROW_HEIGHT = 40
 
 interface ColumnWidths {
   index: number
@@ -238,9 +239,10 @@ function StatusBadge({ item }: { item: AnalysisQueueItem }) {
         break
     }
   } else if (status === 'completed') {
-    colorStyle = 'bg-green-500/10 text-green-600 dark:text-green-400 font-medium'
+    // 完成态只用文字色、不加背景徽章：避免在「当前阶段」cell 左侧呈现绿色背景块/竖条
+    colorStyle = 'text-green-600 dark:text-green-400 font-medium'
   } else if (status === 'pending' && stage > 0) {
-    colorStyle = 'bg-blue-500/10 text-blue-600 dark:text-blue-400 font-medium'
+    colorStyle = 'text-blue-600 dark:text-blue-400 font-medium'
   }
 
   return (

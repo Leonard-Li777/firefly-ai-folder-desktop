@@ -75,6 +75,23 @@ function getDevBuildLabel(t: (s: string) => string): string {
 }
 
 /**
+ * stage2 进度条目标值：非简单模式下，把视频切片完成比例（done/total）线性映射进
+ * 进度条的 [0.01, 0.25] 区间，使 Footer 在长视频 stage2 内部随切片平滑推进，
+ * 而非卡死在阶段起始的固定值；无切片信息时回退到阶段起始值。
+ * 背景：stage2 耗时是其它 stage 的数倍，切片多时原来一直停在 0.25 不动。
+ */
+function stage2BarTarget(isSimpleMode: boolean, done?: number, total?: number): number {
+  if (isSimpleMode) return 0.98
+  const min = 0.01
+  const max = 0.25
+  if (typeof done !== 'number' || typeof total !== 'number' || total <= 0 || done <= 0) {
+    return min
+  }
+  const ratio = Math.max(0, Math.min(1, done / total))
+  return min + (max - min) * ratio
+}
+
+/**
  * 应用底部状态栏组件
  */
 export function Footer() {
@@ -104,7 +121,12 @@ export function Footer() {
         progress: item.progress,
         name: item.name,
         workspaceId: item.workspaceId,
-        stage: item.analysisStage ?? (item.analysisStats as any)?.analysis_stage ?? 0
+        stage: item.analysisStage ?? (item.analysisStats as any)?.analysis_stage ?? 0,
+        // 暴露切片进度明细，供 Footer 在 stage2 内部随切片平滑推进
+        videoCompletedSlices: (item.analysisStats as any)?.video_completed_slices as
+          | number
+          | undefined,
+        videoTotalSlices: (item.analysisStats as any)?.video_total_slices as number | undefined
       }
     })
   )
@@ -372,9 +394,11 @@ export function Footer() {
                   ? 0.94
                   : 0.55
                 : analyzing.stage === 2
-                  ? isSimpleMode
-                    ? 0.98
-                    : 0.25
+                  ? stage2BarTarget(
+                      isSimpleMode,
+                      analyzing.videoCompletedSlices,
+                      analyzing.videoTotalSlices
+                    )
                   : 0.01
           setAnimScale(target)
         })
@@ -407,7 +431,14 @@ export function Footer() {
         } else if (analyzing.stage === 3) {
           setAnimScale(isQuickMode ? 0.94 : 0.55)
         } else if (analyzing.stage === 2) {
-          setAnimScale(isSimpleMode ? 0.98 : 0.25)
+          // 视频切片进度映射进 stage2 区间，使 Footer 随切片平滑推进而非卡死在 0.25
+          setAnimScale(
+            stage2BarTarget(
+              isSimpleMode,
+              analyzing.videoCompletedSlices,
+              analyzing.videoTotalSlices
+            )
+          )
         } else {
           setAnimScale(0.01)
         }
@@ -437,6 +468,9 @@ export function Footer() {
     analyzing?.progress,
     analyzing?.id,
     analyzing?.stage,
+    // 视频切片进度变化需触发重算，让 Footer 在 stage2 内部随切片平滑推进（而非卡死在阶段起始值）
+    analyzing?.videoCompletedSlices,
+    analyzing?.videoTotalSlices,
     analyzing === null,
     runningWorkspace?.name
   ])
