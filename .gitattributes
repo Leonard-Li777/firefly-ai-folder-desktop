@@ -54,3 +54,6 @@
 
 # Electron 构建产物与 llama 库等大文件按字节锁定
 build/llama-lib-zip/** -text
+
+# 预设资源锁文件强制 LF 换行符，防止 Windows CRLF 污染 CI 校验与 diff
+build/extraResources/configs/preset-resources.lock.json text eol=lf

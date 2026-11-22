@@ -92,6 +92,9 @@ export async function extractVideoFrameAsWebp(
   // -nostdin 防止 execFile 场景下 ffmpeg 监听 stdin 导致挂起；
   // 输出到 pipe:1 直接拿 WebP 二进制，避免临时文件落盘。
   const args = [
+    '-hide_banner',
+    '-loglevel',
+    'error',
     '-nostdin',
     '-ss',
     safeSec.toFixed(3),
@@ -108,8 +111,28 @@ export async function extractVideoFrameAsWebp(
     'pipe:1'
   ]
 
+  const queuedAt = Date.now()
   const run = async (): Promise<ExtractVideoFrameResult> => {
     await acquireFrameSlot()
+    const startedAt = Date.now()
+    let spawnLogged = false
+    /** 每次真实 spawn 仅记一行，路径/data URL 均不落日志，仅取扩展名 */
+    const logSpawn = (ok: boolean, bytes: number) => {
+      if (spawnLogged) return
+      spawnLogged = true
+      const ext = filePath.includes('.') ? filePath.split('.').pop()!.toLowerCase() : ''
+      logger.info(
+        LogCategory.MAIN,
+        JSON.stringify({
+          event: 'video_frame_extract',
+          ext,
+          elapsedMs: Date.now() - startedAt,
+          queueWaitMs: startedAt - queuedAt,
+          bytes,
+          ok
+        })
+      )
+    }
     try {
       return await new Promise<ExtractVideoFrameResult>(resolve => {
         let settled = false
@@ -123,6 +146,7 @@ export async function extractVideoFrameAsWebp(
         }
         hardTimer = setTimeout(() => {
           logger.warn(LogCategory.MAIN, `[视频抽帧] 硬超时强制结束: ${filePath} @ ${safeSec}s`)
+          logSpawn(false, 0)
           finish({ success: false, error: '抽帧硬超时' })
         }, FRAME_HARD_TIMEOUT_MS)
 
@@ -152,6 +176,7 @@ export async function extractVideoFrameAsWebp(
                   ? '抽帧超时'
                   : `抽帧失败: ${detail || error.message}`
               logger.warn(LogCategory.MAIN, `[视频抽帧] ${reason}`)
+              logSpawn(false, 0)
               finish({ success: false, error: reason })
               return
             }
@@ -159,6 +184,7 @@ export async function extractVideoFrameAsWebp(
             const bytes = Buffer.isBuffer(stdout) ? stdout : Buffer.from(stdout ?? '')
             if (bytes.length === 0) {
               logger.warn(LogCategory.MAIN, `[视频抽帧] ffmpeg 返回空帧: ${filePath} @ ${safeSec}s`)
+              logSpawn(false, 0)
               finish({ success: false, error: '抽帧结果为空' })
               return
             }
@@ -174,6 +200,7 @@ export async function extractVideoFrameAsWebp(
                 LogCategory.MAIN,
                 `[视频抽帧] ffmpeg 返回非完整 WebP: ${filePath} @ ${safeSec}s`
               )
+              logSpawn(false, bytes.length)
               finish({ success: false, error: '抽帧结果不是有效 WebP' })
               return
             }
@@ -185,6 +212,7 @@ export async function extractVideoFrameAsWebp(
             }
             // cache.set 先于 Promise settle；inFlight 在外部 .finally 删除，两者之间无空窗
             frameCache.set(cacheKey, dataUrl)
+            logSpawn(true, bytes.length)
             finish({ success: true, dataUrl })
           }
         )

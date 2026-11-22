@@ -2,6 +2,7 @@ import { FileCategory, getFileCategory, logger, LogCategory } from '@firefly/sha
 import React, { useEffect, useRef, useState } from 'react'
 
 import { Button } from '../ui/button'
+import { StreamVideoControls } from './StreamVideoControls'
 import { EmptyState } from '../common/EmptyState'
 import { toast } from '../common/Toast'
 import { MaterialIcon, cn } from '../../lib/utils'
@@ -14,41 +15,26 @@ import {
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 import {
+  useVideoFrame,
+  seekKeyOf,
+  pickFallbackSeekSec,
+  type DegradeSeekSnapshot
+} from './hooks/useVideoFrame'
+import {
   usePreviewOverlayStore,
   setCurrentVideoPlaybackTime,
   getCurrentVideoPlaybackTime
 } from '../../stores/preview-overlay-store'
 
-/** 时间点归一：非有限数或负值一律回退 0，与规格 §2.1 契约一致 */
-function normalizeSeekSec(value: number | undefined): number {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0
+interface StreamPlaybackSession {
+  streamId: string
+  streamUrl: string
+  durationSec: number | null
+  actualStartSec: number
+  mode: 'remux' | 'transcode'
 }
 
-/** 降级快照键：绑定进入降级瞬间的「文件|切点」，跨文件或同文件切点变化后快照自动失效 */
-function seekKeyOf(filePath: string, propTime: number | undefined): string {
-  return `${filePath}|${normalizeSeekSec(propTime).toFixed(3)}`
-}
-
-interface DegradeSeekSnapshot {
-  key: string
-  sec: number
-}
-
-/**
- * 降级抽帧/外部跳轴时间点。
- * 快照仅在「文件与切点均未变」时有效：跨文件切换或同文件切换命中切片都回退 props，
- * 从而同时避免全局播放进度串位与旧快照锁死新切点。
- */
-function pickFallbackSeekSec(
-  snapshot: DegradeSeekSnapshot | null,
-  filePath: string,
-  propTime: number | undefined
-): number {
-  if (snapshot && snapshot.key === seekKeyOf(filePath, propTime)) {
-    return normalizeSeekSec(snapshot.sec)
-  }
-  return normalizeSeekSec(propTime)
-}
+const STREAM_STALL_TIMEOUT_MS = 8_000
 
 interface FilePreviewProps {
   filePath: string
@@ -91,57 +77,186 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [videoDuration, setVideoDuration] = useState<number>(0)
   /** <video> 无法解码该视频格式（如 AVI/MKV）时置 true，改用静态抽帧缩图预览 */
   const [videoDecodeFailed, setVideoDecodeFailed] = useState(false)
-  /** ffmpeg 实时抽帧得到的静态预览图 data URL */
-  const [staticFrameUrl, setStaticFrameUrl] = useState<string | null>(null)
-  /** 当前静态图对应的「文件|时间点」键，用于同一文件不同切片间切换时重新抽帧 */
-  const [frameKey, setFrameKey] = useState<string | null>(null)
-  /** 已发起抽帧请求的 key，防止切点后旧请求晚到覆盖新帧或重复发起同 key 请求 */
-  const requestedFrameKeyRef = useRef<string | null>(null)
   /** 进入降级瞬间从当前 <video> 快照的播放位置，绑定文件+切点键，避免跨文件串位与切点锁死 */
   const degradeSeekSnapshotRef = useRef<DegradeSeekSnapshot | null>(null)
+  /** 降级抽帧时间点：仅在降级态生效，由共享 hook 统一发起请求 */
+  const fallbackSeekSec = pickFallbackSeekSec(
+    degradeSeekSnapshotRef.current,
+    filePath,
+    currentTime
+  )
+  /** 共享抽帧层：键归一、去重、取消与乱序防护统一收口（工单 03 FrameBroker） */
+  const { frameUrl: staticFrameUrl, frameKey } = useVideoFrame(filePath, {
+    seekSec: fallbackSeekSec,
+    enabled: videoDecodeFailed
+  })
+  /** 静态帧渲染失败时本地降级（不重试同一坏 data URL） */
+  const [staticFrameBroken, setStaticFrameBroken] = useState(false)
 
-  // 切换文件路径时重置视频时长与抽帧降级状态
+  // Level 2：本地 HTTP 双路流式播放会话
+  const [streamSession, setStreamSession] = useState<StreamPlaybackSession | null>(null)
+  const streamSessionRef = useRef<StreamPlaybackSession | null>(null)
+  const actualStartSecRef = useRef(0)
+  const logicalTimeRef = useRef(0)
+  const [streamLogicalTime, setStreamLogicalTime] = useState(0)
+  const [streamPlaying, setStreamPlaying] = useState(false)
+  const [streamMuted, setStreamMuted] = useState(false)
+  const [streamVolume, setStreamVolume] = useState(1)
+  const lastStreamActivityRef = useRef(Date.now())
+  const pendingSeekRef = useRef(false)
+  /** 8s 停滞看门狗仅在 loadeddata 后启用，避免冷启动与后端 10s 看门狗竞态 */
+  const streamLoadedRef = useRef(false)
+  const seekDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const nativeErrorHandledRef = useRef(false)
+
+  // 切换文件路径时重置视频时长、流式会话与抽帧降级状态
   useEffect(() => {
+    const previous = streamSessionRef.current
+    if (previous) {
+      Promise.resolve(window.electronAPI?.utils?.releaseVideoStream?.(previous.streamId)).catch(
+        () => undefined
+      )
+    }
+    streamSessionRef.current = null
+    setStreamSession(null)
+    setStreamPlaying(false)
+    setStreamLogicalTime(0)
+    pendingSeekRef.current = false
+    streamLoadedRef.current = false
+    if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current)
+    nativeErrorHandledRef.current = false
     setVideoDuration(0)
     setVideoDecodeFailed(false)
-    setStaticFrameUrl(null)
-    setFrameKey(null)
-    requestedFrameKeyRef.current = null
+    setStaticFrameBroken(false)
     degradeSeekSnapshotRef.current = null
   }, [filePath])
 
-  // 视频解码失败时，实时调用 ffmpeg 在当前时间点抽帧作为静态预览图
-  // 时间点变化（点击同一文件不同的命中切片）时以新 key 重新抽帧，避免停留在旧帧
-  useEffect(() => {
-    if (!videoDecodeFailed || !filePath) return
-    const seekSec = pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
-    const nextKey = `${filePath}|${seekSec.toFixed(3)}`
-    if (frameKey === nextKey && staticFrameUrl) return
-    if (requestedFrameKeyRef.current === nextKey) return
-    requestedFrameKeyRef.current = nextKey
-    // 同一文件切换切片时先清掉旧帧，避免新帧返回前展示错误时间点画面
-    if (frameKey !== nextKey) setStaticFrameUrl(null)
+  const markStreamActivity = () => {
+    lastStreamActivityRef.current = Date.now()
+  }
 
-    let cancelled = false
-    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, seekSec))
-      .then(result => {
-        if (cancelled) return
-        if (!result?.success || !result.dataUrl) {
-          logger.warn(LogCategory.RENDERER, '[视频预览] ffmpeg 抽帧失败:', result?.error)
-          return
-        }
-        setFrameKey(nextKey)
-        setStaticFrameUrl(result.dataUrl)
-      })
-      .catch(err => {
-        if (!cancelled) logger.warn(LogCategory.RENDERER, '[视频预览] 抽帧调用异常:', err)
-      })
-    return () => {
-      cancelled = true
+  /** Level 2 失败统一回落 Level 3：先释放会话，再复用 v1.7 静态帧 + 外部跳轴 */
+  const fallbackToStatic = () => {
+    const session = streamSessionRef.current
+    if (session) {
+      Promise.resolve(window.electronAPI?.utils?.releaseVideoStream?.(session.streamId)).catch(
+        () => undefined
+      )
     }
-  }, [videoDecodeFailed, filePath, currentTime, frameKey, staticFrameUrl])
+    const hadStreamSession = Boolean(session)
+    streamSessionRef.current = null
+    setStreamSession(null)
+    setStreamPlaying(false)
+    pendingSeekRef.current = false
+    streamLoadedRef.current = false
+    // 原生 error 已写入的快照必须保留；只有 Stream 模式才用逻辑时间覆盖
+    if (hadStreamSession && logicalTimeRef.current > 0) {
+      degradeSeekSnapshotRef.current = {
+        key: seekKeyOf(filePath, currentTime),
+        sec: logicalTimeRef.current
+      }
+    }
+    setVideoDecodeFailed(true)
+  }
+
+  /** 原生解码失败后进入 Level 2；任一失败都直接回落 Level 3 */
+  const startStreamPlayback = async (startSec: number) => {
+    if (nativeErrorHandledRef.current) return
+    nativeErrorHandledRef.current = true
+    try {
+      const result = await window.electronAPI?.utils?.prepareVideoStream?.(filePath, startSec)
+      if (!result?.success || !result.streamId || !result.streamUrl) {
+        logger.warn(LogCategory.RENDERER, '[视频预览] 流式播放准备失败:', result?.error)
+        fallbackToStatic()
+        return
+      }
+      const session: StreamPlaybackSession = {
+        streamId: result.streamId,
+        streamUrl: result.streamUrl,
+        durationSec: result.durationSec ?? null,
+        actualStartSec: result.actualStartSec ?? startSec,
+        mode: result.mode ?? 'transcode'
+      }
+      actualStartSecRef.current = session.actualStartSec
+      logicalTimeRef.current = session.actualStartSec
+      setStreamLogicalTime(session.actualStartSec)
+      lastStreamActivityRef.current = Date.now()
+      pendingSeekRef.current = true
+      streamLoadedRef.current = false
+      streamSessionRef.current = session
+      setVideoDuration(session.durationSec ?? 0)
+      setStreamSession(session)
+    } catch (err: unknown) {
+      logger.warn(LogCategory.RENDERER, '[视频预览] 流式播放准备异常:', err)
+      fallbackToStatic()
+    }
+  }
+
+  /** Seek 唯一入口：200ms 防抖，先拿新 URL 与逻辑基线再切 src */
+  const handleStreamSeek = (targetSec: number) => {
+    if (!streamSessionRef.current) return
+    if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current)
+    seekDebounceRef.current = setTimeout(() => {
+      void (async () => {
+        const current = streamSessionRef.current
+        if (!current) return
+        try {
+          const result = await window.electronAPI?.utils?.seekVideoStream?.(
+            current.streamId,
+            targetSec
+          )
+          if (!result?.success || !result.streamUrl) {
+            fallbackToStatic()
+            return
+          }
+          const actualStartSec = result.actualStartSec ?? targetSec
+          actualStartSecRef.current = actualStartSec
+          logicalTimeRef.current = actualStartSec
+          setStreamLogicalTime(actualStartSec)
+          pendingSeekRef.current = true
+          streamLoadedRef.current = false
+          lastStreamActivityRef.current = Date.now()
+          const next: StreamPlaybackSession = {
+            ...current,
+            streamUrl: result.streamUrl,
+            actualStartSec,
+            mode: result.mode ?? current.mode
+          }
+          streamSessionRef.current = next
+          setStreamSession(next)
+        } catch (err: unknown) {
+          logger.warn(LogCategory.RENDERER, '[视频预览] 流式 Seek 异常:', err)
+          fallbackToStatic()
+        }
+      })()
+    }, 200)
+  }
+
+  // 非暂停态下长时间无数据推进即视为流卡死，回落 Level 3
+  useEffect(() => {
+    if (!streamSession) return
+    const timer = setInterval(() => {
+      const video = videoRef.current
+      if (!video || video.paused) return
+      if (
+        streamLoadedRef.current &&
+        video.readyState < 3 &&
+        Date.now() - lastStreamActivityRef.current > STREAM_STALL_TIMEOUT_MS
+      ) {
+        logger.warn(LogCategory.RENDERER, '[视频预览] 流式中途停滞，回落静态预览')
+        fallbackToStatic()
+      }
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [streamSession, filePath, currentTime])
 
   const jumpToTime = (targetTime: number) => {
+    const session = streamSessionRef.current
+    if (session) {
+      const dur = session.durationSec ?? Number.POSITIVE_INFINITY
+      handleStreamSeek(clampVideoTime(targetTime, dur))
+      return
+    }
     if (!videoRef.current) return
     const duration = videoRef.current.duration
     const safeTime = clampVideoTime(targetTime, duration)
@@ -152,6 +267,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   const handleCanPlay = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const v = e.currentTarget
+    markStreamActivity()
+    if (streamSessionRef.current) {
+      pendingSeekRef.current = false
+      return
+    }
     if (typeof currentTime === 'number' && Number.isFinite(currentTime) && currentTime > 0) {
       if (Math.abs(v.currentTime - currentTime) > 0.3) {
         const duration = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : videoDuration
@@ -162,11 +282,29 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const v = e.currentTarget
+    markStreamActivity()
+    if (streamSessionRef.current) {
+      // 新流 loadeddata 到达前的 timeupdate 属于旧流，必须忽略
+      if (pendingSeekRef.current) return
+      const logicalTime = actualStartSecRef.current + v.currentTime
+      logicalTimeRef.current = logicalTime
+      setStreamLogicalTime(logicalTime)
+      setCurrentVideoPlaybackTime(logicalTime)
+      return
+    }
     setCurrentVideoPlaybackTime(v.currentTime)
   }
 
   const handleVideoLoadedMetadata = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const v = e.currentTarget
+    markStreamActivity()
+    if (streamSessionRef.current) {
+      pendingSeekRef.current = false
+      setStreamPlaying(!v.paused)
+      v.muted = streamMuted
+      v.volume = streamVolume
+      return
+    }
     // 保持系统原声输出
     v.muted = false
     const validDuration = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0
@@ -187,6 +325,12 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   // 组件卸载或切文件时，将当前播放进度回写至 Store，确保分栏与全屏无缝接力
   useEffect(() => {
     return () => {
+      const activeSession = streamSessionRef.current
+      if (activeSession) {
+        Promise.resolve(
+          window.electronAPI?.utils?.releaseVideoStream?.(activeSession.streamId)
+        ).catch(() => undefined)
+      }
       const liveTime = getCurrentVideoPlaybackTime()
       if (
         category === FileCategory.VIDEO &&
@@ -265,7 +409,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
         filePath,
         category: 'video',
-        seekSeconds: pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
+        seekSeconds: streamSessionRef.current
+          ? logicalTimeRef.current
+          : pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
       })
       if (outcome?.fallbackToDefault) {
         toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
@@ -273,6 +419,50 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     } catch (err: unknown) {
       logger.error(LogCategory.RENDERER, '外部播放器跳轴失败:', err)
       toast.error(t('打开文件失败'))
+    }
+  }
+
+  const handleStreamError = () => {
+    logger.warn(LogCategory.RENDERER, '[视频预览] 流媒体解码失败，回落静态预览')
+    fallbackToStatic()
+  }
+
+  const handleStreamEnded = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const duration = streamSessionRef.current?.durationSec ?? null
+    const logicalTime = actualStartSecRef.current + e.currentTarget.currentTime
+    if (duration !== null && duration > 0 && logicalTime < duration - 2) {
+      logger.warn(LogCategory.RENDERER, '[视频预览] 流媒体异常提前结束，回落静态预览')
+      fallbackToStatic()
+    }
+  }
+
+  const toggleStreamPlay = () => {
+    const video = videoRef.current
+    if (!video) return
+    if (video.paused) {
+      void video.play().then(
+        () => setStreamPlaying(true),
+        () => fallbackToStatic()
+      )
+    } else {
+      video.pause()
+      setStreamPlaying(false)
+    }
+  }
+
+  const toggleStreamMute = () => {
+    const next = !streamMuted
+    setStreamMuted(next)
+    if (videoRef.current) videoRef.current.muted = next
+  }
+
+  const handleStreamVolumeChange = (value: number) => {
+    const safe = Math.min(1, Math.max(0, value))
+    setStreamVolume(safe)
+    setStreamMuted(safe === 0)
+    if (videoRef.current) {
+      videoRef.current.volume = safe
+      videoRef.current.muted = safe === 0
     }
   }
 
@@ -430,14 +620,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               {videoDecodeFailed ? (
                 /* 浏览器无法解码（AVI/MKV 等）：显示 ffmpeg 静态抽帧 + 外部播放器跳轴引导 */
                 <div className="flex flex-col items-center gap-3 max-w-full">
-                  {staticFrameUrl ? (
+                  {staticFrameUrl && !staticFrameBroken ? (
                     <img
                       src={staticFrameUrl}
                       alt={fileName}
                       className="max-w-full max-h-[65vh] shadow-lg rounded object-contain"
                       onError={() => {
+                        // WebP 头合法不代表整帧完整；渲染失败时回退占位图标且不立即重试同一坏帧
                         logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
-                        setStaticFrameUrl(null)
+                        setStaticFrameBroken(true)
                       }}
                     />
                   ) : (
@@ -458,6 +649,44 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       {t('在外部播放器播放此片段')}
                     </Button>
                   </div>
+                </div>
+              ) : streamSession ? (
+                /* 浏览器无法解码原生文件：本地 HTTP 双路流式播放 + 受控播放条 */
+                <div className="flex flex-col items-center gap-2 max-w-full w-full">
+                  <video
+                    ref={videoRef}
+                    src={streamSession.streamUrl}
+                    controls={false}
+                    onLoadedMetadata={handleVideoLoadedMetadata}
+                    onCanPlay={handleCanPlay}
+                    onTimeUpdate={handleTimeUpdate}
+                    onProgress={markStreamActivity}
+                    onLoadedData={() => {
+                      markStreamActivity()
+                      pendingSeekRef.current = false
+                      streamLoadedRef.current = true
+                    }}
+                    onPlay={() => setStreamPlaying(true)}
+                    onPause={() => setStreamPlaying(false)}
+                    onError={handleStreamError}
+                    onEnded={handleStreamEnded}
+                    className="max-w-full max-h-[65vh] shadow-lg rounded"
+                  >
+                    {t('您的浏览器不支持视频播放')}
+                  </video>
+                  <StreamVideoControls
+                    currentSec={streamLogicalTime}
+                    durationSec={streamSession.durationSec}
+                    playing={streamPlaying}
+                    muted={streamMuted}
+                    volume={streamVolume}
+                    highlightRange={highlightRange}
+                    onTogglePlay={toggleStreamPlay}
+                    onSeek={handleStreamSeek}
+                    onToggleMute={toggleStreamMute}
+                    onVolumeChange={handleStreamVolumeChange}
+                    onOpenExternal={handleExternalSeek}
+                  />
                 </div>
               ) : (
                 <video
@@ -480,11 +709,16 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       liveTime !== null
                         ? { key: seekKeyOf(filePath, currentTime), sec: liveTime }
                         : null
+                    const startSec = pickFallbackSeekSec(
+                      degradeSeekSnapshotRef.current,
+                      filePath,
+                      currentTime
+                    )
                     logger.warn(
                       LogCategory.RENDERER,
-                      `[视频预览] 浏览器无法解码视频，切换静态抽帧: ${filePath} @ ${liveTime ?? currentTime ?? 0}s`
+                      `[视频预览] 浏览器无法解码视频，尝试流式播放: ${filePath} @ ${startSec}s`
                     )
-                    setVideoDecodeFailed(true)
+                    void startStreamPlayback(startSec)
                   }}
                   className="max-w-full max-h-[70vh] shadow-lg rounded"
                 >
