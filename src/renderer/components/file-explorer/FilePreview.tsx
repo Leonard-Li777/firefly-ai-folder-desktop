@@ -86,7 +86,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     currentTime
   )
   /** 共享抽帧层：键归一、去重、取消与乱序防护统一收口（工单 03 FrameBroker） */
-  const { frameUrl: staticFrameUrl, frameKey } = useVideoFrame(filePath, {
+  const { frameUrl: staticFrameUrl } = useVideoFrame(filePath, {
     seekSec: fallbackSeekSec,
     enabled: videoDecodeFailed
   })

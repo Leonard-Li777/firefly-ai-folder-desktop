@@ -8,7 +8,8 @@ export function normalizeSeekSec(value: number | undefined): number {
 
 /** 降级快照键：绑定进入降级瞬间的「文件|切点」，跨文件或同文件切点变化后快照自动失效 */
 export function seekKeyOf(filePath: string, propTime: number | undefined): string {
-  return `${filePath}|${normalizeSeekSec(propTime).toFixed(3)}`
+  // 委托 frameKeyOf，确保降级快照键与抽帧去重键共用同一键归一出口（单一事实源）。
+  return frameKeyOf(filePath, normalizeSeekSec(propTime))
 }
 
 export interface DegradeSeekSnapshot {
