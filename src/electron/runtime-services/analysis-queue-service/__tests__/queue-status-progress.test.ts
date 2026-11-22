@@ -1,20 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('electron', () => ({
-  default: {
-    app: {
-      getPath: vi.fn(() => 'D:/mock-path'),
-      getName: vi.fn(() => 'desktop'),
-      getVersion: vi.fn(() => '1.0.0')
-    },
-    ipcMain: { on: vi.fn(), handle: vi.fn() }
-  },
-  app: {
-    getPath: vi.fn(() => 'D:/mock-path'),
-    getName: vi.fn(() => 'desktop'),
-    getVersion: vi.fn(() => '1.0.0')
-  },
-  ipcMain: { on: vi.fn(), handle: vi.fn() }
+vi.mock('electron', () => {
+  const mockApp = {
+    getPath: vi.fn(() => '/tmp/mock-user-data'),
+    getAppPath: vi.fn(() => process.cwd()),
+    getVersion: vi.fn(() => '1.0.0'),
+    isPackaged: false
+  }
+  const mockPowerMonitor = { on: vi.fn() }
+  const mockIpc = { on: vi.fn(), handle: vi.fn() }
+  return {
+    default: { app: mockApp, ipcMain: mockIpc, powerMonitor: mockPowerMonitor },
+    app: mockApp,
+    ipcMain: mockIpc,
+    powerMonitor: mockPowerMonitor
+  }
+})
+
+vi.mock('electron-conf', () => ({
+  Conf: class MockConf {
+    private _store: Record<string, any> = {}
+    get(key: string, def?: any) {
+      return this._store[key] ?? def
+    }
+    set(key: string, val: any) {
+      this._store[key] = val
+    }
+    onDidChange() {}
+  }
 }))
 
 vi.mock('@app/languages', () => ({
