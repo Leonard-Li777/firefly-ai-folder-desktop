@@ -36,8 +36,17 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات ui_ux_standard وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.researcher.ux", "id.designer.ui", "id.designer.graphic"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.researcher.ux",
+        "id.designer.ui",
+        "id.designer.graphic"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "10-设计规范与组件库/01-全局设计系统",
         "10-设计规范与组件库/02-原子组件与模板",
@@ -54,7 +63,29 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{ProjectName}_{AssetName}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.background",
+        "builtin.design_assets",
+        "builtin.document",
+        "builtin.illustration",
+        "builtin.screenshot",
+        "hownet.000000169257.n",
+        "omw.00137562.r",
+        "omw.00213343.n",
+        "omw.00392582.n",
+        "omw.00582388.n",
+        "omw.00610532.a",
+        "omw.00928077.n",
+        "omw.01011392.s",
+        "omw.01705257.v",
+        "omw.02845425.n",
+        "omw.03778600.n",
+        "omw.05237227.n",
+        "omw.05835449.n",
+        "omw.05864177.n",
+        "omw.07269916.n"
+      ]
     },
     {
       "template_id": "tpl_frontend_dev",
@@ -89,7 +120,12 @@
         "id.dev.fullstack",
         "id.dev.mobile"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-工程源码与组件/核心业务模块",
         "01-工程源码与组件/公共组件库",
@@ -107,7 +143,34 @@
         "05-测试报告与缺陷排查/02-E2E测试报告",
         "05-测试报告与缺陷排查/03-缺陷跟踪清单"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.font",
+        "hownet.000000194548.n",
+        "omw.00041841.a",
+        "omw.00118764.v",
+        "omw.00173761.n",
+        "omw.00213343.n",
+        "omw.00447753.s",
+        "omw.00786458.v",
+        "omw.00965035.v",
+        "omw.01002297.v",
+        "omw.01060234.n",
+        "omw.01386200.v",
+        "omw.01738774.v",
+        "omw.02296415.s",
+        "omw.03079230.n",
+        "omw.03778600.n",
+        "omw.05154676.n",
+        "omw.05816622.n",
+        "omw.06125041.n",
+        "omw.06261744.n",
+        "omw.07269916.n",
+        "omw.07295047.n",
+        "omw.08524262.n",
+        "omw.13781164.n",
+        "omw.14464005.n"
+      ]
     },
     {
       "template_id": "tpl_backend_arch",
@@ -143,7 +206,12 @@
         "id.dev.ai_ml",
         "id.dev.embedded"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-系统设计与API文档/接口契约定义",
         "01-系统设计与API文档/API设计文档",
@@ -158,7 +226,30 @@
         "04-性能监控与排障/链路追踪",
         "04-性能监控与排障/告警规则"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.database",
+        "builtin.document",
+        "builtin.log",
+        "builtin.script",
+        "hownet.000000232023.n",
+        "omw.00330644.s",
+        "omw.00577405.s",
+        "omw.00818829.s",
+        "omw.00928077.n",
+        "omw.00998399.v",
+        "omw.01637982.v",
+        "omw.01857093.v",
+        "omw.02593107.v",
+        "omw.02839910.n",
+        "omw.04747115.n",
+        "omw.05237227.n",
+        "omw.05816622.n",
+        "omw.06418901.n",
+        "omw.06525588.n",
+        "omw.06744396.n",
+        "omw.06788897.n"
+      ]
     },
     {
       "template_id": "tpl_para_universal",
@@ -206,7 +297,12 @@
         "id.eng.architect",
         "id.scene.scratchpad_drafts"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-Projects (进行中项目)/本周重点攻坚",
         "01-Projects (进行中项目)/本月里程碑",
@@ -221,7 +317,28 @@
         "04-Archives (历史封存归档)/2025结项归档",
         "04-Archives (历史封存归档)/归档索引"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.completed",
+        "builtin.history",
+        "hownet.000000019515.n",
+        "hownet.000000169257.n",
+        "omw.00159284.r",
+        "omw.00198451.n",
+        "omw.00582388.n",
+        "omw.00584248.n",
+        "omw.00636921.n",
+        "omw.00890441.n",
+        "omw.00965035.v",
+        "omw.01593649.a",
+        "omw.01638368.v",
+        "omw.02436349.v",
+        "omw.04669247.n",
+        "omw.05640433.n",
+        "omw.05815517.n",
+        "omw.06491786.n",
+        "omw.07271167.n"
+      ]
     },
     {
       "template_id": "tpl_johnny_decimal",
@@ -264,7 +381,12 @@
         "id.student.grad",
         "id.eng.civil_engineer"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "10-19 组织治理与规章/11-公司章程",
         "10-19 组织治理与规章/12-规章制度",
@@ -279,7 +401,23 @@
         "40-49 资产采购与行政/42-采购验收",
         "40-49 资产采购与行政/43-资产处置"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.contract",
+        "hownet.000000017633.n",
+        "hownet.000000275874.n",
+        "omw.00620208.s",
+        "omw.01124794.n",
+        "omw.01230965.n",
+        "omw.01852812.s",
+        "omw.02597601.v",
+        "omw.02898276.a",
+        "omw.03315023.n",
+        "omw.06471345.n",
+        "omw.06665108.n",
+        "omw.08058098.n",
+        "omw.08352613.n"
+      ]
     },
     {
       "template_id": "tpl_photography_pipeline",
@@ -313,7 +451,12 @@
         "id.life.traveler",
         "id.scene.personal_photos_album"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始拍片RAW/按拍摄日期存储",
         "01-原始拍片RAW/按项目分类存储",
@@ -333,7 +476,28 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Subject}_{Sequence}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.featured",
+        "builtin.po",
+        "builtin.ts",
+        "hownet.000000104880.n",
+        "hownet.000000217411.n",
+        "omw.00213343.n",
+        "omw.00244416.v",
+        "omw.00392582.n",
+        "omw.00656292.v",
+        "omw.00664788.v",
+        "omw.00665886.v",
+        "omw.01002297.v",
+        "omw.01711965.v",
+        "omw.01852812.s",
+        "omw.02674772.a",
+        "omw.05093581.n",
+        "omw.06125041.n",
+        "omw.08434259.n",
+        "omw.13562133.n"
+      ]
     },
     {
       "template_id": "tpl_video_production",
@@ -370,7 +534,12 @@
         "id.media.collector_hoarder",
         "id.scene.video_production_clips"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-拍摄实录Footage/分机位原片",
         "01-拍摄实录Footage/场记与打板",
@@ -388,7 +557,28 @@
         "05-成片渲染Exports/多平台竖版切片",
         "05-成片渲染Exports/成片字幕版本"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.audio",
+        "builtin.cts",
+        "builtin.ics",
+        "builtin.po",
+        "builtin.sound_effects",
+        "builtin.subtitles",
+        "builtin.ts",
+        "hownet.000000162470.n",
+        "omw.00182086.s",
+        "omw.00925207.n",
+        "omw.01002297.v",
+        "omw.01711965.v",
+        "omw.02771840.n",
+        "omw.03167666.n",
+        "omw.03306869.n",
+        "omw.06125041.n",
+        "omw.07011075.n",
+        "omw.07038615.n",
+        "omw.09428741.n"
+      ]
     },
     {
       "template_id": "tpl_academic_thesis",
@@ -426,7 +616,12 @@
         "id.health.doctor",
         "id.scene.study_research_docs"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-核心文献库/文献综述",
         "01-核心文献库/高引论文",
@@ -444,7 +639,32 @@
         "05-审稿意见与最终定稿/盲审版PDF",
         "05-审稿意见与最终定稿/归档说明"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.script",
+        "builtin.thesis",
+        "hownet.000000104063.v",
+        "omw.00048138.r",
+        "omw.00255450.n",
+        "omw.00639556.n",
+        "omw.00998399.v",
+        "omw.01002297.v",
+        "omw.01230965.n",
+        "omw.01594811.s",
+        "omw.01705257.v",
+        "omw.02662538.a",
+        "omw.03375956.n",
+        "omw.03453696.n",
+        "omw.05771679.n",
+        "omw.05816622.n",
+        "omw.05868272.n",
+        "omw.05999797.n",
+        "omw.06388579.n",
+        "omw.06597466.n",
+        "omw.06998748.n",
+        "omw.08462858.n",
+        "omw.08524262.n"
+      ]
     },
     {
       "template_id": "tpl_finance_accounting",
@@ -479,7 +699,12 @@
         "id.finance.auditor",
         "id.scene.finance_tax_docs"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始发票报销/按月凭证汇总",
         "01-原始发票报销/原始发票报销",
@@ -497,7 +722,23 @@
         "05-年度审计报告/审计底稿",
         "05-年度审计报告/审计意见书"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.statement_of_account",
+        "hownet.000000260817.n",
+        "hownet.000000262330.n",
+        "hownet.000000272293.n",
+        "omw.00186366.r",
+        "omw.00600235.v",
+        "omw.00965035.v",
+        "omw.01852812.s",
+        "omw.02444555.v",
+        "omw.05771679.n",
+        "omw.06471345.n",
+        "omw.13290002.n",
+        "omw.13306870.n"
+      ]
     },
     {
       "template_id": "tpl_family_household",
@@ -534,7 +775,12 @@
         "id.life.household_assets",
         "id.scene.personal_photos_album"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-核心身份与证照/家庭成员电子证件",
         "01-核心身份与证照/户口与出生证",
@@ -552,7 +798,38 @@
         "05-生活电器与售后/保修卡与说明书",
         "05-生活电器与售后/家电购买凭证"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.certificates_and_licenses",
+        "builtin.contract",
+        "builtin.electronic_edm",
+        "builtin.family",
+        "builtin.life",
+        "builtin.vehicle_registration_certificate",
+        "hownet.000000044889.n",
+        "hownet.000000163035.n",
+        "hownet.000000280097.n",
+        "omw.00584248.n",
+        "omw.00636461.n",
+        "omw.00747135.v",
+        "omw.00891216.v",
+        "omw.00965035.v",
+        "omw.01593649.a",
+        "omw.03217458.n",
+        "omw.04074482.n",
+        "omw.04717139.n",
+        "omw.06471345.n",
+        "omw.06478452.n",
+        "omw.06515297.n",
+        "omw.07250034.n",
+        "omw.08132637.n",
+        "omw.08400965.n",
+        "omw.08524262.n",
+        "omw.13241057.n",
+        "omw.13243134.n",
+        "omw.13358549.n"
+      ]
     },
     {
       "template_id": "tpl_newmedia_content",
@@ -587,7 +864,12 @@
         "id.ops.private_domain",
         "id.scene.video_production_clips"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-选题灵感与策划库/选题灵感库",
         "01-选题灵感与策划库/选题脚本",
@@ -605,7 +887,30 @@
         "05-数据复盘与报告/转化漏斗分析",
         "05-数据复盘与报告/竞品对标"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.script",
+        "hownet.000000091371.v",
+        "hownet.000000104063.v",
+        "hownet.000000169257.n",
+        "omw.00382256.v",
+        "omw.00474994.v",
+        "omw.00620208.s",
+        "omw.00641138.v",
+        "omw.00643473.v",
+        "omw.00965035.v",
+        "omw.01023925.v",
+        "omw.01060234.n",
+        "omw.01137206.n",
+        "omw.03167666.n",
+        "omw.03403643.n",
+        "omw.05076472.n",
+        "omw.05816622.n",
+        "omw.05835449.n",
+        "omw.06388579.n",
+        "omw.15277730.n"
+      ]
     },
     {
       "template_id": "tpl_ecommerce_ops",
@@ -634,8 +939,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات ecommerce_ops وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.ecommerce", "id.ops.cross_border"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.ecommerce",
+        "id.ops.cross_border"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-选品调研与样品/样品评估表",
         "01-选品调研与样品/供应商档案",
@@ -653,7 +966,30 @@
         "05-大促复盘与售后/客诉分析",
         "05-大促复盘与售后/售后处理单"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.design_draft",
+        "builtin.keyword",
+        "hownet.000000091371.v",
+        "hownet.000000121346.n",
+        "omw.00396029.n",
+        "omw.00643473.v",
+        "omw.00699334.v",
+        "omw.00786458.v",
+        "omw.00928077.n",
+        "omw.00998399.v",
+        "omw.00998886.v",
+        "omw.01002297.v",
+        "omw.01134861.n",
+        "omw.02013322.v",
+        "omw.02128084.s",
+        "omw.02282365.v",
+        "omw.02308389.v",
+        "omw.02444555.v",
+        "omw.03069567.n",
+        "omw.07366627.n",
+        "omw.10486349.n"
+      ]
     },
     {
       "template_id": "tpl_game_dev_assets",
@@ -683,7 +1019,12 @@
       },
       "template_type": "workflow",
       "target_identities": [],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-游戏设计文档GDD/世界观设定",
         "01-游戏设计文档GDD/数值平衡表",
@@ -701,7 +1042,34 @@
         "05-测试包发布Builds/发行安装包",
         "05-测试包发布Builds/版本说明"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.3d_model",
+        "builtin.audio",
+        "builtin.background",
+        "builtin.document",
+        "builtin.music",
+        "builtin.sound_effects",
+        "hownet.000000273003.n",
+        "omw.00070288.s",
+        "omw.00240938.n",
+        "omw.00430606.n",
+        "omw.00447753.s",
+        "omw.00786458.v",
+        "omw.00868009.v",
+        "omw.00928077.n",
+        "omw.01002297.v",
+        "omw.01011392.s",
+        "omw.01060234.n",
+        "omw.01265632.n",
+        "omw.01622445.v",
+        "omw.03096960.n",
+        "omw.03892891.n",
+        "omw.06125041.n",
+        "omw.06211389.n",
+        "omw.06889138.n",
+        "omw.13581465.n"
+      ]
     },
     {
       "template_id": "tpl_cross_border_ops",
@@ -736,7 +1104,12 @@
         "id.ops.sem_seo",
         "id.mgmt.supply_chain"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-产品刊登与多语Listing/主图素材",
         "01-产品刊登与多语Listing/产品视频",
@@ -751,7 +1124,22 @@
         "04-订单售后与财务对账/利润核算表",
         "04-订单售后与财务对账/多店铺财务汇总"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.video",
+        "omw.00118764.v",
+        "omw.00620208.s",
+        "omw.00699334.v",
+        "omw.00998399.v",
+        "omw.01101329.n",
+        "omw.01137206.n",
+        "omw.01746359.v",
+        "omw.03599761.n",
+        "omw.05157574.n",
+        "omw.06282651.n",
+        "omw.06474030.n"
+      ]
     },
     {
       "template_id": "tpl_legal_case_dossier",
@@ -780,8 +1168,17 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات legal_case_dossier وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.legal.compliance", "id.legal.attorney", "id.legal.ip_agent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.legal.compliance",
+        "id.legal.attorney",
+        "id.legal.ip_agent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-委托与立案/委托合同与授权书",
         "01-委托与立案/起诉状与答辩状",
@@ -796,7 +1193,29 @@
         "04-判决与执行/执行申请与进展",
         "04-判决与执行/结案归档清单"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "hownet.000000034666.n",
+        "hownet.000000144019.n",
+        "hownet.000000163423.n",
+        "hownet.000000182925.n",
+        "hownet.000000263784.n",
+        "omw.00248659.v",
+        "omw.00740449.v",
+        "omw.00765396.v",
+        "omw.00803325.v",
+        "omw.00856578.v",
+        "omw.00965035.v",
+        "omw.02394662.v",
+        "omw.02431971.v",
+        "omw.03729951.n",
+        "omw.05771679.n",
+        "omw.05824739.n",
+        "omw.06551784.n",
+        "omw.06556692.n",
+        "omw.09787955.n",
+        "omw.13932421.n"
+      ]
     },
     {
       "template_id": "tpl_clinical_medical_records",
@@ -825,8 +1244,17 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات clinical_medical_records وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.health.doctor", "id.health.nurse", "id.health.psychologist"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.health.doctor",
+        "id.health.nurse",
+        "id.health.psychologist"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-病历与检查报告/门诊与住院病历",
         "01-病历与检查报告/检验化验单",
@@ -841,7 +1269,34 @@
         "04-统计分析与论文/论文草稿与投稿",
         "04-统计分析与论文/图表与审稿意见"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.draft",
+        "builtin.ethics",
+        "builtin.thesis",
+        "hownet.000000201101.n",
+        "hownet.000000282669.n",
+        "omw.00636461.n",
+        "omw.00636921.n",
+        "omw.00643473.v",
+        "omw.00658627.n",
+        "omw.00764222.v",
+        "omw.00791078.n",
+        "omw.00928371.n",
+        "omw.00965035.v",
+        "omw.00998399.v",
+        "omw.01594811.s",
+        "omw.02163774.s",
+        "omw.02389592.v",
+        "omw.03453696.n",
+        "omw.05771679.n",
+        "omw.05816622.n",
+        "omw.05846932.n",
+        "omw.06515297.n",
+        "omw.06784003.n",
+        "omw.10405694.n",
+        "omw.13941337.n"
+      ]
     },
     {
       "template_id": "tpl_teacher_lesson_prep",
@@ -870,8 +1325,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات teacher_lesson_prep وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.edu.k12_teacher", "id.edu.trainer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.edu.k12_teacher",
+        "id.edu.trainer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-教案与课件/教学设计教案",
         "01-教案与课件/上课课件",
@@ -886,7 +1349,25 @@
         "04-教研与进修/公开课与课题",
         "04-教研与进修/培训学习笔记"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.instructional_video",
+        "builtin.public",
+        "hownet.000000205076.n",
+        "hownet.000000228738.n",
+        "omw.00035189.n",
+        "omw.00409211.n",
+        "omw.00643473.v",
+        "omw.00654625.v",
+        "omw.00928077.n",
+        "omw.00998399.v",
+        "omw.01594811.s",
+        "omw.02128084.s",
+        "omw.06504462.n",
+        "omw.06784003.n",
+        "omw.10406266.n",
+        "omw.10559288.n"
+      ]
     },
     {
       "template_id": "tpl_consulting_due_diligence",
@@ -921,7 +1402,12 @@
         "id.finance.auditor",
         "id.biz.consultant"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-行业与竞品研究/行业报告",
         "01-行业与竞品研究/竞品资料",
@@ -939,7 +1425,30 @@
         "05-汇报与交付/最终报告与建议",
         "05-汇报与交付/项目复盘"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.3d_model",
+        "hownet.000000028366.n",
+        "hownet.000000091371.v",
+        "hownet.000000112511.n",
+        "hownet.000000224444.n",
+        "omw.00048138.r",
+        "omw.00213343.n",
+        "omw.00582388.n",
+        "omw.00636921.n",
+        "omw.00643473.v",
+        "omw.00875394.v",
+        "omw.00965035.v",
+        "omw.03375956.n",
+        "omw.04262678.n",
+        "omw.05816622.n",
+        "omw.05980875.n",
+        "omw.06253690.n",
+        "omw.08058098.n",
+        "omw.09617867.n",
+        "omw.13247712.n",
+        "omw.13305673.n"
+      ]
     },
     {
       "template_id": "tpl_architectural_cad_design",
@@ -968,8 +1477,17 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات architectural_cad_design وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.industrial", "id.eng.architect", "id.eng.civil_engineer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.industrial",
+        "id.eng.architect",
+        "id.eng.civil_engineer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-方案与效果图/概念草图与手绘",
         "01-方案与效果图/效果图与动画",
@@ -984,7 +1502,28 @@
         "04-材料与造价/工程量与预算表",
         "04-材料与造价/供应商报价"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.3d_model",
+        "builtin.animation",
+        "builtin.blueprint",
+        "builtin.hand_drawn",
+        "builtin.text",
+        "omw.00012362.s",
+        "omw.00121926.v",
+        "omw.00392582.n",
+        "omw.00586060.s",
+        "omw.00660809.s",
+        "omw.00924579.n",
+        "omw.01002297.v",
+        "omw.02682207.n",
+        "omw.02827950.a",
+        "omw.03022593.a",
+        "omw.03729951.n",
+        "omw.05846932.n",
+        "omw.06125041.n",
+        "omw.10486349.n"
+      ]
     },
     {
       "template_id": "tpl_writing_publishing_pipeline",
@@ -1013,8 +1552,17 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات writing_publishing_pipeline وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.newmedia", "id.creator.freelance", "id.creator.writer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.newmedia",
+        "id.creator.freelance",
+        "id.creator.writer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-设定与大纲/世界观设定",
         "01-设定与大纲/人物小传与关系",
@@ -1029,7 +1577,25 @@
         "04-投稿与出版/编辑审校意见",
         "04-投稿与出版/封面与成书文件"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.contract",
+        "hownet.000000104063.v",
+        "omw.00425967.v",
+        "omw.01002297.v",
+        "omw.01627105.v",
+        "omw.02677097.v",
+        "omw.03335600.n",
+        "omw.05771679.n",
+        "omw.05835449.n",
+        "omw.05921685.n",
+        "omw.06211389.n",
+        "omw.06268096.n",
+        "omw.06388579.n",
+        "omw.06473168.n",
+        "omw.06486630.n",
+        "omw.06505799.n"
+      ]
     },
     {
       "template_id": "tpl_wellness_health_portfolio",
@@ -1064,7 +1630,12 @@
         "id.health.psychologist",
         "id.health.nutritionist"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-健康档案与评估/基本信息与知情同意",
         "01-健康档案与评估/体检报告",
@@ -1079,7 +1650,31 @@
         "04-阶段总结与回访/回访记录",
         "04-阶段总结与回访/下一阶段计划"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "omw.00014742.v",
+        "omw.00250798.r",
+        "omw.00306900.n",
+        "omw.00764222.v",
+        "omw.00868910.n",
+        "omw.00928371.n",
+        "omw.00965035.v",
+        "omw.00966330.v",
+        "omw.00998399.v",
+        "omw.01593649.a",
+        "omw.02308389.v",
+        "omw.02666882.v",
+        "omw.02752695.v",
+        "omw.02814453.a",
+        "omw.03002351.a",
+        "omw.03002724.a",
+        "omw.03668642.n",
+        "omw.05027135.n",
+        "omw.05846932.n",
+        "omw.06253690.n",
+        "omw.14480065.n",
+        "omw.15280695.n"
+      ]
     },
     {
       "template_id": "tpl_pm_product_workflow",
@@ -1108,8 +1703,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات pm_product_workflow وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.pm.product", "id.researcher.ux"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.pm.product",
+        "id.researcher.ux"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-产品规划/产品愿景与路线图",
         "01-产品规划/竞品分析",
@@ -1129,7 +1732,30 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{ProjectName}_{DocName}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.document",
+        "hownet.000000091371.v",
+        "hownet.000000282669.n",
+        "omw.00137562.r",
+        "omw.00636921.n",
+        "omw.00643473.v",
+        "omw.00876200.v",
+        "omw.00928371.n",
+        "omw.00998399.v",
+        "omw.01011392.s",
+        "omw.01090308.a",
+        "omw.01638368.v",
+        "omw.02682207.n",
+        "omw.03526805.n",
+        "omw.03599761.n",
+        "omw.05816622.n",
+        "omw.06476200.n",
+        "omw.06682290.n",
+        "omw.07250034.n",
+        "omw.10670483.n",
+        "omw.14917208.n"
+      ]
     },
     {
       "template_id": "tpl_data_science_analytics",
@@ -1158,8 +1784,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات data_science_analytics وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.data.analyst", "id.dev.ai_ml"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.data.analyst",
+        "id.dev.ai_ml"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始数据/数据库导出与SQL",
         "01-原始数据/接口与爬虫数据",
@@ -1179,7 +1813,35 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{ProjectName}_{DatasetName}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.3d_model",
+        "builtin.database",
+        "builtin.document",
+        "builtin.script",
+        "builtin.sheet",
+        "omw.00255450.n",
+        "omw.00643473.v",
+        "omw.00945777.n",
+        "omw.00965035.v",
+        "omw.01002297.v",
+        "omw.01314781.n",
+        "omw.01594811.s",
+        "omw.01852812.s",
+        "omw.02163774.s",
+        "omw.02308389.v",
+        "omw.02315648.s",
+        "omw.02751271.v",
+        "omw.03375956.n",
+        "omw.03453696.n",
+        "omw.05816622.n",
+        "omw.06125041.n",
+        "omw.06418901.n",
+        "omw.08462858.n",
+        "omw.13941337.n",
+        "omw.14917208.n",
+        "omw.15021085.n"
+      ]
     },
     {
       "template_id": "tpl_qa_testing_lifecycle",
@@ -1208,8 +1870,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات qa_testing_lifecycle وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.qa.tester"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-测试计划/测试范围与计划",
         "01-测试计划/环境与配置清单",
@@ -1229,7 +1898,32 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Module}_{TestCase}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.log",
+        "builtin.record_screen",
+        "builtin.screenshot",
+        "builtin.script",
+        "hownet.000000091371.v",
+        "omw.00447753.s",
+        "omw.00479932.v",
+        "omw.00507464.a",
+        "omw.00636461.n",
+        "omw.00786458.v",
+        "omw.00928371.n",
+        "omw.00958823.v",
+        "omw.00965035.v",
+        "omw.00998399.v",
+        "omw.01002297.v",
+        "omw.01060234.n",
+        "omw.01090308.a",
+        "omw.02024508.v",
+        "omw.02058656.s",
+        "omw.05127782.n",
+        "omw.05688397.n",
+        "omw.13941337.n",
+        "omw.14464005.n"
+      ]
     },
     {
       "template_id": "tpl_sales_pipeline_crm",
@@ -1258,8 +1952,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات sales_pipeline_crm وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.sales.bd"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.sales.bd"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-客户与商机/客户名单与联系方式",
         "01-客户与商机/拜访与沟通记录",
@@ -1279,7 +1980,27 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{ClientName}_{DocType}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.contract",
+        "builtin.statement_of_account",
+        "hownet.000000104880.n",
+        "omw.00248659.v",
+        "omw.00699334.v",
+        "omw.00998399.v",
+        "omw.01002297.v",
+        "omw.01023925.v",
+        "omw.02152504.v",
+        "omw.02389592.v",
+        "omw.02487573.v",
+        "omw.03375956.n",
+        "omw.04930632.n",
+        "omw.05846932.n",
+        "omw.06471345.n",
+        "omw.08058098.n",
+        "omw.13941337.n"
+      ]
     },
     {
       "template_id": "tpl_hr_people_operations",
@@ -1308,8 +2029,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات hr_people_operations وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.hr.admin", "id.hr.recruiter"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.hr.admin",
+        "id.hr.recruiter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-组织与岗位/组织架构图",
         "01-组织与岗位/岗位说明书",
@@ -1329,7 +2058,23 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Dept}_{EmployeeName}_{DocName}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.contract",
+        "hownet.000000037841.n",
+        "hownet.000000234603.v",
+        "hownet.000000272287.n",
+        "hownet.000000289824.v",
+        "omw.00998399.v",
+        "omw.02128084.s",
+        "omw.02308389.v",
+        "omw.02898276.a",
+        "omw.03022593.a",
+        "omw.03729951.n",
+        "omw.08624385.n",
+        "omw.10053808.n",
+        "omw.13941337.n"
+      ]
     },
     {
       "template_id": "tpl_marketing_campaign_imc",
@@ -1358,8 +2103,17 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات marketing_campaign_imc وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.marketing.planner", "id.ops.private_domain", "id.ops.sem_seo"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.marketing.planner",
+        "id.ops.private_domain",
+        "id.ops.sem_seo"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-市场与品牌定位/行业与竞品分析",
         "01-市场与品牌定位/目标人群画像",
@@ -1379,7 +2133,36 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{CampaignName}_{MaterialType}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.script",
+        "builtin.video",
+        "hownet.000000091371.v",
+        "hownet.000000113484.n",
+        "omw.00382256.v",
+        "omw.00582388.n",
+        "omw.00620208.s",
+        "omw.00641138.v",
+        "omw.00643473.v",
+        "omw.00683771.v",
+        "omw.00965035.v",
+        "omw.01023925.v",
+        "omw.01137206.n",
+        "omw.02128084.s",
+        "omw.02159197.v",
+        "omw.03022593.a",
+        "omw.03022739.a",
+        "omw.04763650.n",
+        "omw.05766984.n",
+        "omw.05816622.n",
+        "omw.05845140.n",
+        "omw.05846932.n",
+        "omw.05980875.n",
+        "omw.06254669.n",
+        "omw.06793817.n",
+        "omw.08182379.n"
+      ]
     },
     {
       "template_id": "tpl_corporate_legal_compliance",
@@ -1408,8 +2191,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات corporate_legal_compliance وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.legal.compliance", "id.legal.ip_agent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.legal.compliance",
+        "id.legal.ip_agent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-合同审查/待审合同",
         "01-合同审查/修改留痕与审查意见",
@@ -1429,7 +2220,38 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{CaseOrContract}_{DocType}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.contract",
+        "hownet.000000017633.n",
+        "hownet.000000019515.n",
+        "omw.00066685.v",
+        "omw.00248659.v",
+        "omw.00397347.n",
+        "omw.00620208.s",
+        "omw.00765396.v",
+        "omw.00856578.v",
+        "omw.00947128.n",
+        "omw.00998399.v",
+        "omw.01002297.v",
+        "omw.01182654.n",
+        "omw.01205827.n",
+        "omw.02308389.v",
+        "omw.03729951.n",
+        "omw.04652177.n",
+        "omw.05771679.n",
+        "omw.05816622.n",
+        "omw.05824739.n",
+        "omw.06421685.n",
+        "omw.06501141.n",
+        "omw.06649426.n",
+        "omw.06665108.n",
+        "omw.08058098.n",
+        "omw.09787955.n",
+        "omw.10053808.n",
+        "omw.10654015.n",
+        "omw.13241057.n"
+      ]
     },
     {
       "template_id": "tpl_embedded_iot_firmware",
@@ -1458,8 +2280,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات embedded_iot_firmware وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.dev.embedded"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.dev.embedded"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-硬件设计/原理图与PCB工程",
         "01-硬件设计/芯片手册与物料清单",
@@ -1475,7 +2304,28 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{BoardName}_{FirmwareVersion}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.drive",
+        "builtin.pc",
+        "builtin.script",
+        "hownet.000000194548.n",
+        "omw.00092691.a",
+        "omw.00213343.n",
+        "omw.00223395.r",
+        "omw.00710005.v",
+        "omw.00786458.v",
+        "omw.00928077.n",
+        "omw.00998399.v",
+        "omw.03180969.n",
+        "omw.03493333.n",
+        "omw.06125041.n",
+        "omw.06355894.n",
+        "omw.06357814.n",
+        "omw.06421685.n",
+        "omw.06665108.n",
+        "omw.08524262.n"
+      ]
     },
     {
       "template_id": "tpl_3d_cg_animation",
@@ -1504,8 +2354,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات 3d_cg_animation وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.3d", "id.designer.industrial"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.3d",
+        "id.designer.industrial"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-参考与设定/灵感图与情绪板",
         "01-参考与设定/原画三视图与尺寸标注",
@@ -1521,7 +2379,27 @@
       ],
       "naming_rules": {
         "asset_pattern": "{ProjectName}_{AssetName}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.3d_model",
+        "builtin.animation",
+        "omw.00048138.r",
+        "omw.00121926.v",
+        "omw.00623356.a",
+        "omw.00710922.v",
+        "omw.01002297.v",
+        "omw.01256157.v",
+        "omw.01705257.v",
+        "omw.03287178.n",
+        "omw.04746430.n",
+        "omw.05093581.n",
+        "omw.05835449.n",
+        "omw.06125041.n",
+        "omw.06593803.n",
+        "omw.07551498.n",
+        "omw.13562328.n",
+        "omw.14411884.n"
+      ]
     },
     {
       "template_id": "tpl_freelance_business_delivery",
@@ -1550,8 +2428,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات freelance_business_delivery وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.creator.freelance", "id.edu.trainer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.creator.freelance",
+        "id.edu.trainer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-接单与报价/客户需求与沟通记录",
         "01-接单与报价/工时评估与报价单",
@@ -1566,7 +2452,35 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{ClientName}_{Deliverable}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.contract",
+        "hownet.000000018027.n",
+        "hownet.000000104880.n",
+        "omw.00007846.n",
+        "omw.00066685.v",
+        "omw.00213343.n",
+        "omw.00620208.s",
+        "omw.00641138.v",
+        "omw.00664788.v",
+        "omw.00831273.v",
+        "omw.00876200.v",
+        "omw.00998399.v",
+        "omw.01023925.v",
+        "omw.01121492.n",
+        "omw.02301502.v",
+        "omw.02308389.v",
+        "omw.02431971.v",
+        "omw.02593107.v",
+        "omw.04652177.n",
+        "omw.05845140.n",
+        "omw.06421685.n",
+        "omw.06471345.n",
+        "omw.06476200.n",
+        "omw.06665108.n",
+        "omw.15230482.n"
+      ]
     },
     {
       "template_id": "tpl_pkm_knowledge_vault",
@@ -1601,7 +2515,12 @@
         "id.student.self_learner",
         "id.student.exam"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-随手记收集箱/网页剪藏与摘录",
         "01-随手记收集箱/灵感便签与待整理",
@@ -1616,7 +2535,30 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Topic}_{NoteTitle}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.e_book",
+        "hownet.000000019515.n",
+        "hownet.000000091371.v",
+        "omw.00181664.v",
+        "omw.00606093.v",
+        "omw.00677021.v",
+        "omw.00890441.n",
+        "omw.00894552.n",
+        "omw.00998399.v",
+        "omw.01060234.n",
+        "omw.01622795.v",
+        "omw.02752695.v",
+        "omw.05640433.n",
+        "omw.05835449.n",
+        "omw.06268096.n",
+        "omw.06358900.n",
+        "omw.06402202.n",
+        "omw.06410655.n",
+        "omw.06502378.n",
+        "omw.06504462.n",
+        "omw.08524262.n"
+      ]
     },
     {
       "template_id": "tpl_gamer_library",
@@ -1645,8 +2587,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات gamer_library وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.hobby.gamer", "id.life.acg_fan"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.hobby.gamer",
+        "id.life.acg_fan"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-游戏安装文件/电脑游戏安装包",
         "01-游戏安装文件/模拟器与怀旧游戏",
@@ -1661,7 +2611,24 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{GameTitle}_{DocType}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.electronic_edm",
+        "builtin.game_screenshot",
+        "builtin.screenshot",
+        "omw.00240938.n",
+        "omw.00430606.n",
+        "omw.00869931.v",
+        "omw.01002297.v",
+        "omw.01003049.v",
+        "omw.02771840.n",
+        "omw.03082979.n",
+        "omw.03720163.n",
+        "omw.03745285.n",
+        "omw.04073425.n",
+        "omw.04221823.n",
+        "omw.15245829.n"
+      ]
     },
     {
       "template_id": "tpl_novel_reading_library",
@@ -1690,8 +2657,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات novel_reading_library وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.novel_reader"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.novel_reader"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-最近在读与追更/连载网文最新更新",
         "02-网络小说/玄幻仙侠与修真",
@@ -1706,7 +2680,32 @@
       ],
       "naming_rules": {
         "asset_pattern": "{Author}_{BookTitle}_{Status}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.city",
+        "builtin.doujin",
+        "builtin.e_book",
+        "builtin.history",
+        "builtin.humanities",
+        "builtin.novel",
+        "builtin.science_fiction",
+        "builtin.workplace",
+        "builtin.xianxia",
+        "hownet.000000101231.n",
+        "omw.00408021.r",
+        "omw.00425967.v",
+        "omw.00668366.s",
+        "omw.01248852.n",
+        "omw.01499269.s",
+        "omw.03038595.n",
+        "omw.05237227.n",
+        "omw.05809878.n",
+        "omw.06169488.n",
+        "omw.06410655.n",
+        "omw.08132637.n",
+        "omw.08434259.n",
+        "omw.11159595.n"
+      ]
     },
     {
       "template_id": "tpl_home_theater_audiophile",
@@ -1740,7 +2739,12 @@
         "id.scene.movies_tv_collection",
         "id.scene.music_collection_vault"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-电影收藏/4K蓝光原盘",
         "01-电影收藏/高清压制电影",
@@ -1755,7 +2759,23 @@
       ],
       "naming_rules": {
         "asset_pattern": "{Title}.{Year}.{Resolution}.{AudioCodec}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.film_and_television",
+        "builtin.music",
+        "builtin.subtitles",
+        "omw.00084759.r",
+        "omw.00354845.v",
+        "omw.00390842.v",
+        "omw.00430606.n",
+        "omw.02055900.s",
+        "omw.02696795.a",
+        "omw.04404412.n",
+        "omw.04417809.n",
+        "omw.06253690.n",
+        "omw.06591815.n",
+        "omw.06793817.n"
+      ]
     },
     {
       "template_id": "tpl_acg_anime_manga",
@@ -1784,8 +2804,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات acg_anime_manga وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.acg_fan"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.acg_fan"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-追番清单/本季新番与待看",
         "02-漫画收藏/单行本与全卷漫画",
@@ -1799,7 +2826,24 @@
       ],
       "naming_rules": {
         "asset_pattern": "[{Group}]_{Title}_EP{Ep}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.animation",
+        "builtin.cell_phone",
+        "builtin.comics",
+        "builtin.doujin",
+        "builtin.full_color",
+        "builtin.illustration",
+        "builtin.separate_book",
+        "builtin.webtoon",
+        "hownet.000000090601.n",
+        "hownet.000000208402.n",
+        "omw.00546389.n",
+        "omw.00973056.v",
+        "omw.02466134.v",
+        "omw.03082979.n",
+        "omw.03892891.n"
+      ]
     },
     {
       "template_id": "tpl_pc_hardware_gear",
@@ -1828,8 +2872,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات pc_hardware_gear وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.tech_geek"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.tech_geek"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-装机配置单/配置清单与预算",
         "01-装机配置单/比价与选购记录",
@@ -1843,7 +2894,23 @@
       ],
       "naming_rules": {
         "asset_pattern": "{Brand}_{DeviceName}_{DocType}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.drive",
+        "builtin.screenshot",
+        "hownet.000000032993.n",
+        "hownet.000000090771.n",
+        "hownet.000000091932.n",
+        "hownet.000000232027.n",
+        "omw.00786458.v",
+        "omw.00998399.v",
+        "omw.03022593.a",
+        "omw.03599761.n",
+        "omw.05011790.n",
+        "omw.06357814.n",
+        "omw.06471345.n"
+      ]
     },
     {
       "template_id": "tpl_cooking_recipes_vault",
@@ -1872,8 +2939,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات cooking_recipes_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.cooking_foodie", "id.health.nutritionist"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.cooking_foodie",
+        "id.health.nutritionist"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-家常菜与主食/快手小炒步骤图解",
         "01-家常菜与主食/面点与主食配方",
@@ -1887,7 +2962,22 @@
       ],
       "naming_rules": {
         "asset_pattern": "{Cuisine}_{DishName}_Recipe.{ext}"
-      }
+      },
+      "concept_codes": [
+        "hownet.000000024240.n",
+        "hownet.000000105289.v",
+        "hownet.000000274941.n",
+        "hownet.000000275874.n",
+        "omw.00966330.v",
+        "omw.00998399.v",
+        "omw.01638368.v",
+        "omw.05927813.n",
+        "omw.06492939.n",
+        "omw.07597263.n",
+        "omw.07628870.n",
+        "omw.07679356.n",
+        "omw.07929519.n"
+      ]
     },
     {
       "template_id": "tpl_pet_care_diary",
@@ -1916,8 +3006,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات pet_care_diary وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.pet_owner"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.pet_owner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-健康与疫苗档案/疫苗本与驱虫记录",
         "01-健康与疫苗档案/病历与化验报告",
@@ -1930,7 +3027,22 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{PetName}_{DocType}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.meme",
+        "omw.00372226.n",
+        "omw.00791078.n",
+        "omw.00965035.v",
+        "omw.00998399.v",
+        "omw.01178565.v",
+        "omw.01593649.a",
+        "omw.02633881.v",
+        "omw.02932161.a",
+        "omw.03668642.n",
+        "omw.04517535.n",
+        "omw.06515297.n",
+        "omw.06665108.n"
+      ]
     },
     {
       "template_id": "tpl_travel_outdoor_journey",
@@ -1959,8 +3071,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات travel_outdoor_journey وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.traveler"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.traveler"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-行程与订单/行程路书与打卡计划",
         "01-行程与订单/机票车票与酒店凭证",
@@ -1975,7 +3094,28 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Destination}_{Title}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.cell_phone",
+        "builtin.travel",
+        "builtin.video",
+        "hownet.000000213160.n",
+        "hownet.000000266196.n",
+        "hownet.000000282370.n",
+        "omw.00110659.r",
+        "omw.00666784.s",
+        "omw.00928371.n",
+        "omw.00966330.v",
+        "omw.02671780.n",
+        "omw.02696165.n",
+        "omw.03668642.n",
+        "omw.06125041.n",
+        "omw.06471345.n",
+        "omw.06474030.n",
+        "omw.06519253.n",
+        "omw.06520429.n",
+        "omw.07351195.n"
+      ]
     },
     {
       "template_id": "tpl_audio_sound_engineering",
@@ -2004,8 +3144,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات audio_sound_engineering وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.creator.sound_designer", "id.scene.voice_recordings_audio"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.creator.sound_designer",
+        "id.scene.voice_recordings_audio"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-编曲工程/宿主软件工程文件",
         "01-编曲工程/工程备份与版本",
@@ -2020,7 +3168,28 @@
       ],
       "naming_rules": {
         "asset_pattern": "{TrackName}_{BPM}_{Key}_{Stage}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.sound_effects",
+        "hownet.000000163035.n",
+        "hownet.000000256992.n",
+        "omw.00048138.r",
+        "omw.00620208.s",
+        "omw.00623356.a",
+        "omw.00675701.a",
+        "omw.01002297.v",
+        "omw.02771840.n",
+        "omw.03287178.n",
+        "omw.03800933.n",
+        "omw.04262678.n",
+        "omw.04987620.n",
+        "omw.06125041.n",
+        "omw.06473168.n",
+        "omw.06566077.n",
+        "omw.06591108.n",
+        "omw.08481184.n"
+      ]
     },
     {
       "template_id": "tpl_graphic_brand_design",
@@ -2054,7 +3223,12 @@
         "id.designer.illustrator",
         "id.scene.design_graphics_assets"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-品牌规范/品牌视觉手册",
         "01-品牌规范/标志源文件与标准色",
@@ -2069,7 +3243,26 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Client}_{AssetType}_v{Version}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.font",
+        "hownet.000000104880.n",
+        "hownet.000000144019.n",
+        "omw.00213343.n",
+        "omw.00412271.n",
+        "omw.00483146.a",
+        "omw.00665886.v",
+        "omw.01002297.v",
+        "omw.01692579.v",
+        "omw.02128084.s",
+        "omw.03022739.a",
+        "omw.05845140.n",
+        "omw.06421685.n",
+        "omw.06473168.n",
+        "omw.06793817.n",
+        "omw.07260623.n",
+        "omw.07269916.n"
+      ]
     },
     {
       "template_id": "tpl_illustration_cg_art",
@@ -2098,8 +3291,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات illustration_cg_art وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.illustrator", "id.scene.design_graphics_assets"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.illustrator",
+        "id.scene.design_graphics_assets"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-约稿与授权/需求说明与参考图",
         "01-约稿与授权/报价与授权合同",
@@ -2114,7 +3315,22 @@
       ],
       "naming_rules": {
         "asset_pattern": "{ProjectName}_{Character}_{Stage}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.draft",
+        "omw.00213343.n",
+        "omw.01002297.v",
+        "omw.01023925.v",
+        "omw.01705257.v",
+        "omw.02682207.n",
+        "omw.03892891.n",
+        "omw.04946877.n",
+        "omw.06125041.n",
+        "omw.06476200.n",
+        "omw.06591108.n",
+        "omw.13562328.n"
+      ]
     },
     {
       "template_id": "tpl_mobile_app_dev",
@@ -2143,8 +3359,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات mobile_app_dev وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.dev.mobile"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.dev.mobile"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-iOS 工程源码/项目代码与界面文件",
         "01-iOS 工程源码/依赖库与工程配置",
@@ -2159,7 +3382,31 @@
       ],
       "naming_rules": {
         "asset_pattern": "{AppName}_v{Version}_{BuildNum}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.android",
+        "builtin.cross_platform",
+        "builtin.image",
+        "builtin.ios",
+        "builtin.screenshot",
+        "builtin.script",
+        "hownet.000000102444.n",
+        "hownet.000000194548.n",
+        "hownet.000000256992.n",
+        "omw.00240938.n",
+        "omw.00688261.v",
+        "omw.00996485.v",
+        "omw.01002297.v",
+        "omw.01137206.n",
+        "omw.01386200.v",
+        "omw.03729951.n",
+        "omw.03778600.n",
+        "omw.04202417.n",
+        "omw.05154676.n",
+        "omw.06125041.n",
+        "omw.06355894.n",
+        "omw.07739125.n"
+      ]
     },
     {
       "template_id": "tpl_cloud_native_sre",
@@ -2188,8 +3435,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات cloud_native_sre وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.sre"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.sre"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-容器与集群部署/K8s 部署清单",
         "01-容器与集群部署/Docker 镜像构建",
@@ -2204,7 +3458,22 @@
       ],
       "naming_rules": {
         "asset_pattern": "{Env}_{Cluster}_{Service}_{YYYYMMDD}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.script",
+        "hownet.000000091371.v",
+        "omw.00479932.v",
+        "omw.00965035.v",
+        "omw.00998399.v",
+        "omw.01060234.n",
+        "omw.02077904.s",
+        "omw.02839910.n",
+        "omw.04008385.n",
+        "omw.04747115.n",
+        "omw.05154676.n",
+        "omw.06416598.n",
+        "omw.06788897.n"
+      ]
     },
     {
       "template_id": "tpl_supply_chain_logistics",
@@ -2233,8 +3502,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات supply_chain_logistics وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.mgmt.supply_chain"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.mgmt.supply_chain"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-供应商管理/供应商名录与资质",
         "01-供应商管理/评审与考核记录",
@@ -2249,7 +3525,16 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Vendor}_{DocType}_PO{PONumber}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.purchase_order",
+        "builtin.statement_of_account",
+        "hownet.000000121346.n",
+        "hownet.000000145596.n",
+        "omw.00998399.v",
+        "omw.02013322.v",
+        "omw.10486349.n"
+      ]
     },
     {
       "template_id": "tpl_study_abroad_application",
@@ -2278,8 +3563,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات study_abroad_application وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.student.study_abroad"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.student.study_abroad"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-选校与申请要求/目标学校清单",
         "01-选校与申请要求/专业与申请要求",
@@ -2294,7 +3586,27 @@
       ],
       "naming_rules": {
         "asset_pattern": "{University}_{Major}_{DocType}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.sheet",
+        "hownet.000000050527.n",
+        "hownet.000000145146.n",
+        "hownet.000000272293.n",
+        "omw.00007846.n",
+        "omw.00035189.n",
+        "omw.00130432.r",
+        "omw.00521562.n",
+        "omw.00752493.v",
+        "omw.00765396.v",
+        "omw.02310855.v",
+        "omw.02633881.v",
+        "omw.03729951.n",
+        "omw.04146050.n",
+        "omw.04538552.n",
+        "omw.05980875.n",
+        "omw.06282651.n",
+        "omw.10654015.n"
+      ]
     },
     {
       "template_id": "tpl_desktop_declutter",
@@ -2323,8 +3635,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات desktop_declutter وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.desktop_declutter"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.desktop_declutter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-今日急需处理/今天必做任务与急用文件",
         "01-今日急需处理/临时备忘与待发材料",
@@ -2340,7 +3659,49 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Title}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.compressed_archive",
+        "builtin.contract",
+        "builtin.document",
+        "builtin.draft",
+        "builtin.electronic_edm",
+        "builtin.history",
+        "builtin.image",
+        "builtin.installation_program",
+        "builtin.presentation",
+        "builtin.record_screen",
+        "builtin.screenshot",
+        "builtin.sheet",
+        "builtin.shortcut",
+        "builtin.temporary_files",
+        "hownet.000000038318.n",
+        "hownet.000000055367.n",
+        "hownet.000000110005.n",
+        "omw.00007846.n",
+        "omw.00066685.v",
+        "omw.00088303.r",
+        "omw.00212414.v",
+        "omw.00330644.s",
+        "omw.00409483.n",
+        "omw.00730247.n",
+        "omw.00869931.v",
+        "omw.01002297.v",
+        "omw.01134861.n",
+        "omw.01386200.v",
+        "omw.01627105.v",
+        "omw.01705257.v",
+        "omw.02152504.v",
+        "omw.02161982.s",
+        "omw.03217458.n",
+        "omw.03729951.n",
+        "omw.04381860.n",
+        "omw.05050115.n",
+        "omw.06665108.n",
+        "omw.07191279.n",
+        "omw.13290002.n"
+      ]
     },
     {
       "template_id": "tpl_downloads_triage",
@@ -2369,8 +3730,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات downloads_triage وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.downloads_triage"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.downloads_triage"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-软件安装包/应用程序安装包",
         "01-软件安装包/驱动与系统补丁",
@@ -2385,7 +3753,31 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Source}_{FileName}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "builtin.compressed_archive",
+        "builtin.disc_image",
+        "builtin.document",
+        "builtin.drive",
+        "builtin.e_book",
+        "builtin.image",
+        "builtin.music",
+        "builtin.video",
+        "hownet.000000090601.n",
+        "omw.00159284.r",
+        "omw.00240938.n",
+        "omw.00244416.v",
+        "omw.01002297.v",
+        "omw.01734502.v",
+        "omw.01901082.s",
+        "omw.02233704.v",
+        "omw.02254495.v",
+        "omw.03745285.n",
+        "omw.05237227.n",
+        "omw.06470073.n",
+        "omw.06566077.n",
+        "omw.06568978.n"
+      ]
     },
     {
       "template_id": "tpl_inbox_staging_universal",
@@ -2424,11 +3816,27 @@
         "id.scene.screenshots_recordings",
         "id.scene.external_media_triage"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
-      "paths": ["01-收件箱", "02-马上要办", "03-等人回复", "04-常用参考", "05-办完归档"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-收件箱",
+        "02-马上要办",
+        "03-等人回复",
+        "04-常用参考",
+        "05-办完归档"
+      ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Context}_{Title}.{ext}"
-      }
+      },
+      "concept_codes": [
+        "omw.00002436.r",
+        "omw.00387310.v",
+        "omw.01705257.v"
+      ]
     },
     {
       "template_id": "tpl_desktop_classic_classification",
@@ -2457,8 +3865,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات desktop_classic_classification وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.desktop_declutter"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.desktop_declutter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-常用软件快捷方式/办公与聊天",
         "01-常用软件快捷方式/上网与下载工具",
@@ -2474,7 +3889,34 @@
         "04-安装包与压缩包/软件安装包",
         "04-安装包与压缩包/压缩文件"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.compressed_archive",
+        "builtin.contracts_bills",
+        "builtin.document",
+        "builtin.gaming_entertainment",
+        "builtin.humanities",
+        "builtin.image",
+        "builtin.record_screen",
+        "builtin.screenshot",
+        "builtin.shortcut",
+        "hownet.000000110005.n",
+        "omw.00007846.n",
+        "omw.00173761.n",
+        "omw.00240938.n",
+        "omw.00244416.v",
+        "omw.00409483.n",
+        "omw.00928077.n",
+        "omw.01002297.v",
+        "omw.01705257.v",
+        "omw.01717169.v",
+        "omw.02233704.v",
+        "omw.02633881.v",
+        "omw.02752695.v",
+        "omw.03217458.n",
+        "omw.05237227.n",
+        "omw.06566077.n"
+      ]
     },
     {
       "template_id": "tpl_qa_testing_asset_vault",
@@ -2503,8 +3945,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات qa_testing_asset_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.qa.tester"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-测试用例与脚本/功能与界面测试用例",
         "01-测试用例与脚本/接口测试脚本",
@@ -2519,7 +3968,32 @@
         "05-发布质量检查/上线检查清单",
         "05-发布质量检查/版本质量统计"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.log",
+        "builtin.record_screen",
+        "builtin.screenshot",
+        "builtin.script",
+        "hownet.000000261219.n",
+        "omw.00479932.v",
+        "omw.00636461.n",
+        "omw.00661824.v",
+        "omw.00786458.v",
+        "omw.00928371.n",
+        "omw.00958823.v",
+        "omw.00965035.v",
+        "omw.00998399.v",
+        "omw.01060234.n",
+        "omw.01090308.a",
+        "omw.01594811.s",
+        "omw.02058656.s",
+        "omw.02152504.v",
+        "omw.02752695.v",
+        "omw.05171045.n",
+        "omw.05846932.n",
+        "omw.13941337.n",
+        "omw.14464005.n"
+      ]
     },
     {
       "template_id": "tpl_k12_education_vault",
@@ -2548,8 +4022,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات k12_education_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.k12_student_parent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.k12_student_parent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-学科教辅资料/语文阅读与作文",
         "01-学科教辅资料/数学练习与思维题",
@@ -2561,7 +4042,25 @@
         "04-兴趣与成长记录/书法绘画与考级",
         "04-兴趣与成长记录/体育与实践活动"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.mathematics",
+        "builtin.painting",
+        "builtin.physical_education",
+        "builtin.video",
+        "omw.00372226.n",
+        "omw.00409211.n",
+        "omw.00473799.v",
+        "omw.00606093.v",
+        "omw.00884466.n",
+        "omw.00998399.v",
+        "omw.02128084.s",
+        "omw.02671880.v",
+        "omw.05657718.n",
+        "omw.06403969.n",
+        "omw.06409752.n",
+        "omw.06504462.n"
+      ]
     },
     {
       "template_id": "tpl_k12_school_term_pipeline",
@@ -2590,8 +4089,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات k12_school_term_pipeline وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.k12_student_parent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.k12_student_parent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-开学计划/学期计划与作息表",
         "01-开学计划/课表与选课",
@@ -2602,7 +4108,22 @@
         "04-寒暑假/假期作业与实践",
         "04-寒暑假/假期阅读与拓展"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "omw.00035189.n",
+        "omw.00250798.r",
+        "omw.00409211.n",
+        "omw.00473799.v",
+        "omw.00606093.v",
+        "omw.00928371.n",
+        "omw.00966330.v",
+        "omw.01884126.v",
+        "omw.02671880.v",
+        "omw.02752695.v",
+        "omw.04746430.n",
+        "omw.05868272.n",
+        "omw.15225797.n"
+      ]
     },
     {
       "template_id": "tpl_senior_life_archive",
@@ -2631,8 +4152,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات senior_life_archive وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.senior_citizen"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.senior_citizen"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-家庭老照片与相册/全家福与亲友合影",
         "01-家庭老照片与相册/老照片扫描件",
@@ -2643,7 +4171,25 @@
         "04-证件与重要备忘/证件复印件",
         "04-证件与重要备忘/重要事项备忘"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.family",
+        "builtin.history",
+        "hownet.000000019515.n",
+        "omw.00607780.v",
+        "omw.00998399.v",
+        "omw.01059900.n",
+        "omw.01736299.v",
+        "omw.02152504.v",
+        "omw.02161982.s",
+        "omw.03217458.n",
+        "omw.03668642.n",
+        "omw.05817845.n",
+        "omw.06268096.n",
+        "omw.07026352.n",
+        "omw.07052700.n",
+        "omw.08102402.n"
+      ]
     },
     {
       "template_id": "tpl_senior_medical_care_pipeline",
@@ -2672,8 +4218,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات senior_medical_care_pipeline وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.senior_citizen"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.senior_citizen"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-看病前准备/病历与症状记录",
         "01-看病前准备/挂号凭证与预约单",
@@ -2684,7 +4237,23 @@
         "04-复诊与长期档案/复诊提醒与医嘱",
         "04-复诊与长期档案/年度体检汇总"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.bill",
+        "hownet.000000064936.n",
+        "omw.00159284.r",
+        "omw.00357254.s",
+        "omw.00406243.v",
+        "omw.00636461.n",
+        "omw.00791078.n",
+        "omw.00965035.v",
+        "omw.00998399.v",
+        "omw.06471345.n",
+        "omw.06515297.n",
+        "omw.13290002.n",
+        "omw.13306870.n",
+        "omw.13941337.n"
+      ]
     },
     {
       "template_id": "tpl_office_general_archive",
@@ -2713,8 +4282,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات office_general_archive وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.office.general_clerk"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.office.general_clerk"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-公文与函件/通知公告",
         "01-公文与函件/会议纪要",
@@ -2729,7 +4305,23 @@
         "04-合同与用印/常用合同模板",
         "04-合同与用印/用印登记"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.contract",
+        "hownet.000000163423.n",
+        "hownet.000000169257.n",
+        "hownet.000000272287.n",
+        "hownet.000000280097.n",
+        "omw.01230965.n",
+        "omw.02301502.v",
+        "omw.02599754.v",
+        "omw.06470073.n",
+        "omw.06471345.n",
+        "omw.06665108.n",
+        "omw.06682290.n",
+        "omw.13290002.n"
+      ]
     },
     {
       "template_id": "tpl_office_document_dispatch_flow",
@@ -2758,8 +4350,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات office_document_dispatch_flow وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.office.general_clerk", "id.scene.personal_office_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.office.general_clerk",
+        "id.scene.personal_office_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-收文登记/外来公文",
         "01-收文登记/登记与流转单",
@@ -2774,7 +4374,17 @@
         "04-办结归档/往年归档",
         "04-办结归档/办结清单"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "omw.00180496.a",
+        "omw.00517010.s",
+        "omw.00876200.v",
+        "omw.01002297.v",
+        "omw.01256417.n",
+        "omw.02599754.v",
+        "omw.05817845.n",
+        "omw.06470073.n"
+      ]
     },
     {
       "template_id": "tpl_household_dossier_vault",
@@ -2803,8 +4413,16 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات household_dossier_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.household_assets", "id.scene.finance_tax_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.household_assets",
+        "id.scene.finance_tax_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-家人证件/身份证与户口本",
         "01-家人证件/护照与通行证",
@@ -2819,7 +4437,29 @@
         "04-缴费与银行单据/银行对账单",
         "04-缴费与银行单据/存款与理财凭证"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.household_registration_book",
+        "builtin.id_card",
+        "builtin.marriage_certificate",
+        "builtin.property_ownership_certificate",
+        "builtin.statement_of_account",
+        "hownet.000000038318.n",
+        "hownet.000000044889.n",
+        "hownet.000000205368.v",
+        "hownet.000000272347.n",
+        "hownet.000000280097.n",
+        "omw.00006032.a",
+        "omw.00891216.v",
+        "omw.02310855.v",
+        "omw.02671038.a",
+        "omw.02827950.a",
+        "omw.03217458.n",
+        "omw.04074482.n",
+        "omw.06271288.n",
+        "omw.06471345.n"
+      ]
     },
     {
       "template_id": "tpl_media_collector_vault",
@@ -2853,7 +4493,12 @@
         "id.scene.movies_tv_collection",
         "id.scene.music_collection_vault"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-电影/高清电影",
         "01-电影/蓝光原盘",
@@ -2868,7 +4513,19 @@
         "04-电子书与漫画/漫画",
         "04-电子书与漫画/杂志"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.animation",
+        "builtin.audiobook",
+        "builtin.comics",
+        "builtin.e_book",
+        "builtin.magazine",
+        "builtin.music",
+        "omw.00546389.n",
+        "omw.02055900.s",
+        "omw.02696795.a",
+        "omw.06591815.n"
+      ]
     },
     {
       "template_id": "tpl_code_asset_vault",
@@ -2904,7 +4561,12 @@
         "id.dev.mobile",
         "id.student.self_learner"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-项目脚手架/前端起步模板",
         "01-项目脚手架/后端服务模板",
@@ -2919,7 +4581,27 @@
         "04-实用脚本/自动化运维脚本",
         "04-实用脚本/数据转换脚本"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.back_end",
+        "builtin.front_end",
+        "builtin.script",
+        "hownet.000000169257.n",
+        "hownet.000000231458.n",
+        "omw.00162549.v",
+        "omw.00173761.n",
+        "omw.00428722.r",
+        "omw.00447753.s",
+        "omw.00479932.v",
+        "omw.01134861.n",
+        "omw.02593107.v",
+        "omw.02839910.n",
+        "omw.03778600.n",
+        "omw.04141423.n",
+        "omw.05816622.n",
+        "omw.06586355.n",
+        "omw.13781164.n"
+      ]
     },
     {
       "template_id": "tpl_system_cache_appdata_vault",
@@ -2948,8 +4630,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات system_cache_appdata_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.system_cache_appdata"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.system_cache_appdata"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-软件运行日志",
         "02-崩溃与错误记录",
@@ -2957,7 +4646,19 @@
         "04-过期备份残留",
         "05-确认后可删除"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.log",
+        "builtin.temporary_files",
+        "omw.00201722.v",
+        "omw.00665886.v",
+        "omw.00998399.v",
+        "omw.01785579.v",
+        "omw.01901082.s",
+        "omw.02444159.v",
+        "omw.02771840.n",
+        "omw.06566077.n"
+      ]
     },
     {
       "template_id": "tpl_chat_software_vault",
@@ -2986,10 +4687,32 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات chat_software_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.chat_software_files"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
-      "paths": ["01-文档与表格", "02-图片", "03-视频与语音", "04-压缩包", "05-待处理暂存"],
-      "naming_rules": {}
+      "target_identities": [
+        "id.scene.chat_software_files"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-文档与表格",
+        "02-图片",
+        "03-视频与语音",
+        "04-压缩包",
+        "05-待处理暂存"
+      ],
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.compressed_archive",
+        "builtin.document",
+        "builtin.image",
+        "builtin.sheet",
+        "builtin.video",
+        "omw.01134861.n",
+        "omw.06177033.n"
+      ]
     },
     {
       "template_id": "tpl_cross_device_transfer_vault",
@@ -3018,8 +4741,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات cross_device_transfer_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.cross_device_transfer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.cross_device_transfer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-手机照片与视频",
         "02-手机录音",
@@ -3027,7 +4757,17 @@
         "04-电脑发往手机",
         "05-临时中转暂存"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.cell_phone",
+        "builtin.video",
+        "omw.00088303.r",
+        "omw.01915365.v",
+        "omw.02152504.v",
+        "omw.03082979.n",
+        "omw.03668642.n",
+        "omw.04262678.n"
+      ]
     },
     {
       "template_id": "tpl_screenshots_screenrecord_vault",
@@ -3056,8 +4796,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات screenshots_screenrecord_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.screenshots_recordings"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.screenshots_recordings"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-聊天与沟通截图",
         "02-网页与资料截图",
@@ -3065,7 +4812,16 @@
         "04-报错与问题记录",
         "05-看完可删的临时截图"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.record_screen",
+        "builtin.screenshot",
+        "omw.00088303.r",
+        "omw.00140652.n",
+        "omw.00998399.v",
+        "omw.05688397.n",
+        "omw.06358900.n"
+      ]
     },
     {
       "template_id": "tpl_scratchpad_drafts_vault",
@@ -3094,10 +4850,28 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات scratchpad_drafts_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.scratchpad_drafts"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
-      "paths": ["01-随手记的便签", "02-写了一半的草稿", "03-摘抄与素材", "04-写完待归档"],
-      "naming_rules": {}
+      "target_identities": [
+        "id.scene.scratchpad_drafts"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-随手记的便签",
+        "02-写了一半的草稿",
+        "03-摘抄与素材",
+        "04-写完待归档"
+      ],
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.draft",
+        "hownet.000000053000.v",
+        "omw.00007884.r",
+        "omw.06502378.n"
+      ]
     },
     {
       "template_id": "tpl_external_storage_vault",
@@ -3126,8 +4900,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات external_storage_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.external_media_triage"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.external_media_triage"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-随身办公文档",
         "02-照片与视频",
@@ -3135,7 +4916,19 @@
         "04-系统安装盘",
         "05-旧文件暂存"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.document",
+        "builtin.video",
+        "omw.00173761.n",
+        "omw.00240938.n",
+        "omw.01002297.v",
+        "omw.01525776.a",
+        "omw.03668642.n",
+        "omw.05237227.n",
+        "omw.06470073.n",
+        "omw.06566077.n"
+      ]
     },
     {
       "template_id": "tpl_scanned_documents_vault",
@@ -3164,8 +4957,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات scanned_documents_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.scanned_documents"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.scanned_documents"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-证件扫描",
         "02-合同与协议扫描",
@@ -3173,7 +4973,17 @@
         "04-书信与资料翻拍",
         "05-待识别文字的文件"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.bill",
+        "builtin.contract",
+        "omw.01002297.v",
+        "omw.02152504.v",
+        "omw.03217458.n",
+        "omw.06351613.n",
+        "omw.06624161.n",
+        "omw.06665108.n"
+      ]
     },
     {
       "template_id": "tpl_docs_office_vault",
@@ -3202,8 +5012,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات docs_office_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.personal_office_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.personal_office_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-合同与协议",
         "02-方案与汇报",
@@ -3211,7 +5028,16 @@
         "04-制度与参考资料",
         "05-草稿与待办"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.contract",
+        "builtin.draft",
+        "builtin.sheet",
+        "omw.05816622.n",
+        "omw.05846932.n",
+        "omw.06665108.n",
+        "omw.07258664.n"
+      ]
     },
     {
       "template_id": "tpl_docs_study_research_vault",
@@ -3240,8 +5066,15 @@
         "ar-EG": "سير عمل قياسي لتنظيم وتصنيف ملفات docs_study_research_vault وفق المعايير المعتمدة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.study_research_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.study_research_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-课程与教材",
         "02-学习笔记",
@@ -3249,7 +5082,18 @@
         "04-题目与练习",
         "05-课题与研究报告"
       ],
-      "naming_rules": {}
+      "naming_rules": {},
+      "concept_codes": [
+        "builtin.textbook",
+        "builtin.thesis",
+        "omw.00606093.v",
+        "omw.00636921.n",
+        "omw.00890441.n",
+        "omw.00965035.v",
+        "omw.02662538.a",
+        "omw.06504462.n",
+        "omw.06784003.n"
+      ]
     }
   ]
 }

@@ -909,10 +909,18 @@ export function registerVirtualDirectoryIPCHandlers() {
         request.injectedFileTags as
           | Record<number, Array<{ code: string; weight: number }>>
           | undefined
-      const cacheKey =
-        request.fileIds && request.fileIds.length > 0
-          ? `${request.workspaceId || 0}:${request.fileIds.length}:${request.fileIds[0]}:${request.fileIds[request.fileIds.length - 1]}`
-          : ''
+      // 缓存键必须覆盖全量 fileId：旧键只取「数量 + 首 + 尾」，用户在中段替换文件时
+      // 键完全不变，会直接命中上一批的标签，表现为「推荐批次与当前待整理文件不匹配」。
+      let fileIdFingerprint = ''
+      if (request.fileIds && request.fileIds.length > 0) {
+        let hash = 0x811c9dc5
+        for (const id of request.fileIds) {
+          hash ^= id & 0xffffffff
+          hash = Math.imul(hash, 0x01000193) >>> 0
+        }
+        fileIdFingerprint = `${request.fileIds.length}:${hash.toString(16)}`
+      }
+      const cacheKey = fileIdFingerprint ? `${request.workspaceId || 0}:${fileIdFingerprint}` : ''
 
       if (!fileTags && cacheKey && fileTagsSessionCache.has(cacheKey)) {
         fileTags = fileTagsSessionCache.get(cacheKey)
