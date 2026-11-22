@@ -177,6 +177,10 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
 
   const isOverlayOpen = usePluginCenterStore(s => s.isOverlayOpen)
   const closeOverlay = usePluginCenterStore(s => s.closeOverlay)
+  const focusSlot = usePluginCenterStore(s => s.focusSlot)
+  const clearFocusSlot = usePluginCenterStore(s => s.clearFocusSlot)
+  const [highlightedSlot, setHighlightedSlot] = useState<string | null>(null)
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const configuringModuleId = usePluginCenterStore(s => s.configuringModuleId)
   const setConfiguringModuleId = usePluginCenterStore(s => s.setConfiguringModuleId)
   const searchKeyword = usePluginCenterStore(s => s.searchKeyword)
@@ -219,6 +223,37 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
       unsubVisibility()
     }
   }, [subscribeProgress, subscribeEnvironmentVisibility])
+
+  // 当通过外部接口设置页指定 focusSlot 打开插件中心时，等待目标槽位挂载后平滑滚动并脉冲高亮 2 秒
+  useEffect(() => {
+    if (!isOverlayOpen || !focusSlot) return
+    const container = overlayContainerRef.current
+    if (!container) return
+    const target = container.querySelector<HTMLElement>(`[data-testid="slot-group-${focusSlot}"]`)
+    if (!target) return
+
+    const slotToHighlight = focusSlot
+    target.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+    setHighlightedSlot(slotToHighlight)
+    clearFocusSlot()
+
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current)
+    }
+    highlightTimerRef.current = setTimeout(() => {
+      highlightTimerRef.current = null
+      setHighlightedSlot(prev => (prev === slotToHighlight ? null : prev))
+    }, 2000)
+  }, [isOverlayOpen, focusSlot, modules.length, clearFocusSlot])
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimerRef.current) {
+        clearTimeout(highlightTimerRef.current)
+        highlightTimerRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (isOverlayOpen) {
@@ -891,7 +926,11 @@ export const PluginCenterOverlay: React.FC<PluginCenterOverlayProps> = ({ classN
                     <div
                       key={group.definition.key}
                       data-testid={`slot-group-${group.definition.key}`}
-                      className="bg-card/75 dark:bg-card/40 border border-border/70 rounded-2xl p-4 shadow-2xs space-y-3 backdrop-blur-xs"
+                      className={cn(
+                        'bg-card/75 dark:bg-card/40 border border-border/70 rounded-2xl p-4 shadow-2xs space-y-3 backdrop-blur-xs transition-all duration-300',
+                        highlightedSlot === group.definition.key &&
+                          'ring-2 ring-primary ring-offset-2 border-primary/70 animate-pulse'
+                      )}
                     >
                       {/* 槽位组头部：名称、图标、策略 Badge、描述 */}
                       <div className="flex items-center justify-between pb-2.5 border-b border-border/50 flex-wrap gap-2">

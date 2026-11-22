@@ -1,5 +1,7 @@
 import { t } from '@app/languages'
 import * as http from 'node:http'
+import * as fs from 'node:fs/promises'
+import * as os from 'node:os'
 import * as crypto from 'node:crypto'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
@@ -14,11 +16,17 @@ import * as iconv from 'iconv-lite'
 import {
   type ExternalApiActivityInfo,
   type ExternalApiTestResultDTO,
+  type ExternalApiCapabilityId,
+  type ExternalApiCapabilityDescriptor,
   EXTERNAL_API_CAPABILITIES
 } from '@firefly/types'
 import { databaseService } from './database/database-service'
 import { analysisQueueService } from './analysis-queue-service'
 import { organizeRealDirectoryService, virtualDirectoryService } from '../main/state'
+import { VoiceSeamDispatcher, VoiceSeamError } from './ai/voice-seam-dispatcher'
+import { ConfigOrchestrator } from '../config/config-orchestrator'
+import { modularResourceService } from './system/modular-resource-service'
+import { omniService } from './system/omni-service'
 
 export interface VideoSegmentItem {
   chunkIndices: number[]
@@ -212,6 +220,13 @@ export class AISkillApiService {
   private discoveryRevision = 0
   private inFlightAbortControllers: Set<AbortController> = new Set()
   private activeSearchesCount = 0
+  private activeMultimodalCount = 0
+  private readonly maxBodyBytes = 1024 * 1024 // 1MB
+  private readonly ttsTempDir = path.join(os.tmpdir(), 'firefly-skill-tts')
+  private discoveryOpChain: Promise<void> = Promise.resolve()
+  private getActiveCapabilitiesProvider: () => ExternalApiCapabilityId[] = () => [
+    ...EXTERNAL_API_CAPABILITIES
+  ]
 
   // 生命周期、安全与探针状态
   private acceptingRequests = false
@@ -549,12 +564,72 @@ export class AISkillApiService {
         new Promise<void>(resolve => setTimeout(resolve, this.stopBudgetMs))
       ])
     }
+
+    // 停机时清理 TTS 临时音频目录，杜绝磁盘残留
+    await this.cleanupTtsTempDir('all').catch(() => {})
+  }
+
+  /**
+   * 注入动态激活能力提供者（由 AISkillApiReconciler 注入，start() 与 refresh() 共用同一 SSOT）
+   */
+  setActiveCapabilitiesProvider(provider: () => ExternalApiCapabilityId[]): void {
+    this.getActiveCapabilitiesProvider = provider
+  }
+
+  /**
+   * 获取当前激活的能力列表
+   */
+  getActiveCapabilities(): ExternalApiCapabilityId[] {
+    try {
+      const caps = this.getActiveCapabilitiesProvider()
+      return Array.isArray(caps) ? [...caps] : [...EXTERNAL_API_CAPABILITIES]
+    } catch {
+      return [...EXTERNAL_API_CAPABILITIES]
+    }
+  }
+
+  /**
+   * 发现文件写/删统一串行排队，杜绝同 PID 临时文件 (.tmp.<pid>) 并发踩踏
+   */
+  private enqueueDiscoveryOp<T>(op: () => Promise<T>): Promise<T> {
+    const next = this.discoveryOpChain.then(op, op)
+    this.discoveryOpChain = next.then(
+      () => undefined,
+      () => undefined
+    )
+    return next
+  }
+
+  /**
+   * 运行期安全刷新发现文件中的 capabilities（仅 running 态生效，严禁停机后死文件复活）
+   */
+  async refreshDiscoveryCapabilities(): Promise<void> {
+    return this.enqueueDiscoveryOp(async () => {
+      if (!this.acceptingRequests || !this.server || !this.discoveryFile) return
+      const epoch = this.currentEpoch
+      await this.publishDiscoveryFileUnlocked()
+      // 若写盘期间并发发生了 stop() 且服务已非接收状态，立即撤销刚落盘的文件；
+      // 若发生了 stop() -> start()（新一代已 running），严禁误删新一代，由后续排队写盘覆盖
+      if (!this.acceptingRequests) {
+        await this.revokeDiscoveryFileUnlocked()
+        this.discoveryPresent = false
+      } else if (epoch !== this.currentEpoch) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          '[AI Skill API] refreshDiscoveryCapabilities 检测到代际切换且新服务已运行，跳过撤销交由新一代覆盖'
+        )
+      }
+    })
   }
 
   /**
    * Windows 文件锁退避原子写 (V1 Schema，复用 @firefly/shared ServiceDiscoveryFile)
    */
   private async atomicPublishDiscoveryFile(): Promise<void> {
+    return this.enqueueDiscoveryOp(() => this.publishDiscoveryFileUnlocked())
+  }
+
+  private async publishDiscoveryFileUnlocked(): Promise<void> {
     if (!this.discoveryFile) return
     await this.discoveryFile.publish({
       instanceId: this.instanceId,
@@ -564,7 +639,7 @@ export class AISkillApiService {
       pid: process.pid,
       startedAt: (this.startedAt || new Date()).toISOString(),
       userDataDir: this.discoveryFile.getUserDataPath(),
-      capabilities: EXTERNAL_API_CAPABILITIES
+      capabilities: this.getActiveCapabilities()
     })
 
     this.discoveryPresent = true
@@ -575,8 +650,57 @@ export class AISkillApiService {
   }
 
   private async removeConfigFile(): Promise<void> {
+    return this.enqueueDiscoveryOp(() => this.revokeDiscoveryFileUnlocked())
+  }
+
+  private async revokeDiscoveryFileUnlocked(): Promise<void> {
     if (!this.discoveryFile) return
     await this.discoveryFile.revoke({ pid: process.pid, instanceId: this.instanceId })
+  }
+
+  /**
+   * 清理 TTS 临时目录：prune 模式淘汰超时(>30m)或超量(>50)旧文件；all 模式清空全部临时 WAV
+   */
+  private async cleanupTtsTempDir(mode: 'prune' | 'all'): Promise<void> {
+    try {
+      await fs.mkdir(this.ttsTempDir, { recursive: true })
+      const entries = await fs.readdir(this.ttsTempDir)
+      if (entries.length === 0) return
+
+      const now = Date.now()
+      const maxAgeMs = 30 * 60 * 1000
+      const maxFiles = 50
+      const stats: Array<{ fullPath: string; mtimeMs: number }> = []
+
+      for (const name of entries) {
+        if (!name.endsWith('.wav')) continue
+        const fullPath = path.join(this.ttsTempDir, name)
+        if (mode === 'all') {
+          await fs.unlink(fullPath).catch(() => {})
+          continue
+        }
+        try {
+          const st = await fs.stat(fullPath)
+          if (now - st.mtimeMs > maxAgeMs) {
+            await fs.unlink(fullPath).catch(() => {})
+          } else {
+            stats.push({ fullPath, mtimeMs: st.mtimeMs })
+          }
+        } catch {
+          // 忽略已被并发清理的文件
+        }
+      }
+
+      if (mode === 'prune' && stats.length >= maxFiles) {
+        stats.sort((a, b) => a.mtimeMs - b.mtimeMs)
+        const toRemove = stats.slice(0, stats.length - maxFiles + 1)
+        for (const item of toRemove) {
+          await fs.unlink(item.fullPath).catch(() => {})
+        }
+      }
+    } catch {
+      // 临时目录清理不阻断主流程
+    }
   }
 
   /**
@@ -688,10 +812,25 @@ export class AISkillApiService {
   private readBody(req: http.IncomingMessage): Promise<any> {
     return new Promise((resolve, reject) => {
       const buffers: Buffer[] = []
+      let totalBytes = 0
+      let tooLarge = false
+
       req.on('data', (chunk: Buffer) => {
+        if (tooLarge) return
+        totalBytes += chunk.byteLength
+        if (totalBytes > this.maxBodyBytes) {
+          tooLarge = true
+          buffers.length = 0
+          req.pause()
+          const err: any = new Error('Payload Too Large: request body exceeds 1MB limit')
+          err.statusCode = 413
+          reject(err)
+          return
+        }
         buffers.push(chunk)
       })
       req.on('end', () => {
+        if (tooLarge) return
         const raw = Buffer.concat(buffers)
         if (!raw.length) {
           resolve({})
@@ -726,7 +865,9 @@ export class AISkillApiService {
           // ignore
         }
 
-        reject(new Error('Invalid JSON body'))
+        const err: any = new Error('Invalid JSON body')
+        err.statusCode = 400
+        reject(err)
       })
       req.on('error', reject)
     })
@@ -824,7 +965,7 @@ export class AISkillApiService {
       pathname = parsedUrl.pathname || ''
       const query = Object.fromEntries(parsedUrl.searchParams.entries())
 
-      // 6. GET /api/health 纯内存健康检查 (支持自检探针快速放行)
+      // 6. GET /api/health 纯内存健康检查 (支持自检探针快速放行，并顺带广播最新能力集)
       if (method === 'GET' && pathname === '/api/health') {
         this.sendSuccess(res, {
           status: 'ok',
@@ -833,7 +974,17 @@ export class AISkillApiService {
           pid: process.pid,
           startedAt: this.startedAt?.toISOString() || null,
           apiVersion: '1.2.0',
-          uptime: this.getUptimeSec()
+          uptime: this.getUptimeSec(),
+          capabilities: this.getActiveCapabilities()
+        })
+        return true
+      }
+
+      // 7. GET /api/capabilities 纯内存自描述能力热发现端点（供外部 Agent 一次复制长期免重配）
+      if (method === 'GET' && pathname === '/api/capabilities') {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
+        this.sendSuccess(res, {
+          capabilities: this.buildCapabilityDescriptors()
         })
         return true
       }
@@ -1154,15 +1305,427 @@ export class AISkillApiService {
         return true
       }
 
+      // 8. 多模态扩展能力端点 (/api/ai/ocr, /api/ai/transcribe, /api/ai/synthesize, /api/ai/assert-sensitive)
+      if (
+        method === 'POST' &&
+        (pathname === '/api/ai/ocr' ||
+          pathname === '/api/ai/transcribe' ||
+          pathname === '/api/ai/synthesize' ||
+          pathname === '/api/ai/assert-sensitive')
+      ) {
+        this.recordBusinessRequest(req, pathname, res, isProbe)
+        return await this.handleMultimodalRequest(pathname, req, res)
+      }
+
       return false
     } catch (error: any) {
+      if (res.writableEnded || res.destroyed) {
+        logger.debug(LogCategory.SYSTEM, `[AI Skill API] 客户端已提前断开: ${pathname}`)
+        return true
+      }
       logger.error(LogCategory.SYSTEM, `[AI Skill API] 处理请求失败: ${pathname}`, error)
-      this.sendError(res, 500, error.message)
+      const statusCode =
+        typeof error?.statusCode === 'number' && error.statusCode >= 400 && error.statusCode < 600
+          ? error.statusCode
+          : 500
+      if (statusCode === 413) {
+        res.setHeader('Connection', 'close')
+      }
+      this.sendError(res, statusCode, error?.message || t('内部服务异常'))
       return true
     }
   }
 
+  /**
+   * 构造当前已激活能力的自描述清单（供 GET /api/capabilities 返回）
+   */
+  private buildCapabilityDescriptors(): ExternalApiCapabilityDescriptor[] {
+    const activeSet = new Set(this.getActiveCapabilities())
+    const allDescriptors: ExternalApiCapabilityDescriptor[] = [
+      {
+        id: 'search',
+        method: 'GET',
+        path: '/api/files/search',
+        description: '按关键词、模糊语义或音视频对白检索本地文件',
+        inputSchema: {
+          keyword: 'string (required)',
+          limit: 'number (optional, 1-50)',
+          scope: 'string (optional: real | virtual | all)'
+        }
+      },
+      {
+        id: 'timeline',
+        method: 'GET',
+        path: '/api/files/search',
+        description: '在视频检索结果中返回精确的镜头片段与起止秒数 (videoSegments)',
+        inputSchema: {
+          keyword: 'string (required)',
+          limit: 'number (optional, 1-50)'
+        }
+      },
+      {
+        id: 'progress',
+        method: 'GET',
+        path: '/api/analysis/progress',
+        description: '查询当前电脑后台文件分析与索引进度',
+        inputSchema: {}
+      },
+      {
+        id: 'virtual-folder-draft',
+        method: 'POST',
+        path: '/api/organize/apply-plan',
+        description: '向桌面端推送多维文件分类整理草案（需用户人工确认后生效）',
+        inputSchema: {
+          name: 'string (required)',
+          strategy: 'string (required)',
+          perspective: 'string (optional)'
+        }
+      },
+      {
+        id: 'ocr',
+        method: 'POST',
+        path: '/api/ai/ocr',
+        description: '从本地图片、截图或文档中识别并提取文字内容',
+        inputSchema: {
+          filePath: 'string (required, absolute local file path)'
+        }
+      },
+      {
+        id: 'asr',
+        method: 'POST',
+        path: '/api/ai/transcribe',
+        description: '将本地音视频文件中的说话内容转写为文字与时间戳台词',
+        inputSchema: {
+          filePath: 'string (required, absolute local audio/video path)',
+          language: 'string (optional)'
+        }
+      },
+      {
+        id: 'tts',
+        method: 'POST',
+        path: '/api/ai/synthesize',
+        description: '将文本合成为自然流畅的本地 WAV 语音文件',
+        inputSchema: {
+          text: 'string (required, 1-10000 chars)',
+          voiceId: 'string (optional)',
+          speed: 'number (optional)'
+        }
+      },
+      {
+        id: 'sensitive',
+        method: 'POST',
+        path: '/api/ai/assert-sensitive',
+        description: '检测本地图片是否包含私密或敏感内容并返回合规分级结果',
+        inputSchema: {
+          filePath: 'string (required, absolute local image path)'
+        }
+      }
+    ]
+    return allDescriptors.filter(d => activeSet.has(d.id))
+  }
+
+  /**
+   * 统一处理多模态扩展能力路由：并发守卫(429) + AbortController 停机联动 + 既有单例复用
+   */
+  private async handleMultimodalRequest(
+    pathname: string,
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): Promise<boolean> {
+    if (this.activeMultimodalCount >= 2) {
+      res.writeHead(429, {
+        'Content-Type': 'application/json',
+        'Retry-After': '2'
+      })
+      res.end(
+        JSON.stringify({
+          success: false,
+          error: 'TOO_MANY_REQUESTS',
+          message: 'Too many multimodal inference requests, please retry shortly'
+        })
+      )
+      return true
+    }
+
+    // 同步递增防 await readBody 期间的 TOCTOU 竞态击穿并发上限
+    this.activeMultimodalCount++
+    const abortController = new AbortController()
+    this.inFlightAbortControllers.add(abortController)
+    // 注意：Node 18+ 中 req 'close' 在请求体读完即触发；监听 res 'close' 且 !writableEnded 才是客户端提前断开
+    const onResClose = () => {
+      if (!res.writableEnded) {
+        abortController.abort()
+      }
+    }
+    res.once('close', onResClose)
+
+    const raceWithAbort = <T>(promise: Promise<T>): Promise<T> => {
+      if (abortController.signal.aborted) {
+        return Promise.reject(Object.assign(new Error('Request aborted'), { statusCode: 503 }))
+      }
+      return new Promise<T>((resolve, reject) => {
+        const onAbort = () => {
+          reject(Object.assign(new Error('Request aborted'), { statusCode: 503 }))
+        }
+        abortController.signal.addEventListener('abort', onAbort, { once: true })
+        promise.then(
+          val => {
+            abortController.signal.removeEventListener('abort', onAbort)
+            resolve(val)
+          },
+          err => {
+            abortController.signal.removeEventListener('abort', onAbort)
+            reject(err)
+          }
+        )
+      })
+    }
+
+    try {
+      const body = await this.readBody(req)
+      if (pathname === '/api/ai/ocr') {
+        const ocrEnabled = ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
+        if (!ocrEnabled) {
+          this.sendStructuredError(res, 400, {
+            error: 'FEATURE_DISABLED',
+            message: '图片文字识别功能未开启',
+            requiredSetting: 'ENABLE_IMAGE_OCR'
+          })
+          return true
+        }
+
+        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
+        if (!filePath) {
+          this.sendStructuredError(res, 400, {
+            error: 'INVALID_ARGUMENT',
+            message: '缺少必填字段: filePath'
+          })
+          return true
+        }
+
+        try {
+          await fs.access(filePath)
+        } catch {
+          this.sendStructuredError(res, 400, {
+            error: 'FILE_NOT_FOUND',
+            message: '目标本地文件不存在或无法访问'
+          })
+          return true
+        }
+
+        const mediaType = detectMediaType(filePath, path.basename(filePath))
+        if (mediaType === 'image') {
+          const perceived = await raceWithAbort(
+            omniService.perceive(filePath, { enableImageOcr: true })
+          )
+          this.sendSuccess(res, {
+            text: perceived?.ocr_text || '',
+            source: 'image_ocr'
+          })
+        } else {
+          const extracted = await raceWithAbort(omniService.extract(filePath))
+          this.sendSuccess(res, {
+            text: extracted?.markdown_content || '',
+            source: 'document_extract'
+          })
+        }
+        return true
+      }
+
+      if (pathname === '/api/ai/transcribe') {
+        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
+        if (!filePath) {
+          this.sendStructuredError(res, 400, {
+            error: 'INVALID_ARGUMENT',
+            message: '缺少必填字段: filePath'
+          })
+          return true
+        }
+
+        try {
+          await fs.access(filePath)
+        } catch {
+          this.sendStructuredError(res, 400, {
+            error: 'FILE_NOT_FOUND',
+            message: '目标音视频文件不存在或无法访问'
+          })
+          return true
+        }
+
+        const language = typeof body?.language === 'string' ? body.language.trim() : undefined
+        try {
+          const result = await VoiceSeamDispatcher.getInstance().transcribe(filePath, {
+            language,
+            signal: abortController.signal
+          })
+          const segments = Array.isArray(result.segments)
+            ? result.segments.map(seg => ({
+                start: Number((seg.startMs / 1000).toFixed(3)),
+                end: Number((seg.endMs / 1000).toFixed(3)),
+                text: seg.text
+              }))
+            : []
+          this.sendSuccess(res, {
+            text: result.text || '',
+            segments
+          })
+        } catch (err: any) {
+          if (err instanceof VoiceSeamError && err.code === 'NO_ACTIVE_PLUGIN') {
+            this.sendStructuredError(res, 400, {
+              error: 'PLUGIN_NOT_ACTIVE',
+              message: '语音转文字功能需安装并启用对应插件',
+              requiredSlot: 'voice_asr'
+            })
+            return true
+          }
+          if (err instanceof VoiceSeamError && err.code === 'ABORTED') {
+            this.sendError(res, 503, '语音转录已中止')
+            return true
+          }
+          throw err
+        }
+        return true
+      }
+
+      if (pathname === '/api/ai/synthesize') {
+        const text = typeof body?.text === 'string' ? body.text.trim() : ''
+        if (!text || text.length > 10000) {
+          this.sendStructuredError(res, 400, {
+            error: 'INVALID_ARGUMENT',
+            message: text ? '朗读文本长度超过 10,000 字符上限' : '缺少必填字段: text'
+          })
+          return true
+        }
+
+        const voiceId = typeof body?.voiceId === 'string' ? body.voiceId.trim() : undefined
+        const speed = typeof body?.speed === 'number' && Number.isFinite(body.speed) ? body.speed : undefined
+
+        try {
+          const wavBuf = await VoiceSeamDispatcher.getInstance().synthesizeToWav(text, {
+            voiceId,
+            speed,
+            signal: abortController.signal
+          })
+          if (abortController.signal.aborted) {
+            this.sendError(res, 503, '语音合成已中止')
+            return true
+          }
+          await this.cleanupTtsTempDir('prune')
+          await fs.mkdir(this.ttsTempDir, { recursive: true })
+          const audioPath = path.join(this.ttsTempDir, `${crypto.randomUUID()}.wav`)
+          await fs.writeFile(audioPath, Buffer.from(wavBuf))
+          const pcmBytes = Math.max(0, wavBuf.byteLength - 44)
+          const durationSec = Number((pcmBytes / (48000 * 2)).toFixed(2))
+          this.sendSuccess(res, {
+            audioPath,
+            durationSec
+          })
+        } catch (err: any) {
+          if (err instanceof VoiceSeamError && err.code === 'NO_ACTIVE_PLUGIN') {
+            this.sendStructuredError(res, 400, {
+              error: 'PLUGIN_NOT_ACTIVE',
+              message: '语音朗读功能需安装并启用对应插件',
+              requiredSlot: 'voice_tts'
+            })
+            return true
+          }
+          if (err instanceof VoiceSeamError && err.code === 'ABORTED') {
+            this.sendError(res, 503, '语音合成已中止')
+            return true
+          }
+          throw err
+        }
+        return true
+      }
+
+      if (pathname === '/api/ai/assert-sensitive') {
+        const activeMod = modularResourceService.getActiveModuleBySlot('perception_nsfw')
+        const isReady = Boolean(
+          activeMod && modularResourceService.processManager.isUsable(activeMod.id)
+        )
+        if (!isReady) {
+          this.sendStructuredError(res, 400, {
+            error: 'PLUGIN_NOT_ACTIVE',
+            message: '内容安全检测需安装并启用对应插件',
+            requiredSlot: 'perception_nsfw'
+          })
+          return true
+        }
+
+        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
+        if (!filePath) {
+          this.sendStructuredError(res, 400, {
+            error: 'INVALID_ARGUMENT',
+            message: '缺少必填字段: filePath'
+          })
+          return true
+        }
+
+        try {
+          await fs.access(filePath)
+        } catch {
+          this.sendStructuredError(res, 400, {
+            error: 'FILE_NOT_FOUND',
+            message: '目标图片文件不存在或无法访问'
+          })
+          return true
+        }
+
+        const perceived = await raceWithAbort(
+          omniService.perceive(filePath, { enableNsfwPerception: true })
+        )
+        const nsfw = perceived?.nsfw_perception
+        const status: 'clean' | 'flagged' | 'skipped' =
+          nsfw?.status === 'flagged' || nsfw?.status === 'clean' || nsfw?.status === 'skipped'
+            ? nsfw.status
+            : 'skipped'
+        const tags = Array.isArray(nsfw?.tags) ? nsfw.tags : []
+        const sensitiveTypes = Array.isArray(perceived?.sensitive_types)
+          ? perceived.sensitive_types
+          : []
+        const isSensitive = status === 'flagged' || sensitiveTypes.length > 0
+
+        this.sendSuccess(res, {
+          isSensitive,
+          status,
+          tags,
+          sensitiveTypes,
+          contentRating: perceived?.content_rating
+        })
+        return true
+      }
+
+      return false
+    } finally {
+      res.off('close', onResClose)
+      this.inFlightAbortControllers.delete(abortController)
+      this.activeMultimodalCount = Math.max(0, this.activeMultimodalCount - 1)
+    }
+  }
+
+  private sendStructuredError(
+    res: http.ServerResponse,
+    statusCode: number,
+    payload: { error: string; message: string; [key: string]: any }
+  ) {
+    if (res.writableEnded || res.destroyed) return
+    try {
+      res.statusCode = statusCode
+      const responseData = JSON.stringify({ success: false, ...payload })
+      res.setHeader('Content-Type', 'application/json')
+      res.setHeader('Content-Length', Buffer.byteLength(responseData))
+      res.end(responseData)
+    } catch (error: any) {
+      logger.error(LogCategory.SYSTEM, '[AI Skill API] 发送结构化错误响应失败', error)
+      if (!res.writableEnded && !res.destroyed) {
+        res.statusCode = 500
+        res.end(JSON.stringify({ success: false, error: t('响应序列化失败') }))
+      }
+    }
+  }
+
   private sendError(res: http.ServerResponse, statusCode: number, message: string) {
+    if (res.writableEnded || res.destroyed) return
     try {
       res.statusCode = statusCode
       const payload = { success: false, error: message }
@@ -1172,7 +1735,7 @@ export class AISkillApiService {
       res.end(responseData)
     } catch (error: any) {
       logger.error(LogCategory.SYSTEM, '[AI Skill API] 发送错误响应失败', error)
-      if (!res.writableEnded) {
+      if (!res.writableEnded && !res.destroyed) {
         res.statusCode = 500
         res.end(JSON.stringify({ success: false, error: t('响应序列化失败') }))
       }
@@ -1180,6 +1743,7 @@ export class AISkillApiService {
   }
 
   private sendSuccess(res: http.ServerResponse, data: any) {
+    if (res.writableEnded || res.destroyed) return
     try {
       res.statusCode = 200
       const payload: any = { success: true }
