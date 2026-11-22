@@ -14,6 +14,7 @@ import { useSearchStore } from '../../../../stores/search-store'
 import { getOrganizedSearchTags, OrganizedTagItem } from './search-list-tag-utils'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useTierStore } from '../../../../stores/tier-store'
+import { useVideoFrame, normalizeSeekSec } from '../../hooks/useVideoFrame'
 
 /**
  * 搜索列表模式专用行高（三行式多模态卡片排版，规格书定高 104px）
@@ -59,50 +60,42 @@ export const VideoChunkFrame: React.FC<{
   onItemSelect?: (e: React.MouseEvent) => void
 }> = ({ chunk, filePath, category, frameHeight = 38, onPreviewSeek, onItemSelect }) => {
   const [hasError, setHasError] = useState(false)
-  /** ffmpeg 实时抽帧得到的静态缩图 data URL（浏览器 <video> 无法解码时的兜底） */
-  const [frameDataUrl, setFrameDataUrl] = useState<string | null>(null)
-  /** 记录解码失败隶属的「文件|时间点」，避免虚拟行复用旧 hasError 触发多余抽帧 */
-  const errorKeyRef = useRef<string | null>(null)
+  /** 坏帧渲染失败标记：避免同一坏 data URL 反复重试，回退占位图标 */
+  const [imgBroken, setImgBroken] = useState(false)
+  /**
+   * 解码失败归属身份（文件+切片行）。
+   * 仅当错误确属当前文件与切片行时才允许发起抽帧，杜绝虚拟行复用旧 hasError 触发多余抽帧
+   * （等价于原 errorKeyRef 守卫，但与共享 hook 的 resetKey 身份对齐）。
+   */
+  const [errorIdentity, setErrorIdentity] = useState<string | null>(null)
 
   // 缩略图封面严格抽取目标最清晰的 repPtsSec 关键帧，彻底消除切镜黑屏。
   // 这里只做非负有限归一，不套用带片长上限的 clampVideoTime，避免 >1h 视频被截到 3599.9s。
   const rawPreviewSec = chunk.repPtsSec ?? chunk.startSec
-  const previewSec = Number.isFinite(rawPreviewSec) && rawPreviewSec > 0 ? rawPreviewSec : 0
-  const frameSourceKey = `${filePath}|${previewSec.toFixed(3)}`
+  const previewSec = normalizeSeekSec(rawPreviewSec)
   const videoUrl = useMemo(() => {
     if (!filePath) return ''
     const base = toSafeFileUrl(filePath)
     return `${base}#t=${previewSec}`
   }, [filePath, previewSec])
 
-  // 虚拟行复用时重置抽帧兜底状态，避免上一行的缩图串到本行
-  useEffect(() => {
-    errorKeyRef.current = null
-    setHasError(false)
-    setFrameDataUrl(null)
-  }, [filePath, chunk.repPtsSec, chunk.startSec])
+  // 当前切片行的复用身份键（文件+切片行），供错误归属判定与抽帧 resetKey 共用
+  const rowIdentity = `${filePath}|${chunk.repPtsSec}|${chunk.startSec}`
 
-  // 浏览器 <video> 解码失败后，实时调用 ffmpeg 抽取目标帧作为静态缩图
+  /** 共享抽帧层：键归一、去重、取消与乱序防护统一收口（工单 03 FrameBroker）。
+   * 仅当解码失败确属当前行时启用，避免行复用旧 hasError 造成多余抽帧。 */
+  const { frameUrl: frameDataUrl } = useVideoFrame(filePath, {
+    seekSec: previewSec,
+    enabled: hasError && errorIdentity === rowIdentity,
+    resetKey: `${chunk.repPtsSec}|${chunk.startSec}`
+  })
+
+  // 切换文件或切片行时重置降级与坏帧标记（抽帧 URL 由共享 hook 随 resetKey 自动重置）
   useEffect(() => {
-    if (!hasError || !filePath || frameDataUrl) return
-    if (errorKeyRef.current !== frameSourceKey) return
-    let cancelled = false
-    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, previewSec))
-      .then(result => {
-        if (cancelled) return
-        if (!result?.success || !result.dataUrl) {
-          logger.warn(LogCategory.RENDERER, '[切片缩图] ffmpeg 抽帧失败:', result?.error)
-          return
-        }
-        setFrameDataUrl(result.dataUrl)
-      })
-      .catch(err => {
-        if (!cancelled) logger.warn(LogCategory.RENDERER, '[切片缩图] 抽帧调用异常:', err)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [hasError, filePath, previewSec, frameSourceKey, frameDataUrl])
+    setHasError(false)
+    setImgBroken(false)
+    setErrorIdentity(null)
+  }, [filePath, chunk.repPtsSec, chunk.startSec])
 
   const chunkPercent =
     typeof chunk.similarity === 'number'
@@ -176,20 +169,21 @@ export const VideoChunkFrame: React.FC<{
           playsInline
           className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
           onError={() => {
-            errorKeyRef.current = frameSourceKey
+            // 标记解码失败后由共享 useVideoFrame 统一发起抽帧（键归一、去重、取消均在 hook 内）。
+            // 记录错误归属身份，杜绝虚拟行复用旧 hasError 触发多余抽帧。
             setHasError(true)
+            setErrorIdentity(rowIdentity)
           }}
         />
-      ) : frameDataUrl ? (
+      ) : frameDataUrl && !imgBroken ? (
         <img
           src={frameDataUrl}
           alt=""
           className="w-full h-full object-cover pointer-events-none group-hover/chunk:scale-105 transition-transform duration-200"
           onError={() => {
             // WebP 头合法不代表整帧完整；渲染失败时回到 movie 图标且不立即重试同一坏帧
-            errorKeyRef.current = null
             logger.warn(LogCategory.RENDERER, '[切片缩图] 静态帧渲染失败，回退占位图标')
-            setFrameDataUrl(null)
+            setImgBroken(true)
           }}
         />
       ) : (

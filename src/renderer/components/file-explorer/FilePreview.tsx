@@ -15,41 +15,16 @@ import {
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 import {
+  useVideoFrame,
+  seekKeyOf,
+  pickFallbackSeekSec,
+  type DegradeSeekSnapshot
+} from './hooks/useVideoFrame'
+import {
   usePreviewOverlayStore,
   setCurrentVideoPlaybackTime,
   getCurrentVideoPlaybackTime
 } from '../../stores/preview-overlay-store'
-
-/** 时间点归一：非有限数或负值一律回退 0，与规格 §2.1 契约一致 */
-function normalizeSeekSec(value: number | undefined): number {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0
-}
-
-/** 降级快照键：绑定进入降级瞬间的「文件|切点」，跨文件或同文件切点变化后快照自动失效 */
-function seekKeyOf(filePath: string, propTime: number | undefined): string {
-  return `${filePath}|${normalizeSeekSec(propTime).toFixed(3)}`
-}
-
-interface DegradeSeekSnapshot {
-  key: string
-  sec: number
-}
-
-/**
- * 降级抽帧/外部跳轴时间点。
- * 快照仅在「文件与切点均未变」时有效：跨文件切换或同文件切换命中切片都回退 props，
- * 从而同时避免全局播放进度串位与旧快照锁死新切点。
- */
-function pickFallbackSeekSec(
-  snapshot: DegradeSeekSnapshot | null,
-  filePath: string,
-  propTime: number | undefined
-): number {
-  if (snapshot && snapshot.key === seekKeyOf(filePath, propTime)) {
-    return normalizeSeekSec(snapshot.sec)
-  }
-  return normalizeSeekSec(propTime)
-}
 
 interface StreamPlaybackSession {
   streamId: string
@@ -102,14 +77,21 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [videoDuration, setVideoDuration] = useState<number>(0)
   /** <video> 无法解码该视频格式（如 AVI/MKV）时置 true，改用静态抽帧缩图预览 */
   const [videoDecodeFailed, setVideoDecodeFailed] = useState(false)
-  /** ffmpeg 实时抽帧得到的静态预览图 data URL */
-  const [staticFrameUrl, setStaticFrameUrl] = useState<string | null>(null)
-  /** 当前静态图对应的「文件|时间点」键，用于同一文件不同切片间切换时重新抽帧 */
-  const [frameKey, setFrameKey] = useState<string | null>(null)
-  /** 已发起抽帧请求的 key，防止切点后旧请求晚到覆盖新帧或重复发起同 key 请求 */
-  const requestedFrameKeyRef = useRef<string | null>(null)
   /** 进入降级瞬间从当前 <video> 快照的播放位置，绑定文件+切点键，避免跨文件串位与切点锁死 */
   const degradeSeekSnapshotRef = useRef<DegradeSeekSnapshot | null>(null)
+  /** 降级抽帧时间点：仅在降级态生效，由共享 hook 统一发起请求 */
+  const fallbackSeekSec = pickFallbackSeekSec(
+    degradeSeekSnapshotRef.current,
+    filePath,
+    currentTime
+  )
+  /** 共享抽帧层：键归一、去重、取消与乱序防护统一收口（工单 03 FrameBroker） */
+  const { frameUrl: staticFrameUrl, frameKey } = useVideoFrame(filePath, {
+    seekSec: fallbackSeekSec,
+    enabled: videoDecodeFailed
+  })
+  /** 静态帧渲染失败时本地降级（不重试同一坏 data URL） */
+  const [staticFrameBroken, setStaticFrameBroken] = useState(false)
 
   // Level 2：本地 HTTP 双路流式播放会话
   const [streamSession, setStreamSession] = useState<StreamPlaybackSession | null>(null)
@@ -145,42 +127,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     nativeErrorHandledRef.current = false
     setVideoDuration(0)
     setVideoDecodeFailed(false)
-    setStaticFrameUrl(null)
-    setFrameKey(null)
-    requestedFrameKeyRef.current = null
+    setStaticFrameBroken(false)
     degradeSeekSnapshotRef.current = null
   }, [filePath])
-
-  // 视频解码失败时，实时调用 ffmpeg 在当前时间点抽帧作为静态预览图
-  // 时间点变化（点击同一文件不同的命中切片）时以新 key 重新抽帧，避免停留在旧帧
-  useEffect(() => {
-    if (!videoDecodeFailed || !filePath) return
-    const seekSec = pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
-    const nextKey = `${filePath}|${seekSec.toFixed(3)}`
-    if (frameKey === nextKey && staticFrameUrl) return
-    if (requestedFrameKeyRef.current === nextKey) return
-    requestedFrameKeyRef.current = nextKey
-    // 同一文件切换切片时先清掉旧帧，避免新帧返回前展示错误时间点画面
-    if (frameKey !== nextKey) setStaticFrameUrl(null)
-
-    let cancelled = false
-    Promise.resolve(window.electronAPI?.utils?.extractVideoFrame?.(filePath, seekSec))
-      .then(result => {
-        if (cancelled) return
-        if (!result?.success || !result.dataUrl) {
-          logger.warn(LogCategory.RENDERER, '[视频预览] ffmpeg 抽帧失败:', result?.error)
-          return
-        }
-        setFrameKey(nextKey)
-        setStaticFrameUrl(result.dataUrl)
-      })
-      .catch(err => {
-        if (!cancelled) logger.warn(LogCategory.RENDERER, '[视频预览] 抽帧调用异常:', err)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [videoDecodeFailed, filePath, currentTime, frameKey, staticFrameUrl])
 
   const markStreamActivity = () => {
     lastStreamActivityRef.current = Date.now()
@@ -671,14 +620,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               {videoDecodeFailed ? (
                 /* 浏览器无法解码（AVI/MKV 等）：显示 ffmpeg 静态抽帧 + 外部播放器跳轴引导 */
                 <div className="flex flex-col items-center gap-3 max-w-full">
-                  {staticFrameUrl ? (
+                  {staticFrameUrl && !staticFrameBroken ? (
                     <img
                       src={staticFrameUrl}
                       alt={fileName}
                       className="max-w-full max-h-[65vh] shadow-lg rounded object-contain"
                       onError={() => {
+                        // WebP 头合法不代表整帧完整；渲染失败时回退占位图标且不立即重试同一坏帧
                         logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
-                        setStaticFrameUrl(null)
+                        setStaticFrameBroken(true)
                       }}
                     />
                   ) : (
