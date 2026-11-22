@@ -373,7 +373,8 @@ export class HybridSearchSession {
           whereClauses: where.whereClauses,
           queryParams: where.queryParams,
           workspaceDirectoryPath,
-          poolSize: HYBRID_SEARCH_POOL_SIZE
+          poolSize: HYBRID_SEARCH_POOL_SIZE,
+          similarityThreshold: params.similarityThreshold
         },
         onPhase1
       )

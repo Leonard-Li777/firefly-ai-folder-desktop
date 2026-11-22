@@ -164,3 +164,86 @@ export const DEFAULT_COLUMN_WEIGHT_MAP: Record<string, number> = {
   description: 3.0,
   lrc: 3.0
 }
+
+/** 用户可调搜索匹配度滑块默认锚点（对应视频切片默认置信度 35%） */
+export const SEARCH_SIMILARITY_THRESHOLD_DEFAULT = TEMPORAL_CHUNK_MIN_CONFIDENCE
+/** 用户可调搜索匹配度滑块下限（25%） */
+export const SEARCH_SIMILARITY_THRESHOLD_MIN = 0.25
+/** 用户可调搜索匹配度滑块上限（60%） */
+export const SEARCH_SIMILARITY_THRESHOLD_MAX = 0.6
+/** 用户可调搜索匹配度滑块步进（1%） */
+export const SEARCH_SIMILARITY_THRESHOLD_STEP = 0.01
+
+/** 解析后的多通道搜索相似度门限集合 */
+export interface ResolvedSearchThresholds {
+  /** 归一化并钳制后的用户设定值（0.25 ~ 0.60） */
+  userThreshold: number
+  /** 通用文本向量准入门限（基准 0.30） */
+  genericVector: number
+  /** 视频切片绝对置信度门限（基准 0.35） */
+  chunkConfidence: number
+  /** 视频切片相对显著性门限（基准 0.015，低于默认时线性降至 0） */
+  chunkProminence: number
+  /** CLIP 视觉文本第 5 路准入门限（基准 0.38） */
+  clipVector: number
+  /** 下推至 Omni 文本向量通道的 threshold */
+  omniVectorPushdown: number
+}
+
+const clampValue = (v: number, min: number, max: number): number =>
+  Math.min(max, Math.max(min, v))
+
+const round4 = (v: number): number => Math.round(v * 10000) / 10000
+
+/**
+ * 将用户可调匹配度（默认 0.35，范围 0.25~0.60）映射为各语义通道的联动门限。
+ *
+ * 约定（search-similarity-threshold-and-video-chunk-gate-spec §2.3）：
+ * - 偏移量 delta = userThreshold - 0.35，各语义通道围绕自身标定基准同向偏移并钳制；
+ * - 当 userThreshold >= 0.35 时，视频切片显著性门禁保持 0.015 防全片泛红噪点；
+ * - 当 0.25 <= userThreshold < 0.35 时，显著性门禁线性放宽至 0，确保拉低滑块可见更多切片。
+ */
+export function resolveSearchThresholds(
+  similarityThreshold?: number
+): ResolvedSearchThresholds {
+  const isValid = typeof similarityThreshold === 'number' && Number.isFinite(similarityThreshold)
+  const userThreshold = round4(
+    isValid
+      ? clampValue(
+          similarityThreshold,
+          SEARCH_SIMILARITY_THRESHOLD_MIN,
+          SEARCH_SIMILARITY_THRESHOLD_MAX
+        )
+      : SEARCH_SIMILARITY_THRESHOLD_DEFAULT
+  )
+  const delta = userThreshold - SEARCH_SIMILARITY_THRESHOLD_DEFAULT
+
+  const chunkConfidence = round4(
+    clampValue(
+      TEMPORAL_CHUNK_MIN_CONFIDENCE + delta,
+      SEARCH_SIMILARITY_THRESHOLD_MIN,
+      SEARCH_SIMILARITY_THRESHOLD_MAX
+    )
+  )
+  const genericVector = round4(clampValue(MIN_GENERIC_VECTOR_SCORE + delta, 0.2, 0.55))
+  const clipVector = round4(clampValue(MIN_CLIP_VECTOR_SCORE + delta, 0.28, 0.65))
+  const omniVectorPushdown = Math.min(genericVector, chunkConfidence)
+
+  const lowSpan = SEARCH_SIMILARITY_THRESHOLD_DEFAULT - SEARCH_SIMILARITY_THRESHOLD_MIN
+  const chunkProminence =
+    userThreshold >= SEARCH_SIMILARITY_THRESHOLD_DEFAULT
+      ? TEMPORAL_CHUNK_MIN_PROMINENCE
+      : round4(
+          TEMPORAL_CHUNK_MIN_PROMINENCE *
+            clampValue((userThreshold - SEARCH_SIMILARITY_THRESHOLD_MIN) / lowSpan, 0, 1)
+        )
+
+  return {
+    userThreshold,
+    genericVector,
+    chunkConfidence,
+    chunkProminence,
+    clipVector,
+    omniVectorPushdown
+  }
+}

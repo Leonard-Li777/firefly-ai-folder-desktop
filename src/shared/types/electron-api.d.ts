@@ -439,7 +439,13 @@ declare global {
       searchWorkspaceFiles: (
         keyword: string,
         workspacePath: string,
-        options?: { stream?: boolean; seq?: number }
+        options?: {
+          stream?: boolean
+          seq?: number
+          channel?: string
+          epoch?: number
+          similarityThreshold?: number
+        }
       ) => Promise<FileItem[]>
       onSearchProgress: (
         callback: (payload: {

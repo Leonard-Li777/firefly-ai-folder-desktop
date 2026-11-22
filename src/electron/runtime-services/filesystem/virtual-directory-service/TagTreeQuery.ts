@@ -50,6 +50,8 @@ export interface FilterFilesParams {
   virtualDirectoryId?: number
   unionMode?: 'union' | 'intersection'
   includeUnanalyzed?: boolean
+  /** 用户可调语义匹配度阈值（0.25 ~ 0.60，默认 0.35） */
+  similarityThreshold?: number
   /**
    * 流式检索进度回调。
    *
