@@ -360,10 +360,14 @@ export interface PluginCenterState {
   isExportingBundle: boolean
   isImportingBundle: boolean
   isTogglingSlot: boolean
+  focusSlot: import('@firefly/types').ExternalApiPluginSlot | null
 
   // 弹层开关动作
   setOverlayOpen: (open: boolean) => void | Promise<void>
-  openOverlay: () => void | Promise<void>
+  openOverlay: (options?: {
+    focusSlot?: import('@firefly/types').ExternalApiPluginSlot
+  }) => void | Promise<void>
+  clearFocusSlot: () => void
   closeOverlay: () => void
   toggleOverlay: () => void | Promise<void>
 
@@ -937,6 +941,7 @@ async function syncDevModeFromBridge(
 
 export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
   isOverlayOpen: false,
+  focusSlot: null,
   configuringModuleId: null,
   searchKeyword: '',
   selectedCategory: 'all',
@@ -966,8 +971,19 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     }
   },
 
-  openOverlay: async () => {
-    set({ isOverlayOpen: true })
+  openOverlay: async options => {
+    const focusSlot = options?.focusSlot ?? null
+    set({
+      isOverlayOpen: true,
+      focusSlot,
+      ...(focusSlot
+        ? {
+            scope: 'market' as const,
+            selectedCategory: 'all',
+            searchKeyword: ''
+          }
+        : {})
+    })
     const envVis = await get().loadEnvironmentVisibility()
     if (!envVis) {
       await syncDevModeFromBridge(set)
@@ -975,8 +991,12 @@ export const usePluginCenterStore = create<PluginCenterState>((set, get) => ({
     await get().loadModules()
   },
 
+  clearFocusSlot: () => {
+    set({ focusSlot: null })
+  },
+
   closeOverlay: () => {
-    set({ isOverlayOpen: false, configuringModuleId: null })
+    set({ isOverlayOpen: false, configuringModuleId: null, focusSlot: null })
   },
 
   toggleOverlay: async () => {
