@@ -2269,6 +2269,10 @@
   {
     "id": "builtin.workflow.game-dev-assets",
     "templateId": "tpl_game_dev_assets",
+    "targetIdentityIds": [
+      "id.hobby.gamer",
+      "id.designer.3d"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Independent game development and material resource organization structure",
@@ -21273,6 +21277,11 @@
   {
     "id": "builtin.workflow.renovation-project",
     "templateId": "tpl_renovation_project",
+    "targetIdentityIds": [
+      "id.eng.architect",
+      "id.life.homemaker",
+      "id.life.household_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Full process management of home decoration projects",
@@ -21563,6 +21572,10 @@
   {
     "id": "builtin.workflow.visual-appreciation-vault",
     "templateId": "tpl_visual_appreciation_vault",
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Picture Appreciation and Inspiration Collection Library",
@@ -21832,6 +21845,10 @@
   {
     "id": "builtin.workflow.career-jobhunt-portfolio",
     "templateId": "tpl_career_jobhunt_portfolio",
+    "targetIdentityIds": [
+      "id.office.general_clerk",
+      "id.student.grad"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Job Search and Career Development Profiles",
@@ -22062,6 +22079,10 @@
   {
     "id": "builtin.workflow.online-course-production",
     "templateId": "tpl_online_course_production",
+    "targetIdentityIds": [
+      "id.edu.trainer",
+      "id.student.self_learner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Online courses and online course production",
@@ -22317,6 +22338,11 @@
   {
     "id": "builtin.workflow.livestream-creator-ops",
     "templateId": "tpl_livestream_creator_ops",
+    "targetIdentityIds": [
+      "id.ops.newmedia",
+      "id.ops.private_domain",
+      "id.ops.ecommerce"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Live broadcast and anchor operation",
@@ -22556,6 +22582,10 @@
   {
     "id": "builtin.workflow.foodblogger-recipe-studio",
     "templateId": "tpl_foodblogger_recipe_studio",
+    "targetIdentityIds": [
+      "id.life.cooking_foodie",
+      "id.hobby.vlogger"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Food bloggers and recipe development",
@@ -22796,6 +22826,11 @@
   {
     "id": "builtin.workflow.travelblogger-shoot-studio",
     "templateId": "tpl_travelblogger_shoot_studio",
+    "targetIdentityIds": [
+      "id.hobby.photographer",
+      "id.hobby.vlogger",
+      "id.life.traveler"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Travel bloggers and travel photography studios",
@@ -23060,6 +23095,10 @@
   {
     "id": "builtin.workflow.study-tour-camp-organizer",
     "templateId": "tpl_study_tour_camp_organizer",
+    "targetIdentityIds": [
+      "id.edu.k12_teacher",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Research camp and parent-child activity organization",
@@ -23292,6 +23331,9 @@
   {
     "id": "builtin.workflow.wedding-planning",
     "templateId": "tpl_wedding_planning",
+    "targetIdentityIds": [
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Complete Wedding Planning File",
@@ -23605,6 +23647,10 @@
   {
     "id": "builtin.workflow.car-lifecycle",
     "templateId": "tpl_car_lifecycle",
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Vehicle Full Lifecycle Record",
@@ -23873,6 +23919,10 @@
   {
     "id": "builtin.workflow.baby-growth-archive",
     "templateId": "tpl_baby_growth_archive",
+    "targetIdentityIds": [
+      "id.life.k12_student_parent",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Baby's Growth and Parenting Records",
@@ -24121,6 +24171,11 @@
   {
     "id": "builtin.workflow.personal-finance-invest",
     "templateId": "tpl_personal_finance_invest",
+    "targetIdentityIds": [
+      "id.finance.accountant",
+      "id.life.household_assets",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Household Financial Management and Investment Accounting",
@@ -24406,6 +24461,10 @@
   {
     "id": "builtin.workflow.insurance-policy-vault",
     "templateId": "tpl_insurance_policy_vault",
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Home Insurance Policy Hub",
@@ -24673,6 +24732,11 @@
   {
     "id": "builtin.workflow.podcast-production",
     "templateId": "tpl_podcast_production",
+    "targetIdentityIds": [
+      "id.hobby.vlogger",
+      "id.creator.sound_designer",
+      "id.scene.voice_recordings_audio"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Podcast and Audio Program Production",
@@ -24991,6 +25055,11 @@
   {
     "id": "builtin.workflow.3dprint-maker",
     "templateId": "tpl_3dprint_maker",
+    "targetIdentityIds": [
+      "id.dev.embedded",
+      "id.designer.3d",
+      "id.life.tech_geek"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "3D Printing and Maker Workshop",
@@ -25272,6 +25341,10 @@
   {
     "id": "builtin.workflow.collectible-model-archive",
     "templateId": "tpl_collectible_model_archive",
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.life.digital_hoarder"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Model Figures and Collectibles Archive",
@@ -25537,6 +25610,11 @@
   {
     "id": "builtin.workflow.ai-generated-content",
     "templateId": "tpl_ai_generated_content",
+    "targetIdentityIds": [
+      "id.designer.graphic",
+      "id.hobby.vlogger",
+      "id.dev.ai_ml"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "AI generated content and prompt lexicon",

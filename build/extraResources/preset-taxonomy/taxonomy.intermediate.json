@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "canonicalization": "json-stable-v1",
-  "canonical_sha256": "ea3905fa99ec782cd3aecac0371377f925727657fd929a940f41feb4a5df4bff",
-  "bake_fingerprint": "dd4ac78d65e36f304c589d73c48dd4112964745adb03e6315e367f902c081705",
+  "canonical_sha256": "dcc1f6de6458cf4a0b0f680eb89745cf95501ec123f15b0454ecde7c7ebfe2e6",
+  "bake_fingerprint": "4dad45d7e8611448254a2b4b573983f6b2298dd6b9d585d79e3ac72d4dbaff37",
   "languages": [
     "zh-CN",
     "en-US",
@@ -767,7 +767,10 @@
       {
         "template_id": "tpl_game_dev_assets",
         "workflow_id": "builtin.workflow.game-dev-assets",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.hobby.gamer",
+          "id.designer.3d"
+        ],
         "slug": "game-dev-assets",
         "name": "独立游戏开发与素材资源组织架构",
         "summary": "覆盖Unity/Unreal/Godot策划案、美术精灵图、音效音频与构建Demo包",
@@ -3917,7 +3920,11 @@
       {
         "template_id": "tpl_renovation_project",
         "workflow_id": "builtin.workflow.renovation-project",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.eng.architect",
+          "id.life.homemaker",
+          "id.life.household_assets"
+        ],
         "slug": "renovation-project",
         "name": "家装装修工程全流程管理",
         "summary": "从量房设计、预算合同到施工验收与入住保修的装修全过程档案",
@@ -3979,7 +3986,10 @@
       {
         "template_id": "tpl_visual_appreciation_vault",
         "workflow_id": "builtin.workflow.visual-appreciation-vault",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.media.collector_hoarder",
+          "id.scene.personal_photos_album"
+        ],
         "slug": "visual-appreciation-vault",
         "name": "图片欣赏与灵感收藏库",
         "summary": "壁纸、插画、AI出图、同人图等纯欣赏收藏图片的统一图墙归档",
@@ -4035,7 +4045,10 @@
       {
         "template_id": "tpl_career_jobhunt_portfolio",
         "workflow_id": "builtin.workflow.career-jobhunt-portfolio",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.office.general_clerk",
+          "id.student.grad"
+        ],
         "slug": "career-jobhunt-portfolio",
         "name": "求职与职业发展档案",
         "summary": "简历多版本、作品集、面试复盘与Offer对比的职业跃迁档案",
@@ -4094,7 +4107,10 @@
       {
         "template_id": "tpl_online_course_production",
         "workflow_id": "builtin.workflow.online-course-production",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.edu.trainer",
+          "id.student.self_learner"
+        ],
         "slug": "online-course-production",
         "name": "在线课程与网课制作",
         "summary": "课程大纲、录课原片、课件讲义到剪辑交付的网课生产线",
@@ -4153,7 +4169,11 @@
       {
         "template_id": "tpl_livestream_creator_ops",
         "workflow_id": "builtin.workflow.livestream-creator-ops",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.ops.newmedia",
+          "id.ops.private_domain",
+          "id.ops.ecommerce"
+        ],
         "slug": "livestream-creator-ops",
         "name": "直播与主播运营",
         "summary": "直播回放、高光切片、场控脚本到带货数据复盘的主播运营档案",
@@ -4212,7 +4232,10 @@
       {
         "template_id": "tpl_foodblogger_recipe_studio",
         "workflow_id": "builtin.workflow.foodblogger-recipe-studio",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.life.cooking_foodie",
+          "id.hobby.vlogger"
+        ],
         "slug": "foodblogger-recipe-studio",
         "name": "美食博主与食谱研发",
         "summary": "菜品拍摄、配方研发、探店素材到图文成稿的美食创作档案",
@@ -4271,7 +4294,11 @@
       {
         "template_id": "tpl_travelblogger_shoot_studio",
         "workflow_id": "builtin.workflow.travelblogger-shoot-studio",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.hobby.photographer",
+          "id.hobby.vlogger",
+          "id.life.traveler"
+        ],
         "slug": "travelblogger-shoot-studio",
         "name": "旅行博主与旅拍工作室",
         "summary": "行程机位、原片精修、视频航拍到图文商单的旅拍创作档案",
@@ -4330,7 +4357,10 @@
       {
         "template_id": "tpl_study_tour_camp_organizer",
         "workflow_id": "builtin.workflow.study-tour-camp-organizer",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.edu.k12_teacher",
+          "id.edu.trainer"
+        ],
         "slug": "study-tour-camp-organizer",
         "name": "研学营地与亲子活动组织",
         "summary": "行程方案、安全预案、家长通知到活动复盘的研学营地组织档案",
@@ -4389,7 +4419,9 @@
       {
         "template_id": "tpl_wedding_planning",
         "workflow_id": "builtin.workflow.wedding-planning",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.life.homemaker"
+        ],
         "slug": "wedding-planning",
         "name": "婚礼策划全案档案",
         "summary": "备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档",
@@ -4449,7 +4481,10 @@
       {
         "template_id": "tpl_car_lifecycle",
         "workflow_id": "builtin.workflow.car-lifecycle",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.life.household_assets",
+          "id.life.homemaker"
+        ],
         "slug": "car-lifecycle",
         "name": "汽车全生命周期档案",
         "summary": "私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链",
@@ -4509,7 +4544,10 @@
       {
         "template_id": "tpl_baby_growth_archive",
         "workflow_id": "builtin.workflow.baby-growth-archive",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.life.k12_student_parent",
+          "id.life.homemaker"
+        ],
         "slug": "baby-growth-archive",
         "name": "宝宝成长与育儿档案",
         "summary": "0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口",
@@ -4565,7 +4603,11 @@
       {
         "template_id": "tpl_personal_finance_invest",
         "workflow_id": "builtin.workflow.personal-finance-invest",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.finance.accountant",
+          "id.life.household_assets",
+          "id.scene.finance_tax_docs"
+        ],
         "slug": "personal-finance-invest",
         "name": "家庭理财与投资记账",
         "summary": "个人与家庭理财全链路，账户对账单、投资持仓、个税汇算、贷款负债与家庭预算表归档，与企业财务finance-contract形成个人线互补",
@@ -4621,7 +4663,10 @@
       {
         "template_id": "tpl_insurance_policy_vault",
         "workflow_id": "builtin.workflow.insurance-policy-vault",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.life.household_assets",
+          "id.life.homemaker"
+        ],
         "slug": "insurance-policy-vault",
         "name": "家庭保险保单中枢",
         "summary": "给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单",
@@ -4676,7 +4721,11 @@
       {
         "template_id": "tpl_podcast_production",
         "workflow_id": "builtin.workflow.podcast-production",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.hobby.vlogger",
+          "id.creator.sound_designer",
+          "id.scene.voice_recordings_audio"
+        ],
         "slug": "podcast-production",
         "name": "播客与音频节目制作",
         "summary": "播客主播有声书配音创作者，原始录音、多轨工程、逐字稿shownotes、封面视觉与分发成片归档，区别于音乐制作与影视收藏的创作向空缺",
@@ -4735,7 +4784,11 @@
       {
         "template_id": "tpl_3dprint_maker",
         "workflow_id": "builtin.workflow.3dprint-maker",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.dev.embedded",
+          "id.designer.3d",
+          "id.life.tech_geek"
+        ],
         "slug": "3dprint-maker",
         "name": "3D打印与创客工坊",
         "summary": "3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰",
@@ -4791,7 +4844,10 @@
       {
         "template_id": "tpl_collectible_model_archive",
         "workflow_id": "builtin.workflow.collectible-model-archive",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.media.collector_hoarder",
+          "id.life.digital_hoarder"
+        ],
         "slug": "collectible-model-archive",
         "name": "模型手办与收藏品档案",
         "summary": "高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线",
@@ -4847,7 +4903,11 @@
       {
         "template_id": "tpl_ai_generated_content",
         "workflow_id": "builtin.workflow.ai-generated-content",
-        "target_identity_ids": [],
+        "target_identity_ids": [
+          "id.designer.graphic",
+          "id.hobby.vlogger",
+          "id.dev.ai_ml"
+        ],
         "slug": "ai-generated-content",
         "name": "AI生成内容与提示词库",
         "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",

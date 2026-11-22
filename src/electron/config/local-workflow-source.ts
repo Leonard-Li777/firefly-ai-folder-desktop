@@ -1785,6 +1785,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.game-dev-assets',
     templateId: 'tpl_game_dev_assets',
+    targetIdentityIds: [
+      'id.hobby.gamer',
+      'id.designer.3d',
+    ],
     name: t('独立游戏开发与素材资源组织架构'),
     summary: t('覆盖Unity/Unreal/Godot策划案、美术精灵图、音效音频与构建Demo包'),
     version: '1.0.0',
@@ -17446,6 +17450,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.renovation-project',
     templateId: 'tpl_renovation_project',
+    targetIdentityIds: [
+      'id.eng.architect',
+      'id.life.homemaker',
+      'id.life.household_assets'
+    ],
     name: t('家装装修工程全流程管理'),
     summary: t('从量房设计、预算合同到施工验收与入住保修的装修全过程档案'),
     version: '1.0.0',
@@ -17661,6 +17670,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.visual-appreciation-vault',
     templateId: 'tpl_visual_appreciation_vault',
+    targetIdentityIds: [
+      'id.media.collector_hoarder',
+      'id.scene.personal_photos_album',
+    ],
     name: t('图片欣赏与灵感收藏库'),
     summary: t('壁纸、插画、AI出图、同人图等纯欣赏收藏图片的统一图墙归档'),
     version: '1.0.0',
@@ -17857,6 +17870,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.career-jobhunt-portfolio',
     templateId: 'tpl_career_jobhunt_portfolio',
+    targetIdentityIds: [
+      'id.office.general_clerk',
+      'id.student.grad',
+    ],
     name: t('求职与职业发展档案'),
     summary: t('简历多版本、作品集、面试复盘与Offer对比的职业跃迁档案'),
     version: '1.0.0',
@@ -17997,6 +18014,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.online-course-production',
     templateId: 'tpl_online_course_production',
+    targetIdentityIds: [
+      'id.edu.trainer',
+      'id.student.self_learner',
+    ],
     name: t('在线课程与网课制作'),
     summary: t('课程大纲、录课原片、课件讲义到剪辑交付的网课生产线'),
     version: '1.0.0',
@@ -18161,6 +18182,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.livestream-creator-ops',
     templateId: 'tpl_livestream_creator_ops',
+    targetIdentityIds: [
+      'id.ops.newmedia',
+      'id.ops.private_domain',
+      'id.ops.ecommerce',
+    ],
     name: t('直播与主播运营'),
     summary: t('直播回放、高光切片、场控脚本到带货数据复盘的主播运营档案'),
     version: '1.0.0',
@@ -18309,6 +18335,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.foodblogger-recipe-studio',
     templateId: 'tpl_foodblogger_recipe_studio',
+    targetIdentityIds: [
+      'id.life.cooking_foodie',
+      'id.hobby.vlogger',
+    ],
     name: t('美食博主与食谱研发'),
     summary: t('菜品拍摄、配方研发、探店素材到图文成稿的美食创作档案'),
     version: '1.0.0',
@@ -18457,6 +18487,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.travelblogger-shoot-studio',
     templateId: 'tpl_travelblogger_shoot_studio',
+    targetIdentityIds: [
+      'id.hobby.photographer',
+      'id.hobby.vlogger',
+      'id.life.traveler',
+    ],
     name: t('旅行博主与旅拍工作室'),
     summary: t('行程机位、原片精修、视频航拍到图文商单的旅拍创作档案'),
     version: '1.0.0',
@@ -18629,6 +18664,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.study-tour-camp-organizer',
     templateId: 'tpl_study_tour_camp_organizer',
+    targetIdentityIds: [
+      'id.edu.k12_teacher',
+      'id.edu.trainer',
+    ],
     name: t('研学营地与亲子活动组织'),
     summary: t('行程方案、安全预案、家长通知到活动复盘的研学营地组织档案'),
     version: '1.0.0',
@@ -18769,6 +18808,9 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
 {
     id: 'builtin.workflow.wedding-planning',
     templateId: 'tpl_wedding_planning',
+    targetIdentityIds: [
+      'id.life.homemaker',
+    ],
     name: t('婚礼策划全案档案'),
     summary: t('备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档'),
     version: '1.0.0',
@@ -19012,6 +19054,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.car-lifecycle',
     templateId: 'tpl_car_lifecycle',
+    targetIdentityIds: [
+      'id.life.household_assets',
+      'id.life.homemaker',
+    ],
     name: t('汽车全生命周期档案'),
     summary: t('私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链'),
     version: '1.0.0',
@@ -19210,6 +19256,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.baby-growth-archive',
     templateId: 'tpl_baby_growth_archive',
+    targetIdentityIds: [
+      'id.life.k12_student_parent',
+      'id.life.homemaker',
+    ],
     name: t('宝宝成长与育儿档案'),
     summary: t('0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口'),
     version: '1.0.0',
@@ -19396,6 +19446,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.personal-finance-invest',
     templateId: 'tpl_personal_finance_invest',
+    targetIdentityIds: [
+      'id.finance.accountant',
+      'id.life.household_assets',
+      'id.scene.finance_tax_docs',
+    ],
     name: t('家庭理财与投资记账'),
     summary: t('个人与家庭理财全链路，账户对账单、投资持仓、个税汇算、贷款负债与家庭预算表归档，与企业财务finance-contract形成个人线互补'),
     version: '1.0.0',
@@ -19620,6 +19675,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.insurance-policy-vault',
     templateId: 'tpl_insurance_policy_vault',
+    targetIdentityIds: [
+      'id.life.household_assets',
+      'id.life.homemaker',
+    ],
     name: t('家庭保险保单中枢'),
     summary: t('给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单'),
     version: '1.0.0',
@@ -19829,6 +19888,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.podcast-production',
     templateId: 'tpl_podcast_production',
+    targetIdentityIds: [
+      'id.hobby.vlogger',
+      'id.creator.sound_designer',
+      'id.scene.voice_recordings_audio',
+    ],
     name: t('播客与音频节目制作'),
     summary: t('播客主播有声书配音创作者，原始录音、多轨工程、逐字稿shownotes、封面视觉与分发成片归档，区别于音乐制作与影视收藏的创作向空缺'),
     version: '1.0.0',
@@ -20080,6 +20144,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.3dprint-maker',
     templateId: 'tpl_3dprint_maker',
+    targetIdentityIds: [
+      'id.dev.embedded',
+      'id.designer.3d',
+      'id.life.tech_geek',
+    ],
     name: t('3D打印与创客工坊'),
     summary: t('3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰'),
     version: '1.0.0',
@@ -20299,6 +20368,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.collectible-model-archive',
     templateId: 'tpl_collectible_model_archive',
+    targetIdentityIds: [
+      'id.media.collector_hoarder',
+      'id.life.digital_hoarder',
+    ],
     name: t('模型手办与收藏品档案'),
     summary: t('高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线'),
     version: '1.0.0',
@@ -20502,6 +20575,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.ai-generated-content',
     templateId: 'tpl_ai_generated_content',
+    targetIdentityIds: [
+      'id.designer.graphic',
+      'id.hobby.vlogger',
+      'id.dev.ai_ml',
+    ],
     name: t('AI生成内容与提示词库'),
     summary: t('重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产'),
     version: '1.0.0',

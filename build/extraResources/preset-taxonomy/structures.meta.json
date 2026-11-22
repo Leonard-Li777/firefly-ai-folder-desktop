@@ -6,8 +6,8 @@
     "gemma": 512
   },
   "dtype": "float32",
-  "canonical_sha256": "ea3905fa99ec782cd3aecac0371377f925727657fd929a940f41feb4a5df4bff",
-  "bake_fingerprint": "dd4ac78d65e36f304c589d73c48dd4112964745adb03e6315e367f902c081705",
+  "canonical_sha256": "dcc1f6de6458cf4a0b0f680eb89745cf95501ec123f15b0454ecde7c7ebfe2e6",
+  "bake_fingerprint": "4dad45d7e8611448254a2b4b573983f6b2298dd6b9d585d79e3ac72d4dbaff37",
   "templates": [
     {
       "template_id": "tpl_ui_ux_standard",
@@ -1002,7 +1002,10 @@
         "ar-EG": "تغطية تخطيط الوحدة/غير الواقعي/Godot، والعفاريت الفنية، والمؤثرات الصوتية، وبناء الحزم التجريبية"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.hobby.gamer",
+        "id.designer.3d"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -4990,7 +4993,11 @@
         "ar-EG": "أرشيف عملية الديكور بأكملها بدءًا من قياس الغرفة وتصميمها وعقد الميزانية وحتى قبول البناء وضمان النقل"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.eng.architect",
+        "id.life.homemaker",
+        "id.life.household_assets"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5076,7 +5083,10 @@
         "ar-EG": "أرشيف حائط صور موحد للخلفيات والرسوم التوضيحية والصور التي تم إنشاؤها بواسطة الذكاء الاصطناعي وصور المعجبين وغيرها من الصور للتقدير والتجميع الخالص."
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.media.collector_hoarder",
+        "id.scene.personal_photos_album"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5151,7 +5161,10 @@
         "ar-EG": "ملفات الانتقال الوظيفي مع إصدارات متعددة من السيرة الذاتية والمحفظة ومراجعة المقابلة ومقارنة العروض"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.office.general_clerk",
+        "id.student.grad"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5231,7 +5244,10 @@
         "ar-EG": "خط إنتاج الدورة التدريبية عبر الإنترنت بدءًا من منهج الدورة التدريبية وتسجيل الدورة الأصلية والبرامج التعليمية والنشرات وحتى التحرير والتسليم"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.edu.trainer",
+        "id.student.self_learner"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5302,7 +5318,11 @@
         "ar-EG": "تشغيل البث المباشر ، والتقطيع شديد اللمعان ، ومخطوطات التحكم الميداني ، وملفات تشغيل المرساة مع إعادة قرص بيانات الشحن"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.ops.newmedia",
+        "id.ops.private_domain",
+        "id.ops.ecommerce"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5378,7 +5398,10 @@
         "ar-EG": "محفوظات إنشاء الطعام لإطلاق النار على الطعام ، والبحث والتطوير في الوصفات ، وتخزين مواد الاستكشاف إلى المسودات الرسومية"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.life.cooking_foodie",
+        "id.hobby.vlogger"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5457,7 +5480,11 @@
         "ar-EG": "ملفات إنشاء تصوير السفر لمقاعد خط سير الرحلة ، وتحسينات الأفلام الأصلية ، والتصوير الجوي للفيديو للطلبات التجارية الرسومية"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.hobby.photographer",
+        "id.hobby.vlogger",
+        "id.life.traveler"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5527,7 +5554,10 @@
         "ar-EG": "خطة خط سير الرحلة ، خطة السلامة ، إخطار الوالدين بملف المنظمة لمعسكر البحث لاستئناف الحدث"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.edu.k12_teacher",
+        "id.edu.trainer"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5608,7 +5638,9 @@
         "ar-EG": "تستغرق فترة التحضير للزفاف بأكملها من 6 إلى 12 شهرًا، ويتم حفظ الصور الأصلية المعدلة بدقة لصور الزفاف، ومعلومات موردي أماكن إقامة حفل الزفاف، وعقود الميزانية، وتصميم بطاقات الدعوة، ومواد التصوير الفوتوغرافي في يوم الزفاف في مكان واحد."
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.life.homemaker"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5692,7 +5724,10 @@
         "ar-EG": "من شراء السيارة الخاصة إلى بيعها خلال 5-10 سنوات، يتم الاحتفاظ بسجلات عقد شراء السيارة والتأمين والفحص السنوي والصيانة والإصلاح والمطالبات المتعلقة بالحوادث والتعديلات في مكان واحد، وهي سلسلة الأدلة الكاملة الأكثر قيمة عند بيع السيارة."
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.life.household_assets",
+        "id.life.homemaker"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5771,7 +5806,10 @@
         "ar-EG": "الآباء الجدد الذين لديهم أطفال تتراوح أعمارهم بين 0 و6 سنوات، ومقاطع الفيديو والصور الخاصة بنمو الأطفال، والتطعيمات والفحوصات الطبية، والزيارات الطبية، وسجلات التعليم المبكر، وأرشيف ألبومات الذكريات الخاصة بنمو الأطفال، والتي تتوافق مع الفجوة الخاصة بالأطفال الرضع والأطفال الصغار في تطبيق \"senior-life-archive\" المخصص لكبار السن"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.life.k12_student_parent",
+        "id.life.homemaker"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5842,7 +5880,11 @@
         "ar-EG": "السلسلة الكاملة للإدارة المالية للأفراد والأسر، بما في ذلك كشوف الحسابات، والمحافظ الاستثمارية، وحساب ضريبة الدخل الشخصية، والديون والقروض، وسجلات الميزانية الأسرية، والتي تكمل سلسلة الأفراد في العقود المالية للشركات"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.finance.accountant",
+        "id.life.household_assets",
+        "id.scene.finance_tax_docs"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5909,7 +5951,10 @@
         "ar-EG": "صانع القرار الذي يجهز التأمين لجميع أفراد الأسرة، إدارة شاملة لبوليصات التأمين الإلكترونية، وشروط المسؤولية، ودفع الأقساط وتجديد التأمين، ومستندات المطالبة، واسترجاع بوليصة التأمين في ثوانٍ عند وقوع حادث"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.life.household_assets",
+        "id.life.homemaker"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -5975,7 +6020,11 @@
         "ar-EG": "مقدمو البودكاست، مؤلفو الكتب الصوتية، الممثلون الصوتيون، التسجيلات الأصلية، مشاريع المسارات المتعددة، النصوص الحرفية، الملاحظات المصاحبة للحلقات، الصور البصرية للأغلفة، وأرشفة الأعمال الموزعة، تختلف عن الفراغات الإبداعية لإنتاج الموسيقى ومجموعات الأفلام والتلفزيون"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.hobby.vlogger",
+        "id.creator.sound_designer",
+        "id.scene.voice_recordings_audio"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -6049,7 +6098,11 @@
         "ar-EG": "يتم تصنيف ملفات النماذج ومعلمات التقسيم وصور مراجعة الإخفاقات والمشاريع الإلكترونية مفتوحة المصدر وقوائم المواد الاستهلاكية الخاصة بعشاق الطباعة ثلاثية الأبعاد وصناع أردوينو وراسبيري باي، مع تحديد واضح للحدود بين التطوير الهندسي وعمليات العرض المتحركة."
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.dev.embedded",
+        "id.designer.3d",
+        "id.life.tech_geek"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -6121,7 +6174,10 @@
         "ar-EG": "يتم أرشفة صور التقدم في التجميع البسيط، والمنتجات النهائية المطلية، وصور الصناديق، وإيصالات الشراء، وقوائم التقييم للمقتنيات الخاصة بهواة جمع دمى الليغو والدمى العسكرية والأحذية الرياضية، والتي تختلف عن خطوط المقتنيات المادية الخاصة بمعلومات اللاعبين."
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.media.collector_hoarder",
+        "id.life.digital_hoarder"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -6189,7 +6245,11 @@
         "ar-EG": "يقوم مستخدمو الذكاء الاصطناعي الثقيل MJ وSD برسم الصور ومقاطع فيديو الذكاء الاصطناعي ومنتجات حوار GPT وإنشاء مقاطع فيديو مصورة ومعلمات الكلمات السريعة وتكوين سير عمل إصدار النموذج وأرشفة المحفظة المحددة، وهو الأصل الجديد الأسرع نموًا في الوقت الحالي"
       },
       "template_type": "workflow",
-      "target_identities": [],
+      "target_identities": [
+        "id.designer.graphic",
+        "id.hobby.vlogger",
+        "id.dev.ai_ml"
+      ],
       "lifecycle_stages": [
         "inbox",
         "in_progress",

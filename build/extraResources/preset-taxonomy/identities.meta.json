@@ -6,8 +6,8 @@
     "gemma": 512
   },
   "dtype": "float32",
-  "canonical_sha256": "ea3905fa99ec782cd3aecac0371377f925727657fd929a940f41feb4a5df4bff",
-  "bake_fingerprint": "dd4ac78d65e36f304c589d73c48dd4112964745adb03e6315e367f902c081705",
+  "canonical_sha256": "dcc1f6de6458cf4a0b0f680eb89745cf95501ec123f15b0454ecde7c7ebfe2e6",
+  "bake_fingerprint": "4dad45d7e8611448254a2b4b573983f6b2298dd6b9d585d79e3ac72d4dbaff37",
   "domains": [
     {
       "domain_id": "domain_universal_cleanup",
@@ -824,7 +824,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_finance_accounting",
-                "tpl_household_dossier_vault"
+                "tpl_household_dossier_vault",
+                "tpl_personal_finance_invest"
               ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_documents_library"
@@ -902,7 +903,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_photography_pipeline",
-                "tpl_family_household"
+                "tpl_family_household",
+                "tpl_visual_appreciation_vault"
               ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_pictures_library"
@@ -1078,7 +1080,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_audio_sound_engineering",
-                "tpl_inbox_staging_universal"
+                "tpl_inbox_staging_universal",
+                "tpl_podcast_production"
               ],
               "domain_id": "domain_universal_cleanup",
               "category_id": "cat_audio_library"
@@ -1312,7 +1315,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_gamer_library",
-                "tpl_para_universal"
+                "tpl_para_universal",
+                "tpl_game_dev_assets"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_gaming"
@@ -1359,7 +1363,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_pc_hardware_gear",
-                "tpl_para_universal"
+                "tpl_para_universal",
+                "tpl_3dprint_maker"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_gaming"
@@ -1610,7 +1615,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_audio_sound_engineering",
-                "tpl_video_production"
+                "tpl_video_production",
+                "tpl_podcast_production"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
@@ -1657,7 +1663,11 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_video_production",
-                "tpl_newmedia_content"
+                "tpl_newmedia_content",
+                "tpl_foodblogger_recipe_studio",
+                "tpl_travelblogger_shoot_studio",
+                "tpl_podcast_production",
+                "tpl_ai_generated_content"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
@@ -1705,7 +1715,9 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_media_collector_vault",
-                "tpl_video_production"
+                "tpl_video_production",
+                "tpl_visual_appreciation_vault",
+                "tpl_collectible_model_archive"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_audiovisual"
@@ -1780,7 +1792,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_photography_pipeline",
-                "tpl_para_universal"
+                "tpl_para_universal",
+                "tpl_travelblogger_shoot_studio"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_travel_photo"
@@ -1827,7 +1840,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_travel_outdoor_journey",
-                "tpl_photography_pipeline"
+                "tpl_photography_pipeline",
+                "tpl_travelblogger_shoot_studio"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_travel_photo"
@@ -1903,7 +1917,12 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_family_household",
-                "tpl_johnny_decimal"
+                "tpl_johnny_decimal",
+                "tpl_renovation_project",
+                "tpl_wedding_planning",
+                "tpl_car_lifecycle",
+                "tpl_baby_growth_archive",
+                "tpl_insurance_policy_vault"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
@@ -1998,7 +2017,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_cooking_recipes_vault",
-                "tpl_family_household"
+                "tpl_family_household",
+                "tpl_foodblogger_recipe_studio"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
@@ -2139,7 +2159,11 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_household_dossier_vault",
-                "tpl_family_household"
+                "tpl_family_household",
+                "tpl_renovation_project",
+                "tpl_car_lifecycle",
+                "tpl_personal_finance_invest",
+                "tpl_insurance_policy_vault"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_family_home"
@@ -2262,7 +2286,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_pkm_knowledge_vault",
-                "tpl_johnny_decimal"
+                "tpl_johnny_decimal",
+                "tpl_collectible_model_archive"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_wellness_growth"
@@ -2309,7 +2334,8 @@
               "associated_template_ids": [
                 "tpl_code_asset_vault",
                 "tpl_pkm_knowledge_vault",
-                "tpl_frontend_dev"
+                "tpl_frontend_dev",
+                "tpl_online_course_production"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_wellness_growth"
@@ -2357,7 +2383,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_k12_education_vault",
-                "tpl_k12_school_term_pipeline"
+                "tpl_k12_school_term_pipeline",
+                "tpl_baby_growth_archive"
               ],
               "domain_id": "domain_life_entertainment",
               "category_id": "cat_life_wellness_growth"
@@ -2784,7 +2811,8 @@
               },
               "associated_template_ids": [
                 "tpl_data_science_analytics",
-                "tpl_backend_arch"
+                "tpl_backend_arch",
+                "tpl_ai_generated_content"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
@@ -2831,7 +2859,8 @@
               },
               "associated_template_ids": [
                 "tpl_embedded_iot_firmware",
-                "tpl_backend_arch"
+                "tpl_backend_arch",
+                "tpl_3dprint_maker"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_it_dev"
@@ -3050,7 +3079,8 @@
               },
               "associated_template_ids": [
                 "tpl_graphic_brand_design",
-                "tpl_ui_ux_standard"
+                "tpl_ui_ux_standard",
+                "tpl_ai_generated_content"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
@@ -3138,7 +3168,9 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_3d_cg_animation",
-                "tpl_video_production"
+                "tpl_video_production",
+                "tpl_game_dev_assets",
+                "tpl_3dprint_maker"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_design_product"
@@ -3303,7 +3335,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_newmedia_content",
-                "tpl_writing_publishing_pipeline"
+                "tpl_writing_publishing_pipeline",
+                "tpl_livestream_creator_ops"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
@@ -3347,7 +3380,8 @@
               "external_ids": {},
               "associated_template_ids": [
                 "tpl_ecommerce_ops",
-                "tpl_cross_border_ops"
+                "tpl_cross_border_ops",
+                "tpl_livestream_creator_ops"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
@@ -3443,7 +3477,8 @@
               },
               "associated_template_ids": [
                 "tpl_marketing_campaign_imc",
-                "tpl_newmedia_content"
+                "tpl_newmedia_content",
+                "tpl_livestream_creator_ops"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_marketing_growth"
@@ -3661,7 +3696,8 @@
               },
               "associated_template_ids": [
                 "tpl_finance_accounting",
-                "tpl_johnny_decimal"
+                "tpl_johnny_decimal",
+                "tpl_personal_finance_invest"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
@@ -4175,7 +4211,8 @@
               },
               "associated_template_ids": [
                 "tpl_office_general_archive",
-                "tpl_office_document_dispatch_flow"
+                "tpl_office_document_dispatch_flow",
+                "tpl_career_jobhunt_portfolio"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_finance_hr_legal"
@@ -4299,7 +4336,8 @@
               },
               "associated_template_ids": [
                 "tpl_academic_thesis",
-                "tpl_johnny_decimal"
+                "tpl_johnny_decimal",
+                "tpl_career_jobhunt_portfolio"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
@@ -4435,7 +4473,8 @@
               },
               "associated_template_ids": [
                 "tpl_teacher_lesson_prep",
-                "tpl_para_universal"
+                "tpl_para_universal",
+                "tpl_study_tour_camp_organizer"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
@@ -4482,7 +4521,9 @@
               },
               "associated_template_ids": [
                 "tpl_teacher_lesson_prep",
-                "tpl_freelance_business_delivery"
+                "tpl_freelance_business_delivery",
+                "tpl_online_course_production",
+                "tpl_study_tour_camp_organizer"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_education_academic"
@@ -4800,7 +4841,8 @@
               },
               "associated_template_ids": [
                 "tpl_architectural_cad_design",
-                "tpl_para_universal"
+                "tpl_para_universal",
+                "tpl_renovation_project"
               ],
               "domain_id": "domain_work_profession",
               "category_id": "cat_prof_health_engineering"
@@ -5503,7 +5545,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_finance_accounting",
-        "tpl_household_dossier_vault"
+        "tpl_household_dossier_vault",
+        "tpl_personal_finance_invest"
       ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_documents_library"
@@ -5552,7 +5595,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_photography_pipeline",
-        "tpl_family_household"
+        "tpl_family_household",
+        "tpl_visual_appreciation_vault"
       ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_pictures_library"
@@ -5699,7 +5743,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_audio_sound_engineering",
-        "tpl_inbox_staging_universal"
+        "tpl_inbox_staging_universal",
+        "tpl_podcast_production"
       ],
       "domain_id": "domain_universal_cleanup",
       "category_id": "cat_audio_library"
@@ -5846,7 +5891,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_gamer_library",
-        "tpl_para_universal"
+        "tpl_para_universal",
+        "tpl_game_dev_assets"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_gaming"
@@ -5893,7 +5939,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_pc_hardware_gear",
-        "tpl_para_universal"
+        "tpl_para_universal",
+        "tpl_3dprint_maker"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_gaming"
@@ -6086,7 +6133,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_audio_sound_engineering",
-        "tpl_video_production"
+        "tpl_video_production",
+        "tpl_podcast_production"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
@@ -6133,7 +6181,11 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_video_production",
-        "tpl_newmedia_content"
+        "tpl_newmedia_content",
+        "tpl_foodblogger_recipe_studio",
+        "tpl_travelblogger_shoot_studio",
+        "tpl_podcast_production",
+        "tpl_ai_generated_content"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
@@ -6181,7 +6233,9 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_media_collector_vault",
-        "tpl_video_production"
+        "tpl_video_production",
+        "tpl_visual_appreciation_vault",
+        "tpl_collectible_model_archive"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_audiovisual"
@@ -6227,7 +6281,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_photography_pipeline",
-        "tpl_para_universal"
+        "tpl_para_universal",
+        "tpl_travelblogger_shoot_studio"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_travel_photo"
@@ -6274,7 +6329,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_travel_outdoor_journey",
-        "tpl_photography_pipeline"
+        "tpl_photography_pipeline",
+        "tpl_travelblogger_shoot_studio"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_travel_photo"
@@ -6321,7 +6377,12 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_family_household",
-        "tpl_johnny_decimal"
+        "tpl_johnny_decimal",
+        "tpl_renovation_project",
+        "tpl_wedding_planning",
+        "tpl_car_lifecycle",
+        "tpl_baby_growth_archive",
+        "tpl_insurance_policy_vault"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
@@ -6416,7 +6477,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_cooking_recipes_vault",
-        "tpl_family_household"
+        "tpl_family_household",
+        "tpl_foodblogger_recipe_studio"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
@@ -6557,7 +6619,11 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_household_dossier_vault",
-        "tpl_family_household"
+        "tpl_family_household",
+        "tpl_renovation_project",
+        "tpl_car_lifecycle",
+        "tpl_personal_finance_invest",
+        "tpl_insurance_policy_vault"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_family_home"
@@ -6651,7 +6717,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_pkm_knowledge_vault",
-        "tpl_johnny_decimal"
+        "tpl_johnny_decimal",
+        "tpl_collectible_model_archive"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
@@ -6698,7 +6765,8 @@
       "associated_template_ids": [
         "tpl_code_asset_vault",
         "tpl_pkm_knowledge_vault",
-        "tpl_frontend_dev"
+        "tpl_frontend_dev",
+        "tpl_online_course_production"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
@@ -6746,7 +6814,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_k12_education_vault",
-        "tpl_k12_school_term_pipeline"
+        "tpl_k12_school_term_pipeline",
+        "tpl_baby_growth_archive"
       ],
       "domain_id": "domain_life_entertainment",
       "category_id": "cat_life_wellness_growth"
@@ -7115,7 +7184,8 @@
       },
       "associated_template_ids": [
         "tpl_data_science_analytics",
-        "tpl_backend_arch"
+        "tpl_backend_arch",
+        "tpl_ai_generated_content"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
@@ -7162,7 +7232,8 @@
       },
       "associated_template_ids": [
         "tpl_embedded_iot_firmware",
-        "tpl_backend_arch"
+        "tpl_backend_arch",
+        "tpl_3dprint_maker"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_it_dev"
@@ -7352,7 +7423,8 @@
       },
       "associated_template_ids": [
         "tpl_graphic_brand_design",
-        "tpl_ui_ux_standard"
+        "tpl_ui_ux_standard",
+        "tpl_ai_generated_content"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
@@ -7440,7 +7512,9 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_3d_cg_animation",
-        "tpl_video_production"
+        "tpl_video_production",
+        "tpl_game_dev_assets",
+        "tpl_3dprint_maker"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_design_product"
@@ -7576,7 +7650,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_newmedia_content",
-        "tpl_writing_publishing_pipeline"
+        "tpl_writing_publishing_pipeline",
+        "tpl_livestream_creator_ops"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
@@ -7620,7 +7695,8 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_ecommerce_ops",
-        "tpl_cross_border_ops"
+        "tpl_cross_border_ops",
+        "tpl_livestream_creator_ops"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
@@ -7716,7 +7792,8 @@
       },
       "associated_template_ids": [
         "tpl_marketing_campaign_imc",
-        "tpl_newmedia_content"
+        "tpl_newmedia_content",
+        "tpl_livestream_creator_ops"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_marketing_growth"
@@ -7905,7 +7982,8 @@
       },
       "associated_template_ids": [
         "tpl_finance_accounting",
-        "tpl_johnny_decimal"
+        "tpl_johnny_decimal",
+        "tpl_personal_finance_invest"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
@@ -8419,7 +8497,8 @@
       },
       "associated_template_ids": [
         "tpl_office_general_archive",
-        "tpl_office_document_dispatch_flow"
+        "tpl_office_document_dispatch_flow",
+        "tpl_career_jobhunt_portfolio"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_finance_hr_legal"
@@ -8514,7 +8593,8 @@
       },
       "associated_template_ids": [
         "tpl_academic_thesis",
-        "tpl_johnny_decimal"
+        "tpl_johnny_decimal",
+        "tpl_career_jobhunt_portfolio"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
@@ -8650,7 +8730,8 @@
       },
       "associated_template_ids": [
         "tpl_teacher_lesson_prep",
-        "tpl_para_universal"
+        "tpl_para_universal",
+        "tpl_study_tour_camp_organizer"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
@@ -8697,7 +8778,9 @@
       },
       "associated_template_ids": [
         "tpl_teacher_lesson_prep",
-        "tpl_freelance_business_delivery"
+        "tpl_freelance_business_delivery",
+        "tpl_online_course_production",
+        "tpl_study_tour_camp_organizer"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_education_academic"
@@ -8986,7 +9069,8 @@
       },
       "associated_template_ids": [
         "tpl_architectural_cad_design",
-        "tpl_para_universal"
+        "tpl_para_universal",
+        "tpl_renovation_project"
       ],
       "domain_id": "domain_work_profession",
       "category_id": "cat_prof_health_engineering"
