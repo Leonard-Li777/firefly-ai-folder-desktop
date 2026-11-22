@@ -2925,6 +2925,13 @@ export class ModularResourceService implements IModularResourceService {
     }
 
     await this.topologyCoordinator.coalesceTopologyNotify(runNotify)
+
+    // DB 更新与插件拓扑全部落地后再派发稳定态事件，供对外接口协调器刷新动态能力集
+    try {
+      emitRuntimeContextChange('module_topology_settled')
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ModularResource] 派发 module_topology_settled 告警:', err)
+    }
   }
 
   /**

@@ -63,7 +63,7 @@ export interface IVoiceSeamService {
   /** 非流式整段音频合成 (直接返回标准带头部的 WAV 格式) */
   synthesizeToWav(
     text: string,
-    options?: { voiceId?: string; speed?: number }
+    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
   ): Promise<ArrayBuffer>
 }
 
@@ -415,11 +415,18 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
    */
   public async synthesizeToWav(
     text: string,
-    options?: { voiceId?: string; speed?: number }
+    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
   ): Promise<ArrayBuffer> {
+    if (options?.signal?.aborted) {
+      throw new VoiceSeamError('ABORTED', '语音合成已中止')
+    }
     const pcmChunks: Uint8Array[] = []
     for await (const chunk of this.synthesizeStream(text, options)) {
       pcmChunks.push(chunk.data)
+    }
+
+    if (options?.signal?.aborted) {
+      throw new VoiceSeamError('ABORTED', '语音合成已中止')
     }
 
     if (pcmChunks.length === 0) {

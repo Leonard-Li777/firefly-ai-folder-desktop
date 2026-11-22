@@ -14,9 +14,15 @@ import type {
   ExternalApiPresence,
   ExternalApiDegradationReason,
   ExternalApiErrorDTO,
-  ExternalApiTestResultDTO
+  ExternalApiTestResultDTO,
+  ExternalApiCapabilityId,
+  ExternalApiPluginSlot,
+  ExternalApiSlotReadiness
 } from '@firefly/types'
 import { aiSkillApiService } from '../ai-skill-api-service'
+import { modularResourceService } from './modular-resource-service'
+import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { subscribeRuntimeContextChange } from './workspace-runtime-context-bus'
 
 export class AISkillApiReconciler {
   private static instance: AISkillApiReconciler | null = null
@@ -35,6 +41,9 @@ export class AISkillApiReconciler {
     lastEndpoint: string | null
   } | undefined = undefined
   private listeners = new Set<(status: ExternalApiStatusDTO) => void>()
+  private capabilityRefreshTimer: ReturnType<typeof setTimeout> | null = null
+  private unsubRuntimeContext: (() => void) | null = null
+  private unsubConfigChange: (() => void) | null = null
 
   static getInstance(): AISkillApiReconciler {
     if (!AISkillApiReconciler.instance) {
@@ -44,10 +53,112 @@ export class AISkillApiReconciler {
   }
 
   constructor() {
+    // 注入动态能力 SSOT 回调，供 start() 与 refreshDiscoveryCapabilities() 共用
+    aiSkillApiService.setActiveCapabilitiesProvider(
+      () => this.evaluateCapabilities().activeCapabilities
+    )
+
     // 监听底层意外崩溃事件
     aiSkillApiService.onCrash((err: Error) => {
       this.handleServerCrash(err)
     })
+
+    // 监听插件拓扑稳定事件 (150ms debounce 防连续切换抖动)
+    try {
+      this.unsubRuntimeContext = subscribeRuntimeContextChange((reason: string) => {
+        if (reason === 'module_topology_settled') {
+          this.scheduleCapabilityRefresh()
+        }
+      })
+    } catch {
+      // 单测环境容错
+    }
+
+    // 监听系统 OCR 开关变更
+    try {
+      this.unsubConfigChange = ConfigOrchestrator.getInstance().onConfigChange(changes => {
+        if ('ENABLE_IMAGE_OCR' in changes) {
+          this.scheduleCapabilityRefresh()
+        }
+      })
+    } catch {
+      // 单测环境容错
+    }
+  }
+
+  private scheduleCapabilityRefresh(): void {
+    if (this.shutdownRequested) return
+    if (this.capabilityRefreshTimer) {
+      clearTimeout(this.capabilityRefreshTimer)
+    }
+    this.capabilityRefreshTimer = setTimeout(() => {
+      this.capabilityRefreshTimer = null
+      if (this.shutdownRequested) return
+      if (this.phase === 'running') {
+        void aiSkillApiService.refreshDiscoveryCapabilities().catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[AISkillApiReconciler] 刷新发现文件能力集告警:', err)
+        })
+      }
+      this.broadcast()
+    }, 150)
+  }
+
+  /**
+   * 评估当前激活能力与受控插件槽位就绪状态 (SSOT)
+   */
+  evaluateCapabilities(): {
+    activeCapabilities: ExternalApiCapabilityId[]
+    slotReadiness: Record<ExternalApiPluginSlot, ExternalApiSlotReadiness>
+  } {
+    const activeCapabilities: ExternalApiCapabilityId[] = [
+      'search',
+      'timeline',
+      'progress',
+      'virtual-folder-draft'
+    ]
+
+    let ocrEnabled = true
+    try {
+      ocrEnabled = ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
+    } catch {
+      ocrEnabled = true
+    }
+    if (ocrEnabled) {
+      activeCapabilities.push('ocr')
+    }
+
+    const checkSlot = (slot: ExternalApiPluginSlot): ExternalApiSlotReadiness => {
+      try {
+        const mod = modularResourceService?.getActiveModuleBySlot?.(slot)
+        if (!mod) {
+          return { ready: false, slotKey: slot }
+        }
+        const usable =
+          typeof modularResourceService?.processManager?.isUsable === 'function'
+            ? modularResourceService.processManager.isUsable(mod.id)
+            : mod.install_state === 'active'
+        return { ready: Boolean(usable), moduleId: mod.id, slotKey: slot }
+      } catch {
+        return { ready: false, slotKey: slot }
+      }
+    }
+
+    const asrSlot = checkSlot('voice_asr')
+    const ttsSlot = checkSlot('voice_tts')
+    const nsfwSlot = checkSlot('perception_nsfw')
+
+    if (asrSlot.ready) activeCapabilities.push('asr')
+    if (ttsSlot.ready) activeCapabilities.push('tts')
+    if (nsfwSlot.ready) activeCapabilities.push('sensitive')
+
+    return {
+      activeCapabilities,
+      slotReadiness: {
+        voice_asr: asrSlot,
+        voice_tts: ttsSlot,
+        perception_nsfw: nsfwSlot
+      }
+    }
   }
 
   /**
@@ -125,6 +236,25 @@ export class AISkillApiReconciler {
   async shutdown(): Promise<void> {
     this.shutdownRequested = true
     this.desired = false
+
+    // 清理防抖定时器与外部事件退订句柄，杜绝退出后悬空回调与单测串扰
+    if (this.capabilityRefreshTimer) {
+      clearTimeout(this.capabilityRefreshTimer)
+      this.capabilityRefreshTimer = null
+    }
+    if (this.unsubRuntimeContext) {
+      try {
+        this.unsubRuntimeContext()
+      } catch {}
+      this.unsubRuntimeContext = null
+    }
+    if (this.unsubConfigChange) {
+      try {
+        this.unsubConfigChange()
+      } catch {}
+      this.unsubConfigChange = null
+    }
+
     this.reconciling ??= this.reconcile()
     await this.reconciling
   }
@@ -284,6 +414,8 @@ export class AISkillApiReconciler {
       }
     }
 
+    const { activeCapabilities, slotReadiness } = this.evaluateCapabilities()
+
     return {
       rev: this.rev,
       phase: this.phase,
@@ -298,6 +430,8 @@ export class AISkillApiReconciler {
       activity,
       presence,
       lastError: this.lastError,
+      activeCapabilities,
+      slotReadiness,
       previousSession: this.previousSession
     }
   }

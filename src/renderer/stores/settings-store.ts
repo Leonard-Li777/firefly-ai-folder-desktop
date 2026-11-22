@@ -132,9 +132,9 @@ export const systemSettingsCategories = (): ISettingsCategoryInfo[] => [
   },
   {
     id: SettingsCategory.EXTERNAL_API,
-    name: t('萤核对外接口'),
+    name: t('对外开放给 AI 助手'),
     icon: 'share',
-    description: t('对外 HTTP API、智能体连接状态与生态集成')
+    description: t('把本地查文件、读文字、转台词等能力共享给外部 AI 助手')
   },
   {
     id: SettingsCategory.STORAGE_ENERGY,
