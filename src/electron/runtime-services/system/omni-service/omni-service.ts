@@ -3235,6 +3235,10 @@ export class OmniService {
     const timeoutMs = options?.timeoutMs || effectiveCpuCapMs
 
     const doFetch = async () => {
+      const timeoutSignal = AbortSignal.timeout(timeoutMs)
+      const combinedSignal = options?.signal
+        ? AbortSignal.any([timeoutSignal, options.signal])
+        : timeoutSignal
       const res = await fetch(`${this.baseUrl}/api/perceive`, {
         method: 'POST',
         headers: {
@@ -3242,7 +3246,7 @@ export class OmniService {
           Connection: 'keep-alive'
         },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        signal: combinedSignal
       })
 
       if (!res.ok) {

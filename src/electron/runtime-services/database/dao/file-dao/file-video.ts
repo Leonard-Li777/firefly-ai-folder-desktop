@@ -324,13 +324,43 @@ export class FileVideoMixin extends FileQueryMixin {
 
   /**
    * 标记视频片段分析完成 (ISS-37)
+   * 若传入 paramsHash，同步回写最新画面提取指纹，防参数升档重提后残留旧指纹。
    */
   markVideoSegmentCompleted(
     fileId: string,
     segmentIndex: number,
-    stats: { frameCount: number; visualEmbeddedCount: number; asrTranscriptChars: number }
+    stats: {
+      frameCount: number
+      visualEmbeddedCount: number
+      asrTranscriptChars: number
+      paramsHash?: string
+    }
   ): void {
     const now = Date.now()
+    if (stats.paramsHash) {
+      this.db
+        .prepare(
+          `UPDATE file_video_segments
+           SET status = 'completed',
+               frame_count = ?,
+               visual_embedded_count = ?,
+               asr_transcript_chars = ?,
+               params_hash = ?,
+               error_message = NULL,
+               updated_at = ?
+           WHERE file_id = ? AND segment_index = ?`
+        )
+        .run(
+          stats.frameCount,
+          stats.visualEmbeddedCount,
+          stats.asrTranscriptChars,
+          stats.paramsHash,
+          now,
+          fileId,
+          segmentIndex
+        )
+      return
+    }
     this.db
       .prepare(
         `UPDATE file_video_segments
@@ -473,5 +503,201 @@ export class FileVideoMixin extends FileQueryMixin {
          WHERE s.status = 'pending'`
       )
       .all() as any[]
+  }
+
+  /**
+   * 查询存在 k >= 1 待补切片且 seg_0 已完成的工作区 ID 列表（Spec §2.3 / §3.5）
+   */
+  getWorkspaceIdsWithPendingVideoSegments(): number[] {
+    const rows = this.db
+      .prepare(
+        `SELECT DISTINCT wf.workspace_id AS workspaceId
+         FROM file_video_segments s
+         JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
+         WHERE s.segment_index >= 1
+           AND s.status = 'pending'
+           AND EXISTS (
+             SELECT 1 FROM file_video_segments s0
+             WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
+           )
+         ORDER BY wf.workspace_id ASC`
+      )
+      .all() as Array<{ workspaceId: number }>
+    return rows.map(r => Number(r.workspaceId)).filter(id => Number.isFinite(id))
+  }
+
+  /**
+   * 查询指定工作区有效时长上限内的待补视频切片（Spec §3.5）：
+   * 强制限定 segment_index >= 1 且 seg_0 已 completed，物理免疫失败 seg_0 误跑与超限尾巴死循环。
+   */
+  getPendingVideoSegmentsForWorkspace(
+    workspaceId: number,
+    maxStartPtsSec: number
+  ): Array<{
+    fileFingerprint: string
+    segmentIndex: number
+    startPtsSec: number
+    endPtsSec: number
+    paramsHash: string
+    workspaceId: number
+    path: string
+    name: string
+  }> {
+    return this.db
+      .prepare(
+        `SELECT s.file_id AS fileFingerprint,
+                s.segment_index AS segmentIndex,
+                s.start_pts_sec AS startPtsSec,
+                s.end_pts_sec AS endPtsSec,
+                s.params_hash AS paramsHash,
+                wf.workspace_id AS workspaceId,
+                wf.path,
+                wf.name
+         FROM file_video_segments s
+         JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
+         WHERE wf.workspace_id = ?
+           AND s.segment_index >= 1
+           AND s.status = 'pending'
+           AND s.start_pts_sec < ?
+           AND EXISTS (
+             SELECT 1 FROM file_video_segments s0
+             WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
+           )
+         ORDER BY s.file_id ASC, s.segment_index ASC`
+      )
+      .all(workspaceId, maxStartPtsSec) as any[]
+  }
+
+  /**
+   * 聚合指定工作区有效上限内存在待补/失败切片的视频文件清单（供「待补分析文件」Tab 展示）
+   */
+  getWorkspacePendingBackfillVideos(
+    workspaceId: number,
+    effectiveLimitSec: number
+  ): Array<{
+    fileFingerprint: string
+    path: string
+    name: string
+    completedSlices: number
+    targetSlices: number
+    totalSlices: number
+    completedDurationSec: number
+    targetDurationSec: number
+    totalDurationSec: number
+    failedSlices: number
+  }> {
+    const rows = this.db
+      .prepare(
+        `SELECT
+           s.file_id AS fileFingerprint,
+           wf.path AS path,
+           wf.name AS name,
+           SUM(CASE WHEN s.start_pts_sec < ? AND s.status = 'completed' THEN 1 ELSE 0 END) AS completedSlices,
+           SUM(CASE WHEN s.start_pts_sec < ? THEN 1 ELSE 0 END) AS targetSlices,
+           COUNT(*) AS totalSlices,
+           COALESCE(SUM(CASE WHEN s.start_pts_sec < ? AND s.status = 'completed' THEN (MIN(s.end_pts_sec, ?) - s.start_pts_sec) ELSE 0 END), 0) AS completedDurationSec,
+           COALESCE(SUM(CASE WHEN s.start_pts_sec < ? THEN (MIN(s.end_pts_sec, ?) - s.start_pts_sec) ELSE 0 END), 0) AS targetDurationSec,
+           COALESCE(MAX(s.end_pts_sec), 0) AS totalDurationSec,
+           SUM(CASE WHEN s.segment_index >= 1 AND s.start_pts_sec < ? AND s.status = 'failed' THEN 1 ELSE 0 END) AS failedSlices,
+           SUM(CASE WHEN s.segment_index >= 1 AND s.start_pts_sec < ? AND s.status IN ('pending', 'failed') THEN 1 ELSE 0 END) AS actionableSlices
+         FROM file_video_segments s
+         JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
+         WHERE wf.workspace_id = ?
+           AND EXISTS (
+             SELECT 1 FROM file_video_segments s0
+             WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
+           )
+         GROUP BY s.file_id, wf.path, wf.name
+         HAVING actionableSlices > 0
+         ORDER BY wf.name ASC`
+      )
+      .all(
+        effectiveLimitSec,
+        effectiveLimitSec,
+        effectiveLimitSec,
+        effectiveLimitSec,
+        effectiveLimitSec,
+        effectiveLimitSec,
+        effectiveLimitSec,
+        effectiveLimitSec,
+        workspaceId
+      ) as any[]
+
+    return rows.map(r => ({
+      fileFingerprint: r.fileFingerprint,
+      path: r.path,
+      name: r.name,
+      completedSlices: Number(r.completedSlices || 0),
+      targetSlices: Number(r.targetSlices || 0),
+      totalSlices: Number(r.totalSlices || 0),
+      completedDurationSec: Math.max(0, Math.round(Number(r.completedDurationSec || 0))),
+      targetDurationSec: Math.max(0, Math.round(Number(r.targetDurationSec || 0))),
+      totalDurationSec: Math.max(0, Math.round(Number(r.totalDurationSec || 0))),
+      failedSlices: Number(r.failedSlices || 0)
+    }))
+  }
+
+  /**
+   * 复位指定工作区有效上限内失败的 k >= 1 切片为 pending 并清零重试计数
+   */
+  resetFailedVideoSegmentsForWorkspace(workspaceId: number, effectiveLimitSec: number): number {
+    const now = Date.now()
+    const info = this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'pending', attempt_count = 0, error_message = NULL, updated_at = ?
+         WHERE segment_index >= 1
+           AND status = 'failed'
+           AND start_pts_sec < ?
+           AND file_id IN (
+             SELECT file_fingerprint FROM workspace_files WHERE workspace_id = ?
+           )`
+      )
+      .run(now, effectiveLimitSec, workspaceId)
+    return Number(info?.changes ?? 0)
+  }
+
+  /**
+   * 抽帧档位升档后，将当前工作区有效上限内指纹失效的 k >= 1 切片重置为 pending 等待重提
+   */
+  resetUpgradedVideoSegmentsForWorkspace(
+    workspaceId: number,
+    effectiveLimitSec: number,
+    expectedParamsHash: string,
+    isReusableFn: (seg: { status?: string; params_hash?: string }, expectedHash: string) => boolean
+  ): number {
+    const rows = this.db
+      .prepare(
+        `SELECT s.file_id, s.segment_index, s.status, s.params_hash
+         FROM file_video_segments s
+         JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
+         WHERE wf.workspace_id = ?
+           AND s.segment_index >= 1
+           AND s.status = 'completed'
+           AND s.start_pts_sec < ?`
+      )
+      .all(workspaceId, effectiveLimitSec) as Array<{
+      file_id: string
+      segment_index: number
+      status: string
+      params_hash: string
+    }>
+
+    const stale = rows.filter(r => !isReusableFn(r, expectedParamsHash))
+    if (stale.length === 0) return 0
+
+    const now = Date.now()
+    const stmt = this.db.prepare(
+      `UPDATE file_video_segments
+       SET status = 'pending', attempt_count = 0, error_message = NULL, updated_at = ?
+       WHERE file_id = ? AND segment_index = ?`
+    )
+    const tx = this.db.transaction(() => {
+      for (const s of stale) {
+        stmt.run(now, s.file_id, s.segment_index)
+      }
+    })
+    tx()
+    return stale.length
   }
 }

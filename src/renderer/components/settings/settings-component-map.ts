@@ -9,6 +9,7 @@ import { BasicAIEngineTab } from './workspace/BasicAIEngineTab'
 import { ContentExtractionTab } from './workspace/ContentExtractionTab'
 import { WorkspaceAdmissionRulesTab } from './workspace/WorkspaceAdmissionRulesTab'
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
+import { WorkspacePendingBackfillTab } from './workspace/WorkspacePendingBackfillTab'
 import { ExternalApiSettingsTab } from './external-api-settings'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 
@@ -48,5 +49,6 @@ export const SETTINGS_COMPONENT_MAP: Record<string, React.ComponentType<any>> = 
   basic_ai_engine: BasicAIEngineTab,
   content_extraction: ContentExtractionTab,
   workspace_admission_rules: WorkspaceAdmissionRulesTab,
-  workspace_maintenance: WorkspaceMaintenanceTab
+  workspace_maintenance: WorkspaceMaintenanceTab,
+  pending_backfill: WorkspacePendingBackfillTab
 }

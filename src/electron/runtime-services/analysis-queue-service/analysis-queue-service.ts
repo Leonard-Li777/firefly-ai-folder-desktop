@@ -30,6 +30,14 @@ import {
   canonicalMaintenanceService,
   installCanonicalMaintenanceListener
 } from './canonical-maintenance-service'
+import {
+  VideoSegmentBackfillWorker,
+  computeVideoVisualParamsHash
+} from './video-segment-backfill-worker'
+import { anydocService } from '../system/anydoc-service'
+import { omniClient } from '../../services/omni-client'
+import { resolveWorkspaceEffectiveConfig } from '../system/workspace-analysis-context'
+import { userTierService } from '../user-tier/user-tier-service'
 
 import { StageNotifier, Stage2TimeoutError, STAGE2_WAIT_TIMEOUT_MS } from './stage-notifier'
 export { StageNotifier, Stage2TimeoutError }
@@ -52,7 +60,6 @@ import {
   checkExtensionMismatchFiles,
   batchFixFileExtensions,
   checkAlreadyAnalyzedFilesByPaths,
-  collectIncompleteVideoEnqueueInputs,
   updateVirtualDirectoriesAfterQueueCompletion,
   type ExtensionMismatchItem
 } from './extension-and-precheck-helpers'
@@ -108,6 +115,7 @@ export class AnalysisQueueService {
   /** Stage2 S-B 数据面路由：按 ANALYSIS_USE_DB_WRITER_PROCESS 特性开关在写进程与本地执行器间分派 */
   private writerSink: WorkerWriteSink
   private workerBridge: WorkerOrchestratorBridge
+  private videoSegmentBackfillWorker: VideoSegmentBackfillWorker
   private currentAbortController: AbortController | null = null
 
   /** 工单 06：canonical 档位切换维护监听的取消订阅句柄 */
@@ -205,6 +213,96 @@ export class AnalysisQueueService {
     this.omniAdapter = new OmniHttpAdapter()
 
     this.statsCollector = new AnalysisStatsCollector()
+    this.videoSegmentBackfillWorker = new VideoSegmentBackfillWorker({
+      hasMainQueuePendingOrRunning: () => {
+        if (this.running || this.isProcessingLoopActive || this.runningWorkspaceStack.length > 0) {
+          return true
+        }
+        const snap = this.queueManager?.getSnapshot()
+        return Boolean(snap?.items?.some(i => i.status === 'pending' || i.status === 'analyzing'))
+      },
+      emitSnapshotUpdate: () => {
+        this.writeDispatcher.emitUpdate()
+      },
+      onHibernationChange: active => {
+        this.syncHibernationState(active)
+      },
+      resolveWorkspaceContext: async workspaceId => {
+        const effectiveConfig = await resolveWorkspaceEffectiveConfig(workspaceId)
+        const cachedTierData = userTierService.getCachedData?.()
+        const computedLimits = cachedTierData?.computed_limits
+        const isFreeTier = Boolean((effectiveConfig.capabilities as any)?.isFreeTier)
+        const entitlementLimit =
+          typeof computedLimits?.video_max_duration_seconds === 'number'
+            ? computedLimits.video_max_duration_seconds
+            : isFreeTier
+              ? 300
+              : 999999999
+        const configuredRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? 300
+        const configuredLimit = Math.min(
+          10800,
+          Math.max(300, Math.round(configuredRaw / 300) * 300)
+        )
+        const effectiveLimitSec = Math.min(entitlementLimit, configuredLimit)
+        const videoFrameQuotaMax = effectiveConfig.effectiveParams.videoFrameQuotaMax ?? 60
+        const videoSoftTokenBudget = effectiveConfig.effectiveParams.videoSoftTokenBudget ?? 140
+        const videoCutSensitivity =
+          (effectiveConfig.effectiveParams.videoCutSensitivity as any) || 'medium'
+        const paramsHash = computeVideoVisualParamsHash(
+          videoFrameQuotaMax,
+          videoSoftTokenBudget,
+          videoCutSensitivity
+        )
+        const allWs = (await databaseService.getAllWorkspaceDirectories?.()) ?? []
+        const ws = allWs.find((w: any) => Number(w.id) === Number(workspaceId))
+        return {
+          effectiveLimitSec,
+          videoVisualAnalysisEnabled: effectiveConfig.capabilities.videoVisualAnalysisEnabled,
+          workspaceName: ws?.name,
+          paramsHash,
+          perceptionParams: {
+            language:
+              ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN',
+            enableImageOcr: effectiveConfig.effectiveParams.enableImageOcr,
+            ocrModelSize: effectiveConfig.effectiveParams.ocrModelSize,
+            maxDocumentOcrItems: effectiveConfig.effectiveParams.maxDocumentOcrItems,
+            extractPages: effectiveConfig.effectiveParams.extractPages,
+            maxContentSizeKb: effectiveConfig.effectiveParams.maxContentSizeKb,
+            enableOfficeCover: effectiveConfig.effectiveParams.enableOfficeCover,
+            enableVideoVisualAnalysis: effectiveConfig.capabilities.videoVisualAnalysisEnabled,
+            enableNsfwPerception: effectiveConfig.capabilities.nsfwEffectivelyEnabled,
+            enableFacePerception: effectiveConfig.capabilities.faceEffectivelyEnabled,
+            videoFrameQuotaMax,
+            videoCutSensitivity,
+            videoSoftTokenBudget
+          }
+        }
+      },
+      getWorkspaceIdsWithPendingVideoSegments: () =>
+        databaseService.getWorkspaceIdsWithPendingVideoSegments(),
+      getPendingVideoSegmentsForWorkspace: (wsId, maxStartPtsSec) =>
+        databaseService.getPendingVideoSegmentsForWorkspace(wsId, maxStartPtsSec),
+      getWorkspacePendingBackfillVideos: (wsId, effectiveLimitSec) =>
+        databaseService.getWorkspacePendingBackfillVideos(wsId, effectiveLimitSec),
+      resetFailedVideoSegmentsForWorkspace: (wsId, effectiveLimitSec) =>
+        databaseService.resetFailedVideoSegmentsForWorkspace(wsId, effectiveLimitSec),
+      resetUpgradedVideoSegmentsForWorkspace: (wsId, effectiveLimitSec, expectedHash, isReusableFn) =>
+        databaseService.resetUpgradedVideoSegmentsForWorkspace(
+          wsId,
+          effectiveLimitSec,
+          expectedHash,
+          isReusableFn
+        ),
+      getVideoSegments: fileId => databaseService.getVideoSegments(fileId),
+      executorDeps: {
+        get db() {
+          return databaseService.db
+        },
+        databaseService,
+        anydocService,
+        omniClient
+      }
+    })
     this.orphanWatchdog = new OrphanWatchdog(
       itemId =>
         this.current?.id === itemId ||
@@ -667,7 +765,9 @@ export class AnalysisQueueService {
       }
     }
     this.isProcessingLoopActive = false
-    this.syncHibernationState(false)
+    if (!this.videoSegmentBackfillWorker.getSnapshot().running) {
+      this.syncHibernationState(false)
+    }
     this.orphanWatchdog.stop()
     flushFtsSync()
     this.writeDispatcher.emitUpdate()
@@ -698,6 +798,8 @@ export class AnalysisQueueService {
     systemHealthService.updateMonitoringInterval(300000)
     cloudSyncWorker.updateInterval(300000)
     await updateVirtualDirectoriesAfterQueueCompletion()
+    // Spec §2.3：仅在全部工作区自然排空时唤醒独立单切片视频后台回填器
+    this.videoSegmentBackfillWorker.scheduleStart('queue_drained')
     this.writeDispatcher.emitUpdate()
     return 'break'
   }
@@ -756,12 +858,18 @@ export class AnalysisQueueService {
       flushFtsSync()
     }
 
+    // Spec §2.3：用户暂停队列时同步中止在途视频后台补全，绝不误触发补全
+    this.videoSegmentBackfillWorker.abortCurrent()
+
     this.writeDispatcher.emitUpdate()
   }
 
   async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
     await this.ensureInitialized()
     const result = await this.queueManager.addItems(inputs, forceReanalyze)
+    if (result.addedCount > 0 || result.updatedCount > 0) {
+      this.videoSegmentBackfillWorker.requestYield()
+    }
     if (!this.isProcessingLoopActive && this.isInitialized) {
       void this.start()
     }
@@ -771,6 +879,9 @@ export class AnalysisQueueService {
   async addItemsResolved(inputs: EnqueueInput[], forceReanalyze = false): Promise<EnqueueResult> {
     await this.ensureInitialized()
     const result = await this.queueManager.addItemsResolved(inputs, forceReanalyze)
+    if (result.addedCount > 0 || result.updatedCount > 0) {
+      this.videoSegmentBackfillWorker.requestYield()
+    }
     if (!this.isProcessingLoopActive && this.isInitialized) {
       void this.start()
     }
@@ -797,11 +908,15 @@ export class AnalysisQueueService {
       this.currentAbortController.abort()
       this.currentAbortController = null
     }
+    await this.videoSegmentBackfillWorker.abortAndWaitCurrent(filePath)
     this.queueManager.deleteItemByPath(filePath)
   }
 
   async deleteItemsByDirectory(directoryPath: string): Promise<void> {
     await this.ensureInitialized()
+    // Spec §2.3：删除工作目录前中止并等待在途视频补全切片释放文件句柄，防 Windows EBUSY
+    await this.videoSegmentBackfillWorker.abortAndWaitCurrent(directoryPath)
+
     this.queueManager.deleteItemsByDirectory(directoryPath)
   }
 
@@ -835,6 +950,9 @@ export class AnalysisQueueService {
         this.currentAbortController = null
       }
     }
+
+    // Spec §2.3：删除工作目录前中止并等待在途视频补全切片释放文件句柄，防 Windows EBUSY
+    await this.videoSegmentBackfillWorker.abortAndWaitCurrent(directoryPath)
 
     this.queueManager.deleteItemsByDirectory(directoryPath)
   }
@@ -935,6 +1053,11 @@ export class AnalysisQueueService {
     }
     this.orphanWatchdog.stop()
     try {
+      await this.videoSegmentBackfillWorker.abortAndWaitCurrent()
+    } catch (err) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出中止视频后台回填器失败:', err)
+    }
+    try {
       await this.workerBridge.dispose()
     } catch (err) {
       logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 退出销毁 WorkerBridge 失败:', err)
@@ -990,13 +1113,41 @@ export class AnalysisQueueService {
   }
 
   /**
-   * 恢复与重新入队存在未完成切片的视频（例如会员升级为 Pro 后唤醒待续作长视频，ISS-60）
+   * 恢复并唤醒存在未完成 k >= 1 切片的长视频后台补全（ISS-60 / ISS-66 / Spec §2.3）：
+   * 废弃原 addItems(inputs, true) 整文件回灌主队列，改为纯 Stage 2 独立单切片后台回填，0 次多余 LLM。
    */
   public async requeueIncompleteVideos(): Promise<number> {
-    const inputs = collectIncompleteVideoEnqueueInputs()
-    if (inputs.length === 0) return 0
-    await this.addItems(inputs, true)
-    return inputs.length
+    databaseService.resetDanglingVideoSegmentsOnStartup()
+    const next = await this.videoSegmentBackfillWorker.pickNextEligibleSegment()
+    const count = next?.pendingVideoCount ?? 0
+    if (count > 0) {
+      this.videoSegmentBackfillWorker.scheduleStart('requeue_api')
+    }
+    return count
+  }
+
+  public startVideoBackfill(reason = 'manual'): boolean {
+    return this.videoSegmentBackfillWorker.resumeByUser() || this.videoSegmentBackfillWorker.scheduleStart(reason)
+  }
+
+  public async pauseVideoBackfill(): Promise<void> {
+    await this.videoSegmentBackfillWorker.pauseByUser()
+  }
+
+  public prioritizeVideoBackfill(workspaceId: number, fileFingerprint: string): boolean {
+    return this.videoSegmentBackfillWorker.prioritizeFile(workspaceId, fileFingerprint)
+  }
+
+  public async retryFailedVideoBackfill(workspaceId: number): Promise<number> {
+    return this.videoSegmentBackfillWorker.retryFailedForWorkspace(workspaceId)
+  }
+
+  public async listWorkspacePendingBackfillVideos(workspaceId: number) {
+    return this.videoSegmentBackfillWorker.listWorkspacePendingVideos(workspaceId)
+  }
+
+  public async notifyWorkspaceConfigChangedForBackfill(workspaceId: number): Promise<void> {
+    await this.videoSegmentBackfillWorker.onWorkspaceConfigChanged(workspaceId)
   }
 
   getSnapshot(workspaceId?: number): AnalysisQueueSnapshot {
@@ -1041,7 +1192,8 @@ export class AnalysisQueueService {
       activeRunningWorkspaceId,
       runningWorkspaceStack: this.runningWorkspaceStack.slice(),
       currentAnalyzingItem,
-      status: queueStatus
+      status: queueStatus,
+      videoBackfill: this.videoSegmentBackfillWorker.getSnapshot()
     }
   }
 

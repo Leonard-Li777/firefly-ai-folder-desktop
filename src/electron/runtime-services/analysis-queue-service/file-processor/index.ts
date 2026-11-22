@@ -1979,7 +1979,8 @@ export class FileProcessor {
               databaseService.markVideoSegmentCompleted(fileFingerprint, 0, {
                 frameCount: seg0Chunks.length,
                 visualEmbeddedCount: seg0Chunks.length,
-                asrTranscriptChars: (anydocResult.audioTranscript || '').length
+                asrTranscriptChars: (anydocResult.audioTranscript || '').length,
+                paramsHash
               })
             } else if (capabilities.videoVisualAnalysisEnabled) {
               // 严禁零帧写 completed：否则下次复用判定会永久跳过感知（历史「瞬间完成但零切片」根因）
@@ -2081,174 +2082,18 @@ export class FileProcessor {
             }
           }
 
-          // 切片级进度上报：长视频 stage2 耗时是其它 stage 的数倍，以切片为单位向用户可见地汇报进度。
-          // 0 号切片已在上方单独完成，计入已完成基数；每完成一片调用 onVideoSliceProgress 推送。
-          const videoTotalSlices = numChunks
-          let videoCompletedSlices = 1 // 0 号切片已处理完成
-          const VIDEO_PROGRESS_BASE = 10 // 进入 stage2 时已写入的初始进度，避免回退
-          const VIDEO_PROGRESS_SPAN = 88 // 留 2% 给后续阶段收尾，避免卡在 100 又跳回 98
-          const reportVideoSliceProgress = (completed: number) => {
-            const pct = VIDEO_PROGRESS_BASE + (completed / videoTotalSlices) * VIDEO_PROGRESS_SPAN
-            pushVideoProgress(pct, { done: completed, total: videoTotalSlices })
-          }
-
-          // 2. 流式派发切片：受当前用户的 ComputedLimits.video_max_duration_seconds 门禁保护
-          for (let k = 1; k < numChunks; k++) {
-            // 派发前动态读取最新限额
-            const cachedTierData = userTierService.getCachedData()
-            const computedLimits = cachedTierData?.computed_limits
-            const entitlementLimit =
-              typeof computedLimits?.video_max_duration_seconds === 'number'
-                ? computedLimits.video_max_duration_seconds
-                : isFreeUser
-                  ? 300
-                  : 999999999
-            const configuredRaw = effectiveParams.videoAnalyzeDurationSec ?? 300
-            const configuredLimit = Math.min(
-              10800,
-              Math.max(300, Math.round(configuredRaw / 300) * 300)
+          // Spec §2.2：首段快速分析封顶 + 进度条对齐（analysis-queue-slice-progress-visualization-spec §3.2/§3.4）
+          // 主队列仅完成 0 号切片（0~300s）并上报 videoTotalSlices=1 / 98%，立即释放主队列进入 Stage 3/4；
+          // 剩余 k >= 1 切片已登记为 pending，由独立单切片后台回填器 VideoSegmentBackfillWorker 在空闲时静默补全。
+          const VIDEO_PROGRESS_BASE = 10
+          const VIDEO_PROGRESS_SPAN = 88
+          const firstSliceDonePct = VIDEO_PROGRESS_BASE + VIDEO_PROGRESS_SPAN // 98%
+          pushVideoProgress(firstSliceDonePct, { done: 1, total: 1 })
+          if (numChunks > 1) {
+            logger.debug(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] 视频首段 (0~300s) 已完成，已登记剩余 ${numChunks - 1} 个待补切片交由空闲回填器接管: ${filePath}`
             )
-            // 云端权益是客观上限，工作区配置是主观意愿；取较小值，用户配置永远不能放大权益
-            const currentLimit = Math.min(entitlementLimit, configuredLimit)
-
-            const chunkStart = k * chunkSpan
-            const chunkEnd = Math.min(
-              k === numChunks - 1 ? probedDuration : (k + 1) * chunkSpan,
-              currentLimit
-            )
-
-            // 门禁断点：若切片起点超出最终上限，读时阻断后续切片（等待升级或用户调大配置后唤醒）
-            if (chunkStart >= currentLimit) {
-              logger.debug(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 片段 ${k} 起点 ${chunkStart}s 达到当前上限 ${currentLimit}s（权益 ${entitlementLimit}s / 工作区配置 ${configuredLimit}s），断点暂停: ${filePath}`
-              )
-              break
-            }
-
-            // 跨设备文件缺失预检 (FIN-07)
-            if (!fs.existsSync(filePath)) {
-              logger.debug(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 跨设备原文件不存在，跳过调度: ${filePath}`
-              )
-              break
-            }
-
-            const segK = existingSegMap.get(k)
-            if (!forceRebuildSegments && isVideoSegmentReusable(segK, paramsHash)) {
-              continue
-            }
-            this.throwIfAborted(signal)
-
-            if (segK) {
-              databaseService.resetEmptyCompletedVideoSegment(fileFingerprint, k)
-            }
-
-            // 原子 CAS 认领
-            const canProceed = databaseService.markVideoSegmentProcessing(fileFingerprint, k)
-            if (!canProceed) {
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 片段 ${k} 重试超限熔断或已被认领，跳过`
-              )
-              continue
-            }
-
-            try {
-              const chunkResult = await anydocService.perceive(filePath, {
-                language,
-                enableAudioTranscript: false, // 后续切片不重复执行 ASR (FIN-08)
-                // [OBS-05] k >= 1 切片双时长恒为 0，与 Rust enable_asr 守卫形成双保险
-                videoAsrDurationSec: 0,
-                audioAnalysisDuration: 0,
-                // 全参数直传：与 0 号切片共享同一锁定快照，杜绝切片间指纹分裂
-                enableImageOcr: effectiveParams.enableImageOcr,
-                ocrModelSize: effectiveParams.ocrModelSize,
-                maxDocumentOcrItems: effectiveParams.maxDocumentOcrItems,
-                extractPages: effectiveParams.extractPages,
-                maxContentSizeKb: effectiveParams.maxContentSizeKb,
-                enableOfficeCover: effectiveParams.enableOfficeCover,
-                enableVideoVisualAnalysis: capabilities.videoVisualAnalysisEnabled,
-                enableNsfwPerception: capabilities.nsfwEffectivelyEnabled,
-                enableFacePerception: capabilities.faceEffectivelyEnabled,
-                videoFrameQuotaMax,
-                videoCutSensitivity,
-                videoFrameIntervalSeconds: videoFrameIntervalSeconds,
-                videoSoftTokenBudget: videoSoftTokenBudget,
-                videoAnalyzeStartSec: chunkStart,
-                videoMaxAnalyzeSec: chunkEnd,
-                enableTextAnalysis: false,
-                generateThumbnail: false,
-                fileFingerprint,
-                skip5wSynthesis: true
-              })
-
-              const chunkFrames = chunkResult.perception?.video_chunks || []
-              // 保留累积：供文件级 persistOmniVectors 做态3切片向量回传（DB 落库已改幂等 upsert，push 不再触发整表删）
-              if (anydocResult.perception?.video_chunks && chunkFrames.length > 0) {
-                anydocResult.perception.video_chunks.push(...chunkFrames)
-              }
-
-              // [Issue 04 Step 3 / FIN-12] 本段完成即按 [chunkStart, chunkEnd) 区间替换 chunks，
-              // 已完成段 chunks 在 DB 中稳定留存，杜绝续跑丢前序段（chunk_index 全局网格不跨段冲突）
-              if (chunkFrames.length > 0) {
-                const segSamplingInterval =
-                  chunkResult.perception?.video_sampling_interval_seconds ?? 1.0
-                databaseService.replaceVideoChunksInRange(
-                  fileFingerprint,
-                  chunkFrames.map(c => ({
-                    fileFingerprint,
-                    chunkIndex: c.chunk_index ?? 0,
-                    startSec: c.start_sec ?? 0,
-                    endSec: c.end_sec ?? 0,
-                    repPtsSec: c.rep_pts_sec ?? c.start_sec ?? 0,
-                    meta: c.meta || {},
-                    samplingIntervalSeconds: segSamplingInterval
-                  })),
-                  chunkStart,
-                  chunkEnd
-                )
-              }
-
-              // 仅在当前片段提取成功后，精确清理该片段 [chunkStart, chunkEnd) 区间内的旧切片向量 (FIN-12)
-              await cleanupOrphanedVideoChunks(
-                db,
-                fileFingerprint,
-                omniClient,
-                chunkStart,
-                chunkEnd
-              )
-
-              if (chunkFrames.length > 0) {
-                databaseService.markVideoSegmentCompleted(fileFingerprint, k, {
-                  frameCount: chunkFrames.length,
-                  visualEmbeddedCount: chunkFrames.length,
-                  asrTranscriptChars: 0
-                })
-
-                // 切片完成，推送切片级进度（仅上报，不静默失败）
-                videoCompletedSlices += 1
-                reportVideoSliceProgress(videoCompletedSlices)
-              } else {
-                const reason = `perceive returned zero video chunks (seg ${k})`
-                logger.warn(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[分析队列] 片段 ${k} 未产出任何画面，标记失败等待重提（不写 completed）: ${filePath}`
-                )
-                databaseService.markVideoSegmentFailedOrPending(fileFingerprint, k, reason)
-              }
-
-              // 协程让出 50ms，释放 Node 事件循环 (FIN-10)
-              await new Promise(resolve => setTimeout(resolve, 50))
-            } catch (err: any) {
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 片段 ${k} 分析异常: ${err.message}`
-              )
-              // 失败回写与毒药熔断闭环 (FIN-02)
-              databaseService.markVideoSegmentFailedOrPending(fileFingerprint, k, err.message)
-            }
           }
         }
       }

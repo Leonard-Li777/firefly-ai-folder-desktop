@@ -2426,6 +2426,38 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     return this.fileDao.getIncompleteVideoFiles()
   }
 
+  getWorkspaceIdsWithPendingVideoSegments(): number[] {
+    return this.fileDao?.getWorkspaceIdsWithPendingVideoSegments() ?? []
+  }
+
+  getPendingVideoSegmentsForWorkspace(workspaceId: number, maxStartPtsSec: number) {
+    return this.fileDao?.getPendingVideoSegmentsForWorkspace(workspaceId, maxStartPtsSec) ?? []
+  }
+
+  getWorkspacePendingBackfillVideos(workspaceId: number, effectiveLimitSec: number) {
+    return this.fileDao?.getWorkspacePendingBackfillVideos(workspaceId, effectiveLimitSec) ?? []
+  }
+
+  resetFailedVideoSegmentsForWorkspace(workspaceId: number, effectiveLimitSec: number): number {
+    return this.fileDao?.resetFailedVideoSegmentsForWorkspace(workspaceId, effectiveLimitSec) ?? 0
+  }
+
+  resetUpgradedVideoSegmentsForWorkspace(
+    workspaceId: number,
+    effectiveLimitSec: number,
+    expectedParamsHash: string,
+    isReusableFn: (seg: { status?: string; params_hash?: string }, expectedHash: string) => boolean
+  ): number {
+    return (
+      this.fileDao?.resetUpgradedVideoSegmentsForWorkspace(
+        workspaceId,
+        effectiveLimitSec,
+        expectedParamsHash,
+        isReusableFn
+      ) ?? 0
+    )
+  }
+
   unlockVideoSegments(): number {
     return this.fileDao?.unlockVideoSegments() ?? 0
   }
@@ -2467,7 +2499,12 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   markVideoSegmentCompleted(
     fileId: string,
     segmentIndex: number,
-    stats: { frameCount: number; visualEmbeddedCount: number; asrTranscriptChars: number }
+    stats: {
+      frameCount: number
+      visualEmbeddedCount: number
+      asrTranscriptChars: number
+      paramsHash?: string
+    }
   ): void {
     this.fileDao?.markVideoSegmentCompleted(fileId, segmentIndex, stats)
   }

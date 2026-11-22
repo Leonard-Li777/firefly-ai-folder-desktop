@@ -970,6 +970,63 @@ export function AnalysisQueueContent({
               )}
             </HintBanner>
           )}
+          {/* 后台视频补全顶部固定状态条（Spec §3.2：不写 analysis_queue 伪行，复刻 StatusBadge 青色胶囊进度条） */}
+          {snapshot?.videoBackfill &&
+            (snapshot.videoBackfill.running || snapshot.videoBackfill.pendingVideoCount > 0) && (
+              <div
+                data-testid="queue-video-backfill-bar"
+                className="shrink-0 px-3 py-1.5 border-b border-cyan-500/20 bg-cyan-500/5 flex items-center justify-between gap-3 text-xs"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-foreground truncate">
+                    {snapshot.videoBackfill.current
+                      ? `${snapshot.videoBackfill.current.workspaceName ? `【${snapshot.videoBackfill.current.workspaceName}】` : ''}${snapshot.videoBackfill.current.fileName}`
+                      : t('后台视频补全等待中')}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground truncate">
+                    {t('待补 {videos} 个长视频（剩余 {slices} 段）', {
+                      videos: snapshot.videoBackfill.pendingVideoCount,
+                      slices: snapshot.videoBackfill.pendingSliceCount
+                    })}
+                  </div>
+                </div>
+                {snapshot.videoBackfill.running && snapshot.videoBackfill.current && (
+                  <span
+                    className="relative block w-44 h-[18px] rounded-full border bg-background/60 overflow-hidden box-border bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 animate-pulse font-semibold shrink-0"
+                    title={t('视频分析：已完成 {done}/{total} 个片段', {
+                      done: snapshot.videoBackfill.current.completedSlices,
+                      total: snapshot.videoBackfill.current.targetSlices
+                    })}
+                  >
+                    <span
+                      className="absolute inset-y-0 left-0 bg-current/25 rounded-full transition-all"
+                      style={{
+                        width: `${Math.max(0, Math.min(100, snapshot.videoBackfill.current.progressPct))}%`
+                      }}
+                    />
+                    <span className="absolute inset-0 flex items-center px-1.5 text-[10px] leading-none font-mono font-semibold tabular-nums text-current truncate">
+                      <span className="truncate">
+                        {Math.round(snapshot.videoBackfill.current.progressPct)}% {t('视频补全')} (
+                        {snapshot.videoBackfill.current.completedSlices}/
+                        {snapshot.videoBackfill.current.targetSlices})
+                      </span>
+                    </span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    void useSettingsStore.getState().openWorkspaceSettings({
+                      workspaceId: snapshot.videoBackfill?.current?.workspaceId,
+                      targetTab: 'pending_backfill'
+                    })
+                  }
+                  className="shrink-0 text-xs font-semibold text-cyan-600 dark:text-cyan-400 hover:underline cursor-pointer"
+                >
+                  {t('管理待补文件')} →
+                </button>
+              </div>
+            )}
           <div
             ref={tableContainerRef}
             className="w-full h-full bg-card/40 flex flex-col overflow-hidden"

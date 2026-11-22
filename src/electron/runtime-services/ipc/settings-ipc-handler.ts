@@ -457,6 +457,13 @@ export function registerSettingsIPCHandlers(): void {
         }
 
         const result = await workspaceAdmissionService.applyPolicyMutation(workspaceId, mutation)
+        void import('../analysis-queue-service')
+          .then(({ analysisQueueService }) =>
+            analysisQueueService.notifyWorkspaceConfigChangedForBackfill(workspaceId)
+          )
+          .catch(err =>
+            logger.warn(LogCategory.IPC, '[Settings] 通知视频后台回填器配置变更失败:', err)
+          )
 
         const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
         BrowserWindow.getAllWindows().forEach(win => {
@@ -611,6 +618,13 @@ export function registerSettingsIPCHandlers(): void {
           workspaceId,
           mutation || {}
         )
+        void import('../analysis-queue-service')
+          .then(({ analysisQueueService }) =>
+            analysisQueueService.notifyWorkspaceConfigChangedForBackfill(workspaceId)
+          )
+          .catch(err =>
+            logger.warn(LogCategory.IPC, '[Settings] 通知视频后台回填器策略变更失败:', err)
+          )
         const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
         BrowserWindow.getAllWindows().forEach(win => {
           if (!win.isDestroyed()) {

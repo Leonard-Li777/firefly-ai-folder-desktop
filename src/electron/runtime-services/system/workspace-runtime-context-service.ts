@@ -235,6 +235,51 @@ export class WorkspaceRuntimeContextService {
       ): Promise<{ success: boolean; queued?: number; error?: string }> =>
         enqueueRecovery(workspaceId, workspaceFileIds)
     )
+
+    // 长视频空闲单切片补全 5 通道（Spec §3.5）
+    ipcMain.handle(
+      'video-backfill:list-workspace',
+      async (_event, payload: { workspaceId: number }) => {
+        const { analysisQueueService } = await import('../analysis-queue-service')
+        return analysisQueueService.listWorkspacePendingBackfillVideos(payload?.workspaceId)
+      }
+    )
+
+    ipcMain.handle('video-backfill:start', async (_event, payload?: { workspaceId?: number }) => {
+      const { analysisQueueService } = await import('../analysis-queue-service')
+      if (payload?.workspaceId != null) {
+        await analysisQueueService.notifyWorkspaceConfigChangedForBackfill(payload.workspaceId)
+      }
+      const started = analysisQueueService.startVideoBackfill('manual_start')
+      return { started }
+    })
+
+    ipcMain.handle('video-backfill:pause', async () => {
+      const { analysisQueueService } = await import('../analysis-queue-service')
+      await analysisQueueService.pauseVideoBackfill()
+      return { paused: true }
+    })
+
+    ipcMain.handle(
+      'video-backfill:prioritize',
+      async (_event, payload: { workspaceId: number; fileFingerprint: string }) => {
+        const { analysisQueueService } = await import('../analysis-queue-service')
+        const ok = analysisQueueService.prioritizeVideoBackfill(
+          payload.workspaceId,
+          payload.fileFingerprint
+        )
+        return { ok }
+      }
+    )
+
+    ipcMain.handle(
+      'video-backfill:retry-failed',
+      async (_event, payload: { workspaceId: number }) => {
+        const { analysisQueueService } = await import('../analysis-queue-service')
+        const resetCount = await analysisQueueService.retryFailedVideoBackfill(payload.workspaceId)
+        return { resetCount }
+      }
+    )
   }
 
   /** 触发指定工作区的环境恢复存量缺口增量补齐入队（仅入队缺口文件，不推翻已提取阶段）。 */

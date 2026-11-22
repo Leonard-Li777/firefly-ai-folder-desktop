@@ -200,12 +200,12 @@ export async function checkBasicDataCompleteness(
               effectiveConfig.effectiveParams.videoSoftTokenBudget ?? 140,
               (effectiveConfig.effectiveParams.videoCutSensitivity as any) || 'medium'
             )
-            const hasIncompleteSegmentInScope = segRows.some(
-              seg =>
-                (seg.start_pts_sec ?? 0) < effectiveVideoLimitSec &&
-                !isVideoSegmentReusable(seg as any, expectedParamsHash)
-            )
-            if (hasIncompleteSegmentInScope) {
+            // Spec §2.2：主队列完整性仅校验 0 号切片（seg_0）；k >= 1 由独立单切片后台回填器专管，
+            // 避免目录重扫/监听/并行模式将待补长视频反复灌回主队列触发二次 LLM 浪费。
+            const seg0Row = segRows.find(seg => seg.segment_index === 0)
+            const hasIncompleteSeg0 =
+              !seg0Row || !isVideoSegmentReusable(seg0Row as any, expectedParamsHash)
+            if (hasIncompleteSeg0) {
               missingReasons.push('incomplete_video_segments')
             }
           }

@@ -169,6 +169,21 @@ export const workspaceApi = {
     ipcRenderer.invoke('dismiss-workspace-recovery-banner', workspaceId),
   enqueueWorkspaceRecoveryItems: (workspaceId: number, workspaceFileIds?: number[]) =>
     ipcRenderer.invoke('enqueue-workspace-recovery-items', workspaceId, workspaceFileIds),
+
+  // 长视频空闲单切片补全控制通道（Spec §3.5）
+  listWorkspacePendingBackfillVideos: (workspaceId: number) =>
+    ipcRenderer.invoke('video-backfill:list-workspace', { workspaceId }),
+  startVideoBackfill: (workspaceId?: number): Promise<{ started: boolean }> =>
+    ipcRenderer.invoke('video-backfill:start', workspaceId != null ? { workspaceId } : undefined),
+  pauseVideoBackfill: (): Promise<{ paused: boolean }> =>
+    ipcRenderer.invoke('video-backfill:pause'),
+  prioritizeVideoBackfill: (
+    workspaceId: number,
+    fileFingerprint: string
+  ): Promise<{ ok: boolean }> =>
+    ipcRenderer.invoke('video-backfill:prioritize', { workspaceId, fileFingerprint }),
+  retryFailedVideoBackfill: (workspaceId: number): Promise<{ resetCount: number }> =>
+    ipcRenderer.invoke('video-backfill:retry-failed', { workspaceId }),
   onWorkspaceRuntimeContextUpdated: (callback: (data: unknown) => void) => {
     const listener = (_event: unknown, data: unknown) => callback(data)
     ipcRenderer.on('workspace-runtime-context-updated', listener as any)

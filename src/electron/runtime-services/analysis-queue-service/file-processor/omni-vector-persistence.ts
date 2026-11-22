@@ -37,6 +37,8 @@ export interface OmniVectorPersistenceParams {
   }
   samplingIntervalSeconds?: number
   hasTextBody?: boolean
+  /** 若为 true，视频切片元数据/态 3 向量落库失败时抛错，阻止上游写假 completed */
+  throwOnChunkError?: boolean
 }
 
 /**
@@ -160,8 +162,53 @@ export async function persistOmniVectors(params: OmniVectorPersistenceParams): P
         `[分析队列] 视频时序切片持久化完成: fp=${fileFingerprint}, chunksCount=${videoChunks.length}, vectorSaved=${vectorSaved}`
       )
     } catch (chunkErr) {
-      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败(非致命):', chunkErr)
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视频切片写入失败:', chunkErr)
+      if (params.throwOnChunkError) {
+        throw chunkErr
+      }
     }
+  }
+}
+
+/**
+ * 差集孤儿向量清理（Spec §2.1）：
+ * 仅清理旧区间 [startSec, endSec) 中不在 newChunkIndices 内的孤儿向量，
+ * 避免现代 Omni 态 1 (vector_saved=true) 下全量删旧把刚写入的新 chunk_index 亲手删光。
+ */
+export async function cleanupOrphanedVideoChunksDiff(
+  db: any,
+  fileFingerprint: string,
+  omniClientInstance: { deleteVectors: (fps: string[]) => Promise<any> },
+  startSec: number,
+  endSec: number,
+  newChunkIndices: Iterable<number>
+): Promise<string[]> {
+  if (!fileFingerprint || fileFingerprint.startsWith('temp_')) return []
+  try {
+    const oldRows = db
+      .prepare(
+        'SELECT chunk_index FROM file_video_chunks WHERE file_fingerprint = ? AND start_sec >= ? AND start_sec < ?'
+      )
+      .all(fileFingerprint, startSec, endSec) as Array<{ chunk_index: number }>
+    if (!oldRows || oldRows.length === 0) return []
+    const keepSet = new Set<number>(newChunkIndices)
+    const orphanFps = oldRows
+      .filter(r => !keepSet.has(r.chunk_index))
+      .map(r => `${fileFingerprint}:c${r.chunk_index}`)
+    if (orphanFps.length === 0) return []
+    await omniClientInstance.deleteVectors(orphanFps)
+    logger.debug(
+      LogCategory.ANALYSIS_QUEUE,
+      `[FileProcessor] 差集清理 [${startSec}s ~ ${endSec}s) 孤儿切片向量 ${orphanFps.length} 条: ${fileFingerprint}`
+    )
+    return orphanFps
+  } catch (cleanupErr) {
+    logger.warn(
+      LogCategory.ANALYSIS_QUEUE,
+      '[FileProcessor] 差集清理旧切片向量异常(非致命):',
+      cleanupErr
+    )
+    return []
   }
 }
 

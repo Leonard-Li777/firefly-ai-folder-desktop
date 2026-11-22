@@ -45,6 +45,7 @@ import {
 } from './workspace/WorkspaceAdmissionRulesTab'
 import { WorkspaceMaintenanceTab } from './workspace/WorkspaceMaintenanceTab'
 import { WorkspacePluginsTab } from './workspace/WorkspacePluginsTab'
+import { WorkspacePendingBackfillTab } from './workspace/WorkspacePendingBackfillTab'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { useToastStore, toast } from '../common/Toast'
@@ -59,6 +60,7 @@ type WorkspaceTabId =
   | 'basic_ai_engine'
   | 'content_extraction'
   | 'workspace_plugins'
+  | 'pending_backfill'
   | 'ignore_rules'
   | 'maintenance'
 
@@ -74,6 +76,7 @@ const MemoizedContentExtractionTab = memo(ContentExtractionTab)
 const MemoizedWorkspaceAdmissionRulesTab = memo(WorkspaceAdmissionRulesTab)
 const MemoizedWorkspaceMaintenanceTab = memo(WorkspaceMaintenanceTab)
 const MemoizedWorkspacePluginsTab = memo(WorkspacePluginsTab)
+const MemoizedWorkspacePendingBackfillTab = memo(WorkspacePendingBackfillTab)
 
 /**
  * 工作目录独立设置对话框 (WorkspaceSettingsDialog)
@@ -228,7 +231,9 @@ export const WorkspaceSettingsDialog: React.FC = () => {
           const tabKey =
             targetWorkspaceTab === 'admission' || targetWorkspaceTab === 'admission_rules'
               ? 'ignore_rules'
-              : targetWorkspaceTab
+              : targetWorkspaceTab === 'recovery_queue'
+                ? 'pending_backfill'
+                : targetWorkspaceTab
           setActiveTab(tabKey as WorkspaceTabId)
         }
         setIsManualWizardMode(false)
@@ -386,6 +391,12 @@ export const WorkspaceSettingsDialog: React.FC = () => {
         name: t('目录插件配置'),
         icon: 'extension',
         description: t('按当前目录单独开关语音听写与敏感图识别等组件')
+      },
+      {
+        id: 'pending_backfill',
+        name: t('待补分析文件'),
+        icon: 'pending_actions',
+        description: t('管理长视频空闲补全与环境恢复待补任务')
       },
       {
         id: 'ignore_rules',
@@ -749,6 +760,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                         resolvedFields={resolvedEffectiveConfig?.fields}
                         hasBoundWorkflow={hasBoundWorkflow}
                         onFixAction={handleDegradationFixAction}
+                        onNavigateTab={tabId => handleTabChange(tabId)}
                       />
                     </div>
                   )}
@@ -832,6 +844,22 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                           }}
                         />
                       </div>
+                    </div>
+                  )}
+
+                  {visitedTabs.has('pending_backfill') && (
+                    <div
+                      className={cn(
+                        'flex-1 flex flex-col overflow-hidden',
+                        activeTab !== 'pending_backfill' && 'hidden'
+                      )}
+                    >
+                      <MemoizedWorkspacePendingBackfillTab
+                        key={activeWorkspace.id}
+                        workspace={activeWorkspace}
+                        isActive={activeTab === 'pending_backfill'}
+                        onNavigateTab={tabId => handleTabChange(tabId)}
+                      />
                     </div>
                   )}
                 </div>

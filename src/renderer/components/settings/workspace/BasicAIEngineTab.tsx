@@ -71,6 +71,8 @@ export interface BasicAIEngineTabProps {
     action: import('../../../lib/workspace-policy/workspace-ai-client').DegradationFixAction,
     pluginId?: string
   ) => void
+  /** 同弹窗内跳转至其它工作目录设置 Tab（例如直达「待补分析文件」） */
+  onNavigateTab?: (tabId: 'pending_backfill') => void
 }
 
 /** 待提交的补丁累积 */
@@ -198,7 +200,8 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   onConfigSaved,
   resolvedFields,
   hasBoundWorkflow = false,
-  onFixAction
+  onFixAction,
+  onNavigateTab
 }) => {
   const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
@@ -1591,6 +1594,29 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                         '每个视频最多整理多长时间，5 分钟一档，最长 3 小时；普通电脑建议选短一些，放后台慢慢整理。'
                       )}
                     </p>
+                    {/* Spec §3.3：取消 Switch 后，当用户设定时长 > 5 分钟时提供大白话解释与直达「待补分析文件」引导 */}
+                    {videoAnalyzeDurationSec > 300 && !isFreeUser && (
+                      <div
+                        data-testid="video-fast-first-slice-guide"
+                        className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-700 dark:text-sky-300 flex items-start justify-between gap-3"
+                      >
+                        <p className="leading-relaxed">
+                          {t(
+                            '为避免长视频卡住其它文件，超过 5 分钟的视频首次会先分析开头 5 分钟并快速出结果；剩余部分（至您设定的 {mins} 分钟上限）会在电脑空闲时自动补全，导入新文件时会自动让路。',
+                            { mins: Math.round(videoAnalyzeDurationSec / 60) }
+                          )}
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 px-2 text-[11px] text-sky-700 dark:text-sky-300 hover:bg-sky-500/15 shrink-0 font-semibold"
+                          onClick={() => onNavigateTab?.('pending_backfill')}
+                        >
+                          {t('查看待补分析文件')} →
+                        </Button>
+                      </div>
+                    )}
                   </div>
 
                   {/* 免费会员权益说明与 Pro 升级引导 */}

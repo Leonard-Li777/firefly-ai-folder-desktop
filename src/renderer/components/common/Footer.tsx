@@ -134,6 +134,7 @@ export function Footer() {
   const waiting = useAnalysisQueueStore(
     s => s.snapshot?.items?.filter(i => i.status === 'pending').length || 0
   )
+  const videoBackfill = useAnalysisQueueStore(s => s.snapshot?.videoBackfill)
   const { config } = useConfigStore()
   const { openSettings, openWorkspaceSettings } = useSettingsStore()
   const [showUpdateModal, setShowUpdateModal] = useState(false)
@@ -917,18 +918,32 @@ export function Footer() {
   // 注：PRD-0043 后"非最佳可用引擎"警告归属引擎应用（firefly-ai-engine）Footer 展示，
   // desktop 不再显示该警告（PRD-0049：BEST_ACCELERATION 记忆服务已清退）。
 
+  // Spec §3.2：严格在主队列 displayItem（含 800ms 完成态滞留）彻底清空且未暂停时切入后台视频补全态，
+  // 使用独立 backfillScale + 0.4s 缓动，避免与主队列 animScale / 800ms 定时器冲突闪烁。
+  const backfillCurrent =
+    !displayItem && !analyzing && !isPaused && videoBackfill?.running && videoBackfill.current
+      ? videoBackfill.current
+      : undefined
+  const backfillScale = backfillCurrent
+    ? backfillCurrent.targetSlices > 0
+      ? Math.max(0.01, Math.min(0.98, backfillCurrent.progressPct / 100))
+      : 0.01
+    : 0
+
   const handleQueueButtonClick = async () => {
     try {
-      if (
-        displayItem?.workspaceId &&
-        runningWorkspace &&
-        currentWorkspaceDirectory?.id !== displayItem.workspaceId
-      ) {
+      const targetWsId = displayItem?.workspaceId ?? backfillCurrent?.workspaceId
+      const targetWs =
+        runningWorkspace ||
+        (targetWsId != null
+          ? workspaceDirectories.find(w => Number(w.id) === Number(targetWsId))
+          : undefined)
+      if (targetWsId && targetWs && currentWorkspaceDirectory?.id !== targetWsId) {
         if (typeof window.electronAPI?.setCurrentWorkspaceDirectory === 'function') {
-          await window.electronAPI.setCurrentWorkspaceDirectory(runningWorkspace.path)
+          await window.electronAPI.setCurrentWorkspaceDirectory(targetWs.path)
         }
-        useVirtualDirectoryStore.getState().setCurrentWorkspaceDirectory(runningWorkspace)
-        useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory(runningWorkspace)
+        useVirtualDirectoryStore.getState().setCurrentWorkspaceDirectory(targetWs)
+        useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory(targetWs)
         window.dispatchEvent(new CustomEvent('workspace-directories-updated'))
       }
     } catch (e) {
@@ -1098,11 +1113,16 @@ export function Footer() {
                   ws: displayItem.workspaceName ? `【${displayItem.workspaceName}】` : '',
                   name: displayItem.name
                 })
-              : t('查看分析队列 - {count} 个文件等待中', { count: waiting })
+              : backfillCurrent
+                ? `${t('视频分析：已完成 {done}/{total} 个片段', {
+                    done: backfillCurrent.completedSlices,
+                    total: backfillCurrent.targetSlices
+                  })} · ${t('导入新文件会自动暂停让路')}`
+                : t('查看分析队列 - {count} 个文件等待中', { count: waiting })
           }
         >
-          {/* 背景进度条层：自适应时间与动态阻尼自平衡算法 (Self-Balancing Adaptive Progress) + 思考流光 */}
-          {displayItem && (
+          {/* 背景进度条层：主队列自适应进度条 / 独立视频补全进度条（互不干扰） */}
+          {displayItem ? (
             <div
               className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
               style={{
@@ -1140,7 +1160,29 @@ export function Footer() {
               {/* 头部先导光标线 */}
               <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-gradient-to-b from-sky-400/50 via-sky-400/90 to-sky-400/50 dark:from-sky-300/60 dark:via-white/90 dark:to-sky-300/60 shadow-[0_0_6px_rgba(56,189,248,0.5)]" />
             </div>
-          )}
+          ) : backfillCurrent ? (
+            <div
+              data-testid="footer-video-backfill-bar"
+              className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
+              style={{
+                transform: `scaleX(${backfillScale})`,
+                transformOrigin: 'left',
+                transition: 'transform 0.4s ease-out'
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/15 via-sky-500/20 to-cyan-600/20 dark:from-cyan-600/25 dark:via-sky-500/30 dark:to-cyan-400/30" />
+              <div
+                className="absolute inset-0 pointer-events-none opacity-70 dark:opacity-80"
+                style={{
+                  background:
+                    'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 35%, rgba(165,243,252,0.3) 50%, rgba(255,255,255,0.2) 65%, transparent 100%)',
+                  backgroundSize: '800px 100%',
+                  animation: 'shimmer 2.4s infinite ease-in-out'
+                }}
+              />
+              <div className="absolute top-0 right-0 bottom-0 w-[2px] bg-gradient-to-b from-cyan-400/50 via-cyan-400/90 to-cyan-400/50" />
+            </div>
+          ) : null}
 
           {/* 前景文字内容 */}
           <span className="relative z-10 text-foreground dark:text-foreground flex items-center gap-1.5">
@@ -1149,7 +1191,9 @@ export function Footer() {
               className={`inline-block w-1.5 h-1.5 rounded-full transition-colors ${
                 displayItem
                   ? 'bg-blue-500 dark:bg-sky-400 animate-pulse shadow-[0_0_6px_rgba(59,130,246,0.6)]'
-                  : 'bg-muted-foreground/40'
+                  : backfillCurrent
+                    ? 'bg-cyan-500 dark:bg-cyan-400 animate-pulse shadow-[0_0_6px_rgba(6,182,212,0.6)]'
+                    : 'bg-muted-foreground/40'
               }`}
             />
 
@@ -1167,6 +1211,20 @@ export function Footer() {
                   {t('等待: {count}', { count: waiting })}
                 </span>
               </>
+            ) : backfillCurrent ? (
+              <>
+                <span className="text-cyan-600 dark:text-cyan-400 font-semibold tracking-tight">
+                  {t('视频补全')} ({backfillCurrent.completedSlices}/{backfillCurrent.targetSlices}):
+                </span>
+                <span className="max-w-[220px] truncate text-foreground/90 font-medium">
+                  {backfillCurrent.workspaceName ? `【${backfillCurrent.workspaceName}】` : ''}
+                  {backfillCurrent.fileName}
+                </span>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-muted-foreground font-normal">
+                  {t('待补: {count}', { count: videoBackfill?.pendingVideoCount ?? 0 })}
+                </span>
+              </>
             ) : isPaused ? (
               <span className="text-yellow-500 font-medium">{t('队列暂停')}</span>
             ) : (
@@ -1174,7 +1232,9 @@ export function Footer() {
                 <span className="text-muted-foreground font-medium">{t('空闲')}</span>
                 <span className="text-muted-foreground/40">·</span>
                 <span className="text-muted-foreground font-normal">
-                  {t('等待: {count}', { count: waiting })}
+                  {videoBackfill?.userPaused && (videoBackfill?.pendingVideoCount ?? 0) > 0
+                    ? t('待补暂停: {count}', { count: videoBackfill.pendingVideoCount })
+                    : t('等待: {count}', { count: waiting })}
                 </span>
               </>
             )}

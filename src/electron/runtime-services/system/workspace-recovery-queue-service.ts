@@ -134,7 +134,7 @@ export function scanRecoverableFilesLight(db: any, workspaceId: number): Recover
     )
     .all(workspaceId) as ScanRow[]
 
-  // 一次查出该工作区所有待续跑长视频切片的 file_id 集合
+  // 一次查出该工作区所有待续跑长视频切片的 file_id 集合（限定 k >= 1 且 seg_0 已完成，Spec §2.2）
   const pendingVideoIds = new Set<string>(
     (
       db
@@ -142,7 +142,13 @@ export function scanRecoverableFilesLight(db: any, workspaceId: number): Recover
           `SELECT DISTINCT fvs.file_id
            FROM file_video_segments fvs
            INNER JOIN workspace_files wf ON wf.file_fingerprint = fvs.file_id
-           WHERE wf.workspace_id = ? AND fvs.status = 'pending'`
+           WHERE wf.workspace_id = ?
+             AND fvs.segment_index >= 1
+             AND fvs.status = 'pending'
+             AND EXISTS (
+               SELECT 1 FROM file_video_segments s0
+               WHERE s0.file_id = fvs.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
+             )`
         )
         .all(workspaceId) as Array<{ file_id: string }>
     ).map(r => r.file_id)
@@ -262,13 +268,29 @@ export async function listRecoverableFilesPrecise(
       if (isCleared(row.meta)) continue
       const missingReasons: string[] = []
 
-      // 待续跑长视频（独立于 checkBasicDataCompleteness 的切片缺口判定）
+      // 待续跑长视频（严格限定 k >= 1、在有效上限内且 seg_0 已完成，Spec §2.2）
       if (row.file_fingerprint != null) {
+        const configuredRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? 300
+        const configuredLimit = Math.min(
+          10800,
+          Math.max(300, Math.round(configuredRaw / 300) * 300)
+        )
+        const isFreeTier = Boolean((effectiveConfig.capabilities as any)?.isFreeTier)
+        const effectiveLimitSec = isFreeTier ? 300 : configuredLimit
         const pendingSeg = db
           .prepare(
-            `SELECT 1 FROM file_video_segments WHERE file_id = ? AND status = 'pending' LIMIT 1`
+            `SELECT 1 FROM file_video_segments s
+             WHERE s.file_id = ?
+               AND s.segment_index >= 1
+               AND s.status = 'pending'
+               AND s.start_pts_sec < ?
+               AND EXISTS (
+                 SELECT 1 FROM file_video_segments s0
+                 WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
+               )
+             LIMIT 1`
           )
-          .get(row.file_fingerprint)
+          .get(row.file_fingerprint, effectiveLimitSec)
         if (pendingSeg) missingReasons.push('pending_video')
       }
 
@@ -421,15 +443,24 @@ export async function enqueueRecovery(
     }
     if (items.length === 0) return { success: true, queued: 0 }
     const { analysisQueueService } = await import('../analysis-queue-service')
-    await analysisQueueService.addItems(
-      items.map(it => ({
-        path: it.path,
-        name: it.name,
-        size: Number(it.fileSize ?? 0),
-        type: 'file' as const,
-        workspaceId
-      }))
-    )
+    // Spec §2.2：含非视频缺口（OCR/封面/转录）的文件入主队列重跑标签与 Stage 3/4；
+    // 纯长视频待补切片禁止入主队列 addItems，统一唤醒独立单切片后台回填器。
+    const nonVideoItems = items.filter(it => it.missingReasons.some(r => r !== 'pending_video'))
+    const videoItems = items.filter(it => it.isPendingVideo)
+    if (nonVideoItems.length > 0) {
+      await analysisQueueService.addItems(
+        nonVideoItems.map(it => ({
+          path: it.path,
+          name: it.name,
+          size: Number(it.fileSize ?? 0),
+          type: 'file' as const,
+          workspaceId
+        }))
+      )
+    }
+    if (videoItems.length > 0) {
+      analysisQueueService.startVideoBackfill('manual_recovery')
+    }
     return { success: true, queued: items.length }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)

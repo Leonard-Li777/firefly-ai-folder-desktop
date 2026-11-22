@@ -123,6 +123,8 @@ export interface OmniPerceptionOptions {
   fileFingerprint?: string
   /** 是否跳过 CPU 阶段 5W 造句（当后续由生成式 AI 接管时置为 true） */
   skip5wSynthesis?: boolean
+  /** 可选外部中止信号，与内部超时信号合并以支持删除目录/暂停时立即中断在途请求 */
+  signal?: AbortSignal
 }
 
 /** POST /api/extract 逐请求覆盖字段（`extract` 回退通道必须与 perceive 同源，杜绝参数丢失） */

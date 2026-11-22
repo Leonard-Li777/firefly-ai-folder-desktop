@@ -330,6 +330,16 @@ function getRecoveryApi() {
           wsId: number,
           ids?: number[]
         ) => Promise<{ success: boolean; queued?: number; error?: string }>
+        listWorkspacePendingBackfillVideos?: (
+          wsId: number
+        ) => Promise<import('@firefly/types').WorkspaceBackfillListResult>
+        startVideoBackfill?: (wsId?: number) => Promise<{ started: boolean }>
+        pauseVideoBackfill?: () => Promise<{ paused: boolean }>
+        prioritizeVideoBackfill?: (
+          wsId: number,
+          fileFingerprint: string
+        ) => Promise<{ ok: boolean }>
+        retryFailedVideoBackfill?: (wsId: number) => Promise<{ resetCount: number }>
       }
     | undefined
 }
@@ -378,6 +388,53 @@ export async function enqueueWorkspaceRecoveryItems(
     return { success: false, error: 'WORKSPACE_RECOVERY_ENQUEUE_CHANNEL_UNAVAILABLE' }
   }
   return api.enqueueWorkspaceRecoveryItems(workspaceId, workspaceFileIds)
+}
+
+/** 拉取指定工作区的长视频空闲补全清单（Spec §3.5） */
+export async function fetchWorkspacePendingBackfillVideos(
+  workspaceId: number
+): Promise<import('@firefly/types').WorkspaceBackfillListResult> {
+  const api = getRecoveryApi()
+  if (typeof api?.listWorkspacePendingBackfillVideos !== 'function') {
+    return {
+      success: false,
+      workspaceId,
+      effectiveLimitSec: 300,
+      items: [],
+      snapshot: { running: false, userPaused: false, pendingVideoCount: 0, pendingSliceCount: 0 },
+      error: 'VIDEO_BACKFILL_CHANNEL_UNAVAILABLE'
+    }
+  }
+  return api.listWorkspacePendingBackfillVideos(workspaceId)
+}
+
+export async function startVideoBackfill(workspaceId?: number): Promise<{ started: boolean }> {
+  const api = getRecoveryApi()
+  if (typeof api?.startVideoBackfill !== 'function') return { started: false }
+  return api.startVideoBackfill(workspaceId)
+}
+
+export async function pauseVideoBackfill(): Promise<{ paused: boolean }> {
+  const api = getRecoveryApi()
+  if (typeof api?.pauseVideoBackfill !== 'function') return { paused: false }
+  return api.pauseVideoBackfill()
+}
+
+export async function prioritizeVideoBackfill(
+  workspaceId: number,
+  fileFingerprint: string
+): Promise<{ ok: boolean }> {
+  const api = getRecoveryApi()
+  if (typeof api?.prioritizeVideoBackfill !== 'function') return { ok: false }
+  return api.prioritizeVideoBackfill(workspaceId, fileFingerprint)
+}
+
+export async function retryFailedVideoBackfill(
+  workspaceId: number
+): Promise<{ resetCount: number }> {
+  const api = getRecoveryApi()
+  if (typeof api?.retryFailedVideoBackfill !== 'function') return { resetCount: 0 }
+  return api.retryFailedVideoBackfill(workspaceId)
 }
 
 /** 将主进程标准信封 `{ contextEpoch, snapshot: WorkspaceRuntimeContext }`（或测试扁平对象）统一归一化 */
