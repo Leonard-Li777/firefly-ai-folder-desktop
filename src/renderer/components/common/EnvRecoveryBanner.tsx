@@ -108,49 +108,52 @@ export const EnvRecoveryBanner: React.FC<EnvRecoveryBannerProps> = ({
         className
       )}
     >
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 flex-1">
         <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-500" />
         <span className="truncate">{buildText()}</span>
+
+        {/* 操作区：左对齐，紧随文案（立即补全 / 查看待补项 = 按钮形态，知道了 = 下划线） */}
+        <div className="flex items-center gap-2 shrink-0 ml-1">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy}
+            onClick={handleRecoverAll}
+            className="h-6 px-2 text-xs rounded gap-1 border-amber-400/60 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 cursor-pointer shadow-2xs shrink-0"
+          >
+            {t('立即补全')}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={e => {
+              e.stopPropagation()
+              onOpenRecoveryQueue()
+            }}
+            className="h-6 px-2 text-xs rounded gap-1 border-amber-400/60 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 cursor-pointer shadow-2xs shrink-0"
+          >
+            {t('查看待补项')}
+          </Button>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="text-xs text-amber-700 dark:text-amber-300 underline underline-offset-2 hover:opacity-80 cursor-pointer px-1 shrink-0"
+          >
+            {t('知道了')}
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={busy}
-          onClick={handleRecoverAll}
-          className="h-6 px-2 text-xs rounded gap-1 border-amber-400/60 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 cursor-pointer shadow-2xs shrink-0"
-        >
-          {t('立即补全')}
-        </Button>
-        <button
-          type="button"
-          onClick={e => {
-            e.stopPropagation()
-            onOpenRecoveryQueue()
-          }}
-          className="text-xs text-amber-700 dark:text-amber-300 underline underline-offset-2 hover:opacity-80 cursor-pointer shrink-0"
-        >
-          {t('查看待补项')}
-        </button>
-        <button
-          type="button"
-          onClick={handleDismiss}
-          className="text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 px-1.5 py-0.5 rounded transition-colors cursor-pointer font-medium shrink-0"
-        >
-          {t('知道了')}
-        </button>
-        <span className="h-3 w-px bg-border/60 shrink-0" />
-        <button
-          type="button"
-          onClick={handleDismiss}
-          aria-label={t('关闭')}
-          title={t('关闭')}
-          className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer shrink-0"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
-      </div>
+      {/* 关闭：唯一右对齐元素 */}
+      <button
+        type="button"
+        onClick={handleDismiss}
+        aria-label={t('关闭')}
+        title={t('关闭')}
+        className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-colors cursor-pointer shrink-0"
+      >
+        <X className="w-3.5 h-3.5" />
+      </button>
     </div>
   )
 }
