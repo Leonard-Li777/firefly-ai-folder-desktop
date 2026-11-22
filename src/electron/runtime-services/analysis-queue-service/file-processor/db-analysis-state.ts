@@ -1,8 +1,16 @@
 import path from 'node:path'
-import { LogCategory, logger, FileCategory, getFileCategory } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  FileCategory,
+  getFileCategory,
+  computeVideoVisualParamsHash,
+  isVideoSegmentReusable
+} from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { omniClient } from '../../../services/omni-client'
 import { decompressText } from '../../../utils/text-compressor'
+import { userTierService } from '../../user-tier/user-tier-service'
 import type { EffectiveWorkspaceAIConfigResult } from '../../system/workspace-analysis-context'
 
 export function getFileStageFromDB(db: any, workspaceId: number, filePath: string): number {
@@ -154,6 +162,57 @@ export async function checkBasicDataCompleteness(
           }
         }
       }
+
+      // 检查当前有效分析时长上限内是否存在未完成或需升格重提的 file_video_segments 切片
+      if (effectiveConfig.capabilities.videoVisualAnalysisEnabled) {
+        try {
+          const segRows = db
+            .prepare(
+              'SELECT segment_index, start_pts_sec, end_pts_sec, frame_count, visual_embedded_count, status, params_hash FROM file_video_segments WHERE file_id = ? ORDER BY segment_index ASC'
+            )
+            .all(fingerprint) as Array<{
+            segment_index?: number
+            start_pts_sec?: number
+            end_pts_sec?: number
+            frame_count?: number
+            visual_embedded_count?: number
+            status?: string
+            params_hash?: string
+          }>
+          if (segRows && segRows.length > 0) {
+            const cachedTierData = userTierService.getCachedData?.()
+            const computedLimits = cachedTierData?.computed_limits
+            const isFreeTier = Boolean((effectiveConfig.capabilities as any)?.isFreeTier)
+            const entitlementLimit =
+              typeof computedLimits?.video_max_duration_seconds === 'number'
+                ? computedLimits.video_max_duration_seconds
+                : isFreeTier
+                  ? 300
+                  : 999999999
+            const configuredRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? 300
+            const configuredLimit = Math.min(
+              10800,
+              Math.max(300, Math.round(configuredRaw / 300) * 300)
+            )
+            const effectiveVideoLimitSec = Math.min(entitlementLimit, configuredLimit)
+            const expectedParamsHash = computeVideoVisualParamsHash(
+              effectiveConfig.effectiveParams.videoFrameQuotaMax,
+              effectiveConfig.effectiveParams.videoSoftTokenBudget ?? 140,
+              (effectiveConfig.effectiveParams.videoCutSensitivity as any) || 'medium'
+            )
+            const hasIncompleteSegmentInScope = segRows.some(
+              seg =>
+                (seg.start_pts_sec ?? 0) < effectiveVideoLimitSec &&
+                !isVideoSegmentReusable(seg as any, expectedParamsHash)
+            )
+            if (hasIncompleteSegmentInScope) {
+              missingReasons.push('incomplete_video_segments')
+            }
+          }
+        } catch {
+          // 兼容未创建 file_video_segments 表的最小单测夹具
+        }
+      }
     } catch {
       missingReasons.push('query_video_chunks_error')
     }
@@ -223,7 +282,8 @@ export async function checkBasicDataCompleteness(
   const ocrRank = (size?: string): number => (size === 'small' ? 2 : size === 'tiny' ? 1 : 0)
   const sameFingerprint = attemptedEmpty?.fileFingerprint === fingerprint
   const effectiveOcrValid =
-    sameFingerprint && ocrRank(effectiveConfig.effectiveParams.ocrModelSize) <= ocrRank(attemptedEmpty?.ocrModelSize)
+    sameFingerprint &&
+    ocrRank(effectiveConfig.effectiveParams.ocrModelSize) <= ocrRank(attemptedEmpty?.ocrModelSize)
   const targetAsrSec =
     category === FileCategory.VIDEO
       ? effectiveConfig.effectiveParams.videoAsrDurationSec

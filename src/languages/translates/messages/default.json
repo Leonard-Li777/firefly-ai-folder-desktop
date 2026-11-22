@@ -90,77 +90,6 @@
     "$files": ["src/renderer/App.tsx(26442-26459)"],
     "$id": 7621
   },
-  "已加入分析队列": {
-    "en-US": "Already added to analysis queue",
-    "es-ES": "Ya agregado a la cola de análisis",
-    "ar-EG": "تمت إضافته بالفعل إلى قائمة انتظار التحليل",
-    "pt-PT": "Já adicionado à fila de análise",
-    "ru-RU": "Уже добавлено в очередь анализа",
-    "ja-JP": "すでに分析キューに追加されています",
-    "de-DE": "Bereits zur Analysewarteschlange hinzugefügt",
-    "fr-FR": "Déjà ajouté à la file d'attente d'analyse",
-    "ko-KR": "분석 대기열에 이미 추가됨",
-    "$files": [
-      "src/renderer/utils/enqueue-notifier.ts(406-417)",
-      "src/renderer/utils/enqueue-notifier.ts(1607-1618)"
-    ],
-    "$id": 22915
-  },
-  "当前工作区尚未配置 AI 策略，已拦截入队。请先完成工作区配置。": {
-    "en-US": "The AI ​​policy has not been configured in the current workspace and entry into the queue has been blocked. Please complete the workspace configuration first.",
-    "es-ES": "La política de IA no se configuró en el espacio de trabajo actual y se bloqueó la entrada a la cola. Primero complete la configuración del espacio de trabajo.",
-    "ar-EG": "لم يتم تكوين سياسة الذكاء الاصطناعي في مساحة العمل الحالية وتم حظر الدخول إلى قائمة الانتظار. الرجاء إكمال تكوين مساحة العمل أولاً.",
-    "pt-PT": "A política de IA não foi configurada no espaço de trabalho atual e a entrada na fila foi bloqueada. Conclua primeiro a configuração do espaço de trabalho.",
-    "ru-RU": "Политика AI не настроена в текущей рабочей области и вход в очередь заблокирован. Пожалуйста, сначала завершите настройку рабочей области.",
-    "ja-JP": "現在のワークスペースでは AI ポリシーが構成されていないため、キューへのエントリがブロックされています。まずワークスペースの構成を完了してください。",
-    "de-DE": "Die KI-Richtlinie wurde im aktuellen Arbeitsbereich nicht konfiguriert und der Eintritt in die Warteschlange wurde blockiert. Bitte schließen Sie zunächst die Arbeitsbereichskonfiguration ab.",
-    "fr-FR": "La politique d'IA n'a pas été configurée dans l'espace de travail actuel et l'entrée dans la file d'attente a été bloquée. Veuillez d'abord terminer la configuration de l'espace de travail.",
-    "ko-KR": "현재 워크스페이스에는 AI 정책이 구성되지 않아 대기열 진입이 차단되었습니다. 먼저 작업공간 구성을 완료하세요.",
-    "$files": ["src/renderer/utils/enqueue-notifier.ts(627-663)"],
-    "$id": 22916
-  },
-  "前往配置": {
-    "en-US": "Go to configuration",
-    "es-ES": "Ir a configuración",
-    "ar-EG": "انتقل إلى التكوين",
-    "pt-PT": "Vá para configuração",
-    "ru-RU": "Перейти к настройке",
-    "ja-JP": "設定に移動",
-    "de-DE": "Gehen Sie zur Konfiguration",
-    "fr-FR": "Aller à la configuration",
-    "ko-KR": "구성으로 이동",
-    "$files": [
-      "src/renderer/utils/enqueue-notifier.ts(718-726)",
-      "src/renderer/utils/enqueue-notifier.ts(1308-1316)"
-    ],
-    "$id": 22917
-  },
-  "已添加 {count} 项，另有 {blocked} 项因工作区尚未配置策略被跳过": {
-    "en-US": "{count} items have been added, and {blocked} items have been skipped because the workspace has not yet configured policies.",
-    "es-ES": "Se agregaron {count} elementos y se omitieron {blocked} elementos porque el espacio de trabajo aún no ha configurado políticas.",
-    "ar-EG": "تمت إضافة {count} عنصر، وتم تخطي {blocked} عنصر لأن مساحة العمل لم تقم بتكوين السياسات بعد.",
-    "pt-PT": "{count} itens foram adicionados e {blocked} itens foram ignorados porque o espaço de trabalho ainda não configurou políticas.",
-    "ru-RU": "Элементов: {count} добавлено, а элементов: {blocked} пропущено, поскольку в рабочей области еще не настроены политики.",
-    "ja-JP": "{count} 個の項目が追加されましたが、ワークスペースにポリシーがまだ構成されていないため、{blocked} 個の項目はスキップされました。",
-    "de-DE": "{count} Elemente wurden hinzugefügt und {blocked} Elemente wurden übersprungen, da der Arbeitsbereich noch keine Richtlinien konfiguriert hat.",
-    "fr-FR": "{count} éléments ont été ajoutés et {blocked} éléments ont été ignorés car l'espace de travail n'a pas encore configuré de stratégies.",
-    "ko-KR": "{count} 항목이 추가되었으며, 작업공간이 아직 정책을 구성하지 않았기 때문에 {blocked} 항목을 건너뛰었습니다.",
-    "$files": ["src/renderer/utils/enqueue-notifier.ts(1104-1149)"],
-    "$id": 22918
-  },
-  "未添加新文件（文件可能已在队列中或已分析）": {
-    "en-US": "No new file added (the file may already be in the queue or analyzed)",
-    "es-ES": "No se agregó ningún archivo nuevo (es posible que el archivo ya esté en la cola o analizado)",
-    "ar-EG": "لم تتم إضافة ملف جديد (قد يكون الملف موجودًا بالفعل في قائمة الانتظار أو تم تحليله)",
-    "pt-PT": "Nenhum novo arquivo adicionado (o arquivo pode já estar na fila ou analisado)",
-    "ru-RU": "Новый файл не добавлен (возможно, файл уже находится в очереди или проанализирован)",
-    "ja-JP": "新しいファイルは追加されません (ファイルはすでにキューにあるか、分析されている可能性があります)",
-    "de-DE": "Keine neue Datei hinzugefügt (die Datei befindet sich möglicherweise bereits in der Warteschlange oder wurde analysiert)",
-    "fr-FR": "Aucun nouveau fichier ajouté (le fichier est peut-être déjà dans la file d'attente ou analysé)",
-    "ko-KR": "새 파일이 추가되지 않았습니다(파일이 이미 대기열에 있거나 분석되었을 수 있음).",
-    "$files": ["src/renderer/utils/enqueue-notifier.ts(1668-1693)"],
-    "$id": 22919
-  },
   "萤核智能文件夹需要访问您的“下载”文件夹以整理和检索文件。": {
     "en-US": "Firefly Core Smart Folder needs to access your \"Downloads\" folder to organize and retrieve files.",
     "es-ES": "La Firefly AI Folder Core necesita acceder a su carpeta \"Descargas\" para organizar y recuperar archivos.",
@@ -332,6 +261,77 @@
       "src/electron/runtime-services/ai-skill-api-service.ts(40662-40673)"
     ],
     "$id": 7631
+  },
+  "已加入分析队列": {
+    "en-US": "Already added to analysis queue",
+    "es-ES": "Ya agregado a la cola de análisis",
+    "ar-EG": "تمت إضافته بالفعل إلى قائمة انتظار التحليل",
+    "pt-PT": "Já adicionado à fila de análise",
+    "ru-RU": "Уже добавлено в очередь анализа",
+    "ja-JP": "すでに分析キューに追加されています",
+    "de-DE": "Bereits zur Analysewarteschlange hinzugefügt",
+    "fr-FR": "Déjà ajouté à la file d'attente d'analyse",
+    "ko-KR": "분석 대기열에 이미 추가됨",
+    "$files": [
+      "src/renderer/utils/enqueue-notifier.ts(406-417)",
+      "src/renderer/utils/enqueue-notifier.ts(1607-1618)"
+    ],
+    "$id": 22915
+  },
+  "当前工作区尚未配置 AI 策略，已拦截入队。请先完成工作区配置。": {
+    "en-US": "The AI ​​policy has not been configured in the current workspace and entry into the queue has been blocked. Please complete the workspace configuration first.",
+    "es-ES": "La política de IA no se configuró en el espacio de trabajo actual y se bloqueó la entrada a la cola. Primero complete la configuración del espacio de trabajo.",
+    "ar-EG": "لم يتم تكوين سياسة الذكاء الاصطناعي في مساحة العمل الحالية وتم حظر الدخول إلى قائمة الانتظار. الرجاء إكمال تكوين مساحة العمل أولاً.",
+    "pt-PT": "A política de IA não foi configurada no espaço de trabalho atual e a entrada na fila foi bloqueada. Conclua primeiro a configuração do espaço de trabalho.",
+    "ru-RU": "Политика AI не настроена в текущей рабочей области и вход в очередь заблокирован. Пожалуйста, сначала завершите настройку рабочей области.",
+    "ja-JP": "現在のワークスペースでは AI ポリシーが構成されていないため、キューへのエントリがブロックされています。まずワークスペースの構成を完了してください。",
+    "de-DE": "Die KI-Richtlinie wurde im aktuellen Arbeitsbereich nicht konfiguriert und der Eintritt in die Warteschlange wurde blockiert. Bitte schließen Sie zunächst die Arbeitsbereichskonfiguration ab.",
+    "fr-FR": "La politique d'IA n'a pas été configurée dans l'espace de travail actuel et l'entrée dans la file d'attente a été bloquée. Veuillez d'abord terminer la configuration de l'espace de travail.",
+    "ko-KR": "현재 워크스페이스에는 AI 정책이 구성되지 않아 대기열 진입이 차단되었습니다. 먼저 작업공간 구성을 완료하세요.",
+    "$files": ["src/renderer/utils/enqueue-notifier.ts(627-663)"],
+    "$id": 22916
+  },
+  "前往配置": {
+    "en-US": "Go to configuration",
+    "es-ES": "Ir a configuración",
+    "ar-EG": "انتقل إلى التكوين",
+    "pt-PT": "Vá para configuração",
+    "ru-RU": "Перейти к настройке",
+    "ja-JP": "設定に移動",
+    "de-DE": "Gehen Sie zur Konfiguration",
+    "fr-FR": "Aller à la configuration",
+    "ko-KR": "구성으로 이동",
+    "$files": [
+      "src/renderer/utils/enqueue-notifier.ts(718-726)",
+      "src/renderer/utils/enqueue-notifier.ts(1308-1316)"
+    ],
+    "$id": 22917
+  },
+  "已添加 {count} 项，另有 {blocked} 项因工作区尚未配置策略被跳过": {
+    "en-US": "{count} items have been added, and {blocked} items have been skipped because the workspace has not yet configured policies.",
+    "es-ES": "Se agregaron {count} elementos y se omitieron {blocked} elementos porque el espacio de trabajo aún no ha configurado políticas.",
+    "ar-EG": "تمت إضافة {count} عنصر، وتم تخطي {blocked} عنصر لأن مساحة العمل لم تقم بتكوين السياسات بعد.",
+    "pt-PT": "{count} itens foram adicionados e {blocked} itens foram ignorados porque o espaço de trabalho ainda não configurou políticas.",
+    "ru-RU": "Элементов: {count} добавлено, а элементов: {blocked} пропущено, поскольку в рабочей области еще не настроены политики.",
+    "ja-JP": "{count} 個の項目が追加されましたが、ワークスペースにポリシーがまだ構成されていないため、{blocked} 個の項目はスキップされました。",
+    "de-DE": "{count} Elemente wurden hinzugefügt und {blocked} Elemente wurden übersprungen, da der Arbeitsbereich noch keine Richtlinien konfiguriert hat.",
+    "fr-FR": "{count} éléments ont été ajoutés et {blocked} éléments ont été ignorés car l'espace de travail n'a pas encore configuré de stratégies.",
+    "ko-KR": "{count} 항목이 추가되었으며, 작업공간이 아직 정책을 구성하지 않았기 때문에 {blocked} 항목을 건너뛰었습니다.",
+    "$files": ["src/renderer/utils/enqueue-notifier.ts(1104-1149)"],
+    "$id": 22918
+  },
+  "未添加新文件（文件可能已在队列中或已分析）": {
+    "en-US": "No new file added (the file may already be in the queue or analyzed)",
+    "es-ES": "No se agregó ningún archivo nuevo (es posible que el archivo ya esté en la cola o analizado)",
+    "ar-EG": "لم تتم إضافة ملف جديد (قد يكون الملف موجودًا بالفعل في قائمة الانتظار أو تم تحليله)",
+    "pt-PT": "Nenhum novo arquivo adicionado (o arquivo pode já estar na fila ou analisado)",
+    "ru-RU": "Новый файл не добавлен (возможно, файл уже находится в очереди или проанализирован)",
+    "ja-JP": "新しいファイルは追加されません (ファイルはすでにキューにあるか、分析されている可能性があります)",
+    "de-DE": "Keine neue Datei hinzugefügt (die Datei befindet sich möglicherweise bereits in der Warteschlange oder wurde analysiert)",
+    "fr-FR": "Aucun nouveau fichier ajouté (le fichier est peut-être déjà dans la file d'attente ou analysé)",
+    "ko-KR": "새 파일이 추가되지 않았습니다(파일이 이미 대기열에 있거나 분석되었을 수 있음).",
+    "$files": ["src/renderer/utils/enqueue-notifier.ts(1668-1693)"],
+    "$id": 22919
   },
   "通用文件收纳与分类体系": {
     "en-US": "Universal document storage and classification system",

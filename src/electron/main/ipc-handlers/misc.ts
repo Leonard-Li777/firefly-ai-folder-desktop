@@ -9,6 +9,7 @@ import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
+import { omniClient } from '../../services/omni-client'
 import {
   logger,
   LogCategory,
@@ -383,7 +384,17 @@ export function registerMiscIPCHandlers() {
       } catch {
         // 忽略旧引擎清理异常
       }
-      await databaseService.resetFileAnalysis(fileId)
+      const resetFingerprints = await databaseService.resetFileAnalysis(fileId)
+      omniClient.clearTaxonomyTreeCache()
+      if (resetFingerprints && resetFingerprints.length > 0) {
+        omniClient.deleteVectors(resetFingerprints).catch(err => {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            '重置单文件级联清理 Omni 向量失败（将在下一次重启时自愈）',
+            { count: resetFingerprints.length, err }
+          )
+        })
+      }
       return { success: true }
     } catch (error) {
       logger.error(LogCategory.MAIN, `重置文件分析失败: ${fileId}`, error)

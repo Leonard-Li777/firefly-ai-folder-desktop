@@ -1805,8 +1805,23 @@ export class FileProcessor {
           : ''
 
       // 0 号切片处理 (名义 0 ~ 300s，支持降档不失效与升级重提取，ISS-65)
+      // 守卫：当用户强制重提且关闭复用，或 file_contents 基础元数据已被清空时，禁止空壳复用 seg_0 跳过 perceive；
+      // 注意：当 reuseBasicAnalysisData=false 且并非 forceReanalyze（如暂停后恢复续跑）时，existingBasicData 为空对象，
+      // 须按需回查数据库真实 metadata，避免误判已完成的 seg_0 不可复用。
       const seg0 = existingSegMap.get(0)
-      const seg0Completed = isVideoSegmentReusable(seg0, paramsHash)
+      const forceRebuildSegments = item.forceReanalyze === true && !reuseBasicAnalysisData
+      const persistedBasicDataForSeg0 =
+        !forceRebuildSegments &&
+        isVideo &&
+        (!existingBasicData?.metadata || Object.keys(existingBasicData.metadata).length === 0)
+          ? this.getExistingBasicData(db, fileFingerprint, currentWorkspaceId, filePath)
+          : existingBasicData
+      const hasReusableBaseMetadata = Boolean(
+        persistedBasicDataForSeg0?.metadata &&
+        Object.keys(persistedBasicDataForSeg0.metadata).length > 0
+      )
+      const seg0Completed =
+        !forceRebuildSegments && hasReusableBaseMetadata && isVideoSegmentReusable(seg0, paramsHash)
       if (isVideo && capabilities.videoVisualAnalysisEnabled && !seg0Completed) {
         try {
           if (seg0) {
@@ -1979,6 +1994,35 @@ export class FileProcessor {
             logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 0号视频片段完成更新失败:', e)
           }
         }
+      } else if (isVideo) {
+        // seg_0 合法复用（如断点续跑 seg_1..seg_N）：回填已有 metadata 并初始化 video_chunks 容器，
+        // 避免 anydocResult.metadata 为 undefined 导致 probedDuration=0 跳过后续 pending 切片派发
+        const baseMetaSource =
+          persistedBasicDataForSeg0?.metadata &&
+          Object.keys(persistedBasicDataForSeg0.metadata).length > 0
+            ? persistedBasicDataForSeg0.metadata
+            : existingBasicData?.metadata
+        let fallbackMeta = baseMetaSource ? { ...baseMetaSource } : {}
+        if (resolveVideoDurationSec(fallbackMeta) <= 0) {
+          try {
+            const extractedMeta = await omniService.extractMetadataFull(filePath)
+            if (extractedMeta && Object.keys(extractedMeta).length > 0) {
+              fallbackMeta = { ...extractedMeta, ...fallbackMeta }
+            }
+          } catch (metaErr) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] 0号切片复用时补捞视频时长元数据失败:',
+              metaErr
+            )
+          }
+        }
+        anydocResult.metadata = fallbackMeta
+        if (!anydocResult.perception) {
+          anydocResult.perception = { video_chunks: [] } as any
+        } else if (!Array.isArray(anydocResult.perception.video_chunks)) {
+          anydocResult.perception.video_chunks = []
+        }
       }
 
       // 视频切片流水线与断点续作调度 (升维架构：读时派生 + 一次性登记 + 24h物理防爆 + 尾片容差合并，FIN-01 / FIN-03 / FIN-14)
@@ -2092,7 +2136,7 @@ export class FileProcessor {
             }
 
             const segK = existingSegMap.get(k)
-            if (isVideoSegmentReusable(segK, paramsHash)) {
+            if (!forceRebuildSegments && isVideoSegmentReusable(segK, paramsHash)) {
               continue
             }
             this.throwIfAborted(signal)

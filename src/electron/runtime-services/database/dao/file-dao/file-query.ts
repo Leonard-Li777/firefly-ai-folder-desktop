@@ -379,7 +379,7 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
       .run(thumbnailPath, new Date().toISOString(), filePath)
   }
 
-  async resetFileAnalysis(filePath: string): Promise<void> {
+  async resetFileAnalysis(filePath: string): Promise<string[]> {
     try {
       const fileRecord = this.db
         .prepare(
@@ -397,7 +397,7 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         logger.warn(LogCategory.DATABASE_SERVICE, '重置文件分析状态失败：数据库中未找到匹配路径', {
           inputPath: filePath
         })
-        return
+        return []
       }
 
       const actualId = fileRecord.id
@@ -409,6 +409,34 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         id: actualId,
         isAnalyzed: fileRecord.is_analyzed
       })
+
+      // [RV-03 对齐] 检查该指纹是否仍被其他物理路径/工作区引用：
+      // 共享文件（被其他 workspace_files 记录引用）仅重置当前 workspace_files.is_analyzed，不清除全局摘要、切片与向量
+      const isSharedFingerprint = fileFingerprint
+        ? Boolean(
+            this.db
+              .prepare(
+                `SELECT 1 FROM workspace_files WHERE file_fingerprint = ? AND id != ? LIMIT 1`
+              )
+              .get(fileFingerprint, actualId)
+          )
+        : false
+
+      // 收集待清理的 Omni 向量 key（仅独占孤儿指纹才删除主指纹 + 视频时序切片 ${fp}:c${chunkIndex}）
+      const vectorsToDelete: string[] = []
+      if (fileFingerprint && !isSharedFingerprint) {
+        vectorsToDelete.push(fileFingerprint)
+        try {
+          const chunkRows = this.db
+            .prepare(`SELECT chunk_index FROM file_video_chunks WHERE file_fingerprint = ?`)
+            .all(fileFingerprint) as Array<{ chunk_index: number }>
+          for (const row of chunkRows) {
+            vectorsToDelete.push(`${fileFingerprint}:c${row.chunk_index}`)
+          }
+        } catch {
+          // 兼容未创建 file_video_chunks 表的最小单测夹具
+        }
+      }
 
       this.db.transaction(() => {
         // 1. 重置 workspace_files 表
@@ -424,57 +452,101 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
           )
           .run(actualId)
 
-        // 2. 清空 files 表中的分析数据 (创世 Baseline V1：files 表无 category 列，magika 类型识别由标签树承载)
-        this.db
-          .prepare(
-            `
-          UPDATE files
-          SET smart_name = (SELECT name FROM workspace_files WHERE id = ?),
-              smart_name_source = NULL,
-              smart_name_template_source = NULL,
-              description = NULL,
-              author = NULL,
-              language = NULL,
-              is_hit = 0,
-              last_hit_at = NULL
-          WHERE file_fingerprint = ?
-        `
-          )
-          .run(actualId, fileFingerprint)
+        if (fileFingerprint && !isSharedFingerprint) {
+          // 2. 清空 files 表中的分析数据 (创世 Baseline V1：files 表无 category 列，magika 类型识别由标签树承载)
+          this.db
+            .prepare(
+              `
+            UPDATE files
+            SET smart_name = (SELECT name FROM workspace_files WHERE id = ?),
+                smart_name_source = NULL,
+                smart_name_template_source = NULL,
+                description = NULL,
+                author = NULL,
+                language = NULL,
+                is_hit = 0,
+                last_hit_at = NULL
+            WHERE file_fingerprint = ?
+          `
+            )
+            .run(actualId, fileFingerprint)
 
-        // 3. 清空 file_contents 表中的分析数据
-        this.db
-          .prepare(
+          try {
+            this.db
+              .prepare(
+                `
+              UPDATE files
+              SET raw_smart_name = NULL,
+                  canonical_text = NULL,
+                  canonical_text_hash = NULL,
+                  canonical_vector_state = NULL
+              WHERE file_fingerprint = ?
             `
-          UPDATE file_contents
-          SET content = NULL,
-              multimodal_content = NULL,
-              lrc = NULL,
-              asr = NULL,
-              exif = NULL,
-              analysis_stats = NULL,
-              quality_score = NULL,
-              quality_confidence = NULL,
-              quality_criteria = NULL,
-              quality_reasoning = NULL,
-              grouping_reason = NULL,
-              grouping_confidence = NULL
-          WHERE file_fingerprint = ?
-        `
-          )
-          .run(fileFingerprint)
+              )
+              .run(fileFingerprint)
+          } catch {
+            // 兼容未含 canonical 列的最小单测夹具
+          }
 
-        // 4. 清除文件的标签关联
-        this.db
-          .prepare(
-            `
-          DELETE FROM file_tag_relations
-          WHERE file_fingerprint = ?
-        `
-          )
-          .run(fileFingerprint)
+          // 3. 清空 file_contents 表中的分析数据
+          this.db
+            .prepare(
+              `
+            UPDATE file_contents
+            SET content = NULL,
+                multimodal_content = NULL,
+                lrc = NULL,
+                asr = NULL,
+                exif = NULL,
+                analysis_stats = NULL,
+                quality_score = NULL,
+                quality_confidence = NULL,
+                quality_criteria = NULL,
+                quality_reasoning = NULL,
+                grouping_reason = NULL,
+                grouping_confidence = NULL
+            WHERE file_fingerprint = ?
+          `
+            )
+            .run(fileFingerprint)
 
-        // 5. 从分析队列中移除该项目，确保下次添加时是全新状态
+          try {
+            this.db
+              .prepare(`UPDATE file_contents SET ocr = NULL WHERE file_fingerprint = ?`)
+              .run(fileFingerprint)
+          } catch {
+            // 兼容未含 ocr 列的最小单测夹具
+          }
+
+          // 4. 清除文件的标签关联
+          this.db
+            .prepare(
+              `
+            DELETE FROM file_tag_relations
+            WHERE file_fingerprint = ?
+          `
+            )
+            .run(fileFingerprint)
+
+          // 5. [RV-03 对齐] 清理 file_video_segments 与 file_video_chunks：
+          // 防止切片 completed 状态残留导致重置后调度器跳过重新分析及视频向量提取
+          try {
+            this.db
+              .prepare(`DELETE FROM file_video_segments WHERE file_id = ?`)
+              .run(fileFingerprint)
+          } catch {
+            // 兼容未创建 file_video_segments 表的最小单测夹具
+          }
+          try {
+            this.db
+              .prepare(`DELETE FROM file_video_chunks WHERE file_fingerprint = ?`)
+              .run(fileFingerprint)
+          } catch {
+            // 兼容未创建 file_video_chunks 表的最小单测夹具
+          }
+        }
+
+        // 6. 从分析队列中移除该项目，确保下次添加时是全新状态
         const res4 = this.db
           .prepare(
             `
@@ -491,6 +563,7 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
       })()
 
       logger.debug(LogCategory.DATABASE_SERVICE, '文件分析数据已完全清空', { filePath: actualPath })
+      return vectorsToDelete
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '重置文件分析数据失败', { error, filePath })
       throw error
