@@ -19,10 +19,35 @@ import {
   getCurrentVideoPlaybackTime
 } from '../../stores/preview-overlay-store'
 
-/** 降级抽帧/外部跳轴时间点：优先用进入降级瞬间快照的最后播放位置，否则回退 props */
-function pickFallbackSeekSec(snapshot: number | null, propTime: number | undefined): number {
-  if (typeof snapshot === 'number' && Number.isFinite(snapshot) && snapshot >= 0) return snapshot
-  return typeof propTime === 'number' && Number.isFinite(propTime) ? propTime : 0
+/** 时间点归一：非有限数或负值一律回退 0，与规格 §2.1 契约一致 */
+function normalizeSeekSec(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0
+}
+
+/** 降级快照键：绑定进入降级瞬间的「文件|切点」，跨文件或同文件切点变化后快照自动失效 */
+function seekKeyOf(filePath: string, propTime: number | undefined): string {
+  return `${filePath}|${normalizeSeekSec(propTime).toFixed(3)}`
+}
+
+interface DegradeSeekSnapshot {
+  key: string
+  sec: number
+}
+
+/**
+ * 降级抽帧/外部跳轴时间点。
+ * 快照仅在「文件与切点均未变」时有效：跨文件切换或同文件切换命中切片都回退 props，
+ * 从而同时避免全局播放进度串位与旧快照锁死新切点。
+ */
+function pickFallbackSeekSec(
+  snapshot: DegradeSeekSnapshot | null,
+  filePath: string,
+  propTime: number | undefined
+): number {
+  if (snapshot && snapshot.key === seekKeyOf(filePath, propTime)) {
+    return normalizeSeekSec(snapshot.sec)
+  }
+  return normalizeSeekSec(propTime)
 }
 
 interface FilePreviewProps {
@@ -72,8 +97,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [frameKey, setFrameKey] = useState<string | null>(null)
   /** 已发起抽帧请求的 key，防止切点后旧请求晚到覆盖新帧或重复发起同 key 请求 */
   const requestedFrameKeyRef = useRef<string | null>(null)
-  /** 进入降级瞬间从非响应式播放进度单例快照的时间点，避免中途 error 丢失播放位置 */
-  const degradeSeekSecRef = useRef<number | null>(null)
+  /** 进入降级瞬间从当前 <video> 快照的播放位置，绑定文件+切点键，避免跨文件串位与切点锁死 */
+  const degradeSeekSnapshotRef = useRef<DegradeSeekSnapshot | null>(null)
 
   // 切换文件路径时重置视频时长与抽帧降级状态
   useEffect(() => {
@@ -82,14 +107,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setStaticFrameUrl(null)
     setFrameKey(null)
     requestedFrameKeyRef.current = null
-    degradeSeekSecRef.current = null
+    degradeSeekSnapshotRef.current = null
   }, [filePath])
 
   // 视频解码失败时，实时调用 ffmpeg 在当前时间点抽帧作为静态预览图
   // 时间点变化（点击同一文件不同的命中切片）时以新 key 重新抽帧，避免停留在旧帧
   useEffect(() => {
     if (!videoDecodeFailed || !filePath) return
-    const seekSec = pickFallbackSeekSec(degradeSeekSecRef.current, currentTime)
+    const seekSec = pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
     const nextKey = `${filePath}|${seekSec.toFixed(3)}`
     if (frameKey === nextKey && staticFrameUrl) return
     if (requestedFrameKeyRef.current === nextKey) return
@@ -240,7 +265,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       const outcome = await window.electronAPI?.utils?.launchExternalDeepLink?.({
         filePath,
         category: 'video',
-        seekSeconds: pickFallbackSeekSec(degradeSeekSecRef.current, currentTime)
+        seekSeconds: pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
       })
       if (outcome?.fallbackToDefault) {
         toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
@@ -442,15 +467,22 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   onLoadedMetadata={handleVideoLoadedMetadata}
                   onCanPlay={handleCanPlay}
                   onTimeUpdate={handleTimeUpdate}
-                  onError={() => {
-                    const liveTime = getCurrentVideoPlaybackTime()
-                    degradeSeekSecRef.current =
-                      typeof liveTime === 'number' && Number.isFinite(liveTime) && liveTime >= 0
-                        ? liveTime
+                  onError={e => {
+                    // 只读当前 <video> 实例的时间点：切文件后该实例时间会重置，
+                    // 不会读到模块级全局单例里上一个文件残留的播放进度（V-01 根因）。
+                    // 启动期解码失败时 currentTime 通常为 0，此时不记快照，回退 props 命中点。
+                    const videoTime = e.currentTarget.currentTime
+                    const liveTime =
+                      typeof videoTime === 'number' && Number.isFinite(videoTime) && videoTime > 0
+                        ? videoTime
+                        : null
+                    degradeSeekSnapshotRef.current =
+                      liveTime !== null
+                        ? { key: seekKeyOf(filePath, currentTime), sec: liveTime }
                         : null
                     logger.warn(
                       LogCategory.RENDERER,
-                      `[视频预览] 浏览器无法解码视频，切换静态抽帧: ${filePath} @ ${degradeSeekSecRef.current ?? currentTime ?? 0}s`
+                      `[视频预览] 浏览器无法解码视频，切换静态抽帧: ${filePath} @ ${liveTime ?? currentTime ?? 0}s`
                     )
                     setVideoDecodeFailed(true)
                   }}
