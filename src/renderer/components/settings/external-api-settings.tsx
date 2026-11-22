@@ -139,7 +139,9 @@ export const getCapabilityDisplayMeta = (
     case 'sensitive':
       return {
         name: t('隐私与敏感内容把关'),
-        desc: t('自动辨识私密照片、敏感内容与合规风险，防止误发或尴尬'),
+        desc: t(
+          '支持图片、文档与纯文本的暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别，防止误发或合规风险'
+        ),
         category: 'plugin_extension',
         requiredSlot: 'perception_nsfw'
       }
@@ -166,16 +168,20 @@ export function buildUniversalAgentPrompt(
     capLines.push(t('- 后台分析进度感知: 查询当前电脑的后台文件分析进度'))
   }
   if (activeCapabilities.includes('ocr')) {
-    capLines.push(t('- 图片与文档文字提取: 识别并提取图片和文档中的文字内容'))
+    capLines.push(t('- 图片与文档文字提取: 支持本地文件路径或 Base64 图片输入，识别并提取文字内容'))
   }
   if (activeCapabilities.includes('asr')) {
-    capLines.push(t('- 语音转文字与台词提取: 听懂音视频对白并提取字幕与时间戳'))
+    capLines.push(t('- 语音转文字与台词提取: 支持本地音视频路径或 Base64 音频输入，提取字幕与时间戳'))
   }
   if (activeCapabilities.includes('tts')) {
-    capLines.push(t('- 真人语音朗读: 将文字转化为自然流畅的声音朗读输出'))
+    capLines.push(t('- 真人语音朗读: 支持直接文本或本地文本文件输入，合成自然流畅的语音（可返回文件或 Base64）'))
   }
   if (activeCapabilities.includes('sensitive')) {
-    capLines.push(t('- 隐私与敏感内容把关: 自动识别私密照片与敏感内容合规分级'))
+    capLines.push(
+      t(
+        '- 隐私与敏感内容把关: 支持对图片（文件路径或 Base64）、文档与纯文本进行暴恐、涉政、违规、色情、辱骂、血腥等多维鉴别'
+      )
+    )
   }
   if (activeCapabilities.includes('virtual-folder-draft')) {
     capLines.push(t('- 智能分类与整理建议: 推送文件夹整理方案，由我在桌面端人工确认生效'))

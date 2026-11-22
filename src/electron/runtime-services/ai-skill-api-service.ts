@@ -221,8 +221,10 @@ export class AISkillApiService {
   private inFlightAbortControllers: Set<AbortController> = new Set()
   private activeSearchesCount = 0
   private activeMultimodalCount = 0
-  private readonly maxBodyBytes = 1024 * 1024 // 1MB
+  private readonly maxBodyBytes = 1024 * 1024 // 普通接口 1MB
+  private readonly maxMultimodalBodyBytes = 20 * 1024 * 1024 // 多模态 Base64 接口 20MB
   private readonly ttsTempDir = path.join(os.tmpdir(), 'firefly-skill-tts')
+  private readonly tmpInputDir = path.join(os.tmpdir(), 'firefly-skill-tmp')
   private discoveryOpChain: Promise<void> = Promise.resolve()
   private getActiveCapabilitiesProvider: () => ExternalApiCapabilityId[] = () => [
     ...EXTERNAL_API_CAPABILITIES
@@ -809,7 +811,7 @@ export class AISkillApiService {
     return result
   }
 
-  private readBody(req: http.IncomingMessage): Promise<any> {
+  private readBody(req: http.IncomingMessage, maxBytes: number = this.maxBodyBytes): Promise<any> {
     return new Promise((resolve, reject) => {
       const buffers: Buffer[] = []
       let totalBytes = 0
@@ -818,11 +820,12 @@ export class AISkillApiService {
       req.on('data', (chunk: Buffer) => {
         if (tooLarge) return
         totalBytes += chunk.byteLength
-        if (totalBytes > this.maxBodyBytes) {
+        if (totalBytes > maxBytes) {
           tooLarge = true
           buffers.length = 0
           req.pause()
-          const err: any = new Error('Payload Too Large: request body exceeds 1MB limit')
+          const maxMb = Math.round(maxBytes / (1024 * 1024))
+          const err: any = new Error(`Payload Too Large: request body exceeds ${maxMb}MB limit`)
           err.statusCode = 413
           reject(err)
           return
@@ -1385,18 +1388,22 @@ export class AISkillApiService {
         id: 'ocr',
         method: 'POST',
         path: '/api/ai/ocr',
-        description: '从本地图片、截图或文档中识别并提取文字内容',
+        description: '从本地图片、文档或 Base64 图片中识别并提取文字内容（也兼容直接传入 text）',
         inputSchema: {
-          filePath: 'string (required, absolute local file path)'
+          filePath: 'string (optional, absolute local image/document path)',
+          imageBase64: 'string (optional, base64 image or data URI)',
+          mimeType: 'string (optional, e.g. image/png)',
+          text: 'string (optional, passthrough text)'
         }
       },
       {
         id: 'asr',
         method: 'POST',
         path: '/api/ai/transcribe',
-        description: '将本地音视频文件中的说话内容转写为文字与时间戳台词',
+        description: '将本地音视频文件或 Base64 音频中的说话内容转写为文字与时间戳台词',
         inputSchema: {
-          filePath: 'string (required, absolute local audio/video path)',
+          filePath: 'string (optional, absolute local audio/video path)',
+          audioBase64: 'string (optional, base64 audio or data URI)',
           language: 'string (optional)'
         }
       },
@@ -1404,20 +1411,26 @@ export class AISkillApiService {
         id: 'tts',
         method: 'POST',
         path: '/api/ai/synthesize',
-        description: '将文本合成为自然流畅的本地 WAV 语音文件',
+        description: '将文本或本地文本文件内容合成为自然流畅的 WAV 语音（支持返回文件路径或 Base64）',
         inputSchema: {
-          text: 'string (required, 1-10000 chars)',
+          text: 'string (optional, 1-10000 chars)',
+          filePath: 'string (optional, local text file path)',
           voiceId: 'string (optional)',
-          speed: 'number (optional)'
+          speed: 'number (optional)',
+          responseFormat: 'string (optional: file | base64, default file)'
         }
       },
       {
         id: 'sensitive',
         method: 'POST',
         path: '/api/ai/assert-sensitive',
-        description: '检测本地图片是否包含私密或敏感内容并返回合规分级结果',
+        description:
+          '检测本地图片/文档、Base64 图片或纯文本是否包含暴恐、涉政、违规、色情、辱骂、血腥等敏感内容并返回合规分级结果',
         inputSchema: {
-          filePath: 'string (required, absolute local image path)'
+          text: 'string (optional, plain text for FastText + nsfw-l3)',
+          filePath: 'string (optional, local image/document path)',
+          imageBase64: 'string (optional, base64 image for nsfw-mobilenetv2)',
+          language: 'string (optional)'
         }
       }
     ]
@@ -1482,7 +1495,27 @@ export class AISkillApiService {
     }
 
     try {
-      const body = await this.readBody(req)
+      const body = await this.readBody(req, this.maxMultimodalBodyBytes)
+
+      const decodeBase64Payload = (raw: string): { buffer: Buffer; ext: string } => {
+        const trimmed = raw.trim()
+        let ext = 'bin'
+        let b64 = trimmed
+        const dataUriMatch = trimmed.match(/^data:([^;]+);base64,(.*)$/s)
+        if (dataUriMatch) {
+          const mime = dataUriMatch[1].toLowerCase()
+          b64 = dataUriMatch[2]
+          if (mime.includes('png')) ext = 'png'
+          else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg'
+          else if (mime.includes('webp')) ext = 'webp'
+          else if (mime.includes('bmp')) ext = 'bmp'
+          else if (mime.includes('gif')) ext = 'gif'
+          else if (mime.includes('wav')) ext = 'wav'
+          else if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3'
+        }
+        return { buffer: Buffer.from(b64, 'base64'), ext }
+      }
+
       if (pathname === '/api/ai/ocr') {
         const ocrEnabled = ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
         if (!ocrEnabled) {
@@ -1495,11 +1528,54 @@ export class AISkillApiService {
         }
 
         const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        if (!filePath) {
+        const imageBase64 = typeof body?.imageBase64 === 'string' ? body.imageBase64.trim() : ''
+        const rawText = typeof body?.text === 'string' ? body.text.trim() : ''
+
+        if (!filePath && !imageBase64 && !rawText) {
           this.sendStructuredError(res, 400, {
             error: 'INVALID_ARGUMENT',
-            message: '缺少必填字段: filePath'
+            message: '至少需要提供 filePath、imageBase64 或 text 之一'
           })
+          return true
+        }
+
+        if (rawText && !filePath && !imageBase64) {
+          this.sendSuccess(res, { text: rawText, source: 'text_passthrough' })
+          return true
+        }
+
+        if (imageBase64) {
+          const { buffer, ext: inferredExt } = decodeBase64Payload(imageBase64)
+          if (buffer.byteLength === 0) {
+            this.sendStructuredError(res, 400, {
+              error: 'INVALID_ARGUMENT',
+              message: '无效的 imageBase64 数据'
+            })
+            return true
+          }
+          const mimeHint = typeof body?.mimeType === 'string' ? body.mimeType.toLowerCase() : ''
+          const ext =
+            inferredExt !== 'bin'
+              ? inferredExt
+              : mimeHint.includes('jpeg') || mimeHint.includes('jpg')
+                ? 'jpg'
+                : mimeHint.includes('webp')
+                  ? 'webp'
+                  : 'png'
+          await fs.mkdir(this.tmpInputDir, { recursive: true })
+          const tmpImgPath = path.join(this.tmpInputDir, `${crypto.randomUUID()}.${ext}`)
+          try {
+            await fs.writeFile(tmpImgPath, buffer)
+            const perceived = await raceWithAbort(
+              omniService.perceive(tmpImgPath, { enableImageOcr: true })
+            )
+            this.sendSuccess(res, {
+              text: perceived?.ocr_text || '',
+              source: 'image_ocr_base64'
+            })
+          } finally {
+            await fs.unlink(tmpImgPath).catch(() => {})
+          }
           return true
         }
 
@@ -1534,27 +1610,42 @@ export class AISkillApiService {
 
       if (pathname === '/api/ai/transcribe') {
         const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        if (!filePath) {
+        const audioBase64 = typeof body?.audioBase64 === 'string' ? body.audioBase64.trim() : ''
+        if (!filePath && !audioBase64) {
           this.sendStructuredError(res, 400, {
             error: 'INVALID_ARGUMENT',
-            message: '缺少必填字段: filePath'
+            message: '至少需要提供 filePath 或 audioBase64 之一'
           })
           return true
         }
 
-        try {
-          await fs.access(filePath)
-        } catch {
-          this.sendStructuredError(res, 400, {
-            error: 'FILE_NOT_FOUND',
-            message: '目标音视频文件不存在或无法访问'
-          })
-          return true
+        let audioInput: string | Buffer
+        if (audioBase64) {
+          const { buffer } = decodeBase64Payload(audioBase64)
+          if (buffer.byteLength === 0) {
+            this.sendStructuredError(res, 400, {
+              error: 'INVALID_ARGUMENT',
+              message: '无效的 audioBase64 数据'
+            })
+            return true
+          }
+          audioInput = buffer
+        } else {
+          try {
+            await fs.access(filePath)
+          } catch {
+            this.sendStructuredError(res, 400, {
+              error: 'FILE_NOT_FOUND',
+              message: '目标音视频文件不存在或无法访问'
+            })
+            return true
+          }
+          audioInput = filePath
         }
 
         const language = typeof body?.language === 'string' ? body.language.trim() : undefined
         try {
-          const result = await VoiceSeamDispatcher.getInstance().transcribe(filePath, {
+          const result = await VoiceSeamDispatcher.getInstance().transcribe(audioInput, {
             language,
             signal: abortController.signal
           })
@@ -1588,17 +1679,31 @@ export class AISkillApiService {
       }
 
       if (pathname === '/api/ai/synthesize') {
-        const text = typeof body?.text === 'string' ? body.text.trim() : ''
+        let text = typeof body?.text === 'string' ? body.text.trim() : ''
+        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
+        if (!text && filePath) {
+          try {
+            await fs.access(filePath)
+            text = (await fs.readFile(filePath, 'utf-8')).trim()
+          } catch {
+            this.sendStructuredError(res, 400, {
+              error: 'FILE_NOT_FOUND',
+              message: '目标文本文件不存在或无法读取'
+            })
+            return true
+          }
+        }
         if (!text || text.length > 10000) {
           this.sendStructuredError(res, 400, {
             error: 'INVALID_ARGUMENT',
-            message: text ? '朗读文本长度超过 10,000 字符上限' : '缺少必填字段: text'
+            message: text ? '朗读文本长度超过 10,000 字符上限' : '至少需要提供 text 或 filePath 之一'
           })
           return true
         }
 
         const voiceId = typeof body?.voiceId === 'string' ? body.voiceId.trim() : undefined
         const speed = typeof body?.speed === 'number' && Number.isFinite(body.speed) ? body.speed : undefined
+        const responseFormat = body?.responseFormat === 'base64' ? 'base64' : 'file'
 
         try {
           const wavBuf = await VoiceSeamDispatcher.getInstance().synthesizeToWav(text, {
@@ -1613,12 +1718,16 @@ export class AISkillApiService {
           await this.cleanupTtsTempDir('prune')
           await fs.mkdir(this.ttsTempDir, { recursive: true })
           const audioPath = path.join(this.ttsTempDir, `${crypto.randomUUID()}.wav`)
-          await fs.writeFile(audioPath, Buffer.from(wavBuf))
+          const wavNodeBuf = Buffer.from(wavBuf)
+          await fs.writeFile(audioPath, wavNodeBuf)
           const pcmBytes = Math.max(0, wavBuf.byteLength - 44)
           const durationSec = Number((pcmBytes / (48000 * 2)).toFixed(2))
           this.sendSuccess(res, {
             audioPath,
-            durationSec
+            durationSec,
+            ...(responseFormat === 'base64'
+              ? { audioBase64: wavNodeBuf.toString('base64'), mimeType: 'audio/wav' }
+              : {})
           })
         } catch (err: any) {
           if (err instanceof VoiceSeamError && err.code === 'NO_ACTIVE_PLUGIN') {
@@ -1652,45 +1761,59 @@ export class AISkillApiService {
           return true
         }
 
+        const text = typeof body?.text === 'string' ? body.text.trim() : ''
         const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        if (!filePath) {
+        const imageBase64 = typeof body?.imageBase64 === 'string' ? body.imageBase64.trim() : ''
+        const language = typeof body?.language === 'string' ? body.language.trim() : undefined
+
+        if (!text && !filePath && !imageBase64) {
           this.sendStructuredError(res, 400, {
             error: 'INVALID_ARGUMENT',
-            message: '缺少必填字段: filePath'
+            message: '至少需要提供 text、filePath 或 imageBase64 之一'
           })
           return true
         }
 
-        try {
-          await fs.access(filePath)
-        } catch {
-          this.sendStructuredError(res, 400, {
-            error: 'FILE_NOT_FOUND',
-            message: '目标图片文件不存在或无法访问'
-          })
-          return true
+        if (filePath) {
+          try {
+            await fs.access(filePath)
+          } catch {
+            this.sendStructuredError(res, 400, {
+              error: 'FILE_NOT_FOUND',
+              message: '目标文件不存在或无法访问'
+            })
+            return true
+          }
         }
 
-        const perceived = await raceWithAbort(
-          omniService.perceive(filePath, { enableNsfwPerception: true })
+        const nsfwRes = await raceWithAbort(
+          omniService.assertNsfw({
+            text: text || undefined,
+            filePath: filePath || undefined,
+            imageBase64: imageBase64 || undefined,
+            language
+          })
         )
-        const nsfw = perceived?.nsfw_perception
-        const status: 'clean' | 'flagged' | 'skipped' =
-          nsfw?.status === 'flagged' || nsfw?.status === 'clean' || nsfw?.status === 'skipped'
-            ? nsfw.status
-            : 'skipped'
-        const tags = Array.isArray(nsfw?.tags) ? nsfw.tags : []
-        const sensitiveTypes = Array.isArray(perceived?.sensitive_types)
-          ? perceived.sensitive_types
-          : []
-        const isSensitive = status === 'flagged' || sensitiveTypes.length > 0
+        if (!nsfwRes) {
+          this.sendError(res, 500, '敏感内容鉴别引擎响应异常')
+          return true
+        }
 
         this.sendSuccess(res, {
-          isSensitive,
-          status,
-          tags,
-          sensitiveTypes,
-          contentRating: perceived?.content_rating
+          isSensitive: Boolean(nsfwRes.is_sensitive),
+          status: nsfwRes.status || 'skipped',
+          tags: Array.isArray(nsfwRes.tags) ? nsfwRes.tags : [],
+          sensitiveTypes: Array.isArray(nsfwRes.sensitive_types) ? nsfwRes.sensitive_types : [],
+          contentRating: nsfwRes.content_rating ?? undefined,
+          ...(Array.isArray(nsfwRes.nsfw_probs) ? { nsfwProbs: nsfwRes.nsfw_probs } : {}),
+          supportedDimensions: nsfwRes.supported_dimensions || [
+            '暴恐',
+            '涉政',
+            '违规',
+            '色情',
+            '辱骂',
+            '血腥'
+          ]
         })
         return true
       }

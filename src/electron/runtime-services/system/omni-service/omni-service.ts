@@ -3839,6 +3839,56 @@ export class OmniService {
   }
 
   /**
+   * 原生多模态敏感内容鉴别 (POST /api/text/nsfw)
+   * 同时支持纯文本 (FastText + nsfw-l3)、本地文件 (图片/文档) 与 Base64 图片 (nsfw-mobilenetv2)，
+   * 覆盖 暴恐 / 涉政 / 违规 / 色情 / 辱骂 / 血腥 等多维鉴别。
+   */
+  public async assertNsfw(
+    params: {
+      text?: string
+      filePath?: string
+      imageBase64?: string
+      language?: string
+    },
+    timeoutMs: number = 30000
+  ): Promise<{
+    success: boolean
+    is_sensitive: boolean
+    status: 'clean' | 'flagged' | 'skipped'
+    tags: string[]
+    sensitive_types: string[]
+    content_rating?: string | null
+    nsfw_probs?: number[] | null
+    supported_dimensions?: string[]
+  } | null> {
+    await this.ensureRunning()
+    try {
+      const res = await fetch(`${this.baseUrl}/api/text/nsfw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: params.text,
+          file_path: params.filePath,
+          image_base64: params.imageBase64,
+          language: params.language
+        }),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] POST /api/text/nsfw 响应异常: status=${res.status}`
+        )
+        return null
+      }
+      return (await res.json()) as any
+    } catch (err: any) {
+      logger.warn(LogCategory.SYSTEM, '[OmniService] assertNsfw 调用异常:', err?.message || err)
+      return null
+    }
+  }
+
+  /**
    * 语义标签父级推荐与物化路径推导 (POST /api/taxonomy/resolve-parent)
    */
   public async resolveTaxonomyParent(
