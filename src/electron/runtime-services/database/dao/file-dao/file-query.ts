@@ -278,6 +278,17 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
     }
   }
 
+  /**
+   * 按文件 ID 轻量取路径（仅供 query-proxy 服务层复用，避免服务层自行拼 SQL）。
+   * 路径所在表与列名属 DAO 领域知识，服务层只调本方法拿 path。
+   */
+  getFilePathById(id: number): string | null {
+    const row = this.db.prepare('SELECT path FROM workspace_files WHERE id = ?').get(id) as
+      | { path?: string }
+      | undefined
+    return row?.path ?? null
+  }
+
   async getFileByPath(filePath: string): Promise<any> {
     try {
       const wf = this.db

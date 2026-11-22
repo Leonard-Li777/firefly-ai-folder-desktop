@@ -487,11 +487,9 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     }
     const id = Number(fileIdOrPath)
     if (!id || isNaN(id)) return null
-    const row = this.fileDao.db.prepare('SELECT path FROM workspace_files WHERE id = ?').get(id) as
-      | { path?: string }
-      | undefined
-    if (!row?.path) return null
-    return this.fileDao.getFileByPath(row.path)
+    const path = this.fileDao.getFilePathById(id)
+    if (!path) return null
+    return this.fileDao.getFileByPath(path)
   }
   /**
    * 分页获取文件分析数据（供外部 API 与技能调用）

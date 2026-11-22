@@ -190,6 +190,395 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
   )
 }
 
+interface VideoAnalysisEstimateCardProps {
+  videoQuotaMax: number
+  localVideoSoftTokenBudget: 48 | 140
+  videoAsrCap: number
+  hasGpuPower: boolean
+  videoAnalyzeDurationSec: number
+  isFreeUser: boolean
+  isAnalyzeCapped: boolean
+  onDurationChange: (sec: number) => void
+  onNavigateTab?: (tabId: 'pending_backfill') => void
+  setIsUpgradeOpen: (open: boolean) => void
+}
+
+/**
+ * 实时整理分析耗时预估图形化卡片与每个视频分析时长上限设置卡片
+ * 独立隔离子组件：维持局部即时状态以实现滑块 60fps+ 丝滑跟随，在拖拽结束后统一防抖提交，
+ * 拖拽中屏蔽 transition 避免 CSS 动画与高频布局回流严重卡顿。
+ */
+const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = React.memo(
+  ({
+    videoQuotaMax,
+    localVideoSoftTokenBudget,
+    videoAsrCap,
+    hasGpuPower,
+    videoAnalyzeDurationSec,
+    isFreeUser,
+    isAnalyzeCapped,
+    onDurationChange,
+    onNavigateTab,
+    setIsUpgradeOpen
+  }) => {
+    const [localDurationSec, setLocalDurationSec] = useState(videoAnalyzeDurationSec)
+    const [isDragging, setIsDragging] = useState(false)
+    const isDraggingRef = useRef(false)
+    const commitTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+    useEffect(() => {
+      if (!isDraggingRef.current) {
+        setLocalDurationSec(videoAnalyzeDurationSec)
+      }
+    }, [videoAnalyzeDurationSec])
+
+    useEffect(() => {
+      return () => {
+        if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+      }
+    }, [])
+
+    const handleCommit = useCallback(
+      (val: number) => {
+        if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+        isDraggingRef.current = false
+        setIsDragging(false)
+        onDurationChange(val)
+      },
+      [onDurationChange]
+    )
+
+    const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const nextVal = parseInt(e.target.value, 10)
+      setLocalDurationSec(nextVal)
+      // 200ms 防抖兜底：即使鼠标拖出边界也能在松手后稳定提交
+      if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+      commitTimerRef.current = setTimeout(() => {
+        handleCommit(nextVal)
+      }, 200)
+    }
+
+    const est = estimateVideoAnalysisDurationSec(
+      videoQuotaMax,
+      localVideoSoftTokenBudget,
+      videoAsrCap,
+      hasGpuPower,
+      300
+    )
+    const totalMins = (est.totalSec / 60).toFixed(1)
+    const fillWidthPct = Math.min(100, Math.max(3, Math.round((est.perChunkSec / 300) * 100)))
+
+    // 整片口径：严格按滑块当前即时值 localDurationSec 估算，拖动时即时响应
+    const fullEst = estimateVideoAnalysisDurationSec(
+      videoQuotaMax,
+      localVideoSoftTokenBudget,
+      videoAsrCap,
+      hasGpuPower,
+      localDurationSec
+    )
+    const fullMins = (fullEst.totalSec / 60).toFixed(1)
+    const fullVideoMins = Math.round(localDurationSec / 60)
+    // 固定 3 小时绝对标尺：填充长度随估算耗时变化，避免用「耗时/整片时长」比值导致拖动时恒定
+    const fullScaleSec = 10800
+    const fullFillPct = Math.min(
+      100,
+      Math.max(3, Math.round((fullEst.totalSec / fullScaleSec) * 100))
+    )
+    const fullMarkPct = Math.min(
+      100,
+      Math.max(0, Math.round((localDurationSec / fullScaleSec) * 100))
+    )
+
+    return (
+      <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚡</span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-foreground">
+                  {t('单视频首次整理耗时预估')}
+                </span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
+                  {t('以每 5 分钟视频分析基准测算')}
+                </span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {t('耗时仅在首次整理时发生一次；搜索时均为毫秒级瞬发。')}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-extrabold font-mono text-primary">
+              {est.minSec} ~ {est.maxSec} {t('秒')}
+            </span>
+            {est.totalSec >= 60 && (
+              <span className="text-[11px] text-muted-foreground font-mono">
+                ({t('约 {min} 分钟', { min: totalMins })})
+              </span>
+            )}
+            {est.speedTier === 'blazing' && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                ⚡ {t('极速飞快 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
+              </span>
+            )}
+            {est.speedTier === 'balanced' && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                ⚖️ {t('平衡适中 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
+              </span>
+            )}
+            {est.speedTier === 'deep' && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                🔍 {t('深度精细 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* 全局绝对标尺刻度轨道 */}
+        <div className="space-y-1.5">
+          <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex relative p-0.5 border border-border/40">
+            <div
+              style={{ width: `${fillWidthPct}%` }}
+              className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
+            >
+              <div
+                style={{ width: `${est.visualPct}%` }}
+                className="h-full bg-primary rounded-l-full transition-all duration-300"
+                title={t('画面 AI 理解')}
+              />
+              <div
+                style={{ width: `${est.asrPct}%` }}
+                className="h-full bg-emerald-500 transition-all duration-300"
+                title={t('台词语音识别')}
+              />
+              <div
+                style={{ width: `${est.fixedPct}%` }}
+                className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
+                title={t('基础解包与索引')}
+              />
+            </div>
+          </div>
+
+          {/* 实时线与刻度标尺 */}
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
+            <span>0s</span>
+            <span>60s</span>
+            <span>150s</span>
+            <span className="text-primary/80 font-medium">{t('5 分钟参考线')}</span>
+          </div>
+
+          {/* 细分耗时图例与百分比 */}
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+                <span>
+                  {t('画面 AI 理解')}:{' '}
+                  <strong className="text-foreground">~{est.visualSec}s</strong> ({videoQuotaMax}
+                  {t('张')})
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                <span>
+                  {t('台词识别')}: <strong className="text-foreground">~{est.asrSec}s</strong> (
+                  {videoAsrCap}s{t('音轨')})
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
+                <span>
+                  {t('基础开销')}: <strong className="text-foreground">~{est.fixedSec}s</strong>
+                </span>
+              </span>
+            </div>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+              ⚡ {t('搜索时毫秒级瞬发响应')}
+            </span>
+          </div>
+        </div>
+
+        {/* 纯 CPU 口径深度档慢于实时播放时的贴心提示 */}
+        {est.perChunkSec >= 300 && (
+          <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
+            <span>💡</span>
+            <span>
+              {t(
+                '这个档位对电脑算力要求高：普通轻薄本整理会比视频播放更慢，建议放后台慢慢整理；有独立显卡的电脑大约能快 2~3 倍，多数情况能比实时播放更快完成（具体快多少因显卡型号而异）。'
+              )}
+            </span>
+          </div>
+        )}
+
+        {/* 整片口径耗时条：所有用户可见，随「每个视频分析时长上限」动态变化 */}
+        <div className="space-y-1.5 pt-2 border-t border-border/30">
+          <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                {t('按整片时长测算')}
+              </span>
+              <span className="text-muted-foreground">
+                {t('上限 {mins} 分钟', { mins: fullVideoMins })}
+              </span>
+            </div>
+            <span className="text-sm font-extrabold font-mono text-primary">
+              {fullEst.minSec} ~ {fullEst.maxSec} {t('秒')}
+              <span className="ml-1 text-[11px] text-muted-foreground font-mono">
+                ({t('约 {min} 分钟', { min: fullMins })})
+              </span>
+            </span>
+          </div>
+          <div className="relative h-2.5 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40">
+            <div
+              style={{ width: `${fullFillPct}%` }}
+              className={cn(
+                'h-full rounded-full overflow-hidden flex gap-0.5',
+                !isDragging && 'transition-all duration-300'
+              )}
+            >
+              <div
+                style={{ width: `${fullEst.visualPct}%` }}
+                className={cn(
+                  'h-full bg-primary rounded-l-full',
+                  !isDragging && 'transition-all duration-300'
+                )}
+                title={t('画面 AI 理解')}
+              />
+              <div
+                style={{ width: `${fullEst.asrPct}%` }}
+                className={cn(
+                  'h-full bg-emerald-500',
+                  !isDragging && 'transition-all duration-300'
+                )}
+                title={t('台词语音识别')}
+              />
+              <div
+                style={{ width: `${fullEst.fixedPct}%` }}
+                className={cn(
+                  'h-full bg-muted-foreground/30 rounded-r-full',
+                  !isDragging && 'transition-all duration-300'
+                )}
+                title={t('基础解包与索引')}
+              />
+            </div>
+            <span
+              style={{ left: `${fullMarkPct}%` }}
+              className={cn(
+                'absolute -top-0.5 h-3.5 w-0.5 bg-sky-500 rounded-full',
+                !isDragging && 'transition-all duration-300'
+              )}
+              title={t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
+            />
+          </div>
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
+            <span>0</span>
+            <span>{t('1 小时')}</span>
+            <span>{t('2 小时')}</span>
+            <span className="text-sky-500/80 font-medium">
+              {t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
+            </span>
+          </div>
+        </div>
+
+        {/* 每个视频分析时长上限：所有用户可调，免费用户最终按 5 分钟结算 */}
+        <div className="space-y-1.5 pt-2 border-t border-border/30">
+          <div className="flex items-center justify-between text-xs">
+            <Label className="font-semibold text-foreground">{t('每个视频分析时长上限')}</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+                {Math.round(localDurationSec / 60)} {t('分钟')}
+              </span>
+              {isFreeUser && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-[11px] text-amber-600 dark:text-amber-400"
+                  onClick={() => setIsUpgradeOpen(true)}
+                >
+                  {t('解锁更长')}
+                </Button>
+              )}
+            </div>
+          </div>
+          <input
+            type="range"
+            min={300}
+            max={10800}
+            step={300}
+            value={localDurationSec}
+            onPointerDown={() => {
+              isDraggingRef.current = true
+              setIsDragging(true)
+            }}
+            onChange={handleSliderChange}
+            onPointerUp={e => handleCommit(parseInt(e.currentTarget.value, 10))}
+            onKeyUp={e => handleCommit(parseInt(e.currentTarget.value, 10))}
+            className="w-full accent-primary cursor-pointer"
+          />
+          {isAnalyzeCapped && isFreeUser && (
+            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+              {t('当前你是免费用户，最终结算值为5分钟，升级后可应用设置值。')}
+            </p>
+          )}
+          <p className="text-[11px] text-muted-foreground">
+            {t(
+              '每个视频最多整理多长时间，5 分钟一档，最长 3 小时；普通电脑建议选短一些，放后台慢慢整理。'
+            )}
+          </p>
+          {/* Spec §3.3：取消 Switch 后，当用户设定时长 > 5 分钟时提供大白话解释与直达「待补分析文件」引导 */}
+          {localDurationSec > 300 && !isFreeUser && (
+            <div
+              data-testid="video-fast-first-slice-guide"
+              className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-700 dark:text-sky-300 flex items-start justify-between gap-3"
+            >
+              <p className="leading-relaxed">
+                {t(
+                  '为避免长视频卡住其它文件，超过 5 分钟的视频首次会先分析开头 5 分钟并快速出结果；剩余部分（至您设定的 {mins} 分钟上限）会在电脑空闲时自动补全，导入新文件时会自动让路。',
+                  { mins: Math.round(localDurationSec / 60) }
+                )}
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[11px] text-sky-700 dark:text-sky-300 hover:bg-sky-500/15 shrink-0 font-semibold"
+                onClick={() => onNavigateTab?.('pending_backfill')}
+              >
+                {t('查看待补分析文件')} →
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* 免费会员权益说明与 Pro 升级引导 */}
+        {isFreeUser && (
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <div className="text-xs leading-relaxed">
+                <p className="font-bold text-amber-700 dark:text-amber-300">
+                  {t('免费版每个视频分析精彩前 5 分钟。')}
+                </p>
+                <p className="text-muted-foreground">
+                  {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 3 小时。')}
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setIsUpgradeOpen(true)}
+              className="h-7 px-3 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90 transition-opacity shrink-0 shadow-xs"
+            >
+              {t('立即升级 Pro')}
+            </Button>
+          </div>
+        )}
+      </div>
+    )
+  }
+)
+
 /**
  * 工作区专有：基础AI引擎设置 Tab (原 basic-ai-engine-config-settings 100% 完整原味还原版)
  */
@@ -1336,315 +1725,19 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               )}
             </div>
 
-            {/* 实时整理分析耗时预估图形化卡片（以每 5 分钟片段为绝对标尺测算，紧随参数调优之后呈现反馈） */}
-            {(() => {
-              const est = estimateVideoAnalysisDurationSec(
-                videoQuotaMax,
-                localVideoSoftTokenBudget,
-                videoAsrCap,
-                hasGpuPower,
-                300
-              )
-              const totalMins = (est.totalSec / 60).toFixed(1)
-              const fillWidthPct = Math.min(
-                100,
-                Math.max(3, Math.round((est.perChunkSec / 300) * 100))
-              )
-              // 整片口径：严格按「每个视频分析时长上限」滑块的 UI 值估算，结算差异由滑块下方提示单独说明
-              const fullEst = estimateVideoAnalysisDurationSec(
-                videoQuotaMax,
-                localVideoSoftTokenBudget,
-                videoAsrCap,
-                hasGpuPower,
-                videoAnalyzeDurationSec
-              )
-              const fullMins = (fullEst.totalSec / 60).toFixed(1)
-              const fullVideoMins = Math.round(videoAnalyzeDurationSec / 60)
-              // 固定 3 小时绝对标尺：填充长度随估算耗时变化，避免用「耗时/整片时长」比值导致拖动时恒定
-              const fullScaleSec = 10800
-              const fullFillPct = Math.min(
-                100,
-                Math.max(3, Math.round((fullEst.totalSec / fullScaleSec) * 100))
-              )
-              const fullMarkPct = Math.min(
-                100,
-                Math.max(0, Math.round((videoAnalyzeDurationSec / fullScaleSec) * 100))
-              )
-
-              return (
-                <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">⚡</span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-foreground">
-                            {t('单视频首次整理耗时预估')}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
-                            {t('以每 5 分钟视频分析基准测算')}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                          {t('耗时仅在首次整理时发生一次；搜索时均为毫秒级瞬发。')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-extrabold font-mono text-primary">
-                        {est.minSec} ~ {est.maxSec} {t('秒')}
-                      </span>
-                      {est.totalSec >= 60 && (
-                        <span className="text-[11px] text-muted-foreground font-mono">
-                          ({t('约 {min} 分钟', { min: totalMins })})
-                        </span>
-                      )}
-                      {est.speedTier === 'blazing' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                          ⚡ {t('极速飞快 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-                        </span>
-                      )}
-                      {est.speedTier === 'balanced' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                          ⚖️ {t('平衡适中 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-                        </span>
-                      )}
-                      {est.speedTier === 'deep' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                          🔍 {t('深度精细 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 全局绝对标尺刻度轨道 */}
-                  <div className="space-y-1.5">
-                    <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex relative p-0.5 border border-border/40">
-                      <div
-                        style={{ width: `${fillWidthPct}%` }}
-                        className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
-                      >
-                        <div
-                          style={{ width: `${est.visualPct}%` }}
-                          className="h-full bg-primary rounded-l-full transition-all duration-300"
-                          title={t('画面 AI 理解')}
-                        />
-                        <div
-                          style={{ width: `${est.asrPct}%` }}
-                          className="h-full bg-emerald-500 transition-all duration-300"
-                          title={t('台词语音识别')}
-                        />
-                        <div
-                          style={{ width: `${est.fixedPct}%` }}
-                          className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
-                          title={t('基础解包与索引')}
-                        />
-                      </div>
-                    </div>
-
-                    {/* 实时线与刻度标尺 */}
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
-                      <span>0s</span>
-                      <span>60s</span>
-                      <span>150s</span>
-                      <span className="text-primary/80 font-medium">{t('5 分钟参考线')}</span>
-                    </div>
-
-                    {/* 细分耗时图例与百分比 */}
-                    <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-                          <span>
-                            {t('画面 AI 理解')}:{' '}
-                            <strong className="text-foreground">~{est.visualSec}s</strong> (
-                            {videoQuotaMax}
-                            {t('张')})
-                          </span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                          <span>
-                            {t('台词识别')}:{' '}
-                            <strong className="text-foreground">~{est.asrSec}s</strong> (
-                            {videoAsrCap}s{t('音轨')})
-                          </span>
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
-                          <span>
-                            {t('基础开销')}:{' '}
-                            <strong className="text-foreground">~{est.fixedSec}s</strong>
-                          </span>
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                        ⚡ {t('搜索时毫秒级瞬发响应')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 纯 CPU 口径深度档慢于实时播放时的贴心提示 */}
-                  {est.perChunkSec >= 300 && (
-                    <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                      <span>💡</span>
-                      <span>
-                        {t(
-                          '这个档位对电脑算力要求高：普通轻薄本整理会比视频播放更慢，建议放后台慢慢整理；有独立显卡的电脑大约能快 2~3 倍，多数情况能比实时播放更快完成（具体快多少因显卡型号而异）。'
-                        )}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* 整片口径耗时条：所有用户可见，随「每个视频分析时长上限」动态变化 */}
-                  <div className="space-y-1.5 pt-2 border-t border-border/30">
-                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                          {t('按整片时长测算')}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {t('上限 {mins} 分钟', { mins: fullVideoMins })}
-                        </span>
-                      </div>
-                      <span className="text-sm font-extrabold font-mono text-primary">
-                        {fullEst.minSec} ~ {fullEst.maxSec} {t('秒')}
-                        <span className="ml-1 text-[11px] text-muted-foreground font-mono">
-                          ({t('约 {min} 分钟', { min: fullMins })})
-                        </span>
-                      </span>
-                    </div>
-                    <div className="relative h-2.5 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40">
-                      <div
-                        style={{ width: `${fullFillPct}%` }}
-                        className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
-                      >
-                        <div
-                          style={{ width: `${fullEst.visualPct}%` }}
-                          className="h-full bg-primary rounded-l-full transition-all duration-300"
-                          title={t('画面 AI 理解')}
-                        />
-                        <div
-                          style={{ width: `${fullEst.asrPct}%` }}
-                          className="h-full bg-emerald-500 transition-all duration-300"
-                          title={t('台词语音识别')}
-                        />
-                        <div
-                          style={{ width: `${fullEst.fixedPct}%` }}
-                          className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
-                          title={t('基础解包与索引')}
-                        />
-                      </div>
-                      <span
-                        style={{ left: `${fullMarkPct}%` }}
-                        className="absolute -top-0.5 h-3.5 w-0.5 bg-sky-500 rounded-full transition-all duration-300"
-                        title={t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
-                      <span>0</span>
-                      <span>{t('1 小时')}</span>
-                      <span>{t('2 小时')}</span>
-                      <span className="text-sky-500/80 font-medium">
-                        {t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* 每个视频分析时长上限：所有用户可调，免费用户最终按 5 分钟结算 */}
-                  <div className="space-y-1.5 pt-2 border-t border-border/30">
-                    <div className="flex items-center justify-between text-xs">
-                      <Label className="font-semibold text-foreground">
-                        {t('每个视频分析时长上限')}
-                      </Label>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                          {Math.round(videoAnalyzeDurationSec / 60)} {t('分钟')}
-                        </span>
-                        {isFreeUser && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 px-2 text-[11px] text-amber-600 dark:text-amber-400"
-                            onClick={() => setIsUpgradeOpen(true)}
-                          >
-                            {t('解锁更长')}
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    <input
-                      type="range"
-                      min={300}
-                      max={10800}
-                      step={300}
-                      value={videoAnalyzeDurationSec}
-                      onChange={e =>
-                        handleParamChange('videoAnalyzeDurationSec', parseInt(e.target.value, 10))
-                      }
-                      className="w-full accent-primary cursor-pointer"
-                    />
-                    {isAnalyzeCapped && isFreeUser && (
-                      <p className="text-[11px] text-amber-600 dark:text-amber-400">
-                        {t('当前你是免费用户，最终结算值为5分钟，升级后可应用设置值。')}
-                      </p>
-                    )}
-                    <p className="text-[11px] text-muted-foreground">
-                      {t(
-                        '每个视频最多整理多长时间，5 分钟一档，最长 3 小时；普通电脑建议选短一些，放后台慢慢整理。'
-                      )}
-                    </p>
-                    {/* Spec §3.3：取消 Switch 后，当用户设定时长 > 5 分钟时提供大白话解释与直达「待补分析文件」引导 */}
-                    {videoAnalyzeDurationSec > 300 && !isFreeUser && (
-                      <div
-                        data-testid="video-fast-first-slice-guide"
-                        className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-700 dark:text-sky-300 flex items-start justify-between gap-3"
-                      >
-                        <p className="leading-relaxed">
-                          {t(
-                            '为避免长视频卡住其它文件，超过 5 分钟的视频首次会先分析开头 5 分钟并快速出结果；剩余部分（至您设定的 {mins} 分钟上限）会在电脑空闲时自动补全，导入新文件时会自动让路。',
-                            { mins: Math.round(videoAnalyzeDurationSec / 60) }
-                          )}
-                        </p>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 px-2 text-[11px] text-sky-700 dark:text-sky-300 hover:bg-sky-500/15 shrink-0 font-semibold"
-                          onClick={() => onNavigateTab?.('pending_backfill')}
-                        >
-                          {t('查看待补分析文件')} →
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 免费会员权益说明与 Pro 升级引导 */}
-                  {isFreeUser && (
-                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                        <div className="text-xs leading-relaxed">
-                          <p className="font-bold text-amber-700 dark:text-amber-300">
-                            {t('免费版每个视频分析精彩前 5 分钟。')}
-                          </p>
-                          <p className="text-muted-foreground">
-                            {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 3 小时。')}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => setIsUpgradeOpen(true)}
-                        className="h-7 px-3 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90 transition-opacity shrink-0 shadow-xs"
-                      >
-                        {t('立即升级 Pro')}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )
-            })()}
+            {/* 实时整理分析耗时预估图形化卡片与每个视频分析时长上限（独立隔离子组件，拖拽 60fps 丝滑且防抖提交） */}
+            <VideoAnalysisEstimateCard
+              videoQuotaMax={videoQuotaMax}
+              localVideoSoftTokenBudget={localVideoSoftTokenBudget}
+              videoAsrCap={videoAsrCap}
+              hasGpuPower={hasGpuPower}
+              videoAnalyzeDurationSec={videoAnalyzeDurationSec}
+              isFreeUser={isFreeUser}
+              isAnalyzeCapped={isAnalyzeCapped}
+              onDurationChange={val => handleParamChange('videoAnalyzeDurationSec', val)}
+              onNavigateTab={onNavigateTab}
+              setIsUpgradeOpen={setIsUpgradeOpen}
+            />
           </div>
         </Card>
       )}
