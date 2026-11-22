@@ -22,9 +22,7 @@
     "de-DE": "Der Verzeichnispfad darf nicht leer sein",
     "fr-FR": "Le chemin du répertoire ne peut pas être vide",
     "ko-KR": "디렉터리 경로를 비울 수 없습니다",
-    "$files": [
-      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(6813-6825)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/common-resource-path-service.ts(6813-6825)"],
     "$id": 38307
   },
   "目录路径必须是绝对路径": {
@@ -37,9 +35,7 @@
     "de-DE": "Der Verzeichnispfad muss ein absoluter Pfad sein",
     "fr-FR": "Le chemin du répertoire doit être un chemin absolu",
     "ko-KR": "디렉터리 경로는 절대 경로여야 합니다",
-    "$files": [
-      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(6911-6926)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/common-resource-path-service.ts(6911-6926)"],
     "$id": 38308
   },
   "所选目录不可写入，请更换其他目录": {
@@ -69,9 +65,7 @@
     "de-DE": "Aktualisierung des Cache-Verzeichnisses fehlgeschlagen, bitte versuchen Sie es später erneut",
     "fr-FR": "La mise à jour du répertoire de cache a échoué, veuillez réessayer plus tard",
     "ko-KR": "캐시 디렉터리 업데이트에 실패했으므로 나중에 다시 시도하십시오",
-    "$files": [
-      "src/electron/runtime-services/filesystem/common-resource-path-service.ts(17222-17240)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/common-resource-path-service.ts(17222-17240)"],
     "$id": 38310
   },
   "数据库连接未初始化": {
@@ -97,9 +91,7 @@
     "de-DE": "100% exakt identische Dateien",
     "fr-FR": "Fichier 100 % identique et parfaitement exact",
     "ko-KR": "100% 완전 일치는 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1038-1055)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1038-1055)"],
     "$id": 19946
   },
   "视觉感知相似图像": {
@@ -112,9 +104,7 @@
     "de-DE": "Visuell ähnliche Bilder",
     "fr-FR": "Images visuellement similaires",
     "ko-KR": "시각적 유사 이미지",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1163-1175)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1163-1175)"],
     "$id": 19947
   },
   "同源/声学相似音频文件": {
@@ -127,9 +117,7 @@
     "de-DE": "Audiodateien gleichen Ursprungs / akustisch ähnliche Audiodateien",
     "fr-FR": "Fichiers audio identiques ou similaires sur le plan acoustique",
     "ko-KR": "동음/음성 유사 오디오 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1278-1293)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1278-1293)"],
     "$id": 19948
   },
   "同源/画面相似视频文件": {
@@ -142,9 +130,7 @@
     "de-DE": "Videodateien gleichen Ursprungs / visuell ähnliche Videodateien",
     "fr-FR": "Fichiers vidéo provenant de la même source ou présentant des images similaires",
     "ko-KR": "동원/화면 유사 비디오 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1401-1416)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1401-1416)"],
     "$id": 19949
   },
   "扩展名不匹配文件": {
@@ -157,9 +143,7 @@
     "de-DE": "Dateien mit nicht übereinstimmenden Erweiterungen",
     "fr-FR": "Fichiers dont l'extension ne correspond pas",
     "ko-KR": "확장자 불일치 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1478-1490)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1478-1490)"],
     "$id": 19950
   },
   "空文件夹": {
@@ -172,9 +156,7 @@
     "de-DE": "Leerer Ordner",
     "fr-FR": "Dossier vide",
     "ko-KR": "빈 폴더",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1578-1586)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1578-1586)"],
     "$id": 19951
   },
   "占用空间超大文件": {
@@ -187,9 +169,7 @@
     "de-DE": "Dateien mit übermäßigem Speicherplatzbedarf",
     "fr-FR": "Fichiers très volumineux",
     "ko-KR": "대용량 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1666-1678)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1666-1678)"],
     "$id": 19952
   },
   "0 字节空文件": {
@@ -202,9 +182,7 @@
     "de-DE": "0 Byte leere Datei",
     "fr-FR": "Fichier vide de 0 octet",
     "ko-KR": "0바이트의 빈 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1762-1773)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1762-1773)"],
     "$id": 19953
   },
   "临时与残留缓存文件": {
@@ -217,9 +195,7 @@
     "de-DE": "Temporäre und verwaiste Cache-Dateien",
     "fr-FR": "Fichiers de cache temporaires et résiduels",
     "ko-KR": "임시 및 잔여 캐시 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1860-1873)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1860-1873)"],
     "$id": 19954
   },
   "无效或断裂的软链接": {
@@ -232,9 +208,7 @@
     "de-DE": "Ungültige oder gebrochene symbolische Links",
     "fr-FR": "Liens symboliques invalides ou rompus",
     "ko-KR": "무효하거나 연결이 끊긴 심볼릭 링크",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1967-1980)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1967-1980)"],
     "$id": 19955
   },
   "损坏或无法解码的文件": {
@@ -247,9 +221,7 @@
     "de-DE": "Beschädigte oder nicht decodierte Dateien",
     "fr-FR": "Fichiers endommagés ou impossibles à décoder",
     "ko-KR": "손상이 있거나 디코딩할 수 없는 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2066-2080)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2066-2080)"],
     "$id": 19956
   },
   "包含异常/不合规字符的文件名": {
@@ -262,9 +234,7 @@
     "de-DE": "Dateinamen mit ungewöhnlichen / nicht konformen Zeichen",
     "fr-FR": "Noms de fichiers contenant des caractères inhabituels ou non conformes",
     "ko-KR": "비정상/비표준 문자가 포함된 파일 이름",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2160-2178)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2160-2178)"],
     "$id": 19957
   },
   "可清除 Exif 隐私信息的文件": {
@@ -277,9 +247,7 @@
     "de-DE": "Dateien mit löschbaren Exif-Privatsphäre-Informationen",
     "fr-FR": "Fichiers permettant de supprimer les informations de confidentialité Exif",
     "ko-KR": "Exif 비공개 정보를 제거할 수 있는 파일",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2238-2258)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2238-2258)"],
     "$id": 19958
   },
   "可转码/优化的高效能视频": {
@@ -292,9 +260,7 @@
     "de-DE": "Hoch effiziente Videos zur Transkodierung / Optimierung",
     "fr-FR": "Vidéos haute performance pouvant être encodées/optimisées",
     "ko-KR": "변환/최적화가 가능한 고효율 비디오",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2321-2337)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2321-2337)"],
     "$id": 19959
   },
   "多模态特征识别组": {
@@ -307,9 +273,7 @@
     "de-DE": "Gruppen mit multimodaler Merkmalserkennung",
     "fr-FR": "Groupe de reconnaissance des caractéristiques multimodales",
     "ko-KR": "다중모달 특징 인식 그룹",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2385-2397)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2385-2397)"],
     "$id": 19960
   },
   "扫描完成": {
@@ -322,9 +286,7 @@
     "de-DE": "Scan abgeschlossen",
     "fr-FR": "La numérisation est terminée",
     "ko-KR": "스캔 완료",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(10697-10705)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(10697-10705)"],
     "$id": 19961
   },
   "发现重复组": {
@@ -337,9 +299,7 @@
     "de-DE": "Doppelte Gruppen gefunden",
     "fr-FR": "Détection des groupes en double",
     "ko-KR": "중복 그룹 발견",
-    "$files": [
-      "src/electron/runtime-services/filesystem/duplicate-detection-service.ts(11975-11984)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(11975-11984)"],
     "$id": 19962
   },
   "文件记录 { fileId } 不存在": {
@@ -885,9 +845,7 @@
     "de-DE": "Intelligentes Clustering von endseitigem HAC ist abgeschlossen und {count} Themenkataloge werden im Konsens festgelegt (zeitaufwändige {ms} ms)",
     "fr-FR": "Le clustering intelligent des HAC côté terminal est terminé et les {count} catalogues de sujets sont déterminés par consensus ({ms} ms chronophages)",
     "ko-KR": "엔드사이드 해크의 지능형 클러스터링이 완료되고{count}주제 카탈로그는 합의에 의해 결정됩니다(시간이 많이 걸리는{ms}밀리초).",
-    "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(25583-25631)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(25583-25631)"],
     "$id": 19964
   },
   "智能聚类整理": {
@@ -900,9 +858,7 @@
     "de-DE": "Intelligentes Clustering und Sortieren",
     "fr-FR": "Regroupement et tri intelligents",
     "ko-KR": "지능형 클러스터링 및 정렬",
-    "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(33842-33852)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(33842-33852)"],
     "$id": 21920
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
@@ -931,9 +887,7 @@
     "de-DE": "Arbeitsverzeichnis nicht vorhanden: {workspaceDirectoryPath}",
     "fr-FR": "Le répertoire de travail n'existe pas : {workspaceDirectoryPath}",
     "ko-KR": "작업 디렉터리가 존재하지 않습니다: {workspaceDirectoryPath}",
-    "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/PersistenceManager.ts(578-615)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/PersistenceManager.ts(578-615)"],
     "$id": 8136
   },
   "无法创建虚拟目录：名称\"{name}\"及其所有衍生名称均已被占用": {
@@ -946,9 +900,7 @@
     "de-DE": "Virtuelles Verzeichnis kann nicht erstellt werden: Der Name \"{name}\" und alle abgeleiteten Namen sind bereits vergeben",
     "fr-FR": "Impossible de créer un répertoire virtuel: le nom \"{name}\" et tous ses noms dérivés sont déjà utilisés",
     "ko-KR": "가상 디렉터리를 생성할 수 없습니다: 이름 \"{name}\" 및 모든 파생 이름이 이미 사용 중입니다",
-    "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10689-10725)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10689-10725)"],
     "$id": 8137
   },
   "虚拟目录不存在": {
@@ -961,9 +913,7 @@
     "de-DE": "Virtuelles Verzeichnis nicht vorhanden",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다",
-    "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10887-10898)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10887-10898)"],
     "$id": 8138
   },
   "无法更新名称：名称\"{name}\"已被占用": {
@@ -976,9 +926,7 @@
     "de-DE": "Name kann nicht aktualisiert werden: Der Name \"{name}\" ist bereits vergeben",
     "fr-FR": "Impossible de mettre à jour le nom : le nom \"{name}\" est déjà utilisé",
     "ko-KR": "이름을 업데이트할 수 없습니다: 이름 \"{name}\"이(가) 이미 사용 중입니다",
-    "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11711-11736)"
-    ],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11711-11736)"],
     "$id": 8139
   }
 }

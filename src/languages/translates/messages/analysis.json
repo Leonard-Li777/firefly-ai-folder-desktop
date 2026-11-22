@@ -535,7 +535,10 @@
     "de-DE": "Videoanalyse: {done}/{total} Clips abgeschlossen",
     "fr-FR": "Analyse vidéo : {done}/{total} clips terminés",
     "ko-KR": "비디오 분석: {done}/{total} 클립 완료",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(5784-5815)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(5784-5815)",
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(33720-33751)"
+    ],
     "$id": 38312
   },
   "当前进度约 {pct}%": {
@@ -947,6 +950,58 @@
     "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31871-31878)"],
     "$id": 22300
   },
+  "后台视频补全等待中": {
+    "en-US": "Background video completion is waiting",
+    "es-ES": "La finalización del video de fondo está esperando",
+    "ar-EG": "الانتهاء من الفيديو الخلفية ينتظر",
+    "pt-PT": "A conclusão do vídeo de fundo está à espera",
+    "ru-RU": "Ожидается завершение работы с фоновым видео",
+    "ja-JP": "背景ビデオの完成が待っています",
+    "de-DE": "Die Fertigstellung des Hintergrundvideos wartet",
+    "fr-FR": "L'achèvement de la vidéo d'arrière-plan est en attente",
+    "ko-KR": "배경 비디오 완성이 기다리고 있습니다",
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(32958-32971)"],
+    "$id": 39819
+  },
+  "待补 {videos} 个长视频（剩余 {slices} 段）": {
+    "en-US": "{videos} long videos to be made up (remaining {slices} segments)",
+    "es-ES": "{videos} videos largos a componer ({slices} segmentos restantes)",
+    "ar-EG": "{videos} مقاطع فيديو طويلة مكونة (مقاطع {slices} متبقية)",
+    "pt-PT": "{videos} vídeos longos a compor (restantes {slices} segmentos)",
+    "ru-RU": "{videos} необходимо создать длинные видеоролики (оставшиеся {slices} фрагменты)",
+    "ja-JP": "{videos}構成される長いビデオ（残りの{slices}セグメント）",
+    "de-DE": "{videos} lange Videos, die erstellt werden sollen (verbleibende {slices} Segmente)",
+    "fr-FR": "{videos} longues vidéos à composer (segments {slices} restants)",
+    "ko-KR": "{videos}구성해야 할 긴 동영상(나머지{slices}세그먼트)",
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(33099-33134)"],
+    "$id": 39820
+  },
+  "视频补全": {
+    "en-US": "Video completion",
+    "es-ES": "Finalización de video",
+    "ar-EG": "الانتهاء من الفيديو",
+    "pt-PT": "Conclusão do vídeo",
+    "ru-RU": "Завершение видеосъемки",
+    "ja-JP": "ビデオ補完",
+    "de-DE": "Videovervollständigung",
+    "fr-FR": "Achèvement de la vidéo",
+    "ko-KR": "비디오 완성",
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(34561-34569)"],
+    "$id": 39821
+  },
+  "管理待补文件": {
+    "en-US": "Manage pending documents",
+    "es-ES": "Administrar documentos pendientes",
+    "ar-EG": "إدارة المستندات المعلقة",
+    "pt-PT": "Gerir documentos pendentes",
+    "ru-RU": "Управление ожидающими рассмотрения документами",
+    "ja-JP": "保留中の文書の管理",
+    "de-DE": "Ausstehende Dokumente verwalten",
+    "fr-FR": "Gérer les documents en attente",
+    "ko-KR": "보류 중인 문서 관리",
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(35326-35336)"],
+    "$id": 39822
+  },
   "文件名": {
     "en-US": "Filename",
     "es-ES": "Nombre del archivo",
@@ -957,7 +1012,7 @@
     "de-DE": "Dateiname",
     "fr-FR": "Nom du fichier",
     "ko-KR": "파일명",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(33199-33206)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(36469-36476)"],
     "$id": 3877
   },
   "当前阶段": {
@@ -970,7 +1025,7 @@
     "de-DE": "Aktuelle Stufe",
     "fr-FR": "Stade actuel",
     "ko-KR": "현재 단계",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(33536-33544)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(36806-36814)"],
     "$id": 38314
   },
   "状态": {
@@ -983,7 +1038,7 @@
     "de-DE": "Status",
     "fr-FR": "Statut",
     "ko-KR": "상태",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(33893-33899)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(37163-37169)"],
     "$id": 3879
   },
   "失败/跳过原因": {
@@ -996,7 +1051,7 @@
     "de-DE": "Fehler-/Übersprungsgrund",
     "fr-FR": "Raison de l'échec/du saut",
     "ko-KR": "실패/건너뛰기 이유",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(34244-34255)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(37514-37525)"],
     "$id": 7805
   },
   "缓存/耗时": {
@@ -1009,7 +1064,7 @@
     "de-DE": "Cache / Laufzeit",
     "fr-FR": "Cache / Temps écoulé",
     "ko-KR": "캐시/소요 시간",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(34616-34625)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(37886-37895)"],
     "$id": 3416
   },
   "最小单元": {
@@ -1022,7 +1077,7 @@
     "de-DE": "Mindesteinheit",
     "fr-FR": "Unité minimale",
     "ko-KR": "최소 단위",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(34957-34965)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(38227-38235)"],
     "$id": 6232
   },
   "操作": {
@@ -1035,7 +1090,7 @@
     "de-DE": "Aktionen",
     "fr-FR": "Opérations",
     "ko-KR": "작업",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(35323-35329)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(38593-38599)"],
     "$id": 3881
   },
   "智能文件名扩展名确认": {

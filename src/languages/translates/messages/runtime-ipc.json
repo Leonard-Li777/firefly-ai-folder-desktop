@@ -89,7 +89,7 @@
     "de-DE": "Wählen Sie die Miniaturansicht und den Sprachcache aus, um das Verzeichnis zu speichern",
     "fr-FR": "Sélectionnez la vignette et le cache vocal pour enregistrer le répertoire",
     "ko-KR": "썸네일 및 음성 캐시를 선택하여 디렉터리를 저장합니다",
-    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(24677-24695)"],
+    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(25289-25307)"],
     "$id": 38311
   }
 }

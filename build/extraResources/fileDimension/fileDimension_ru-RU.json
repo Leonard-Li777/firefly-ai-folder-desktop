@@ -22,14 +22,8 @@
         "Данные приложений"
       ],
       "description": "Классификация файлов по базовому формату",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Расширение файла",
-        "MIME-тип",
-        "Сигнатура файла"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Расширение файла", "MIME-тип", "Сигнатура файла"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -57,14 +51,8 @@
         "семейная жизнь"
       ],
       "description": "Основные сценарии использования файлов",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Путь хранения",
-        "Шаблон именования",
-        "Связанные приложения"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Путь хранения", "Шаблон именования", "Связанные приложения"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -88,13 +76,8 @@
         "Вложение почты"
       ],
       "description": "Первоисточник файла",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Характеристики пути",
-        "Журнал передачи"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Характеристики пути", "Журнал передачи"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -110,20 +93,8 @@
       "level": 1,
       "tags": [],
       "description": "Создатель или участник файла",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "code",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "Метаданные",
-        "цифровая подпись",
-        "водяной знак"
-      ],
+      "applicableFileTypes": ["text", "document", "ebook", "image", "code", "video", "audio"],
+      "contextHints": ["Метаданные", "цифровая подпись", "водяной знак"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -145,18 +116,12 @@
         "Справочная документация"
       ],
       "description": "Сегментация файлов данных приложения",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "Характеристики формата"
-      ],
+      "applicableFileTypes": ["application"],
+      "contextHints": ["Характеристики формата"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Данные приложений"
-          ]
+          "triggerTags": ["Данные приложений"]
         }
       ],
       "metadata": {
@@ -190,19 +155,12 @@
         "Иллюстрация без текста"
       ],
       "description": "Профессиональная классификация контента изображений",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "EXIF-данные",
-        "идентификация контента"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["EXIF-данные", "идентификация контента"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение"
-          ]
+          "triggerTags": ["Изображение"]
         }
       ],
       "tagImplications": [
@@ -264,19 +222,12 @@
         "Видео встречи"
       ],
       "description": "Профессиональная классификация видеоконтента",
-      "applicableFileTypes": [
-        "video"
-      ],
-      "contextHints": [
-        "Характеристики продолжительности",
-        "Анализ ключевых кадров"
-      ],
+      "applicableFileTypes": ["video"],
+      "contextHints": ["Характеристики продолжительности", "Анализ ключевых кадров"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Видео"
-          ]
+          "triggerTags": ["Видео"]
         }
       ],
       "tagImplications": [
@@ -317,19 +268,12 @@
         "Запись встречи"
       ],
       "description": "Профессиональная классификация аудиоконтента",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "Спектральные характеристики",
-        "Метаданные"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["Спектральные характеристики", "Метаданные"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Аудио"
-          ]
+          "triggerTags": ["Аудио"]
         }
       ],
       "tagImplications": [
@@ -366,20 +310,12 @@
         "Незашифрованный сжатый пакет"
       ],
       "description": "Статус шифрования и классификация форматов сжатых пакетов",
-      "applicableFileTypes": [
-        "archive"
-      ],
-      "contextHints": [
-        "Алгоритм сжатия",
-        "Подпись заголовка файла",
-        "Обнаружение шифрования"
-      ],
+      "applicableFileTypes": ["archive"],
+      "contextHints": ["Алгоритм сжатия", "Подпись заголовка файла", "Обнаружение шифрования"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Сжатый архив"
-          ]
+          "triggerTags": ["Сжатый архив"]
         }
       ],
       "metadata": {
@@ -404,19 +340,12 @@
         "Игровая программа"
       ],
       "description": "Классификация исполняемых файлов",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "Возможности платформы",
-        "Сертификат подписи"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["Возможности платформы", "Сертификат подписи"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Исполняемая программа"
-          ]
+          "triggerTags": ["Исполняемая программа"]
         }
       ],
       "tagImplications": [
@@ -463,18 +392,9 @@
       "id": 163,
       "name": "Операционная платформа",
       "level": 2,
-      "tags": [
-        "Windows",
-        "macOS",
-        "Linux",
-        "Android",
-        "iOS",
-        "Кросс-платформенный"
-      ],
+      "tags": ["Windows", "macOS", "Linux", "Android", "iOS", "Кросс-платформенный"],
       "description": "Операционная система и архитектурная платформа, на которой выполняется программа",
-      "applicableFileTypes": [
-        "executable"
-      ],
+      "applicableFileTypes": ["executable"],
       "contextHints": [
         "Особенности PE-заголовка",
         "Особенности ELF-заголовка",
@@ -483,9 +403,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Исполняемая программа"
-          ]
+          "triggerTags": ["Исполняемая программа"]
         }
       ],
       "metadata": {
@@ -511,19 +429,12 @@
         "JVM"
       ],
       "description": "Характеристики зависимостей программ от времени выполнения и фреймворка",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "Обнаружение библиотеки зависимостей",
-        "Характеристики упаковки"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["Обнаружение библиотеки зависимостей", "Характеристики упаковки"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Исполняемая программа"
-          ]
+          "triggerTags": ["Исполняемая программа"]
         }
       ],
       "metadata": {
@@ -548,19 +459,12 @@
         "Шифрование & Безопасность"
       ],
       "description": "Измерение маркировки множественного выбора характеристик возможностей программы",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "Кластеризация символов IAT",
-        "Обнаружение способностей"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["Кластеризация символов IAT", "Обнаружение способностей"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Исполняемая программа"
-          ]
+          "triggerTags": ["Исполняемая программа"]
         }
       ],
       "metadata": {
@@ -592,27 +496,12 @@
         "хинди"
       ],
       "description": "Классификация содержимого документа на естественном языке",
-      "applicableFileTypes": [
-        "document",
-        "text",
-        "ebook",
-        "audio",
-        "video"
-      ],
-      "contextHints": [
-        "кодировка символов",
-        "грамматические особенности"
-      ],
+      "applicableFileTypes": ["document", "text", "ebook", "audio", "video"],
+      "contextHints": ["кодировка символов", "грамматические особенности"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Текст",
-            "Документ",
-            "Электронная книга",
-            "Аудио",
-            "Видео"
-          ]
+          "triggerTags": ["Текст", "Документ", "Электронная книга", "Аудио", "Видео"]
         }
       ],
       "metadata": {
@@ -636,19 +525,12 @@
         "Драйвер"
       ],
       "description": "Функциональная классификация ключевых системных файлов",
-      "applicableFileTypes": [
-        "filesystem"
-      ],
-      "contextHints": [
-        "Расположение пути",
-        "Разрешительные характеристики"
-      ],
+      "applicableFileTypes": ["filesystem"],
+      "contextHints": ["Расположение пути", "Разрешительные характеристики"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Системные файлы"
-          ]
+          "triggerTags": ["Системные файлы"]
         }
       ],
       "metadata": {
@@ -674,47 +556,28 @@
         "Специальное предложение"
       ],
       "description": "Статус публикации и выпуска документов",
-      "applicableFileTypes": [
-        "ebook",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "Страница авторских прав",
-        "ISBN-номер",
-        "издательская платформа"
-      ],
+      "applicableFileTypes": ["ebook", "video", "audio"],
+      "contextHints": ["Страница авторских прав", "ISBN-номер", "издательская платформа"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация электронных книг",
-          "triggerTags": [
-            "роман"
-          ]
+          "triggerTags": ["роман"]
         },
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "аудиокнига",
-            "музыка"
-          ]
+          "triggerTags": ["аудиокнига", "музыка"]
         },
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Электронная книга"
-          ]
+          "triggerTags": ["Электронная книга"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -738,19 +601,12 @@
         "Резервное копирование данных"
       ],
       "description": "Технический формат файлов базы данных",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "Сигнатура файла",
-        "Конструктивные особенности"
-      ],
+      "applicableFileTypes": ["database"],
+      "contextHints": ["Сигнатура файла", "Конструктивные особенности"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "База данных"
-          ]
+          "triggerTags": ["База данных"]
         }
       ],
       "metadata": {
@@ -772,19 +628,12 @@
         "образ диска"
       ],
       "description": "Классификация использования образа диска",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "Информация на метке тома",
-        "Структура разделов"
-      ],
+      "applicableFileTypes": ["diskimage"],
+      "contextHints": ["Информация на метке тома", "Структура разделов"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Образ диска"
-          ]
+          "triggerTags": ["Образ диска"]
         }
       ],
       "metadata": {
@@ -801,28 +650,16 @@
       "level": 2,
       "tags": [],
       "description": "Местоположение, связанное с контентом",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "GPS-координаты",
-        "Признание достопримечательности"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["GPS-координаты", "Признание достопримечательности"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение",
-            "Видео"
-          ]
+          "triggerTags": ["Изображение", "Видео"]
         },
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Записи о путешествиях",
-            "Творческие проекты"
-          ]
+          "triggerTags": ["Записи о путешествиях", "Творческие проекты"]
         }
       ],
       "metadata": {
@@ -838,30 +675,14 @@
       "id": 17,
       "name": "Уровень безопасности",
       "level": 2,
-      "tags": [
-        "общественный",
-        "внутренний",
-        "конфиденциальный",
-        "Совершенно секретно"
-      ],
+      "tags": ["общественный", "внутренний", "конфиденциальный", "Совершенно секретно"],
       "description": "Классификация степеней конфиденциальности документов",
-      "applicableFileTypes": [
-        "document",
-        "code",
-        "archive",
-        "database"
-      ],
-      "contextHints": [
-        "статус шифрования",
-        "Настройки разрешений"
-      ],
+      "applicableFileTypes": ["document", "code", "archive", "database"],
+      "contextHints": ["статус шифрования", "Настройки разрешений"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Рабочие документы",
-            "финансовые файлы"
-          ]
+          "triggerTags": ["Рабочие документы", "финансовые файлы"]
         }
       ],
       "metadata": {
@@ -885,22 +706,12 @@
         "На доработку"
       ],
       "description": "Статус рабочего процесса файла",
-      "applicableFileTypes": [
-        "document",
-        "code",
-        "design"
-      ],
-      "contextHints": [
-        "время модификации",
-        "отметка версии"
-      ],
+      "applicableFileTypes": ["document", "code", "design"],
+      "contextHints": ["время модификации", "отметка версии"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Рабочие документы",
-            "Творческие проекты"
-          ]
+          "triggerTags": ["Рабочие документы", "Творческие проекты"]
         }
       ],
       "metadata": {
@@ -925,19 +736,12 @@
         "Локализованная Версия"
       ],
       "description": "Лицензирование и характер распространения программного обеспечения",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "файл лицензии",
-        "Идентификатор авторизации"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["файл лицензии", "Идентификатор авторизации"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Исполняемая программа"
-          ]
+          "triggerTags": ["Исполняемая программа"]
         }
       ],
       "metadata": {
@@ -960,21 +764,12 @@
         "активный отдых на свежем воздухе"
       ],
       "description": "Классификация содержания путевых записей",
-      "applicableFileTypes": [
-        "image",
-        "video",
-        "document"
-      ],
-      "contextHints": [
-        "распознавание сцены",
-        "временные характеристики"
-      ],
+      "applicableFileTypes": ["image", "video", "document"],
+      "contextHints": ["распознавание сцены", "временные характеристики"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Записи о путешествиях"
-          ]
+          "triggerTags": ["Записи о путешествиях"]
         }
       ],
       "metadata": {
@@ -997,19 +792,12 @@
         "счет"
       ],
       "description": "Деловой тип финансовых документов",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Идентификация счета",
-        "Режим суммы"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["Идентификация счета", "Режим суммы"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "финансовые файлы"
-          ]
+          "triggerTags": ["финансовые файлы"]
         }
       ],
       "tagImplications": [
@@ -1075,20 +863,12 @@
         "Отомэ-игры"
       ],
       "description": "Тип игры",
-      "applicableFileTypes": [
-        "video",
-        "ebook",
-        "executable"
-      ],
-      "contextHints": [
-        "игра"
-      ],
+      "applicableFileTypes": ["video", "ebook", "executable"],
+      "contextHints": ["игра"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Игры и развлечения"
-          ]
+          "triggerTags": ["Игры и развлечения"]
         }
       ],
       "tagImplications": [
@@ -1193,12 +973,7 @@
         "Образование"
       ],
       "description": "Классификация учебных материалов по предметным областям",
-      "applicableFileTypes": [
-        "document",
-        "video",
-        "ebook",
-        "code"
-      ],
+      "applicableFileTypes": ["document", "video", "ebook", "code"],
       "contextHints": [
         "Плотность предметной терминологии",
         "Структура глав учебника",
@@ -1207,9 +982,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Учебные материалы"
-          ]
+          "triggerTags": ["Учебные материалы"]
         }
       ],
       "tagImplications": [
@@ -1290,19 +1063,12 @@
         "общественная книга"
       ],
       "description": "Классификация содержания электронных книг",
-      "applicableFileTypes": [
-        "ebook"
-      ],
-      "contextHints": [
-        "Структура главы",
-        "Статус DRM"
-      ],
+      "applicableFileTypes": ["ebook"],
+      "contextHints": ["Структура главы", "Статус DRM"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Электронная книга"
-          ]
+          "triggerTags": ["Электронная книга"]
         }
       ],
       "tagImplications": [
@@ -1340,7 +1106,7 @@
         "город",
         "кампус",
         "рабочее место",
-        "Семья",
+        "Домовая книга",
         "Идол",
         "боевые искусства",
         "сюжет",
@@ -1369,12 +1135,7 @@
         "этика"
       ],
       "description": "Профессиональная классификация предмета",
-      "applicableFileTypes": [
-        "video",
-        "audio",
-        "ebook",
-        "executable"
-      ],
+      "applicableFileTypes": ["video", "audio", "ebook", "executable"],
       "contextHints": [
         "Характеристики продолжительности",
         "Анализ ключевых кадров",
@@ -1383,33 +1144,23 @@
       "triggerConditions": [
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "музыка"
-          ]
+          "triggerTags": ["музыка"]
         },
         {
           "parentDimension": "сегментация электронных книг",
-          "triggerTags": [
-            "роман"
-          ]
+          "triggerTags": ["роман"]
         },
         {
           "parentDimension": "Сегментация программы",
-          "triggerTags": [
-            "игра"
-          ]
+          "triggerTags": ["игра"]
         },
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Игры и развлечения"
-          ]
+          "triggerTags": ["Игры и развлечения"]
         }
       ],
       "metadata": {
@@ -1442,19 +1193,12 @@
         "Симфоническая музыка"
       ],
       "description": "тип музыки",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "Характеристики продолжительности",
-        "Характеристики контента"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["Характеристики продолжительности", "Характеристики контента"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "музыка"
-          ]
+          "triggerTags": ["музыка"]
         }
       ],
       "metadata": {
@@ -1468,20 +1212,10 @@
       "id": 27,
       "name": "Качество документа",
       "level": 1,
-      "tags": [
-        "высокое качество",
-        "среднее качество",
-        "низкое качество"
-      ],
+      "tags": ["высокое качество", "среднее качество", "низкое качество"],
       "description": "Оценка качества содержимого файла",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Качество контента",
-        "Техническое качество",
-        "эстетическое качество"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Качество контента", "Техническое качество", "эстетическое качество"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1497,14 +1231,8 @@
       "level": 1,
       "tags": [],
       "description": "Основные ключевые слова, извлеченные из содержания документа или мультимодального описания.",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "текстовый контент",
-        "визуальное описание",
-        "транскрипция речи"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["текстовый контент", "визуальное описание", "транскрипция речи"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1528,26 +1256,12 @@
         "домашние блюда"
       ],
       "description": "Конкретные жизненные вопросы в семейных ситуациях",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "Путь хранения",
-        "Шаблон именования",
-        "Связанные приложения"
-      ],
+      "applicableFileTypes": ["text", "document", "ebook", "image", "video", "audio", "design"],
+      "contextHints": ["Путь хранения", "Шаблон именования", "Связанные приложения"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "семейная жизнь"
-          ]
+          "triggerTags": ["семейная жизнь"]
         }
       ],
       "metadata": {
@@ -1571,18 +1285,12 @@
         "Субтитры"
       ],
       "description": "Разделение текстовых файлов",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "Характеристики формата"
-      ],
+      "applicableFileTypes": ["text"],
+      "contextHints": ["Характеристики формата"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Текст"
-          ]
+          "triggerTags": ["Текст"]
         }
       ],
       "metadata": {
@@ -1606,18 +1314,12 @@
         "WPS-документ"
       ],
       "description": "Разделение файлов документов",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Характеристики формата"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["Характеристики формата"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Документ"
-          ]
+          "triggerTags": ["Документ"]
         }
       ],
       "metadata": {
@@ -1665,18 +1367,12 @@
         "url"
       ],
       "description": "Расширение файла данных приложения",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["application"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация данных приложения",
-          "triggerTags": [
-            "расширение данных приложения"
-          ]
+          "triggerTags": ["расширение данных приложения"]
         }
       ],
       "metadata": {
@@ -1692,28 +1388,14 @@
       "id": 103,
       "name": "Расширение базы данных",
       "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
+      "tags": ["db", "db3", "mdb", "accdb", "fdb", "dbf", "sqlitedb"],
       "description": "Расширение файла базы данных",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["database"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация базы данных",
-          "triggerTags": [
-            "Расширение базы данных"
-          ]
+          "triggerTags": ["Расширение базы данных"]
         }
       ],
       "metadata": {
@@ -1729,32 +1411,14 @@
       "id": 104,
       "name": "расширение образа диска",
       "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
+      "tags": ["vhd", "vhdx", "vmdk", "img", "nrg", "mdf", "mds", "raw", "qcow2", "vdi", "ova"],
       "description": "Расширение файла образа диска",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["diskimage"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация образа диска",
-          "triggerTags": [
-            "расширение образа диска"
-          ]
+          "triggerTags": ["расширение образа диска"]
         }
       ],
       "metadata": {
@@ -1779,19 +1443,12 @@
         "Backend"
       ],
       "description": "Классификация файлов исходного кода",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "грамматические особенности",
-        "Путь к интерпретатору"
-      ],
+      "applicableFileTypes": ["code"],
+      "contextHints": ["грамматические особенности", "Путь к интерпретатору"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Исходный код"
-          ]
+          "triggerTags": ["Исходный код"]
         }
       ],
       "metadata": {
@@ -1806,26 +1463,14 @@
       "id": 106,
       "name": "Сегментация шрифтов",
       "level": 2,
-      "tags": [
-        "Расширение шрифта",
-        "Английский шрифт",
-        "Китайский шрифт",
-        "Иконочный шрифт"
-      ],
+      "tags": ["Расширение шрифта", "Английский шрифт", "Китайский шрифт", "Иконочный шрифт"],
       "description": "Классификация файлов шрифтов",
-      "applicableFileTypes": [
-        "font"
-      ],
-      "contextHints": [
-        "Формат шрифта",
-        "набор символов"
-      ],
+      "applicableFileTypes": ["font"],
+      "contextHints": ["Формат шрифта", "набор символов"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Шрифт"
-          ]
+          "triggerTags": ["Шрифт"]
         }
       ],
       "metadata": {
@@ -1840,28 +1485,14 @@
       "id": 107,
       "name": "Расширение системного файла",
       "level": 3,
-      "tags": [
-        "sys",
-        "drv",
-        "dll",
-        "service",
-        "socket",
-        "pid",
-        "lock"
-      ],
+      "tags": ["sys", "drv", "dll", "service", "socket", "pid", "lock"],
       "description": "Расширение системного файла",
-      "applicableFileTypes": [
-        "filesystem"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["filesystem"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Разбивка системных файлов",
-          "triggerTags": [
-            "Расширение системного файла"
-          ]
+          "triggerTags": ["Расширение системного файла"]
         }
       ],
       "metadata": {
@@ -1905,18 +1536,12 @@
         "xlsx"
       ],
       "description": "Расширение файла класса документа",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Детализация документа",
-          "triggerTags": [
-            "Расширение документа"
-          ]
+          "triggerTags": ["Расширение документа"]
         }
       ],
       "metadata": {
@@ -1949,18 +1574,12 @@
         "webvtt"
       ],
       "description": "Расширение текстового файла",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["text"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Детализация текста",
-          "triggerTags": [
-            "текстовое расширение"
-          ]
+          "triggerTags": ["текстовое расширение"]
         }
       ],
       "metadata": {
@@ -2011,18 +1630,12 @@
         "xcf"
       ],
       "description": "Расширение файла изображения",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Расширение изображения"
-          ]
+          "triggerTags": ["Расширение изображения"]
         }
       ],
       "metadata": {
@@ -2061,18 +1674,12 @@
         "dv"
       ],
       "description": "Расширение видеофайла",
-      "applicableFileTypes": [
-        "video"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["video"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "расширение видео"
-          ]
+          "triggerTags": ["расширение видео"]
         }
       ],
       "metadata": {
@@ -2117,18 +1724,12 @@
         "oga"
       ],
       "description": "расширение аудиофайла",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "аудио расширение"
-          ]
+          "triggerTags": ["аудио расширение"]
         }
       ],
       "metadata": {
@@ -2181,18 +1782,12 @@
         "zip"
       ],
       "description": "Расширение сжатого файла пакета",
-      "applicableFileTypes": [
-        "archive"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["archive"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Разбивка сжатого пакета",
-          "triggerTags": [
-            "Расширение сжатого пакета"
-          ]
+          "triggerTags": ["Расширение сжатого пакета"]
         }
       ],
       "metadata": {
@@ -2315,18 +1910,12 @@
         "yml"
       ],
       "description": "Расширение файла исходного кода",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["code"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация исходного кода",
-          "triggerTags": [
-            "Расширение исходного кода"
-          ]
+          "triggerTags": ["Расширение исходного кода"]
         }
       ],
       "metadata": {
@@ -2364,18 +1953,12 @@
         "wasm"
       ],
       "description": "Расширение исполняемого файла",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация программы",
-          "triggerTags": [
-            "Расширение программы"
-          ]
+          "triggerTags": ["Расширение программы"]
         }
       ],
       "metadata": {
@@ -2391,32 +1974,14 @@
       "id": 116,
       "name": "расширение электронной книги",
       "level": 3,
-      "tags": [
-        "epub",
-        "mobi",
-        "azw3",
-        "fb2",
-        "djvu",
-        "umd",
-        "cb7",
-        "cbt",
-        "bz2",
-        "cbr",
-        "cbz"
-      ],
+      "tags": ["epub", "mobi", "azw3", "fb2", "djvu", "umd", "cb7", "cbt", "bz2", "cbr", "cbz"],
       "description": "расширение файла электронной книги",
-      "applicableFileTypes": [
-        "ebook"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["ebook"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация электронных книг",
-          "triggerTags": [
-            "расширение электронной книги"
-          ]
+          "triggerTags": ["расширение электронной книги"]
         }
       ],
       "metadata": {
@@ -2432,25 +1997,14 @@
       "id": 117,
       "name": "Расширение шрифта",
       "level": 3,
-      "tags": [
-        "ttf",
-        "otf",
-        "woff",
-        "woff2"
-      ],
+      "tags": ["ttf", "otf", "woff", "woff2"],
       "description": "Расширение файла шрифта",
-      "applicableFileTypes": [
-        "font"
-      ],
-      "contextHints": [
-        "расширение файла"
-      ],
+      "applicableFileTypes": ["font"],
+      "contextHints": ["расширение файла"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация шрифтов",
-          "triggerTags": [
-            "Расширение шрифта"
-          ]
+          "triggerTags": ["Расширение шрифта"]
         }
       ],
       "metadata": {
@@ -2480,34 +2034,20 @@
         "Деловой журнал"
       ],
       "description": "Классификация комического контента по целевой аудитории",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "archive"
-      ],
-      "contextHints": [
-        "Характеристики контента",
-        "Идентификатор аудитории"
-      ],
+      "applicableFileTypes": ["ebook", "image", "archive"],
+      "contextHints": ["Характеристики контента", "Идентификатор аудитории"],
       "triggerConditions": [
         {
           "parentDimension": "Разбивка сжатого пакета",
-          "triggerTags": [
-            "Зашифрованный сжатый пакет",
-            "Незашифрованный сжатый пакет"
-          ]
+          "triggerTags": ["Зашифрованный сжатый пакет", "Незашифрованный сжатый пакет"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Электронная книга"
-          ]
+          "triggerTags": ["Электронная книга"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -2538,22 +2078,12 @@
         "независимая платформа"
       ],
       "description": "Аппаратная платформа, на которой работает игра.",
-      "applicableFileTypes": [
-        "video",
-        "ebook",
-        "archive",
-        "executable"
-      ],
-      "contextHints": [
-        "Идентификация платформы",
-        "Формат файла"
-      ],
+      "applicableFileTypes": ["video", "ebook", "archive", "executable"],
+      "contextHints": ["Идентификация платформы", "Формат файла"],
       "triggerConditions": [
         {
           "parentDimension": "Назначение файла",
-          "triggerTags": [
-            "Игры и развлечения"
-          ]
+          "triggerTags": ["Игры и развлечения"]
         }
       ],
       "metadata": {
@@ -2576,50 +2106,28 @@
         "Машинный перевод"
       ],
       "description": "Источники и методы производства креативного контента",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "archive"
-      ],
-      "contextHints": [
-        "творческое заявление",
-        "цифровой водяной знак",
-        "Метаданные"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive"],
+      "contextHints": ["творческое заявление", "цифровой водяной знак", "Метаданные"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация электронных книг",
-          "triggerTags": [
-            "роман"
-          ]
+          "triggerTags": ["роман"]
         },
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "аудиокнига",
-            "музыка"
-          ]
+          "triggerTags": ["аудиокнига", "музыка"]
         },
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Электронная книга",
-            "Изображение"
-          ]
+          "triggerTags": ["Электронная книга", "Изображение"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -2651,48 +2159,28 @@
         "Доминирование"
       ],
       "description": "Эмоциональная атмосфера, вызванная содержанием документа",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "анализ настроений",
-        "тон содержания"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio"],
+      "contextHints": ["анализ настроений", "тон содержания"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация электронных книг",
-          "triggerTags": [
-            "роман"
-          ]
+          "triggerTags": ["роман"]
         },
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "аудиокнига",
-            "музыка"
-          ]
+          "triggerTags": ["аудиокнига", "музыка"]
         },
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Электронная книга",
-            "Изображение"
-          ]
+          "triggerTags": ["Электронная книга", "Изображение"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -2706,36 +2194,18 @@
       "id": 122,
       "name": "Уровень качества изображения",
       "level": 2,
-      "tags": [
-        "Плавный 360P",
-        "SD 480P",
-        "HD 720P",
-        "Ультра HD 1080P",
-        "2K",
-        "4K",
-        "8K"
-      ],
+      "tags": ["Плавный 360P", "SD 480P", "HD 720P", "Ультра HD 1080P", "2K", "4K", "8K"],
       "description": "Уровень качества и четкости изображения или видео.",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Определение разрешения",
-        "параметры кодирования"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Определение разрешения", "параметры кодирования"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение"
-          ]
+          "triggerTags": ["Изображение"]
         }
       ],
       "metadata": {
@@ -2758,22 +2228,12 @@
         "Экстремальный гротеск"
       ],
       "description": "Градация степени откровенности и форм подачи эротического контента",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Модерация контента",
-        "Идентификация оценок"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Модерация контента", "Идентификация оценок"],
       "triggerConditions": [
         {
           "parentDimension": "Чувствительный контент",
-          "triggerTags": [
-            "порнография"
-          ]
+          "triggerTags": ["порнография"]
         }
       ],
       "metadata": {
@@ -2788,38 +2248,22 @@
       "id": 124,
       "name": "Уровень мозаики",
       "level": 2,
-      "tags": [
-        "Без цензуры",
-        "Легкая цензура",
-        "С цензурой"
-      ],
+      "tags": ["Без цензуры", "Легкая цензура", "С цензурой"],
       "description": "Уровень цензуры/мозаики контента файла",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Модерация контента",
-        "Идентификация оценок"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Модерация контента", "Идентификация оценок"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение"
-          ]
+          "triggerTags": ["Изображение"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -2834,39 +2278,22 @@
       "id": 125,
       "name": "Уровень водяного знака",
       "level": 2,
-      "tags": [
-        "Нет водяного знака",
-        "легкий водяной знак",
-        "Есть водяной знак"
-      ],
+      "tags": ["Нет водяного знака", "легкий водяной знак", "Есть водяной знак"],
       "description": "Степень водяного знака в содержимом файла",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Модерация контента",
-        "Идентификация оценок",
-        "Знак авторского права"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Модерация контента", "Идентификация оценок", "Знак авторского права"],
       "triggerConditions": [
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение"
-          ]
+          "triggerTags": ["Изображение"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -2896,20 +2323,12 @@
         "Авиационная аэрофотосъемка"
       ],
       "description": "Профессиональная классификация фотографий по содержанию и тематике",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "EXIF-данные",
-        "Распознавание тем",
-        "Распознавание сцены"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["EXIF-данные", "Распознавание тем", "Распознавание сцены"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография"
-          ]
+          "triggerTags": ["Фотография"]
         }
       ],
       "tagImplications": [
@@ -2953,20 +2372,12 @@
         "Изображение наклонено"
       ],
       "description": "Техника фотографирования и оценка качества снимков",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Проверка качества изображения",
-        "Анализ экспозиции",
-        "Оценка четкости"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Проверка качества изображения", "Анализ экспозиции", "Оценка четкости"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография"
-          ]
+          "triggerTags": ["Фотография"]
         }
       ],
       "metadata": {
@@ -2994,21 +2405,12 @@
         "Тендерная документация"
       ],
       "description": "Профессиональная классификация форматов коммерческих векселей и юридических документов",
-      "applicableFileTypes": [
-        "image",
-        "document"
-      ],
-      "contextHints": [
-        "Распознавание макета",
-        "Печать и штамп",
-        "Финансовые таблицы"
-      ],
+      "applicableFileTypes": ["image", "document"],
+      "contextHints": ["Распознавание макета", "Печать и штамп", "Финансовые таблицы"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Контракты и счета"
-          ]
+          "triggerTags": ["Контракты и счета"]
         }
       ],
       "tagImplications": [
@@ -3081,10 +2483,7 @@
         "Карта социального страхования"
       ],
       "description": "Гражданство и классификация официальных удостоверений и пропусков",
-      "applicableFileTypes": [
-        "image",
-        "document"
-      ],
+      "applicableFileTypes": ["image", "document"],
       "contextHints": [
         "Рамка для карты",
         "Фоновый рисунок для защиты от подделок",
@@ -3093,9 +2492,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Лицензии и разрешения"
-          ]
+          "triggerTags": ["Лицензии и разрешения"]
         }
       ],
       "metadata": {
@@ -3118,12 +2515,7 @@
         "Кровавый"
       ],
       "description": "Классификация контента документов по степени конфиденциальности и соответствию требованиям безопасности",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Проверка контента, содержащего деликатные материалы",
         "Проверка соответствия требованиям безопасности",
@@ -3132,35 +2524,23 @@
       "triggerConditions": [
         {
           "parentDimension": "сегментация электронных книг",
-          "triggerTags": [
-            "роман"
-          ]
+          "triggerTags": ["роман"]
         },
         {
           "parentDimension": "сегментация аудио",
-          "triggerTags": [
-            "аудиокнига",
-            "музыка"
-          ]
+          "triggerTags": ["аудиокнига", "музыка"]
         },
         {
           "parentDimension": "сегментация видео",
-          "triggerTags": [
-            "Кино и телевидение"
-          ]
+          "triggerTags": ["Кино и телевидение"]
         },
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Электронная книга",
-            "Изображение"
-          ]
+          "triggerTags": ["Электронная книга", "Изображение"]
         },
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "комиксы"
-          ]
+          "triggerTags": ["комиксы"]
         }
       ],
       "metadata": {
@@ -3186,23 +2566,12 @@
         "Самоувечье с кровопусканием"
       ],
       "description": "Подкатегории, посвящённые кровавым, жестоким и экстремальным сюжетам",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Жестокая цензура",
-        "Рейтинг «Кровь»",
-        "Обнаружение гротеска"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Жестокая цензура", "Рейтинг «Кровь»", "Обнаружение гротеска"],
       "triggerConditions": [
         {
           "parentDimension": "Чувствительный контент",
-          "triggerTags": [
-            "Кровавый"
-          ]
+          "triggerTags": ["Кровавый"]
         }
       ],
       "metadata": {
@@ -3227,12 +2596,7 @@
         "Экстремистские течения"
       ],
       "description": "Классификация нарушений по критериям политической чувствительности, национальной безопасности и идеологии",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Политическое соответствие",
         "Лица, вызывающие озабоченность",
@@ -3241,9 +2605,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Чувствительный контент",
-          "triggerTags": [
-            "связанные с политикой"
-          ]
+          "triggerTags": ["связанные с политикой"]
         }
       ],
       "metadata": {
@@ -3270,12 +2632,7 @@
         "Запрещённые предметы"
       ],
       "description": "Классификация противозаконных предметов и действий, оборот которых запрещен законодательством",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Выявление нарушений",
         "Распознавание запрещенных предметов",
@@ -3284,9 +2641,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Чувствительный контент",
-          "triggerTags": [
-            "нарушение"
-          ]
+          "triggerTags": ["нарушение"]
         }
       ],
       "metadata": {
@@ -3315,12 +2670,7 @@
         "Различные сексуальные ориентации"
       ],
       "description": "Разделение основных категорий порно для взрослых и вертикальных тем",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Контроль содержания для взрослых",
         "Классификация тем",
@@ -3329,9 +2679,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Чувствительный контент",
-          "triggerTags": [
-            "порнография"
-          ]
+          "triggerTags": ["порнография"]
         }
       ],
       "metadata": {
@@ -3362,20 +2710,12 @@
         "Снимок экрана в полноэкранном режиме"
       ],
       "description": "Профессиональная классификация различных видов захвата экрана и содержимого скриншотов",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Снимок экрана",
-        "Анализ интерфейса",
-        "Распознавание скриншотов"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Снимок экрана", "Анализ интерфейса", "Распознавание скриншотов"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "скриншот"
-          ]
+          "triggerTags": ["скриншот"]
         }
       ],
       "tagImplications": [
@@ -3411,29 +2751,14 @@
       "id": 136,
       "name": "Носитель генерации",
       "level": 2,
-      "tags": [
-        "Реальная съёмка",
-        "рисованной",
-        "Компьютерная графика",
-        "ИИ сгенерировал"
-      ],
+      "tags": ["Реальная съёмка", "рисованной", "Компьютерная графика", "ИИ сгенерировал"],
       "description": "Физические методы генерации и носители изображений и визуального контента",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Метод генерации",
-        "Тип рендеринга",
-        "Идентификация носителя"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Метод генерации", "Тип рендеринга", "Идентификация носителя"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение",
-            "Видео"
-          ]
+          "triggerTags": ["Изображение", "Видео"]
         }
       ],
       "metadata": {
@@ -3449,30 +2774,14 @@
       "id": 137,
       "name": "Крупность плана",
       "level": 3,
-      "tags": [
-        "Крупный план",
-        "Половина тела",
-        "все тело",
-        "панорамный",
-        "Макрос"
-      ],
+      "tags": ["Крупный план", "Половина тела", "все тело", "панорамный", "Макрос"],
       "description": "Диапазон кадрирования и декорации фотографий и произведений изобразительного искусства.",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Диапазон просмотра",
-        "композиция кадра",
-        "Крупность плана персонажа"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Диапазон просмотра", "композиция кадра", "Крупность плана персонажа"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография",
-            "комиксы",
-            "рисование"
-          ]
+          "triggerTags": ["Фотография", "комиксы", "рисование"]
         }
       ],
       "metadata": {
@@ -3488,28 +2797,14 @@
       "id": 138,
       "name": "освещение",
       "level": 3,
-      "tags": [
-        "Солнечный свет",
-        "закат",
-        "Ночной вид",
-        "тусклый свет",
-        "внутренний свет"
-      ],
+      "tags": ["Солнечный свет", "закат", "Ночной вид", "тусклый свет", "внутренний свет"],
       "description": "Окружающий свет и атмосфера времени съемки фотографических фотографий",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Световой анализ",
-        "Время съемки",
-        "Распознавание атмосферы"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Световой анализ", "Время съемки", "Распознавание атмосферы"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография"
-          ]
+          "triggerTags": ["Фотография"]
         }
       ],
       "metadata": {
@@ -3525,26 +2820,14 @@
       "id": 139,
       "name": "Фон",
       "level": 2,
-      "tags": [
-        "Прозрачный фон",
-        "однотонный фон",
-        "Реальный фон"
-      ],
+      "tags": ["Прозрачный фон", "однотонный фон", "Реальный фон"],
       "description": "Фоновые каналы и типы среды для ресурсов и материалов дизайна изображений",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Альфа-канал",
-        "Вырез фона",
-        "Материалы для дизайна"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Альфа-канал", "Вырез фона", "Материалы для дизайна"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение"
-          ]
+          "triggerTags": ["Изображение"]
         }
       ],
       "metadata": {
@@ -3560,29 +2843,14 @@
       "id": 140,
       "name": "перспектива",
       "level": 3,
-      "tags": [
-        "уровень глаз",
-        "Вид сверху",
-        "искать",
-        "первое лицо"
-      ],
+      "tags": ["уровень глаз", "Вид сверху", "искать", "первое лицо"],
       "description": "Углы перспективы и углы обзора для съемки и прорисовки кадров",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "угол съемки",
-        "перспектива объектива",
-        "угол обзора"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["угол съемки", "перспектива объектива", "угол обзора"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография",
-            "скриншот"
-          ]
+          "triggerTags": ["Фотография", "скриншот"]
         }
       ],
       "metadata": {
@@ -3605,10 +2873,7 @@
         "рукописные заметки"
       ],
       "description": "Состав визуального макета документа и страницы",
-      "applicableFileTypes": [
-        "document",
-        "image"
-      ],
+      "applicableFileTypes": ["document", "image"],
       "contextHints": [
         "Структура набора текста",
         "Анализ макета",
@@ -3617,10 +2882,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Документ",
-            "Изображение"
-          ]
+          "triggerTags": ["Документ", "Изображение"]
         }
       ],
       "metadata": {
@@ -3644,20 +2906,12 @@
         "скриншот Linux"
       ],
       "description": "Интерфейс операционной системы и сегментация экологического источника терминального устройства",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Операционная система",
-        "Стиль интерфейса",
-        "Источник оборудования"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Операционная система", "Стиль интерфейса", "Источник оборудования"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "скриншот"
-          ]
+          "triggerTags": ["скриншот"]
         }
       ],
       "metadata": {
@@ -3673,29 +2927,14 @@
       "id": 143,
       "name": "рамка",
       "level": 2,
-      "tags": [
-        "Горизонтальный экран",
-        "Вертикальный экран",
-        "квадрат",
-        "Очень широкая полоска"
-      ],
+      "tags": ["Горизонтальный экран", "Вертикальный экран", "квадрат", "Очень широкая полоска"],
       "description": "Соотношение сторон картинки и направление композиции",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "соотношение сторон",
-        "анализ разрешения",
-        "Направление кадра"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["соотношение сторон", "анализ разрешения", "Направление кадра"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение",
-            "Видео"
-          ]
+          "triggerTags": ["Изображение", "Видео"]
         }
       ],
       "metadata": {
@@ -3711,29 +2950,14 @@
       "id": 144,
       "name": "Количество объектов",
       "level": 3,
-      "tags": [
-        "Один человек",
-        "Двойной",
-        "Групповое фото",
-        "Пустая сцена"
-      ],
+      "tags": ["Один человек", "Двойной", "Групповое фото", "Пустая сцена"],
       "description": "Количество и состав персонажей или основных сюжетов на картинке.",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Количество объектов",
-        "Обнаружение портрета",
-        "композиция сцены"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Количество объектов", "Обнаружение портрета", "композиция сцены"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография",
-            "комиксы",
-            "рисование"
-          ]
+          "triggerTags": ["Фотография", "комиксы", "рисование"]
         }
       ],
       "metadata": {
@@ -3757,20 +2981,12 @@
         "экологическая архитектура"
       ],
       "description": "Основной тип зрительного фокуса переднего плана на снимке",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Обнаружение цели",
-        "Идентификация субъекта",
-        "визуальный фокус"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Обнаружение цели", "Идентификация субъекта", "визуальный фокус"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение"
-          ]
+          "triggerTags": ["Изображение"]
         }
       ],
       "metadata": {
@@ -3786,26 +3002,14 @@
       "id": 146,
       "name": "плотность текста",
       "level": 2,
-      "tags": [
-        "Микротекст",
-        "Изображение и текстовое название",
-        "Плотная типографика"
-      ],
+      "tags": ["Микротекст", "Изображение и текстовое название", "Плотная типографика"],
       "description": "Количество текста и плотность макета, содержащиеся в изображении или странице.",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Распознавание OCR",
-        "текстовое покрытие",
-        "Текстовый макет"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Распознавание OCR", "текстовое покрытие", "Текстовый макет"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Изображение с текстом"
-          ]
+          "triggerTags": ["Изображение с текстом"]
         }
       ],
       "metadata": {
@@ -3879,21 +3083,12 @@
         "Динамические частицы"
       ],
       "description": "Художественный тон и фактурный стиль изобразительных произведений.",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "цветовой стиль",
-        "рендеринг текстур",
-        "художественный стиль"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["цветовой стиль", "рендеринг текстур", "художественный стиль"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография",
-            "рисование"
-          ]
+          "triggerTags": ["Фотография", "рисование"]
         }
       ],
       "metadata": {
@@ -3909,27 +3104,14 @@
       "id": 148,
       "name": "время сезона",
       "level": 3,
-      "tags": [
-        "Весенняя цветочная сцена",
-        "летняя тень",
-        "осень золотая",
-        "Зимняя снежная сцена"
-      ],
+      "tags": ["Весенняя цветочная сцена", "летняя тень", "осень золотая", "Зимняя снежная сцена"],
       "description": "Сезонные временные характеристики природных пейзажей и фотографий из путешествий на природе.",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Цвет временного ряда",
-        "сезонные растения",
-        "характеристики климата"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Цвет временного ряда", "сезонные растения", "характеристики климата"],
       "triggerConditions": [
         {
           "parentDimension": "Сегментация изображений",
-          "triggerTags": [
-            "Фотография"
-          ]
+          "triggerTags": ["Фотография"]
         }
       ],
       "metadata": {
@@ -3964,22 +3146,12 @@
         "серый"
       ],
       "description": "Общая доминирующая цветовая температура и тенденция цветового тона изображения.",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Анализ цветовой температуры",
-        "цветовая гистограмма",
-        "Тенденция оттенка"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Анализ цветовой температуры", "цветовая гистограмма", "Тенденция оттенка"],
       "triggerConditions": [
         {
           "parentDimension": "Тип файла",
-          "triggerTags": [
-            "Изображение",
-            "Видео"
-          ]
+          "triggerTags": ["Изображение", "Видео"]
         }
       ],
       "metadata": {
@@ -4014,23 +3186,12 @@
         "Эротика между дедушкой и внуком из поколения в поколение"
       ],
       "description": "Подразделение кровного родства, семейного старшинства и табуированных этических тем.",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Тема близких родственников",
-        "Этические табу",
-        "кровавый рассказ"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Тема близких родственников", "Этические табу", "кровавый рассказ"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Разбивка по семейному инцесту"
-          ]
+          "triggerTags": ["Разбивка по семейному инцесту"]
         }
       ],
       "metadata": {
@@ -4055,23 +3216,12 @@
         "Эротика с разницей в возрасте"
       ],
       "description": "Сегментация внебрачных эмоциональных контрактов, обмена партнерами и тем жен.",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "обмен партнерами",
-        "Внебрачные тайны",
-        "Тема жены"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["обмен партнерами", "Внебрачные тайны", "Тема жены"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "внебрачная похоть"
-          ]
+          "triggerTags": ["внебрачная похоть"]
         }
       ],
       "metadata": {
@@ -4098,23 +3248,12 @@
         "Эротика с репетитором"
       ],
       "description": "Тематическая разбивка влечения между учителем и учеником, секса в молодежном кампусе и эротики одноклассников",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Вожделение учителя и ученика",
-        "Секс в кампусе",
-        "Эротика одноклассницы"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Вожделение учителя и ученика", "Секс в кампусе", "Эротика одноклассницы"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Эротика учителей и учеников"
-          ]
+          "triggerTags": ["Эротика учителей и учеников"]
         }
       ],
       "metadata": {
@@ -4142,12 +3281,7 @@
         "Похоть в интернете"
       ],
       "description": "Разделение эротических кругов на рабочем месте, по соседству и в социальных сетях",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Жажда работы на рабочем месте",
         "Эротика между соседями",
@@ -4156,9 +3290,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Эротика на рабочем месте"
-          ]
+          "triggerTags": ["Эротика на рабочем месте"]
         }
       ],
       "metadata": {
@@ -4180,12 +3312,7 @@
         "Секс-вечеринка из нескольких человек"
       ],
       "description": "Многоагентное сотрудничество, групповое взаимодействие и сегментация тем взаимодействия нескольких человек",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "мультистороннее эротическое взаимодействие",
         "групповое эротическое взаимодействие",
@@ -4194,9 +3321,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "групповой секс"
-          ]
+          "triggerTags": ["групповой секс"]
         }
       ],
       "metadata": {
@@ -4222,23 +3347,12 @@
         "фетишная сексуальная склонность"
       ],
       "description": "Доминирование и подчинение, субкультурные фетиши и серьезный конфронтационный сексуальный распад.",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "обучение субкультуре",
-        "доминирующий сабмиссив",
-        "тяжелая конфронтация"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["обучение субкультуре", "доминирующий сабмиссив", "тяжелая конфронтация"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Разбивка секс-тренинга"
-          ]
+          "triggerTags": ["Разбивка секс-тренинга"]
         }
       ],
       "metadata": {
@@ -4263,23 +3377,12 @@
         "Случайное оголение"
       ],
       "description": "Подразделение экспозиции в общественных местах, уличная экспозиция, скрытое подглядывание и откровенная фотосъемка",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "пространственная экспозиция",
-        "Скрытая съемка",
-        "уличный дисплей"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["пространственная экспозиция", "Скрытая съемка", "уличный дисплей"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Подглядывание и эксгибиционизм"
-          ]
+          "triggerTags": ["Подглядывание и эксгибиционизм"]
         }
       ],
       "metadata": {
@@ -4304,23 +3407,12 @@
         "Платные свидания и проституция"
       ],
       "description": "Отраслевые профессии, специфические единые роли и сегментация личности",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Персонаж в форме",
-        "Профессия отрасли",
-        "Ролевая игра"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Персонаж в форме", "Профессия отрасли", "Ролевая игра"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Соблазнение в униформе"
-          ]
+          "triggerTags": ["Соблазнение в униформе"]
         }
       ],
       "metadata": {
@@ -4348,23 +3440,12 @@
         "Эротические приключения"
       ],
       "description": "Настройки фона литературы для взрослых, время и пространство, а также отдельные жанровые подразделения.",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Эротическая литература",
-        "настройки фона",
-        "литературный жанр"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Эротическая литература", "настройки фона", "литературный жанр"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Эротическая литература"
-          ]
+          "triggerTags": ["Эротическая литература"]
         }
       ],
       "metadata": {
@@ -4390,23 +3471,12 @@
         "комплекс девственности"
       ],
       "description": "Физиологические и поведенческие движения, крупные планы органов, сексуальные фотографии и расшифровка сенсорных характеристик.",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Физиологические действия",
-        "Орган крупным планом",
-        "сексуальное фото"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Физиологические действия", "Орган крупным планом", "сексуальное фото"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Эротическая физиология"
-          ]
+          "triggerTags": ["Эротическая физиология"]
         }
       ],
       "metadata": {
@@ -4428,23 +3498,12 @@
         "Насильственное принуждение"
       ],
       "description": "Классификация содержания недобровольного принуждения, ущемления прав, нарушений и экстремальных нарушений",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "против воли",
-        "Посягательство и нарушение",
-        "насильственное нарушение"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["против воли", "Посягательство и нарушение", "насильственное нарушение"],
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "непроизвольное нападение"
-          ]
+          "triggerTags": ["непроизвольное нападение"]
         }
       ],
       "metadata": {
@@ -4465,12 +3524,7 @@
         "Эротика трансгендеров"
       ],
       "description": "Разнообразное гендерное познание, разнообразные ориентации и конкретная сегментация тем сексуальной ориентации.",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Различные сексуальные ориентации",
         "Гомосексуальные темы",
@@ -4479,9 +3533,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Порнографические подкатегории",
-          "triggerTags": [
-            "Различные сексуальные ориентации"
-          ]
+          "triggerTags": ["Различные сексуальные ориентации"]
         }
       ],
       "metadata": {
@@ -4495,22 +3547,9 @@
       "id": 162,
       "name": "Классификация контента",
       "level": 1,
-      "tags": [
-        "все возрасты",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
-      ],
+      "tags": ["все возрасты", "PG-13", "R-15", "R-18", "R-18G"],
       "description": "Рейтинг соответствия содержимого файла возрасту",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "archive",
-        "document"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive", "document"],
       "contextHints": [
         "Классификация по возрастному соответствию",
         "Классификация контента",
