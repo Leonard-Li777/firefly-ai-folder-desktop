@@ -15,20 +15,38 @@ import { modularResourceService } from './modular-resource-service'
 import { llmGatewayService } from '../llm/llm-gateway-service'
 import { userTierService } from '../user-tier/user-tier-service'
 import { subscribeRuntimeContextChange } from './workspace-runtime-context-bus'
-import { countRecoverableFiles } from '../analysis-queue-service/file-processor/db-analysis-state'
+import {
+  countRecoverableByCategory,
+  listRecoverableFilesPrecise,
+  clearRecoverableFiles,
+  dismissRecoveryBanner,
+  isRecoveryBannerSilenced,
+  enqueueRecovery,
+  type RecoveryQueueResult
+} from './workspace-recovery-queue-service'
 
 export const WORKSPACE_RUNTIME_CONTEXT_CHANNEL = 'workspace-runtime-context-updated'
 export const WORKSPACE_RUNTIME_CONTEXT_SNAPSHOT_CHANNEL = 'workspace-runtime-context:get-snapshot'
 export const WORKSPACE_INCREMENTAL_RECOVERY_CHANNEL = 'trigger-workspace-incremental-recovery'
+export const WORKSPACE_RECOVERY_QUEUE_CHANNEL = 'get-workspace-recovery-queue'
+export const WORKSPACE_RECOVERY_CLEAR_CHANNEL = 'clear-workspace-recovery-items'
+export const WORKSPACE_RECOVERY_DISMISS_CHANNEL = 'dismiss-workspace-recovery-banner'
+export const WORKSPACE_RECOVERY_ENQUEUE_CHANNEL = 'enqueue-workspace-recovery-items'
 
 /**
  * 主进程权威运行时上下文信封：
  * - `contextEpoch` + `snapshot` 严格对齐 `@firefly/shared` `WorkspaceRuntimeContextSnapshot`；
- * - 可选 `recoverableCount` 在按 `workspaceId` 查询快照时由主进程基于真实 DB 计算回传。
+ * - 可选 `recoverableCount` / `recoverableNonVideoCount` / `recoverablePendingVideoCount`
+ *   在按 `workspaceId` 查询快照时由主进程基于真实 DB 计算回传。
  */
 export interface WorkspaceRuntimeContextSnapshotEnvelope extends SharedRuntimeContextSnapshot {
   workspaceId?: number | null
+  /** 兼容字段：待补文件总数（非视频 + 待续跑长视频） */
   recoverableCount?: number
+  /** 待补非视频缺口文件数（OCR/封面/缩略图/内容/向量/ASR） */
+  recoverableNonVideoCount?: number
+  /** 待续跑长视频切片文件数 */
+  recoverablePendingVideoCount?: number
 }
 
 const FOCUS_RECHECK_INTERVAL_MS = 30_000
@@ -105,14 +123,29 @@ export class WorkspaceRuntimeContextService {
 
   getSnapshotEnvelope(workspaceId?: number | null): WorkspaceRuntimeContextSnapshotEnvelope {
     let recoverableCount: number | undefined
+    let recoverableNonVideoCount: number | undefined
+    let recoverablePendingVideoCount: number | undefined
     if (workspaceId != null && databaseService.db) {
-      recoverableCount = countRecoverableFiles(databaseService.db, workspaceId)
+      const counts = countRecoverableByCategory(databaseService.db, workspaceId)
+      // 横幅 24h 静默：关闭后 24h 内即使有新文件进入待补也不再计为可提醒，
+      // 三类计数一律归零，使前端横幅不显示；设置页清单仍可见（不受静默影响）。
+      if (isRecoveryBannerSilenced(databaseService.db, workspaceId)) {
+        recoverableCount = 0
+        recoverableNonVideoCount = 0
+        recoverablePendingVideoCount = 0
+      } else {
+        recoverableCount = counts.totalCount
+        recoverableNonVideoCount = counts.nonVideoCount
+        recoverablePendingVideoCount = counts.pendingVideoCount
+      }
     }
     return {
       contextEpoch: this.contextEpoch,
       workspaceId: workspaceId ?? null,
       snapshot: this.getRuntimeContext(),
-      recoverableCount
+      recoverableCount,
+      recoverableNonVideoCount,
+      recoverablePendingVideoCount
     }
   }
 
@@ -160,11 +193,48 @@ export class WorkspaceRuntimeContextService {
       void this.recheckLibreOffice(true)
     })
 
+    this.registerRecoveryChannels()
+
     subscribeRuntimeContextChange(reason => {
       this.notifyChanged(reason)
     })
 
     void this.refresh('cold_start')
+  }
+
+  /** 注册待补恢复三通道：清单 / 清除 / 横幅关闭（触发补全复用既有增量恢复通道） */
+  private registerRecoveryChannels(): void {
+    ipcMain.handle(
+      WORKSPACE_RECOVERY_QUEUE_CHANNEL,
+      async (_event, workspaceId: number): Promise<RecoveryQueueResult> =>
+        listRecoverableFilesPrecise(workspaceId)
+    )
+
+    ipcMain.handle(
+      WORKSPACE_RECOVERY_CLEAR_CHANNEL,
+      async (
+        _event,
+        workspaceId: number,
+        workspaceFileIds: number[]
+      ): Promise<{ success: boolean; cleared?: number; error?: string }> =>
+        clearRecoverableFiles(workspaceId, workspaceFileIds)
+    )
+
+    ipcMain.handle(
+      WORKSPACE_RECOVERY_DISMISS_CHANNEL,
+      async (_event, workspaceId: number): Promise<{ success: boolean; error?: string }> =>
+        dismissRecoveryBanner(workspaceId)
+    )
+
+    ipcMain.handle(
+      WORKSPACE_RECOVERY_ENQUEUE_CHANNEL,
+      async (
+        _event,
+        workspaceId: number,
+        workspaceFileIds?: number[]
+      ): Promise<{ success: boolean; queued?: number; error?: string }> =>
+        enqueueRecovery(workspaceId, workspaceFileIds)
+    )
   }
 
   /** 触发指定工作区的环境恢复存量缺口增量补齐入队（仅入队缺口文件，不推翻已提取阶段）。 */

@@ -276,8 +276,12 @@ export interface WorkspaceRuntimeContextSnapshot {
     string,
     { availability: string; installed: boolean; active: boolean; error?: string }
   >
-  /** 环境能力恢复后可增量补齐的历史文件数（由主进程统计） */
+  /** 环境能力恢复后可增量补齐的历史文件数（由主进程统计，横幅 24h 静默时为 0） */
   recoverableCount?: number
+  /** 待补非视频缺口文件数（OCR/封面/缩略图/内容/向量/ASR） */
+  recoverableNonVideoCount?: number
+  /** 待续跑长视频切片文件数 */
+  recoverablePendingVideoCount?: number
 }
 
 /** 触发当前工作区环境恢复增量补齐入队（通道未就绪时显式返回失败，严禁假成功） */
@@ -292,6 +296,88 @@ export async function triggerWorkspaceIncrementalRecovery(
     }
   }
   return channel(workspaceId)
+}
+
+/** 待补清单单项（设置页用） */
+export interface RecoverableFileItem {
+  workspaceFileId: number
+  fileFingerprint: string | null
+  path: string
+  name: string
+  fileSize: number
+  missingReasons: string[]
+  isPendingVideo: boolean
+}
+
+export interface RecoveryQueueResult {
+  success: boolean
+  items: RecoverableFileItem[]
+  error?: string
+}
+
+function getRecoveryApi() {
+  return getPolicyApiWindow()?.electronAPI as
+    | {
+        getWorkspaceRecoveryQueue?: (wsId: number) => Promise<RecoveryQueueResult>
+        clearWorkspaceRecoveryItems?: (
+          wsId: number,
+          ids: number[]
+        ) => Promise<{ success: boolean; cleared?: number; error?: string }>
+        dismissWorkspaceRecoveryBanner?: (
+          wsId: number
+        ) => Promise<{ success: boolean; error?: string }>
+        enqueueWorkspaceRecoveryItems?: (
+          wsId: number,
+          ids?: number[]
+        ) => Promise<{ success: boolean; queued?: number; error?: string }>
+      }
+    | undefined
+}
+
+/** 拉取待补文件清单（设置页用，含每个文件的具体待补项） */
+export async function fetchWorkspaceRecoveryQueue(
+  workspaceId: number
+): Promise<RecoveryQueueResult> {
+  const api = getRecoveryApi()
+  if (typeof api?.getWorkspaceRecoveryQueue !== 'function') {
+    return { success: false, items: [], error: 'WORKSPACE_RECOVERY_QUEUE_CHANNEL_UNAVAILABLE' }
+  }
+  return api.getWorkspaceRecoveryQueue(workspaceId)
+}
+
+/** 清除待补文件（清除后不再计数、不再被补全捞回） */
+export async function clearWorkspaceRecoveryItems(
+  workspaceId: number,
+  workspaceFileIds: number[]
+): Promise<{ success: boolean; cleared?: number; error?: string }> {
+  const api = getRecoveryApi()
+  if (typeof api?.clearWorkspaceRecoveryItems !== 'function') {
+    return { success: false, error: 'WORKSPACE_RECOVERY_CLEAR_CHANNEL_UNAVAILABLE' }
+  }
+  return api.clearWorkspaceRecoveryItems(workspaceId, workspaceFileIds)
+}
+
+/** 记录横幅关闭（24h 内不再弹，即使有新文件） */
+export async function dismissWorkspaceRecoveryBanner(
+  workspaceId: number
+): Promise<{ success: boolean; error?: string }> {
+  const api = getRecoveryApi()
+  if (typeof api?.dismissWorkspaceRecoveryBanner !== 'function') {
+    return { success: false, error: 'WORKSPACE_RECOVERY_DISMISS_CHANNEL_UNAVAILABLE' }
+  }
+  return api.dismissWorkspaceRecoveryBanner(workspaceId)
+}
+
+/** 触发补全入队（不传 ids = 全部待补；传 ids = 仅指定文件） */
+export async function enqueueWorkspaceRecoveryItems(
+  workspaceId: number,
+  workspaceFileIds?: number[]
+): Promise<{ success: boolean; queued?: number; error?: string }> {
+  const api = getRecoveryApi()
+  if (typeof api?.enqueueWorkspaceRecoveryItems !== 'function') {
+    return { success: false, error: 'WORKSPACE_RECOVERY_ENQUEUE_CHANNEL_UNAVAILABLE' }
+  }
+  return api.enqueueWorkspaceRecoveryItems(workspaceId, workspaceFileIds)
 }
 
 /** 将主进程标准信封 `{ contextEpoch, snapshot: WorkspaceRuntimeContext }`（或测试扁平对象）统一归一化 */
@@ -324,7 +410,13 @@ function normalizeRuntimeSnapshot(raw: unknown): WorkspaceRuntimeContextSnapshot
       videoInferenceBackend: nested.videoInferenceBackend ?? 'unknown',
       isProTier: tierStr === 'pro' || tierStr === 'enterprise' || tierStr === 'max',
       moduleStates,
-      recoverableCount: typeof obj.recoverableCount === 'number' ? obj.recoverableCount : undefined
+      recoverableCount: typeof obj.recoverableCount === 'number' ? obj.recoverableCount : undefined,
+      recoverableNonVideoCount:
+        typeof obj.recoverableNonVideoCount === 'number' ? obj.recoverableNonVideoCount : undefined,
+      recoverablePendingVideoCount:
+        typeof obj.recoverablePendingVideoCount === 'number'
+          ? obj.recoverablePendingVideoCount
+          : undefined
     }
   }
 

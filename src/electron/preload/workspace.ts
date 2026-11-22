@@ -159,6 +159,16 @@ export const workspaceApi = {
     workspaceId: number
   ): Promise<{ success: boolean; queued?: number; error?: string }> =>
     ipcRenderer.invoke('trigger-workspace-incremental-recovery', workspaceId),
+
+  // 待补全恢复：清单 / 清除 / 横幅关闭 / 入队补全（通道注册由 WorkspaceRuntimeContextService 完成）
+  getWorkspaceRecoveryQueue: (workspaceId: number) =>
+    ipcRenderer.invoke('get-workspace-recovery-queue', workspaceId),
+  clearWorkspaceRecoveryItems: (workspaceId: number, workspaceFileIds: number[]) =>
+    ipcRenderer.invoke('clear-workspace-recovery-items', workspaceId, workspaceFileIds),
+  dismissWorkspaceRecoveryBanner: (workspaceId: number) =>
+    ipcRenderer.invoke('dismiss-workspace-recovery-banner', workspaceId),
+  enqueueWorkspaceRecoveryItems: (workspaceId: number, workspaceFileIds?: number[]) =>
+    ipcRenderer.invoke('enqueue-workspace-recovery-items', workspaceId, workspaceFileIds),
   onWorkspaceRuntimeContextUpdated: (callback: (data: unknown) => void) => {
     const listener = (_event: unknown, data: unknown) => callback(data)
     ipcRenderer.on('workspace-runtime-context-updated', listener as any)

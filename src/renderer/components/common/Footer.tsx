@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/renderer/components/ui/dialog'
-import React, { useEffect, useMemo, useState, useRef } from 'react'
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react'
 
 import { Button } from '@/renderer/components/ui/button'
 import { MaterialIcon } from '@/renderer/lib/utils'
@@ -30,6 +30,7 @@ import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-st
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
 import { useWorkspaceRuntimeContext } from '@/renderer/stores/workspace-runtime-context-store'
 import { triggerWorkspaceIncrementalRecovery } from '@/renderer/lib/workspace-policy/workspace-ai-client'
+import { EnvRecoveryBanner } from './EnvRecoveryBanner'
 import { toast } from '@/renderer/components/common/Toast'
 import {
   compareVersions,
@@ -134,7 +135,7 @@ export function Footer() {
     s => s.snapshot?.items?.filter(i => i.status === 'pending').length || 0
   )
   const { config } = useConfigStore()
-  const { openSettings } = useSettingsStore()
+  const { openSettings, openWorkspaceSettings } = useSettingsStore()
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const { capabilities } = useAIServiceStatus()
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
@@ -304,7 +305,20 @@ export function Footer() {
   }, [currentWorkspaceDirectory?.workspace_config, config?.analysisMode, runtimeSnapshot])
   const setCurrentWorkspaceDirectory = useVirtualDirectoryStore(s => s.setCurrentWorkspaceDirectory)
 
-  const recoverableCount = runtimeSnapshot?.recoverableCount ?? 0
+  const recoverableNonVideoCount = runtimeSnapshot?.recoverableNonVideoCount ?? 0
+  const recoverablePendingVideoCount = runtimeSnapshot?.recoverablePendingVideoCount ?? 0
+  const recoverableCount = recoverableNonVideoCount + recoverablePendingVideoCount
+
+  /** 打开「待补全文件」设置页（工作区配置 → 待补全文件 Tab） */
+  const handleOpenRecoveryQueue = useCallback(() => {
+    const wsId = currentWorkspaceDirectory?.id
+    if (wsId != null) {
+      void openWorkspaceSettings({ workspaceId: wsId, targetTab: 'recovery_queue' })
+    } else {
+      void openSettings(SettingsCategory.WORKSPACE_CONFIG)
+    }
+  }, [currentWorkspaceDirectory?.id, openWorkspaceSettings, openSettings])
+
   const handleTriggerIncrementalRecovery = async () => {
     const wsId = currentWorkspaceDirectory?.id
     if (!wsId || isTriggeringRecovery) return
