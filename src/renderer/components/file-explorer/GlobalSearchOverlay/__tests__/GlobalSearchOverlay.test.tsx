@@ -103,6 +103,7 @@ describe('GlobalSearchOverlay (Issue 03 / 双阶段流式上屏与呼吸微条)'
   beforeEach(() => {
     vi.useFakeTimers()
     progressCallback = null
+    localStorage.removeItem('search_similarity_threshold')
     useSearchStore.setState({ globalSearchKeyword: '' })
 
     ;(window as any).electronAPI = {
@@ -319,5 +320,77 @@ describe('GlobalSearchOverlay (Issue 03 / 双阶段流式上屏与呼吸微条)'
     expect(screen.queryByText('正在搜索...')).toBeNull()
     expect(screen.queryByText('没有找到匹配的文件')).toBeNull()
     expect(screen.getByText('car.mp4')).toBeInTheDocument()
+  })
+
+  it('顶部工具栏展示匹配度滑块，拖动后防抖透传 similarityThreshold、持久化至 localStorage 并支持一键复位', async () => {
+    render(<GlobalSearchOverlay workspaceDirectory={mockWorkspace} />)
+
+    act(() => {
+      useSearchStore.setState({ globalSearchKeyword: '两人' })
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(260)
+    })
+
+    // 初始默认 35%，不显示复位按钮，首轮检索透传 similarityThreshold: 0.35
+    expect(screen.getByTestId('search-similarity-value')).toHaveTextContent('35%')
+    expect(screen.queryByTestId('search-similarity-reset')).toBeNull()
+    expect(window.electronAPI!.searchWorkspaceFiles).toHaveBeenLastCalledWith(
+      '两人',
+      'C:\\Work',
+      expect.objectContaining({ similarityThreshold: 0.35 })
+    )
+
+    // 拖动滑块至 30%
+    const slider = screen.getByTestId('search-similarity-slider')
+    fireEvent.change(slider, { target: { value: '30' } })
+
+    expect(screen.getByTestId('search-similarity-value')).toHaveTextContent('30%')
+    expect(localStorage.getItem('search_similarity_threshold')).toBe('0.30')
+    expect(screen.getByTestId('search-similarity-reset')).toBeInTheDocument()
+
+    await act(async () => {
+      vi.advanceTimersByTime(260)
+    })
+    expect(window.electronAPI!.searchWorkspaceFiles).toHaveBeenLastCalledWith(
+      '两人',
+      'C:\\Work',
+      expect.objectContaining({ similarityThreshold: 0.3 })
+    )
+
+    // 点击一键复位恢复 35%
+    fireEvent.click(screen.getByTestId('search-similarity-reset'))
+    expect(screen.getByTestId('search-similarity-value')).toHaveTextContent('35%')
+    expect(localStorage.getItem('search_similarity_threshold')).toBe('0.35')
+    expect(screen.queryByTestId('search-similarity-reset')).toBeNull()
+
+    await act(async () => {
+      vi.advanceTimersByTime(260)
+    })
+    expect(window.electronAPI!.searchWorkspaceFiles).toHaveBeenLastCalledWith(
+      '两人',
+      'C:\\Work',
+      expect.objectContaining({ similarityThreshold: 0.35 })
+    )
+  })
+
+  it('重新挂载时从 localStorage 恢复上次保存的匹配度阈值', async () => {
+    localStorage.setItem('search_similarity_threshold', '0.42')
+    render(<GlobalSearchOverlay workspaceDirectory={mockWorkspace} />)
+
+    act(() => {
+      useSearchStore.setState({ globalSearchKeyword: '两人' })
+    })
+    await act(async () => {
+      vi.advanceTimersByTime(260)
+    })
+
+    expect(screen.getByTestId('search-similarity-value')).toHaveTextContent('42%')
+    expect(screen.getByTestId('search-similarity-reset')).toBeInTheDocument()
+    expect(window.electronAPI!.searchWorkspaceFiles).toHaveBeenLastCalledWith(
+      '两人',
+      'C:\\Work',
+      expect.objectContaining({ similarityThreshold: 0.42 })
+    )
   })
 })

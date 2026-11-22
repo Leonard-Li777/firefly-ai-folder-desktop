@@ -48,10 +48,10 @@ import {
   HYBRID_SEARCH_RRF_K,
   HYBRID_SEARCH_WEIGHTS,
   HYBRID_SEARCH_POOL_SIZE,
-  TEMPORAL_CHUNK_MIN_CONFIDENCE,
-  TEMPORAL_CHUNK_MIN_PROMINENCE,
   MIN_GENERIC_VECTOR_SCORE,
   MIN_CLIP_VECTOR_SCORE,
+  resolveSearchThresholds,
+  type ResolvedSearchThresholds,
   HYBRID_SEARCH_WEIGHTS_WITH_PINYIN,
   CLIP_TEXT_WARM_WINDOW_MS,
   CLIP_TEXT_EMBED_DIM,
@@ -296,6 +296,8 @@ export interface HybridSearchContext {
   poolSize?: number
   /** 调用方可直接注入查询向量（测试复用 / 避免重复编码） */
   queryEmbedding?: number[]
+  /** 用户可调语义匹配度阈值（0.25 ~ 0.60，默认 0.35） */
+  similarityThreshold?: number
 }
 
 /**
@@ -599,6 +601,8 @@ export class HybridSearchArbiter {
     /** 拼音路校验回填结果（fingerprint → 音节边界对齐的中文命中词），供高亮与回显 */
     pinyinVerifyMap?: Map<string, PinyinVerifyHit>
     existingNameMap?: Map<string, { name?: string; smartName?: string; path?: string }>
+    /** 本轮检索解析后的多通道联动门限（省略时回退默认标定常量） */
+    thresholds?: ResolvedSearchThresholds
   }): {
     candidates: HybridRankedCandidate[]
     nameMap: Map<string, { name?: string; smartName?: string; path?: string }>
@@ -611,8 +615,11 @@ export class HybridSearchArbiter {
       clipRankMap,
       pinyinRankMap,
       pinyinVerifyMap,
-      existingNameMap
+      existingNameMap,
+      thresholds
     } = opts
+    const effectiveGenericThreshold = thresholds?.genericVector ?? MIN_GENERIC_VECTOR_SCORE
+    const effectiveClipThreshold = thresholds?.clipVector ?? MIN_CLIP_VECTOR_SCORE
     const fpSet = new Set<string>()
     for (const fp of ftsRankMap.keys()) fpSet.add(fp)
     for (const fp of vecRankMap.keys()) fpSet.add(fp)
@@ -670,12 +677,12 @@ export class HybridSearchArbiter {
         nameBoost >= 0.85
       // 工单 12：CLIP 命中只有达到准入分才算「有语义依据」，否则等同未命中，
       // 避免引擎端阈值被绕过（desktop 侧不做后过滤，只做准入判定）
-      const hasClip = clip !== undefined && clip.score >= MIN_CLIP_VECTOR_SCORE
+      const hasClip = clip !== undefined && clip.score >= effectiveClipThreshold
       // 纯向量假阳性过滤：如果一个文件完全没有字面匹配（无 FTS、无 exact、无文件名命中）、
-      // 无 CLIP 准入命中，且无有效时序切片命中，向量得分又低于 MIN_GENERIC_VECTOR_SCORE，
+      // 无 CLIP 准入命中，且无有效时序切片命中，向量得分又低于 effectiveGenericThreshold，
       // 坚决不参与排序，防止假阳性污染
       if (!hasLiteral && !hasClip && (!vec?.matchedChunks || vec.matchedChunks.length === 0)) {
-        if (!vec?.score || vec.score < MIN_GENERIC_VECTOR_SCORE) {
+        if (!vec?.score || vec.score < effectiveGenericThreshold) {
           continue
         }
       }
@@ -831,8 +838,10 @@ export class HybridSearchArbiter {
       queryParams,
       workspaceDirectoryPath,
       poolSize = HYBRID_SEARCH_POOL_SIZE,
-      queryEmbedding
+      queryEmbedding,
+      similarityThreshold
     } = context
+    const thresholds = resolveSearchThresholds(similarityThreshold)
 
     // Ticket 09：解析双字短词倒排点查快道的工作区隔离 ID。
     // 优先采用调用方显式注入的 workspaceId；否则尝试从 workspaceDirectoryPath 反查根工作区；
@@ -898,7 +907,14 @@ export class HybridSearchArbiter {
     const pinyinHit = pinyinRankMap.size > 0
     const vectorPromise = pinyinHit
       ? Promise.resolve(null)
-      : this.queryVectorCandidates(keyword, queryEmbedding, whereClauses, queryParams, poolSize)
+      : this.queryVectorCandidates(
+          keyword,
+          queryEmbedding,
+          whereClauses,
+          queryParams,
+          poolSize,
+          thresholds
+        )
 
     // 工单 12：CLIP 第 5 路前置预检。**必须满足真实开启且非熔断条件**才发起；
     // 不满足前置条件（如 profile 档位不符、开关关闭、非中文或拼音命中）时严禁产生假 pendingClip。
@@ -926,7 +942,14 @@ export class HybridSearchArbiter {
     // 避免 6000ms 冷启动预算把首屏拖垮（phase3 由工单 13 消费该结果）。
     const clipWarmAtStart = shouldRunClip ? this.isClipWarm() : false
     const clipPromise = shouldRunClip
-      ? this.queryClipVectorCandidates(keyword, whereClauses, queryParams, poolSize, clipEnabled)
+      ? this.queryClipVectorCandidates(
+          keyword,
+          whereClauses,
+          queryParams,
+          poolSize,
+          clipEnabled,
+          thresholds
+        )
       : null
 
     // 拼音路校验回填（设计文档 §5.3；二轮 review 红线：Top-30 限量，主线程阻塞压在 10ms 内）。
@@ -1030,7 +1053,8 @@ export class HybridSearchArbiter {
       clipRankMap,
       pinyinRankMap,
       pinyinVerifyMap,
-      existingNameMap: p1NameMap
+      existingNameMap: p1NameMap,
+      thresholds
     })
     const unanalyzedHits = this.buildUnanalyzedHits({
       fsResult,
@@ -1636,7 +1660,8 @@ export class HybridSearchArbiter {
     whereClauses: string[],
     queryParams: any[],
     poolSize: number,
-    clipEnabledOverride?: boolean
+    clipEnabledOverride?: boolean,
+    thresholds?: ResolvedSearchThresholds
   ): Promise<Array<{ fileFingerprint: string; rank: number; score: number }> | null> {
     if (this.clipBreaker.isOpen) {
       // AC：所有跳过都必须留痕。熔断跳过属真实故障态（不是「能力未启用」），用 warn 而非 debug，
@@ -1756,7 +1781,7 @@ export class HybridSearchArbiter {
       // 一旦沿用，phase2 会被单条 CLIP 链路拖到 25s 量级，与 800ms 热态契约冲突。
       const resp = await omniClient.searchVectors(encoded.vector, poolSize, {
         encoderFilter: activeEncoderFilter,
-        threshold: MIN_CLIP_VECTOR_SCORE,
+        threshold: thresholds?.clipVector ?? MIN_CLIP_VECTOR_SCORE,
         timeoutMs: budget,
         retries: 0
       })
@@ -1813,7 +1838,8 @@ export class HybridSearchArbiter {
     queryEmbedding: number[] | undefined,
     whereClauses: string[],
     queryParams: any[],
-    poolSize: number
+    poolSize: number,
+    thresholds: ResolvedSearchThresholds = resolveSearchThresholds()
   ): Promise<VectorMatch[] | null> {
     if (this.vectorBreaker.isOpen) return null
     if (!this.networkSignals) return []
@@ -1877,7 +1903,7 @@ export class HybridSearchArbiter {
       // 桌面侧 L712 的 MIN_GENERIC_VECTOR_SCORE 过滤是第二道闸，两者必须同源同值。
       const resp = await omniClient.searchVectors(embedding, poolSize, {
         encoderFilter: resolveQueryEncoderFilter(target.profile),
-        threshold: MIN_GENERIC_VECTOR_SCORE
+        threshold: thresholds.omniVectorPushdown
       })
       if (!resp || !Array.isArray(resp.matches)) {
         this.vectorBreaker.recordFailure()
@@ -1920,9 +1946,12 @@ export class HybridSearchArbiter {
       const uniqueParentFps = Array.from(new Set(parsedMatches.map(p => p.parentFp)))
       const allowed = this.filterMembersFromBase(uniqueParentFps, whereClauses, queryParams)
 
-      // 2. 按 parentFp 聚合并保留最高相似度得分与优选切片索引
+      // 2. 按 parentFp 聚合：严格隔离整文件/正文文本分 (wholeBestScore) 与视频时序切片 (chunks)，
+      // 杜绝被切片门禁否决的视频切片分冒充父文件 vecScore 导致无切片“幽灵视频”召回
       interface ParentAgg {
         parentFp: string
+        /** 仅非视频时序切片（整文件向量或 :tcN 正文文本切片）的最高相似度得分 */
+        wholeBestScore?: number
         bestScore: number
         bestChunkIndex?: number
         bestChunkScore?: number
@@ -1952,13 +1981,17 @@ export class HybridSearchArbiter {
           existing.bestScore = m.score
         }
         // 仅视频时序切片才登记至 chunks 参与后续 file_video_chunks 元数据查询与跳转时间对齐；
-        // 文本切片 (chunkType === 'text') 纯用于丰富全文检索得分，不登记视频时序切片元数据
-        if (m.chunkIndex !== undefined && m.chunkType !== 'text') {
+        // 整文件向量与正文文本切片 (chunkType === 'text') 归入 wholeBestScore，作为无切片时的合法整文件语义兜底
+        if (m.chunkIndex !== undefined && m.chunkType === 'video') {
           const found = existing.chunks.find(c => c.chunkIndex === m.chunkIndex)
           if (found) {
             if (m.score > found.score) found.score = m.score
           } else {
             existing.chunks.push({ chunkIndex: m.chunkIndex, score: m.score })
+          }
+        } else {
+          if (existing.wholeBestScore === undefined || m.score > existing.wholeBestScore) {
+            existing.wholeBestScore = m.score
           }
         }
       }
@@ -2035,10 +2068,13 @@ export class HybridSearchArbiter {
 
       // 2. 优选每个视频的跳轴切片并执行时序聚类（Temporal NMS）与多切片返回：
       // 恪守第一性原理：
-      // - 绝对门禁：切片 score 必须达到 TEMPORAL_CHUNK_MIN_CONFIDENCE，杜绝未命中切片凭空捏造时间戳；
-      // - 显著性门禁：切片得分高出全视频均值至少 TEMPORAL_CHUNK_MIN_PROMINENCE，证明为瞬态高光实体而非背景色偏；
+      // - 绝对门禁：切片 score 必须达到 minChunkConfidence，杜绝未命中切片凭空捏造时间戳；
+      // - 显著性门禁：切片得分高出全视频均值至少 minChunkProminence，证明为瞬态高光实体而非背景色偏；
       // - 时序聚类合并（Temporal NMS）：相邻或重叠片段（<= 3.0s 间隔）合并为单连续时段，保留波峰相似度；
       // - 离散时段保留：间隔较远的不同高光段（如同一视频中 1:41 与 2:09 均出现目标跑车）同时保留并返回给前端！
+      const minChunkConfidence = thresholds.chunkConfidence
+      const minChunkProminence = thresholds.chunkProminence
+
       for (const agg of parentAggMap.values()) {
         if (agg.chunks.length === 0) continue
 
@@ -2046,17 +2082,17 @@ export class HybridSearchArbiter {
         const maxScore = Math.max(...agg.chunks.map(c => c.score))
         const peakProminence = maxScore - meanScore
 
-        // 核心门禁 1：若视频全片切片得分平铺（peakProminence < TEMPORAL_CHUNK_MIN_PROMINENCE），
+        // 核心门禁 1：若视频全片切片得分平铺（peakProminence < minChunkProminence），
         // 证明没有任何切片能够突出于全局背景基线，属于纯背景噪声，彻底阻断跳轴与切片下发！
         const hasSignificantPeak =
-          agg.chunks.length <= 2 || peakProminence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+          agg.chunks.length <= 2 || minChunkProminence <= 0 || peakProminence >= minChunkProminence
 
         // 高光波峰切片集合（用于甄别伴生背景噪声 vs 独立离散高光）
         const highPeakChunks = agg.chunks.filter(c => c.score >= maxScore - 0.02)
 
         const validChunks = hasSignificantPeak
           ? agg.chunks.filter(c => {
-              if (c.score < TEMPORAL_CHUNK_MIN_CONFIDENCE) return false
+              if (c.score < minChunkConfidence) return false
 
               // 1. 本身即为高光核心或处于波峰容差内（收紧至 0.030，允许同镜头平滑过渡，阻断断崖）
               if (c.score >= maxScore - 0.03) return true
@@ -2078,7 +2114,7 @@ export class HybridSearchArbiter {
 
               // 3. 远离高光波峰的独立时段（间隔 > 3.0s），只要自身突出于全片基线，作为独立高光段保留
               const prominence = c.score - meanScore
-              return prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+              return prominence >= minChunkProminence
             })
           : []
 
@@ -2109,7 +2145,7 @@ export class HybridSearchArbiter {
           // Phase 2：Top-Peak 动态门禁与相似度降序重排 (高置信度核心镜头置顶)
           // =========================================================================
           const PEAK_MARGIN = 0.02 // 收紧至 0.020，杜绝与峰值相差过大的背景切片混入
-          const minConfidence = TEMPORAL_CHUNK_MIN_CONFIDENCE
+          const minConfidence = minChunkConfidence
 
           // 找到当前视频合并后时段的最高峰值分
           const maxScore =
@@ -2140,7 +2176,7 @@ export class HybridSearchArbiter {
               // 是视频中另一处真实高光而非同镜头延伸（如同一视频 1:41 与 2:20 两处出现目标跑车），
               // 只要自身过绝对置信门禁（上方）与显著性门禁，就必须保留并返回前端，
               // 不因 PEAK_MARGIN 收紧至 0.020 被误杀——恪守上方「离散时段保留」设计承诺。
-              return chunk.similarity - meanScore >= TEMPORAL_CHUNK_MIN_PROMINENCE
+              return chunk.similarity - meanScore >= minChunkProminence
             })
 
             // 2. 最终输出结果严格按 similarity DESC 降序排列（分数并列时按时间先后升序），保证最高分片段排在最前
@@ -2174,7 +2210,7 @@ export class HybridSearchArbiter {
             if (uniqueChunks.length > 0) {
               agg.bestChunkIndex = uniqueChunks[0].chunkIndex
               agg.bestChunkScore = uniqueChunks[0].similarity
-              agg.bestScore = Math.max(agg.bestScore, uniqueChunks[0].similarity)
+              agg.bestScore = Math.max(agg.wholeBestScore ?? 0, uniqueChunks[0].similarity)
             } else {
               agg.bestChunkIndex = undefined
               agg.bestChunkScore = undefined
@@ -2185,8 +2221,9 @@ export class HybridSearchArbiter {
           agg.chunks.sort((a, b) => b.score - a.score)
           const topChunk = agg.chunks[0]
           const prominence = topChunk.score - meanScore
-          const isConfident = topChunk.score >= TEMPORAL_CHUNK_MIN_CONFIDENCE
-          const isProminent = agg.chunks.length <= 2 || prominence >= TEMPORAL_CHUNK_MIN_PROMINENCE
+          const isConfident = topChunk.score >= minChunkConfidence
+          const isProminent =
+            agg.chunks.length <= 2 || minChunkProminence <= 0 || prominence >= minChunkProminence
 
           if (hasSignificantPeak && isConfident && isProminent) {
             agg.bestChunkIndex = topChunk.chunkIndex
@@ -2198,17 +2235,21 @@ export class HybridSearchArbiter {
         }
       }
 
-      // 按最高得分降序重排
-      const sortedParents = Array.from(parentAggMap.values()).sort(
-        (a, b) => b.bestScore - a.bestScore
-      )
+      // 3. 组装 VectorMatch 输出（双轨归约不变量：无达标切片且无整文件/正文向量达标 -> 剔除幽灵视频）
+      const resolvedMatches: Array<{
+        fileFingerprint: string
+        score: number
+        matchedChunk?: VectorMatch['matchedChunk']
+        matchedChunks?: VectorMatch['matchedChunks']
+      }> = []
 
-      // 3. 组装 VectorMatch 输出
-      const out: VectorMatch[] = []
-      for (const [idx, p] of sortedParents.entries()) {
+      for (const p of parentAggMap.values()) {
         let matchedChunk: VectorMatch['matchedChunk']
-        if (p.matchedChunks && p.matchedChunks.length > 0) {
-          const top = p.matchedChunks[0]
+        const matchedChunks =
+          p.matchedChunks && p.matchedChunks.length > 0 ? p.matchedChunks : undefined
+
+        if (matchedChunks) {
+          const top = matchedChunks[0]
           matchedChunk = {
             chunkIndex: top.chunkIndex,
             startSec: top.startSec,
@@ -2236,14 +2277,38 @@ export class HybridSearchArbiter {
             }
           }
         }
-        out.push({
-          fileFingerprint: p.parentFp,
-          score: p.bestScore,
-          rank: idx + 1,
-          matchedChunk,
-          matchedChunks: p.matchedChunks
-        })
+
+        const hasValidChunk = Boolean(matchedChunks || matchedChunk)
+        if (hasValidChunk) {
+          const chunkTopScore =
+            matchedChunks?.[0]?.similarity ?? matchedChunk?.similarity ?? p.bestChunkScore ?? 0
+          const effectiveScore = Math.max(p.wholeBestScore ?? 0, chunkTopScore)
+          resolvedMatches.push({
+            fileFingerprint: p.parentFp,
+            score: effectiveScore,
+            matchedChunk,
+            matchedChunks
+          })
+        } else if (
+          p.wholeBestScore !== undefined &&
+          p.wholeBestScore >= thresholds.genericVector
+        ) {
+          resolvedMatches.push({
+            fileFingerprint: p.parentFp,
+            score: p.wholeBestScore
+          })
+        }
       }
+
+      // 按有效得分降序重排并生成 1-based rank
+      resolvedMatches.sort((a, b) => b.score - a.score)
+      const out: VectorMatch[] = resolvedMatches.map((m, idx) => ({
+        fileFingerprint: m.fileFingerprint,
+        score: m.score,
+        rank: idx + 1,
+        matchedChunk: m.matchedChunk,
+        matchedChunks: m.matchedChunks
+      }))
       return out
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)

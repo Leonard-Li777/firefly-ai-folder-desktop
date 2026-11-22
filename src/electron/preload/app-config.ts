@@ -81,7 +81,13 @@ export const appConfigApi = {
   searchWorkspaceFiles: (
     keyword: string,
     workspacePath: string,
-    options?: { stream?: boolean; seq?: number; channel?: string; epoch?: number }
+    options?: {
+      stream?: boolean
+      seq?: number
+      channel?: string
+      epoch?: number
+      similarityThreshold?: number
+    }
   ): Promise<FileItem[]> =>
     ipcRenderer.invoke('search-workspace-files', keyword, workspacePath, options),
 

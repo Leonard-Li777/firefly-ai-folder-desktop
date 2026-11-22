@@ -51,6 +51,33 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([])
   const [showDetailsPanel, setShowDetailsPanel] = useState(true)
   const SEARCH_OVERLAY_VIEW_KEY = 'page_view_mode_search_overlay'
+  const SEARCH_SIMILARITY_THRESHOLD_KEY = 'search_similarity_threshold'
+  const DEFAULT_SIMILARITY_PCT = 35
+  const MIN_SIMILARITY_PCT = 25
+  const MAX_SIMILARITY_PCT = 60
+
+  const [similarityThresholdPct, setSimilarityThresholdPct] = useState<number>(() => {
+    try {
+      const raw = localStorage.getItem(SEARCH_SIMILARITY_THRESHOLD_KEY)
+      if (raw !== null) {
+        const parsed = Number.parseFloat(raw)
+        if (Number.isFinite(parsed)) {
+          const pct = parsed <= 1 ? Math.round(parsed * 100) : Math.round(parsed)
+          return Math.min(MAX_SIMILARITY_PCT, Math.max(MIN_SIMILARITY_PCT, pct))
+        }
+      }
+    } catch (e) {}
+    return DEFAULT_SIMILARITY_PCT
+  })
+
+  const handleSimilarityChange = useCallback((nextPct: number) => {
+    const clamped = Math.min(MAX_SIMILARITY_PCT, Math.max(MIN_SIMILARITY_PCT, Math.round(nextPct)))
+    setSimilarityThresholdPct(clamped)
+    try {
+      localStorage.setItem(SEARCH_SIMILARITY_THRESHOLD_KEY, (clamped / 100).toFixed(2))
+    } catch (e) {}
+  }, [])
+
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     try {
       const saved = localStorage.getItem(SEARCH_OVERLAY_VIEW_KEY)
@@ -526,7 +553,8 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
           stream: true,
           seq: currentSeq,
           channel: 'global-overlay',
-          epoch: activeCtx.epoch
+          epoch: activeCtx.epoch,
+          similarityThreshold: Number((similarityThresholdPct / 100).toFixed(2))
         })
 
         // 仅最新一次请求允许写回 State，防止慢响应覆盖快响应
@@ -642,7 +670,13 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
         clearTimeout(searchDebounceTimerRef.current)
       }
     }
-  }, [globalSearchKeyword, workspaceDirectory?.path, handlePhase2Replace, applyCommit])
+  }, [
+    globalSearchKeyword,
+    workspaceDirectory?.path,
+    similarityThresholdPct,
+    handlePhase2Replace,
+    applyCommit
+  ])
 
   // 4. 键盘事件监听 (Escape 退出)
   useEffect(() => {
@@ -828,8 +862,44 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
                   )}
                 </div>
 
-                {/* 右侧：视图模式与显示设置 Mini 下拉弹窗 */}
+                {/* 右侧：匹配度滑块 + 视图模式与显示设置 Mini 下拉弹窗 */}
                 <div className="flex items-center gap-2 text-foreground dark:text-foreground shrink-0">
+                  <div
+                    className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-muted/50 border border-border/60"
+                    title={t('调低可搜出更多相关画面和文件，调高则结果更精准')}
+                  >
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                      {t('匹配度')}
+                    </span>
+                    <input
+                      data-testid="search-similarity-slider"
+                      type="range"
+                      min={MIN_SIMILARITY_PCT}
+                      max={MAX_SIMILARITY_PCT}
+                      step={1}
+                      value={similarityThresholdPct}
+                      aria-label={t('匹配度')}
+                      onChange={e => handleSimilarityChange(Number(e.target.value))}
+                      className="w-20 sm:w-24 h-1.5 accent-primary cursor-pointer"
+                    />
+                    <span
+                      data-testid="search-similarity-value"
+                      className="text-[11px] font-mono tabular-nums text-foreground w-8 text-right"
+                    >
+                      {similarityThresholdPct}%
+                    </span>
+                    {similarityThresholdPct !== DEFAULT_SIMILARITY_PCT && (
+                      <button
+                        type="button"
+                        data-testid="search-similarity-reset"
+                        onClick={() => handleSimilarityChange(DEFAULT_SIMILARITY_PCT)}
+                        title={t('恢复默认')}
+                        className="text-[10px] text-primary hover:underline whitespace-nowrap ml-0.5"
+                      >
+                        {t('恢复默认')}
+                      </button>
+                    )}
+                  </div>
                   <MiniViewDisplaySettingsPopover
                     viewMode={layoutContext.viewMode}
                     onViewModeChange={newMode => {

@@ -133,7 +133,13 @@ export function registerFileIPCHandlers() {
       event,
       keyword: string,
       workspacePath: string,
-      options?: { stream?: boolean; seq?: number; channel?: string; epoch?: number }
+      options?: {
+        stream?: boolean
+        seq?: number
+        channel?: string
+        epoch?: number
+        similarityThreshold?: number
+      }
     ) => {
       // 真实目录搜索统一走数据库"文件全信息搜索"：
       // FTS 全字段（文件名/智能名/描述/内容/标签等）+ path/type/author/language/category LIKE，
@@ -253,6 +259,7 @@ export function registerFileIPCHandlers() {
           workspaceDirectoryPath: workspacePath,
           searchKeyword: keyword,
           includeUnanalyzed: true,
+          similarityThreshold: options?.similarityThreshold,
           limit: 500,
           offset: 0,
           onProgress
