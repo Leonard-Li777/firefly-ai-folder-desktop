@@ -1,6 +1,12 @@
 [
   {
     "id": "builtin.workflow.design-dev",
+    "templateId": "tpl_ui_ux_standard",
+    "targetIdentityIds": [
+      "id.researcher.ux",
+      "id.designer.ui",
+      "id.designer.graphic"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "UI/UX design library",
@@ -162,6 +168,13 @@
   },
   {
     "id": "builtin.workflow.frontend-dev",
+    "templateId": "tpl_frontend_dev",
+    "targetIdentityIds": [
+      "id.student.self_learner",
+      "id.dev.frontend",
+      "id.dev.fullstack",
+      "id.dev.mobile"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Modern front-end and client-side engineering workflows",
@@ -353,6 +366,14 @@
   },
   {
     "id": "builtin.workflow.backend-arch",
+    "templateId": "tpl_backend_arch",
+    "targetIdentityIds": [
+      "id.dev.backend",
+      "id.dev.fullstack",
+      "id.ops.sre",
+      "id.dev.ai_ml",
+      "id.dev.embedded"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Backend microservices and system architecture workflow",
@@ -530,6 +551,26 @@
   },
   {
     "id": "builtin.workflow.para-universal",
+    "templateId": "tpl_para_universal",
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter",
+      "id.scene.downloads_triage",
+      "id.hobby.gamer",
+      "id.life.tech_geek",
+      "id.hobby.photographer",
+      "id.life.minimalist",
+      "id.life.fitness",
+      "id.dev.frontend",
+      "id.pm.product",
+      "id.designer.ui",
+      "id.creator.writer",
+      "id.sales.bd",
+      "id.biz.consultant",
+      "id.student.undergrad",
+      "id.edu.k12_teacher",
+      "id.eng.architect",
+      "id.scene.scratchpad_drafts"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Universal digital asset management system",
@@ -683,6 +724,21 @@
   },
   {
     "id": "builtin.workflow.johnny-decimal",
+    "templateId": "tpl_johnny_decimal",
+    "targetIdentityIds": [
+      "id.scene.temporary_staging",
+      "id.life.homemaker",
+      "id.life.digital_hoarder",
+      "id.dev.backend",
+      "id.finance.accountant",
+      "id.finance.cashier",
+      "id.hr.admin",
+      "id.hr.recruiter",
+      "id.legal.attorney",
+      "id.researcher.faculty",
+      "id.student.grad",
+      "id.eng.civil_engineer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Accurate information classification architecture",
@@ -836,6 +892,12 @@
   },
   {
     "id": "builtin.workflow.photography-raw",
+    "templateId": "tpl_photography_pipeline",
+    "targetIdentityIds": [
+      "id.hobby.photographer",
+      "id.life.traveler",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Professional photography front-end and back-end color grading delivery workflow",
@@ -1039,6 +1101,15 @@
   },
   {
     "id": "builtin.workflow.video-production",
+    "templateId": "tpl_video_production",
+    "targetIdentityIds": [
+      "id.life.audiophile_cinephile",
+      "id.creator.sound_designer",
+      "id.hobby.vlogger",
+      "id.designer.3d",
+      "id.media.collector_hoarder",
+      "id.scene.video_production_clips"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Film, television, audio-visual and self-media editing industrial pipeline",
@@ -1243,6 +1314,16 @@
   },
   {
     "id": "builtin.workflow.academic-thesis",
+    "templateId": "tpl_academic_thesis",
+    "targetIdentityIds": [
+      "id.researcher.faculty",
+      "id.student.grad",
+      "id.student.undergrad",
+      "id.student.exam",
+      "id.student.study_abroad",
+      "id.health.doctor",
+      "id.scene.study_research_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Academic research, project proposal and dissertation workflow",
@@ -1426,6 +1507,13 @@
   },
   {
     "id": "builtin.workflow.finance-contract",
+    "templateId": "tpl_finance_accounting",
+    "targetIdentityIds": [
+      "id.finance.accountant",
+      "id.finance.cashier",
+      "id.finance.auditor",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Enterprise financial vouchers and accounting audit management system",
@@ -1616,6 +1704,15 @@
   },
   {
     "id": "builtin.workflow.family-household",
+    "templateId": "tpl_family_household",
+    "targetIdentityIds": [
+      "id.life.homemaker",
+      "id.life.pet_owner",
+      "id.life.cooking_foodie",
+      "id.life.minimalist",
+      "id.life.household_assets",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Family digital archives and real estate life asset management",
@@ -1788,6 +1885,13 @@
   },
   {
     "id": "builtin.workflow.newmedia-content",
+    "templateId": "tpl_newmedia_content",
+    "targetIdentityIds": [
+      "id.hobby.vlogger",
+      "id.ops.newmedia",
+      "id.ops.private_domain",
+      "id.scene.video_production_clips"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "New media omni-channel content incubation and publicity workflow",
@@ -1976,6 +2080,11 @@
   },
   {
     "id": "builtin.workflow.ecommerce-ops",
+    "templateId": "tpl_ecommerce_ops",
+    "targetIdentityIds": [
+      "id.ops.ecommerce",
+      "id.ops.cross_border"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "E-commerce full platform store operation and product selection and archiving",
@@ -2151,6 +2260,7 @@
   },
   {
     "id": "builtin.workflow.game-dev-assets",
+    "templateId": "tpl_game_dev_assets",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Independent game development and material resource organization structure",
@@ -2350,6 +2460,13 @@
   },
   {
     "id": "builtin.workflow.cross-border-ops",
+    "templateId": "tpl_cross_border_ops",
+    "targetIdentityIds": [
+      "id.ops.ecommerce",
+      "id.ops.cross_border",
+      "id.ops.sem_seo",
+      "id.mgmt.supply_chain"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Cross-border e-commerce multi-store operation",
@@ -2503,6 +2620,12 @@
   },
   {
     "id": "builtin.workflow.legal-case-dossier",
+    "templateId": "tpl_legal_case_dossier",
+    "targetIdentityIds": [
+      "id.legal.compliance",
+      "id.legal.attorney",
+      "id.legal.ip_agent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Lawyer's Litigation File Library",
@@ -2908,6 +3031,12 @@
   },
   {
     "id": "builtin.workflow.clinical-medical-records",
+    "templateId": "tpl_clinical_medical_records",
+    "targetIdentityIds": [
+      "id.health.doctor",
+      "id.health.nurse",
+      "id.health.psychologist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Medical record follow-up and scientific research archives",
@@ -3277,6 +3406,11 @@
   },
   {
     "id": "builtin.workflow.teacher-lesson-prep",
+    "templateId": "tpl_teacher_lesson_prep",
+    "targetIdentityIds": [
+      "id.edu.k12_teacher",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Teacher preparation and class management",
@@ -3638,6 +3772,13 @@
   },
   {
     "id": "builtin.workflow.consulting-due-diligence",
+    "templateId": "tpl_consulting_due_diligence",
+    "targetIdentityIds": [
+      "id.data.analyst",
+      "id.marketing.planner",
+      "id.finance.auditor",
+      "id.biz.consultant"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Business Due Diligence and Consulting Report Library",
@@ -4025,6 +4166,12 @@
   },
   {
     "id": "builtin.workflow.architectural-cad-design",
+    "templateId": "tpl_architectural_cad_design",
+    "targetIdentityIds": [
+      "id.designer.industrial",
+      "id.eng.architect",
+      "id.eng.civil_engineer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Architectural plan and CAD construction drawing library",
@@ -4470,6 +4617,12 @@
   },
   {
     "id": "builtin.workflow.writing-publishing-pipeline",
+    "templateId": "tpl_writing_publishing_pipeline",
+    "targetIdentityIds": [
+      "id.ops.newmedia",
+      "id.creator.freelance",
+      "id.creator.writer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Archives of Novel Creation and Publication",
@@ -4799,6 +4952,13 @@
   },
   {
     "id": "builtin.workflow.wellness-health-portfolio",
+    "templateId": "tpl_wellness_health_portfolio",
+    "targetIdentityIds": [
+      "id.life.fitness",
+      "id.health.nurse",
+      "id.health.psychologist",
+      "id.health.nutritionist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Health Management and Nutritional Conditioning Archives",
@@ -5120,6 +5280,11 @@
   },
   {
     "id": "builtin.workflow.pm-product-workflow",
+    "templateId": "tpl_pm_product_workflow",
+    "targetIdentityIds": [
+      "id.pm.product",
+      "id.researcher.ux"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Product manager Requirements and PRD document library",
@@ -5471,6 +5636,11 @@
   },
   {
     "id": "builtin.workflow.data-science-analytics",
+    "templateId": "tpl_data_science_analytics",
+    "targetIdentityIds": [
+      "id.data.analyst",
+      "id.dev.ai_ml"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Data analysis and modeling project library",
@@ -5996,6 +6166,10 @@
   },
   {
     "id": "builtin.workflow.qa-testing-lifecycle",
+    "templateId": "tpl_qa_testing_lifecycle",
+    "targetIdentityIds": [
+      "id.qa.tester"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Software Testing and Defect Archive",
@@ -6473,6 +6647,10 @@
   },
   {
     "id": "builtin.workflow.sales-pipeline-crm",
+    "templateId": "tpl_sales_pipeline_crm",
+    "targetIdentityIds": [
+      "id.sales.bd"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Sales customer and business opportunity follow-up file",
@@ -6836,6 +7014,11 @@
   },
   {
     "id": "builtin.workflow.hr-people-operations",
+    "templateId": "tpl_hr_people_operations",
+    "targetIdentityIds": [
+      "id.hr.admin",
+      "id.hr.recruiter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Personnel management and employee Files",
@@ -7191,6 +7374,12 @@
   },
   {
     "id": "builtin.workflow.marketing-campaign-imc",
+    "templateId": "tpl_marketing_campaign_imc",
+    "targetIdentityIds": [
+      "id.marketing.planner",
+      "id.ops.private_domain",
+      "id.ops.sem_seo"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Brand marketing and event planning",
@@ -7634,6 +7823,11 @@
   },
   {
     "id": "builtin.workflow.corporate-legal-compliance",
+    "templateId": "tpl_corporate_legal_compliance",
+    "targetIdentityIds": [
+      "id.legal.compliance",
+      "id.legal.ip_agent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Corporate Legal Affairs and Intellectual Property Archives",
@@ -8021,6 +8215,10 @@
   },
   {
     "id": "builtin.workflow.embedded-iot-firmware",
+    "templateId": "tpl_embedded_iot_firmware",
+    "targetIdentityIds": [
+      "id.dev.embedded"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Embedded and IOT development library",
@@ -8419,6 +8617,11 @@
   },
   {
     "id": "builtin.workflow.creative-assets",
+    "templateId": "tpl_3d_cg_animation",
+    "targetIdentityIds": [
+      "id.designer.3d",
+      "id.designer.industrial"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "3D modeling and animation rendering library",
@@ -8815,6 +9018,11 @@
   },
   {
     "id": "builtin.workflow.freelance-business-delivery",
+    "templateId": "tpl_freelance_business_delivery",
+    "targetIdentityIds": [
+      "id.creator.freelance",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Freelance order receiving and delivery warehouse",
@@ -9135,6 +9343,13 @@
   },
   {
     "id": "builtin.workflow.pkm-knowledge-vault",
+    "templateId": "tpl_pkm_knowledge_vault",
+    "targetIdentityIds": [
+      "id.life.novel_reader",
+      "id.life.digital_hoarder",
+      "id.student.self_learner",
+      "id.student.exam"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Personal knowledge base and study notes",
@@ -9357,6 +9572,11 @@
   },
   {
     "id": "builtin.workflow.gaming",
+    "templateId": "tpl_gamer_library",
+    "targetIdentityIds": [
+      "id.hobby.gamer",
+      "id.life.acg_fan"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Gamer Database",
@@ -9746,6 +9966,10 @@
   },
   {
     "id": "builtin.workflow.novel",
+    "templateId": "tpl_novel_reading_library",
+    "targetIdentityIds": [
+      "id.life.novel_reader"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Library of novels and e-books",
@@ -10004,6 +10228,12 @@
   },
   {
     "id": "builtin.workflow.movie-cinema",
+    "templateId": "tpl_home_theater_audiophile",
+    "targetIdentityIds": [
+      "id.life.audiophile_cinephile",
+      "id.scene.movies_tv_collection",
+      "id.scene.music_collection_vault"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Home theater audio and video collection library",
@@ -10383,6 +10613,10 @@
   },
   {
     "id": "builtin.workflow.anime-comic",
+    "templateId": "tpl_acg_anime_manga",
+    "targetIdentityIds": [
+      "id.life.acg_fan"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Anime and Doujin Collection Library",
@@ -10681,6 +10915,10 @@
   },
   {
     "id": "builtin.workflow.pc-hardware-gear",
+    "templateId": "tpl_pc_hardware_gear",
+    "targetIdentityIds": [
+      "id.life.tech_geek"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Computer installation and hardware database",
@@ -10963,6 +11201,11 @@
   },
   {
     "id": "builtin.workflow.cooking-recipes-vault",
+    "templateId": "tpl_cooking_recipes_vault",
+    "targetIdentityIds": [
+      "id.life.cooking_foodie",
+      "id.health.nutritionist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Home-cooked recipes and Baking recipe library",
@@ -11198,6 +11441,10 @@
   },
   {
     "id": "builtin.workflow.pet-care-diary",
+    "templateId": "tpl_pet_care_diary",
+    "targetIdentityIds": [
+      "id.life.pet_owner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Pet Health Archives and Growth Albums",
@@ -11414,6 +11661,10 @@
   },
   {
     "id": "builtin.workflow.travel-outdoor-journey",
+    "templateId": "tpl_travel_outdoor_journey",
+    "targetIdentityIds": [
+      "id.life.traveler"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Travel Planning and Outdoor Record Library",
@@ -11759,6 +12010,11 @@
   },
   {
     "id": "builtin.workflow.music-audio",
+    "templateId": "tpl_audio_sound_engineering",
+    "targetIdentityIds": [
+      "id.creator.sound_designer",
+      "id.scene.voice_recordings_audio"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Music Production and Recording Engineering Library",
@@ -12132,6 +12388,12 @@
   },
   {
     "id": "builtin.workflow.graphic-brand-design",
+    "templateId": "tpl_graphic_brand_design",
+    "targetIdentityIds": [
+      "id.designer.graphic",
+      "id.designer.illustrator",
+      "id.scene.design_graphics_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Brand design and printing material library",
@@ -12427,6 +12689,11 @@
   },
   {
     "id": "builtin.workflow.illustration-cg-art",
+    "templateId": "tpl_illustration_cg_art",
+    "targetIdentityIds": [
+      "id.designer.illustrator",
+      "id.scene.design_graphics_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Illustration and original painting gallery",
@@ -12753,6 +13020,10 @@
   },
   {
     "id": "builtin.workflow.mobile-app-dev",
+    "templateId": "tpl_mobile_app_dev",
+    "targetIdentityIds": [
+      "id.dev.mobile"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Mobile App development and listing engineering library",
@@ -13211,6 +13482,10 @@
   },
   {
     "id": "builtin.workflow.cloud-native-sre",
+    "templateId": "tpl_cloud_native_sre",
+    "targetIdentityIds": [
+      "id.ops.sre"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Server operation and maintenance and fault recovery library",
@@ -13591,6 +13866,10 @@
   },
   {
     "id": "builtin.workflow.supply-chain-logistics",
+    "templateId": "tpl_supply_chain_logistics",
+    "targetIdentityIds": [
+      "id.mgmt.supply_chain"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Procurement and warehouse management document warehouse",
@@ -13861,6 +14140,10 @@
   },
   {
     "id": "builtin.workflow.study-abroad-application",
+    "templateId": "tpl_study_abroad_application",
+    "targetIdentityIds": [
+      "id.student.study_abroad"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Library of Study abroad Application and Visa Materials",
@@ -14083,6 +14366,10 @@
   },
   {
     "id": "builtin.workflow.desktop-declutter",
+    "templateId": "tpl_desktop_declutter",
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Quickly organize desktop files",
@@ -14431,6 +14718,10 @@
   },
   {
     "id": "builtin.workflow.downloads-triage",
+    "templateId": "tpl_downloads_triage",
+    "targetIdentityIds": [
+      "id.scene.downloads_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Automatic classification of download folders",
@@ -14983,6 +15274,17 @@
   },
   {
     "id": "builtin.workflow.inbox-staging-universal",
+    "templateId": "tpl_inbox_staging_universal",
+    "targetIdentityIds": [
+      "id.scene.temporary_staging",
+      "id.scene.voice_recordings_audio",
+      "id.scene.scanned_documents",
+      "id.scene.system_cache_appdata",
+      "id.scene.chat_software_files",
+      "id.scene.cross_device_transfer",
+      "id.scene.screenshots_recordings",
+      "id.scene.external_media_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Personal file inbox and to-do sorting",
@@ -15242,6 +15544,10 @@
   },
   {
     "id": "builtin.workflow.desktop-classic-classification",
+    "templateId": "tpl_desktop_classic_classification",
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Desktop software and file classification",
@@ -15595,6 +15901,10 @@
   },
   {
     "id": "builtin.workflow.qa-testing-asset-vault",
+    "templateId": "tpl_qa_testing_asset_vault",
+    "targetIdentityIds": [
+      "id.qa.tester"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Software test case and report library",
@@ -15960,6 +16270,10 @@
   },
   {
     "id": "builtin.workflow.k12-education-vault",
+    "templateId": "tpl_k12_education_vault",
+    "targetIdentityIds": [
+      "id.life.k12_student_parent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Primary and secondary school learning materials and growth record library",
@@ -16261,6 +16575,10 @@
   },
   {
     "id": "builtin.workflow.k12-school-term-pipeline",
+    "templateId": "tpl_k12_school_term_pipeline",
+    "targetIdentityIds": [
+      "id.life.k12_student_parent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Semester study plan and exam preparation collation",
@@ -16488,6 +16806,10 @@
   },
   {
     "id": "builtin.workflow.senior-life-archive",
+    "templateId": "tpl_senior_life_archive",
+    "targetIdentityIds": [
+      "id.life.senior_citizen"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Elder Life Archives and Family Memoirs",
@@ -16799,6 +17121,10 @@
   },
   {
     "id": "builtin.workflow.senior-medical-care-pipeline",
+    "templateId": "tpl_senior_medical_care_pipeline",
+    "targetIdentityIds": [
+      "id.life.senior_citizen"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Elder medical treatment and physical examination record library",
@@ -17018,6 +17344,10 @@
   },
   {
     "id": "builtin.workflow.office-docs",
+    "templateId": "tpl_office_general_archive",
+    "targetIdentityIds": [
+      "id.office.general_clerk"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Administrative office Database",
@@ -17274,6 +17604,11 @@
   },
   {
     "id": "builtin.workflow.office-document-dispatch-flow",
+    "templateId": "tpl_office_document_dispatch_flow",
+    "targetIdentityIds": [
+      "id.office.general_clerk",
+      "id.scene.personal_office_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Receipt and supervision of official documents",
@@ -17506,6 +17841,11 @@
   },
   {
     "id": "builtin.workflow.household-dossier-vault",
+    "templateId": "tpl_household_dossier_vault",
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Safe deposit box for important family documents",
@@ -17722,6 +18062,12 @@
   },
   {
     "id": "builtin.workflow.media-collector-vault",
+    "templateId": "tpl_media_collector_vault",
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.scene.movies_tv_collection",
+      "id.scene.music_collection_vault"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Audio-visual and e-book collection library",
@@ -18139,6 +18485,14 @@
   },
   {
     "id": "builtin.workflow.code-asset-vault",
+    "templateId": "tpl_code_asset_vault",
+    "targetIdentityIds": [
+      "id.dev.frontend",
+      "id.dev.backend",
+      "id.dev.fullstack",
+      "id.dev.mobile",
+      "id.student.self_learner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Scaffolding and code component library",
@@ -18563,6 +18917,10 @@
   },
   {
     "id": "builtin.workflow.system-cache-appdata-vault",
+    "templateId": "tpl_system_cache_appdata_vault",
+    "targetIdentityIds": [
+      "id.scene.system_cache_appdata"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Collation of software logs and temporary caches",
@@ -18765,6 +19123,10 @@
   },
   {
     "id": "builtin.workflow.chat-software-vault",
+    "templateId": "tpl_chat_software_vault",
+    "targetIdentityIds": [
+      "id.scene.chat_software_files"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Chat receiving file library",
@@ -19097,6 +19459,10 @@
   },
   {
     "id": "builtin.workflow.cross-device-transfer-vault",
+    "templateId": "tpl_cross_device_transfer_vault",
+    "targetIdentityIds": [
+      "id.scene.cross_device_transfer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Mobile phone and computer transfer transit station",
@@ -19403,6 +19769,10 @@
   },
   {
     "id": "builtin.workflow.screenshots-screenrecord-vault",
+    "templateId": "tpl_screenshots_screenrecord_vault",
+    "targetIdentityIds": [
+      "id.scene.screenshots_recordings"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Screenshot and screen recording library",
@@ -19583,6 +19953,10 @@
   },
   {
     "id": "builtin.workflow.scratchpad-drafts-vault",
+    "templateId": "tpl_scratchpad_drafts_vault",
+    "targetIdentityIds": [
+      "id.scene.scratchpad_drafts"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Draft and note storage box",
@@ -19743,6 +20117,10 @@
   },
   {
     "id": "builtin.workflow.external-storage-vault",
+    "templateId": "tpl_external_storage_vault",
+    "targetIdentityIds": [
+      "id.scene.external_media_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Organize U disk and mobile hard disk",
@@ -20134,6 +20512,10 @@
   },
   {
     "id": "builtin.workflow.scanned-documents-vault",
+    "templateId": "tpl_scanned_documents_vault",
+    "targetIdentityIds": [
+      "id.scene.scanned_documents"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Scan and remake the file library",
@@ -20297,6 +20679,10 @@
   },
   {
     "id": "builtin.workflow.docs-office-vault",
+    "templateId": "tpl_docs_office_vault",
+    "targetIdentityIds": [
+      "id.scene.personal_office_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Personal work document library",
@@ -20493,6 +20879,10 @@
   },
   {
     "id": "builtin.workflow.docs-study-research-vault",
+    "templateId": "tpl_docs_study_research_vault",
+    "targetIdentityIds": [
+      "id.scene.study_research_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Learning and Research Database",
@@ -20774,6 +21164,7 @@
   },
   {
     "id": "builtin.workflow.renovation-project",
+    "templateId": "tpl_renovation_project",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Full process management of home decoration projects",
@@ -21063,6 +21454,7 @@
   },
   {
     "id": "builtin.workflow.visual-appreciation-vault",
+    "templateId": "tpl_visual_appreciation_vault",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Picture Appreciation and Inspiration Collection Library",
@@ -21328,6 +21720,7 @@
   },
   {
     "id": "builtin.workflow.career-jobhunt-portfolio",
+    "templateId": "tpl_career_jobhunt_portfolio",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Job Search and Career Development Profiles",
@@ -21555,6 +21948,7 @@
   },
   {
     "id": "builtin.workflow.online-course-production",
+    "templateId": "tpl_online_course_production",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Online courses and online course production",
@@ -21806,6 +22200,7 @@
   },
   {
     "id": "builtin.workflow.livestream-creator-ops",
+    "templateId": "tpl_livestream_creator_ops",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Live broadcast and anchor operation",
@@ -22041,6 +22436,7 @@
   },
   {
     "id": "builtin.workflow.foodblogger-recipe-studio",
+    "templateId": "tpl_foodblogger_recipe_studio",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Food bloggers and recipe development",
@@ -22276,6 +22672,7 @@
   },
   {
     "id": "builtin.workflow.travelblogger-shoot-studio",
+    "templateId": "tpl_travelblogger_shoot_studio",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Travel bloggers and travel photography studios",
@@ -22535,6 +22932,7 @@
   },
   {
     "id": "builtin.workflow.study-tour-camp-organizer",
+    "templateId": "tpl_study_tour_camp_organizer",
     "user_id": null,
     "author": "Firefly Official",
     "name": "Research camp and parent-child activity organization",
