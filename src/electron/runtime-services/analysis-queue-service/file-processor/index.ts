@@ -78,6 +78,7 @@ import { modularResourceService } from '../../system/modular-resource-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import { anydocService, AnydocAsset, AnydocResult } from '../../system/anydoc-service'
 import { cloudAnalysisService } from '@firefly/server'
+import { cloudSyncWorker } from '../../ai/cloud-sync-worker'
 import { IErrorRecoveryConfig } from '../types'
 import { t } from '@app/languages'
 import { compressText, compressJson, decompressText } from '../../../utils/text-compressor'
@@ -121,6 +122,19 @@ export {
 }
 export type { OmniVectorPersistenceParams } from './omni-vector-persistence'
 export type { BasicDataCompletenessResult } from './db-analysis-state'
+
+/**
+ * Stage 1~2（CPU 阶段）执行结果判别联合类型
+ * - proceed：CPU 阶段完成或已复用跳过，可安全推进至 Stage 3~4 能力租约与 AI 推理；
+ * - terminal：本文件已在 CPU 阶段落入终态（缓存命中 / 简单模式已固化 / 空文件 / 失败 / 跳过），
+ *   外层 Worker 严禁再进入 GPU 或 completeAsCpuOnly 覆盖终态。
+ */
+export type CpuPhaseOutcome =
+  | { outcome: 'proceed'; fingerprint: string; cpuSkipped: boolean }
+  | {
+      outcome: 'terminal'
+      terminalKind: 'cache_hit' | 'simple' | 'empty' | 'failed' | 'skipped'
+    }
 
 /**
  * CPU 阶段耗时登记表（item.id → 毫秒）
@@ -209,16 +223,11 @@ function createRetagCompletedHandler(filePath: string, fileFingerprint: string) 
   }
 }
 
-/** 当前是否已安装可用 AI 引擎（唯一事实源，供有效模式与工作区上下文共同消费）。 */
+/** 当前是否已安装可用 AI 引擎（唯一事实源，仅信 hasInstalledEngines，移除 backend/model 启发式防止冷启 stopped 被误降 simple）。 */
 function getHasInstalledAiEngine(): boolean {
   const aiServiceMode =
     ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
-  return aiServiceMode === 'local'
-    ? engineBridgeService.hasInstalledEngines !== false &&
-        Boolean(
-          engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
-        )
-    : true
+  return aiServiceMode === 'local' ? engineBridgeService.hasInstalledEngines !== false : true
 }
 
 /**
@@ -476,14 +485,26 @@ export class FileProcessor {
   }
 
   /**
-   * 处理文件项
+   * 处理文件项（按 phase 函数重载：'cpu' 精确返回 CpuPhaseOutcome，'gpu' | 'all' 返回 void）
    */
+  async processFile(
+    item: AnalysisQueueItem,
+    signal: AbortSignal | undefined,
+    phase: 'cpu',
+    cpuSkipped?: boolean
+  ): Promise<CpuPhaseOutcome>
+  async processFile(
+    item: AnalysisQueueItem,
+    signal?: AbortSignal,
+    phase?: 'gpu' | 'all',
+    cpuSkipped?: boolean
+  ): Promise<void>
   async processFile(
     item: AnalysisQueueItem,
     signal?: AbortSignal,
     phase: 'cpu' | 'gpu' | 'all' = 'all',
     cpuSkipped = false
-  ): Promise<void> {
+  ): Promise<CpuPhaseOutcome | void> {
     const deps = this.getDependencies()
     // slice-3 双层仲裁：Tier 1（Omni/预置数据）产出的可读命名，作为 Tier 2 AI 推理失败的静默保底
     let tier1FallbackName: string | null = null
@@ -532,7 +553,7 @@ export class FileProcessor {
       if (!filePath) {
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 无法获取文件路径: ${item.id}`)
         this.updateItemStatus(item.id, 'failed', 0, '文件路径丢失')
-        return
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
       }
 
       // 1. 获取工作空间归属：优先使用 item 携带的 ID，否则进行路径搜索
@@ -549,7 +570,7 @@ export class FileProcessor {
       if (!currentWorkspaceId) {
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 无法确定文件所属工作空间: ${filePath}`)
         this.updateItemStatus(item.id, 'failed', 0, '工作空间归属不明')
-        return
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
       }
 
       // [OBS-02] 单文件快照锁定：消费 WorkspaceDao.getById 已刷新的配置（由 resolveWorkspaceEffectiveConfig
@@ -569,7 +590,7 @@ export class FileProcessor {
         const handled = await this.applyMockResult(item.id, filePath, currentWorkspaceId)
         if (handled) {
           logger.debug(LogCategory.ANALYSIS_QUEUE, `[测试模式] 拦截器已处理完成: ${item.name}`)
-          return
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
         }
         logger.warn(
           LogCategory.ANALYSIS_QUEUE,
@@ -583,7 +604,7 @@ export class FileProcessor {
             `[测试模式] 文件不在 mock 库中，标记为已跳过: ${item.name}`
           )
           this.updateItemStatus(item.id, 'completed', 100)
-          return
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
         }
       }
 
@@ -592,7 +613,7 @@ export class FileProcessor {
       if (!db) {
         logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 数据库连接不可用')
         this.updateItemStatus(item.id, 'failed', 0, '数据库未初始化')
-        return
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
       }
       this.initStatements(db)
 
@@ -601,8 +622,9 @@ export class FileProcessor {
 
       // [OBS-02] analysisMode 已在入口由锁定快照赋值，严禁再次从全局 ConfigOrchestrator 覆写
 
-      if (phase === 'all') {
-        // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）
+      if (phase === 'all' || phase === 'cpu') {
+        // 串行拆分（phase === 'cpu'）与整流程（phase === 'all'）均复核 Stage >= 2 基础数据完整性，
+        // 避免已提取完基础数据的文件重复执行 CPU 提取
         let alreadyAnalyzed = false
         let existingFp: string | undefined
         try {
@@ -657,6 +679,9 @@ export class FileProcessor {
               LogCategory.ANALYSIS_QUEUE,
               `[串行队列] 文件已处于 Stage ${initialStage} >= 2，跳过 CPU 提取，直接进入 GPU AI 阶段: ${item.name}`
             )
+            if (phase === 'cpu') {
+              return { outcome: 'proceed', fingerprint: existingFp ?? '', cpuSkipped: true }
+            }
             return this.processFile(item, signal, 'gpu', true)
           }
           // 简单模式（simple）不执行 AI 阶段，其完成标志即 stage 2（CPU 内容提取完成）。
@@ -671,7 +696,7 @@ export class FileProcessor {
             await databaseService.markFileAnalyzed(currentWorkspaceId, filePath)
           }
           this.updateItemStatus(item.id, 'completed', 100)
-          return
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'simple' } : undefined
         }
       }
 
@@ -681,7 +706,7 @@ export class FileProcessor {
       } catch (e) {
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 无法读取文件状态: ${filePath}`, e)
         this.updateItemStatus(item.id, 'failed', 0, '文件不可读或已移除')
-        return
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
       }
 
       const rootWorkspaceDir = await databaseService.getWorkspaceDirectoryById(currentWorkspaceId)
@@ -715,7 +740,7 @@ export class FileProcessor {
           )
           this.updateItemStatus(item.id, 'failed', 0, error.message)
           this.pause() // 配额超限，立即暂停队列
-          return
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
         }
       }
 
@@ -725,7 +750,7 @@ export class FileProcessor {
         logger.debug(LogCategory.ANALYSIS_QUEUE, `[分析队列] 发现空文件，跳过AI分析: ${fileName}`)
         await this.handleEmptyFile(item, currentWorkspaceId)
         this.updateItemStatus(item.id, 'completed', 100)
-        return
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'empty' } : undefined
       }
 
       const language =
@@ -852,7 +877,8 @@ export class FileProcessor {
               LogCategory.ANALYSIS_QUEUE,
               `[分析队列] GPU 阶段自动计算指纹失败，平滑回退至 CPU 阶段提取: ${fpErr.message}`
             )
-            return this.processFile(item, signal, 'cpu', true)
+            await this.processFile(item, signal, 'cpu', true)
+            return
           }
         }
 
@@ -1607,7 +1633,7 @@ export class FileProcessor {
             `[分析队列] 项目分析完成 (缓存命中): ${item.name}`
           )
           timer.end('应用缓存数据')
-          return
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'cache_hit' } : undefined
         } catch (saveError) {
           logger.error(
             LogCategory.ANALYSIS_QUEUE,
@@ -2051,7 +2077,8 @@ export class FileProcessor {
               clearInterval(videoCreepTimer)
               videoCreepTimer = null
             }
-            return
+            this.updateItemStatus(item.id, 'failed', 100, '视频时长超出24小时物理上限')
+            return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
           }
 
           const chunkSpan = 300
@@ -2830,7 +2857,7 @@ export class FileProcessor {
             analysisStage: cpuCompletionStage
           })
         }
-        return
+        return { outcome: 'proceed', fingerprint: fileFingerprint, cpuSkipped }
       }
 
       if (!fileInfo.content || fileInfo.content.length === 0) {
@@ -3207,6 +3234,7 @@ export class FileProcessor {
           `[分析队列] 分析任务被中止，恢复状态为 pending: ${item.name}`
         )
         this.updateItemStatus(item.id, 'pending', 0)
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
       } else {
         let errorMsg = error instanceof Error ? error.message : String(error)
         // Fix-07：结构化错误分类 —— 阶段标记由推理调用点边界（tagErrorPhase）打上，
@@ -3221,14 +3249,14 @@ export class FileProcessor {
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件分析失败: ${item.name}`, error)
 
         // 若为底层 AI 引擎瞬态未就绪错误（如 503 模型加载中、连接被拒绝 ECONNREFUSED），
-        // 绝不触发 Tier 1 降级，恢复为 pending 并重新抛出，通知外层调度器等待引擎就绪后重试
+        // 绝不触发 Tier 1 降级；同时严禁在此提前置为 pending(0)（防与调度主循环竞态双跑），
+        // 保持 analyzing 原样抛出，交由 AnalysisOrchestratorWorker 原地重仲裁与重试/降级。
         if (isTransientInfraError(error)) {
           logger.warn(
             LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 遇到 AI 引擎瞬态未就绪错误，任务恢复为 pending 准备等待重试: ${item.name}`,
+            `[分析队列] 遇到 AI 引擎瞬态未就绪错误，保持 analyzing 上浮交由外层重仲裁: ${item.name}`,
             error
           )
-          this.updateItemStatus(item.id, 'pending', 0)
           throw error
         }
 
@@ -3273,12 +3301,111 @@ export class FileProcessor {
           this.updateItemStatus(item.id, 'completed', 100, undefined, {
             analysisStage: 2
           })
-          return
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
         }
 
         this.updateItemStatus(item.id, 'failed', 100, errorMsg, { isTimeout })
+        return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
       }
     }
+  }
+
+  /**
+   * 高内聚 CPU 基线终态收口：CAS 非终态守卫 + Abort 前置/中置检查 + terminalKind 语义隔离。
+   * 供 AnalysisOrchestratorWorker 在能力租约未授出（simple / tier1_fallback）或瞬态重试失败时统一调用。
+   */
+  async completeAsCpuOnly(
+    item: AnalysisQueueItem,
+    reason: string,
+    terminalKind: 'simple' | 'tier1_fallback',
+    signal?: AbortSignal,
+    knownFingerprint?: string
+  ): Promise<'completed' | 'aborted' | 'already_terminal'> {
+    // 1. 入口 Abort 守卫：已取消立即回滚 pending(0)，严禁标 completed
+    if (signal?.aborted) {
+      this.updateItemStatus(item.id, 'pending', 0)
+      return 'aborted'
+    }
+
+    // 2. CAS 非终态守卫：若 item 已为 completed 或 failed，幂等返回，绝不覆盖终态
+    // （通过函数封装读取实时状态，避免 TS 控制流静态收窄在 await 边界后误判并发变更）
+    const isTerminalStatus = (target: AnalysisQueueItem): boolean =>
+      target.status === 'completed' || target.status === 'failed'
+
+    if (isTerminalStatus(item)) {
+      return 'already_terminal'
+    }
+
+    const filePath = (item as any).file_path || item.path
+    let workspaceId = item.workspaceId
+    if (!workspaceId && filePath) {
+      try {
+        const rootDir = await databaseService.findRootWorkspaceDirectory(filePath)
+        workspaceId = rootDir?.id
+      } catch (err) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列] completeAsCpuOnly 回捞工作区归属失败: ${filePath}`,
+          err
+        )
+      }
+    }
+
+    const fingerprint =
+      knownFingerprint || (filePath ? databaseService.getFileFingerprintByPath(filePath) : null) || ''
+
+    // 3. markFileAnalyzed 前再次检查 Abort 与终态
+    if (signal?.aborted) {
+      this.updateItemStatus(item.id, 'pending', 0)
+      return 'aborted'
+    }
+    if (isTerminalStatus(item)) {
+      return 'already_terminal'
+    }
+
+    if (workspaceId && filePath) {
+      try {
+        await databaseService.markFileAnalyzed(workspaceId, filePath)
+      } catch (markErr) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列] completeAsCpuOnly 补齐已分析标记失败 (reason=${reason}): ${item.name}`,
+          markErr
+        )
+      }
+    }
+
+    // 异步操作后再次校验 Abort 与终态
+    if (signal?.aborted) {
+      this.updateItemStatus(item.id, 'pending', 0)
+      return 'aborted'
+    }
+    if (isTerminalStatus(item)) {
+      return 'already_terminal'
+    }
+
+    // 4. 严格按 terminalKind 固化 canonical 语义文本/向量（契约保证永不抛异常）
+    await solidifyCanonicalForTerminal(terminalKind, fingerprint)
+
+    if (signal?.aborted) {
+      this.updateItemStatus(item.id, 'pending', 0)
+      return 'aborted'
+    }
+    if (isTerminalStatus(item)) {
+      return 'already_terminal'
+    }
+
+    // 5. FTS 同步 + 置 completed(100, analysisStage: 2) + 防抖触发云同步
+    if (fingerprint) {
+      queueFtsSync(fingerprint)
+    }
+    logger.debug(
+      LogCategory.ANALYSIS_QUEUE,
+      `[分析队列] CPU 基线终态收口完成 (terminalKind=${terminalKind}, reason=${reason}): ${item.name}`
+    )
+    this.updateItemStatus(item.id, 'completed', 100, undefined, { analysisStage: 2 })
+    cloudSyncWorker.triggerSync(2000)
+    return 'completed'
   }
 
   /**

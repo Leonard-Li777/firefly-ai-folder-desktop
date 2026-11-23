@@ -27,11 +27,23 @@ import { Tier2CircuitBreaker, Tier2CircuitState } from '../tier2-circuit-breaker
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from '../crash-heal-policy'
 import { isServiceUsableStatus, shouldTriggerServiceStartAt } from '../service-start-policy'
 import {
+  createAbortError,
+  DEFAULT_ENSURE_MODE_TIMEOUT_MS,
+  matchesEngineTargetMode,
+  SHARED_STARTUP_HARD_TIMEOUT_MS,
+  waitForEngineStatusReactive,
+  type EngineTargetMode,
+  type EnsureReadyOptions,
+  type EnsureReadyResult
+} from '../engine-readiness-barrier'
+import {
   EngineCapability,
   EngineMetricsSnapshot,
+  type EngineReadinessStatus,
   engineSwappingCoordinator,
   normalizeEngineMetricsPayload,
-  parseRetryAfter
+  parseRetryAfter,
+  registerEngineReadinessChecker
 } from '../engine-swapping-coordinator'
 import { EngineLifecycleStateMachine } from '../engine-lifecycle-state-machine'
 import { EngineModelCatalogResolver } from '../engine-model-catalog-resolver'
@@ -226,15 +238,31 @@ export class EngineBridgeService {
   private autoHealAttempts = 0
   /** 崩溃自愈定时器 */
   private autoHealTimer: NodeJS.Timeout | null = null
+  /** 是否正在执行 runCrashHeal 异步自愈流程 */
+  private isRunningCrashHeal = false
   /** 稳定运行重置计时器：到点归还自愈配额 */
   private stableResetTimer: NodeJS.Timeout | null = null
   private eventStreamAbortController: AbortController | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
+  /** 按 mode 键控的 Single-Flight 共享启动在途表（与调用方预算解耦） */
+  private inFlightEnsureByMode = new Map<
+    EngineTargetMode,
+    { promise: Promise<EnsureReadyResult>; force: boolean }
+  >()
+  /** 共享体自身失败终态单向事件订阅者（供 AIServiceManager 记账冷却） */
+  private ensureFailedListeners = new Set<
+    (mode: EngineTargetMode, res: EnsureReadyResult) => void
+  >()
   readonly circuitBreaker = new Tier2CircuitBreaker()
 
   /** 当前是否正处于拉起启动流程中 */
   public isStartingNow(): boolean {
     return this.isStarting
+  }
+
+  /** 当前是否处于崩溃自愈排期或自愈执行中 */
+  public isAutoHealing(): boolean {
+    return this.autoHealTimer !== null || this.isRunningCrashHeal
   }
 
   /**
@@ -250,12 +278,41 @@ export class EngineBridgeService {
     return this.autoHealAttempts >= CRASH_HEAL_MAX_ATTEMPTS && !this.process && !this.lastRawStatus
   }
 
+  /** 跨包 DIP 传输层就绪检查器注销函数 */
+  private readinessCheckerDisposer: (() => void) | null = null
+
   private constructor(options?: EngineBridgeServiceOptions) {
     this.userDataPath = this.resolveUserDataPath(options?.userDataPath)
     this.discoveryFile = new ServiceDiscoveryFile({
       fileName: 'engine-config.json',
       serviceId: 'firefly-engine-bridge',
       userDataPath: this.userDataPath
+    })
+    // 构造期同步注入跨包传输门闩就绪检查器（零 Electron 依赖 DIP 桥接，使 Pro 包 HttpClient 感知宿主实态）
+    this.readinessCheckerDisposer = registerEngineReadinessChecker({
+      getStatus: (): EngineReadinessStatus => {
+        const snap = this.getSnapshot()
+        if (!snap.connected) return 'unknown'
+        const status = snap.raw?.status
+        if (status === 'ready' || status === 'processing') return 'ready'
+        if (status === 'starting') return 'starting'
+        if (status === 'stopped' || status === 'stopping') return 'stopped'
+        if (status === 'error') return 'error'
+        return 'unknown'
+      },
+      isSwapping: () =>
+        engineSwappingCoordinator.isInSwapping() ||
+        Boolean(this.latestMetrics?.swapping?.isSwapping),
+      getPort: () => {
+        const snap = this.getSnapshot()
+        return snap.connected && snap.port > 0 ? snap.port : null
+      },
+      ensureReady: (signal?: AbortSignal) =>
+        this.ensureReady({
+          mode: 'language',
+          timeoutMs: SHARED_STARTUP_HARD_TIMEOUT_MS,
+          signal
+        })
     })
     if (!options?.disableLifecycleHooks) {
       this.setupLifecycleHooks()
@@ -2715,78 +2772,281 @@ export class EngineBridgeService {
   }
 
   /**
-   * 确保引擎以指定的意图模式运行（'language' | 'embedding'）
-   * - 'language'：主语言模型模式（用于文件分析、文本分类）
-   * - 'embedding'：多模态嵌入模式（用于 Stage 5 高维修正 WeMM 向量嵌入）
-   * 若当前未运行或运行的模型与目标意图不符，则按意图重新激活并启动
+   * 订阅 Single-Flight 共享体自身的启动失败终态事件（单向依赖，供上层如 AIServiceManager 记账冷却）。
+   * 仅在共享体自身以失败终态结束时触发一次（含孤儿共享体终态）；
+   * 单个调用方自身的短超时或 Abort 绝不触发本事件。
    */
-  public async ensureMode(
-    mode: 'language' | 'embedding',
-    options?: { force?: boolean }
-  ): Promise<{ ok: boolean; code?: string; canDegrade?: boolean; error?: string }> {
-    const running = await this.ensureRunning({ mode, force: options?.force })
-    if (!running) {
-      return { ok: false, error: 'AI引擎未运行且拉起失败' }
+  public onEnsureFailed(
+    fn: (mode: EngineTargetMode, res: EnsureReadyResult) => void
+  ): () => void {
+    this.ensureFailedListeners.add(fn)
+    return () => {
+      this.ensureFailedListeners.delete(fn)
     }
-    const status = await this.healthCheck()
-    const currentModel = (status?.current_model || status?.model || '').toLowerCase()
-    const isCurrentlyEmbedding = currentModel.includes('wemm') || currentModel.includes('embedding')
-    const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
+  }
 
-    // processing 亦属「服务已就绪」（仅表示当前有请求在处理），此时不得误判为模型不符而重启
-    if ((status?.status === 'ready' || status?.status === 'processing') && matchesTarget) {
-      return { ok: true }
+  /** 广播共享体失败终态给所有订阅者 */
+  private emitEnsureFailed(mode: EngineTargetMode, res: EnsureReadyResult): void {
+    for (const listener of this.ensureFailedListeners) {
+      try {
+        listener(mode, res)
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[EngineBridge] onEnsureFailed 订阅回调异常:', err)
+      }
     }
-
-    const startRes = await this.startService({ mode })
-    if (!startRes.ok) {
-      return startRes
-    }
-
-    return this.waitForServiceReady(mode, 45000)
   }
 
   /**
-   * 等待引擎推理子进程 (llama-server) 真正就绪且运行符合目标意图的模型
-   * 避免启动后反向代理处于 503 拒绝状态导致前台或高维修正报错
+   * Single-Flight 统一拉起并等待引擎进入目标意图模式就绪（零轮询 SSE 反应式屏障）。
+   *
+   * - 按 `mode` 复用共享在途 Promise（共享体自带 120s 硬上限，不绑定任何单个调用方的 AbortSignal 或短预算）；
+   * - `force: true` 不合并进在途非 force 调用，待在途结束后重发；
+   * - 每个调用方独立竞争自身 `timeoutMs` 与 `signal`，超时/取消绝不中止共享体，也绝不触发 `onEnsureFailed`；
+   * - 仅共享体自身失败终态（含孤儿共享体终态）触发一次 `onEnsureFailed` 与共享体级 warn。
    */
-  private async waitForServiceReady(
-    mode: 'language' | 'embedding',
-    limitMs: number = 45000
-  ): Promise<{ ok: boolean; error?: string }> {
-    const start = Date.now()
-    while (Date.now() - start < limitMs) {
-      const status = await this.healthCheck()
-      if (status) {
-        const currentModel = (status.current_model || status.model || '').toLowerCase()
-        const isCurrentlyEmbedding =
-          currentModel.includes('wemm') || currentModel.includes('embedding')
-        const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
+  public async ensureReady(options: EnsureReadyOptions): Promise<EnsureReadyResult> {
+    const {
+      mode,
+      timeoutMs: callerTimeoutMs = SHARED_STARTUP_HARD_TIMEOUT_MS,
+      signal,
+      force = false
+    } = options
 
-        // 同上：processing 表示服务已就绪但正在处理请求，同样算达成「就绪」
-        if ((status.status === 'ready' || status.status === 'processing') && matchesTarget) {
-          logger.info(
-            LogCategory.SYSTEM,
-            `[EngineBridge] 引擎推理服务已就绪（模式: ${mode}, 模型: ${status.current_model}）`
-          )
-          return { ok: true }
-        }
-
-        // 引擎契约（firefly-ai-engine `engine/mod.rs` EngineStatus.status）只产出
-        // starting/ready/processing/error/stopped，没有 'failed' 这一档；
-        // 原写法比对了一个不存在的取值，TS 会判定为无重叠比较而报错，故移除。
-        if (status.status === 'error') {
-          const errMsg = status.last_error || status.error || '引擎服务运行报错'
-          logger.warn(LogCategory.SYSTEM, `[EngineBridge] 引擎服务报告错误: ${errMsg}`)
-          return { ok: false, error: errMsg }
-        }
-      }
-      await new Promise(resolve => setTimeout(resolve, 800))
+    if (signal?.aborted) {
+      throw createAbortError()
     }
 
-    const timeoutMsg = `等待引擎切换至 ${mode === 'embedding' ? 'WeMM 嵌入' : '主语言'} 模型就绪超时（${Math.round(limitMs / 1000)}s）`
-    logger.warn(LogCategory.SYSTEM, `[EngineBridge] ${timeoutMsg}`)
-    return { ok: false, error: timeoutMsg }
+    const deadline = Date.now() + Math.max(0, callerTimeoutMs)
+
+    // force: true 不合并进在途非 force 调用：等待在途结束后再重发，防止强制重启/换模型被吞
+    while (force) {
+      const existing = this.inFlightEnsureByMode.get(mode)
+      if (!existing || existing.force) {
+        break
+      }
+      const waitRemaining = deadline - Date.now()
+      if (waitRemaining <= 0) {
+        return {
+          ok: false,
+          code: 'caller_timeout',
+          error: `等待引擎切换至 ${
+            mode === 'embedding' ? 'WeMM 嵌入' : '主语言'
+          } 模型就绪超时（${Math.round(callerTimeoutMs / 1000)}s）`
+        }
+      }
+      const waitRes = await this.raceCallerWithShared(
+        existing.promise,
+        mode,
+        waitRemaining,
+        signal
+      )
+      if (waitRes.code === 'caller_timeout') {
+        return waitRes
+      }
+    }
+
+    if (signal?.aborted) {
+      throw createAbortError()
+    }
+
+    let entry = this.inFlightEnsureByMode.get(mode)
+    if (!entry) {
+      const sharedPromise = this.runSharedEnsureReady(mode, force)
+      entry = { promise: sharedPromise, force }
+      this.inFlightEnsureByMode.set(mode, entry)
+      void sharedPromise
+        .finally(() => {
+          // 身份校验：仅删除与自身一致的在途条目
+          if (this.inFlightEnsureByMode.get(mode)?.promise === sharedPromise) {
+            this.inFlightEnsureByMode.delete(mode)
+          }
+        })
+        .catch(() => {})
+    }
+
+    const remainingMs = Math.max(0, deadline - Date.now())
+    return this.raceCallerWithShared(entry.promise, mode, remainingMs, signal)
+  }
+
+  /**
+   * 共享启动体实现：自带 `SHARED_STARTUP_HARD_TIMEOUT_MS`（120s）硬上限，与调用方预算完全解耦。
+   * 仅在本方法产出失败终态时输出共享体级 warn 并触发一次 `emitEnsureFailed`。
+   */
+  private async runSharedEnsureReady(
+    mode: EngineTargetMode,
+    force: boolean
+  ): Promise<EnsureReadyResult> {
+    const running = await this.ensureRunning({ mode, force })
+    if (!running) {
+      const res: EnsureReadyResult = {
+        ok: false,
+        code: 'host_start_failed',
+        error: 'AI引擎未运行且拉起失败'
+      }
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 引擎推理服务拉起失败（模式: ${mode}, code=${res.code}）: ${res.error}`
+      )
+      this.emitEnsureFailed(mode, res)
+      return res
+    }
+
+    let snap = this.getSnapshot()
+    if (
+      !force &&
+      snap.connected &&
+      (snap.raw?.status === 'ready' || snap.raw?.status === 'processing') &&
+      matchesEngineTargetMode(snap.raw, mode)
+    ) {
+      return { ok: true }
+    }
+
+    if (!snap.connected || !snap.raw) {
+      await this.healthCheck()
+      snap = this.getSnapshot()
+      if (
+        !force &&
+        snap.connected &&
+        (snap.raw?.status === 'ready' || snap.raw?.status === 'processing') &&
+        matchesEngineTargetMode(snap.raw, mode)
+      ) {
+        return { ok: true }
+      }
+    }
+
+    const baselineRevision = snap.raw?.revision ?? 0
+    const baselineInstanceId = snap.raw?.instance_id
+
+    const needKick =
+      force || snap.raw?.status !== 'starting' || !matchesEngineTargetMode(snap.raw, mode)
+    if (needKick) {
+      const startRes = await this.startService({ mode })
+      if (!startRes.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 启动推理服务指令失败（模式: ${mode}, code=${startRes.code ?? 'start_failed'}）: ${startRes.error ?? ''}`
+        )
+        this.emitEnsureFailed(mode, startRes)
+        return startRes
+      }
+    }
+
+    const res = await waitForEngineStatusReactive({
+      subscribe: fn => this.subscribe(fn),
+      getSnapshot: () => this.getSnapshot(),
+      isAutoHealing: () => this.isAutoHealing(),
+      isCrashHealExhausted: () => this.isCrashHealExhaustedAndOffline(),
+      mode,
+      baselineRevision,
+      baselineInstanceId,
+      timeoutMs: SHARED_STARTUP_HARD_TIMEOUT_MS
+    })
+
+    if (res.ok) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 引擎推理服务已就绪（模式: ${mode}）`
+      )
+      return res
+    }
+
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 引擎推理服务拉起失败（模式: ${mode}, code=${res.code ?? 'unknown'}）: ${res.error ?? ''}`
+    )
+    this.emitEnsureFailed(mode, res)
+    return res
+  }
+
+  /**
+   * 调用方独立竞争：在共享体、自身超时、自身 AbortSignal 之间取最快结束项，
+   * 并在任一路径结束后立刻清理调用方自身定时器与 abort 监听（绝不中止共享体）。
+   */
+  private raceCallerWithShared(
+    sharedPromise: Promise<EnsureReadyResult>,
+    mode: EngineTargetMode,
+    callerTimeoutMs: number,
+    signal?: AbortSignal
+  ): Promise<EnsureReadyResult> {
+    if (signal?.aborted) {
+      return Promise.reject(createAbortError())
+    }
+
+    return new Promise<EnsureReadyResult>((resolve, reject) => {
+      let settled = false
+      let ownTimer: ReturnType<typeof setTimeout> | null = null
+
+      const cleanup = () => {
+        if (ownTimer !== null) {
+          clearTimeout(ownTimer)
+          ownTimer = null
+        }
+        if (signal) {
+          signal.removeEventListener('abort', onAbort)
+        }
+      }
+
+      const onAbort = () => {
+        if (settled) return
+        settled = true
+        cleanup()
+        reject(createAbortError())
+      }
+
+      if (signal) {
+        signal.addEventListener('abort', onAbort, { once: true })
+      }
+
+      if (callerTimeoutMs < SHARED_STARTUP_HARD_TIMEOUT_MS) {
+        const safeMs = Math.max(0, callerTimeoutMs)
+        ownTimer = setTimeout(() => {
+          ownTimer = null
+          if (settled) return
+          settled = true
+          cleanup()
+          resolve({
+            ok: false,
+            code: 'caller_timeout',
+            error: `等待引擎切换至 ${
+              mode === 'embedding' ? 'WeMM 嵌入' : '主语言'
+            } 模型就绪超时（${Math.round(safeMs / 1000)}s）`
+          })
+        }, safeMs)
+      }
+
+      sharedPromise.then(
+        res => {
+          if (settled) return
+          settled = true
+          cleanup()
+          resolve(res)
+        },
+        err => {
+          if (settled) return
+          settled = true
+          cleanup()
+          reject(err)
+        }
+      )
+    })
+  }
+
+  /**
+   * 确保引擎以指定的意图模式运行（'language' | 'embedding'）
+   * - 'language'：主语言模型模式（用于文件分析、文本分类）
+   * - 'embedding'：多模态嵌入模式（用于 Stage 5 高维修正 WeMM 向量嵌入）
+   * 向下兼容壳（默认 timeoutMs = 45_000），内部统一委托零轮询 Single-Flight `ensureReady`。
+   */
+  public async ensureMode(
+    mode: 'language' | 'embedding',
+    options?: { force?: boolean; timeoutMs?: number; signal?: AbortSignal }
+  ): Promise<EnsureReadyResult> {
+    return this.ensureReady({
+      mode,
+      force: options?.force,
+      timeoutMs: options?.timeoutMs ?? DEFAULT_ENSURE_MODE_TIMEOUT_MS,
+      signal: options?.signal
+    })
   }
 
   /**
@@ -2906,6 +3166,7 @@ export class EngineBridgeService {
 
   /** 执行一次崩溃自愈（force 拉起会复位熔断器，避免冷却期把恢复路径拦住） */
   private async runCrashHeal(): Promise<void> {
+    this.isRunningCrashHeal = true
     try {
       // 延迟窗口内用户可能已停用高级引擎或切到云端：执行前必须重新确认意图。
       // ensureRunning({force:true}) 会跳过 shouldEngineRun 检查，故这里必须自己拦一道。
@@ -2928,6 +3189,7 @@ export class EngineBridgeService {
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[EngineBridge] 崩溃自愈异常，本次不再重试:', err)
     } finally {
+      this.isRunningCrashHeal = false
       this.broadcastStatus()
     }
   }

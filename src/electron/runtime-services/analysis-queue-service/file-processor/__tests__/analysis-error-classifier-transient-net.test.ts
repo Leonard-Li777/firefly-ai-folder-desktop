@@ -96,3 +96,51 @@ describe('isTransientInfraError：引擎暖机期文案', () => {
     expect(isTransientInfraError(err)).toBe(true)
   })
 })
+
+describe('isTransientInfraError：传输门控 EngineNotAvailableError 与跨包鸭子类型 (Ticket 04)', () => {
+  it('code / errorCode 为 engine_service_stopped / engine_starting / engine_swapping 均判瞬态', () => {
+    expect(
+      isTransientInfraError(
+        Object.assign(new Error('stopped'), { code: 'engine_service_stopped' })
+      )
+    ).toBe(true)
+    expect(
+      isTransientInfraError(Object.assign(new Error('starting'), { code: 'engine_starting' }))
+    ).toBe(true)
+    expect(
+      isTransientInfraError(
+        Object.assign(new Error('swapping'), { errorCode: 'engine_swapping' })
+      )
+    ).toBe(true)
+    expect(
+      isTransientInfraError(
+        Object.assign(new Error('stopped'), { errorCode: 'engine_service_stopped', status: 503 })
+      )
+    ).toBe(true)
+  })
+
+  it('跨包鸭子类型 isTransient === true 判瞬态', () => {
+    expect(
+      isTransientInfraError({ name: 'EngineNotAvailableError', isTransient: true, message: 'busy' })
+    ).toBe(true)
+  })
+
+  it('真实 HTTP 500 / engine_failed 严禁误判为瞬态（AGENTS §2.12）', () => {
+    expect(
+      isTransientInfraError(
+        Object.assign(new Error('AI engine failed to start'), {
+          status: 500,
+          code: 'engine_failed',
+          isTransient: true
+        })
+      )
+    ).toBe(false)
+    expect(
+      isTransientInfraError({
+        status: 500,
+        errorCode: 'engine_failed',
+        message: 'ProcessStatus::Failed'
+      })
+    ).toBe(false)
+  })
+})

@@ -44,7 +44,6 @@ export { StageNotifier, Stage2TimeoutError }
 import { AnalysisWriteDispatcher } from './analysis-write-dispatcher'
 import { AnalysisOrchestratorWorker } from './analysis-orchestrator-worker'
 import { OmniHttpAdapter } from './omni-http-adapter'
-import { EngineHealthTier } from './engine-health-tier'
 import { OrphanWatchdog } from './orphan-watchdog'
 import { flushFtsSync } from './fts-sync-hooks'
 import {
@@ -109,7 +108,6 @@ export class AnalysisQueueService {
   private writeDispatcher: AnalysisWriteDispatcher
   private orchestratorWorker: AnalysisOrchestratorWorker
   private omniAdapter: OmniHttpAdapter
-  private engineHealth: EngineHealthTier
   private orphanWatchdog: OrphanWatchdog
   private writeSetBatchDispatcher: WriteSetBatchDispatcher
   private dbWriterProcess: AnalysisDbWriterProcess
@@ -212,7 +210,6 @@ export class AnalysisQueueService {
         this.writeDispatcher.notifyFrontend(type, message, sticky, id, autoClose, action)
     )
 
-    this.engineHealth = new EngineHealthTier(this.aiServiceManager)
     this.omniAdapter = new OmniHttpAdapter()
 
     this.statsCollector = new AnalysisStatsCollector()
@@ -666,12 +663,9 @@ export class AnalysisQueueService {
         const isCpuEngine =
           aiServiceMode === 'cpu' || (aiServiceMode === 'local' && isCpuBackend(currentEngineAcc))
 
-        // 统一按当前活跃工作区解析有效分析模式（SLICE-04 旁路收口）
+        // 统一按当前活跃工作区解析有效分析模式（SLICE-04 旁路收口；仅信 hasInstalledEngines，移除 backend/model 启发式防止冷启 stopped 被误降 simple）
         const hasInstalledAiEngine =
-          aiServiceMode === 'local'
-            ? this.omniAdapter.hasInstalledEngines() &&
-              Boolean(backendSnap.backend || backendSnap.model)
-            : true
+          aiServiceMode === 'local' ? this.omniAdapter.hasInstalledEngines() : true
         let analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
         if (activeWorkspaceId != null) {
           try {
@@ -705,46 +699,28 @@ export class AnalysisQueueService {
             break
           }
 
-          const isReady = await this.engineHealth.waitForReady()
-          if (!isReady) {
-            this.running = false
-            this.isProcessingLoopActive = false
-            break
-          }
-
-          // 并行分析模式：在启动并行流水线前，确保底层引擎处于主语言模型模式
-          if (isAiStageEnabled(analysisMode)) {
-            const modeRes = await this.omniAdapter.ensureMode('language')
-            if (modeRes && !modeRes.ok) {
-              this.engineHealth.logWarning('[并行分析] 确保主语言模型就绪告警:', modeRes.error)
-            }
-          }
+          // 批启动前非阻塞预热：高阶 local 模式且引擎 stopped 时后台 Single-Flight 拉起，与 Tier 1 CPU 阶段并行
+          this.aiServiceManager.preheatLocalEngineNonBlocking(analysisMode)
 
           this.currentAbortController = new AbortController()
           const signal = this.currentAbortController.signal
 
           await this.orchestratorWorker.runParallel(pendingItems, signal, this.stage2WaitTimeoutMs)
+          this.aiServiceManager.flushDegradeLogSummary()
         } else {
           // SERIAL LOOP
           const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
           const next = pickNextPending(snapshot.items)
-
-          if (next) {
-            if (next.taskType === 'analysis' && isAiStageEnabled()) {
-              const isReady = await this.engineHealth.waitForReady()
-              if (!isReady) {
-                this.running = false
-                this.isProcessingLoopActive = false
-                break
-              }
-            }
-          }
 
           if (!next) {
             if ((await this.advanceOrStopWorkspaceQueue(activeWorkspaceId)) === 'continue') {
               continue
             }
             break
+          }
+
+          if (next.taskType === 'analysis') {
+            this.aiServiceManager.preheatLocalEngineNonBlocking(analysisMode)
           }
 
           this.currentAbortController = new AbortController()
@@ -755,7 +731,7 @@ export class AnalysisQueueService {
             currentSignal,
             isAiStageEnabled(),
             this.omniAdapter,
-            (msg, err) => this.engineHealth.logWarning(msg, err)
+            (msg, err) => logger.warn(LogCategory.ANALYSIS_QUEUE, msg, err)
           )
         }
 
@@ -777,6 +753,7 @@ export class AnalysisQueueService {
       this.syncHibernationState(false)
     }
     this.orphanWatchdog.stop()
+    this.aiServiceManager.flushDegradeLogSummary()
     flushFtsSync()
     this.writeDispatcher.emitUpdate()
   }
@@ -1089,6 +1066,7 @@ export class AnalysisQueueService {
       this.writeSetBatchDispatcher.dispose()
     }
     flushFtsSync()
+    this.aiServiceManager.dispose()
     if (this.canonicalMaintenanceUnsubscribe) {
       try {
         this.canonicalMaintenanceUnsubscribe()

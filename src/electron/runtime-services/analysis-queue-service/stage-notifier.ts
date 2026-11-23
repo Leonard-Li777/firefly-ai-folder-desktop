@@ -1,4 +1,5 @@
 import { LogCategory, logger } from '@firefly/shared'
+import type { CpuPhaseOutcome } from './file-processor'
 
 /**
  * 等待 CPU 提取阶段就绪的上限。
@@ -6,6 +7,13 @@ import { LogCategory, logger } from '@firefly/shared'
  * 故必须 export，避免 import undefined 导致运行期超时判断失效。
  */
 export const STAGE2_WAIT_TIMEOUT_MS = 30 * 60 * 1000
+
+/** 兼容未显式传入 outcome 的旧调用方的默认推进结果 */
+const DEFAULT_PROCEED_OUTCOME: CpuPhaseOutcome = {
+  outcome: 'proceed',
+  fingerprint: '',
+  cpuSkipped: false
+}
 
 /** CPU 提取阶段等待超时 */
 export class Stage2TimeoutError extends Error {
@@ -19,30 +27,38 @@ export class Stage2TimeoutError extends Error {
 }
 
 export class StageNotifier {
-  private resolvers = new Map<number, () => void>()
-  private completedSet = new Set<number>()
+  private resolvers = new Map<number, (outcome: CpuPhaseOutcome) => void>()
+  private completedOutcomes = new Map<number, CpuPhaseOutcome>()
 
-  notify(itemId: number) {
-    this.completedSet.add(itemId)
+  notify(itemId: number, outcome: CpuPhaseOutcome = DEFAULT_PROCEED_OUTCOME) {
+    this.completedOutcomes.set(itemId, outcome)
     const resolve = this.resolvers.get(itemId)
     if (resolve) {
-      resolve()
+      resolve(outcome)
       this.resolvers.delete(itemId)
     }
   }
 
+  private resolveCheckResult(result: boolean | CpuPhaseOutcome): CpuPhaseOutcome | null {
+    if (typeof result === 'object' && result !== null) {
+      return result
+    }
+    return result ? DEFAULT_PROCEED_OUTCOME : null
+  }
+
   waitForStage2(
     itemId: number,
-    checkStage: () => boolean,
+    checkStage: () => boolean | CpuPhaseOutcome,
     signal?: AbortSignal,
     timeoutMs: number = STAGE2_WAIT_TIMEOUT_MS
-  ): Promise<void> {
-    if (this.completedSet.has(itemId)) {
-      return Promise.resolve()
+  ): Promise<CpuPhaseOutcome> {
+    const existingOutcome = this.completedOutcomes.get(itemId)
+    if (existingOutcome) {
+      return Promise.resolve(existingOutcome)
     }
-    let readyNow = false
+    let readyOutcome: CpuPhaseOutcome | null = null
     try {
-      readyNow = checkStage()
+      readyOutcome = this.resolveCheckResult(checkStage())
     } catch (e) {
       // 严禁静默降级：checkStage 抛异常须上报，否则就绪判定被吞、GPU 消费者空等至超时
       logger.warn(
@@ -50,12 +66,12 @@ export class StageNotifier {
         `[StageNotifier] checkStage 前置判定异常: itemId=${itemId}`,
         e
       )
-      readyNow = false
+      readyOutcome = null
     }
-    if (readyNow) {
-      return Promise.resolve()
+    if (readyOutcome) {
+      return Promise.resolve(readyOutcome)
     }
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<CpuPhaseOutcome>((resolve, reject) => {
       let settled = false
       let timer: NodeJS.Timeout | null = null
 
@@ -72,7 +88,9 @@ export class StageNotifier {
         if (settled) return
         settled = true
         cleanup()
-        reject(new Error('Aborted'))
+        const err = new Error('Aborted')
+        err.name = 'AbortError'
+        reject(err)
       }
 
       if (signal?.aborted) {
@@ -84,9 +102,9 @@ export class StageNotifier {
         if (settled) return
         settled = true
         cleanup()
-        let ready = false
+        let outcomeAtTimeout: CpuPhaseOutcome | null = null
         try {
-          ready = checkStage()
+          outcomeAtTimeout = this.resolveCheckResult(checkStage())
         } catch (e) {
           // 严禁静默降级：超时边界最后一次就绪复核的异常须上报
           logger.warn(
@@ -94,21 +112,21 @@ export class StageNotifier {
             `[StageNotifier] 超时复核 checkStage 异常: itemId=${itemId}`,
             e
           )
-          ready = false
+          outcomeAtTimeout = null
         }
-        if (ready) {
-          resolve()
+        if (outcomeAtTimeout) {
+          resolve(outcomeAtTimeout)
           return
         }
         reject(new Stage2TimeoutError(itemId, timeoutMs))
       }, timeoutMs)
       if (timer.unref) timer.unref()
 
-      this.resolvers.set(itemId, () => {
+      this.resolvers.set(itemId, (outcome: CpuPhaseOutcome) => {
         if (settled) return
         settled = true
         cleanup()
-        resolve()
+        resolve(outcome)
       })
     })
   }

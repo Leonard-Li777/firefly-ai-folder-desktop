@@ -1,16 +1,144 @@
 /**
- * 统一 AI 引擎置换门闩协调器与多通道执行器 (Ticket 3)
+ * 统一 AI 引擎置换门闩协调器与多通道执行器 (Ticket 3 & Ticket 04)
  * apps/desktop/src/electron/runtime-services/engine-bridge/engine-swapping-coordinator.ts
+ *
+ * @doc-anchor: docs/specs/ai-inference-proactive-readiness-gating-spec.md#25-传输层物理出口-preflight-守卫跨包注册与意图感知-withenginegate
  *
  * 遵循架构规范：
  * 1. 纯 TypeScript 模块，无 Electron 顶层依赖，可直接在 Vitest Node 环境测试；
  * 2. 独立通道分立：/v1/embeddings 独立常驻放行，绝不参与门闩；
  * 3. 门闩双重判定契约 (IN-01)：state === 'ready' && reasonCode !== 'engine_swapping'；
  * 4. 防惊群机制：并发请求在置换期间复用单一 waitPromise，自适应退避后并发放行；
- * 5. 豁免熔断失败计数：置换期间不增加 consecutiveFailures，不错误降级至基础引擎。
+ * 5. 豁免熔断失败计数：置换与瞬态门控期间不增加 consecutiveFailures，不错误降级至基础引擎；
+ * 6. 跨包 DIP Preflight 与 ALS 意图隔离：经 globalThis 共享 readiness checker 与 AsyncLocalStorage，
+ *    batch 路径在 stopped/starting 态立即 fail-fast（零 TCP 发包），interactive 路径自动按需单飞唤醒。
  */
 
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { logger, LogCategory } from '@firefly/shared'
+
+/** 外置 Tier 2 AI 引擎动态端口有界区间（与 Omni / 轻量 CPU LLM 38200..=38219 物理隔离） */
+const EXTERNAL_ENGINE_PORT_MIN = 38400
+const EXTERNAL_ENGINE_PORT_MAX = 38419
+
+/**
+ * 传输层 Preflight 拦截时抛出的结构化瞬态不可用错误
+ * 携带 status: 503、结构化 code 与 isTransient: true，供上游分类器与 HttpClient 鸭子类型识别
+ */
+export class EngineNotAvailableError extends Error {
+  readonly status = 503
+  readonly code: 'engine_service_stopped' | 'engine_starting'
+  readonly isTransient = true
+
+  constructor(
+    code: 'engine_service_stopped' | 'engine_starting' = 'engine_service_stopped',
+    message = 'AI engine is not ready for inference'
+  ) {
+    super(message)
+    this.name = 'EngineNotAvailableError'
+    this.code = code
+  }
+}
+
+/** 传输层就绪检查器映射后的统一状态 */
+export type EngineReadinessStatus =
+  | 'ready'
+  | 'starting'
+  | 'stopped'
+  | 'swapping'
+  | 'error'
+  | 'unknown'
+
+/** 推理调用方意图：batch（批处理立即 fail-fast）或 interactive（交互式按需唤醒） */
+export type EngineGateIntent = 'batch' | 'interactive'
+
+/** AsyncLocalStorage 传递的门控上下文 */
+export interface EngineGateContext {
+  intent: EngineGateIntent
+  signal?: AbortSignal
+}
+
+/**
+ * 跨包依赖反转（DIP）引擎就绪检查器接口
+ * 由 EngineBridgeService 在构造期注入，使纯 TS 传输门闩零 Electron 依赖即可感知宿主实态
+ */
+export interface IEngineReadinessChecker {
+  getStatus: () => EngineReadinessStatus
+  isSwapping: () => boolean
+  getPort?: () => number | null
+  ensureReady?: (signal?: AbortSignal) => Promise<{ ok: boolean; error?: string }>
+}
+
+const GLOBAL_READINESS_CHECKER_KEY = '__fireflyEngineReadinessChecker'
+const GLOBAL_GATE_CONTEXT_STORAGE_KEY = '__fireflyEngineGateContextStorage'
+
+function getEngineReadinessChecker(): IEngineReadinessChecker | null {
+  if (typeof globalThis === 'undefined') return null
+  const checker = (globalThis as Record<string, unknown>)[GLOBAL_READINESS_CHECKER_KEY]
+  if (
+    checker &&
+    typeof checker === 'object' &&
+    typeof (checker as IEngineReadinessChecker).getStatus === 'function' &&
+    typeof (checker as IEngineReadinessChecker).isSwapping === 'function'
+  ) {
+    return checker as IEngineReadinessChecker
+  }
+  return null
+}
+
+function getEngineGateContextStorage(): AsyncLocalStorage<EngineGateContext> {
+  if (typeof globalThis !== 'undefined') {
+    const g = globalThis as Record<string, unknown>
+    if (g[GLOBAL_GATE_CONTEXT_STORAGE_KEY] instanceof AsyncLocalStorage) {
+      return g[GLOBAL_GATE_CONTEXT_STORAGE_KEY] as AsyncLocalStorage<EngineGateContext>
+    }
+    const storage = new AsyncLocalStorage<EngineGateContext>()
+    g[GLOBAL_GATE_CONTEXT_STORAGE_KEY] = storage
+    return storage
+  }
+  return new AsyncLocalStorage<EngineGateContext>()
+}
+
+// 模组加载期即确保 globalThis.__fireflyEngineGateContextStorage 就位，供跨包双实例共享同一 ALS
+getEngineGateContextStorage()
+
+/**
+ * 注册跨包共享的引擎就绪检查器（同步挂载至 globalThis.__fireflyEngineReadinessChecker）。
+ * 未注册时门闩默认 fail-open 放行，保护独立单测隔离。
+ *
+ * @returns disposer 仅当当前注册者仍为本次 checker 时注销，避免覆盖后注册的新实例
+ */
+export function registerEngineReadinessChecker(checker: IEngineReadinessChecker): () => void {
+  if (typeof globalThis !== 'undefined') {
+    ;(globalThis as Record<string, unknown>)[GLOBAL_READINESS_CHECKER_KEY] = checker
+  }
+  return () => {
+    if (
+      typeof globalThis !== 'undefined' &&
+      (globalThis as Record<string, unknown>)[GLOBAL_READINESS_CHECKER_KEY] === checker
+    ) {
+      delete (globalThis as Record<string, unknown>)[GLOBAL_READINESS_CHECKER_KEY]
+    }
+  }
+}
+
+/** 仅供测试清理全局就绪检查器注册态 */
+export function __resetEngineReadinessCheckerForTest(): void {
+  if (typeof globalThis !== 'undefined') {
+    delete (globalThis as Record<string, unknown>)[GLOBAL_READINESS_CHECKER_KEY]
+  }
+}
+
+/**
+ * 在指定的引擎门控异步上下文（intent / signal）中执行异步任务。
+ * 无需修改 Pro 包 HttpClient 对外方法签名即可跨层透传 batch/interactive 意图。
+ */
+export function runWithEngineGateContext<T>(
+  ctx: EngineGateContext,
+  fn: () => Promise<T>
+): Promise<T> {
+  return getEngineGateContextStorage().run(ctx, fn)
+}
 
 /**
  * 单个 Worker 子进程运行状态
@@ -562,12 +690,27 @@ export function normalizeEngineMetricsPayload(rawPayload: unknown): EngineMetric
   return snapshot
 }
 
+function isLoopbackHost(hostname: string): boolean {
+  const lower = hostname.toLowerCase()
+  return lower === '127.0.0.1' || lower === 'localhost' || lower === '::1' || lower === '[::1]'
+}
+
+function extractUrlPort(parsed: URL): number {
+  if (parsed.port) {
+    return Number(parsed.port)
+  }
+  return parsed.protocol === 'https:' ? 443 : 80
+}
+
 /**
- * 根据请求 URL 路径与 Origin 自动判定引擎门闩通道：
- * - 外部云端请求（非 localhost / 127.0.0.1）-> null（完全放行，免除本地引擎置换门闩）
+ * 根据请求 URL 路径与 Origin/端口严格判定外置引擎门闩通道：
+ * - 外部云端请求（非 localhost / 127.0.0.1 / ::1）-> null（完全放行，免除本地引擎门闩）
+ * - 端口作用域严格限定外置引擎：若已注册 checker 且 getPort() 返回有效端口（>0）则精确匹配该端口，
+ *   否则仅匹配 38400..=38419 动态槽位区间（若传入 localBaseUrl 则求交）；
+ *   天然排除 Omni / 轻量 CPU LLM（38200..=38219）及第三方本地服务端口，严禁误拦或误拉外置引擎；
  * - 包含 '/v1/embeddings' 或 '/api/v1/vector' -> 'embeddings'（独立常驻，零等待直放）
  * - '/v1/engine/metrics' -> null（探活与指标读取端点直通）
- * - 其余 '/v1/*' 推理端点 -> 'chat'（受 EngineSwappingCoordinator 门闩保护）
+ * - 其余 '/v1/*' 推理端点 -> 'chat'（受 Preflight 与 EngineSwappingCoordinator 门闩保护）
  */
 export function resolveEngineGateChannel(
   urlOrPath: string,
@@ -577,26 +720,59 @@ export function resolveEngineGateChannel(
     return null
   }
 
-  let pathname = urlOrPath.toLowerCase()
+  const checker = getEngineReadinessChecker()
+  const registeredPortRaw = checker?.getPort?.()
+  const hasRegisteredPort =
+    typeof registeredPortRaw === 'number' &&
+    Number.isFinite(registeredPortRaw) &&
+    registeredPortRaw > 0
+  const registeredPort = hasRegisteredPort ? registeredPortRaw : null
 
-  // 1. 尝试 URL 解析做 Origin 校验，防止云端自定义 API 被本地置换门闩误拦截
+  // 若调用方显式传入 localBaseUrl，先解析用于与目标端口求交
+  let localBasePort: number | null = null
+  if (localBaseUrl) {
+    try {
+      const parsedBase = new URL(localBaseUrl)
+      if (!isLoopbackHost(parsedBase.hostname)) {
+        return null
+      }
+      localBasePort = extractUrlPort(parsedBase)
+    } catch {
+      return null
+    }
+  }
+
+  // 1. URL 解析做 Origin 与外置引擎端口作用域校验，防止云端 API 或 CPU 轻量 LLM 环回端口被误拦截
+  let pathname: string
   try {
-    const parsed = new URL(urlOrPath, localBaseUrl || 'http://127.0.0.1:38400')
-    const hostname = parsed.hostname.toLowerCase()
-    const isLocal =
-      hostname === '127.0.0.1' ||
-      hostname === 'localhost' ||
-      hostname === '::1' ||
-      hostname === '[::1]'
+    const fallbackBase =
+      localBaseUrl || `http://127.0.0.1:${registeredPort ?? EXTERNAL_ENGINE_PORT_MIN}`
+    const parsed = new URL(urlOrPath, fallbackBase)
 
     // 非本机回环地址（如 api.openai.com 等外部云端提供商），直接放行
-    if (!isLocal) {
+    if (!isLoopbackHost(parsed.hostname)) {
+      return null
+    }
+
+    const targetPort = extractUrlPort(parsed)
+    const matchesExternalEnginePort =
+      registeredPort !== null
+        ? targetPort === registeredPort
+        : targetPort >= EXTERNAL_ENGINE_PORT_MIN && targetPort <= EXTERNAL_ENGINE_PORT_MAX
+
+    if (!matchesExternalEnginePort) {
+      return null
+    }
+
+    // 传入 localBaseUrl 时强制求交，避免跨端口误命中
+    if (localBasePort !== null && targetPort !== localBasePort) {
       return null
     }
 
     pathname = parsed.pathname.toLowerCase()
   } catch {
-    // URL 解析失败时降级走原始路径字串匹配
+    // 非法 URL 无法确认归属外置引擎端口，保守放行
+    return null
   }
 
   if (pathname.includes('/v1/embeddings') || pathname.includes('/api/v1/vector')) {
@@ -614,21 +790,53 @@ export function resolveEngineGateChannel(
 /**
  * 统一引擎多通道高阶门闩执行器
  *
- * @param channel 通道类型：'chat'（受置换门闩保护）或 'embeddings'（独立常驻，零等待放行）
+ * @param channel 通道类型：'chat'（受 Preflight 与置换门闩保护）或 'embeddings'（独立常驻，零等待放行）
  * @param action 实际执行的推理异步闭包
  * @param coordinator 可选注入的协调器实例（便于单测隔离）
+ * @param options 可选显式覆盖意图与中止信号（未传入时读取 AsyncLocalStorage，默认 'interactive'）
  */
 export async function withEngineGate<T>(
   channel: 'chat' | 'embeddings',
   action: () => Promise<T>,
-  coordinator: EngineSwappingCoordinator = engineSwappingCoordinator
+  coordinator: EngineSwappingCoordinator = engineSwappingCoordinator,
+  options?: { intent?: EngineGateIntent; signal?: AbortSignal }
 ): Promise<T> {
-  // 1. 独立常驻 Embedding 通道：零等待直放，绝不参与语言/生图置换门闩
+  // 1. 独立常驻 Embedding 通道：零等待直放，绝不参与语言/生图置换门闩与 language 态校验
   if (channel === 'embeddings') {
     return action()
   }
 
-  // 2. 语言/多模态通道：受 EngineSwappingCoordinator 集中门闩调度（支持 120s 预算内循环等待屏障）
+  // 2. 语言/多模态通道 Preflight 检查（跨包 DIP 读取 globalThis.__fireflyEngineReadinessChecker）
+  const store = getEngineGateContextStorage().getStore()
+  const effectiveIntent: EngineGateIntent = options?.intent ?? store?.intent ?? 'interactive'
+  const effectiveSignal = options?.signal ?? store?.signal
+
+  const checker = getEngineReadinessChecker()
+  if (checker) {
+    const status = checker.getStatus()
+    const inSwapping = coordinator.isInSwapping() || checker.isSwapping()
+
+    // unknown / ready / error / swapping 或置换中直接放行（error 交反代返回真实 500，严守 AGENTS §2.12）
+    if ((status === 'stopped' || status === 'starting') && !inSwapping) {
+      const errorCode: 'engine_service_stopped' | 'engine_starting' =
+        status === 'starting' ? 'engine_starting' : 'engine_service_stopped'
+      const defaultMsg =
+        status === 'starting'
+          ? 'AI engine is starting, please try again'
+          : 'AI engine service is not started'
+
+      if (effectiveIntent === 'interactive' && typeof checker.ensureReady === 'function') {
+        const readyRes = await checker.ensureReady(effectiveSignal)
+        if (!readyRes.ok) {
+          throw new EngineNotAvailableError(errorCode, readyRes.error || defaultMsg)
+        }
+      } else {
+        throw new EngineNotAvailableError(errorCode, defaultMsg)
+      }
+    }
+  }
+
+  // 3. 受 EngineSwappingCoordinator 集中门闩调度（支持 120s 预算内循环等待屏障）
   const deadline = Date.now() + 120_000
   while (true) {
     try {
@@ -658,13 +866,14 @@ export async function executeWithEngineTransportGate<T>(
   urlOrPath: string,
   action: () => Promise<T>,
   coordinator: EngineSwappingCoordinator = engineSwappingCoordinator,
-  localBaseUrl?: string
+  localBaseUrl?: string,
+  options?: { intent?: EngineGateIntent; signal?: AbortSignal }
 ): Promise<T> {
   const channel = resolveEngineGateChannel(urlOrPath, localBaseUrl)
   if (!channel) {
     return action()
   }
-  return withEngineGate(channel, action, coordinator)
+  return withEngineGate(channel, action, coordinator, options)
 }
 
 // 挂载至全局对象，供跨包传输层 (如 @firefly/electron-llamaIndex-service 的 HttpClient) 零循环依赖共享同一门闩协调器

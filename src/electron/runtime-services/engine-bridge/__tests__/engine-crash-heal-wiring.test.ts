@@ -69,17 +69,21 @@ describe('EngineBridgeService 崩溃自愈接线', () => {
 })
 
 describe('AIServiceManager 自愈耗尽短路', () => {
-  it('就绪检查入口必须短路（否则每个文件空等 120s）', () => {
+  it('能力租约与预热入口必须短路（否则每个文件空等 120s）', () => {
     const idx = managerSource.indexOf('isCrashHealExhaustedAndOffline')
     expect(idx).toBeGreaterThan(-1)
-    // 至少两处：入口一次 + 等待循环内一次
+    // 至少两处：批前预热入口 + acquireLocalStage3Capability 静态不可用短路
     const occurrences = managerSource.split('isCrashHealExhaustedAndOffline').length - 1
     expect(occurrences).toBeGreaterThanOrEqual(2)
   })
 
-  it('短路必须返回 false（判不可用）而不是 true', () => {
-    const entryIdx = managerSource.indexOf('isCrashHealExhaustedAndOffline')
+  it('acquireLocalStage3Capability 短路必须返回 granted: false 降级租约而不是 granted: true', () => {
+    const localIdx = managerSource.indexOf('private async acquireLocalStage3Capability')
+    expect(localIdx).toBeGreaterThan(-1)
+    const entryIdx = managerSource.indexOf('isCrashHealExhaustedAndOffline', localIdx)
+    expect(entryIdx).toBeGreaterThan(-1)
     const body = managerSource.slice(entryIdx, entryIdx + 600)
-    expect(body).toMatch(/return false/)
+    expect(body).toMatch(/granted:\s*false/)
+    expect(body).toMatch(/crash_heal_exhausted/)
   })
 })

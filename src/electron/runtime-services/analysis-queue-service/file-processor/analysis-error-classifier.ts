@@ -117,6 +117,13 @@ function matchesEngineWarmupMessage(text: string | undefined): boolean {
   return isEngineSwappingError(text) || ENGINE_WARMUP_MESSAGES.some(msg => text.includes(msg))
 }
 
+/** 传输门控与引擎反代瞬态结构化错误码白名单（鸭子类型识别，不依赖跨包 instanceof） */
+const TRANSIENT_ENGINE_ERROR_CODES = new Set([
+  'engine_service_stopped',
+  'engine_starting',
+  'engine_swapping'
+])
+
 /** 是否为基础设施未就绪等瞬态错误（不可静默降级为完成，必须等待就绪或重试） */
 export function isTransientInfraError(err: unknown): boolean {
   if (!err) return false
@@ -127,6 +134,7 @@ export function isTransientInfraError(err: unknown): boolean {
       status?: number
       statusCode?: number
       code?: string
+      errorCode?: string
       message?: string
       error?: { code?: string; message?: string }
     }
@@ -134,6 +142,7 @@ export function isTransientInfraError(err: unknown): boolean {
     if (
       status === 500 ||
       e.code === 'engine_failed' ||
+      e.errorCode === 'engine_failed' ||
       e.error?.code === 'engine_failed' ||
       (typeof e.message === 'string' &&
         (e.message.includes('ProcessStatus::Failed') ||
@@ -154,14 +163,23 @@ export function isTransientInfraError(err: unknown): boolean {
   }
 
   if (typeof err === 'object') {
-    const e = err as { status?: number; statusCode?: number; code?: string; message?: string }
+    const e = err as {
+      status?: number
+      statusCode?: number
+      code?: string
+      errorCode?: string
+      isTransient?: boolean
+      message?: string
+    }
     if (
+      e.isTransient === true ||
       e.status === 503 ||
       e.statusCode === 503 ||
       e.code === 'ECONNREFUSED' ||
       e.code === 'ECONNRESET' ||
       e.code === 'EBUSY' ||
-      e.code === 'engine_swapping' ||
+      (typeof e.code === 'string' && TRANSIENT_ENGINE_ERROR_CODES.has(e.code)) ||
+      (typeof e.errorCode === 'string' && TRANSIENT_ENGINE_ERROR_CODES.has(e.errorCode)) ||
       matchesElectronNetTransientCode(e.code)
     ) {
       return true
