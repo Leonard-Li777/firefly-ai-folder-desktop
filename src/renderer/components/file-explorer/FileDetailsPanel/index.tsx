@@ -1,9 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react'
-import { FileItem, DirectoryItem, SettingsCategory } from '@firefly/types'
+import { FileItem, DirectoryItem } from '@firefly/types'
 import { FileCategory, isCategory, getFileCategory, formatDateTime } from '@firefly/shared'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { cn, MaterialIcon } from '../../../lib/utils'
+import { MaterialIcon } from '../../../lib/utils'
 import { Button } from '../../ui/button'
 import {
   AlertDialog,
@@ -15,148 +15,37 @@ import {
 } from '../../ui/alert-dialog'
 
 import { useFileDetails } from './hooks/useFileDetails'
-import { PreviewSection } from './components/PreviewSection'
-import { AnalysisTabs } from './tabs/AnalysisTabs'
-import { TagList } from './components/TagList'
-import { DirectoryProfileSection } from './components/DirectoryProfileSection'
-import { getUnitTypeLabel, getUnitTheme } from '../FileList/utils'
-import { useSettingsStore } from '../../../stores/settings-store'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import { openExternalLink } from '../../../lib/external-link'
-import { HighlightText } from '../../common/HighlightText'
-import { useSearchStore } from '../../../stores/search-store'
 import { resolveThumbnailUrl, toSafeFileUrl } from '../FileList/components/thumbnail-url-utils'
+import {
+  useDetailsCardsStore,
+  DETAILS_CARD_IDS,
+  DetailsCardId
+} from './stores/details-cards-store'
+import { DetailsMicroActionStrip } from './components/DetailsMicroActionStrip'
+import { DetailsPinnedBanner } from './components/DetailsPinnedBanner'
+import { DetailsBottomActions } from './components/DetailsBottomActions'
+import { DetailsCardWrapper } from './cards/DetailsCardWrapper'
+import { DetailsCardMiniPreview } from './cards/DetailsCardMiniPreview'
+import { DetailsCardSummary } from './cards/DetailsCardSummary'
+import { DetailsCardTags } from './cards/DetailsCardTags'
+import { DetailsCardMetrics } from './cards/DetailsCardMetrics'
 
-function extractAnchorMap(content: string): Map<string, string> {
-  const map = new Map<string, string>()
-  const linkRe = /\[([^\]]+)\]\(#([^)]+)\)/g
-  let match: RegExpExecArray | null
-  while ((match = linkRe.exec(content)) !== null) {
-    const linkText = match[1].trim()
-    const anchorId = match[2]
-    const normalized = linkText.replace(/\s+\d+$/, '').trim()
-    if (normalized && !map.has(normalized)) {
-      map.set(normalized, anchorId)
-    }
-  }
-  return map
+export interface FileDetailsPanelProps {
+  pageId?: string
+  item?: FileItem | DirectoryItem
+  onClose?: () => void
+  onFileDeleted?: (item?: any) => void
+  onFileUpdated?: (item?: any) => void
+  workspaceDirectoryPath?: string
+  workspaceDirectoryType?: string
+  currentDirectoryPath?: string
+  isRealDirectory?: boolean
+  showPreview?: boolean
+  previewCollapsed?: boolean
 }
 
-function getAnchorId(children: any, anchorMap: Map<string, string>): string | undefined {
-  const text = extractText(children)
-  if (!text) return undefined
-  const normalized = text.trim()
-  if (anchorMap.has(normalized)) return anchorMap.get(normalized)
-  const withoutNum = normalized.replace(/\s+\d+$/, '').trim()
-  return anchorMap.get(withoutNum)
-}
-
-function extractText(node: any): string {
-  if (typeof node === 'string') return node
-  if (Array.isArray(node)) return node.map(extractText).join('')
-  if (node?.props?.children) return extractText(node.props.children)
-  return ''
-}
-
-function highlightChildren(children: any, tokens: string[]) {
-  if (!tokens || tokens.length === 0) return children
-  if (typeof children === 'string') {
-    return <HighlightText text={children} tokens={tokens} />
-  }
-  if (Array.isArray(children)) {
-    return children.map((c, idx) => (
-      <React.Fragment key={idx}>{highlightChildren(c, tokens)}</React.Fragment>
-    ))
-  }
-  return children
-}
-
-function makeMarkdownComponents(anchorMap: Map<string, string>, tokens: string[] = []) {
-  const heading =
-    (tag: string) =>
-    ({ children, ...props }: any) => {
-      const id = getAnchorId(children, anchorMap)
-      const Tag = tag as any
-      return (
-        <Tag id={id} {...props}>
-          {highlightChildren(children, tokens)}
-        </Tag>
-      )
-    }
-  return {
-    h1: heading('h1'),
-    h2: heading('h2'),
-    h3: heading('h3'),
-    h4: heading('h4'),
-    p: ({ children }: any) => (
-      <p className="mb-2 text-sm leading-relaxed last:mb-0 break-words whitespace-pre-line">
-        {highlightChildren(children, tokens)}
-      </p>
-    ),
-    ul: ({ children }: any) => (
-      <ul className="list-disc pl-5 space-y-1 mb-2 last:mb-0">{children}</ul>
-    ),
-    ol: ({ children }: any) => (
-      <ol className="list-decimal pl-5 space-y-1 mb-2 last:mb-0">{children}</ol>
-    ),
-    li: ({ children }: any) => (
-      <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>
-    ),
-    strong: ({ children }: any) => (
-      <strong className="font-bold text-foreground">{highlightChildren(children, tokens)}</strong>
-    ),
-    code: ({ children }: any) => (
-      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">
-        {children}
-      </code>
-    ),
-    a: ({ href, children }: any) => (
-      <a
-        href={href}
-        className="text-primary underline break-all hover:opacity-80 cursor-pointer"
-        onClick={e => {
-          e.preventDefault()
-          if (!href) return
-          if (href.startsWith('#')) {
-            const id = href.slice(1)
-            const el = document.getElementById(id)
-            if (el) el.scrollIntoView({ behavior: 'smooth' })
-            return
-          }
-          openExternalLink(href)
-        }}
-      >
-        {children}
-      </a>
-    )
-  }
-}
-
-function MarkdownRenderer({ content, maskClass }: { content: string; maskClass?: string }) {
-  const tokens = useSearchStore(s => s.searchTokens)
-  const globalKeyword = useSearchStore(s => s.globalSearchKeyword)
-  const effectiveTokens = React.useMemo(() => {
-    if (tokens && tokens.length > 0) return tokens
-    if (globalKeyword && globalKeyword.trim()) return [globalKeyword.trim()]
-    return []
-  }, [tokens, globalKeyword])
-
-  const anchorMap = React.useMemo(() => extractAnchorMap(content), [content])
-  const components = React.useMemo(
-    () => makeMarkdownComponents(anchorMap, effectiveTokens),
-    [anchorMap, effectiveTokens]
-  )
-  return (
-    <div className={cn('break-words', maskClass)}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components as any}>
-        {content}
-      </ReactMarkdown>
-    </div>
-  )
-}
-
-const FileDetailsPanelComponent: React.FC<any> = ({
+const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
+  pageId = 'default_page',
   item,
   onClose,
   onFileDeleted,
@@ -164,7 +53,8 @@ const FileDetailsPanelComponent: React.FC<any> = ({
   workspaceDirectoryPath,
   workspaceDirectoryType,
   currentDirectoryPath,
-  isRealDirectory = true
+  isRealDirectory = true,
+  previewCollapsed = true
 }) => {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const {
@@ -179,13 +69,22 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     handleClearAnalysis,
     handleDirectoryClearAnalysis,
     refreshAnalysis
-  } = useFileDetails(item, workspaceDirectoryPath, onFileUpdated, currentDirectoryPath)
+  } = useFileDetails(
+    item,
+    workspaceDirectoryPath,
+    onFileUpdated ? () => onFileUpdated(item) : undefined,
+    currentDirectoryPath
+  )
+
   const [activeTab, setActiveTab] = useState('')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const maskClass = workspaceDirectoryType === 'PRIVATE' ? 'ph-mask' : ''
   const showDirectory = !item
-  const swapFileNameDisplay =
-    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
+  const isDir = Boolean(isDirectory)
+
+  // 微宫格 4 大卡片开闭状态管理
+  const visibleCards = useDetailsCardsStore(s => s.getVisibleCards(pageId))
+  const toggleCard = useDetailsCardsStore(s => s.toggleCard)
 
   const isFileAnalysis = React.useCallback(
     (res: any) =>
@@ -205,6 +104,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
         res.itemType === 'file'),
     [isDirectory, showDirectory]
   )
+
   const isDirAnalysis = React.useCallback(
     (res: any) =>
       res &&
@@ -235,37 +135,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
 
   const formatDate = React.useCallback((d: any) => formatDateTime(d), [])
 
-  // 生成虚拟路径（基于维度标签 + 智能文件名）
-  const generateVirtualPath = (res: any, useRealName?: boolean): string => {
-    if (!res) return ''
-    const parts: string[] = []
-    // 维度顺序：1 (文件类型), 2 (文件用途)
-    const targetDimensions = [
-      { id: 1, name: t('文件类型') },
-      { id: 2, name: t('文件用途') }
-    ]
-    if (Array.isArray(res.dimensionTags)) {
-      for (const target of targetDimensions) {
-        const dimGroup = res.dimensionTags.find(
-          (d: any) =>
-            d.dimension === target.id ||
-            d.dimension === String(target.id) ||
-            d.dimension === target.name ||
-            d.name === target.name
-        )
-        if (dimGroup && dimGroup.tags && dimGroup.tags.length > 0) {
-          parts.push(dimGroup.tags[0].name)
-        }
-      }
-    }
-    const fileName = useRealName ? res.name || '' : res.smartName || ''
-    if (fileName) parts.push(fileName)
-    if (parts.length === 0) return ''
-    const joined = parts.join('/')
-    return window.electronAPI?.utils?.normalizePath(joined) || joined
-  }
-
-  // 生成缩略图URL
+  // 生成缩略图 URL
   const getThumbnailUrl = (): string | null => {
     if (!item || isDirectory) return null
     const thumbPathRaw =
@@ -286,7 +156,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     return refreshKey ? `${url}?t=${refreshKey}` : url
   }
 
-  // 生成原始图片URL - 如果没有缩略图，但文件本身是图片，则直接显示
+  // 原图预览 URL
   const getOriginalImageUrl = (): string | null => {
     if (
       !item ||
@@ -313,21 +183,16 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     )
       tabs.push({ id: 'quality', label: t('质量评分'), icon: 'star_rate' })
 
-    // 从 file-constants.ts 获取文件分类，用于判断各 tab 的显示类型
     const fileCategory = getFileCategory(analysisResult.name || analysisResult.path || '')
     const isImageFile = fileCategory === FileCategory.IMAGE
     const isAudioVideo = fileCategory === FileCategory.AUDIO || fileCategory === FileCategory.VIDEO
 
-    // 1. 图片类：若有提取文字（ocr 或 content），展示【OCR】Tab
     const hasImageOcr =
       isImageFile && Boolean(analysisResult.ocr?.trim() || analysisResult.content?.trim())
     if (hasImageOcr) {
       tabs.push({ id: 'ocr', label: t('OCR'), icon: 'document_scanner' })
     }
 
-    // 2. 音视频类：
-    // - 若有转录文本（content），展示【音频文本】Tab
-    // - 若有纯正元数据歌词（lrc），展示【歌词】Tab
     if (isAudioVideo) {
       if (analysisResult.asr?.trim() || analysisResult.content?.trim()) {
         tabs.push({ id: 'asr', label: t('音频文本'), icon: 'record_voice_over' })
@@ -337,12 +202,10 @@ const FileDetailsPanelComponent: React.FC<any> = ({
       }
     }
 
-    // 3. 文档/文本类或其他非音视频非图片：若有提取文本，展示【内容摘要】Tab
     if (!isImageFile && !isAudioVideo && analysisResult.content?.trim()) {
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
     }
-    // 元数据 tab：仅当存在实际元数据内容（file_contents.metadata）或 Magika 类型识别信息（files.file_group）时显示，
-    // 避免清空分析数据后仍残留空 tab
+
     const hasCategoryContent = Boolean(
       analysisResult.category &&
       (typeof analysisResult.category === 'object'
@@ -358,389 +221,140 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     if (hasMetadataContent) tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
     if (analysisResult.analysisStats) tabs.push({ id: 'timing', label: t('耗时'), icon: 'timer' })
     return tabs
-  }, [analysisResult, activeLanguage])
+  }, [analysisResult, activeLanguage, isFileAnalysis, t])
 
   useEffect(() => {
-    if (availableTabs.length > 0 && !availableTabs.some(t => t.id === activeTab))
+    if (availableTabs.length > 0 && !availableTabs.some(tab => tab.id === activeTab))
       setActiveTab(availableTabs[0].id)
   }, [availableTabs, activeTab])
 
-  const openSettings = useSettingsStore(s => s.openSettings)
-
-  return (
-    <aside className="w-full flex-1 min-w-0 border-l border-border flex flex-col h-full overflow-hidden select-text @container/details">
-      {onClose && (
-        <div className="flex items-center justify-between px-4 py-2 border-b border-border/40 shrink-0 bg-muted/10">
-          <span className="text-xs font-semibold text-muted-foreground">{t('文件属性')}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            data-testid="details-close-button"
-            onClick={onClose}
-            title={t('关闭属性面板')}
-            className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-foreground"
-          >
-            <MaterialIcon icon="close" className="text-sm" />
-          </Button>
-        </div>
-      )}
-      {/* 容器感知双列流容器 (ISS-02 / §3.10) */}
-      <div
-        data-testid="file-details-container"
-        className="flex-1 min-h-0 w-full overflow-hidden grid grid-cols-1 content-start @[540px]/details:grid-cols-2 @[540px]/details:grid-rows-[minmax(0,1fr)]"
-      >
-        {/* 左列：基础信息、缩略图 PreviewSection、AI 标签 TagList 与维度 */}
-        <div
-          data-testid="details-left-column"
-          className="min-h-0 min-w-0 flex flex-col overflow-y-auto border-b @[540px]/details:border-b-0 @[540px]/details:border-r border-border/40 p-4 space-y-4"
-        >
-          {((item && 'status' in item && (item as any).status === 0) ||
-            (analysisResult &&
-              'status' in analysisResult &&
-              (analysisResult as any).status === 0)) && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm font-semibold">
-                <MaterialIcon icon="warning" className="text-red-500 text-base" />
-                <span>{t('原文件丢失')}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs border-red-500/40 hover:bg-red-500/20 text-red-600 dark:text-red-400 h-7 px-2.5"
-                onClick={() => openSettings(SettingsCategory.FILE_DISPLAY)}
-              >
-                {t('关闭显示所有丢失文件')}
-              </Button>
-            </div>
-          )}
-
-          {/* 最小单元标识 */}
-          {item && (item as any).isUnit && (
-            <div
-              className="mb-4 p-3 rounded-xl border space-y-2"
-              style={{ borderColor: 'inherit', backgroundColor: 'inherit' }}
-            >
-              {(() => {
-                const uType = (item as any).unitType
-                const uReason = (item as any).unitReason || ''
-                const uConfidence = (item as any).unitConfidence
-                const uLabel = getUnitTypeLabel(uType)
-                const uTheme = getUnitTheme(uType)
-                return (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`material-icons text-lg ${uTheme.color} ${uTheme.darkColor}`}
-                      >
-                        {uTheme.icon}
-                      </span>
-                      <span className={`text-sm font-semibold ${uTheme.color} ${uTheme.darkColor}`}>
-                        {uLabel}
-                      </span>
-                      <span
-                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${uTheme.color} ${uTheme.darkColor} ${uTheme.border} ${uTheme.darkBorder} bg-white/80 dark:bg-gray-900/80`}
-                      >
-                        {t('最小单元')}
-                      </span>
-                      {uConfidence !== undefined && (
-                        <span className="text-xs text-muted-foreground ml-auto">
-                          {t('置信度')}: {Math.round(uConfidence * 100)}%
-                        </span>
-                      )}
-                    </div>
-                    {uReason && (
-                      <p className="text-xs text-muted-foreground leading-relaxed">{uReason}</p>
-                    )}
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {t('已经有序，目录内文件不进行逐一分析')}
-                    </p>
-                    {/* 可选类型：可关闭最小单元识别 */}
-                    {['design_project', 'album', 'series'].includes(uType || '') && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-2 text-xs h-7 px-2.5 text-orange-600 dark:text-orange-400 border-orange-300/50 dark:border-orange-700/50 hover:bg-orange-500/10"
-                        onClick={() => openSettings(SettingsCategory.UNIT_RECOGNITION)}
-                      >
-                        <MaterialIcon icon="tune" className="text-xs mr-1" />
-                        {t('关闭最小单元识别')}
-                      </Button>
-                    )}
-                  </>
-                )
-              })()}
-            </div>
-          )}
-
-          <div className="text-center mb-6">
-            <PreviewSection
-              displayUrl={displayUrl}
-              item={item}
-              isDirectory={isDirectory}
-              showDirectory={showDirectory}
-              analysisResult={analysisResult}
-              isFileAnalysis={isFileAnalysis}
-            />
-            {analysisResult &&
-            isFileAnalysis(analysisResult) &&
-            analysisResult.isAnalyzed &&
-            (analysisResult.smartName ||
-              (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
-              <>
-                {(() => {
-                  const realName = item?.name || analysisResult.name || ''
-                  const smartName = analysisResult.smartName || ''
-
-                  if (smartName) {
-                    const primary = swapFileNameDisplay ? realName : smartName
-                    const secondary = swapFileNameDisplay ? smartName : realName
-
-                    return (
-                      <>
-                        <h2
-                          className="font-semibold text-base mt-3 text-primary break-all cursor-text"
-                          title={primary}
-                        >
-                          <HighlightText text={primary} title={primary} />
-                        </h2>
-                        {secondary && (
-                          <p
-                            className="text-xs text-muted-foreground mt-1 break-all cursor-text"
-                            title={secondary}
-                          >
-                            <HighlightText text={secondary} title={secondary} />
-                          </p>
-                        )}
-                      </>
-                    )
-                  }
-
-                  return (
-                    <h2
-                      className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
-                      title={realName}
-                    >
-                      <HighlightText text={realName} title={realName} />
-                    </h2>
-                  )
-                })()}
-                {analysisResult.description && (
-                  <div className="mt-2 text-left">
-                    <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
-                  </div>
-                )}
-              </>
-            ) : item && !isDirectory ? (
-              <h2
-                className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
-                title={item.name}
-              >
-                <HighlightText text={item.name} title={item.name} />
-              </h2>
-            ) : null}
-            {analysisResult && isDirAnalysis(analysisResult) && (
-              <h2 className="font-semibold text-base mt-3 text-foreground break-all">
-                ⭐{analysisResult.name}
-                {analysisResult.contextAnalysis?.directoryType &&
-                  ` (${analysisResult.contextAnalysis.directoryType})`}
-              </h2>
-            )}
-            {!analysisResult && item && isDirectory && (
-              <h2 className="font-semibold text-base mt-3 text-foreground break-all">
-                📁{item.name}
-              </h2>
-            )}
-          </div>
-
-          {!isDirectory &&
-            !showDirectory &&
-            analysisResult &&
-            isFileAnalysis(analysisResult) &&
-            analysisResult.isAnalyzed && (
-              <TagList
-                analysisResult={analysisResult}
-                getTagColor={getTagColor}
-                onTagDeleted={refreshAnalysis}
-              />
-            )}
-        </div>
-
-        {/* 右列：详细元数据 DirectoryProfileSection、分析指标 AnalysisTabs 等 */}
-        <div
-          data-testid="details-right-column"
-          className="min-h-0 min-w-0 flex flex-col overflow-y-auto p-4 space-y-4"
-        >
-          {(showDirectory || isDirectory) && analysisResult && isDirAnalysis(analysisResult) && (
-            <DirectoryProfileSection
-              analysisResult={analysisResult}
-              isDirAnalysis={isDirAnalysis}
-              getTagColor={getTagColor}
-              formatDate={formatDate}
-              onRefresh={refreshAnalysis}
-              isUnit={!!(item as any)?.isUnit}
-              workspaceDirectoryPath={
-                workspaceDirectoryPath || (item as any)?.workspaceDirectoryPath
-              }
-            />
-          )}
-
-          {(showDirectory || isDirectory) && !analysisResult && item && (
-            <div className="border-t border-border pt-4 mb-6">
-              <h3 className="text-sm font-semibold mb-3 text-foreground">{t('目录属性')}</h3>
-              <div className="bg-muted/30 rounded-xl p-4 space-y-3 text-sm border border-border/50">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t('目录名')}</span>
-                  <span className="font-bold break-all ml-4 text-right">{item.name}</span>
-                </div>
-                {item.path && (
-                  <div className="flex justify-between items-start flex-col gap-1">
-                    <span className="text-muted-foreground">{t('路径')}</span>
-                    <span className="text-xs break-all text-muted-foreground/80 font-mono bg-muted/50 p-2 rounded-md w-full border border-border/30">
-                      {item.path}
-                    </span>
-                  </div>
-                )}
-                {item.fileCount !== undefined && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">{t('文件数量')}</span>
-                    <span className="font-bold">
-                      {item.fileCount} {t('个')}
-                    </span>
-                  </div>
-                )}
-                {item.subdirectoriesCount !== undefined && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">{t('子目录数量')}</span>
-                    <span className="font-bold">
-                      {item.subdirectoriesCount} {t('个')}
-                    </span>
-                  </div>
-                )}
-                {item.size !== undefined && item.size > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">{t('大小')}</span>
-                    <span className="font-bold">
-                      {((item.size || 0) / 1024 / 1024).toFixed(2)} MB
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <AnalysisTabs
+  // 渲染指定 ID 的微宫格卡片内容
+  const renderCardContent = (id: DetailsCardId) => {
+    switch (id) {
+      case DETAILS_CARD_IDS.MINI_PREVIEW:
+        return (
+          <DetailsCardMiniPreview
+            displayUrl={displayUrl}
+            item={item}
+            isDirectory={isDir}
+            showDirectory={showDirectory}
+            analysisResult={analysisResult}
+            isFileAnalysis={isFileAnalysis}
+            previewCollapsed={previewCollapsed}
+          />
+        )
+      case DETAILS_CARD_IDS.SUMMARY:
+        return (
+          <DetailsCardSummary
+            item={item}
+            analysisResult={analysisResult}
+            isDirectory={isDir}
+            showDirectory={showDirectory}
+            maskClass={maskClass}
+            isFileAnalysis={isFileAnalysis}
+            isDirAnalysis={isDirAnalysis}
+          />
+        )
+      case DETAILS_CARD_IDS.TAGS:
+        return (
+          <DetailsCardTags
+            analysisResult={analysisResult}
+            getTagColor={getTagColor}
+            onTagDeleted={refreshAnalysis}
+            isDirectory={isDir}
+            showDirectory={showDirectory}
+            isFileAnalysis={isFileAnalysis}
+          />
+        )
+      case DETAILS_CARD_IDS.METRICS:
+        return (
+          <DetailsCardMetrics
+            item={item}
+            analysisResult={analysisResult}
+            isDirectory={isDir}
+            showDirectory={showDirectory}
             availableTabs={availableTabs}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            analysisResult={analysisResult}
             maskClass={maskClass}
             formatDate={formatDate}
+            getTagColor={getTagColor}
+            refreshAnalysis={refreshAnalysis}
+            workspaceDirectoryPath={workspaceDirectoryPath}
+            isDirAnalysis={isDirAnalysis}
           />
-        </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  const isOnlyOneVisible = visibleCards.length <= 1
+
+  return (
+    <aside className="w-full flex-1 min-w-0 border-l border-border flex flex-col h-full overflow-hidden select-text @container/details bg-background/50">
+      {/* 升维范式 1：26px 极简微型动作槽（左侧复原胶囊，右侧面板全局折叠 X） */}
+      <DetailsMicroActionStrip
+        pageId={pageId}
+        visibleCards={visibleCards}
+        onToggleCard={toggleCard}
+        onClose={onClose}
+      />
+
+      {/* 置顶状态横幅（原文件丢失告警 / 最小单元标记） */}
+      <DetailsPinnedBanner item={item} analysisResult={analysisResult} />
+
+      {/* 自适应内容高度网格容器 (L3 Spec: auto-rows-min，自然高度撑开，整体平滑滚动) */}
+      <div
+        data-testid="file-details-container"
+        className="flex-1 min-h-0 w-full overflow-y-auto p-3.5 grid grid-cols-1 @[540px]/details:grid-cols-2 auto-rows-min gap-3.5 content-start"
+      >
+        {visibleCards.map((cardId, index) => {
+          // 动态跨列规则：当且仅当恰好有 3 张卡片可见时，首张卡片在宽屏跨两列全宽
+          const isSpanTwo = visibleCards.length === 3 && index === 0
+          const spanClass = isSpanTwo ? '@[540px]/details:col-span-2' : ''
+
+          return (
+            <DetailsCardWrapper
+              key={cardId}
+              id={cardId}
+              isOnlyOneVisible={isOnlyOneVisible}
+              onCloseCard={() => toggleCard(pageId, cardId)}
+              className={spanClass}
+            >
+              {renderCardContent(cardId)}
+            </DetailsCardWrapper>
+          )
+        })}
       </div>
 
-      {/* 底部操作按钮 — 仅真实目录显示分析相关操作 */}
+      {/* 底部自适应限宽靠右工具栏 (L3 Spec: 宽屏靠右收敛，主按钮 <=140px，清空方块 h-8 w-8) */}
       {isRealDirectory && (
-        <div className="p-4 border-t">
-          <div className="flex space-x-2 items-stretch">
-            <div className="flex-1 flex space-x-2 min-w-0">
-              {isDirectory || showDirectory ? (
-                <>
-                  <div className="relative flex-1 group">
-                    <div className="absolute bottom-full left-0 mb-2 w-40 p-2 bg-popover text-popover-foreground text-xs text-center leading-relaxed rounded-md shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                      {t('分析目录特征，以指导目录中文件的后续分析')}
-                    </div>
-                    <Button
-                      variant="secondary"
-                      className="w-full px-2"
-                      onClick={handleDirectoryReanalyze}
-                      disabled={reanalyzing}
-                    >
-                      {reanalyzing ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mr-2"></div>
-                          {t('分析中')}
-                        </>
-                      ) : (
-                        <>
-                          <MaterialIcon icon="refresh" className="text-base mr-1.5" />
-                          <span className="truncate">{t('目录画像')}</span>
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  <div className="relative flex-1 group">
-                    <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-popover text-popover-foreground text-xs text-center leading-relaxed rounded-md shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 pointer-events-none">
-                      {t('分析整个目录中的文件')}
-                    </div>
-                    <Button
-                      variant="default"
-                      className="w-full px-2 shadow-none hover:shadow-md hover:bg-primary"
-                      onClick={handleBatchAnalyzeSubfiles}
-                      disabled={reanalyzing}
-                    >
-                      <MaterialIcon icon="auto_awesome" className="text-base mr-1.5" />
-                      <span className="truncate">
-                        {analysisResult &&
-                        isDirAnalysis(analysisResult) &&
-                        analysisResult.analyzedFileCount > 0
-                          ? t('重新分析')
-                          : t('立即分析')}
-                      </span>
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <Button
-                  variant="secondary"
-                  className="w-full hover:shadow-sm hover:bg-primary"
-                  onClick={handleReanalyze}
-                  disabled={reanalyzing}
-                >
-                  {reanalyzing ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mr-2"></div>
-                      {queueStatus === 'pending' ? t('队列中') : t('分析中...')}
-                    </>
-                  ) : (
-                    <>
-                      <MaterialIcon icon="refresh" className="text-base mr-2" />
-                      {analysisResult && isFileAnalysis(analysisResult) && analysisResult.isAnalyzed
-                        ? t('重新分析')
-                        : t('立即分析')}
-                    </>
-                  )}
-                </Button>
-              )}
-            </div>
-
-            {analysisResult &&
-              ((isFileAnalysis(analysisResult) && analysisResult.isAnalyzed) ||
-                isDirAnalysis(analysisResult)) && (
-                <Button
-                  variant="secondary"
-                  className="flex-shrink-0 px-3"
-                  onClick={() => setShowDeleteDialog(true)}
-                  disabled={deleting || reanalyzing}
-                  title={t('清空分析结果')}
-                >
-                  <MaterialIcon icon="delete_forever" className="text-base" />
-                </Button>
-              )}
-          </div>
-        </div>
+        <DetailsBottomActions
+          isDirectory={isDir}
+          showDirectory={showDirectory}
+          analysisResult={analysisResult}
+          reanalyzing={reanalyzing}
+          queueStatus={queueStatus}
+          deleting={deleting}
+          isFileAnalysis={isFileAnalysis}
+          isDirAnalysis={isDirAnalysis}
+          handleReanalyze={handleReanalyze}
+          handleDirectoryReanalyze={handleDirectoryReanalyze}
+          handleBatchAnalyzeSubfiles={handleBatchAnalyzeSubfiles}
+          onOpenClearDialog={() => setShowDeleteDialog(true)}
+        />
       )}
 
-      {/* 确认删除对话框 */}
+      {/* 确认清空分析结果对话框 */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{t('确认清空分析结果？')}</AlertDialogTitle>
             <AlertDialogDescription>
               {t('此操作将删除该{category}的所有AI分析数据{sentens}，但不会删除{category}本身。', {
-                category: isDirectory ? t('目录') : t('文件'),
-                sentens: isDirectory
+                category: isDir ? t('目录') : t('文件'),
+                sentens: isDir
                   ? t('（不包括目录内文件的分析数据）')
                   : t('（包括摘要、标签、向量索引等）')
               })}
@@ -756,7 +370,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
             <Button
               variant="destructive"
               onClick={async () => {
-                await (isDirectory ? handleDirectoryClearAnalysis() : handleClearAnalysis())
+                await (isDir ? handleDirectoryClearAnalysis() : handleClearAnalysis())
                 setShowDeleteDialog(false)
               }}
             >
@@ -769,5 +383,4 @@ const FileDetailsPanelComponent: React.FC<any> = ({
   )
 }
 
-// 使用 React.memo 优化渲染，避免在父级文件列表变动时频繁导致整个侧边栏 DOM 属性突变
 export const FileDetailsPanel = React.memo(FileDetailsPanelComponent)

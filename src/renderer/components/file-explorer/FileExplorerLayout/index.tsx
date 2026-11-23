@@ -604,6 +604,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                         className="h-full w-full relative flex flex-col overflow-hidden"
                       >
                         <FileDetailsPanel
+                          pageId={targetPageId}
                           item={
                             activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : undefined)
                           }
@@ -619,6 +620,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                           onFileDeleted={onFileDeleted}
                           onFileUpdated={onFileUpdated}
                           showPreview={true}
+                          previewCollapsed={projection.collapsed.preview}
                         />
                       </div>
                     )
