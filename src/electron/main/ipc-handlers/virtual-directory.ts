@@ -31,6 +31,7 @@ import {
   PathCosineService,
   buildDirectoryPrompt,
   buildFilePrompt,
+  generateSemanticVector,
   type MatchPerspectivesRequest,
   type CalculateFilePathsCosineRequest,
   type FileMetaItem
@@ -51,6 +52,124 @@ import { isGemmaMrlDim, resolveGemmaDim } from '../../utils/embedding-dim'
 
 /** 批量整理会话级文本特征向量缓存 (fileId -> number[])，防投毒且杜绝重复推理 */
 const organizeSessionVectorCache = new Map<number, number[]>()
+
+/**
+ * 待整理批次的聚合语义向量（`files.canonical_text` -> 确定性语义投影 -> 逐文件平均 -> L2 归一化）。
+ *
+ * 为什么用 `canonical_text`：这是分析阶段已经把「智能名 + 元数据轴 + 内容标签 + 描述」拼好的
+ * 匹配串（见 canonical-text-service），是系统里唯一为「匹配向量计算」预拼的字段；再从
+ * `file_tag_relations` 重新拼标签既重复又更稀疏。
+ *
+ * 投影必须与烘焙脚本 `bake-preset-organize-assets.py::generate_semantic_vector` 逐元素一致
+ * （由 parity 测试门禁），否则与 `structures_*.bin` 不在同一空间，余弦无意义。
+ */
+function buildAggregateCanonicalVector(
+  fileIds: number[],
+  dim: number
+): number[] | undefined {
+  const db = databaseService.db
+  if (!db || !fileIds || fileIds.length === 0) return undefined
+
+  try {
+    const chunkSize = 500
+    const agg = new Array<number>(dim).fill(0)
+    let used = 0
+
+    for (let i = 0; i < fileIds.length; i += chunkSize) {
+      const chunk = fileIds.slice(i, i + chunkSize)
+      const placeholders = chunk.map(() => '?').join(',')
+      const rows = db
+        .prepare(
+          `
+          SELECT f.canonical_text AS canonical_text
+          FROM workspace_files wf
+          INNER JOIN files f ON f.file_fingerprint = wf.file_fingerprint
+          WHERE wf.id IN (${placeholders})
+        `
+        )
+        .all(...chunk) as Array<{ canonical_text: string | null }>
+
+      for (const row of rows) {
+        const text = row.canonical_text
+        if (!text || !text.trim()) continue
+        // 领域基底与模板侧保持一致（模板向量以 domain_template 烘焙），否则向量不在同一空间
+        const v = generateSemanticVector({
+          text,
+          domainId: 'domain_template',
+          taskTags: [],
+          dim
+        })
+        for (let d = 0; d < dim; d++) agg[d] += v[d]
+        used++
+      }
+    }
+
+    if (used === 0) return undefined
+
+    let normSq = 0
+    for (let d = 0; d < dim; d++) normSq += agg[d] * agg[d]
+    const norm = Math.sqrt(normSq)
+    if (norm < 1e-12) return undefined
+    for (let d = 0; d < dim; d++) agg[d] /= norm
+    return agg
+  } catch (err) {
+    logger.warn(
+      LogCategory.FILE_ORGANIZATION,
+      '[IPC] 聚合 canonical_text 语义向量失败，降级为不使用该通道:',
+      err
+    )
+    return undefined
+  }
+}
+
+/**
+ * 待整理批次的扩展名计数（`文件原名末段扩展名` -> 文件数）。
+ *
+ * 供「媒体类型占比」通道使用：运行期只负责统计扩展名分布，扩展名到受控媒体类型码的映射
+ * 完全由烧录期物化（`structures.meta.json::media_type_code_by_extension`），此处禁止硬编码。
+ */
+function buildExtensionCounts(fileIds: number[]): Record<string, number> | undefined {
+  const db = databaseService.db
+  if (!db || !fileIds || fileIds.length === 0) return undefined
+
+  try {
+    const chunkSize = 500
+    const counts: Record<string, number> = {}
+    let total = 0
+
+    for (let i = 0; i < fileIds.length; i += chunkSize) {
+      const chunk = fileIds.slice(i, i + chunkSize)
+      const placeholders = chunk.map(() => '?').join(',')
+      const rows = db
+        .prepare(
+          `
+          SELECT f.extension AS ext
+          FROM workspace_files wf
+          INNER JOIN files f ON f.file_fingerprint = wf.file_fingerprint
+          WHERE wf.id IN (${placeholders})
+        `
+        )
+        .all(...chunk) as Array<{ ext: string | null }>
+
+      for (const row of rows) {
+        // `files.extension` 已是归一化后的带点扩展名（如 `.avi`），直接去点小写即可
+        const ext = (row.ext || '').trim().replace(/^\./, '').toLowerCase()
+        if (!ext) continue
+        counts[ext] = (counts[ext] || 0) + 1
+        total++
+      }
+    }
+
+    return total > 0 ? counts : undefined
+  } catch (err) {
+    logger.warn(
+      LogCategory.FILE_ORGANIZATION,
+      '[IPC] 统计批次扩展名分布失败，降级为不使用媒体类型通道:',
+      err
+    )
+    return undefined
+  }
+}
 
 async function exportTreeToDirectory(
   tree: any[],
@@ -975,10 +1094,21 @@ export function registerVirtualDirectoryIPCHandlers() {
       }
 
       const matchService = IdentityMatchService.getInstance()
+      // 文件语义向量通道：读 `files.canonical_text`（分析期已拼好的匹配串），
+      // 经与烘焙脚本严格同算法的确定性语义投影生成聚合向量。
+      // 维度跟当前 Profile 严格一致（classic_light/bekko -> 384，gemma_unified -> 512），
+      // 两套引擎各有独立的烘焙向量矩阵，禁止跨维度复用。
+      const fileVector = buildAggregateCanonicalVector(
+        request.fileIds,
+        activeProfile === 'gemma_512' ? 512 : 384
+      )
+      const extensionCounts = buildExtensionCounts(request.fileIds)
       return await matchService.matchPerspectivesAndStructures({
         ...request,
         aiProfile: activeProfile,
-        injectedFileTags: fileTags
+        injectedFileTags: fileTags,
+        injectedFileVector: fileVector,
+        injectedExtensionCounts: extensionCounts
       })
     }
   )
