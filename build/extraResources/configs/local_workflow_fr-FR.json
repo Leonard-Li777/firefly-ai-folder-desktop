@@ -2,7 +2,11 @@
   {
     "id": "builtin.workflow.design-dev",
     "templateId": "tpl_ui_ux_standard",
-    "targetIdentityIds": ["id.researcher.ux", "id.designer.ui", "id.designer.graphic"],
+    "targetIdentityIds": [
+      "id.researcher.ux",
+      "id.designer.ui",
+      "id.designer.graphic"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de conception UI/UX",
@@ -18,6 +22,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.design-dev",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -87,7 +92,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -186,6 +193,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.frontend-dev",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -385,6 +393,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.backend-arch",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -582,6 +591,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.para-universal",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -750,6 +760,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.johnny-decimal",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -812,7 +823,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -909,6 +922,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.photography-raw",
+      "defaultLayout": "tri",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -1121,6 +1135,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.video-production",
+      "defaultLayout": "tri",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -1335,6 +1350,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.academic-thesis",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -1525,6 +1541,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.finance-contract",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.finance-contract-ignore-3",
@@ -1609,7 +1626,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -1724,6 +1743,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.family-household",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -1903,6 +1923,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.newmedia-content",
+      "defaultLayout": "tri",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -2077,7 +2098,10 @@
   {
     "id": "builtin.workflow.ecommerce-ops",
     "templateId": "tpl_ecommerce_ops",
-    "targetIdentityIds": ["id.ops.ecommerce", "id.ops.cross_border"],
+    "targetIdentityIds": [
+      "id.ops.ecommerce",
+      "id.ops.cross_border"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Exploitation de magasins à plateforme complète de commerce électronique, sélection et archivage de produits",
@@ -2093,6 +2117,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.ecommerce-ops",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -2162,7 +2187,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2254,7 +2281,10 @@
   {
     "id": "builtin.workflow.game-dev-assets",
     "templateId": "tpl_game_dev_assets",
-    "targetIdentityIds": ["id.hobby.gamer", "id.designer.3d"],
+    "targetIdentityIds": [
+      "id.hobby.gamer",
+      "id.designer.3d"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Structure indépendante de développement de jeux et d’organisation des ressources matérielles",
@@ -2270,6 +2300,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.game-dev-assets",
+      "defaultLayout": "tri",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -2360,7 +2391,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2476,6 +2510,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.cross-border-ops",
+      "defaultLayout": "all-row",
       "customExcludeRules": [],
       "customIncludeRules": [
         {
@@ -2538,7 +2573,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -2615,7 +2652,11 @@
   {
     "id": "builtin.workflow.legal-case-dossier",
     "templateId": "tpl_legal_case_dossier",
-    "targetIdentityIds": ["id.legal.compliance", "id.legal.attorney", "id.legal.ip_agent"],
+    "targetIdentityIds": [
+      "id.legal.compliance",
+      "id.legal.attorney",
+      "id.legal.ip_agent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de Dossiers de Litiges d'Avocats",
@@ -2631,6 +2672,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.legal-case-dossier",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.legal-case-dossier-ignore-3",
@@ -3022,7 +3064,11 @@
   {
     "id": "builtin.workflow.clinical-medical-records",
     "templateId": "tpl_clinical_medical_records",
-    "targetIdentityIds": ["id.health.doctor", "id.health.nurse", "id.health.psychologist"],
+    "targetIdentityIds": [
+      "id.health.doctor",
+      "id.health.nurse",
+      "id.health.psychologist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Suivi des dossiers médicaux et archives de la recherche scientifique",
@@ -3038,6 +3084,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.clinical-medical-records",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.clinical-medical-records-ignore-3",
@@ -3297,7 +3344,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3393,7 +3443,10 @@
   {
     "id": "builtin.workflow.teacher-lesson-prep",
     "templateId": "tpl_teacher_lesson_prep",
-    "targetIdentityIds": ["id.edu.k12_teacher", "id.edu.trainer"],
+    "targetIdentityIds": [
+      "id.edu.k12_teacher",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Préparation des enseignants et gestion de classe",
@@ -3409,6 +3462,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.teacher-lesson-prep",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.teacher-lesson-prep-ignore-3",
@@ -3661,7 +3715,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -3777,6 +3834,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.consulting-due-diligence",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.consulting-due-diligence-ignore-3",
@@ -4150,7 +4208,11 @@
   {
     "id": "builtin.workflow.architectural-cad-design",
     "templateId": "tpl_architectural_cad_design",
-    "targetIdentityIds": ["id.designer.industrial", "id.eng.architect", "id.eng.civil_engineer"],
+    "targetIdentityIds": [
+      "id.designer.industrial",
+      "id.eng.architect",
+      "id.eng.civil_engineer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de plans architecturaux et de dessins de construction CAO",
@@ -4166,6 +4228,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.architectural-cad-design",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.architectural-cad-design-ignore-3",
@@ -4495,7 +4558,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4597,7 +4663,11 @@
   {
     "id": "builtin.workflow.writing-publishing-pipeline",
     "templateId": "tpl_writing_publishing_pipeline",
-    "targetIdentityIds": ["id.ops.newmedia", "id.creator.freelance", "id.creator.writer"],
+    "targetIdentityIds": [
+      "id.ops.newmedia",
+      "id.creator.freelance",
+      "id.creator.writer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Archives de Création et de Publication de Romans",
@@ -4613,6 +4683,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.writing-publishing-pipeline",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.writing-publishing-pipeline-ignore-3",
@@ -4837,7 +4908,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -4949,6 +5024,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.wellness-health-portfolio",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.wellness-health-portfolio-ignore-3",
@@ -5166,7 +5242,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5256,7 +5335,10 @@
   {
     "id": "builtin.workflow.pm-product-workflow",
     "templateId": "tpl_pm_product_workflow",
-    "targetIdentityIds": ["id.pm.product", "id.researcher.ux"],
+    "targetIdentityIds": [
+      "id.pm.product",
+      "id.researcher.ux"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Exigences du chef de produit et bibliothèque de documents PRD",
@@ -5272,6 +5354,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.pm-product-workflow",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.pm-product-workflow-ignore-3",
@@ -5503,7 +5586,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5609,7 +5695,10 @@
   {
     "id": "builtin.workflow.data-science-analytics",
     "templateId": "tpl_data_science_analytics",
-    "targetIdentityIds": ["id.data.analyst", "id.dev.ai_ml"],
+    "targetIdentityIds": [
+      "id.data.analyst",
+      "id.dev.ai_ml"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de projets d'analyse et de modélisation de données",
@@ -5625,6 +5714,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.data-science-analytics",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.data-science-analytics-ignore-3",
@@ -6010,7 +6100,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6136,7 +6228,9 @@
   {
     "id": "builtin.workflow.qa-testing-lifecycle",
     "templateId": "tpl_qa_testing_lifecycle",
-    "targetIdentityIds": ["id.qa.tester"],
+    "targetIdentityIds": [
+      "id.qa.tester"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Tests Logiciels et Archivage des Défauts",
@@ -6152,6 +6246,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.qa-testing-lifecycle",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.qa-testing-lifecycle-ignore-3",
@@ -6495,7 +6590,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -6615,7 +6713,9 @@
   {
     "id": "builtin.workflow.sales-pipeline-crm",
     "templateId": "tpl_sales_pipeline_crm",
-    "targetIdentityIds": ["id.sales.bd"],
+    "targetIdentityIds": [
+      "id.sales.bd"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier de suivi des clients commerciaux et des opportunités commerciales",
@@ -6631,6 +6731,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.sales-pipeline-crm",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.sales-pipeline-crm-ignore-3",
@@ -6980,7 +7081,10 @@
   {
     "id": "builtin.workflow.hr-people-operations",
     "templateId": "tpl_hr_people_operations",
-    "targetIdentityIds": ["id.hr.admin", "id.hr.recruiter"],
+    "targetIdentityIds": [
+      "id.hr.admin",
+      "id.hr.recruiter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Gestion du personnel et Dossiers des employés",
@@ -6996,6 +7100,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.hr-people-operations",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.hr-people-operations-ignore-3",
@@ -7337,7 +7442,11 @@
   {
     "id": "builtin.workflow.marketing-campaign-imc",
     "templateId": "tpl_marketing_campaign_imc",
-    "targetIdentityIds": ["id.marketing.planner", "id.ops.private_domain", "id.ops.sem_seo"],
+    "targetIdentityIds": [
+      "id.marketing.planner",
+      "id.ops.private_domain",
+      "id.ops.sem_seo"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Marketing de marque et planification d'événements",
@@ -7353,6 +7462,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.marketing-campaign-imc",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.marketing-campaign-imc-ignore-3",
@@ -7782,7 +7892,10 @@
   {
     "id": "builtin.workflow.corporate-legal-compliance",
     "templateId": "tpl_corporate_legal_compliance",
-    "targetIdentityIds": ["id.legal.compliance", "id.legal.ip_agent"],
+    "targetIdentityIds": [
+      "id.legal.compliance",
+      "id.legal.ip_agent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Archives des Affaires Juridiques d'Entreprise et de la Propriété Intellectuelle",
@@ -7798,6 +7911,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.corporate-legal-compliance",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.corporate-legal-compliance-ignore-3",
@@ -8171,7 +8285,9 @@
   {
     "id": "builtin.workflow.embedded-iot-firmware",
     "templateId": "tpl_embedded_iot_firmware",
-    "targetIdentityIds": ["id.dev.embedded"],
+    "targetIdentityIds": [
+      "id.dev.embedded"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de développement embarqué et IOT",
@@ -8187,6 +8303,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.embedded-iot-firmware",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.embedded-iot-firmware-ignore-3",
@@ -8467,7 +8584,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -8571,7 +8690,10 @@
   {
     "id": "builtin.workflow.creative-assets",
     "templateId": "tpl_3d_cg_animation",
-    "targetIdentityIds": ["id.designer.3d", "id.designer.industrial"],
+    "targetIdentityIds": [
+      "id.designer.3d",
+      "id.designer.industrial"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de rendu de modélisation et d'animation 3D",
@@ -8587,6 +8709,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.creative-assets",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.creative-assets-ignore-3",
@@ -8969,7 +9092,10 @@
   {
     "id": "builtin.workflow.freelance-business-delivery",
     "templateId": "tpl_freelance_business_delivery",
-    "targetIdentityIds": ["id.creator.freelance", "id.edu.trainer"],
+    "targetIdentityIds": [
+      "id.creator.freelance",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Entrepôt indépendant de réception et de livraison de commandes",
@@ -8985,6 +9111,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.freelance-business-delivery",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.freelance-business-delivery-ignore-3",
@@ -9312,6 +9439,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.pkm-knowledge-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.pkm-knowledge-vault-ignore-3",
@@ -9520,7 +9648,10 @@
   {
     "id": "builtin.workflow.gaming",
     "templateId": "tpl_gamer_library",
-    "targetIdentityIds": ["id.hobby.gamer", "id.life.acg_fan"],
+    "targetIdentityIds": [
+      "id.hobby.gamer",
+      "id.life.acg_fan"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Base de Données de Joueurs",
@@ -9536,6 +9667,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.gaming",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.gaming-ignore-3",
@@ -9809,7 +9941,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -9911,7 +10047,9 @@
   {
     "id": "builtin.workflow.novel",
     "templateId": "tpl_novel_reading_library",
-    "targetIdentityIds": ["id.life.novel_reader"],
+    "targetIdentityIds": [
+      "id.life.novel_reader"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de romans et de livres électroniques",
@@ -9927,6 +10065,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.novel",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.novel-ignore-3",
@@ -10081,7 +10220,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10191,6 +10333,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.movie-cinema",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.movie-cinema-ignore-3",
@@ -10556,7 +10699,9 @@
   {
     "id": "builtin.workflow.anime-comic",
     "templateId": "tpl_acg_anime_manga",
-    "targetIdentityIds": ["id.life.acg_fan"],
+    "targetIdentityIds": [
+      "id.life.acg_fan"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de Collections d'Anime et de Doujins",
@@ -10572,6 +10717,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.anime-comic",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.anime-comic-ignore-3",
@@ -10768,7 +10914,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -10856,7 +11006,9 @@
   {
     "id": "builtin.workflow.pc-hardware-gear",
     "templateId": "tpl_pc_hardware_gear",
-    "targetIdentityIds": ["id.life.tech_geek"],
+    "targetIdentityIds": [
+      "id.life.tech_geek"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Installation informatique et base de données matérielle",
@@ -10872,6 +11024,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.pc-hardware-gear",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.pc-hardware-gear-ignore-3",
@@ -11054,7 +11207,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11140,7 +11295,10 @@
   {
     "id": "builtin.workflow.cooking-recipes-vault",
     "templateId": "tpl_cooking_recipes_vault",
-    "targetIdentityIds": ["id.life.cooking_foodie", "id.health.nutritionist"],
+    "targetIdentityIds": [
+      "id.life.cooking_foodie",
+      "id.health.nutritionist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Recettes maison et bibliothèque de recettes de pâtisserie",
@@ -11156,6 +11314,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.cooking-recipes-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.cooking-recipes-vault-ignore-3",
@@ -11296,7 +11455,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11377,7 +11539,9 @@
   {
     "id": "builtin.workflow.pet-care-diary",
     "templateId": "tpl_pet_care_diary",
-    "targetIdentityIds": ["id.life.pet_owner"],
+    "targetIdentityIds": [
+      "id.life.pet_owner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Archives de la Santé des Animaux de Compagnie et Albums de Croissance",
@@ -11393,6 +11557,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.pet-care-diary",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.pet-care-diary-ignore-3",
@@ -11519,7 +11684,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -11595,7 +11763,9 @@
   {
     "id": "builtin.workflow.travel-outdoor-journey",
     "templateId": "tpl_travel_outdoor_journey",
-    "targetIdentityIds": ["id.life.traveler"],
+    "targetIdentityIds": [
+      "id.life.traveler"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Planification de Voyage et Bibliothèque de Dossiers en plein air",
@@ -11611,6 +11781,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.travel-outdoor-journey",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.travel-outdoor-journey-ignore-3",
@@ -11942,7 +12113,10 @@
   {
     "id": "builtin.workflow.music-audio",
     "templateId": "tpl_audio_sound_engineering",
-    "targetIdentityIds": ["id.creator.sound_designer", "id.scene.voice_recordings_audio"],
+    "targetIdentityIds": [
+      "id.creator.sound_designer",
+      "id.scene.voice_recordings_audio"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque d'Ingénierie de Production et d'Enregistrement de Musique",
@@ -11958,6 +12132,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.music-audio",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.music-audio-ignore-3",
@@ -12217,7 +12392,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12337,6 +12515,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.graphic-brand-design",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.graphic-brand-design-ignore-3",
@@ -12526,7 +12705,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12618,7 +12800,10 @@
   {
     "id": "builtin.workflow.illustration-cg-art",
     "templateId": "tpl_illustration_cg_art",
-    "targetIdentityIds": ["id.designer.illustrator", "id.scene.design_graphics_assets"],
+    "targetIdentityIds": [
+      "id.designer.illustrator",
+      "id.scene.design_graphics_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Galerie d'illustrations et de peintures originales",
@@ -12634,6 +12819,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.illustration-cg-art",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.illustration-cg-art-ignore-3",
@@ -12851,7 +13037,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -12946,7 +13135,9 @@
   {
     "id": "builtin.workflow.mobile-app-dev",
     "templateId": "tpl_mobile_app_dev",
-    "targetIdentityIds": ["id.dev.mobile"],
+    "targetIdentityIds": [
+      "id.dev.mobile"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque d'ingénierie de développement et de référencement d'applications mobiles",
@@ -12962,6 +13153,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.mobile-app-dev",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.mobile-app-dev-ignore-3",
@@ -13298,7 +13490,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13406,7 +13600,9 @@
   {
     "id": "builtin.workflow.cloud-native-sre",
     "templateId": "tpl_cloud_native_sre",
-    "targetIdentityIds": ["id.ops.sre"],
+    "targetIdentityIds": [
+      "id.ops.sre"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque d'exploitation et de maintenance du serveur et de récupération des pannes",
@@ -13422,6 +13618,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.cloud-native-sre",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.cloud-native-sre-ignore-3",
@@ -13688,7 +13885,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -13788,7 +13987,9 @@
   {
     "id": "builtin.workflow.supply-chain-logistics",
     "templateId": "tpl_supply_chain_logistics",
-    "targetIdentityIds": ["id.mgmt.supply_chain"],
+    "targetIdentityIds": [
+      "id.mgmt.supply_chain"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Entrepôt de documents de gestion des achats et des entrepôts",
@@ -13804,6 +14005,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.supply-chain-logistics",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.supply-chain-logistics-ignore-3",
@@ -13972,7 +14174,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -14060,7 +14264,9 @@
   {
     "id": "builtin.workflow.study-abroad-application",
     "templateId": "tpl_study_abroad_application",
-    "targetIdentityIds": ["id.student.study_abroad"],
+    "targetIdentityIds": [
+      "id.student.study_abroad"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de Documents de Demande et de Visa d'Études à l'étranger",
@@ -14076,6 +14282,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.study-abroad-application",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.study-abroad-application-ignore-3",
@@ -14202,7 +14409,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14284,7 +14494,9 @@
   {
     "id": "builtin.workflow.desktop-declutter",
     "templateId": "tpl_desktop_declutter",
-    "targetIdentityIds": ["id.scene.desktop_declutter"],
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Organisez rapidement les fichiers du bureau",
@@ -14300,6 +14512,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.desktop-declutter",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.desktop-declutter-ignore-3",
@@ -14531,7 +14744,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -14634,7 +14851,9 @@
   {
     "id": "builtin.workflow.downloads-triage",
     "templateId": "tpl_downloads_triage",
-    "targetIdentityIds": ["id.scene.downloads_triage"],
+    "targetIdentityIds": [
+      "id.scene.downloads_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Classification automatique des dossiers de téléchargement",
@@ -14650,6 +14869,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.downloads-triage",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.downloads-triage-ignore-1",
@@ -15213,6 +15433,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.inbox-staging-universal",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.inbox-staging-universal-ignore-3",
@@ -15402,7 +15623,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15459,7 +15684,9 @@
     "id": "builtin.workflow.desktop-classic-classification",
     "templateId": "tpl_desktop_classic_classification",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.desktop_declutter"],
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Logiciel de bureau et classification des fichiers",
@@ -15475,6 +15702,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.desktop-classic-classification",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.desktop-classic-classification-ignore-3",
@@ -15713,7 +15941,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -15814,7 +16046,9 @@
   {
     "id": "builtin.workflow.qa-testing-asset-vault",
     "templateId": "tpl_qa_testing_asset_vault",
-    "targetIdentityIds": ["id.qa.tester"],
+    "targetIdentityIds": [
+      "id.qa.tester"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Cas de test logiciel et bibliothèque de rapports",
@@ -15830,6 +16064,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.qa-testing-asset-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.qa-testing-asset-vault-ignore-3",
@@ -16075,7 +16310,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -16181,7 +16419,9 @@
   {
     "id": "builtin.workflow.k12-education-vault",
     "templateId": "tpl_k12_education_vault",
-    "targetIdentityIds": ["id.life.k12_student_parent"],
+    "targetIdentityIds": [
+      "id.life.k12_student_parent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de documents d'apprentissage et de dossiers de croissance des écoles primaires et secondaires",
@@ -16197,6 +16437,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.k12-education-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.k12-education-vault-ignore-3",
@@ -16400,7 +16641,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16484,7 +16728,9 @@
   {
     "id": "builtin.workflow.k12-school-term-pipeline",
     "templateId": "tpl_k12_school_term_pipeline",
-    "targetIdentityIds": ["id.life.k12_student_parent"],
+    "targetIdentityIds": [
+      "id.life.k12_student_parent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Plan d'étude semestriel et collation de préparation aux examens",
@@ -16500,6 +16746,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.k12-school-term-pipeline",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.k12-school-term-pipeline-ignore-3",
@@ -16640,7 +16887,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -16713,7 +16963,9 @@
   {
     "id": "builtin.workflow.senior-life-archive",
     "templateId": "tpl_senior_life_archive",
-    "targetIdentityIds": ["id.life.senior_citizen"],
+    "targetIdentityIds": [
+      "id.life.senior_citizen"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Archives de la Vie des Aînés et Mémoires de Famille",
@@ -16729,6 +16981,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.senior-life-archive",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.senior-life-archive-ignore-3",
@@ -17026,7 +17279,9 @@
   {
     "id": "builtin.workflow.senior-medical-care-pipeline",
     "templateId": "tpl_senior_medical_care_pipeline",
-    "targetIdentityIds": ["id.life.senior_citizen"],
+    "targetIdentityIds": [
+      "id.life.senior_citizen"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de dossiers sur les traitements médicaux et les examens physiques des aînés",
@@ -17042,6 +17297,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.senior-medical-care-pipeline",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.senior-medical-care-pipeline-ignore-3",
@@ -17175,7 +17431,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17247,7 +17505,9 @@
   {
     "id": "builtin.workflow.office-docs",
     "templateId": "tpl_office_general_archive",
-    "targetIdentityIds": ["id.office.general_clerk"],
+    "targetIdentityIds": [
+      "id.office.general_clerk"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Base de données du bureau administratif",
@@ -17263,6 +17523,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.office-docs",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.office-docs-ignore-3",
@@ -17505,7 +17766,10 @@
   {
     "id": "builtin.workflow.office-document-dispatch-flow",
     "templateId": "tpl_office_document_dispatch_flow",
-    "targetIdentityIds": ["id.office.general_clerk", "id.scene.personal_office_docs"],
+    "targetIdentityIds": [
+      "id.office.general_clerk",
+      "id.scene.personal_office_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Réception et contrôle des documents officiels",
@@ -17521,6 +17785,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.office-document-dispatch-flow",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.office-document-dispatch-flow-ignore-3",
@@ -17739,7 +18004,10 @@
   {
     "id": "builtin.workflow.household-dossier-vault",
     "templateId": "tpl_household_dossier_vault",
-    "targetIdentityIds": ["id.life.household_assets", "id.scene.finance_tax_docs"],
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Coffre-fort pour les documents familiaux importants",
@@ -17755,6 +18023,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.household-dossier-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.household-dossier-vault-ignore-3",
@@ -17874,7 +18143,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -17977,6 +18248,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.media-collector-vault",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.media-collector-vault-ignore-3",
@@ -18402,6 +18674,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.code-asset-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.code-asset-vault-ignore-1",
@@ -18813,7 +19086,9 @@
     "id": "builtin.workflow.system-cache-appdata-vault",
     "templateId": "tpl_system_cache_appdata_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.system_cache_appdata"],
+    "targetIdentityIds": [
+      "id.scene.system_cache_appdata"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Classement des journaux logiciels et des caches temporaires",
@@ -18829,6 +19104,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.system-cache-appdata-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.system-cache-appdata-vault-ignore-1",
@@ -19018,7 +19294,9 @@
     "id": "builtin.workflow.chat-software-vault",
     "templateId": "tpl_chat_software_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.chat_software_files"],
+    "targetIdentityIds": [
+      "id.scene.chat_software_files"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de fichiers de réception de chat",
@@ -19034,6 +19312,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.chat-software-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.chat-software-vault-ignore-3",
@@ -19353,7 +19632,9 @@
     "id": "builtin.workflow.cross-device-transfer-vault",
     "templateId": "tpl_cross_device_transfer_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.cross_device_transfer"],
+    "targetIdentityIds": [
+      "id.scene.cross_device_transfer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Station de transit de transfert de téléphone portable et d'ordinateur",
@@ -19369,6 +19650,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.cross-device-transfer-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.cross-device-transfer-vault-ignore-3",
@@ -19600,7 +19882,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -19662,7 +19948,9 @@
     "id": "builtin.workflow.screenshots-screenrecord-vault",
     "templateId": "tpl_screenshots_screenrecord_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.screenshots_recordings"],
+    "targetIdentityIds": [
+      "id.scene.screenshots_recordings"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de captures d'écran et d'enregistrement d'écran",
@@ -19678,6 +19966,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.screenshots-screenrecord-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.screenshots-screenrecord-vault-ignore-3",
@@ -19804,7 +20093,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -19845,7 +20137,9 @@
     "id": "builtin.workflow.scratchpad-drafts-vault",
     "templateId": "tpl_scratchpad_drafts_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.scratchpad_drafts"],
+    "targetIdentityIds": [
+      "id.scene.scratchpad_drafts"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Boîte de rangement pour brouillons et notes",
@@ -19861,6 +20155,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.scratchpad-drafts-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.scratchpad-drafts-vault-ignore-3",
@@ -20008,7 +20303,9 @@
     "id": "builtin.workflow.external-storage-vault",
     "templateId": "tpl_external_storage_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.external_media_triage"],
+    "targetIdentityIds": [
+      "id.scene.external_media_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Organiser le disque U et le disque dur mobile",
@@ -20024,6 +20321,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.external-storage-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.external-storage-vault-ignore-3",
@@ -20402,7 +20700,9 @@
     "id": "builtin.workflow.scanned-documents-vault",
     "templateId": "tpl_scanned_documents_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.scanned_documents"],
+    "targetIdentityIds": [
+      "id.scene.scanned_documents"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Analyser et refaire la bibliothèque de fichiers",
@@ -20418,6 +20718,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.scanned-documents-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.scanned-documents-vault-ignore-3",
@@ -20568,7 +20869,9 @@
     "id": "builtin.workflow.docs-office-vault",
     "templateId": "tpl_docs_office_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.personal_office_docs"],
+    "targetIdentityIds": [
+      "id.scene.personal_office_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de documents de travail personnels",
@@ -20584,6 +20887,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.docs-office-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.docs-office-vault-ignore-3",
@@ -20767,7 +21071,9 @@
     "id": "builtin.workflow.docs-study-research-vault",
     "templateId": "tpl_docs_study_research_vault",
     "templateType": "classification",
-    "targetIdentityIds": ["id.scene.study_research_docs"],
+    "targetIdentityIds": [
+      "id.scene.study_research_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Base de Données sur l'Apprentissage et la Recherche",
@@ -20783,6 +21089,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.docs-study-research-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.docs-study-research-vault-ignore-3",
@@ -21050,7 +21357,11 @@
   {
     "id": "builtin.workflow.renovation-project",
     "templateId": "tpl_renovation_project",
-    "targetIdentityIds": ["id.eng.architect", "id.life.homemaker", "id.life.household_assets"],
+    "targetIdentityIds": [
+      "id.eng.architect",
+      "id.life.homemaker",
+      "id.life.household_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Gestion complète du processus des projets de décoration d'intérieur",
@@ -21066,6 +21377,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.renovation-project",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.renovation-project-ignore-1",
@@ -21341,7 +21653,10 @@
   {
     "id": "builtin.workflow.visual-appreciation-vault",
     "templateId": "tpl_visual_appreciation_vault",
-    "targetIdentityIds": ["id.media.collector_hoarder", "id.scene.personal_photos_album"],
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Bibliothèque de collection d'appréciation et d'inspiration d'images",
@@ -21357,6 +21672,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.visual-appreciation-vault",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.visual-appreciation-vault-ignore-1",
@@ -21511,7 +21827,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".png": 0.34,
         ".jpg": 0.3,
@@ -21608,7 +21927,10 @@
   {
     "id": "builtin.workflow.career-jobhunt-portfolio",
     "templateId": "tpl_career_jobhunt_portfolio",
-    "targetIdentityIds": ["id.office.general_clerk", "id.student.grad"],
+    "targetIdentityIds": [
+      "id.office.general_clerk",
+      "id.student.grad"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Profils de recherche d’emploi et de développement de carrière",
@@ -21624,6 +21946,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.career-jobhunt-portfolio",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.career-jobhunt-portfolio-ignore-1",
@@ -21729,7 +22052,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.4,
         ".docx": 0.22,
@@ -21837,7 +22162,10 @@
   {
     "id": "builtin.workflow.online-course-production",
     "templateId": "tpl_online_course_production",
-    "targetIdentityIds": ["id.edu.trainer", "id.student.self_learner"],
+    "targetIdentityIds": [
+      "id.edu.trainer",
+      "id.student.self_learner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Cours en ligne et production de cours en ligne",
@@ -21853,6 +22181,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.online-course-production",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.online-course-production-ignore-1",
@@ -21979,7 +22308,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.3,
         ".mov": 0.1,
@@ -22090,7 +22422,11 @@
   {
     "id": "builtin.workflow.livestream-creator-ops",
     "templateId": "tpl_livestream_creator_ops",
-    "targetIdentityIds": ["id.ops.newmedia", "id.ops.private_domain", "id.ops.ecommerce"],
+    "targetIdentityIds": [
+      "id.ops.newmedia",
+      "id.ops.private_domain",
+      "id.ops.ecommerce"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Diffusion en direct et opération d'ancrage",
@@ -22106,6 +22442,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.livestream-creator-ops",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.livestream-creator-ops-ignore-1",
@@ -22218,7 +22555,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.34,
         ".flv": 0.12,
@@ -22327,7 +22667,10 @@
   {
     "id": "builtin.workflow.foodblogger-recipe-studio",
     "templateId": "tpl_foodblogger_recipe_studio",
-    "targetIdentityIds": ["id.life.cooking_foodie", "id.hobby.vlogger"],
+    "targetIdentityIds": [
+      "id.life.cooking_foodie",
+      "id.hobby.vlogger"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Blogueurs culinaires et développement de recettes",
@@ -22343,6 +22686,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.foodblogger-recipe-studio",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.foodblogger-recipe-studio-ignore-1",
@@ -22455,7 +22799,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.32,
         ".jpeg": 0.12,
@@ -22564,7 +22912,11 @@
   {
     "id": "builtin.workflow.travelblogger-shoot-studio",
     "templateId": "tpl_travelblogger_shoot_studio",
-    "targetIdentityIds": ["id.hobby.photographer", "id.hobby.vlogger", "id.life.traveler"],
+    "targetIdentityIds": [
+      "id.hobby.photographer",
+      "id.hobby.vlogger",
+      "id.life.traveler"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Blogueurs de voyage et studios de photographie de voyage",
@@ -22580,6 +22932,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.travelblogger-shoot-studio",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.travelblogger-shoot-studio-ignore-1",
@@ -22713,7 +23066,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.26,
         ".jpeg": 0.08,
@@ -22825,7 +23182,10 @@
   {
     "id": "builtin.workflow.study-tour-camp-organizer",
     "templateId": "tpl_study_tour_camp_organizer",
-    "targetIdentityIds": ["id.edu.k12_teacher", "id.edu.trainer"],
+    "targetIdentityIds": [
+      "id.edu.k12_teacher",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Camp de recherche et organisation d'activités parents-enfants",
@@ -22841,6 +23201,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.study-tour-camp-organizer",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.study-tour-camp-organizer-ignore-1",
@@ -22946,7 +23307,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.18,
@@ -23054,7 +23419,9 @@
   {
     "id": "builtin.workflow.wedding-planning",
     "templateId": "tpl_wedding_planning",
-    "targetIdentityIds": ["id.life.homemaker"],
+    "targetIdentityIds": [
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier complet de planification de mariage",
@@ -23070,6 +23437,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.wedding-planning",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.wedding-planning-ignore-1",
@@ -23245,7 +23613,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.2,
         ".jpeg": 0.04,
@@ -23364,7 +23736,10 @@
   {
     "id": "builtin.workflow.car-lifecycle",
     "templateId": "tpl_car_lifecycle",
-    "targetIdentityIds": ["id.life.household_assets", "id.life.homemaker"],
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier du cycle de vie complet du véhicule",
@@ -23380,6 +23755,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.car-lifecycle",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.car-lifecycle-ignore-1",
@@ -23520,7 +23896,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.32,
         ".jpg": 0.16,
@@ -23629,7 +24009,10 @@
   {
     "id": "builtin.workflow.baby-growth-archive",
     "templateId": "tpl_baby_growth_archive",
-    "targetIdentityIds": ["id.life.k12_student_parent", "id.life.homemaker"],
+    "targetIdentityIds": [
+      "id.life.k12_student_parent",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier de croissance et d'éducation de l'enfant",
@@ -23645,6 +24028,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.baby-growth-archive",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.baby-growth-archive-ignore-1",
@@ -23778,7 +24162,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.3,
         ".jpeg": 0.05,
@@ -23894,6 +24282,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.personal-finance-invest",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.personal-finance-invest-ignore-1",
@@ -24062,7 +24451,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.24,
         ".xls": 0.04,
@@ -24161,7 +24553,10 @@
   {
     "id": "builtin.workflow.insurance-policy-vault",
     "templateId": "tpl_insurance_policy_vault",
-    "targetIdentityIds": ["id.life.household_assets", "id.life.homemaker"],
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Centre des polices d'assurance habitation",
@@ -24177,6 +24572,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.insurance-policy-vault",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.insurance-policy-vault-ignore-1",
@@ -24338,7 +24734,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.42,
         ".jpg": 0.12,
@@ -24447,6 +24845,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.podcast-production",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.podcast-production-ignore-1",
@@ -24629,7 +25028,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".wav": 0.11,
         ".mp3": 0.25,
@@ -24747,7 +25149,11 @@
   {
     "id": "builtin.workflow.3dprint-maker",
     "templateId": "tpl_3dprint_maker",
-    "targetIdentityIds": ["id.dev.embedded", "id.designer.3d", "id.life.tech_geek"],
+    "targetIdentityIds": [
+      "id.dev.embedded",
+      "id.designer.3d",
+      "id.life.tech_geek"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Atelier d'impression 3D et de fabrication créative",
@@ -24763,6 +25169,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.3dprint-maker",
+      "defaultLayout": "all-row",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.3dprint-maker-ignore-1",
@@ -24924,7 +25331,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".3mf": 0.16,
         ".gcode": 0.12,
@@ -25025,7 +25436,10 @@
   {
     "id": "builtin.workflow.collectible-model-archive",
     "templateId": "tpl_collectible_model_archive",
-    "targetIdentityIds": ["id.media.collector_hoarder", "id.life.digital_hoarder"],
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.life.digital_hoarder"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Dossier des figurines et des objets de collection",
@@ -25041,6 +25455,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.collectible-model-archive",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.collectible-model-archive-ignore-1",
@@ -25188,7 +25603,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.24,
         ".jpeg": 0.06,
@@ -25287,7 +25706,11 @@
   {
     "id": "builtin.workflow.ai-generated-content",
     "templateId": "tpl_ai_generated_content",
-    "targetIdentityIds": ["id.designer.graphic", "id.hobby.vlogger", "id.dev.ai_ml"],
+    "targetIdentityIds": [
+      "id.designer.graphic",
+      "id.hobby.vlogger",
+      "id.dev.ai_ml"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "Contenu généré par l'IA et thésaurus rapide",
@@ -25303,6 +25726,7 @@
       "policyVersion": 1,
       "presetVersion": 2,
       "workflowId": "builtin.workflow.ai-generated-content",
+      "defaultLayout": "tri",
       "customExcludeRules": [
         {
           "id": "builtin.workflow.ai-generated-content-ignore-1",
@@ -25485,7 +25909,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".png": 0.2,
         ".jpg": 0.08,

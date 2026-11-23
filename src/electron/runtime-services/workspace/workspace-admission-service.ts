@@ -21,6 +21,8 @@ import {
   parseWorkspaceConfig,
   sanitizeWorkspaceAIConfig,
   serializeWorkspaceConfig,
+  LAYOUT_KEYS,
+  type LayoutKey,
   type IFilterRule,
   type LocalWorkflowRecord,
   type TechnicalEngineParameters,
@@ -62,6 +64,8 @@ type WorkspaceConfigReadyV2 = WorkspaceConfigReady & {
 
 export interface WorkspacePolicyMutation {
   workflowId?: string | null
+  /** 期望的推荐/适配布局模式（可选，切换工作流或恢复默认时重算） */
+  defaultLayout?: LayoutKey
   restoreWorkflowDefault?: boolean
   /** 扩展名期望占比权重映射（null 表示重置为模板默认） */
   extensionWeights?: Record<string, number> | null
@@ -388,6 +392,12 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
           if (typeof parsed.presetVersion === 'number') {
             result.presetVersion = parsed.presetVersion
           }
+          if (
+            typeof parsed.defaultLayout === 'string' &&
+            Object.values(LAYOUT_KEYS).includes(parsed.defaultLayout as any)
+          ) {
+            result.defaultLayout = parsed.defaultLayout as LayoutKey
+          }
         }
       } catch {
         // 忽略损坏的模板 JSON
@@ -706,6 +716,14 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
       pluginOverrides: mergedPluginOverrides
     })
 
+    const nextDefaultLayout: LayoutKey =
+      mutation.defaultLayout ??
+      (isExplicitUnbind
+        ? 'all-row'
+        : mutation.restoreWorkflowDefault || isWorkflowIdChanged
+          ? (templateOverlay?.defaultLayout ?? 'all-row')
+          : ((currentReady as WorkspaceConfigReadyV2)?.defaultLayout ?? templateOverlay?.defaultLayout ?? 'all-row'))
+
     const nextConfig: WorkspaceConfigReadyV2 = {
       schemaVersion: 1,
       status: 'ready',
@@ -714,6 +732,7 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         templateOverlay?.presetVersion ??
         (currentReady as WorkspaceConfigReadyV2)?.presetVersion,
       workflowId: nextBoundWorkflowId ?? undefined,
+      defaultLayout: nextDefaultLayout,
       intent: mutation.intent ?? currentReady?.intent,
       overrides: sanitized.overrides as WorkspaceConfigReady['overrides'],
       pluginOverrides: sanitized.pluginOverrides as Partial<Record<WorkspacePluginId, boolean>>,
@@ -1213,6 +1232,10 @@ export class WorkspaceAdmissionService implements IWorkspaceAdmissionService {
         (current as WorkspaceConfigReadyV2).workflowPluginDefaults ??
         [],
       presetVersion: toPresetVersion,
+      defaultLayout:
+        (current as WorkspaceConfigReadyV2).defaultLayout ??
+        (templateOverlay as WorkspaceConfigReadyV2).defaultLayout ??
+        'all-row',
       policyVersion: nextPolicyVersion
     } as WorkspaceConfigReady
 

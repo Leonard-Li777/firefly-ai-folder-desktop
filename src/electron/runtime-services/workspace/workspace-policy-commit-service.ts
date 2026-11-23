@@ -315,6 +315,7 @@ export class WorkspacePolicyCommitService {
       const mutation: WorkspacePolicyMutation = {
         // 兼容薄代理：向导传入完整 targetConfig，不清空既有 overrides
         preserveOverrides: true,
+        defaultLayout: rawTarget.defaultLayout,
         customIncludeRules: rawTarget.customIncludeRules,
         customExcludeRules: rawTarget.customExcludeRules,
         extensionWeights: rawTarget.extensionWeights,

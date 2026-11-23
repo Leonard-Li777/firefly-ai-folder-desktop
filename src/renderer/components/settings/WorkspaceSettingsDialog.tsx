@@ -48,6 +48,7 @@ import { WorkspacePluginsTab } from './workspace/WorkspacePluginsTab'
 import { WorkspacePendingBackfillTab } from './workspace/WorkspacePendingBackfillTab'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
+import { useLayoutSwitcherStore } from '../../stores/layout-switcher-store'
 import { useToastStore, toast } from '../common/Toast'
 import {
   computeLocalEffectiveConfig,
@@ -558,6 +559,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                     })
                       .then(result => {
                         if (result.success) {
+                          useLayoutSwitcherStore.getState().clearUserLayout(activeWorkspace.id!)
                           toast.success(
                             hasBoundWorkflow ? t('已恢复工作流默认配置') : t('已恢复全局默认配置')
                           )
@@ -617,6 +619,10 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                   await refreshWorkspaceData()
                   void refreshRuntime()
 
+                  if (targetWorkspaceId != null && prevWorkflowId !== nextWorkflowId) {
+                    useLayoutSwitcherStore.getState().clearUserLayout(targetWorkspaceId)
+                  }
+
                   // 切换工作流时提供非阻断 [撤销] Toast，允许一键还原原工作流、参数覆盖与插件覆盖
                   if (
                     targetWorkspaceId != null &&
@@ -643,6 +649,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                           })
                             .then(res => {
                               if (res.success) {
+                                useLayoutSwitcherStore.getState().clearUserLayout(targetWorkspaceId)
                                 toast.success(t('已恢复切换前的工作流与参数配置'))
                                 void refreshWorkspaceData()
                                 void refreshRuntime()

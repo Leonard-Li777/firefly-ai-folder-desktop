@@ -14,7 +14,8 @@ import type {
   WorkspaceConfigReady,
   BaseAIConfig,
   IFilterRule,
-  TechnicalEngineParameters
+  TechnicalEngineParameters,
+  LayoutKey
 } from '@firefly/types'
 
 /** 目录树节点定义 */
@@ -120,11 +121,14 @@ export interface LocalWorkflowDefinition {
   mediaFlags?: {
     tsAsVideo?: boolean
   }
+  /** 工作流适配/推荐布局模式（可选，未声明时继承画像簇基准，手机相册等显式重载为 all-row） */
+  defaultLayout?: LayoutKey
 }
 
 interface WorkflowAIPreset {
   baseAIConfig: LocalWorkspaceAIConfig
   workflowPluginDefaults: WorkspacePluginId[]
+  defaultLayout: LayoutKey
 }
 
 /**
@@ -150,7 +154,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       reuseBasicAnalysisData: true,
       clipTextEnabled: true
     },
-    workflowPluginDefaults: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro']
+    workflowPluginDefaults: ['perception_nsfw', 'face_recognition_tool', 'object_detection_pro'],
+    defaultLayout: 'tri'
   },
   SCAN_DOSSIER_OCR: {
     baseAIConfig: {
@@ -170,7 +175,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       reuseBasicAnalysisData: true,
       clipTextEnabled: true
     },
-    workflowPluginDefaults: ['archive_vfs_parser']
+    workflowPluginDefaults: ['archive_vfs_parser'],
+    defaultLayout: 'all-row'
   },
   OFFICE_RESEARCH_DOC: {
     baseAIConfig: {
@@ -190,7 +196,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       reuseBasicAnalysisData: true,
       clipTextEnabled: true
     },
-    workflowPluginDefaults: ['archive_vfs_parser']
+    workflowPluginDefaults: ['archive_vfs_parser'],
+    defaultLayout: 'all-row'
   },
   VIDEO_CREATOR: {
     baseAIConfig: {
@@ -215,7 +222,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       'perception_nsfw',
       'face_recognition_tool',
       'object_detection_pro'
-    ]
+    ],
+    defaultLayout: 'tri'
   },
   AUDIO_VOICE_RECORD: {
     baseAIConfig: {
@@ -235,7 +243,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       reuseBasicAnalysisData: true,
       clipTextEnabled: true
     },
-    workflowPluginDefaults: ['asr_sensevoice_onnx', 'archive_vfs_parser']
+    workflowPluginDefaults: ['asr_sensevoice_onnx', 'archive_vfs_parser'],
+    defaultLayout: 'all-row'
   },
   CODE_DEVOPS: {
     baseAIConfig: {
@@ -255,7 +264,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       reuseBasicAnalysisData: true,
       clipTextEnabled: true
     },
-    workflowPluginDefaults: ['archive_vfs_parser']
+    workflowPluginDefaults: ['archive_vfs_parser'],
+    defaultLayout: 'all-row'
   },
   MIXED_INBOX: {
     baseAIConfig: {
@@ -280,7 +290,8 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
       'perception_nsfw',
       'archive_vfs_parser',
       'password_vault_cracker'
-    ]
+    ],
+    defaultLayout: 'all-row'
   }
 }
 
@@ -9530,7 +9541,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
     ],
     aiPresetKey: 'PHOTO_GALLERY',
     aiOverrides: { videoQuotaMax: 24, videoAsrDurationSec: 30 },
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro']
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'object_detection_pro'],
+    defaultLayout: 'all-row'
   },
   {
     id: 'builtin.workflow.travel-outdoor-journey',
@@ -9814,7 +9826,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       'asr_sensevoice_onnx',
       'face_recognition_tool',
       'object_detection_pro'
-    ]
+    ],
+    defaultLayout: 'all-row'
   },
   {
     id: 'builtin.workflow.music-audio',
@@ -14041,7 +14054,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       'archive_vfs_parser',
       'face_recognition_tool',
       'object_detection_pro'
-    ]
+    ],
+    defaultLayout: 'all-row'
   },
   {
     id: 'builtin.workflow.senior-medical-care-pipeline',
@@ -16186,7 +16200,8 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
       }
     ],
     aiPresetKey: 'MIXED_INBOX',
-    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser']
+    enabledWorkspacePlugins: ['asr_sensevoice_onnx', 'perception_nsfw', 'archive_vfs_parser'],
+    defaultLayout: 'all-row'
   },
   {
     id: 'builtin.workflow.screenshots-screenrecord-vault',
@@ -20772,6 +20787,7 @@ const buildWorkspaceConfig = (def: LocalWorkflowDefinition): WorkspaceConfigRead
     policyVersion: 1,
     presetVersion: CURRENT_WORKFLOW_PRESET_VERSION,
     workflowId: def.id,
+    defaultLayout: def.defaultLayout ?? preset.defaultLayout ?? 'all-row',
     customExcludeRules: def.customExcludeRules,
     customIncludeRules: def.customIncludeRules,
     // 【窄边界适配】Group A 合流后 WorkspaceConfigReady.baseAIConfig 切换为 WorkspaceAIConfig，删除本断言
