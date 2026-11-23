@@ -23,7 +23,7 @@ import type { OfflinePackageDao } from './offline-package-dao'
  * 官方 Ed25519 根公钥常量 (SPKI PEM 格式)
  */
 export const ROOT_ED25519_PK = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEAbEbqhO4NMnk/Y57Hf9vEFv8RNZIzJx20H25Om97twHs=
+MCowBQYDK2VwAyEAQ+anExlPLilrSWg/STA/1xXijaBj5DuoPS63yYc5st4=
 -----END PUBLIC KEY-----`
 
 /**
