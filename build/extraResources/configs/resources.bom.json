@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-23T09:27:56.212Z",
+  "generatedAt": "2026-11-23T17:05:55.606Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -107,15 +107,20 @@
       }
     },
     "chinese-clip": {
-      "version": "INT8-v4",
+      "version": "INT8-v5",
       "source": "shared",
       "asset": {
-        "name": "chinese-clip-int8-v4.zip",
-        "sha256": "f08e3c473e3c9d330b8a7259d7a4b6a5559f3f404188a2b23f16ec5588fc66e1",
-        "size": 267800222,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v4.zip"
+        "name": "chinese-clip-int8-v5.zip",
+        "sha256": "db4a06074f508b45c1ceefc25ab276342122bdab048f599adb01d414138656ca",
+        "size": 242780794,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v5.zip"
       },
       "files": [
+        {
+          "name": "chinese-clip-vit-b-16-int8.onnx",
+          "size": 89448944,
+          "sha256": "bf37c26e5b9174f5a2084a7a67ebf1827cfea440fd55f642ab1de23b1eb10121"
+        },
         {
           "name": "cn_clip_text.onnx",
           "size": 153221930,
@@ -125,26 +130,6 @@
           "name": "cn_clip_vocab.txt",
           "size": 109540,
           "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c"
-        },
-        {
-          "name": "tags_visual_gemma_512.bin",
-          "size": 307200,
-          "sha256": "d1e58808dfb7cdab5cafc1eb6a88b16b2af15241114ff597b99c4c8729fc61fc"
-        },
-        {
-          "name": "tags_visual_gemma_512.meta.json",
-          "size": 5020,
-          "sha256": "a0aca7ba21f3d60f56b3596cb07d5761ebdcddf209404e3f4a8303eb7117ab33"
-        },
-        {
-          "name": "omw_concepts_gemma_512.bin",
-          "size": 24074752,
-          "sha256": "a6ba0e6816f93c28f16a1ecdbc4f024c54aed029f68dec5f27efae9f981432d9"
-        },
-        {
-          "name": "omw_concepts_gemma_512.meta.json",
-          "size": 1311988,
-          "sha256": "7654dd9ec65e639634b402b6c254acb4b15324aad58c12dda284e9586544d79c"
         }
       ]
     },
@@ -152,10 +137,10 @@
       "version": "INT8",
       "source": "shared",
       "asset": {
-        "name": "emb-a892a600-1.0.0.zip",
-        "sha256": "36f8d9522a1453971e3944ca81f99e6e5bb5360051b6c9641b5a9046b93a78ed",
-        "size": 78209514,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-a892a600-1.0.0.zip"
+        "name": "mobile-clip-int8.zip",
+        "sha256": "a236176147ad695655d2d54c810f925d574620689299b713484018b7dd8a910c",
+        "size": 57910236,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/mobile-clip-int8.zip"
       }
     },
     "nsfw-mobilenetv2": {
