@@ -145,6 +145,7 @@ export function scanRecoverableFilesLight(db: any, workspaceId: number): Recover
            WHERE wf.workspace_id = ?
              AND fvs.segment_index >= 1
              AND fvs.status = 'pending'
+             AND (wf.meta IS NULL OR json_extract(wf.meta, '$.recovery_cleared') IS NOT 1)
              AND EXISTS (
                SELECT 1 FROM file_video_segments s0
                WHERE s0.file_id = fvs.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
@@ -331,13 +332,18 @@ export async function listRecoverableFilesPrecise(
 /** 永久清除：写 workspace_files.meta.recovery_cleared，清除后不再计数、不再被「立即补全」捞回 */
 export function clearRecoverableFiles(
   workspaceId: number,
-  workspaceFileIds: number[]
+  workspaceFileIds?: number[]
 ): { success: boolean; cleared?: number; error?: string } {
   const db = databaseService.db
   if (!db || !Number.isFinite(workspaceId)) {
     return { success: false, error: 'INVALID_WORKSPACE_OR_DB' }
   }
-  if (!Array.isArray(workspaceFileIds) || workspaceFileIds.length === 0) {
+  const targetIds: number[] =
+    Array.isArray(workspaceFileIds) && workspaceFileIds.length > 0
+      ? workspaceFileIds
+      : scanRecoverableFilesLight(db, workspaceId).map(it => it.workspaceFileId)
+
+  if (targetIds.length === 0) {
     return { success: true, cleared: 0 }
   }
   try {
@@ -362,7 +368,24 @@ export function clearRecoverableFiles(
         cleared += 1
       }
     })
-    tx(workspaceFileIds)
+    tx(targetIds)
+
+    if (cleared > 0) {
+      try {
+        const { workspaceRuntimeContextService } = require('./workspace-runtime-context-service')
+        workspaceRuntimeContextService.notifyChanged('recovery_cleared')
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[RecoveryQueue] 广播运行时上下文变更失败:', err)
+      }
+
+      try {
+        const { analysisQueueService } = require('../analysis-queue-service')
+        void analysisQueueService.notifyWorkspaceConfigChangedForBackfill(workspaceId)
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[RecoveryQueue] 刷新后台视频回填器计数失败:', err)
+      }
+    }
+
     return { success: true, cleared }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)

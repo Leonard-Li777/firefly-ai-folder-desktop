@@ -77,6 +77,7 @@ export interface VideoSegmentBackfillWorkerDeps {
     workspaceId: number,
     effectiveLimitSec: number
   ) => Array<{
+    workspaceFileId?: number
     fileFingerprint: string
     path: string
     name: string
@@ -258,7 +259,9 @@ export class VideoSegmentBackfillWorker {
   /**
    * 查询指定工作区待补视频列表（供「待补分析文件」Tab 展示）
    */
-  public async listWorkspacePendingVideos(workspaceId: number): Promise<WorkspaceBackfillListResult> {
+  public async listWorkspacePendingVideos(
+    workspaceId: number
+  ): Promise<WorkspaceBackfillListResult> {
     try {
       const ctx = await this.deps.resolveWorkspaceContext(workspaceId)
       const effectiveLimitSec = ctx?.effectiveLimitSec ?? 300

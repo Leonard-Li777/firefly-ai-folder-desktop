@@ -163,7 +163,7 @@ export const workspaceApi = {
   // 待补全恢复：清单 / 清除 / 横幅关闭 / 入队补全（通道注册由 WorkspaceRuntimeContextService 完成）
   getWorkspaceRecoveryQueue: (workspaceId: number) =>
     ipcRenderer.invoke('get-workspace-recovery-queue', workspaceId),
-  clearWorkspaceRecoveryItems: (workspaceId: number, workspaceFileIds: number[]) =>
+  clearWorkspaceRecoveryItems: (workspaceId: number, workspaceFileIds?: number[]) =>
     ipcRenderer.invoke('clear-workspace-recovery-items', workspaceId, workspaceFileIds),
   dismissWorkspaceRecoveryBanner: (workspaceId: number) =>
     ipcRenderer.invoke('dismiss-workspace-recovery-banner', workspaceId),

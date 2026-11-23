@@ -11,12 +11,20 @@ const mockPrioritize = vi.fn()
 const mockRetryFailed = vi.fn()
 const mockEnqueueRecovery = vi.fn()
 const mockClearRecovery = vi.fn()
+const mockRefreshRuntimeContext = vi.fn().mockResolvedValue(undefined)
 
 vi.mock('@app/languages', () => ({
   t: (str: string, params?: Record<string, any>) => {
     if (!params) return str
     return Object.entries(params).reduce((acc, [k, v]) => acc.replace(`{${k}}`, String(v)), str)
   }
+}))
+
+vi.mock('../../../../stores/workspace-runtime-context-store', () => ({
+  useWorkspaceRuntimeContext: (selector: any) =>
+    selector({
+      refresh: mockRefreshRuntimeContext
+    })
 }))
 
 vi.mock('../../../../stores/analysis-queue-store', () => ({
@@ -68,6 +76,7 @@ describe('WorkspacePendingBackfillTab (Ticket 04 / V-05)', () => {
       effectiveLimitSec: 1800,
       items: [
         {
+          workspaceFileId: 102,
           fileFingerprint: 'fp_v1',
           path: 'D:\\media\\vlog_30m.mp4',
           name: 'vlog_30m.mp4',
@@ -80,6 +89,7 @@ describe('WorkspacePendingBackfillTab (Ticket 04 / V-05)', () => {
           failedSlices: 0
         },
         {
+          workspaceFileId: 103,
           fileFingerprint: 'fp_v2',
           path: 'D:\\media\\talk_20m.mp4',
           name: 'talk_20m.mp4',
@@ -151,5 +161,32 @@ describe('WorkspacePendingBackfillTab (Ticket 04 / V-05)', () => {
     // 区块 2 立即补全全部非视频项
     fireEvent.click(screen.getByText('立即补全全部'))
     await waitFor(() => expect(mockEnqueueRecovery).toHaveBeenCalledWith(7, undefined))
+
+    // 清除待补列表按钮（顶部与区块 2 均支持，点击清空当前工作区所有待补项）
+    mockClearRecovery.mockResolvedValue({ success: true, cleared: 3 })
+    const clearButtons = screen.getAllByText('清除待补列表')
+    expect(clearButtons.length).toBeGreaterThanOrEqual(1)
+    fireEvent.click(clearButtons[0])
+    await waitFor(() => {
+      expect(mockClearRecovery).toHaveBeenCalledWith(7, expect.arrayContaining([101, 102, 103]))
+      expect(mockRefreshRuntimeContext).toHaveBeenCalled()
+    })
+  })
+
+  it('V-06: 支持单个长视频行级「不再补全」操作', async () => {
+    render(<WorkspacePendingBackfillTab workspace={workspace} isActive={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('talk_20m.mp4')).toBeTruthy()
+    })
+
+    mockClearRecovery.mockResolvedValue({ success: true, cleared: 1 })
+    const clearSingleBtns = screen.getAllByText('不再补全')
+    expect(clearSingleBtns.length).toBe(2)
+    fireEvent.click(clearSingleBtns[1])
+    await waitFor(() => {
+      expect(mockClearRecovery).toHaveBeenCalledWith(7, [103])
+      expect(mockRefreshRuntimeContext).toHaveBeenCalled()
+    })
   })
 })

@@ -48,6 +48,7 @@ describe('FileDao Video Backfill Methods (Spec §3.5)', () => {
         directory_id INTEGER NOT NULL,
         path TEXT NOT NULL,
         name TEXT NOT NULL,
+        meta TEXT NOT NULL DEFAULT '{}',
         is_analyzed BOOLEAN NOT NULL DEFAULT 0,
         FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
       );
@@ -55,12 +56,9 @@ describe('FileDao Video Backfill Methods (Spec §3.5)', () => {
       ${GENESIS_FILE_VIDEO_SEGMENTS_DDL}
     `)
 
-    db.prepare('INSERT INTO files (file_fingerprint, smart_name, size, extension) VALUES (?, ?, ?, ?)').run(
-      'fp_vid_1',
-      'long_video.mp4',
-      10000000,
-      '.mp4'
-    )
+    db.prepare(
+      'INSERT INTO files (file_fingerprint, smart_name, size, extension) VALUES (?, ?, ?, ?)'
+    ).run('fp_vid_1', 'long_video.mp4', 10000000, '.mp4')
     db.prepare(
       'INSERT INTO workspace_files (file_fingerprint, workspace_id, directory_id, path, name) VALUES (?, ?, ?, ?, ?)'
     ).run('fp_vid_1', 1, 10, 'D:/videos/long_video.mp4', 'long_video.mp4')
@@ -250,5 +248,44 @@ describe('FileDao Video Backfill Methods (Spec §3.5)', () => {
     expect(segs.find(s => s.segment_index === 1)?.status).toBe('pending')
     // seg_0 属于主队列首次切片，不在 resetUpgradedVideoSegmentsForWorkspace 范围内
     expect(segs.find(s => s.segment_index === 0)?.status).toBe('completed')
+  })
+
+  it('6. 验证已标记 recovery_cleared 的长视频被待补查询精准排除', () => {
+    fileDao.upsertVideoSegment({
+      id: 'fp_vid_1_seg_0',
+      fileId: 'fp_vid_1',
+      segmentIndex: 0,
+      startPtsSec: 0,
+      endPtsSec: 300,
+      paramsHash: 'v1_hash',
+      status: 'completed'
+    })
+    fileDao.upsertVideoSegment({
+      id: 'fp_vid_1_seg_1',
+      fileId: 'fp_vid_1',
+      segmentIndex: 1,
+      startPtsSec: 300,
+      endPtsSec: 600,
+      paramsHash: 'v1_hash',
+      status: 'pending'
+    })
+
+    // 未清除时：能查出 1 个工作区和待补切片
+    expect(fileDao.getWorkspaceIdsWithPendingVideoSegments()).toEqual([1])
+    expect(fileDao.getPendingVideoSegmentsForWorkspace(1, 1800)).toHaveLength(1)
+    const listBefore = fileDao.getWorkspacePendingBackfillVideos(1, 1800)
+    expect(listBefore).toHaveLength(1)
+    expect(listBefore[0].workspaceFileId).toBeDefined()
+
+    // 标记为 recovery_cleared = true
+    db.prepare('UPDATE workspace_files SET meta = ? WHERE file_fingerprint = ?').run(
+      JSON.stringify({ recovery_cleared: true }),
+      'fp_vid_1'
+    )
+
+    // 清除后：全部待补查询均被物理排除
+    expect(fileDao.getWorkspaceIdsWithPendingVideoSegments()).toEqual([])
+    expect(fileDao.getPendingVideoSegmentsForWorkspace(1, 1800)).toEqual([])
+    expect(fileDao.getWorkspacePendingBackfillVideos(1, 1800)).toEqual([])
   })
 })

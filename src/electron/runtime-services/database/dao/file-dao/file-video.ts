@@ -516,6 +516,7 @@ export class FileVideoMixin extends FileQueryMixin {
          JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
          WHERE s.segment_index >= 1
            AND s.status = 'pending'
+           AND (wf.meta IS NULL OR json_extract(wf.meta, '$.recovery_cleared') IS NOT 1)
            AND EXISTS (
              SELECT 1 FROM file_video_segments s0
              WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
@@ -559,6 +560,7 @@ export class FileVideoMixin extends FileQueryMixin {
            AND s.segment_index >= 1
            AND s.status = 'pending'
            AND s.start_pts_sec < ?
+           AND (wf.meta IS NULL OR json_extract(wf.meta, '$.recovery_cleared') IS NOT 1)
            AND EXISTS (
              SELECT 1 FROM file_video_segments s0
              WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
@@ -575,6 +577,7 @@ export class FileVideoMixin extends FileQueryMixin {
     workspaceId: number,
     effectiveLimitSec: number
   ): Array<{
+    workspaceFileId?: number
     fileFingerprint: string
     path: string
     name: string
@@ -590,6 +593,7 @@ export class FileVideoMixin extends FileQueryMixin {
       .prepare(
         `SELECT
            s.file_id AS fileFingerprint,
+           wf.id AS workspaceFileId,
            wf.path AS path,
            wf.name AS name,
            SUM(CASE WHEN s.start_pts_sec < ? AND s.status = 'completed' THEN 1 ELSE 0 END) AS completedSlices,
@@ -603,11 +607,12 @@ export class FileVideoMixin extends FileQueryMixin {
          FROM file_video_segments s
          JOIN workspace_files wf ON s.file_id = wf.file_fingerprint
          WHERE wf.workspace_id = ?
+           AND (wf.meta IS NULL OR json_extract(wf.meta, '$.recovery_cleared') IS NOT 1)
            AND EXISTS (
              SELECT 1 FROM file_video_segments s0
              WHERE s0.file_id = s.file_id AND s0.segment_index = 0 AND s0.status = 'completed'
            )
-         GROUP BY s.file_id, wf.path, wf.name
+         GROUP BY s.file_id, wf.id, wf.path, wf.name
          HAVING actionableSlices > 0
          ORDER BY wf.name ASC`
       )
@@ -624,6 +629,7 @@ export class FileVideoMixin extends FileQueryMixin {
       ) as any[]
 
     return rows.map(r => ({
+      workspaceFileId: r.workspaceFileId != null ? Number(r.workspaceFileId) : undefined,
       fileFingerprint: r.fileFingerprint,
       path: r.path,
       name: r.name,

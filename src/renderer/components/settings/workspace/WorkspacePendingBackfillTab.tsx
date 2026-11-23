@@ -1,13 +1,11 @@
 // @doc-anchor: docs/specs/video-fast-first-slice-and-idle-backfill-spec.md#34-目录设置新增常驻-tab待补分析文件workspacependingbackfilltabtsx
 import React, { useEffect, useState, useCallback } from 'react'
-import type {
-  WorkspaceDirectory,
-  WorkspacePendingBackfillVideoItem
-} from '@firefly/types'
+import type { WorkspaceDirectory, WorkspacePendingBackfillVideoItem } from '@firefly/types'
 import { t } from '@app/languages'
 import { Button } from '../../ui/button'
 import { toast } from '../../common/Toast'
 import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
+import { useWorkspaceRuntimeContext } from '../../../stores/workspace-runtime-context-store'
 import {
   fetchWorkspacePendingBackfillVideos,
   startVideoBackfill,
@@ -56,6 +54,7 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
 }) => {
   const videoBackfill = useAnalysisQueueStore(s => s.snapshot?.videoBackfill)
   const mainQueueRunning = useAnalysisQueueStore(s => s.snapshot?.running === true)
+  const refreshRuntimeContext = useWorkspaceRuntimeContext(s => s.refresh)
 
   const [videoItems, setVideoItems] = useState<WorkspacePendingBackfillVideoItem[]>([])
   const [effectiveLimitSec, setEffectiveLimitSec] = useState<number>(300)
@@ -144,20 +143,42 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
     }
   }
 
-  const handleClearEnvItems = async () => {
-    if (workspace?.id == null || envItems.length === 0) return
+  const handleClearAllItems = async (targetFileIds?: number[]) => {
+    if (workspace?.id == null) return
     setBusyAction(true)
     try {
-      const ids = envItems.map(i => i.workspaceFileId)
-      const res = await clearWorkspaceRecoveryItems(workspace.id, ids)
+      let ids = targetFileIds
+      if (!ids) {
+        const idSet = new Set<number>()
+        for (const v of videoItems) {
+          if (v.workspaceFileId != null) idSet.add(v.workspaceFileId)
+        }
+        for (const e of envItems) {
+          if (e.workspaceFileId != null) idSet.add(e.workspaceFileId)
+        }
+        ids = Array.from(idSet)
+      }
+      const res = await clearWorkspaceRecoveryItems(
+        workspace.id,
+        ids && ids.length > 0 ? ids : undefined
+      )
       if (res.success) {
-        toast.info(t('已清除待补提示'))
-        setEnvItems([])
+        toast.info(t('已清除待补列表'))
+        if (!targetFileIds) {
+          setVideoItems([])
+          setEnvItems([])
+        }
+        await loadData()
+        await refreshRuntimeContext()
+      } else {
+        toast.error(res.error || t('清除待补列表失败'))
       }
     } finally {
       setBusyAction(false)
     }
   }
+
+  const handleClearEnvItems = () => handleClearAllItems()
 
   const totalFailedSlices = videoItems.reduce((sum, v) => sum + v.failedSlices, 0)
   const remainingMinutes = Math.round(
@@ -224,6 +245,17 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                 {t('重试全部失败片段')} ({totalFailedSlices})
               </Button>
             )}
+            {(hasVideos || hasEnv) && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={busyAction}
+                onClick={() => void handleClearAllItems()}
+              >
+                {t('清除待补列表')}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -257,8 +289,7 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
         <div className="space-y-2.5" data-testid="pending-backfill-video-section">
           <div className="flex items-center justify-between gap-2">
             <div className="text-xs font-semibold text-muted-foreground">
-              {t('长视频空闲自动补全')} ·{' '}
-              {t('按当前设定上限 {mins} 分钟补齐', { mins: limitMins })}
+              {t('长视频空闲自动补全')} · {t('按当前设定上限 {mins} 分钟补齐', { mins: limitMins })}
             </div>
             {onNavigateTab && (
               <button
@@ -324,17 +355,31 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                       </div>
                     </div>
 
-                    {!isCurrent && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs shrink-0"
-                        onClick={() => void handlePrioritizeVideo(v.fileFingerprint)}
-                      >
-                        {t('优先补全此文件')}
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!isCurrent && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs shrink-0"
+                          onClick={() => void handlePrioritizeVideo(v.fileFingerprint)}
+                        >
+                          {t('优先补全此文件')}
+                        </Button>
+                      )}
+                      {v.workspaceFileId != null && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs shrink-0 text-muted-foreground hover:text-foreground"
+                          disabled={busyAction}
+                          onClick={() => void handleClearAllItems([v.workspaceFileId!])}
+                        >
+                          {t('不再补全')}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
@@ -383,9 +428,9 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                 size="sm"
                 variant="ghost"
                 disabled={busyAction}
-                onClick={() => void handleClearEnvItems()}
+                onClick={() => void handleClearAllItems()}
               >
-                {t('不再提示')}
+                {t('清除待补列表')}
               </Button>
             </div>
           </div>

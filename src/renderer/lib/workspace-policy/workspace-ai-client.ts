@@ -321,7 +321,7 @@ function getRecoveryApi() {
         getWorkspaceRecoveryQueue?: (wsId: number) => Promise<RecoveryQueueResult>
         clearWorkspaceRecoveryItems?: (
           wsId: number,
-          ids: number[]
+          ids?: number[]
         ) => Promise<{ success: boolean; cleared?: number; error?: string }>
         dismissWorkspaceRecoveryBanner?: (
           wsId: number
@@ -358,7 +358,7 @@ export async function fetchWorkspaceRecoveryQueue(
 /** 清除待补文件（清除后不再计数、不再被补全捞回） */
 export async function clearWorkspaceRecoveryItems(
   workspaceId: number,
-  workspaceFileIds: number[]
+  workspaceFileIds?: number[]
 ): Promise<{ success: boolean; cleared?: number; error?: string }> {
   const api = getRecoveryApi()
   if (typeof api?.clearWorkspaceRecoveryItems !== 'function') {
