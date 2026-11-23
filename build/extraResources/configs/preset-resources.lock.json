@@ -38,7 +38,7 @@
       "version": "1.0.0"
     },
     "chinese-clip": {
-      "version": "INT8-v3"
+      "version": "INT8-v4"
     },
     "mobile-clip": {
       "version": "INT8"

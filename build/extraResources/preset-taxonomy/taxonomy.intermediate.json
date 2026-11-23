@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "canonicalization": "json-stable-v1",
-  "canonical_sha256": "dcc1f6de6458cf4a0b0f680eb89745cf95501ec123f15b0454ecde7c7ebfe2e6",
-  "bake_fingerprint": "4dad45d7e8611448254a2b4b573983f6b2298dd6b9d585d79e3ac72d4dbaff37",
+  "canonical_sha256": "b4dd1b470bdac801965fdc52f637b2be887a4fd7f97495004a40c58273ccb507",
+  "bake_fingerprint": "7ecc7dd05abd5b03391fb19bb1e19fbae79330cb3a84fe21b8b27965444c541d",
   "languages": [
     "zh-CN",
     "en-US",
@@ -19,12 +19,9 @@
     "templates": [
       {
         "template_id": "tpl_ui_ux_standard",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.design-dev",
-        "target_identity_ids": [
-          "id.researcher.ux",
-          "id.designer.ui",
-          "id.designer.graphic"
-        ],
+        "target_identity_ids": ["id.researcher.ux", "id.designer.ui", "id.designer.graphic"],
         "slug": "design-dev",
         "name": "UI/UX 设计素材库",
         "summary": "基于项目与基础资产解耦的标准化设计团队工作流",
@@ -42,10 +39,7 @@
           "40-设计灵感与竞品归档/02-设计灵感收藏",
           "40-设计灵感与竞品归档/03-行业案例参考"
         ],
-        "tags": [
-          "{TAG:设计软件}",
-          "{TAG:文档类型}"
-        ],
+        "tags": ["{TAG:设计软件}", "{TAG:文档类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -77,6 +71,7 @@
       },
       {
         "template_id": "tpl_frontend_dev",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.frontend-dev",
         "target_identity_ids": [
           "id.student.self_learner",
@@ -104,9 +99,7 @@
           "05-测试报告与缺陷排查/02-E2E测试报告",
           "05-测试报告与缺陷排查/03-缺陷跟踪清单"
         ],
-        "tags": [
-          "{TAG:编程语言}"
-        ],
+        "tags": ["{TAG:编程语言}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -138,6 +131,7 @@
       },
       {
         "template_id": "tpl_backend_arch",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.backend-arch",
         "target_identity_ids": [
           "id.dev.backend",
@@ -163,10 +157,7 @@
           "04-性能监控与排障/链路追踪",
           "04-性能监控与排障/告警规则"
         ],
-        "tags": [
-          "{TAG:设计软件}",
-          "{TAG:文档类型}"
-        ],
+        "tags": ["{TAG:设计软件}", "{TAG:文档类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -198,6 +189,7 @@
       },
       {
         "template_id": "tpl_para_universal",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.para-universal",
         "target_identity_ids": [
           "id.scene.desktop_declutter",
@@ -235,9 +227,7 @@
           "04-Archives (历史封存归档)/2025结项归档",
           "04-Archives (历史封存归档)/归档索引"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -269,6 +259,7 @@
       },
       {
         "template_id": "tpl_johnny_decimal",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.johnny-decimal",
         "target_identity_ids": [
           "id.scene.temporary_staging",
@@ -301,9 +292,7 @@
           "40-49 资产采购与行政/42-采购验收",
           "40-49 资产采购与行政/43-资产处置"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -335,6 +324,7 @@
       },
       {
         "template_id": "tpl_photography_pipeline",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.photography-raw",
         "target_identity_ids": [
           "id.hobby.photographer",
@@ -361,9 +351,7 @@
           "05-网络展示Web/社交媒体尺寸",
           "05-网络展示Web/网络展示九宫格"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -395,6 +383,7 @@
       },
       {
         "template_id": "tpl_video_production",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.video-production",
         "target_identity_ids": [
           "id.life.audiophile_cinephile",
@@ -424,9 +413,7 @@
           "05-成片渲染Exports/多平台竖版切片",
           "05-成片渲染Exports/成片字幕版本"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -458,6 +445,7 @@
       },
       {
         "template_id": "tpl_academic_thesis",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.academic-thesis",
         "target_identity_ids": [
           "id.researcher.faculty",
@@ -488,9 +476,7 @@
           "05-审稿意见与最终定稿/盲审版PDF",
           "05-审稿意见与最终定稿/归档说明"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -522,6 +508,7 @@
       },
       {
         "template_id": "tpl_finance_accounting",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.finance-contract",
         "target_identity_ids": [
           "id.finance.accountant",
@@ -549,9 +536,7 @@
           "05-年度审计报告/审计底稿",
           "05-年度审计报告/审计意见书"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -583,6 +568,7 @@
       },
       {
         "template_id": "tpl_family_household",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.family-household",
         "target_identity_ids": [
           "id.life.homemaker",
@@ -612,9 +598,7 @@
           "05-生活电器与售后/保修卡与说明书",
           "05-生活电器与售后/家电购买凭证"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -646,6 +630,7 @@
       },
       {
         "template_id": "tpl_newmedia_content",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.newmedia-content",
         "target_identity_ids": [
           "id.hobby.vlogger",
@@ -673,9 +658,7 @@
           "05-数据复盘与报告/转化漏斗分析",
           "05-数据复盘与报告/竞品对标"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -707,11 +690,9 @@
       },
       {
         "template_id": "tpl_ecommerce_ops",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.ecommerce-ops",
-        "target_identity_ids": [
-          "id.ops.ecommerce",
-          "id.ops.cross_border"
-        ],
+        "target_identity_ids": ["id.ops.ecommerce", "id.ops.cross_border"],
         "slug": "ecommerce-ops",
         "name": "电商全平台店铺运营与选品归档",
         "summary": "电商选品打样、直通车投流物料、商品主图详情页与大促活动复盘",
@@ -732,9 +713,7 @@
           "05-大促复盘与售后/客诉分析",
           "05-大促复盘与售后/售后处理单"
         ],
-        "tags": [
-          "{TAG:设计软件}"
-        ],
+        "tags": ["{TAG:设计软件}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -766,11 +745,9 @@
       },
       {
         "template_id": "tpl_game_dev_assets",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.game-dev-assets",
-        "target_identity_ids": [
-          "id.hobby.gamer",
-          "id.designer.3d"
-        ],
+        "target_identity_ids": ["id.hobby.gamer", "id.designer.3d"],
         "slug": "game-dev-assets",
         "name": "独立游戏开发与素材资源组织架构",
         "summary": "覆盖Unity/Unreal/Godot策划案、美术精灵图、音效音频与构建Demo包",
@@ -791,11 +768,7 @@
           "05-测试包发布Builds/发行安装包",
           "05-测试包发布Builds/版本说明"
         ],
-        "tags": [
-          "{TAG:设计软件}",
-          "{TAG:文档类型}",
-          "{TAG:模型格式}"
-        ],
+        "tags": ["{TAG:设计软件}", "{TAG:文档类型}", "{TAG:模型格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -827,6 +800,7 @@
       },
       {
         "template_id": "tpl_cross_border_ops",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.cross-border-ops",
         "target_identity_ids": [
           "id.ops.ecommerce",
@@ -851,9 +825,7 @@
           "04-订单售后与财务对账/利润核算表",
           "04-订单售后与财务对账/多店铺财务汇总"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -885,12 +857,9 @@
       },
       {
         "template_id": "tpl_legal_case_dossier",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.legal-case-dossier",
-        "target_identity_ids": [
-          "id.legal.compliance",
-          "id.legal.attorney",
-          "id.legal.ip_agent"
-        ],
+        "target_identity_ids": ["id.legal.compliance", "id.legal.attorney", "id.legal.ip_agent"],
         "slug": "legal-case-dossier",
         "name": "律师诉讼卷宗库",
         "summary": "按当事人起诉状、原告证据链、庭审笔录、代理词、裁决判决书严谨归类",
@@ -908,9 +877,7 @@
           "04-判决与执行/执行申请与进展",
           "04-判决与执行/结案归档清单"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -942,12 +909,9 @@
       },
       {
         "template_id": "tpl_clinical_medical_records",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.clinical-medical-records",
-        "target_identity_ids": [
-          "id.health.doctor",
-          "id.health.nurse",
-          "id.health.psychologist"
-        ],
+        "target_identity_ids": ["id.health.doctor", "id.health.nurse", "id.health.psychologist"],
         "slug": "clinical-medical-records",
         "name": "病历随访与科研档案",
         "summary": "规范患者化验单影像报告、专病队列随访表、伦理审查批件与SCI论文草稿",
@@ -965,9 +929,7 @@
           "04-统计分析与论文/论文草稿与投稿",
           "04-统计分析与论文/图表与审稿意见"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -999,11 +961,9 @@
       },
       {
         "template_id": "tpl_teacher_lesson_prep",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.teacher-lesson-prep",
-        "target_identity_ids": [
-          "id.edu.k12_teacher",
-          "id.edu.trainer"
-        ],
+        "target_identity_ids": ["id.edu.k12_teacher", "id.edu.trainer"],
         "slug": "teacher-lesson-prep",
         "name": "老师备课与班级管理",
         "summary": "包含教学大纲课件PPT、单元试卷与解析、公开课录像、家校互访沟通记录",
@@ -1021,9 +981,7 @@
           "04-教研与进修/公开课与课题",
           "04-教研与进修/培训学习笔记"
         ],
-        "tags": [
-          "{TAG:设计软件}"
-        ],
+        "tags": ["{TAG:设计软件}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1055,6 +1013,7 @@
       },
       {
         "template_id": "tpl_consulting_due_diligence",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.consulting-due-diligence",
         "target_identity_ids": [
           "id.data.analyst",
@@ -1082,9 +1041,7 @@
           "05-汇报与交付/最终报告与建议",
           "05-汇报与交付/项目复盘"
         ],
-        "tags": [
-          "{TAG:模型格式}"
-        ],
+        "tags": ["{TAG:模型格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1116,6 +1073,7 @@
       },
       {
         "template_id": "tpl_architectural_cad_design",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.architectural-cad-design",
         "target_identity_ids": [
           "id.designer.industrial",
@@ -1139,9 +1097,7 @@
           "04-材料与造价/工程量与预算表",
           "04-材料与造价/供应商报价"
         ],
-        "tags": [
-          "{TAG:模型格式}"
-        ],
+        "tags": ["{TAG:模型格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1173,12 +1129,9 @@
       },
       {
         "template_id": "tpl_writing_publishing_pipeline",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.writing-publishing-pipeline",
-        "target_identity_ids": [
-          "id.ops.newmedia",
-          "id.creator.freelance",
-          "id.creator.writer"
-        ],
+        "target_identity_ids": ["id.ops.newmedia", "id.creator.freelance", "id.creator.writer"],
         "slug": "writing-publishing-pipeline",
         "name": "小说创作与出版档案",
         "summary": "世界观大纲设定、角色小传关系图、分卷正文草稿、采风摄影资料与出版审校意见",
@@ -1196,9 +1149,7 @@
           "04-投稿与出版/编辑审校意见",
           "04-投稿与出版/封面与成书文件"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1230,6 +1181,7 @@
       },
       {
         "template_id": "tpl_wellness_health_portfolio",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.wellness-health-portfolio",
         "target_identity_ids": [
           "id.life.fitness",
@@ -1254,9 +1206,7 @@
           "04-阶段总结与回访/回访记录",
           "04-阶段总结与回访/下一阶段计划"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1288,11 +1238,9 @@
       },
       {
         "template_id": "tpl_pm_product_workflow",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.pm-product-workflow",
-        "target_identity_ids": [
-          "id.pm.product",
-          "id.researcher.ux"
-        ],
+        "target_identity_ids": ["id.pm.product", "id.researcher.ux"],
         "slug": "pm-product-workflow",
         "name": "产品经理需求与PRD文档库",
         "summary": "覆盖产品愿景规划、PRD功能规格书、原型与交互设计、用户调研反馈与敏捷迭代交付的端到端管理架构",
@@ -1313,9 +1261,7 @@
           "05-迭代与上线/上线公告",
           "05-迭代与上线/迭代复盘"
         ],
-        "tags": [
-          "{TAG:文档类型}"
-        ],
+        "tags": ["{TAG:文档类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1347,11 +1293,9 @@
       },
       {
         "template_id": "tpl_data_science_analytics",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.data-science-analytics",
-        "target_identity_ids": [
-          "id.data.analyst",
-          "id.dev.ai_ml"
-        ],
+        "target_identity_ids": ["id.data.analyst", "id.dev.ai_ml"],
         "slug": "data-science-analytics",
         "name": "数据分析与建模项目库",
         "summary": "遵循CRISP-DM工业标准的数据挖掘与商业智能架构 (原始数据、特征清洗、Notebook实验、模型沉淀与BI看板)",
@@ -1372,11 +1316,7 @@
           "05-看板与汇报/分析报告",
           "05-看板与汇报/汇报幻灯片"
         ],
-        "tags": [
-          "{TAG:文件类型}",
-          "{TAG:模型格式}",
-          "{TAG:文档类型}"
-        ],
+        "tags": ["{TAG:文件类型}", "{TAG:模型格式}", "{TAG:文档类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1408,10 +1348,9 @@
       },
       {
         "template_id": "tpl_qa_testing_lifecycle",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.qa-testing-lifecycle",
-        "target_identity_ids": [
-          "id.qa.tester"
-        ],
+        "target_identity_ids": ["id.qa.tester"],
         "slug": "qa-testing-lifecycle",
         "name": "软件测试与缺陷档案库",
         "summary": "涵盖测试策略大纲、手工与自动化测试用例集、缺陷Bug复现与排查日志、性能压测指标及版本准出报告",
@@ -1432,9 +1371,7 @@
           "05-测试报告与发布/上线检查与复盘",
           "05-测试报告与发布/遗留问题清单"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1466,10 +1403,9 @@
       },
       {
         "template_id": "tpl_sales_pipeline_crm",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.sales-pipeline-crm",
-        "target_identity_ids": [
-          "id.sales.bd"
-        ],
+        "target_identity_ids": ["id.sales.bd"],
         "slug": "sales-pipeline-crm",
         "name": "销售客户与商机跟进档案",
         "summary": "覆盖销售全漏斗生命周期：潜客线索挖掘、客户画像与拜访纪要、商业方案报价、招投标资质文件、签约合同与发票回款对账",
@@ -1490,9 +1426,7 @@
           "05-回款与客户维护/对账单",
           "05-回款与客户维护/回访与续约记录"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1524,11 +1458,9 @@
       },
       {
         "template_id": "tpl_hr_people_operations",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.hr-people-operations",
-        "target_identity_ids": [
-          "id.hr.admin",
-          "id.hr.recruiter"
-        ],
+        "target_identity_ids": ["id.hr.admin", "id.hr.recruiter"],
         "slug": "hr-people-operations",
         "name": "人事管理与员工档案",
         "summary": "人力资源经典模块全覆盖：组织架构与岗位JD、招聘简历与面试评估、入转调离手续合规、薪酬绩效考核、员工培训与企业文化",
@@ -1549,9 +1481,7 @@
           "05-培训与员工活动/培训记录与考核",
           "05-培训与员工活动/团建与关怀活动"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1583,12 +1513,9 @@
       },
       {
         "template_id": "tpl_marketing_campaign_imc",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.marketing-campaign-imc",
-        "target_identity_ids": [
-          "id.marketing.planner",
-          "id.ops.private_domain",
-          "id.ops.sem_seo"
-        ],
+        "target_identity_ids": ["id.marketing.planner", "id.ops.private_domain", "id.ops.sem_seo"],
         "slug": "marketing-campaign-imc",
         "name": "品牌营销与活动策划全案",
         "summary": "4A与互联网品牌营销全流程：行业竞品调研、整合营销全案、创意文案与宣发物料、KOL与渠道媒介排期、活动ROI结案",
@@ -1609,9 +1536,7 @@
           "05-数据与复盘/转化数据明细",
           "05-数据与复盘/结案复盘报告"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1643,11 +1568,9 @@
       },
       {
         "template_id": "tpl_corporate_legal_compliance",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.corporate-legal-compliance",
-        "target_identity_ids": [
-          "id.legal.compliance",
-          "id.legal.ip_agent"
-        ],
+        "target_identity_ids": ["id.legal.compliance", "id.legal.ip_agent"],
         "slug": "corporate-legal-compliance",
         "name": "企业法务与知识产权档案",
         "summary": "专为公司法务打造的合同全生命周期管理、合规制度审查、知识产权商标专利布局与法律纠纷争议处理体系",
@@ -1668,9 +1591,7 @@
           "05-纠纷与诉讼/判决与和解协议",
           "05-纠纷与诉讼/案件进展记录"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1702,10 +1623,9 @@
       },
       {
         "template_id": "tpl_embedded_iot_firmware",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.embedded-iot-firmware",
-        "target_identity_ids": [
-          "id.dev.embedded"
-        ],
+        "target_identity_ids": ["id.dev.embedded"],
         "slug": "embedded-iot-firmware",
         "name": "嵌入式与物联网开发库",
         "summary": "软硬件协同开发工业标准：硬件原理图PCB与BOM、底层BSP驱动与SDK、RTOS固件源码、通信协议抓包与量产固件烧录包",
@@ -1722,9 +1642,7 @@
           "05-量产与交付/量产固件烧录包",
           "05-量产与交付/烧录说明与产测指导"
         ],
-        "tags": [
-          "{TAG:设计软件}"
-        ],
+        "tags": ["{TAG:设计软件}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1756,11 +1674,9 @@
       },
       {
         "template_id": "tpl_3d_cg_animation",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.creative-assets",
-        "target_identity_ids": [
-          "id.designer.3d",
-          "id.designer.industrial"
-        ],
+        "target_identity_ids": ["id.designer.3d", "id.designer.industrial"],
         "slug": "creative-assets",
         "name": "三维建模与动画渲染库",
         "summary": "专业CG视觉制作管线：概念原画参考、高低模模型工程(Blender/C4D/Maya)、材质贴图与PBR纹理、骨骼动画与高画质成片渲染",
@@ -1777,9 +1693,7 @@
           "05-渲染与成片/分层渲染序列",
           "05-渲染与成片/合成调色与最终成片"
         ],
-        "tags": [
-          "{TAG:模型格式}"
-        ],
+        "tags": ["{TAG:模型格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1811,11 +1725,9 @@
       },
       {
         "template_id": "tpl_freelance_business_delivery",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.freelance-business-delivery",
-        "target_identity_ids": [
-          "id.creator.freelance",
-          "id.edu.trainer"
-        ],
+        "target_identity_ids": ["id.creator.freelance", "id.edu.trainer"],
         "slug": "freelance-business-delivery",
         "name": "自由职业接单与交付库",
         "summary": "适合独立创作者、自由职业者与独立顾问的商业管理架构：客户Brief与报价排期、签约合同、过程版交付、结算发票与作品集归档",
@@ -1831,9 +1743,7 @@
           "05-作品集与个人品牌/案例展示与作品集",
           "05-作品集与个人品牌/服务介绍与报价手册"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1865,6 +1775,7 @@
       },
       {
         "template_id": "tpl_pkm_knowledge_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.pkm-knowledge-vault",
         "target_identity_ids": [
           "id.life.novel_reader",
@@ -1887,9 +1798,7 @@
           "05-复盘与输出/月度与年度复盘",
           "05-复盘与输出/已发布的文章博客"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1921,11 +1830,9 @@
       },
       {
         "template_id": "tpl_gamer_library",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.gaming",
-        "target_identity_ids": [
-          "id.hobby.gamer",
-          "id.life.acg_fan"
-        ],
+        "target_identity_ids": ["id.hobby.gamer", "id.life.acg_fan"],
         "slug": "gaming",
         "name": "游戏玩家资料库",
         "summary": "专为单机/主机玩家设计，涵盖游戏安装本体、本地通关存档备份、MOD补丁与汉化、精彩录屏及攻略Wiki",
@@ -1941,9 +1848,7 @@
           "05-攻略与设定集/通关攻略与收集地图",
           "05-攻略与设定集/电子设定集与原画"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -1975,10 +1880,9 @@
       },
       {
         "template_id": "tpl_novel_reading_library",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.novel",
-        "target_identity_ids": [
-          "id.life.novel_reader"
-        ],
+        "target_identity_ids": ["id.life.novel_reader"],
         "slug": "novel",
         "name": "小说与电子书书库",
         "summary": "专为小说读者与书友打造，分类收录网络小说连载、精排EPUB/TXT、出版物经典、轻小说与个人推书书单",
@@ -1994,9 +1898,7 @@
           "05-精校收藏版/已校对精排电子书",
           "06-书单与书评/私人书单与五星书评"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2028,6 +1930,7 @@
       },
       {
         "template_id": "tpl_home_theater_audiophile",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.movie-cinema",
         "target_identity_ids": [
           "id.life.audiophile_cinephile",
@@ -2049,9 +1952,7 @@
           "05-字幕与海报信息/外挂字幕",
           "05-字幕与海报信息/海报与影片简介"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2083,10 +1984,9 @@
       },
       {
         "template_id": "tpl_acg_anime_manga",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.anime-comic",
-        "target_identity_ids": [
-          "id.life.acg_fan"
-        ],
+        "target_identity_ids": ["id.life.acg_fan"],
         "slug": "anime-comic",
         "name": "动漫与同人收藏库",
         "summary": "专为动漫爱好者与ACG同好打造，涵盖季度新番追番、高清漫画分卷、Pixiv插画壁纸、广播剧Drama与展会周边",
@@ -2101,9 +2001,7 @@
           "05-同人志与展会/同人志收藏",
           "05-同人志与展会/展会购物清单"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2135,10 +2033,9 @@
       },
       {
         "template_id": "tpl_pc_hardware_gear",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.pc-hardware-gear",
-        "target_identity_ids": [
-          "id.life.tech_geek"
-        ],
+        "target_identity_ids": ["id.life.tech_geek"],
         "slug": "pc-hardware-gear",
         "name": "电脑装机与硬件资料库",
         "summary": "收录装机方案配置单、主板显卡BIOS固件、外设按键宏、基准跑分截图与数码发票电子保修卡",
@@ -2153,9 +2050,7 @@
           "05-说明书与保修/产品说明书",
           "05-说明书与保修/发票与保修凭证"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2187,11 +2082,9 @@
       },
       {
         "template_id": "tpl_cooking_recipes_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.cooking-recipes-vault",
-        "target_identity_ids": [
-          "id.life.cooking_foodie",
-          "id.health.nutritionist"
-        ],
+        "target_identity_ids": ["id.life.cooking_foodie", "id.health.nutritionist"],
         "slug": "cooking-recipes-vault",
         "name": "家常菜谱与烘焙食谱库",
         "summary": "管理私房家常快手菜、西式烘焙配方表、养生靓汤清单、精选调饮鸡尾酒与美食探店打卡记录",
@@ -2206,9 +2099,7 @@
           "05-探店与宴客菜单/探店打卡记录",
           "05-探店与宴客菜单/宴客菜单规划"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2240,10 +2131,9 @@
       },
       {
         "template_id": "tpl_pet_care_diary",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.pet-care-diary",
-        "target_identity_ids": [
-          "id.life.pet_owner"
-        ],
+        "target_identity_ids": ["id.life.pet_owner"],
         "slug": "pet-care-diary",
         "name": "宠物健康档案与成长相册",
         "summary": "全面记录宠物疫苗免疫簿、驱虫化验单、日常高清萌照、主粮成分评测与每月养宠开销记账",
@@ -2257,9 +2147,7 @@
           "05-用品与出行/用品说明书",
           "05-用品与出行/寄养协议与出行证明"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2291,10 +2179,9 @@
       },
       {
         "template_id": "tpl_travel_outdoor_journey",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.travel-outdoor-journey",
-        "target_identity_ids": [
-          "id.life.traveler"
-        ],
+        "target_identity_ids": ["id.life.traveler"],
         "slug": "travel-outdoor-journey",
         "name": "旅行规划与户外记录库",
         "summary": "涵盖自驾游路书、机票酒店订单凭单、相机RAW原始底片、精修风景照、GPX徒步轨迹与纪念票根",
@@ -2310,9 +2197,7 @@
           "05-票根与游记/门票票根",
           "05-票根与游记/旅行手账与游记"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2344,11 +2229,9 @@
       },
       {
         "template_id": "tpl_audio_sound_engineering",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.music-audio",
-        "target_identity_ids": [
-          "id.creator.sound_designer",
-          "id.scene.voice_recordings_audio"
-        ],
+        "target_identity_ids": ["id.creator.sound_designer", "id.scene.voice_recordings_audio"],
         "slug": "music-audio",
         "name": "音乐制作与录音工程库",
         "summary": "支持DAW编曲宿主工程、采样音效库Loops、人声分轨干声、合成器音色预设、混音母带与商用版权",
@@ -2364,9 +2247,7 @@
           "05-版权与授权/音效授权证书",
           "05-版权与授权/分账与合作合同"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2398,6 +2279,7 @@
       },
       {
         "template_id": "tpl_graphic_brand_design",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.graphic-brand-design",
         "target_identity_ids": [
           "id.designer.graphic",
@@ -2419,9 +2301,7 @@
           "05-交付与版权/客户确认单",
           "05-交付与版权/版权协议与授权书"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2453,11 +2333,9 @@
       },
       {
         "template_id": "tpl_illustration_cg_art",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.illustration-cg-art",
-        "target_identity_ids": [
-          "id.designer.illustrator",
-          "id.scene.design_graphics_assets"
-        ],
+        "target_identity_ids": ["id.designer.illustrator", "id.scene.design_graphics_assets"],
         "slug": "illustration-cg-art",
         "name": "插画与原画作品库",
         "summary": "针对商业插画师与原画设计师，涵盖构图线稿草图、分层工程PSD/Procreate、专属笔刷与商用授权书",
@@ -2473,9 +2351,7 @@
           "05-成稿与交付/高清成图",
           "05-成稿与交付/小样与水印预览"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2507,10 +2383,9 @@
       },
       {
         "template_id": "tpl_mobile_app_dev",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.mobile-app-dev",
-        "target_identity_ids": [
-          "id.dev.mobile"
-        ],
+        "target_identity_ids": ["id.dev.mobile"],
         "slug": "mobile-app-dev",
         "name": "手机 App 开发与上架工程库",
         "summary": "支持iOS/Android原生与Flutter/RN跨平台，包含双端工程、开发者打包证书、商店提审截图与发布包",
@@ -2526,9 +2401,7 @@
           "05-打包与上架材料/安装包归档",
           "05-打包与上架材料/商店截图与文案"
         ],
-        "tags": [
-          "{TAG:图片格式}"
-        ],
+        "tags": ["{TAG:图片格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2560,10 +2433,9 @@
       },
       {
         "template_id": "tpl_cloud_native_sre",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.cloud-native-sre",
-        "target_identity_ids": [
-          "id.ops.sre"
-        ],
+        "target_identity_ids": ["id.ops.sre"],
         "slug": "cloud-native-sre",
         "name": "服务器运维与故障复盘库",
         "summary": "覆盖Kubernetes集群编排清单、Terraform/Ansible脚本、Prometheus告警看板与生产巡检故障复盘",
@@ -2579,9 +2451,7 @@
           "05-巡检与故障复盘/例行巡检报告",
           "05-巡检与故障复盘/故障复盘记录"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2613,10 +2483,9 @@
       },
       {
         "template_id": "tpl_supply_chain_logistics",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.supply-chain-logistics",
-        "target_identity_ids": [
-          "id.mgmt.supply_chain"
-        ],
+        "target_identity_ids": ["id.mgmt.supply_chain"],
         "slug": "supply-chain-logistics",
         "name": "采购与仓库管理单据库",
         "summary": "包含供应商准入考核表、采购订单PO合同、来料IQC质检单、WMS实物盘点与国际货运报关凭单",
@@ -2632,9 +2501,7 @@
           "05-物流与报关/运单与提单",
           "05-物流与报关/报关单据"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2666,10 +2533,9 @@
       },
       {
         "template_id": "tpl_study_abroad_application",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.study-abroad-application",
-        "target_identity_ids": [
-          "id.student.study_abroad"
-        ],
+        "target_identity_ids": ["id.student.study_abroad"],
         "slug": "study-abroad-application",
         "name": "留学申请与签证材料库",
         "summary": "专为出国留学学子规划，收录择校方案清单、语言标化成绩、个人陈述PS/推荐信RL、中英成绩单与签证面签资料",
@@ -2685,9 +2551,7 @@
           "05-录取与签证/录取通知书",
           "05-录取与签证/签证表格与面签材料"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2719,10 +2583,9 @@
       },
       {
         "template_id": "tpl_desktop_declutter",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.desktop-declutter",
-        "target_identity_ids": [
-          "id.scene.desktop_declutter"
-        ],
+        "target_identity_ids": ["id.scene.desktop_declutter"],
         "slug": "desktop-declutter",
         "name": "桌面文件快速整理",
         "summary": "专为电脑桌面设计，快速收纳今日待办、当前工作草稿、临时截图、安装包与历史旧桌面备份",
@@ -2739,11 +2602,7 @@
           "05-软件安装包与压缩包/压缩包与已解压临时文件",
           "06-旧桌面历史打包存档/往期桌面文件集中封存"
         ],
-        "tags": [
-          "{TAG:文档类型}",
-          "{TAG:文件类型}",
-          "{TAG:图片格式}"
-        ],
+        "tags": ["{TAG:文档类型}", "{TAG:文件类型}", "{TAG:图片格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2775,10 +2634,9 @@
       },
       {
         "template_id": "tpl_downloads_triage",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.downloads-triage",
-        "target_identity_ids": [
-          "id.scene.downloads_triage"
-        ],
+        "target_identity_ids": ["id.scene.downloads_triage"],
         "slug": "downloads-triage",
         "name": "下载文件夹自动分类",
         "summary": "根据介质与用途全景分流：软件安装程序、办公文档、图片影音、压缩归档包，并设立过期清理缓冲期",
@@ -2794,11 +2652,7 @@
           "05-过期文件待清理/长期未用的旧下载",
           "05-过期文件待清理/重复下载与残留"
         ],
-        "tags": [
-          "{TAG:文档类型}",
-          "{TAG:图片格式}",
-          "{TAG:音频格式}"
-        ],
+        "tags": ["{TAG:文档类型}", "{TAG:图片格式}", "{TAG:音频格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2830,6 +2684,7 @@
       },
       {
         "template_id": "tpl_inbox_staging_universal",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.inbox-staging-universal",
         "target_identity_ids": [
           "id.scene.temporary_staging",
@@ -2844,16 +2699,8 @@
         "slug": "inbox-staging-universal",
         "name": "个人文件收件箱与待办整理",
         "summary": "基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转",
-        "paths": [
-          "01-收件箱",
-          "02-马上要办",
-          "03-等人回复",
-          "04-常用参考",
-          "05-办完归档"
-        ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "paths": ["01-收件箱", "02-马上要办", "03-等人回复", "04-常用参考", "05-办完归档"],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2885,10 +2732,9 @@
       },
       {
         "template_id": "tpl_desktop_classic_classification",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.desktop-classic-classification",
-        "target_identity_ids": [
-          "id.scene.desktop_declutter"
-        ],
+        "target_identity_ids": ["id.scene.desktop_declutter"],
         "slug": "desktop-classic-classification",
         "name": "桌面软件与文件分类整理",
         "summary": "针对电脑桌面高频堆积的应用快捷方式、各业务文档、临时截图素材与安装包进行物理实体功能分类",
@@ -2907,11 +2753,7 @@
           "04-安装包与压缩包/软件安装包",
           "04-安装包与压缩包/压缩文件"
         ],
-        "tags": [
-          "{TAG:设计软件}",
-          "{TAG:文档类型}",
-          "{TAG:图片格式}"
-        ],
+        "tags": ["{TAG:设计软件}", "{TAG:文档类型}", "{TAG:图片格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2943,10 +2785,9 @@
       },
       {
         "template_id": "tpl_qa_testing_asset_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.qa-testing-asset-vault",
-        "target_identity_ids": [
-          "id.qa.tester"
-        ],
+        "target_identity_ids": ["id.qa.tester"],
         "slug": "qa-testing-asset-vault",
         "name": "软件测试用例与报告库",
         "summary": "归档自动化测试脚本工程、手工用例脑图、Bug复现截图抓包、压测基准与版本准出清单",
@@ -2964,9 +2805,7 @@
           "05-发布质量检查/上线检查清单",
           "05-发布质量检查/版本质量统计"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -2998,10 +2837,9 @@
       },
       {
         "template_id": "tpl_k12_education_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.k12-education-vault",
-        "target_identity_ids": [
-          "id.life.k12_student_parent"
-        ],
+        "target_identity_ids": ["id.life.k12_student_parent"],
         "slug": "k12-education-vault",
         "name": "中小学学习资料与成长记录库",
         "summary": "收纳语数英主科学科教辅、日常课后作业、错题重难点归纳、名师网课讲义与课外才艺考级",
@@ -3016,9 +2854,7 @@
           "04-兴趣与成长记录/书法绘画与考级",
           "04-兴趣与成长记录/体育与实践活动"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3050,10 +2886,9 @@
       },
       {
         "template_id": "tpl_k12_school_term_pipeline",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.k12-school-term-pipeline",
-        "target_identity_ids": [
-          "id.life.k12_student_parent"
-        ],
+        "target_identity_ids": ["id.life.k12_student_parent"],
         "slug": "k12-school-term-pipeline",
         "name": "学期学习计划与备考整理",
         "summary": "按学期生命周期分阶段管理：新学期规划课表、日常上课作业打卡、期中期末冲刺与寒暑假实践",
@@ -3067,9 +2902,7 @@
           "04-寒暑假/假期作业与实践",
           "04-寒暑假/假期阅读与拓展"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3101,10 +2934,9 @@
       },
       {
         "template_id": "tpl_senior_life_archive",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.senior-life-archive",
-        "target_identity_ids": [
-          "id.life.senior_citizen"
-        ],
+        "target_identity_ids": ["id.life.senior_citizen"],
         "slug": "senior-life-archive",
         "name": "长辈生活档案与家庭回忆录",
         "summary": "家庭老照片数字化、历年体检病历单据、处方常用药品清单与经典戏曲养生音画库",
@@ -3118,9 +2950,7 @@
           "04-证件与重要备忘/证件复印件",
           "04-证件与重要备忘/重要事项备忘"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3152,10 +2982,9 @@
       },
       {
         "template_id": "tpl_senior_medical_care_pipeline",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.senior-medical-care-pipeline",
-        "target_identity_ids": [
-          "id.life.senior_citizen"
-        ],
+        "target_identity_ids": ["id.life.senior_citizen"],
         "slug": "senior-medical-care-pipeline",
         "name": "长辈就医与体检记录库",
         "summary": "按就医挂号、门诊检查进行中、医保报销结算与年度随访长期建档全流程管理",
@@ -3169,9 +2998,7 @@
           "04-复诊与长期档案/复诊提醒与医嘱",
           "04-复诊与长期档案/年度体检汇总"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3203,10 +3030,9 @@
       },
       {
         "template_id": "tpl_office_general_archive",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.office-docs",
-        "target_identity_ids": [
-          "id.office.general_clerk"
-        ],
+        "target_identity_ids": ["id.office.general_clerk"],
         "slug": "office-docs",
         "name": "行政办公资料库",
         "summary": "收纳规范行政红头公文、办公物资盘点表、收发台账、日常报销发票与常用合同盖章审批件",
@@ -3224,9 +3050,7 @@
           "04-合同与用印/常用合同模板",
           "04-合同与用印/用印登记"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3258,11 +3082,9 @@
       },
       {
         "template_id": "tpl_office_document_dispatch_flow",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.office-document-dispatch-flow",
-        "target_identity_ids": [
-          "id.office.general_clerk",
-          "id.scene.personal_office_docs"
-        ],
+        "target_identity_ids": ["id.office.general_clerk", "id.scene.personal_office_docs"],
         "slug": "office-document-dispatch-flow",
         "name": "公文收发与督办",
         "summary": "外来文书收文承办、领导批示传阅交办、在办催办督查与办结归档销号全流程",
@@ -3280,9 +3102,7 @@
           "04-办结归档/往年归档",
           "04-办结归档/办结清单"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3314,11 +3134,9 @@
       },
       {
         "template_id": "tpl_household_dossier_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.household-dossier-vault",
-        "target_identity_ids": [
-          "id.life.household_assets",
-          "id.scene.finance_tax_docs"
-        ],
+        "target_identity_ids": ["id.life.household_assets", "id.scene.finance_tax_docs"],
         "slug": "household-dossier-vault",
         "name": "家庭重要文件保险箱",
         "summary": "家庭核心成员身份户口簿、房产土地契税合同、医疗人身车险保单与水电账单分类留存",
@@ -3336,9 +3154,7 @@
           "04-缴费与银行单据/银行对账单",
           "04-缴费与银行单据/存款与理财凭证"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3370,6 +3186,7 @@
       },
       {
         "template_id": "tpl_media_collector_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.media-collector-vault",
         "target_identity_ids": [
           "id.media.collector_hoarder",
@@ -3393,9 +3210,7 @@
           "04-电子书与漫画/漫画",
           "04-电子书与漫画/杂志"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3427,6 +3242,7 @@
       },
       {
         "template_id": "tpl_code_asset_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.code-asset-vault",
         "target_identity_ids": [
           "id.dev.frontend",
@@ -3452,9 +3268,7 @@
           "04-实用脚本/自动化运维脚本",
           "04-实用脚本/数据转换脚本"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3486,10 +3300,9 @@
       },
       {
         "template_id": "tpl_system_cache_appdata_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.system-cache-appdata-vault",
-        "target_identity_ids": [
-          "id.scene.system_cache_appdata"
-        ],
+        "target_identity_ids": ["id.scene.system_cache_appdata"],
         "slug": "system-cache-appdata-vault",
         "name": "软件日志与临时缓存整理",
         "summary": "针对应用运行日志、崩溃转储Dump、解压临时缓存与历史未删残留的分类隔离体系",
@@ -3500,9 +3313,7 @@
           "04-过期备份残留",
           "05-确认后可删除"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3534,25 +3345,14 @@
       },
       {
         "template_id": "tpl_chat_software_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.chat-software-vault",
-        "target_identity_ids": [
-          "id.scene.chat_software_files"
-        ],
+        "target_identity_ids": ["id.scene.chat_software_files"],
         "slug": "chat-software-vault",
         "name": "聊天接收文件库",
         "summary": "针对微信WeChat Files、QQ、钉钉接收文档、发票、音视频与压缩包的结构化收敛体系",
-        "paths": [
-          "01-文档与表格",
-          "02-图片",
-          "03-视频与语音",
-          "04-压缩包",
-          "05-待处理暂存"
-        ],
-        "tags": [
-          "{TAG:文档类型}",
-          "{TAG:文件类型}",
-          "{TAG:图片格式}"
-        ],
+        "paths": ["01-文档与表格", "02-图片", "03-视频与语音", "04-压缩包", "05-待处理暂存"],
+        "tags": ["{TAG:文档类型}", "{TAG:文件类型}", "{TAG:图片格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3584,10 +3384,9 @@
       },
       {
         "template_id": "tpl_cross_device_transfer_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.cross-device-transfer-vault",
-        "target_identity_ids": [
-          "id.scene.cross_device_transfer"
-        ],
+        "target_identity_ids": ["id.scene.cross_device_transfer"],
         "slug": "cross-device-transfer-vault",
         "name": "手机电脑互传中转站",
         "summary": "针对手机通过AirDrop、局域网快传传到电脑的照片、录音备忘与单据的中转分类体系",
@@ -3598,9 +3397,7 @@
           "04-电脑发往手机",
           "05-临时中转暂存"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3632,10 +3429,9 @@
       },
       {
         "template_id": "tpl_screenshots_screenrecord_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.screenshots-screenrecord-vault",
-        "target_identity_ids": [
-          "id.scene.screenshots_recordings"
-        ],
+        "target_identity_ids": ["id.scene.screenshots_recordings"],
         "slug": "screenshots-screenrecord-vault",
         "name": "截图与录屏库",
         "summary": "针对快捷键截图、微信截图、Snipaste与录屏素材的按用途分流归档体系",
@@ -3646,9 +3442,7 @@
           "04-报错与问题记录",
           "05-看完可删的临时截图"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3680,22 +3474,14 @@
       },
       {
         "template_id": "tpl_scratchpad_drafts_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.scratchpad-drafts-vault",
-        "target_identity_ids": [
-          "id.scene.scratchpad_drafts"
-        ],
+        "target_identity_ids": ["id.scene.scratchpad_drafts"],
         "slug": "scratchpad-drafts-vault",
         "name": "草稿与便签收纳箱",
         "summary": "针对散落的新建文本文档、未命名表格、副本文件与随手记事草稿的收敛急救体系",
-        "paths": [
-          "01-随手记的便签",
-          "02-写了一半的草稿",
-          "03-摘抄与素材",
-          "04-写完待归档"
-        ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "paths": ["01-随手记的便签", "02-写了一半的草稿", "03-摘抄与素材", "04-写完待归档"],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3727,10 +3513,9 @@
       },
       {
         "template_id": "tpl_external_storage_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.external-storage-vault",
-        "target_identity_ids": [
-          "id.scene.external_media_triage"
-        ],
+        "target_identity_ids": ["id.scene.external_media_triage"],
         "slug": "external-storage-vault",
         "name": "U盘与移动硬盘整理",
         "summary": "针对从他人U盘、移动硬盘或相机卡拷出的临时散乱数据文件夹的分流体系",
@@ -3741,9 +3526,7 @@
           "04-系统安装盘",
           "05-旧文件暂存"
         ],
-        "tags": [
-          "{TAG:文档类型}"
-        ],
+        "tags": ["{TAG:文档类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3775,10 +3558,9 @@
       },
       {
         "template_id": "tpl_scanned_documents_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.scanned-documents-vault",
-        "target_identity_ids": [
-          "id.scene.scanned_documents"
-        ],
+        "target_identity_ids": ["id.scene.scanned_documents"],
         "slug": "scanned-documents-vault",
         "name": "扫描与翻拍文件库",
         "summary": "针对手机扫描全能王PDF、证件翻拍、合同盖章件与报销发票的数字化归档体系",
@@ -3789,9 +3571,7 @@
           "04-书信与资料翻拍",
           "05-待识别文字的文件"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3823,10 +3603,9 @@
       },
       {
         "template_id": "tpl_docs_office_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.docs-office-vault",
-        "target_identity_ids": [
-          "id.scene.personal_office_docs"
-        ],
+        "target_identity_ids": ["id.scene.personal_office_docs"],
         "slug": "docs-office-vault",
         "name": "个人工作文档库",
         "summary": "针对个人Documents文档库中沉淀的日常办公文件的高效分类收纳体系",
@@ -3837,9 +3616,7 @@
           "04-制度与参考资料",
           "05-草稿与待办"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3871,10 +3648,9 @@
       },
       {
         "template_id": "tpl_docs_study_research_vault",
+        "template_type": "classification",
         "workflow_id": "builtin.workflow.docs-study-research-vault",
-        "target_identity_ids": [
-          "id.scene.study_research_docs"
-        ],
+        "target_identity_ids": ["id.scene.study_research_docs"],
         "slug": "docs-study-research-vault",
         "name": "学习与科研资料库",
         "summary": "针对学生、自学者与科研人员课程讲义、电子书、学术论文与练习题库的归集体系",
@@ -3885,9 +3661,7 @@
           "04-题目与练习",
           "05-课题与研究报告"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3919,6 +3693,7 @@
       },
       {
         "template_id": "tpl_renovation_project",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.renovation-project",
         "target_identity_ids": [
           "id.eng.architect",
@@ -3951,9 +3726,7 @@
           "06-入住与保修/家电家具发票",
           "06-入住与保修/物业与钥匙交接"
         ],
-        "tags": [
-          "{TAG:设计软件}"
-        ],
+        "tags": ["{TAG:设计软件}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -3985,11 +3758,9 @@
       },
       {
         "template_id": "tpl_visual_appreciation_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.visual-appreciation-vault",
-        "target_identity_ids": [
-          "id.media.collector_hoarder",
-          "id.scene.personal_photos_album"
-        ],
+        "target_identity_ids": ["id.media.collector_hoarder", "id.scene.personal_photos_album"],
         "slug": "visual-appreciation-vault",
         "name": "图片欣赏与灵感收藏库",
         "summary": "壁纸、插画、AI出图、同人图等纯欣赏收藏图片的统一图墙归档",
@@ -4010,9 +3781,7 @@
           "05-灵感素材与拼贴/排版与构图参考",
           "05-灵感素材与拼贴/moodboard情绪板"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4044,11 +3813,9 @@
       },
       {
         "template_id": "tpl_career_jobhunt_portfolio",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.career-jobhunt-portfolio",
-        "target_identity_ids": [
-          "id.office.general_clerk",
-          "id.student.grad"
-        ],
+        "target_identity_ids": ["id.office.general_clerk", "id.student.grad"],
         "slug": "career-jobhunt-portfolio",
         "name": "求职与职业发展档案",
         "summary": "简历多版本、作品集、面试复盘与Offer对比的职业跃迁档案",
@@ -4072,9 +3839,7 @@
           "06-背调与入职材料/学历证明",
           "06-背调与入职材料/入职材料"
         ],
-        "tags": [
-          "{TAG:设计软件}"
-        ],
+        "tags": ["{TAG:设计软件}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4106,11 +3871,9 @@
       },
       {
         "template_id": "tpl_online_course_production",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.online-course-production",
-        "target_identity_ids": [
-          "id.edu.trainer",
-          "id.student.self_learner"
-        ],
+        "target_identity_ids": ["id.edu.trainer", "id.student.self_learner"],
         "slug": "online-course-production",
         "name": "在线课程与网课制作",
         "summary": "课程大纲、录课原片、课件讲义到剪辑交付的网课生产线",
@@ -4134,9 +3897,7 @@
           "06-交付与分发版本/平台分发版",
           "06-交付与分发版本/宣传片"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4168,12 +3929,9 @@
       },
       {
         "template_id": "tpl_livestream_creator_ops",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.livestream-creator-ops",
-        "target_identity_ids": [
-          "id.ops.newmedia",
-          "id.ops.private_domain",
-          "id.ops.ecommerce"
-        ],
+        "target_identity_ids": ["id.ops.newmedia", "id.ops.private_domain", "id.ops.ecommerce"],
         "slug": "livestream-creator-ops",
         "name": "直播与主播运营",
         "summary": "直播回放、高光切片、场控脚本到带货数据复盘的主播运营档案",
@@ -4197,9 +3955,7 @@
           "06-复盘报告/转化复盘",
           "06-复盘报告/改进计划"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4231,11 +3987,9 @@
       },
       {
         "template_id": "tpl_foodblogger_recipe_studio",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.foodblogger-recipe-studio",
-        "target_identity_ids": [
-          "id.life.cooking_foodie",
-          "id.hobby.vlogger"
-        ],
+        "target_identity_ids": ["id.life.cooking_foodie", "id.hobby.vlogger"],
         "slug": "foodblogger-recipe-studio",
         "name": "美食博主与食谱研发",
         "summary": "菜品拍摄、配方研发、探店素材到图文成稿的美食创作档案",
@@ -4259,9 +4013,7 @@
           "06-平台分发与数据/数据复盘",
           "06-平台分发与数据/商单合作"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4293,12 +4045,9 @@
       },
       {
         "template_id": "tpl_travelblogger_shoot_studio",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.travelblogger-shoot-studio",
-        "target_identity_ids": [
-          "id.hobby.photographer",
-          "id.hobby.vlogger",
-          "id.life.traveler"
-        ],
+        "target_identity_ids": ["id.hobby.photographer", "id.hobby.vlogger", "id.life.traveler"],
         "slug": "travelblogger-shoot-studio",
         "name": "旅行博主与旅拍工作室",
         "summary": "行程机位、原片精修、视频航拍到图文商单的旅拍创作档案",
@@ -4322,9 +4071,7 @@
           "06-平台分发与商单/数据复盘",
           "06-平台分发与商单/品牌商单"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4356,11 +4103,9 @@
       },
       {
         "template_id": "tpl_study_tour_camp_organizer",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.study-tour-camp-organizer",
-        "target_identity_ids": [
-          "id.edu.k12_teacher",
-          "id.edu.trainer"
-        ],
+        "target_identity_ids": ["id.edu.k12_teacher", "id.edu.trainer"],
         "slug": "study-tour-camp-organizer",
         "name": "研学营地与亲子活动组织",
         "summary": "行程方案、安全预案、家长通知到活动复盘的研学营地组织档案",
@@ -4384,9 +4129,7 @@
           "06-结营与复盘/复盘报告",
           "06-结营与复盘/家长反馈"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4418,10 +4161,9 @@
       },
       {
         "template_id": "tpl_wedding_planning",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.wedding-planning",
-        "target_identity_ids": [
-          "id.life.homemaker"
-        ],
+        "target_identity_ids": ["id.life.homemaker"],
         "slug": "wedding-planning",
         "name": "婚礼策划全案档案",
         "summary": "备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档",
@@ -4446,9 +4188,7 @@
           "06-蜜月与收尾/婚礼结算",
           "06-蜜月与收尾/致谢与回礼"
         ],
-        "tags": [
-          "{TAG:设计软件}"
-        ],
+        "tags": ["{TAG:设计软件}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4480,11 +4220,9 @@
       },
       {
         "template_id": "tpl_car_lifecycle",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.car-lifecycle",
-        "target_identity_ids": [
-          "id.life.household_assets",
-          "id.life.homemaker"
-        ],
+        "target_identity_ids": ["id.life.household_assets", "id.life.homemaker"],
         "slug": "car-lifecycle",
         "name": "汽车全生命周期档案",
         "summary": "私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链",
@@ -4509,9 +4247,7 @@
           "05-改装与加装/改装发票",
           "05-改装与加装/改装备案"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4543,11 +4279,9 @@
       },
       {
         "template_id": "tpl_baby_growth_archive",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.baby-growth-archive",
-        "target_identity_ids": [
-          "id.life.k12_student_parent",
-          "id.life.homemaker"
-        ],
+        "target_identity_ids": ["id.life.k12_student_parent", "id.life.homemaker"],
         "slug": "baby-growth-archive",
         "name": "宝宝成长与育儿档案",
         "summary": "0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口",
@@ -4568,9 +4302,7 @@
           "05-成长纪念册/成长语录",
           "05-成长纪念册/亲子合影"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4602,6 +4334,7 @@
       },
       {
         "template_id": "tpl_personal_finance_invest",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.personal-finance-invest",
         "target_identity_ids": [
           "id.finance.accountant",
@@ -4628,9 +4361,7 @@
           "05-家庭预算/年度预算",
           "05-家庭预算/记账凭证"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4662,11 +4393,9 @@
       },
       {
         "template_id": "tpl_insurance_policy_vault",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.insurance-policy-vault",
-        "target_identity_ids": [
-          "id.life.household_assets",
-          "id.life.homemaker"
-        ],
+        "target_identity_ids": ["id.life.household_assets", "id.life.homemaker"],
         "slug": "insurance-policy-vault",
         "name": "家庭保险保单中枢",
         "summary": "给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单",
@@ -4686,9 +4415,7 @@
           "04-理赔材料/病历资料",
           "04-理赔材料/理赔进度"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4720,6 +4447,7 @@
       },
       {
         "template_id": "tpl_podcast_production",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.podcast-production",
         "target_identity_ids": [
           "id.hobby.vlogger",
@@ -4749,9 +4477,7 @@
           "06-分发成片/平台元数据",
           "06-分发成片/发布记录"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4783,12 +4509,9 @@
       },
       {
         "template_id": "tpl_3dprint_maker",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.3dprint-maker",
-        "target_identity_ids": [
-          "id.dev.embedded",
-          "id.designer.3d",
-          "id.life.tech_geek"
-        ],
+        "target_identity_ids": ["id.dev.embedded", "id.designer.3d", "id.life.tech_geek"],
         "slug": "3dprint-maker",
         "name": "3D打印与创客工坊",
         "summary": "3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰",
@@ -4809,9 +4532,7 @@
           "05-工具与耗材/耗材库存",
           "05-工具与耗材/采购记录"
         ],
-        "tags": [
-          "{TAG:模型格式}"
-        ],
+        "tags": ["{TAG:模型格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4843,11 +4564,9 @@
       },
       {
         "template_id": "tpl_collectible_model_archive",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.collectible-model-archive",
-        "target_identity_ids": [
-          "id.media.collector_hoarder",
-          "id.life.digital_hoarder"
-        ],
+        "target_identity_ids": ["id.media.collector_hoarder", "id.life.digital_hoarder"],
         "slug": "collectible-model-archive",
         "name": "模型手办与收藏品档案",
         "summary": "高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线",
@@ -4868,9 +4587,7 @@
           "05-交换出售/交换记录",
           "05-交换出售/市场行情"
         ],
-        "tags": [
-          "{TAG:文件类型}"
-        ],
+        "tags": ["{TAG:文件类型}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",
@@ -4902,12 +4619,9 @@
       },
       {
         "template_id": "tpl_ai_generated_content",
+        "template_type": "workflow",
         "workflow_id": "builtin.workflow.ai-generated-content",
-        "target_identity_ids": [
-          "id.designer.graphic",
-          "id.hobby.vlogger",
-          "id.dev.ai_ml"
-        ],
+        "target_identity_ids": ["id.designer.graphic", "id.hobby.vlogger", "id.dev.ai_ml"],
         "slug": "ai-generated-content",
         "name": "AI生成内容与提示词库",
         "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
@@ -4928,9 +4642,7 @@
           "05-精选作品集/作品标注",
           "05-精选作品集/复现参数"
         ],
-        "tags": [
-          "{TAG:模型格式}"
-        ],
+        "tags": ["{TAG:模型格式}"],
         "template": "{SMART_NAME}",
         "analysis_mode": "full",
         "embedding_profile": "",

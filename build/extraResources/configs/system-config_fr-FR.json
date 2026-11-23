@@ -11,7 +11,7 @@
       "[Mise à niveau des balises de fichier] Enrichissez les types de balises de faits, les balises sont plus précises et interprétables, et l'arborescence des balises prend en charge 10 niveaux d'expansion",
       "[Optimisation du matériel du créateur] Pour les concepteurs et les auto-médias, optimisation spéciale du tri du matériel audio, vidéo et image",
       "[Détection améliorée des contenus sensibles] Identifiez de manière segmentaire les contenus pornographiques, violents, terroristes, politiques, abusifs, sanglants et autres contenus illégaux et leurs sous-catégories",
-      "[Flux de travail] Plus de 70 ensembles de flux de travail intégrés sont adaptés à divers scénarios de tri de fichiers, sans configuration complexe, il est facile de démarrer avec le tri des fichiers",
+      "[Flux de travail] Plus de 80 ensembles de flux de travail intégrés sont adaptés à divers scénarios de tri de fichiers, sans configuration complexe, il est facile de démarrer avec le tri des fichiers",
       "[Cinq modes de tri à grand volume] Plan d'identité, clustering intelligent... Et d'autres nouveaux modes de tri, traitant des milliers de fichiers en quelques secondes",
       "[Plan d'identité (recommandé)] Sélectionnez les rôles de l'industrie, l'optimisation en quatre étapes et classez tous les fichiers en millisecondes côté client",
       "[Clustering intelligent] Clustering non supervisé HAC côté extrémité, génère des arborescences de répertoires en millisecondes, classe tous les fichiers en quelques secondes et prend en charge le réglage fin en temps réel",
@@ -19,6 +19,7 @@
       "[Dérivation d'arborescences de répertoires à partir de fichiers] Le moteur d'IA avancé génère 3 ensembles de répertoires candidats à la fois et la classification automatique est sélectionnée",
       "[Arborescence de répertoires personnalisée] Collez le répertoire Markdown, aperçu en temps réel sur deux colonnes et créez des règles d'organisation exclusives",
       "[Veille intelligente] Perception intelligente du fonctionnement de l'utilisateur, au faible niveau d'eau de la mémoire, l'utilisation de la mémoire est automatiquement libérée lorsque la fonction est inactive.",
+      "[Ouverture aux capacités externes] Améliorez complètement les capacités externes, afin que les agents externes puissent appeler directement les différentes capacités d'IA de Firefly core",
       "[Optimisation approfondie de l'interface utilisateur] Reconstruisez la structure de la page de configuration, ajoutez un nouveau guide et une nouvelle entrée d'aide, et rendez l'opération plus intuitive."
     ],
     "forceUpdate": false

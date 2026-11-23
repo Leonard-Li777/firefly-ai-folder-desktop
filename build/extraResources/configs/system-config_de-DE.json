@@ -11,7 +11,7 @@
       "[Datei-Tag-Upgrade] Erweitern Sie die Fakten-Tag-Typen, die Tags sind genauer und interpretierbarer und der Tag-Baum unterstützt 10 Erweiterungsstufen",
       "[Creator Material Optimization] Für Designer und Self-Media, spezielle Optimierung der Sortierung von Audio-, Video- und Bildmaterial",
       "[Erweiterte Erkennung sensibler Inhalte] Identifizieren Sie segmentweise pornografische, gewalttätige, terroristische, politische, beleidigende, blutige und andere illegale Inhalte und deren Unterkategorien",
-      "[Workflow] Eingebaute über 70 Sätze von Workflows sind an verschiedene Szenarien der Dateisortierung angepasst, ohne komplexe Konfiguration ist es einfach, mit der Dateisortierung zu beginnen",
+      "[Workflow] Integrierte über 80 Sätze von Workflows sind an verschiedene Szenarien der Dateisortierung angepasst, ohne komplexe Konfiguration ist es einfach, mit der Dateisortierung zu beginnen",
       "[Fünf großvolumige Sortiermodi] Identitätsentwurf, intelligentes Clustering... Und andere neue Sortiermodi, die Tausende von Dateien in Sekunden verarbeiten",
       "[Identity Blueprint (empfohlen)] Wählen Sie Branchenrollen aus, optimieren Sie sie in vier Stufen und klassifizieren Sie alle Dateien in Millisekunden auf der Clientseite",
       "[Intelligentes Clustering] Endseitiges unbeaufsichtigtes HAC-Clustering, Generierung von Verzeichnisbäumen in Millisekunden, Klassifizierung aller Dateien in Sekunden und Unterstützung der Feinabstimmung in Echtzeit",
@@ -19,6 +19,7 @@
       "[Verzeichnisbäume aus Dateien ableiten] Die fortschrittliche KI-Engine gibt jeweils drei Sätze von Verzeichniskandidaten aus und wählt die automatische Klassifizierung aus",
       "[Angepasster Verzeichnisbaum] Markdown-Verzeichnis einfügen, zweispaltige Echtzeitvorschau erstellen und exklusive Organisationsregeln erstellen",
       "[Intelligenter Schlaf] Intelligente Wahrnehmung der Benutzerbedienung, bei niedrigem Speicherwasserstand wird die Speichernutzung automatisch freigegeben, wenn die Funktion inaktiv ist.",
+      "[Öffnung für externe Funktionen] Umfassende Aktualisierung externer Funktionen, sodass externe Agenten die verschiedenen KI-Funktionen von Firefly Core direkt aufrufen können",
       "[Umfassende Optimierung der Benutzeroberfläche] Rekonstruieren Sie die Struktur der Einstellungsseite, fügen Sie eine neue Anleitung und einen neuen Hilfeeinstieg hinzu und gestalten Sie die Bedienung intuitiver."
     ],
     "forceUpdate": false

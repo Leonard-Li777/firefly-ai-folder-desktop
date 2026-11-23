@@ -2,11 +2,7 @@
   {
     "id": "builtin.workflow.design-dev",
     "templateId": "tpl_ui_ux_standard",
-    "targetIdentityIds": [
-      "id.researcher.ux",
-      "id.designer.ui",
-      "id.designer.graphic"
-    ],
+    "targetIdentityIds": ["id.researcher.ux", "id.designer.ui", "id.designer.graphic"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "UI/UX 设计素材库",
@@ -91,9 +87,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw"],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -818,9 +812,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -1617,9 +1609,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "password_vault_cracker"
-      ],
+      "workflowPluginDefaults": ["password_vault_cracker"],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -2087,10 +2077,7 @@
   {
     "id": "builtin.workflow.ecommerce-ops",
     "templateId": "tpl_ecommerce_ops",
-    "targetIdentityIds": [
-      "id.ops.ecommerce",
-      "id.ops.cross_border"
-    ],
+    "targetIdentityIds": ["id.ops.ecommerce", "id.ops.cross_border"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "电商全平台店铺运营与选品归档",
@@ -2175,9 +2162,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["object_detection_pro"],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2269,10 +2254,7 @@
   {
     "id": "builtin.workflow.game-dev-assets",
     "templateId": "tpl_game_dev_assets",
-    "targetIdentityIds": [
-      "id.hobby.gamer",
-      "id.designer.3d"
-    ],
+    "targetIdentityIds": ["id.hobby.gamer", "id.designer.3d"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "独立游戏开发与素材资源组织架构",
@@ -2378,10 +2360,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2559,9 +2538,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["object_detection_pro"],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -2638,11 +2615,7 @@
   {
     "id": "builtin.workflow.legal-case-dossier",
     "templateId": "tpl_legal_case_dossier",
-    "targetIdentityIds": [
-      "id.legal.compliance",
-      "id.legal.attorney",
-      "id.legal.ip_agent"
-    ],
+    "targetIdentityIds": ["id.legal.compliance", "id.legal.attorney", "id.legal.ip_agent"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "律师诉讼卷宗库",
@@ -3049,11 +3022,7 @@
   {
     "id": "builtin.workflow.clinical-medical-records",
     "templateId": "tpl_clinical_medical_records",
-    "targetIdentityIds": [
-      "id.health.doctor",
-      "id.health.nurse",
-      "id.health.psychologist"
-    ],
+    "targetIdentityIds": ["id.health.doctor", "id.health.nurse", "id.health.psychologist"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "病历随访与科研档案",
@@ -3328,10 +3297,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3427,10 +3393,7 @@
   {
     "id": "builtin.workflow.teacher-lesson-prep",
     "templateId": "tpl_teacher_lesson_prep",
-    "targetIdentityIds": [
-      "id.edu.k12_teacher",
-      "id.edu.trainer"
-    ],
+    "targetIdentityIds": ["id.edu.k12_teacher", "id.edu.trainer"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "老师备课与班级管理",
@@ -3698,10 +3661,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -4190,11 +4150,7 @@
   {
     "id": "builtin.workflow.architectural-cad-design",
     "templateId": "tpl_architectural_cad_design",
-    "targetIdentityIds": [
-      "id.designer.industrial",
-      "id.eng.architect",
-      "id.eng.civil_engineer"
-    ],
+    "targetIdentityIds": ["id.designer.industrial", "id.eng.architect", "id.eng.civil_engineer"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "建筑方案与CAD施工图库",
@@ -4539,10 +4495,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4644,11 +4597,7 @@
   {
     "id": "builtin.workflow.writing-publishing-pipeline",
     "templateId": "tpl_writing_publishing_pipeline",
-    "targetIdentityIds": [
-      "id.ops.newmedia",
-      "id.creator.freelance",
-      "id.creator.writer"
-    ],
+    "targetIdentityIds": ["id.ops.newmedia", "id.creator.freelance", "id.creator.writer"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "小说创作与出版档案",
@@ -4888,11 +4837,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -5221,10 +5166,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5314,10 +5256,7 @@
   {
     "id": "builtin.workflow.pm-product-workflow",
     "templateId": "tpl_pm_product_workflow",
-    "targetIdentityIds": [
-      "id.pm.product",
-      "id.researcher.ux"
-    ],
+    "targetIdentityIds": ["id.pm.product", "id.researcher.ux"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "产品经理需求与PRD文档库",
@@ -5564,10 +5503,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5673,10 +5609,7 @@
   {
     "id": "builtin.workflow.data-science-analytics",
     "templateId": "tpl_data_science_analytics",
-    "targetIdentityIds": [
-      "id.data.analyst",
-      "id.dev.ai_ml"
-    ],
+    "targetIdentityIds": ["id.data.analyst", "id.dev.ai_ml"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "数据分析与建模项目库",
@@ -6077,9 +6010,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -6205,9 +6136,7 @@
   {
     "id": "builtin.workflow.qa-testing-lifecycle",
     "templateId": "tpl_qa_testing_lifecycle",
-    "targetIdentityIds": [
-      "id.qa.tester"
-    ],
+    "targetIdentityIds": ["id.qa.tester"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "软件测试与缺陷档案库",
@@ -6566,10 +6495,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -6689,9 +6615,7 @@
   {
     "id": "builtin.workflow.sales-pipeline-crm",
     "templateId": "tpl_sales_pipeline_crm",
-    "targetIdentityIds": [
-      "id.sales.bd"
-    ],
+    "targetIdentityIds": ["id.sales.bd"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "销售客户与商机跟进档案",
@@ -7056,10 +6980,7 @@
   {
     "id": "builtin.workflow.hr-people-operations",
     "templateId": "tpl_hr_people_operations",
-    "targetIdentityIds": [
-      "id.hr.admin",
-      "id.hr.recruiter"
-    ],
+    "targetIdentityIds": ["id.hr.admin", "id.hr.recruiter"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "人事管理与员工档案",
@@ -7416,11 +7337,7 @@
   {
     "id": "builtin.workflow.marketing-campaign-imc",
     "templateId": "tpl_marketing_campaign_imc",
-    "targetIdentityIds": [
-      "id.marketing.planner",
-      "id.ops.private_domain",
-      "id.ops.sem_seo"
-    ],
+    "targetIdentityIds": ["id.marketing.planner", "id.ops.private_domain", "id.ops.sem_seo"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "品牌营销与活动策划全案",
@@ -7865,10 +7782,7 @@
   {
     "id": "builtin.workflow.corporate-legal-compliance",
     "templateId": "tpl_corporate_legal_compliance",
-    "targetIdentityIds": [
-      "id.legal.compliance",
-      "id.legal.ip_agent"
-    ],
+    "targetIdentityIds": ["id.legal.compliance", "id.legal.ip_agent"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "企业法务与知识产权档案",
@@ -8257,9 +8171,7 @@
   {
     "id": "builtin.workflow.embedded-iot-firmware",
     "templateId": "tpl_embedded_iot_firmware",
-    "targetIdentityIds": [
-      "id.dev.embedded"
-    ],
+    "targetIdentityIds": ["id.dev.embedded"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "嵌入式与物联网开发库",
@@ -8555,9 +8467,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -8661,10 +8571,7 @@
   {
     "id": "builtin.workflow.creative-assets",
     "templateId": "tpl_3d_cg_animation",
-    "targetIdentityIds": [
-      "id.designer.3d",
-      "id.designer.industrial"
-    ],
+    "targetIdentityIds": ["id.designer.3d", "id.designer.industrial"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "三维建模与动画渲染库",
@@ -9062,10 +8969,7 @@
   {
     "id": "builtin.workflow.freelance-business-delivery",
     "templateId": "tpl_freelance_business_delivery",
-    "targetIdentityIds": [
-      "id.creator.freelance",
-      "id.edu.trainer"
-    ],
+    "targetIdentityIds": ["id.creator.freelance", "id.edu.trainer"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "自由职业接单与交付库",
@@ -9616,10 +9520,7 @@
   {
     "id": "builtin.workflow.gaming",
     "templateId": "tpl_gamer_library",
-    "targetIdentityIds": [
-      "id.hobby.gamer",
-      "id.life.acg_fan"
-    ],
+    "targetIdentityIds": ["id.hobby.gamer", "id.life.acg_fan"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "游戏玩家资料库",
@@ -9908,11 +9809,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -10014,9 +9911,7 @@
   {
     "id": "builtin.workflow.novel",
     "templateId": "tpl_novel_reading_library",
-    "targetIdentityIds": [
-      "id.life.novel_reader"
-    ],
+    "targetIdentityIds": ["id.life.novel_reader"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "小说与电子书书库",
@@ -10186,10 +10081,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10664,9 +10556,7 @@
   {
     "id": "builtin.workflow.anime-comic",
     "templateId": "tpl_acg_anime_manga",
-    "targetIdentityIds": [
-      "id.life.acg_fan"
-    ],
+    "targetIdentityIds": ["id.life.acg_fan"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "动漫与同人收藏库",
@@ -10878,11 +10768,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -10970,9 +10856,7 @@
   {
     "id": "builtin.workflow.pc-hardware-gear",
     "templateId": "tpl_pc_hardware_gear",
-    "targetIdentityIds": [
-      "id.life.tech_geek"
-    ],
+    "targetIdentityIds": ["id.life.tech_geek"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "电脑装机与硬件资料库",
@@ -11170,9 +11054,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -11258,10 +11140,7 @@
   {
     "id": "builtin.workflow.cooking-recipes-vault",
     "templateId": "tpl_cooking_recipes_vault",
-    "targetIdentityIds": [
-      "id.life.cooking_foodie",
-      "id.health.nutritionist"
-    ],
+    "targetIdentityIds": ["id.life.cooking_foodie", "id.health.nutritionist"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "家常菜谱与烘焙食谱库",
@@ -11417,10 +11296,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11501,9 +11377,7 @@
   {
     "id": "builtin.workflow.pet-care-diary",
     "templateId": "tpl_pet_care_diary",
-    "targetIdentityIds": [
-      "id.life.pet_owner"
-    ],
+    "targetIdentityIds": ["id.life.pet_owner"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "宠物健康档案与成长相册",
@@ -11645,10 +11519,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -11724,9 +11595,7 @@
   {
     "id": "builtin.workflow.travel-outdoor-journey",
     "templateId": "tpl_travel_outdoor_journey",
-    "targetIdentityIds": [
-      "id.life.traveler"
-    ],
+    "targetIdentityIds": ["id.life.traveler"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "旅行规划与户外记录库",
@@ -12073,10 +11942,7 @@
   {
     "id": "builtin.workflow.music-audio",
     "templateId": "tpl_audio_sound_engineering",
-    "targetIdentityIds": [
-      "id.creator.sound_designer",
-      "id.scene.voice_recordings_audio"
-    ],
+    "targetIdentityIds": ["id.creator.sound_designer", "id.scene.voice_recordings_audio"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "音乐制作与录音工程库",
@@ -12351,10 +12217,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12663,10 +12526,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser", "object_detection_pro"],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12758,10 +12618,7 @@
   {
     "id": "builtin.workflow.illustration-cg-art",
     "templateId": "tpl_illustration_cg_art",
-    "targetIdentityIds": [
-      "id.designer.illustrator",
-      "id.scene.design_graphics_assets"
-    ],
+    "targetIdentityIds": ["id.designer.illustrator", "id.scene.design_graphics_assets"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "插画与原画作品库",
@@ -12994,10 +12851,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -13092,9 +12946,7 @@
   {
     "id": "builtin.workflow.mobile-app-dev",
     "templateId": "tpl_mobile_app_dev",
-    "targetIdentityIds": [
-      "id.dev.mobile"
-    ],
+    "targetIdentityIds": ["id.dev.mobile"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "手机 App 开发与上架工程库",
@@ -13446,9 +13298,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13556,9 +13406,7 @@
   {
     "id": "builtin.workflow.cloud-native-sre",
     "templateId": "tpl_cloud_native_sre",
-    "targetIdentityIds": [
-      "id.ops.sre"
-    ],
+    "targetIdentityIds": ["id.ops.sre"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "服务器运维与故障复盘库",
@@ -13840,9 +13688,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -13942,9 +13788,7 @@
   {
     "id": "builtin.workflow.supply-chain-logistics",
     "templateId": "tpl_supply_chain_logistics",
-    "targetIdentityIds": [
-      "id.mgmt.supply_chain"
-    ],
+    "targetIdentityIds": ["id.mgmt.supply_chain"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "采购与仓库管理单据库",
@@ -14128,9 +13972,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -14218,9 +14060,7 @@
   {
     "id": "builtin.workflow.study-abroad-application",
     "templateId": "tpl_study_abroad_application",
-    "targetIdentityIds": [
-      "id.student.study_abroad"
-    ],
+    "targetIdentityIds": ["id.student.study_abroad"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "留学申请与签证材料库",
@@ -14362,10 +14202,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser",
-        "password_vault_cracker"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser", "password_vault_cracker"],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14447,9 +14284,7 @@
   {
     "id": "builtin.workflow.desktop-declutter",
     "templateId": "tpl_desktop_declutter",
-    "targetIdentityIds": [
-      "id.scene.desktop_declutter"
-    ],
+    "targetIdentityIds": ["id.scene.desktop_declutter"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "桌面文件快速整理",
@@ -14696,11 +14531,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -14803,9 +14634,7 @@
   {
     "id": "builtin.workflow.downloads-triage",
     "templateId": "tpl_downloads_triage",
-    "targetIdentityIds": [
-      "id.scene.downloads_triage"
-    ],
+    "targetIdentityIds": ["id.scene.downloads_triage"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "下载文件夹自动分类",
@@ -15573,11 +15402,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15633,9 +15458,8 @@
   {
     "id": "builtin.workflow.desktop-classic-classification",
     "templateId": "tpl_desktop_classic_classification",
-    "targetIdentityIds": [
-      "id.scene.desktop_declutter"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.desktop_declutter"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "桌面软件与文件分类整理",
@@ -15889,11 +15713,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -15994,9 +15814,7 @@
   {
     "id": "builtin.workflow.qa-testing-asset-vault",
     "templateId": "tpl_qa_testing_asset_vault",
-    "targetIdentityIds": [
-      "id.qa.tester"
-    ],
+    "targetIdentityIds": ["id.qa.tester"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "软件测试用例与报告库",
@@ -16257,10 +16075,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -16366,9 +16181,7 @@
   {
     "id": "builtin.workflow.k12-education-vault",
     "templateId": "tpl_k12_education_vault",
-    "targetIdentityIds": [
-      "id.life.k12_student_parent"
-    ],
+    "targetIdentityIds": ["id.life.k12_student_parent"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "中小学学习资料与成长记录库",
@@ -16587,10 +16400,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16674,9 +16484,7 @@
   {
     "id": "builtin.workflow.k12-school-term-pipeline",
     "templateId": "tpl_k12_school_term_pipeline",
-    "targetIdentityIds": [
-      "id.life.k12_student_parent"
-    ],
+    "targetIdentityIds": ["id.life.k12_student_parent"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "学期学习计划与备考整理",
@@ -16832,10 +16640,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -16908,9 +16713,7 @@
   {
     "id": "builtin.workflow.senior-life-archive",
     "templateId": "tpl_senior_life_archive",
-    "targetIdentityIds": [
-      "id.life.senior_citizen"
-    ],
+    "targetIdentityIds": ["id.life.senior_citizen"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "长辈生活档案与家庭回忆录",
@@ -17223,9 +17026,7 @@
   {
     "id": "builtin.workflow.senior-medical-care-pipeline",
     "templateId": "tpl_senior_medical_care_pipeline",
-    "targetIdentityIds": [
-      "id.life.senior_citizen"
-    ],
+    "targetIdentityIds": ["id.life.senior_citizen"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "长辈就医与体检记录库",
@@ -17374,9 +17175,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["archive_vfs_parser"],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17448,9 +17247,7 @@
   {
     "id": "builtin.workflow.office-docs",
     "templateId": "tpl_office_general_archive",
-    "targetIdentityIds": [
-      "id.office.general_clerk"
-    ],
+    "targetIdentityIds": ["id.office.general_clerk"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "行政办公资料库",
@@ -17708,10 +17505,7 @@
   {
     "id": "builtin.workflow.office-document-dispatch-flow",
     "templateId": "tpl_office_document_dispatch_flow",
-    "targetIdentityIds": [
-      "id.office.general_clerk",
-      "id.scene.personal_office_docs"
-    ],
+    "targetIdentityIds": ["id.office.general_clerk", "id.scene.personal_office_docs"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "公文收发与督办",
@@ -17945,10 +17739,7 @@
   {
     "id": "builtin.workflow.household-dossier-vault",
     "templateId": "tpl_household_dossier_vault",
-    "targetIdentityIds": [
-      "id.life.household_assets",
-      "id.scene.finance_tax_docs"
-    ],
+    "targetIdentityIds": ["id.life.household_assets", "id.scene.finance_tax_docs"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "家庭重要文件保险箱",
@@ -18083,9 +17874,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "password_vault_cracker"
-      ],
+      "workflowPluginDefaults": ["password_vault_cracker"],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -19023,9 +18812,8 @@
   {
     "id": "builtin.workflow.system-cache-appdata-vault",
     "templateId": "tpl_system_cache_appdata_vault",
-    "targetIdentityIds": [
-      "id.scene.system_cache_appdata"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.system_cache_appdata"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "软件日志与临时缓存整理",
@@ -19229,9 +19017,8 @@
   {
     "id": "builtin.workflow.chat-software-vault",
     "templateId": "tpl_chat_software_vault",
-    "targetIdentityIds": [
-      "id.scene.chat_software_files"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.chat_software_files"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "聊天接收文件库",
@@ -19565,9 +19352,8 @@
   {
     "id": "builtin.workflow.cross-device-transfer-vault",
     "templateId": "tpl_cross_device_transfer_vault",
-    "targetIdentityIds": [
-      "id.scene.cross_device_transfer"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.cross_device_transfer"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "手机电脑互传中转站",
@@ -19814,11 +19600,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw",
-        "archive_vfs_parser"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -19879,9 +19661,8 @@
   {
     "id": "builtin.workflow.screenshots-screenrecord-vault",
     "templateId": "tpl_screenshots_screenrecord_vault",
-    "targetIdentityIds": [
-      "id.scene.screenshots_recordings"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.screenshots_recordings"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "截图与录屏库",
@@ -20023,10 +19804,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -20066,9 +19844,8 @@
   {
     "id": "builtin.workflow.scratchpad-drafts-vault",
     "templateId": "tpl_scratchpad_drafts_vault",
-    "targetIdentityIds": [
-      "id.scene.scratchpad_drafts"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.scratchpad_drafts"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "草稿与便签收纳箱",
@@ -20230,9 +20007,8 @@
   {
     "id": "builtin.workflow.external-storage-vault",
     "templateId": "tpl_external_storage_vault",
-    "targetIdentityIds": [
-      "id.scene.external_media_triage"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.external_media_triage"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "U盘与移动硬盘整理",
@@ -20625,9 +20401,8 @@
   {
     "id": "builtin.workflow.scanned-documents-vault",
     "templateId": "tpl_scanned_documents_vault",
-    "targetIdentityIds": [
-      "id.scene.scanned_documents"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.scanned_documents"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "扫描与翻拍文件库",
@@ -20792,9 +20567,8 @@
   {
     "id": "builtin.workflow.docs-office-vault",
     "templateId": "tpl_docs_office_vault",
-    "targetIdentityIds": [
-      "id.scene.personal_office_docs"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.personal_office_docs"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "个人工作文档库",
@@ -20992,9 +20766,8 @@
   {
     "id": "builtin.workflow.docs-study-research-vault",
     "templateId": "tpl_docs_study_research_vault",
-    "targetIdentityIds": [
-      "id.scene.study_research_docs"
-    ],
+    "templateType": "classification",
+    "targetIdentityIds": ["id.scene.study_research_docs"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "学习与科研资料库",
@@ -21277,11 +21050,7 @@
   {
     "id": "builtin.workflow.renovation-project",
     "templateId": "tpl_renovation_project",
-    "targetIdentityIds": [
-      "id.eng.architect",
-      "id.life.homemaker",
-      "id.life.household_assets"
-    ],
+    "targetIdentityIds": ["id.eng.architect", "id.life.homemaker", "id.life.household_assets"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "家装装修工程全流程管理",
@@ -21572,10 +21341,7 @@
   {
     "id": "builtin.workflow.visual-appreciation-vault",
     "templateId": "tpl_visual_appreciation_vault",
-    "targetIdentityIds": [
-      "id.media.collector_hoarder",
-      "id.scene.personal_photos_album"
-    ],
+    "targetIdentityIds": ["id.media.collector_hoarder", "id.scene.personal_photos_album"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "图片欣赏与灵感收藏库",
@@ -21745,10 +21511,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
       "extensionWeights": {
         ".png": 0.34,
         ".jpg": 0.3,
@@ -21845,10 +21608,7 @@
   {
     "id": "builtin.workflow.career-jobhunt-portfolio",
     "templateId": "tpl_career_jobhunt_portfolio",
-    "targetIdentityIds": [
-      "id.office.general_clerk",
-      "id.student.grad"
-    ],
+    "targetIdentityIds": ["id.office.general_clerk", "id.student.grad"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "求职与职业发展档案",
@@ -21969,9 +21729,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw"],
       "extensionWeights": {
         ".pdf": 0.4,
         ".docx": 0.22,
@@ -22079,10 +21837,7 @@
   {
     "id": "builtin.workflow.online-course-production",
     "templateId": "tpl_online_course_production",
-    "targetIdentityIds": [
-      "id.edu.trainer",
-      "id.student.self_learner"
-    ],
+    "targetIdentityIds": ["id.edu.trainer", "id.student.self_learner"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "在线课程与网课制作",
@@ -22224,10 +21979,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".mp4": 0.3,
         ".mov": 0.1,
@@ -22338,11 +22090,7 @@
   {
     "id": "builtin.workflow.livestream-creator-ops",
     "templateId": "tpl_livestream_creator_ops",
-    "targetIdentityIds": [
-      "id.ops.newmedia",
-      "id.ops.private_domain",
-      "id.ops.ecommerce"
-    ],
+    "targetIdentityIds": ["id.ops.newmedia", "id.ops.private_domain", "id.ops.ecommerce"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "直播与主播运营",
@@ -22470,10 +22218,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".mp4": 0.34,
         ".flv": 0.12,
@@ -22582,10 +22327,7 @@
   {
     "id": "builtin.workflow.foodblogger-recipe-studio",
     "templateId": "tpl_foodblogger_recipe_studio",
-    "targetIdentityIds": [
-      "id.life.cooking_foodie",
-      "id.hobby.vlogger"
-    ],
+    "targetIdentityIds": ["id.life.cooking_foodie", "id.hobby.vlogger"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "美食博主与食谱研发",
@@ -22713,11 +22455,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.32,
         ".jpeg": 0.12,
@@ -22826,11 +22564,7 @@
   {
     "id": "builtin.workflow.travelblogger-shoot-studio",
     "templateId": "tpl_travelblogger_shoot_studio",
-    "targetIdentityIds": [
-      "id.hobby.photographer",
-      "id.hobby.vlogger",
-      "id.life.traveler"
-    ],
+    "targetIdentityIds": ["id.hobby.photographer", "id.hobby.vlogger", "id.life.traveler"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "旅行博主与旅拍工作室",
@@ -22979,11 +22713,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.26,
         ".jpeg": 0.08,
@@ -23095,10 +22825,7 @@
   {
     "id": "builtin.workflow.study-tour-camp-organizer",
     "templateId": "tpl_study_tour_camp_organizer",
-    "targetIdentityIds": [
-      "id.edu.k12_teacher",
-      "id.edu.trainer"
-    ],
+    "targetIdentityIds": ["id.edu.k12_teacher", "id.edu.trainer"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "研学营地与亲子活动组织",
@@ -23219,11 +22946,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.18,
@@ -23331,9 +23054,7 @@
   {
     "id": "builtin.workflow.wedding-planning",
     "templateId": "tpl_wedding_planning",
-    "targetIdentityIds": [
-      "id.life.homemaker"
-    ],
+    "targetIdentityIds": ["id.life.homemaker"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "婚礼策划全案档案",
@@ -23524,11 +23245,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.2,
         ".jpeg": 0.04,
@@ -23647,10 +23364,7 @@
   {
     "id": "builtin.workflow.car-lifecycle",
     "templateId": "tpl_car_lifecycle",
-    "targetIdentityIds": [
-      "id.life.household_assets",
-      "id.life.homemaker"
-    ],
+    "targetIdentityIds": ["id.life.household_assets", "id.life.homemaker"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "汽车全生命周期档案",
@@ -23806,11 +23520,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".pdf": 0.32,
         ".jpg": 0.16,
@@ -23919,10 +23629,7 @@
   {
     "id": "builtin.workflow.baby-growth-archive",
     "templateId": "tpl_baby_growth_archive",
-    "targetIdentityIds": [
-      "id.life.k12_student_parent",
-      "id.life.homemaker"
-    ],
+    "targetIdentityIds": ["id.life.k12_student_parent", "id.life.homemaker"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "宝宝成长与育儿档案",
@@ -24071,11 +23778,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.3,
         ".jpeg": 0.05,
@@ -24359,10 +24062,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
       "extensionWeights": {
         ".xlsx": 0.24,
         ".xls": 0.04,
@@ -24461,10 +24161,7 @@
   {
     "id": "builtin.workflow.insurance-policy-vault",
     "templateId": "tpl_insurance_policy_vault",
-    "targetIdentityIds": [
-      "id.life.household_assets",
-      "id.life.homemaker"
-    ],
+    "targetIdentityIds": ["id.life.household_assets", "id.life.homemaker"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "家庭保险保单中枢",
@@ -24641,9 +24338,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw"],
       "extensionWeights": {
         ".pdf": 0.42,
         ".jpg": 0.12,
@@ -24934,10 +24629,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "asr_sensevoice_onnx",
-        "perception_nsfw"
-      ],
+      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
       "extensionWeights": {
         ".wav": 0.11,
         ".mp3": 0.25,
@@ -25055,11 +24747,7 @@
   {
     "id": "builtin.workflow.3dprint-maker",
     "templateId": "tpl_3dprint_maker",
-    "targetIdentityIds": [
-      "id.dev.embedded",
-      "id.designer.3d",
-      "id.life.tech_geek"
-    ],
+    "targetIdentityIds": ["id.dev.embedded", "id.designer.3d", "id.life.tech_geek"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "3D打印与创客工坊",
@@ -25236,11 +24924,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".3mf": 0.16,
         ".gcode": 0.12,
@@ -25341,10 +25025,7 @@
   {
     "id": "builtin.workflow.collectible-model-archive",
     "templateId": "tpl_collectible_model_archive",
-    "targetIdentityIds": [
-      "id.media.collector_hoarder",
-      "id.life.digital_hoarder"
-    ],
+    "targetIdentityIds": ["id.media.collector_hoarder", "id.life.digital_hoarder"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "模型手办与收藏品档案",
@@ -25507,11 +25188,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".jpg": 0.24,
         ".jpeg": 0.06,
@@ -25610,11 +25287,7 @@
   {
     "id": "builtin.workflow.ai-generated-content",
     "templateId": "tpl_ai_generated_content",
-    "targetIdentityIds": [
-      "id.designer.graphic",
-      "id.hobby.vlogger",
-      "id.dev.ai_ml"
-    ],
+    "targetIdentityIds": ["id.designer.graphic", "id.hobby.vlogger", "id.dev.ai_ml"],
     "user_id": null,
     "author": "Firefly Official",
     "name": "AI生成内容与提示词库",
@@ -25812,11 +25485,7 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": [
-        "perception_nsfw",
-        "object_detection_pro",
-        "asr_sensevoice_onnx"
-      ],
+      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
       "extensionWeights": {
         ".png": 0.2,
         ".jpg": 0.08,
