@@ -325,11 +325,31 @@ jobs:
           echo "🔍 [CI 诊断 - macOS] build/extraResources/configs/preset-resources.lock.json:"
           cat build/extraResources/configs/preset-resources.lock.json || true
 
-      - name: Prepare Multimodal Resources (Fallback if not cached)
+      - name: Fetch published chinese-clip package (consume only, fail-closed)
         shell: bash
         run: |
-          echo "📦 检查并准备多模态预置资源..."
-          node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+          # chinese-clip 属 L 轨（文本塔 + gemma 四件套无下载链路，只有本地烘得出来）。
+          # CI 不得重建：本步按 build/extraResources/configs/resources.bom.json 声明的
+          # name/sha256/size 取**已发布**包并逐字校验，缺失或摘要不符即失败退出。
+          # 严禁给本步加 `|| true` —— 那会把「取到旧代资产」伪装成「构建成功」。
+          echo "📦 拉取已发布的 chinese-clip 明文包（不允许本地重建）..."
+          node pro/scripts/run.js fetch-clip-resources.js
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Prepare public multimodal resources (monorepo-only, best-effort)
+        shell: bash
+        run: |
+          echo "📦 检查并准备公开多模态预置资源..."
+          # 公开模型（mobile-clip / nsfw-tiny / sensevoice-small / audio-cpp）可公开下载，
+          # 但产包脚本只存在于 monorepo 根 scripts/，desktop 仓库 checkout 内没有它。
+          # 因此这里显式判存在再执行，不做 `|| true` 静默掩蔽。
+          if [[ -f scripts/download-multimodal-resources.js ]]; then
+            node scripts/download-multimodal-resources.js --resource mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp
+          else
+            echo "ℹ️ 本 checkout 不含 monorepo 的 scripts/：公开模型资源由 actions/cache 提供。"
+            echo "   冷缓存场景请在 monorepo 执行 pnpm download:multimodal 后发布，再重跑发布流水线。"
+          fi
         env:
           GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
@@ -665,11 +685,31 @@ jobs:
           echo "🔍 [CI 诊断 - Windows] build/extraResources/configs/preset-resources.lock.json:"
           cat build/extraResources/configs/preset-resources.lock.json || true
 
-      - name: Prepare Multimodal Resources (Fallback if not cached)
+      - name: Fetch published chinese-clip package (consume only, fail-closed)
         shell: bash
         run: |
-          echo "📦 检查并准备多模态预置资源..."
-          node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+          # chinese-clip 属 L 轨（文本塔 + gemma 四件套无下载链路，只有本地烘得出来）。
+          # CI 不得重建：本步按 build/extraResources/configs/resources.bom.json 声明的
+          # name/sha256/size 取**已发布**包并逐字校验，缺失或摘要不符即失败退出。
+          # 严禁给本步加 `|| true` —— 那会把「取到旧代资产」伪装成「构建成功」。
+          echo "📦 拉取已发布的 chinese-clip 明文包（不允许本地重建）..."
+          node pro/scripts/run.js fetch-clip-resources.js
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Prepare public multimodal resources (monorepo-only, best-effort)
+        shell: bash
+        run: |
+          echo "📦 检查并准备公开多模态预置资源..."
+          # 公开模型（mobile-clip / nsfw-tiny / sensevoice-small / audio-cpp）可公开下载，
+          # 但产包脚本只存在于 monorepo 根 scripts/，desktop 仓库 checkout 内没有它。
+          # 因此这里显式判存在再执行，不做 `|| true` 静默掩蔽。
+          if [[ -f scripts/download-multimodal-resources.js ]]; then
+            node scripts/download-multimodal-resources.js --resource mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp
+          else
+            echo "ℹ️ 本 checkout 不含 monorepo 的 scripts/：公开模型资源由 actions/cache 提供。"
+            echo "   冷缓存场景请在 monorepo 执行 pnpm download:multimodal 后发布，再重跑发布流水线。"
+          fi
         env:
           GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
@@ -1078,11 +1118,31 @@ jobs:
           echo "🔍 [CI 诊断 - Linux] build/extraResources/configs/preset-resources.lock.json:"
           cat build/extraResources/configs/preset-resources.lock.json || true
 
-      - name: Prepare Multimodal Resources (Fallback if not cached)
+      - name: Fetch published chinese-clip package (consume only, fail-closed)
         shell: bash
         run: |
-          echo "📦 检查并准备多模态预置资源..."
-          node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+          # chinese-clip 属 L 轨（文本塔 + gemma 四件套无下载链路，只有本地烘得出来）。
+          # CI 不得重建：本步按 build/extraResources/configs/resources.bom.json 声明的
+          # name/sha256/size 取**已发布**包并逐字校验，缺失或摘要不符即失败退出。
+          # 严禁给本步加 `|| true` —— 那会把「取到旧代资产」伪装成「构建成功」。
+          echo "📦 拉取已发布的 chinese-clip 明文包（不允许本地重建）..."
+          node pro/scripts/run.js fetch-clip-resources.js
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Prepare public multimodal resources (monorepo-only, best-effort)
+        shell: bash
+        run: |
+          echo "📦 检查并准备公开多模态预置资源..."
+          # 公开模型（mobile-clip / nsfw-tiny / sensevoice-small / audio-cpp）可公开下载，
+          # 但产包脚本只存在于 monorepo 根 scripts/，desktop 仓库 checkout 内没有它。
+          # 因此这里显式判存在再执行，不做 `|| true` 静默掩蔽。
+          if [[ -f scripts/download-multimodal-resources.js ]]; then
+            node scripts/download-multimodal-resources.js --resource mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp
+          else
+            echo "ℹ️ 本 checkout 不含 monorepo 的 scripts/：公开模型资源由 actions/cache 提供。"
+            echo "   冷缓存场景请在 monorepo 执行 pnpm download:multimodal 后发布，再重跑发布流水线。"
+          fi
         env:
           GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
