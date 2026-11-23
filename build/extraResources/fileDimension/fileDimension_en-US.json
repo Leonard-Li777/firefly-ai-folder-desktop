@@ -22,14 +22,8 @@
         "Application Data"
       ],
       "description": "Basic Format Classification of Files",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "File Extension",
-        "MIME Type",
-        "File Signature"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["File Extension", "MIME Type", "File Signature"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -57,14 +51,8 @@
         "Family life"
       ],
       "description": "Core Usage Scenarios of Files",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Storage Path",
-        "Naming Pattern",
-        "Associated Applications"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Storage Path", "Naming Pattern", "Associated Applications"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -88,13 +76,8 @@
         "Email Attachment"
       ],
       "description": "Original File Acquisition Source",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Path Characteristics",
-        "Transfer log"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Path Characteristics", "Transfer log"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -110,20 +93,8 @@
       "level": 1,
       "tags": [],
       "description": "The creator or contributor of the file",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "code",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "Metadata",
-        "Digital Signature",
-        "Watermark"
-      ],
+      "applicableFileTypes": ["text", "document", "ebook", "image", "code", "video", "audio"],
+      "contextHints": ["Metadata", "Digital Signature", "Watermark"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -145,18 +116,12 @@
         "Help documentation"
       ],
       "description": "Segmentation of application data files",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "Format characteristics"
-      ],
+      "applicableFileTypes": ["application"],
+      "contextHints": ["Format characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Application Data"
-          ]
+          "triggerTags": ["Application Data"]
         }
       ],
       "metadata": {
@@ -190,19 +155,12 @@
         "Image without Text"
       ],
       "description": "Professional classification of image content",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "EXIF data",
-        "Content Identification"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["EXIF data", "Content Identification"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image"
-          ]
+          "triggerTags": ["Image"]
         }
       ],
       "tagImplications": [
@@ -264,19 +222,12 @@
         "Meeting video"
       ],
       "description": "Professional classification of video content",
-      "applicableFileTypes": [
-        "video"
-      ],
-      "contextHints": [
-        "Duration characteristics",
-        "Keyframe analysis"
-      ],
+      "applicableFileTypes": ["video"],
+      "contextHints": ["Duration characteristics", "Keyframe analysis"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Video"
-          ]
+          "triggerTags": ["Video"]
         }
       ],
       "tagImplications": [
@@ -317,19 +268,12 @@
         "Meeting recording"
       ],
       "description": "Professional classification of audio content",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "Spectral characteristics",
-        "Metadata"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["Spectral characteristics", "Metadata"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Audio"
-          ]
+          "triggerTags": ["Audio"]
         }
       ],
       "tagImplications": [
@@ -366,20 +310,12 @@
         "Unencrypted compressed package"
       ],
       "description": "Encryption status and format classification of compressed packages",
-      "applicableFileTypes": [
-        "archive"
-      ],
-      "contextHints": [
-        "Compression algorithm",
-        "File header signature",
-        "Encryption detection"
-      ],
+      "applicableFileTypes": ["archive"],
+      "contextHints": ["Compression algorithm", "File header signature", "Encryption detection"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Compressed Archive"
-          ]
+          "triggerTags": ["Compressed Archive"]
         }
       ],
       "metadata": {
@@ -404,19 +340,12 @@
         "Game program"
       ],
       "description": "Classification of executable files",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "Platform features",
-        "Signing certificate"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["Platform features", "Signing certificate"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Executable Program"
-          ]
+          "triggerTags": ["Executable Program"]
         }
       ],
       "tagImplications": [
@@ -463,29 +392,14 @@
       "id": 163,
       "name": "Operating platform",
       "level": 2,
-      "tags": [
-        "Windows",
-        "macOS",
-        "Linux",
-        "Android",
-        "iOS",
-        "Cross-platform"
-      ],
+      "tags": ["Windows", "macOS", "Linux", "Android", "iOS", "Cross-platform"],
       "description": "The operating system and architecture platform on which the program runs",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "PE head features",
-        "ELF head features",
-        "Mach-O head features"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["PE head features", "ELF head features", "Mach-O head features"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Executable Program"
-          ]
+          "triggerTags": ["Executable Program"]
         }
       ],
       "metadata": {
@@ -511,19 +425,12 @@
         "JVM"
       ],
       "description": "Runtime and framework characteristics of program dependencies",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "Dependency library detection",
-        "Packaging characteristics"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["Dependency library detection", "Packaging characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Executable Program"
-          ]
+          "triggerTags": ["Executable Program"]
         }
       ],
       "metadata": {
@@ -548,19 +455,12 @@
         "Data Encryption & Security"
       ],
       "description": "Multi-selection marking dimension of program capability characteristics",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "IAT symbol clustering",
-        "Ability detection"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["IAT symbol clustering", "Ability detection"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Executable Program"
-          ]
+          "triggerTags": ["Executable Program"]
         }
       ],
       "metadata": {
@@ -592,27 +492,12 @@
         "Hindi"
       ],
       "description": "Natural language classification of document content",
-      "applicableFileTypes": [
-        "document",
-        "text",
-        "ebook",
-        "audio",
-        "video"
-      ],
-      "contextHints": [
-        "Character Encoding",
-        "Grammatical Features"
-      ],
+      "applicableFileTypes": ["document", "text", "ebook", "audio", "video"],
+      "contextHints": ["Character Encoding", "Grammatical Features"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Text",
-            "Document",
-            "E-Book",
-            "Audio",
-            "Video"
-          ]
+          "triggerTags": ["Text", "Document", "E-Book", "Audio", "Video"]
         }
       ],
       "metadata": {
@@ -636,19 +521,12 @@
         "Drive"
       ],
       "description": "Functional classification of key system files",
-      "applicableFileTypes": [
-        "filesystem"
-      ],
-      "contextHints": [
-        "Path Location",
-        "Permission characteristics"
-      ],
+      "applicableFileTypes": ["filesystem"],
+      "contextHints": ["Path Location", "Permission characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "System Files"
-          ]
+          "triggerTags": ["System Files"]
         }
       ],
       "metadata": {
@@ -674,47 +552,28 @@
         "Special offer"
       ],
       "description": "Publication and release status of documents",
-      "applicableFileTypes": [
-        "ebook",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "Copyright page",
-        "ISBN number",
-        "Publishing Platform"
-      ],
+      "applicableFileTypes": ["ebook", "video", "audio"],
+      "contextHints": ["Copyright page", "ISBN number", "Publishing Platform"],
       "triggerConditions": [
         {
           "parentDimension": "E-book Segmentation",
-          "triggerTags": [
-            "Novel"
-          ]
+          "triggerTags": ["Novel"]
         },
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Audiobook",
-            "Music"
-          ]
+          "triggerTags": ["Audiobook", "Music"]
         },
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "E-Book"
-          ]
+          "triggerTags": ["E-Book"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -729,28 +588,14 @@
       "id": 14,
       "name": "Database segmentation",
       "level": 2,
-      "tags": [
-        "Database Extensions",
-        "SQLite",
-        "MySQL",
-        "MongoDB",
-        "Access",
-        "Data backup"
-      ],
+      "tags": ["Database Extensions", "SQLite", "MySQL", "MongoDB", "Access", "Data backup"],
       "description": "Technical format of database files",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "File Signature",
-        "Structural features"
-      ],
+      "applicableFileTypes": ["database"],
+      "contextHints": ["File Signature", "Structural features"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Database"
-          ]
+          "triggerTags": ["Database"]
         }
       ],
       "metadata": {
@@ -765,26 +610,14 @@
       "id": 15,
       "name": "Disk image segmentation",
       "level": 2,
-      "tags": [
-        "Disk Image Extensions",
-        "System Image",
-        "Data mirroring",
-        "Disc Image"
-      ],
+      "tags": ["Disk Image Extensions", "System Image", "Data mirroring", "Disc Image"],
       "description": "Disk image usage classification",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "Volume label information",
-        "Partition structure"
-      ],
+      "applicableFileTypes": ["diskimage"],
+      "contextHints": ["Volume label information", "Partition structure"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Disk Image"
-          ]
+          "triggerTags": ["Disk Image"]
         }
       ],
       "metadata": {
@@ -801,28 +634,16 @@
       "level": 2,
       "tags": [],
       "description": "Location associated with content",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "GPS coordinates",
-        "Landmark recognition"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["GPS coordinates", "Landmark recognition"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image",
-            "Video"
-          ]
+          "triggerTags": ["Image", "Video"]
         },
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Travel Records",
-            "Creative Projects"
-          ]
+          "triggerTags": ["Travel Records", "Creative Projects"]
         }
       ],
       "metadata": {
@@ -838,30 +659,14 @@
       "id": 17,
       "name": "Security level",
       "level": 2,
-      "tags": [
-        "Public",
-        "Internal",
-        "Confidential",
-        "Top Secret"
-      ],
+      "tags": ["Public", "Internal", "Confidential", "Top Secret"],
       "description": "Classification of confidentiality levels of documents",
-      "applicableFileTypes": [
-        "document",
-        "code",
-        "archive",
-        "database"
-      ],
-      "contextHints": [
-        "Encryption Status",
-        "Permission settings"
-      ],
+      "applicableFileTypes": ["document", "code", "archive", "database"],
+      "contextHints": ["Encryption Status", "Permission settings"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Work Documents",
-            "Financial Files"
-          ]
+          "triggerTags": ["Work Documents", "Financial Files"]
         }
       ],
       "metadata": {
@@ -876,31 +681,14 @@
       "id": 18,
       "name": "Processing status",
       "level": 2,
-      "tags": [
-        "Draft",
-        "Under review",
-        "Completed",
-        "Archived",
-        "Not archived",
-        "To be revised"
-      ],
+      "tags": ["Draft", "Under review", "Completed", "Archived", "Not archived", "To be revised"],
       "description": "The workflow status of the file",
-      "applicableFileTypes": [
-        "document",
-        "code",
-        "design"
-      ],
-      "contextHints": [
-        "Modification Time",
-        "Version Mark"
-      ],
+      "applicableFileTypes": ["document", "code", "design"],
+      "contextHints": ["Modification Time", "Version Mark"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Work Documents",
-            "Creative Projects"
-          ]
+          "triggerTags": ["Work Documents", "Creative Projects"]
         }
       ],
       "metadata": {
@@ -925,19 +713,12 @@
         "Localized Version"
       ],
       "description": "Licensing and distribution nature of software",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "License File",
-        "Authorization ID"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["License File", "Authorization ID"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Executable Program"
-          ]
+          "triggerTags": ["Executable Program"]
         }
       ],
       "metadata": {
@@ -960,21 +741,12 @@
         "Outdoor Activities"
       ],
       "description": "Content classification of travel records",
-      "applicableFileTypes": [
-        "image",
-        "video",
-        "document"
-      ],
-      "contextHints": [
-        "Scene Recognition",
-        "Time Characteristics"
-      ],
+      "applicableFileTypes": ["image", "video", "document"],
+      "contextHints": ["Scene Recognition", "Time Characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Travel Records"
-          ]
+          "triggerTags": ["Travel Records"]
         }
       ],
       "metadata": {
@@ -997,19 +769,12 @@
         "Bill"
       ],
       "description": "Business type of financial documents",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Bill identification",
-        "Amount mode"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["Bill identification", "Amount mode"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Financial Files"
-          ]
+          "triggerTags": ["Financial Files"]
         }
       ],
       "tagImplications": [
@@ -1075,20 +840,12 @@
         "Otome Game"
       ],
       "description": "Type of game",
-      "applicableFileTypes": [
-        "video",
-        "ebook",
-        "executable"
-      ],
-      "contextHints": [
-        "Game"
-      ],
+      "applicableFileTypes": ["video", "ebook", "executable"],
+      "contextHints": ["Game"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Gaming & Entertainment"
-          ]
+          "triggerTags": ["Gaming & Entertainment"]
         }
       ],
       "tagImplications": [
@@ -1193,12 +950,7 @@
         "Education"
       ],
       "description": "Subject area classification of learning materials",
-      "applicableFileTypes": [
-        "document",
-        "video",
-        "ebook",
-        "code"
-      ],
+      "applicableFileTypes": ["document", "video", "ebook", "code"],
       "contextHints": [
         "Subject terminology density",
         "Textbook chapter structure",
@@ -1207,9 +959,7 @@
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Learning Materials"
-          ]
+          "triggerTags": ["Learning Materials"]
         }
       ],
       "tagImplications": [
@@ -1290,19 +1040,12 @@
         "Public Book"
       ],
       "description": "E-book content classification",
-      "applicableFileTypes": [
-        "ebook"
-      ],
-      "contextHints": [
-        "Chapter structure",
-        "DRM status"
-      ],
+      "applicableFileTypes": ["ebook"],
+      "contextHints": ["Chapter structure", "DRM status"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "E-Book"
-          ]
+          "triggerTags": ["E-Book"]
         }
       ],
       "tagImplications": [
@@ -1361,54 +1104,35 @@
         "Skit",
         "Weird stories",
         "Pornography",
-        "Training",
+        "BDSM Training",
         "Harem",
         "Danmei",
         "Domineering CEO",
         "Ethics"
       ],
       "description": "Professional classification of subject matter",
-      "applicableFileTypes": [
-        "video",
-        "audio",
-        "ebook",
-        "executable"
-      ],
-      "contextHints": [
-        "Duration characteristics",
-        "Keyframe analysis",
-        "Content characteristics"
-      ],
+      "applicableFileTypes": ["video", "audio", "ebook", "executable"],
+      "contextHints": ["Duration characteristics", "Keyframe analysis", "Content characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Music"
-          ]
+          "triggerTags": ["Music"]
         },
         {
           "parentDimension": "E-book Segmentation",
-          "triggerTags": [
-            "Novel"
-          ]
+          "triggerTags": ["Novel"]
         },
         {
           "parentDimension": "Program segmentation",
-          "triggerTags": [
-            "Game"
-          ]
+          "triggerTags": ["Game"]
         },
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Gaming & Entertainment"
-          ]
+          "triggerTags": ["Gaming & Entertainment"]
         }
       ],
       "metadata": {
@@ -1441,19 +1165,12 @@
         "Symphonic Music"
       ],
       "description": "Music Type",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "Duration characteristics",
-        "Content characteristics"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["Duration characteristics", "Content characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Music"
-          ]
+          "triggerTags": ["Music"]
         }
       ],
       "metadata": {
@@ -1467,20 +1184,10 @@
       "id": 27,
       "name": "Document quality",
       "level": 1,
-      "tags": [
-        "High Quality",
-        "Medium Quality",
-        "Low Quality"
-      ],
+      "tags": ["High Quality", "Medium Quality", "Low Quality"],
       "description": "Quality rating of file content",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Content quality",
-        "Technical quality",
-        "Aesthetic Quality"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Content quality", "Technical quality", "Aesthetic Quality"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1498,338 +1205,332 @@
         "Three views",
         "Go online",
         "Internet access",
-        "business",
-        "months",
-        "personal tax",
+        "Business",
+        "Months",
+        "Personal tax",
         "Main picture",
-        "main vision",
-        "staple food",
+        "Main vision",
+        "Staple food",
         "Jiugongge",
-        "book list",
+        "Book list",
         "ACCIDENT",
         "Interactive manuscript",
-        "delivery library",
+        "Delivery library",
         "Certificate of Property",
-        "proxy word",
+        "Proxy word",
         "Conference library",
         "Circular sheet",
         "Low poly",
         "Physical examination",
         "Portfolio",
-        "schedule",
+        "Schedule",
         "Dependent libraries",
         "Notes",
         "Warranty",
-        "warranty card",
-        "revised draft",
+        "Warranty card",
+        "Revised draft",
         "Cultivation",
-        "family portrait",
+        "Family portrait",
         "Open class",
-        "level",
-        "interest",
-        "health care",
-        "published book",
-        "travel",
-        "letter",
+        "Level",
+        "Interest",
+        "Health care",
+        "Published book",
+        "Outings",
+        "Letter",
         "Division of work table",
         "Share accounts",
-        "split track",
-        "first draft",
+        "Split track",
+        "First draft",
         "Theater version",
-        "drama series",
-        "office",
+        "Drama series",
+        "Office",
         "Additional installation",
-        "medical insurance",
+        "Medical insurance",
         "Prototype drawing",
         "Schematic diagram",
-        "original painting",
-        "original disc",
+        "Original painting",
+        "Original disc",
         "Reference picture",
-        "release package",
-        "rations",
+        "Release package",
+        "Rations",
         "Ledger",
         "Compliance",
         "Doujinshi",
-        "famous scene",
+        "Famous scene",
         "Alarm",
         "After-sales",
         "Business order",
         "Product card",
-        "business opportunities",
-        "trademark",
+        "Business opportunities",
+        "Trademark",
         "Refund",
-        "return gift",
-        "return visit",
-        "team building",
-        "firmware library",
-        "domestic drama",
+        "Return gift",
+        "Return visit",
+        "Team building",
+        "Firmware library",
+        "Domestic drama",
         "Tu Sheng Tu",
-        "scene photo",
-        "log",
+        "Scene photo",
+        "Continuity Notes",
         "City",
-        "training",
+        "Training",
         "Add items",
-        "memo",
+        "Memo",
         "Follow-up visit",
         "Multiple screens",
-        "outline",
-        "study",
+        "Outline",
+        "Study",
         "Installation package",
         "Macro settings",
         "Audit version",
         "Promotional picture",
         "Promotional video",
         "Publicity map",
-        "home cooking",
-        "home visit",
-        "key",
-        "winter and summer vacation",
+        "Home cooking",
+        "Home visit",
+        "Key",
+        "Winter and summer vacation",
         "Comparison photos",
         "Reconciliation",
-        "life insurance",
-        "cover",
+        "Life insurance",
+        "Cover",
         "Exhibition",
         "Embedded",
         "Inspection",
         "Engineering quantity",
-        "salary",
+        "Salary",
         "Payroll",
         "Bring goods",
         "Annual inspection",
-        "radio drama",
+        "Radio drama",
         "Modeling",
-        "court session",
+        "Court session",
         "Open the topic",
         "Weak network",
-        "Video",
+        "Video Recording",
         "Admission",
         "Screen recording library",
         "Video library",
         "Film",
         "Film and television",
-        "audio and video",
+        "Audiovisual Media",
         "To be organized",
         "To be seen",
         "Awaiting action",
         "Lawyer's letter",
-        "micro class",
+        "Micro class",
         "Thinking questions",
-        "performance",
-        "mood board",
+        "Performance",
+        "Mood board",
         "Accident insurance",
         "Finished product photos",
         "Completed film",
         "Completed manuscript",
-        "transcript",
+        "Transcript",
         "Hukou",
-        "mortgage",
-        "hit the board",
+        "Mortgage",
+        "Hit the board",
         "Proofing",
         "Capture packets",
         "Place",
         "Contribute",
         "Cover letter",
         "Tik Tok",
-        "quotation",
-        "customs clearance",
+        "Quotation",
+        "Customs clearance",
         "Report library",
         "Report",
-        "reimbursement form",
+        "Reimbursement form",
         "Report an error",
         "Deposit slip",
-        "dismantle and modify",
-        "expand",
-        "recruitment",
-        "collage",
+        "Dismantle and modify",
+        "Expand",
+        "Recruitment",
+        "Collage",
         "Authorize",
-        "Schedule",
+        "Scheduling",
         "Troubleshooting",
         "Visit the store",
         "Take orders",
-        "interface",
-        "prompt word",
-        "excerpt",
-        "ending",
+        "Interface",
+        "Prompt word",
+        "Excerpt",
+        "Ending",
         "Collection",
         "Receipt of goods",
-        "Strategy",
-        "policy",
-        "renderings",
-        "lesson plans",
+        "Walkthrough",
+        "Policy",
+        "Renderings",
+        "Lesson plans",
         "Teaching and research",
-        "data sheet",
+        "Data sheet",
         "Rectify",
         "Vincentian picture",
         "Japan and South Korea",
         "Japanese and Korean dramas",
         "Early education",
         "Roll-up banner",
-        "monthly",
+        "Monthly",
         "Material",
-        "texture pack",
-        "build",
+        "Texture pack",
+        "Build",
         "Standard color",
         "Case",
         "Checklist",
-        "概念图",
+        "Concept diagram",
         "Simulation roll",
-        "模组",
-        "欧美剧",
-        "步骤图",
-        "残留",
-        "母带",
-        "比价",
-        "求职",
-        "汇报",
-        "汇算",
-        "汉化",
-        "汤羹",
-        "法务",
-        "流程",
-        "流转单",
-        "海外仓",
-        "消费贷",
-        "混音",
-        "清单",
-        "渲染",
-        "游记",
-        "源文件",
-        "灵感图",
-        "片库",
-        "版本",
-        "物业",
-        "物料",
-        "物流",
-        "特别篇",
-        "环境音",
-        "现场",
-        "班会",
-        "理财",
-        "用印",
-        "用品",
-        "画质",
-        "番剧",
-        "疫苗本",
-        "监控",
-        "盒照",
-        "盘点",
-        "盘点表",
-        "直播",
-        "相册",
-        "看板",
-        "督办",
-        "社保表",
-        "税务",
-        "税单",
-        "立案",
-        "笔刷",
-        "笔试题",
-        "答案",
-        "答辩",
-        "答辩状",
-        "策划库",
-        "简历",
-        "简历库",
-        "精修",
-        "系统流",
-        "素材",
-        "素材库",
-        "纠纷",
-        "约稿",
-        "线稿",
-        "组件库",
-        "绑定",
-        "结算单",
-        "结营",
-        "续保",
-        "维权",
-        "编制",
-        "缴费",
-        "网课",
-        "考核",
-        "考级",
-        "考试",
-        "耗材",
-        "聊天",
-        "联调",
-        "背调",
-        "航拍",
-        "萌照",
-        "蓝光",
-        "行政",
-        "裁定书",
-        "规章",
-        "视觉",
-        "角色歌",
-        "解协议",
-        "讲义",
-        "设定",
-        "设定集",
-        "设置",
-        "评审",
-        "试卷",
-        "说明",
-        "说明书",
-        "课件",
-        "课表",
-        "负债",
-        "账户",
-        "账簿",
-        "质检",
-        "贴图",
-        "贴片",
-        "贴纸",
-        "贷款",
-        "资质",
-        "超宽",
-        "跑分",
-        "跟拍",
-        "路线图",
-        "车船税",
-        "轻小说",
-        "运单",
-        "进修",
-        "连载",
-        "迭代",
-        "追更",
-        "选校",
-        "选课",
-        "逐字稿",
-        "造价",
-        "配图",
-        "配方卡",
-        "配置",
-        "配色",
-        "采样",
-        "重疾险",
-        "重绘",
-        "量产",
-        "量房",
-        "错题",
-        "错题本",
-        "门诊",
-        "阅读",
-        "面点",
-        "音视频",
-        "预付款",
-        "预算表",
-        "预约单",
-        "预警",
-        "题目",
-        "饮食",
-        "饼干",
-        "验收",
-        "验收单"
+        "Module",
+        "European and American dramas",
+        "Step diagram",
+        "Residue",
+        "Mastering",
+        "Price comparison",
+        "Job search",
+        "Briefing",
+        "Remittance",
+        "Sinicization",
+        "Soup soup",
+        "Legal affairs",
+        "Process",
+        "Transfer order",
+        "Overseas warehouse",
+        "Consumer loan",
+        "Mix",
+        "List",
+        "Render",
+        "Travel notes",
+        "Resources",
+        "Inspiration map",
+        "Film library",
+        "Version",
+        "Property",
+        "Materials",
+        "Logistics",
+        "Special article",
+        "Ambient",
+        "On-site",
+        "Class meeting",
+        "Financial management",
+        "Use printing",
+        "Supplies",
+        "Image quality",
+        "Fan Opera",
+        "Vaccine book",
+        "Monitor",
+        "Passport photo",
+        "Inventory",
+        "Inventory table",
+        "Live broadcast",
+        "Photo album",
+        "Kanban",
+        "Supervision",
+        "Social security form",
+        "Tax",
+        "Tax bill",
+        "File a case",
+        "Brush",
+        "Written test questions",
+        "Answer",
+        "Defense",
+        "Reply",
+        "Planning library",
+        "Resume",
+        "Resume library",
+        "Refined",
+        "System flow",
+        "Assets",
+        "Material library",
+        "Dispute",
+        "Appointment",
+        "Line draft",
+        "Component library",
+        "Bind",
+        "Statement",
+        "Camp closure",
+        "Renewal",
+        "Rights protection",
+        "Preparation",
+        "Payment",
+        "Online class",
+        "Assessment",
+        "Grade examination",
+        "Exam",
+        "Consumables",
+        "Chat",
+        "Joint investigation",
+        "Back tone",
+        "Aerial photography",
+        "Cute photo",
+        "Blu-ray",
+        "Administration",
+        "Ruling",
+        "Regulations",
+        "Vision",
+        "Character song",
+        "Solution agreement",
+        "Handouts",
+        "Set",
+        "Set of settings",
+        "Set up",
+        "Review",
+        "Test paper",
+        "Illustrate",
+        "Manual",
+        "Courseware",
+        "Class Timetable",
+        "Liabilities",
+        "Account",
+        "Books of accounts",
+        "Quality inspection",
+        "Texture",
+        "Patch",
+        "Sticker",
+        "Loan",
+        "Qualification",
+        "Ultra wide",
+        "Running points",
+        "Follow up",
+        "Road map",
+        "Vehicle and Vessel Tax",
+        "Light novel",
+        "Waybill",
+        "Further education",
+        "Serialization",
+        "Iteration",
+        "Chasing more",
+        "School selection",
+        "Course selection",
+        "Verbatim",
+        "Cost",
+        "With picture",
+        "Recipe card",
+        "Configuration",
+        "Color matching",
+        "Sampling",
+        "+ Critical illness",
+        "Redraw",
+        "Mass production",
+        "Measuring the room",
+        "Wrong question",
+        "Wrong question book",
+        "Outpatient",
+        "Read",
+        "Noodles",
+        "Audio and video",
+        "Advance payment",
+        "Budget table",
+        "Reservation form",
+        "Early warning",
+        "Title",
+        "Food and Drink",
+        "Cookies",
+        "Acceptance",
+        "Acceptance form"
       ],
       "description": "Core keywords extracted from document content or multimodal description",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "Text Content",
-        "Visual Description",
-        "Speech Transcription"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["Text Content", "Visual Description", "Speech Transcription"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1853,26 +1554,12 @@
         "Home-cooked meals"
       ],
       "description": "Specific life matters in family situations",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "Storage Path",
-        "Naming Pattern",
-        "Associated Applications"
-      ],
+      "applicableFileTypes": ["text", "document", "ebook", "image", "video", "audio", "design"],
+      "contextHints": ["Storage Path", "Naming Pattern", "Associated Applications"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Family life"
-          ]
+          "triggerTags": ["Family life"]
         }
       ],
       "metadata": {
@@ -1896,18 +1583,12 @@
         "Subtitles"
       ],
       "description": "Subdivision of text files",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "Format characteristics"
-      ],
+      "applicableFileTypes": ["text"],
+      "contextHints": ["Format characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Text"
-          ]
+          "triggerTags": ["Text"]
         }
       ],
       "metadata": {
@@ -1931,18 +1612,12 @@
         "WPS document"
       ],
       "description": "Subdivision of document files",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Format characteristics"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["Format characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Document"
-          ]
+          "triggerTags": ["Document"]
         }
       ],
       "metadata": {
@@ -1990,18 +1665,12 @@
         "url"
       ],
       "description": "Application Data File Extensions",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["application"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Application data segmentation",
-          "triggerTags": [
-            "Application Data Extensions"
-          ]
+          "triggerTags": ["Application Data Extensions"]
         }
       ],
       "metadata": {
@@ -2017,28 +1686,14 @@
       "id": 103,
       "name": "Database Extensions",
       "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
+      "tags": ["db", "db3", "mdb", "accdb", "fdb", "dbf", "sqlitedb"],
       "description": "Database File Extensions",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["database"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Database segmentation",
-          "triggerTags": [
-            "Database Extensions"
-          ]
+          "triggerTags": ["Database Extensions"]
         }
       ],
       "metadata": {
@@ -2054,32 +1709,14 @@
       "id": 104,
       "name": "Disk Image Extensions",
       "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
+      "tags": ["vhd", "vhdx", "vmdk", "img", "nrg", "mdf", "mds", "raw", "qcow2", "vdi", "ova"],
       "description": "Disk Image File Extensions",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["diskimage"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Disk image segmentation",
-          "triggerTags": [
-            "Disk Image Extensions"
-          ]
+          "triggerTags": ["Disk Image Extensions"]
         }
       ],
       "metadata": {
@@ -2104,19 +1741,12 @@
         "Back End"
       ],
       "description": "Classification of source code files",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "Grammatical Features",
-        "Interpreter Path"
-      ],
+      "applicableFileTypes": ["code"],
+      "contextHints": ["Grammatical Features", "Interpreter Path"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Source Code"
-          ]
+          "triggerTags": ["Source Code"]
         }
       ],
       "metadata": {
@@ -2131,26 +1761,14 @@
       "id": 106,
       "name": "Font segmentation",
       "level": 2,
-      "tags": [
-        "Font Extensions",
-        "English font",
-        "Chinese font",
-        "Icon Font"
-      ],
+      "tags": ["Font Extensions", "English font", "Chinese font", "Icon Font"],
       "description": "Classification of font files",
-      "applicableFileTypes": [
-        "font"
-      ],
-      "contextHints": [
-        "Font format",
-        "Character Set"
-      ],
+      "applicableFileTypes": ["font"],
+      "contextHints": ["Font format", "Character Set"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Font"
-          ]
+          "triggerTags": ["Font"]
         }
       ],
       "metadata": {
@@ -2165,28 +1783,14 @@
       "id": 107,
       "name": "System File Extensions",
       "level": 3,
-      "tags": [
-        "sys",
-        "drv",
-        "dll",
-        "service",
-        "socket",
-        "pid",
-        "lock"
-      ],
+      "tags": ["sys", "drv", "dll", "service", "socket", "pid", "lock"],
       "description": "System File Extensions",
-      "applicableFileTypes": [
-        "filesystem"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["filesystem"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "System file breakdown",
-          "triggerTags": [
-            "System File Extensions"
-          ]
+          "triggerTags": ["System File Extensions"]
         }
       ],
       "metadata": {
@@ -2230,18 +1834,12 @@
         "xlsx"
       ],
       "description": "Document Class File Extensions",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Document subdivision",
-          "triggerTags": [
-            "Document Extensions"
-          ]
+          "triggerTags": ["Document Extensions"]
         }
       ],
       "metadata": {
@@ -2274,18 +1872,12 @@
         "webvtt"
       ],
       "description": "Text File Extensions",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["text"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Text subdivision",
-          "triggerTags": [
-            "Text Extensions"
-          ]
+          "triggerTags": ["Text Extensions"]
         }
       ],
       "metadata": {
@@ -2336,18 +1928,12 @@
         "xcf"
       ],
       "description": "Image File Extensions",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Image Extensions"
-          ]
+          "triggerTags": ["Image Extensions"]
         }
       ],
       "metadata": {
@@ -2386,18 +1972,12 @@
         "dv"
       ],
       "description": "Video File Extensions",
-      "applicableFileTypes": [
-        "video"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["video"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Video Extensions"
-          ]
+          "triggerTags": ["Video Extensions"]
         }
       ],
       "metadata": {
@@ -2442,18 +2022,12 @@
         "oga"
       ],
       "description": "Audio File Extensions",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Audio Extensions"
-          ]
+          "triggerTags": ["Audio Extensions"]
         }
       ],
       "metadata": {
@@ -2506,18 +2080,12 @@
         "zip"
       ],
       "description": "The Extension Of The Compressed Package File",
-      "applicableFileTypes": [
-        "archive"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["archive"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Compressed package breakdown",
-          "triggerTags": [
-            "Compressed Package Extensions"
-          ]
+          "triggerTags": ["Compressed Package Extensions"]
         }
       ],
       "metadata": {
@@ -2640,18 +2208,12 @@
         "yml"
       ],
       "description": "Source Code File Extensions",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["code"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Source code segmentation",
-          "triggerTags": [
-            "Source Code Extensions"
-          ]
+          "triggerTags": ["Source Code Extensions"]
         }
       ],
       "metadata": {
@@ -2689,18 +2251,12 @@
         "wasm"
       ],
       "description": "Executable File Extensions",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Program segmentation",
-          "triggerTags": [
-            "Program Extensions"
-          ]
+          "triggerTags": ["Program Extensions"]
         }
       ],
       "metadata": {
@@ -2716,32 +2272,14 @@
       "id": 116,
       "name": "Ebook Extensions",
       "level": 3,
-      "tags": [
-        "epub",
-        "mobi",
-        "azw3",
-        "fb2",
-        "djvu",
-        "umd",
-        "cb7",
-        "cbt",
-        "bz2",
-        "cbr",
-        "cbz"
-      ],
+      "tags": ["epub", "mobi", "azw3", "fb2", "djvu", "umd", "cb7", "cbt", "bz2", "cbr", "cbz"],
       "description": "E-book File Extensions",
-      "applicableFileTypes": [
-        "ebook"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["ebook"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "E-book Segmentation",
-          "triggerTags": [
-            "Ebook Extensions"
-          ]
+          "triggerTags": ["Ebook Extensions"]
         }
       ],
       "metadata": {
@@ -2757,25 +2295,14 @@
       "id": 117,
       "name": "Font Extensions",
       "level": 3,
-      "tags": [
-        "ttf",
-        "otf",
-        "woff",
-        "woff2"
-      ],
+      "tags": ["ttf", "otf", "woff", "woff2"],
       "description": "Font File Extensions",
-      "applicableFileTypes": [
-        "font"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
+      "applicableFileTypes": ["font"],
+      "contextHints": ["File Extensions"],
       "triggerConditions": [
         {
           "parentDimension": "Font segmentation",
-          "triggerTags": [
-            "Font Extensions"
-          ]
+          "triggerTags": ["Font Extensions"]
         }
       ],
       "metadata": {
@@ -2801,38 +2328,24 @@
         "Webtoon",
         "Full Color",
         "Black and White",
-        "Doujinshi",
+        "Doujinshi Book",
         "Commercial Manga"
       ],
       "description": "Target audience classification of comic content",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "archive"
-      ],
-      "contextHints": [
-        "Content characteristics",
-        "Audience ID"
-      ],
+      "applicableFileTypes": ["ebook", "image", "archive"],
+      "contextHints": ["Content characteristics", "Audience ID"],
       "triggerConditions": [
         {
           "parentDimension": "Compressed package breakdown",
-          "triggerTags": [
-            "Encrypted compressed package",
-            "Unencrypted compressed package"
-          ]
+          "triggerTags": ["Encrypted compressed package", "Unencrypted compressed package"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "E-Book"
-          ]
+          "triggerTags": ["E-Book"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -2863,22 +2376,12 @@
         "Independent Platform"
       ],
       "description": "The hardware platform the game runs on",
-      "applicableFileTypes": [
-        "video",
-        "ebook",
-        "archive",
-        "executable"
-      ],
-      "contextHints": [
-        "Platform identification",
-        "File format"
-      ],
+      "applicableFileTypes": ["video", "ebook", "archive", "executable"],
+      "contextHints": ["Platform identification", "File format"],
       "triggerConditions": [
         {
           "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Gaming & Entertainment"
-          ]
+          "triggerTags": ["Gaming & Entertainment"]
         }
       ],
       "metadata": {
@@ -2901,50 +2404,28 @@
         "Machine Translation"
       ],
       "description": "Sources and production methods of creative content",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "archive"
-      ],
-      "contextHints": [
-        "Creative Statement",
-        "Digital Watermark",
-        "Metadata"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive"],
+      "contextHints": ["Creative Statement", "Digital Watermark", "Metadata"],
       "triggerConditions": [
         {
           "parentDimension": "E-book Segmentation",
-          "triggerTags": [
-            "Novel"
-          ]
+          "triggerTags": ["Novel"]
         },
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Audiobook",
-            "Music"
-          ]
+          "triggerTags": ["Audiobook", "Music"]
         },
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "E-Book",
-            "Image"
-          ]
+          "triggerTags": ["E-Book", "Image"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -2976,48 +2457,28 @@
         "Dominate"
       ],
       "description": "The emotional atmosphere evoked by the content of the document",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "Sentiment Analysis",
-        "Content Tone"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio"],
+      "contextHints": ["Sentiment Analysis", "Content Tone"],
       "triggerConditions": [
         {
           "parentDimension": "E-book Segmentation",
-          "triggerTags": [
-            "Novel"
-          ]
+          "triggerTags": ["Novel"]
         },
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Audiobook",
-            "Music"
-          ]
+          "triggerTags": ["Audiobook", "Music"]
         },
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "E-Book",
-            "Image"
-          ]
+          "triggerTags": ["E-Book", "Image"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -3031,36 +2492,18 @@
       "id": 122,
       "name": "Image quality level",
       "level": 2,
-      "tags": [
-        "Smooth 360P",
-        "SD 480P",
-        "HD 720P",
-        "Ultra HD 1080P",
-        "2K",
-        "4K",
-        "8K"
-      ],
+      "tags": ["Smooth 360P", "SD 480P", "HD 720P", "Ultra HD 1080P", "2K", "4K", "8K"],
       "description": "The quality and clarity level of an image or video",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Resolution detection",
-        "Encoding Parameters"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Resolution detection", "Encoding Parameters"],
       "triggerConditions": [
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image"
-          ]
+          "triggerTags": ["Image"]
         }
       ],
       "metadata": {
@@ -3075,30 +2518,14 @@
       "id": 123,
       "name": "Pornography Rating",
       "level": 3,
-      "tags": [
-        "Soft Porn",
-        "Semi-Explicit",
-        "Fully Explicit",
-        "Special XP",
-        "Extreme Grotesque"
-      ],
+      "tags": ["Soft Porn", "Semi-Explicit", "Fully Explicit", "Special XP", "Extreme Grotesque"],
       "description": "Detailed breakdown of explicitness and presentation of pornographic content",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Content moderation",
-        "Grading identification"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Content moderation", "Grading identification"],
       "triggerConditions": [
         {
           "parentDimension": "Sensitive Content",
-          "triggerTags": [
-            "Pornography"
-          ]
+          "triggerTags": ["Pornography"]
         }
       ],
       "metadata": {
@@ -3113,38 +2540,22 @@
       "id": 124,
       "name": "Mosaic Censorship Level",
       "level": 2,
-      "tags": [
-        "Uncensored",
-        "Light Mosaic",
-        "Censored"
-      ],
+      "tags": ["Uncensored", "Light Mosaic", "Censored"],
       "description": "Mosaic Censorship Level of File Content",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Content moderation",
-        "Grading identification"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Content moderation", "Grading identification"],
       "triggerConditions": [
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image"
-          ]
+          "triggerTags": ["Image"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -3159,39 +2570,22 @@
       "id": 125,
       "name": "Watermark level",
       "level": 2,
-      "tags": [
-        "No watermark",
-        "Light Watermark",
-        "Watermarked"
-      ],
+      "tags": ["No watermark", "Light Watermark", "Watermarked"],
       "description": "The degree of watermark in the file content",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Content moderation",
-        "Grading identification",
-        "Copyright mark"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Content moderation", "Grading identification", "Copyright mark"],
       "triggerConditions": [
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image"
-          ]
+          "triggerTags": ["Image"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -3218,23 +2612,15 @@
         "Travel Photos",
         "Street Photography: Candid Shots",
         "Portrait Photography",
-        "Aerial Photography"
+        "Aerial Filming"
       ],
       "description": "Professional Categories of Photography Content and Subjects",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "EXIF data",
-        "Theme Identification",
-        "Scene Awareness"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["EXIF data", "Theme Identification", "Scene Awareness"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography"
-          ]
+          "triggerTags": ["Photography"]
         }
       ],
       "tagImplications": [
@@ -3278,20 +2664,12 @@
         "Tilted Image"
       ],
       "description": "Technical and Image Quality Assessment of Photographs",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Image Quality Inspection",
-        "Exposure Analysis",
-        "Clarity Assessment"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Image Quality Inspection", "Exposure Analysis", "Clarity Assessment"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography"
-          ]
+          "triggerTags": ["Photography"]
         }
       ],
       "metadata": {
@@ -3319,10 +2697,7 @@
         "Bid Documents"
       ],
       "description": "Professional Classification of the Formats of Commercial Documents and Legal Documents",
-      "applicableFileTypes": [
-        "image",
-        "document"
-      ],
+      "applicableFileTypes": ["image", "document"],
       "contextHints": [
         "Layout Recognition",
         "Official Seal and Impression",
@@ -3331,9 +2706,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Contracts & Bills"
-          ]
+          "triggerTags": ["Contracts & Bills"]
         }
       ],
       "tagImplications": [
@@ -3406,10 +2779,7 @@
         "Social Security Card"
       ],
       "description": "Citizenship and Classification of Official Identification Documents and Credentials",
-      "applicableFileTypes": [
-        "image",
-        "document"
-      ],
+      "applicableFileTypes": ["image", "document"],
       "contextHints": [
         "Card and Certificate Borders",
         "Anti-counterfeiting watermark",
@@ -3418,9 +2788,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Certificates and Licenses"
-          ]
+          "triggerTags": ["Certificates and Licenses"]
         }
       ],
       "metadata": {
@@ -3443,12 +2811,7 @@
         "Bloody"
       ],
       "description": "Classification of Document Content Based on Sensitivity and Compliance Security Reviews",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Review of Sensitive Content",
         "Compliance and Security Testing",
@@ -3457,35 +2820,23 @@
       "triggerConditions": [
         {
           "parentDimension": "E-book Segmentation",
-          "triggerTags": [
-            "Novel"
-          ]
+          "triggerTags": ["Novel"]
         },
         {
           "parentDimension": "Audio Segmentation",
-          "triggerTags": [
-            "Audiobook",
-            "Music"
-          ]
+          "triggerTags": ["Audiobook", "Music"]
         },
         {
           "parentDimension": "Video Segmentation",
-          "triggerTags": [
-            "Film and television"
-          ]
+          "triggerTags": ["Film and television"]
         },
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "E-Book",
-            "Image"
-          ]
+          "triggerTags": ["E-Book", "Image"]
         },
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Comics"
-          ]
+          "triggerTags": ["Comics"]
         }
       ],
       "metadata": {
@@ -3511,23 +2862,12 @@
         "Self-Harm Bleeding"
       ],
       "description": "Subgenres of Gory, Violent, and Extreme Bizarre Content",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Violent Censorship",
-        "Blood Rating",
-        "Curiosity Testing"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Violent Censorship", "Blood Rating", "Curiosity Testing"],
       "triggerConditions": [
         {
           "parentDimension": "Sensitive Content",
-          "triggerTags": [
-            "Bloody"
-          ]
+          "triggerTags": ["Bloody"]
         }
       ],
       "metadata": {
@@ -3552,23 +2892,12 @@
         "Extremist Ideologies"
       ],
       "description": "Classification of Political Sensitivity, National Security, and Ideological Violations",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Political Compliance",
-        "Sensitive Figures",
-        "Ideological Censorship"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Political Compliance", "Sensitive Figures", "Ideological Censorship"],
       "triggerConditions": [
         {
           "parentDimension": "Sensitive Content",
-          "triggerTags": [
-            "Political Issues"
-          ]
+          "triggerTags": ["Political Issues"]
         }
       ],
       "metadata": {
@@ -3595,12 +2924,7 @@
         "Prohibited Items"
       ],
       "description": "Classification of Illegal Items and Activities Prohibited by Laws and Regulations",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Illegal Testing",
         "Identification of Prohibited Items",
@@ -3609,9 +2933,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Sensitive Content",
-          "triggerTags": [
-            "Violation"
-          ]
+          "triggerTags": ["Violation"]
         }
       ],
       "metadata": {
@@ -3640,23 +2962,12 @@
         "Diverse Sexual Orientations"
       ],
       "description": "Division of core categories of adult porn and vertical themes",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Adult Content Review",
-        "Theme classification",
-        "Erotic recognition"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Adult Content Review", "Theme classification", "Erotic recognition"],
       "triggerConditions": [
         {
           "parentDimension": "Sensitive Content",
-          "triggerTags": [
-            "Pornography"
-          ]
+          "triggerTags": ["Pornography"]
         }
       ],
       "metadata": {
@@ -3687,20 +2998,12 @@
         "Full-Screen Desktop Screenshot"
       ],
       "description": "Professional Categorization of Various Types of Screen Captures and Screenshot Content",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Screenshot",
-        "Interface Analysis",
-        "Screenshot Recognition"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Screenshot", "Interface Analysis", "Screenshot Recognition"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Screenshot"
-          ]
+          "triggerTags": ["Screenshot"]
         }
       ],
       "tagImplications": [
@@ -3736,29 +3039,14 @@
       "id": 136,
       "name": "Generation Medium",
       "level": 2,
-      "tags": [
-        "Real shot",
-        "Hand drawn",
-        "CG rendering",
-        "AI generated"
-      ],
+      "tags": ["Real shot", "Hand drawn", "CG rendering", "AI generated"],
       "description": "Physical generation methods and carriers of images and visual content",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Generation method",
-        "Rendering type",
-        "Carrier identification"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Generation method", "Rendering type", "Carrier identification"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image",
-            "Video"
-          ]
+          "triggerTags": ["Image", "Video"]
         }
       ],
       "metadata": {
@@ -3774,30 +3062,14 @@
       "id": 137,
       "name": "Shot Size",
       "level": 3,
-      "tags": [
-        "Close-up",
-        "Half body",
-        "Whole body",
-        "Panoramic view",
-        "Macro"
-      ],
+      "tags": ["Close-up", "Half body", "Whole body", "Panoramic view", "Macro"],
       "description": "Framing range and scenery of photography and fine art works",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Viewing range",
-        "Frame composition",
-        "Character Shot Size"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Viewing range", "Frame composition", "Character Shot Size"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography",
-            "Comics",
-            "Painting"
-          ]
+          "triggerTags": ["Photography", "Comics", "Painting"]
         }
       ],
       "metadata": {
@@ -3813,28 +3085,14 @@
       "id": 138,
       "name": "Illumination",
       "level": 3,
-      "tags": [
-        "Sunlight",
-        "Sunset",
-        "Night view",
-        "Dim light",
-        "Indoor light"
-      ],
+      "tags": ["Sunlight", "Sunset", "Night view", "Dim light", "Indoor light"],
       "description": "Ambient light and shooting time atmosphere of photographic photos",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Light analysis",
-        "Shooting time",
-        "Atmosphere recognition"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Light analysis", "Shooting time", "Atmosphere recognition"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography"
-          ]
+          "triggerTags": ["Photography"]
         }
       ],
       "metadata": {
@@ -3850,26 +3108,14 @@
       "id": 139,
       "name": "Background",
       "level": 2,
-      "tags": [
-        "Transparent background",
-        "Solid color background",
-        "Live background"
-      ],
+      "tags": ["Transparent background", "Solid color background", "Live background"],
       "description": "Background channels and environment types for image design assets and materials",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Alpha channel",
-        "Background cutout",
-        "Design Assets"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Alpha channel", "Background cutout", "Design Assets"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image"
-          ]
+          "triggerTags": ["Image"]
         }
       ],
       "metadata": {
@@ -3885,29 +3131,14 @@
       "id": 140,
       "name": "Perspective",
       "level": 3,
-      "tags": [
-        "Eye level",
-        "Looking down",
-        "Look up",
-        "First person"
-      ],
+      "tags": ["Eye level", "Looking down", "Look up", "First person"],
       "description": "Perspective angles and viewing angles for shooting and drawing shots",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Shooting angle",
-        "Lens perspective",
-        "Viewing angle"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Shooting angle", "Lens perspective", "Viewing angle"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography",
-            "Screenshot"
-          ]
+          "triggerTags": ["Photography", "Screenshot"]
         }
       ],
       "metadata": {
@@ -3923,29 +3154,14 @@
       "id": 141,
       "name": "Layout",
       "level": 2,
-      "tags": [
-        "Text Only",
-        "Chart-based",
-        "Mixed graphics and text",
-        "Handwritten notes"
-      ],
+      "tags": ["Text Only", "Chart-based", "Mixed graphics and text", "Handwritten notes"],
       "description": "Document and page visual layout composition",
-      "applicableFileTypes": [
-        "document",
-        "image"
-      ],
-      "contextHints": [
-        "Typesetting structure",
-        "Layout analysis",
-        "Picture and text ratio"
-      ],
+      "applicableFileTypes": ["document", "image"],
+      "contextHints": ["Typesetting structure", "Layout analysis", "Picture and text ratio"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Document",
-            "Image"
-          ]
+          "triggerTags": ["Document", "Image"]
         }
       ],
       "metadata": {
@@ -3969,20 +3185,12 @@
         "Linux screenshot"
       ],
       "description": "Operating system interface and terminal device ecological source segmentation",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Operating system",
-        "Interface style",
-        "Equipment source"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Operating system", "Interface style", "Equipment source"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Screenshot"
-          ]
+          "triggerTags": ["Screenshot"]
         }
       ],
       "metadata": {
@@ -3998,29 +3206,14 @@
       "id": 143,
       "name": "Frame",
       "level": 2,
-      "tags": [
-        "Horizontal screen",
-        "Vertical screen",
-        "Square",
-        "Extra wide strip"
-      ],
+      "tags": ["Horizontal screen", "Vertical screen", "Square", "Extra wide strip"],
       "description": "The aspect ratio of the picture and the direction of the composition",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Aspect ratio",
-        "Resolution analysis",
-        "Frame direction"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Aspect ratio", "Resolution analysis", "Frame direction"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image",
-            "Video"
-          ]
+          "triggerTags": ["Image", "Video"]
         }
       ],
       "metadata": {
@@ -4036,29 +3229,14 @@
       "id": 144,
       "name": "Number of subjects",
       "level": 3,
-      "tags": [
-        "Single",
-        "Double",
-        "Group photo",
-        "Empty Scene"
-      ],
+      "tags": ["Single", "Double", "Group photo", "Empty Scene"],
       "description": "The number and composition of characters or core subjects in the picture",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Subject count",
-        "Portrait detection",
-        "Scene composition"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Subject count", "Portrait detection", "Scene composition"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography",
-            "Comics",
-            "Painting"
-          ]
+          "triggerTags": ["Photography", "Comics", "Painting"]
         }
       ],
       "metadata": {
@@ -4082,20 +3260,12 @@
         "Environmental architecture"
       ],
       "description": "The core type of foreground visual focus in the picture",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Target detection",
-        "Subject identification",
-        "Visual focus"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Target detection", "Subject identification", "Visual focus"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image"
-          ]
+          "triggerTags": ["Image"]
         }
       ],
       "metadata": {
@@ -4111,26 +3281,14 @@
       "id": 146,
       "name": "Text density",
       "level": 2,
-      "tags": [
-        "Microtext",
-        "Picture and text title",
-        "Dense typography"
-      ],
+      "tags": ["Microtext", "Picture and text title", "Dense typography"],
       "description": "The amount of text and layout density contained in an image or page",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "OCR recognition",
-        "Text coverage",
-        "Text layout"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["OCR recognition", "Text coverage", "Text layout"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Text-in-Image"
-          ]
+          "triggerTags": ["Text-in-Image"]
         }
       ],
       "metadata": {
@@ -4204,21 +3362,12 @@
         "Dynamic particles"
       ],
       "description": "The artistic tone and picture texture style of visual works",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Color style",
-        "Texture rendering",
-        "Artistic style"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Color style", "Texture rendering", "Artistic style"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography",
-            "Painting"
-          ]
+          "triggerTags": ["Photography", "Painting"]
         }
       ],
       "metadata": {
@@ -4234,27 +3383,14 @@
       "id": 148,
       "name": "Time season",
       "level": 3,
-      "tags": [
-        "Spring flower scene",
-        "Summer shade",
-        "Autumn golden",
-        "Winter snow scene"
-      ],
+      "tags": ["Spring flower scene", "Summer shade", "Autumn golden", "Winter snow scene"],
       "description": "Seasonal timing characteristics of natural scenery and outdoor travel photos",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "Time series color",
-        "Seasonal plants",
-        "Climate characteristics"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["Time series color", "Seasonal plants", "Climate characteristics"],
       "triggerConditions": [
         {
           "parentDimension": "Image segmentation",
-          "triggerTags": [
-            "Photography"
-          ]
+          "triggerTags": ["Photography"]
         }
       ],
       "metadata": {
@@ -4289,22 +3425,12 @@
         "Gray"
       ],
       "description": "The overall dominant color temperature and color tone tendency of the picture",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "Color temperature analysis",
-        "Color histogram",
-        "Hue tendency"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["Color temperature analysis", "Color histogram", "Hue tendency"],
       "triggerConditions": [
         {
           "parentDimension": "File Type",
-          "triggerTags": [
-            "Image",
-            "Video"
-          ]
+          "triggerTags": ["Image", "Video"]
         }
       ],
       "metadata": {
@@ -4339,23 +3465,12 @@
         "Grandfather and grandson intergenerational erotica"
       ],
       "description": "Subdivision of consanguinity, family seniority and taboo ethical themes",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Close relatives theme",
-        "Ethical taboos",
-        "Blood narrative"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Close relatives theme", "Ethical taboos", "Blood narrative"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Family incest"
-          ]
+          "triggerTags": ["Family incest"]
         }
       ],
       "metadata": {
@@ -4380,23 +3495,12 @@
         "May-December Erotica"
       ],
       "description": "Segmentation of extramarital emotional contracts, partner exchange and wife themes",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Partner swap",
-        "Extramarital secrets",
-        "Wife theme"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Partner swap", "Extramarital secrets", "Wife theme"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Extramarital lust"
-          ]
+          "triggerTags": ["Extramarital lust"]
         }
       ],
       "metadata": {
@@ -4423,23 +3527,12 @@
         "Tutor Erotica"
       ],
       "description": "Theme breakdown of teacher-student lust, youthful campus sex and classmate erotica",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Teacher-student lust",
-        "Campus sex",
-        "Classmate erotica"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Teacher-student lust", "Campus sex", "Classmate erotica"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Teacher-Student Erotica"
-          ]
+          "triggerTags": ["Teacher-Student Erotica"]
         }
       ],
       "metadata": {
@@ -4467,23 +3560,12 @@
         "Online Lust"
       ],
       "description": "Breakdown of workplace erotic, neighborhood erotic and social erotic circles",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Workplace lust",
-        "Neighborhood Erotica",
-        "Social lust"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Workplace lust", "Neighborhood Erotica", "Social lust"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Workplace Erotica"
-          ]
+          "triggerTags": ["Workplace Erotica"]
         }
       ],
       "metadata": {
@@ -4505,12 +3587,7 @@
         "Multi-person Sex Party"
       ],
       "description": "Multi-agent collaboration, group interaction and multi-person interaction theme segmentation",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Multi-party Erotic Interaction",
         "Group Erotic Interaction",
@@ -4519,9 +3596,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Group sex"
-          ]
+          "triggerTags": ["Group sex"]
         }
       ],
       "metadata": {
@@ -4547,23 +3622,12 @@
         "Fetish Sexual Kink"
       ],
       "description": "Dominance and submission, subcultural fetishes and serious confrontational sex breakdown",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Subculture training",
-        "Dominant submissive",
-        "Heavy confrontation"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Subculture training", "Dominant submissive", "Heavy confrontation"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Sex training"
-          ]
+          "triggerTags": ["Sex training"]
         }
       ],
       "metadata": {
@@ -4588,23 +3652,12 @@
         "Wardrobe Malfunction"
       ],
       "description": "Subdivision of public exposure, outdoor display and covert peeping and candid photography",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Spatial exposure",
-        "Candid filming",
-        "Outdoor display"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Spatial exposure", "Candid filming", "Outdoor display"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Peeping Wardrobe Malfunction"
-          ]
+          "triggerTags": ["Peeping Wardrobe Malfunction"]
         }
       ],
       "metadata": {
@@ -4629,23 +3682,12 @@
         "Paid Dating and Prostitution"
       ],
       "description": "Industry-specific occupations, specific uniform roles and personality segmentation",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Uniform character",
-        "Industry occupation",
-        "Role-Playing"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Uniform character", "Industry occupation", "Role-Playing"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Uniform Seduction"
-          ]
+          "triggerTags": ["Uniform Seduction"]
         }
       ],
       "metadata": {
@@ -4673,23 +3715,12 @@
         "Erotic Encounters"
       ],
       "description": "Adult literature background settings, time and space background and specific genre subdivisions",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Erotic Literature",
-        "Background settings",
-        "Literary genre"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Erotic Literature", "Background settings", "Literary genre"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Erotic Literature"
-          ]
+          "triggerTags": ["Erotic Literature"]
         }
       ],
       "metadata": {
@@ -4715,23 +3746,12 @@
         "Virginity complex"
       ],
       "description": "Physiological and behavioral movements, close-ups of organs, sexy photos and breakdown of sensory characteristics",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Physiological actions",
-        "Organ close-up",
-        "Sexy photo"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Physiological actions", "Organ close-up", "Sexy photo"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Erotic Physiology"
-          ]
+          "triggerTags": ["Erotic Physiology"]
         }
       ],
       "metadata": {
@@ -4753,23 +3773,12 @@
         "Violent coercion"
       ],
       "description": "Classification of involuntary coercion, infringement, violation and extreme violation content",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "Against one's will",
-        "Infringement and violation",
-        "Forcible violation"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["Against one's will", "Infringement and violation", "Forcible violation"],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Involuntary assault"
-          ]
+          "triggerTags": ["Involuntary assault"]
         }
       ],
       "metadata": {
@@ -4783,19 +3792,9 @@
       "id": 161,
       "name": "Diverse Sexual Orientation Subcategories",
       "level": 4,
-      "tags": [
-        "Homoerotic",
-        "Lesbian yuri Erotica",
-        "Gay Yaoi Erotica",
-        "Transgender erotica"
-      ],
+      "tags": ["Homoerotic", "Lesbian yuri Erotica", "Gay Yaoi Erotica", "Transgender erotica"],
       "description": "Diverse gender cognition, diverse orientations and specific sexual orientation theme segmentation",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "Diverse Sexual Orientations",
         "Homosexual themes",
@@ -4804,9 +3803,7 @@
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
-          "triggerTags": [
-            "Diverse Sexual Orientations"
-          ]
+          "triggerTags": ["Diverse Sexual Orientations"]
         }
       ],
       "metadata": {
@@ -4820,27 +3817,10 @@
       "id": 162,
       "name": "Content Rating",
       "level": 1,
-      "tags": [
-        "All Ages",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
-      ],
+      "tags": ["All Ages", "PG-13", "R-15", "R-18", "R-18G"],
       "description": "Age appropriateness rating of file content",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "archive",
-        "document"
-      ],
-      "contextHints": [
-        "Age-appropriateness Rating",
-        "Content Rating",
-        "Audience Age Review"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive", "document"],
+      "contextHints": ["Age-appropriateness Rating", "Content Rating", "Audience Age Review"],
       "triggerConditions": [],
       "metadata": {
         "flag": {

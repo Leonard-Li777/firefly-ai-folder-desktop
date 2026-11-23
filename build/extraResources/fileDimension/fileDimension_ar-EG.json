@@ -22,14 +22,8 @@
         "بيانات التطبيقات"
       ],
       "description": "التصنيف الأساسي لتنسيق الملفات",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "امتداد الملف",
-        "نوع MIME",
-        "توقيع الملف"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["امتداد الملف", "نوع MIME", "توقيع الملف"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -57,14 +51,8 @@
         "الحياة العائلية"
       ],
       "description": "سيناريوهات الاستخدام الأساسية للملفات",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "مسار التخزين",
-        "نمط التسمية",
-        "التطبيقات المرتبطة"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["مسار التخزين", "نمط التسمية", "التطبيقات المرتبطة"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -88,13 +76,8 @@
         "مرفق البريد الإلكتروني"
       ],
       "description": "مصدر الحصول الأصلي على الملف",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "خصائص المسار",
-        "سجل النقل"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["خصائص المسار", "سجل النقل"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -110,20 +93,8 @@
       "level": 1,
       "tags": [],
       "description": "منشئ الملف أو المساهم فيه",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "code",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "البيانات الوصفية",
-        "التوقيع الرقمي",
-        "العلامة المائية"
-      ],
+      "applicableFileTypes": ["text", "document", "ebook", "image", "code", "video", "audio"],
+      "contextHints": ["البيانات الوصفية", "التوقيع الرقمي", "العلامة المائية"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -137,26 +108,14 @@
       "id": 5,
       "name": "تجزئة بيانات التطبيق",
       "level": 2,
-      "tags": [
-        "تمديد بيانات التطبيق",
-        "الاختصار",
-        "قائمة التشغيل",
-        "التسجيل",
-        "وثائق المساعدة"
-      ],
+      "tags": ["تمديد بيانات التطبيق", "الاختصار", "قائمة التشغيل", "التسجيل", "وثائق المساعدة"],
       "description": "تجزئة ملفات بيانات التطبيق",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "خصائص التنسيق"
-      ],
+      "applicableFileTypes": ["application"],
+      "contextHints": ["خصائص التنسيق"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "بيانات التطبيقات"
-          ]
+          "triggerTags": ["بيانات التطبيقات"]
         }
       ],
       "metadata": {
@@ -190,19 +149,12 @@
         "صورة بدون نص"
       ],
       "description": "تصنيف احترافي لمحتوى الصورة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "بيانات EXIF",
-        "التعرف على المحتوى"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["بيانات EXIF", "التعرف على المحتوى"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة"
-          ]
+          "triggerTags": ["صورة"]
         }
       ],
       "tagImplications": [
@@ -264,19 +216,12 @@
         "فيديو الاجتماع"
       ],
       "description": "تصنيف احترافي لمحتوى الفيديو",
-      "applicableFileTypes": [
-        "video"
-      ],
-      "contextHints": [
-        "خصائص المدة",
-        "تحليل الإطار الرئيسي"
-      ],
+      "applicableFileTypes": ["video"],
+      "contextHints": ["خصائص المدة", "تحليل الإطار الرئيسي"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "فيديو"
-          ]
+          "triggerTags": ["فيديو"]
         }
       ],
       "tagImplications": [
@@ -317,19 +262,12 @@
         "تسجيل الاجتماع"
       ],
       "description": "تصنيف احترافي للمحتوى الصوتي",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "الخصائص الطيفية",
-        "البيانات الوصفية"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["الخصائص الطيفية", "البيانات الوصفية"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صوت"
-          ]
+          "triggerTags": ["صوت"]
         }
       ],
       "tagImplications": [
@@ -360,26 +298,14 @@
       "id": 9,
       "name": "انهيار الحزمة المضغوطة",
       "level": 2,
-      "tags": [
-        "ملحق الحزمة المضغوطة",
-        "حزمة مضغوطة مشفرة",
-        "حزمة مضغوطة غير مشفرة"
-      ],
+      "tags": ["ملحق الحزمة المضغوطة", "حزمة مضغوطة مشفرة", "حزمة مضغوطة غير مشفرة"],
       "description": "حالة التشفير وتصنيف تنسيق الحزم المضغوطة",
-      "applicableFileTypes": [
-        "archive"
-      ],
-      "contextHints": [
-        "خوارزمية الضغط",
-        "توقيع رأس الملف",
-        "كشف التشفير"
-      ],
+      "applicableFileTypes": ["archive"],
+      "contextHints": ["خوارزمية الضغط", "توقيع رأس الملف", "كشف التشفير"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "أرشيف مضغوط"
-          ]
+          "triggerTags": ["أرشيف مضغوط"]
         }
       ],
       "metadata": {
@@ -404,19 +330,12 @@
         "برنامج اللعبة"
       ],
       "description": "تصنيف الملفات القابلة للتنفيذ",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "ميزات المنصة",
-        "شهادة التوقيع"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["ميزات المنصة", "شهادة التوقيع"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "برنامج قابل للتنفيذ"
-          ]
+          "triggerTags": ["برنامج قابل للتنفيذ"]
         }
       ],
       "tagImplications": [
@@ -463,29 +382,14 @@
       "id": 163,
       "name": "منصة التشغيل",
       "level": 2,
-      "tags": [
-        "Windows",
-        "macOS",
-        "Linux",
-        "Android",
-        "iOS",
-        "عبر منصة"
-      ],
+      "tags": ["Windows", "macOS", "Linux", "Android", "iOS", "عبر منصة"],
       "description": "نظام التشغيل ومنصة الهندسة المعمارية التي يعمل عليها البرنامج",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "ميزات رأس PE",
-        "ميزات رأس ELF",
-        "ميزات رأس Mach-O"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["ميزات رأس PE", "ميزات رأس ELF", "ميزات رأس Mach-O"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "برنامج قابل للتنفيذ"
-          ]
+          "triggerTags": ["برنامج قابل للتنفيذ"]
         }
       ],
       "metadata": {
@@ -511,19 +415,12 @@
         "JVM"
       ],
       "description": "وقت التشغيل والإطار خصائص تبعيات البرنامج",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "كشف مكتبة التبعية",
-        "خصائص التعبئة والتغليف"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["كشف مكتبة التبعية", "خصائص التعبئة والتغليف"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "برنامج قابل للتنفيذ"
-          ]
+          "triggerTags": ["برنامج قابل للتنفيذ"]
         }
       ],
       "metadata": {
@@ -548,19 +445,12 @@
         "تشفير البيانات والأمان"
       ],
       "description": "متعددة اختيار وسم البعد من خصائص قدرة البرنامج",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "تجميع رموز IAT",
-        "كشف القدرة"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["تجميع رموز IAT", "كشف القدرة"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "برنامج قابل للتنفيذ"
-          ]
+          "triggerTags": ["برنامج قابل للتنفيذ"]
         }
       ],
       "metadata": {
@@ -592,27 +482,12 @@
         "الهندية"
       ],
       "description": "تصنيف اللغة الطبيعية لمحتوى الوثيقة",
-      "applicableFileTypes": [
-        "document",
-        "text",
-        "ebook",
-        "audio",
-        "video"
-      ],
-      "contextHints": [
-        "ترميز الأحرف",
-        "الميزات النحوية"
-      ],
+      "applicableFileTypes": ["document", "text", "ebook", "audio", "video"],
+      "contextHints": ["ترميز الأحرف", "الميزات النحوية"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "نص",
-            "وثيقة",
-            "كتاب إلكتروني",
-            "صوت",
-            "فيديو"
-          ]
+          "triggerTags": ["نص", "وثيقة", "كتاب إلكتروني", "صوت", "فيديو"]
         }
       ],
       "metadata": {
@@ -636,19 +511,12 @@
         "برنامج التشغيل"
       ],
       "description": "التصنيف الوظيفي لملفات النظام الرئيسية",
-      "applicableFileTypes": [
-        "filesystem"
-      ],
-      "contextHints": [
-        "موقع المسار",
-        "خصائص الإذن"
-      ],
+      "applicableFileTypes": ["filesystem"],
+      "contextHints": ["موقع المسار", "خصائص الإذن"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "ملفات النظام"
-          ]
+          "triggerTags": ["ملفات النظام"]
         }
       ],
       "metadata": {
@@ -674,47 +542,28 @@
         "عرض خاص"
       ],
       "description": "حالة النشر والإفراج عن الوثائق",
-      "applicableFileTypes": [
-        "ebook",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "صفحة حقوق الطبع والنشر",
-        "رقم ISBN",
-        "منصة النشر"
-      ],
+      "applicableFileTypes": ["ebook", "video", "audio"],
+      "contextHints": ["صفحة حقوق الطبع والنشر", "رقم ISBN", "منصة النشر"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الكتاب الإلكتروني",
-          "triggerTags": [
-            "رواية"
-          ]
+          "triggerTags": ["رواية"]
         },
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "كتاب مسموع",
-            "موسيقى"
-          ]
+          "triggerTags": ["كتاب مسموع", "موسيقى"]
         },
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كتاب إلكتروني"
-          ]
+          "triggerTags": ["كتاب إلكتروني"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -738,19 +587,12 @@
         "النسخ الاحتياطي للبيانات"
       ],
       "description": "التنسيق الفني لملفات قاعدة البيانات",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "توقيع الملف",
-        "الميزات الهيكلية"
-      ],
+      "applicableFileTypes": ["database"],
+      "contextHints": ["توقيع الملف", "الميزات الهيكلية"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "قاعدة بيانات"
-          ]
+          "triggerTags": ["قاعدة بيانات"]
         }
       ],
       "metadata": {
@@ -765,26 +607,14 @@
       "id": 15,
       "name": "تجزئة صورة القرص",
       "level": 2,
-      "tags": [
-        "امتداد صورة القرص",
-        "صورة النظام",
-        "انعكاس البيانات",
-        "صورة قرص ضوئي"
-      ],
+      "tags": ["امتداد صورة القرص", "صورة النظام", "انعكاس البيانات", "صورة قرص ضوئي"],
       "description": "تصنيف استخدام صورة القرص",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "معلومات تسمية الحجم",
-        "هيكل التقسيم"
-      ],
+      "applicableFileTypes": ["diskimage"],
+      "contextHints": ["معلومات تسمية الحجم", "هيكل التقسيم"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة القرص"
-          ]
+          "triggerTags": ["صورة القرص"]
         }
       ],
       "metadata": {
@@ -801,28 +631,16 @@
       "level": 2,
       "tags": [],
       "description": "الموقع المرتبط بالمحتوى",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "إحداثيات نظام تحديد المواقع",
-        "التعرف على المعالم"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["إحداثيات نظام تحديد المواقع", "التعرف على المعالم"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة",
-            "فيديو"
-          ]
+          "triggerTags": ["صورة", "فيديو"]
         },
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "سجلات السفر",
-            "مشاريع إبداعية"
-          ]
+          "triggerTags": ["سجلات السفر", "مشاريع إبداعية"]
         }
       ],
       "metadata": {
@@ -838,30 +656,14 @@
       "id": 17,
       "name": "مستوى الأمان",
       "level": 2,
-      "tags": [
-        "عام",
-        "داخلي",
-        "سري",
-        "سري للغاية"
-      ],
+      "tags": ["عام", "داخلي", "سري", "سري للغاية"],
       "description": "تصنيف مستويات سرية الوثائق",
-      "applicableFileTypes": [
-        "document",
-        "code",
-        "archive",
-        "database"
-      ],
-      "contextHints": [
-        "حالة التشفير",
-        "إعدادات الأذونات"
-      ],
+      "applicableFileTypes": ["document", "code", "archive", "database"],
+      "contextHints": ["حالة التشفير", "إعدادات الأذونات"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "وثائق العمل",
-            "الملفات المالية"
-          ]
+          "triggerTags": ["وثائق العمل", "الملفات المالية"]
         }
       ],
       "metadata": {
@@ -876,31 +678,14 @@
       "id": 18,
       "name": "حالة المعالجة",
       "level": 2,
-      "tags": [
-        "مسودة",
-        "قيد المراجعة",
-        "مكتمل",
-        "مؤرشف",
-        "لم يتم أرشفتها",
-        "ليتم تنقيحها"
-      ],
+      "tags": ["مسودة", "قيد المراجعة", "مكتمل", "مؤرشف", "لم يتم أرشفتها", "ليتم تنقيحها"],
       "description": "حالة سير العمل للملف",
-      "applicableFileTypes": [
-        "document",
-        "code",
-        "design"
-      ],
-      "contextHints": [
-        "وقت التعديل",
-        "علامة الإصدار"
-      ],
+      "applicableFileTypes": ["document", "code", "design"],
+      "contextHints": ["وقت التعديل", "علامة الإصدار"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "وثائق العمل",
-            "مشاريع إبداعية"
-          ]
+          "triggerTags": ["وثائق العمل", "مشاريع إبداعية"]
         }
       ],
       "metadata": {
@@ -925,19 +710,12 @@
         "النسخة المحلية"
       ],
       "description": "طبيعة ترخيص وتوزيع البرمجيات",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "ملف الترخيص",
-        "معرف التفويض"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["ملف الترخيص", "معرف التفويض"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "برنامج قابل للتنفيذ"
-          ]
+          "triggerTags": ["برنامج قابل للتنفيذ"]
         }
       ],
       "metadata": {
@@ -960,21 +738,12 @@
         "الأنشطة في الهواء الطلق"
       ],
       "description": "تصنيف محتوى سجلات السفر",
-      "applicableFileTypes": [
-        "image",
-        "video",
-        "document"
-      ],
-      "contextHints": [
-        "التعرف على المشهد",
-        "خصائص الوقت"
-      ],
+      "applicableFileTypes": ["image", "video", "document"],
+      "contextHints": ["التعرف على المشهد", "خصائص الوقت"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "سجلات السفر"
-          ]
+          "triggerTags": ["سجلات السفر"]
         }
       ],
       "metadata": {
@@ -997,19 +766,12 @@
         "فاتورة"
       ],
       "description": "نوع العمل من الوثائق المالية",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "تحديد الفاتورة",
-        "وضع المبلغ"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["تحديد الفاتورة", "وضع المبلغ"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "الملفات المالية"
-          ]
+          "triggerTags": ["الملفات المالية"]
         }
       ],
       "tagImplications": [
@@ -1075,20 +837,12 @@
         "لعبة أوتومي"
       ],
       "description": "نوع اللعبة",
-      "applicableFileTypes": [
-        "video",
-        "ebook",
-        "executable"
-      ],
-      "contextHints": [
-        "لعبة"
-      ],
+      "applicableFileTypes": ["video", "ebook", "executable"],
+      "contextHints": ["لعبة"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "ألعاب وترفيه"
-          ]
+          "triggerTags": ["ألعاب وترفيه"]
         }
       ],
       "tagImplications": [
@@ -1193,23 +947,12 @@
         "التعليم"
       ],
       "description": "تصنيف مجال الموضوع للمواد التعليمية",
-      "applicableFileTypes": [
-        "document",
-        "video",
-        "ebook",
-        "code"
-      ],
-      "contextHints": [
-        "كثافة المصطلحات الموضوعية",
-        "هيكل فصل الكتاب المدرسي",
-        "شعار منصة الدورة"
-      ],
+      "applicableFileTypes": ["document", "video", "ebook", "code"],
+      "contextHints": ["كثافة المصطلحات الموضوعية", "هيكل فصل الكتاب المدرسي", "شعار منصة الدورة"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "مواد دراسية"
-          ]
+          "triggerTags": ["مواد دراسية"]
         }
       ],
       "tagImplications": [
@@ -1290,19 +1033,12 @@
         "كتاب عام"
       ],
       "description": "تصنيف محتوى الكتاب الإلكتروني",
-      "applicableFileTypes": [
-        "ebook"
-      ],
-      "contextHints": [
-        "هيكل الفصل",
-        "حالة إدارة الحقوق الرقمية"
-      ],
+      "applicableFileTypes": ["ebook"],
+      "contextHints": ["هيكل الفصل", "حالة إدارة الحقوق الرقمية"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كتاب إلكتروني"
-          ]
+          "triggerTags": ["كتاب إلكتروني"]
         }
       ],
       "tagImplications": [
@@ -1361,54 +1097,35 @@
         "مسرحية هزلية",
         "قصص غريبة",
         "المواد الإباحية",
-        "تمرين",
+        "تدريب بي دي إس إم",
         "حريم",
         "دانمي",
         "رئيس تنفيذي متسلط",
         "الأخلاق"
       ],
       "description": "التصنيف المهني للموضوع",
-      "applicableFileTypes": [
-        "video",
-        "audio",
-        "ebook",
-        "executable"
-      ],
-      "contextHints": [
-        "خصائص المدة",
-        "تحليل الإطار الرئيسي",
-        "خصائص المحتوى"
-      ],
+      "applicableFileTypes": ["video", "audio", "ebook", "executable"],
+      "contextHints": ["خصائص المدة", "تحليل الإطار الرئيسي", "خصائص المحتوى"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "موسيقى"
-          ]
+          "triggerTags": ["موسيقى"]
         },
         {
           "parentDimension": "تجزئة الكتاب الإلكتروني",
-          "triggerTags": [
-            "رواية"
-          ]
+          "triggerTags": ["رواية"]
         },
         {
           "parentDimension": "تجزئة البرنامج",
-          "triggerTags": [
-            "لعبة"
-          ]
+          "triggerTags": ["لعبة"]
         },
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "ألعاب وترفيه"
-          ]
+          "triggerTags": ["ألعاب وترفيه"]
         }
       ],
       "metadata": {
@@ -1441,19 +1158,12 @@
         "موسيقى سمفونية"
       ],
       "description": "نوع الموسيقى",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "خصائص المدة",
-        "خصائص المحتوى"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["خصائص المدة", "خصائص المحتوى"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "موسيقى"
-          ]
+          "triggerTags": ["موسيقى"]
         }
       ],
       "metadata": {
@@ -1467,20 +1177,10 @@
       "id": 27,
       "name": "جودة الوثيقة",
       "level": 1,
-      "tags": [
-        "جودة عالية",
-        "جودة متوسطة",
-        "جودة منخفضة"
-      ],
+      "tags": ["جودة عالية", "جودة متوسطة", "جودة منخفضة"],
       "description": "تصنيف جودة محتوى الملف",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "جودة المحتوى",
-        "الجودة الفنية",
-        "الجودة الجمالية"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["جودة المحتوى", "الجودة الفنية", "الجودة الجمالية"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1516,7 +1216,7 @@
         "بولي منخفض",
         "الفحص البدني",
         "مَلَفّ",
-        "جدول",
+        "روتين يومي",
         "المكتبات التابعة",
         "ملحوظات",
         "ضمان",
@@ -1529,7 +1229,7 @@
         "اهتمام",
         "الرعاية الصحية",
         "كتاب منشور",
-        "يسافر",
+        "التنقل",
         "خطاب",
         "تقسيم طاولة العمل",
         "مشاركة الحسابات",
@@ -1565,7 +1265,7 @@
         "الدراما المحلية",
         "تو شنغ تو",
         "صورة المشهد",
-        "سجل",
+        "سجل التصوير",
         "مدينة",
         "تمرين",
         "إضافة عناصر",
@@ -1601,13 +1301,13 @@
         "جلسة المحكمة",
         "افتح الموضوع",
         "شبكة ضعيفة",
-        "فيديو",
+        "تسجيل فيديو",
         "قبول",
         "مكتبة تسجيل الشاشة",
         "مكتبة الفيديو",
         "فيلم",
         "السينما والتلفزيون",
-        "الصوت والفيديو",
+        "وسائط سمعية بصرية",
         "لتكون منظمة",
         "أن نرى",
         "في انتظار العمل",
@@ -1620,7 +1320,7 @@
         "صور المنتج النهائي",
         "فيلم مكتمل",
         "مخطوطة مكتملة",
-        "نص",
+        "كشف الدرجات",
         "هوكو",
         "القرض العقاري",
         "ضرب المجلس",
@@ -1642,7 +1342,7 @@
         "توظيف",
         "ملصقة",
         "يأذن",
-        "جدول",
+        "جدول زمني",
         "استكشاف الأخطاء وإصلاحها",
         "قم بزيارة المتجر",
         "خذ الأوامر",
@@ -1650,7 +1350,7 @@
         "كلمة سريعة",
         "مقتطفات",
         "إنهاء",
-        "مجموعة",
+        "تحصيل المدفوعات",
         "استلام البضائع",
         "استراتيجية",
         "سياسة",
@@ -1671,165 +1371,159 @@
         "اللون القياسي",
         "قضية",
         "قائمة التحقق",
-        "概念图",
-        "模拟卷",
-        "模组",
-        "欧美剧",
-        "步骤图",
-        "残留",
-        "母带",
-        "比价",
-        "求职",
-        "汇报",
-        "汇算",
-        "汉化",
-        "汤羹",
-        "法务",
-        "流程",
-        "流转单",
-        "海外仓",
-        "消费贷",
-        "混音",
-        "清单",
-        "渲染",
-        "游记",
-        "源文件",
-        "灵感图",
-        "片库",
-        "版本",
-        "物业",
-        "物料",
-        "物流",
-        "特别篇",
-        "环境音",
-        "现场",
-        "班会",
-        "理财",
-        "用印",
-        "用品",
-        "画质",
-        "番剧",
-        "疫苗本",
-        "监控",
-        "盒照",
-        "盘点",
-        "盘点表",
-        "直播",
-        "相册",
-        "看板",
-        "督办",
-        "社保表",
-        "税务",
-        "税单",
-        "立案",
-        "笔刷",
-        "笔试题",
-        "答案",
-        "答辩",
-        "答辩状",
-        "策划库",
-        "简历",
-        "简历库",
-        "精修",
-        "系统流",
-        "素材",
-        "素材库",
-        "纠纷",
-        "约稿",
-        "线稿",
-        "组件库",
-        "绑定",
-        "结算单",
-        "结营",
-        "续保",
-        "维权",
-        "编制",
-        "缴费",
-        "网课",
-        "考核",
-        "考级",
-        "考试",
-        "耗材",
-        "聊天",
-        "联调",
-        "背调",
-        "航拍",
-        "萌照",
-        "蓝光",
-        "行政",
-        "裁定书",
-        "规章",
-        "视觉",
-        "角色歌",
-        "解协议",
-        "讲义",
-        "设定",
-        "设定集",
-        "设置",
-        "评审",
-        "试卷",
-        "说明",
-        "说明书",
-        "课件",
-        "课表",
-        "负债",
-        "账户",
-        "账簿",
-        "质检",
-        "贴图",
-        "贴片",
-        "贴纸",
-        "贷款",
-        "资质",
-        "超宽",
-        "跑分",
-        "跟拍",
-        "路线图",
-        "车船税",
-        "轻小说",
-        "运单",
-        "进修",
-        "连载",
-        "迭代",
-        "追更",
-        "选校",
-        "选课",
-        "逐字稿",
-        "造价",
-        "配图",
-        "配方卡",
-        "配置",
-        "配色",
-        "采样",
-        "重疾险",
-        "重绘",
-        "量产",
-        "量房",
-        "错题",
-        "错题本",
-        "门诊",
-        "阅读",
-        "面点",
-        "音视频",
-        "预付款",
-        "预算表",
-        "预约单",
-        "预警",
-        "题目",
-        "饮食",
-        "饼干",
-        "验收",
-        "验收单"
+        "مخطط المفهوم",
+        "حجم التناظرية",
+        "الوحدة",
+        "الدراما الأوروبية والأمريكية",
+        "مخطط الخطوة",
+        "بقايا",
+        "اتقان",
+        "مقارنة الأسعار",
+        "البحث عن وظيفة",
+        "إحاطة",
+        "التحويلات",
+        "سينيسيزاتيون",
+        "حساء الحساء",
+        "الشؤون القانونية",
+        "العملية",
+        "أمر التحويل",
+        "مستودع في الخارج",
+        "القروض الاستهلاكية",
+        "ميكس",
+        "قائمة",
+        "تقديم",
+        "ملاحظات السفر",
+        "المصادر",
+        "خريطة الإلهام",
+        "مكتبة الأفلام",
+        "إصدار",
+        "الممتلكات",
+        "المواد",
+        "اللوجستيات",
+        "مقالة خاصة",
+        "الأصوات المحيطة",
+        "في الموقع",
+        "اجتماع الفصل",
+        "الإدارة المالية",
+        "استخدام الطباعة",
+        "اللوازم",
+        "جودة الصورة",
+        "مروحة أوبرا",
+        "كتاب اللقاحات",
+        "مراقب",
+        "صورة جواز السفر",
+        "المخزون",
+        "جدول الجرد",
+        "بث مباشر",
+        "ألبوم الصور",
+        "كانبان",
+        "الإشراف",
+        "نموذج الضمان الاجتماعي",
+        "الضريبة",
+        "فاتورة ضريبية",
+        "ملف قضية",
+        "فرشاة",
+        "أسئلة الاختبار الكتابي",
+        "الجواب",
+        "الدفاع",
+        "الرد",
+        "مكتبة التخطيط",
+        "استئناف",
+        "مكتبة السيرة الذاتية",
+        "المكرر",
+        "تدفق النظام",
+        "الأصول",
+        "مكتبة المواد",
+        "النزاع",
+        "التعيين",
+        "مشروع خط",
+        "مكتبة المكونات",
+        "ربط",
+        "بيان",
+        "إغلاق المخيم",
+        "التجديد",
+        "حماية الحقوق",
+        "التحضير",
+        "الدفع",
+        "فئة على الانترنت",
+        "التقييم",
+        "امتحان الصف",
+        "الامتحان",
+        "المواد الاستهلاكية",
+        "الدردشة",
+        "التحقيق المشترك",
+        "نغمة الظهر",
+        "التصوير الجوي",
+        "صورة لطيف",
+        "بلو راي",
+        "الإدارة",
+        "الحكم",
+        "اللوائح",
+        "الرؤية",
+        "أغنية شخصية",
+        "اتفاقية الحل",
+        "النشرات",
+        "مجموعة",
+        "مجموعة من الإعدادات",
+        "يثبت",
+        "مراجعة",
+        "ورقة اختبار",
+        "يوضح",
+        "دليل",
+        "المناهج التعليمية",
+        "الجدول الزمني",
+        "الخصوم",
+        "الحساب",
+        "دفاتر الحسابات",
+        "فحص الجودة",
+        "نسيج",
+        "التصحيح",
+        "ملصق",
+        "القرض",
+        "المؤهل",
+        "واسعة جدا",
+        "نقاط الجري",
+        "متابعة",
+        "خارطة الطريق",
+        "ضريبة المركبات والسفن",
+        "رواية خفيفة",
+        "بوليصة الشحن",
+        "مزيد من التعليم",
+        "نشر متسلسل",
+        "التكرار",
+        "مطاردة أكثر",
+        "اختيار المدرسة",
+        "اختيار الدورة",
+        "حرفي",
+        "التكلفة",
+        "مع الصورة",
+        "بطاقة وصفة",
+        "إعدادات",
+        "مطابقة الألوان",
+        "أخذ العينات",
+        "التأمين ضد الأمراض الخطيرة",
+        "إعادة رسم",
+        "الإنتاج الضخم",
+        "قياس الغرفة",
+        "سؤال خاطئ",
+        "كتاب سؤال خاطئ",
+        "العيادات الخارجية",
+        "قراءة",
+        "نودلز",
+        "الصوت والفيديو",
+        "الدفعة المقدمة",
+        "جدول الميزانية",
+        "استمارة الحجز",
+        "الإنذار المبكر",
+        "العنوان",
+        "الغذاء والشراب",
+        "البسكويت",
+        "القبول",
+        "نموذج القبول"
       ],
       "description": "الكلمات الأساسية المستخرجة من محتوى المستند أو الوصف متعدد الوسائط",
-      "applicableFileTypes": [
-        "*"
-      ],
-      "contextHints": [
-        "محتوى النص",
-        "الوصف البصري",
-        "نسخ الكلام"
-      ],
+      "applicableFileTypes": ["*"],
+      "contextHints": ["محتوى النص", "الوصف البصري", "نسخ الكلام"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1853,26 +1547,12 @@
         "وجبات الطعام المطبوخة في المنزل"
       ],
       "description": "أمور حياتية محددة في المواقف العائلية",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "مسار التخزين",
-        "نمط التسمية",
-        "التطبيقات المرتبطة"
-      ],
+      "applicableFileTypes": ["text", "document", "ebook", "image", "video", "audio", "design"],
+      "contextHints": ["مسار التخزين", "نمط التسمية", "التطبيقات المرتبطة"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "الحياة العائلية"
-          ]
+          "triggerTags": ["الحياة العائلية"]
         }
       ],
       "metadata": {
@@ -1896,18 +1576,12 @@
         "التعليقات التوضيحية"
       ],
       "description": "تقسيم الملفات النصية",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "خصائص التنسيق"
-      ],
+      "applicableFileTypes": ["text"],
+      "contextHints": ["خصائص التنسيق"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "نص"
-          ]
+          "triggerTags": ["نص"]
         }
       ],
       "metadata": {
@@ -1922,27 +1596,14 @@
       "id": 101,
       "name": "تجزئة المستند",
       "level": 2,
-      "tags": [
-        "امتداد الوثيقة",
-        "Office",
-        "وثيقة كلمة",
-        "جدول",
-        "عرض تقديمي",
-        "وثيقة WPS"
-      ],
+      "tags": ["امتداد الوثيقة", "Office", "وثيقة كلمة", "جدول", "عرض تقديمي", "وثيقة WPS"],
       "description": "تقسيم ملفات المستندات",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "خصائص التنسيق"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["خصائص التنسيق"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "وثيقة"
-          ]
+          "triggerTags": ["وثيقة"]
         }
       ],
       "metadata": {
@@ -1990,18 +1651,12 @@
         "url"
       ],
       "description": "امتداد ملف بيانات التطبيق",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["application"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة بيانات التطبيق",
-          "triggerTags": [
-            "تمديد بيانات التطبيق"
-          ]
+          "triggerTags": ["تمديد بيانات التطبيق"]
         }
       ],
       "metadata": {
@@ -2017,28 +1672,14 @@
       "id": 103,
       "name": "امتداد قاعدة البيانات",
       "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
+      "tags": ["db", "db3", "mdb", "accdb", "fdb", "dbf", "sqlitedb"],
       "description": "امتداد ملف قاعدة البيانات",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["database"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة قاعدة البيانات",
-          "triggerTags": [
-            "امتداد قاعدة البيانات"
-          ]
+          "triggerTags": ["امتداد قاعدة البيانات"]
         }
       ],
       "metadata": {
@@ -2054,32 +1695,14 @@
       "id": 104,
       "name": "امتداد صورة القرص",
       "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
+      "tags": ["vhd", "vhdx", "vmdk", "img", "nrg", "mdf", "mds", "raw", "qcow2", "vdi", "ova"],
       "description": "امتداد ملف صورة القرص",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["diskimage"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة صورة القرص",
-          "triggerTags": [
-            "امتداد صورة القرص"
-          ]
+          "triggerTags": ["امتداد صورة القرص"]
         }
       ],
       "metadata": {
@@ -2104,19 +1727,12 @@
         "الواجهة الخلفية"
       ],
       "description": "تصنيف ملفات التعليمات البرمجية المصدر",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "الميزات النحوية",
-        "مسار المترجم"
-      ],
+      "applicableFileTypes": ["code"],
+      "contextHints": ["الميزات النحوية", "مسار المترجم"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كود المصدر"
-          ]
+          "triggerTags": ["كود المصدر"]
         }
       ],
       "metadata": {
@@ -2131,26 +1747,14 @@
       "id": 106,
       "name": "تجزئة الخط",
       "level": 2,
-      "tags": [
-        "امتداد الخط",
-        "الخط الإنجليزي",
-        "الخط الصيني",
-        "خط الأيقونة"
-      ],
+      "tags": ["امتداد الخط", "الخط الإنجليزي", "الخط الصيني", "خط الأيقونة"],
       "description": "تصنيف ملفات الخطوط",
-      "applicableFileTypes": [
-        "font"
-      ],
-      "contextHints": [
-        "تنسيق الخط",
-        "مجموعة الأحرف"
-      ],
+      "applicableFileTypes": ["font"],
+      "contextHints": ["تنسيق الخط", "مجموعة الأحرف"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "خط"
-          ]
+          "triggerTags": ["خط"]
         }
       ],
       "metadata": {
@@ -2165,28 +1769,14 @@
       "id": 107,
       "name": "امتداد ملف النظام",
       "level": 3,
-      "tags": [
-        "sys",
-        "drv",
-        "dll",
-        "service",
-        "socket",
-        "pid",
-        "lock"
-      ],
+      "tags": ["sys", "drv", "dll", "service", "socket", "pid", "lock"],
       "description": "امتداد ملف النظام",
-      "applicableFileTypes": [
-        "filesystem"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["filesystem"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "انهيار ملفات النظام",
-          "triggerTags": [
-            "امتداد ملف النظام"
-          ]
+          "triggerTags": ["امتداد ملف النظام"]
         }
       ],
       "metadata": {
@@ -2230,18 +1820,12 @@
         "xlsx"
       ],
       "description": "امتداد ملف فئة الوثيقة",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["document"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة المستند",
-          "triggerTags": [
-            "امتداد الوثيقة"
-          ]
+          "triggerTags": ["امتداد الوثيقة"]
         }
       ],
       "metadata": {
@@ -2274,18 +1858,12 @@
         "webvtt"
       ],
       "description": "امتداد الملف النصي",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["text"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تقسيم النص",
-          "triggerTags": [
-            "امتداد النص"
-          ]
+          "triggerTags": ["امتداد النص"]
         }
       ],
       "metadata": {
@@ -2336,18 +1914,12 @@
         "xcf"
       ],
       "description": "امتداد ملف الصورة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "امتداد الصورة"
-          ]
+          "triggerTags": ["امتداد الصورة"]
         }
       ],
       "metadata": {
@@ -2386,18 +1958,12 @@
         "dv"
       ],
       "description": "امتداد ملف الفيديو",
-      "applicableFileTypes": [
-        "video"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["video"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "امتداد الفيديو"
-          ]
+          "triggerTags": ["امتداد الفيديو"]
         }
       ],
       "metadata": {
@@ -2442,18 +2008,12 @@
         "oga"
       ],
       "description": "امتداد الملف الصوتي",
-      "applicableFileTypes": [
-        "audio"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["audio"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "تمديد الصوت"
-          ]
+          "triggerTags": ["تمديد الصوت"]
         }
       ],
       "metadata": {
@@ -2506,18 +2066,12 @@
         "zip"
       ],
       "description": "امتداد ملف الحزمة المضغوط",
-      "applicableFileTypes": [
-        "archive"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["archive"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "انهيار الحزمة المضغوطة",
-          "triggerTags": [
-            "ملحق الحزمة المضغوطة"
-          ]
+          "triggerTags": ["ملحق الحزمة المضغوطة"]
         }
       ],
       "metadata": {
@@ -2640,18 +2194,12 @@
         "yml"
       ],
       "description": "امتداد ملف التعليمات البرمجية المصدر",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["code"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة كود المصدر",
-          "triggerTags": [
-            "ملحق كود المصدر"
-          ]
+          "triggerTags": ["ملحق كود المصدر"]
         }
       ],
       "metadata": {
@@ -2689,18 +2237,12 @@
         "wasm"
       ],
       "description": "امتداد الملف القابل للتنفيذ",
-      "applicableFileTypes": [
-        "executable"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["executable"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة البرنامج",
-          "triggerTags": [
-            "امتداد البرنامج"
-          ]
+          "triggerTags": ["امتداد البرنامج"]
         }
       ],
       "metadata": {
@@ -2716,32 +2258,14 @@
       "id": 116,
       "name": "ملحق الكتاب الاليكتروني",
       "level": 3,
-      "tags": [
-        "epub",
-        "mobi",
-        "azw3",
-        "fb2",
-        "djvu",
-        "umd",
-        "cb7",
-        "cbt",
-        "bz2",
-        "cbr",
-        "cbz"
-      ],
+      "tags": ["epub", "mobi", "azw3", "fb2", "djvu", "umd", "cb7", "cbt", "bz2", "cbr", "cbz"],
       "description": "امتداد ملف الكتاب الإلكتروني",
-      "applicableFileTypes": [
-        "ebook"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["ebook"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الكتاب الإلكتروني",
-          "triggerTags": [
-            "ملحق الكتاب الاليكتروني"
-          ]
+          "triggerTags": ["ملحق الكتاب الاليكتروني"]
         }
       ],
       "metadata": {
@@ -2757,25 +2281,14 @@
       "id": 117,
       "name": "امتداد الخط",
       "level": 3,
-      "tags": [
-        "ttf",
-        "otf",
-        "woff",
-        "woff2"
-      ],
+      "tags": ["ttf", "otf", "woff", "woff2"],
       "description": "امتداد ملف الخط",
-      "applicableFileTypes": [
-        "font"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
+      "applicableFileTypes": ["font"],
+      "contextHints": ["امتداد الملف"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الخط",
-          "triggerTags": [
-            "امتداد الخط"
-          ]
+          "triggerTags": ["امتداد الخط"]
         }
       ],
       "metadata": {
@@ -2801,38 +2314,24 @@
         "ويب تون",
         "اللون الكامل",
         "أبيض وأسود",
-        "دوجينشي",
+        "كتاب دوجينشي",
         "مجلة الأعمال"
       ],
       "description": "تصنيف الجمهور المستهدف للمحتوى الهزلي",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "archive"
-      ],
-      "contextHints": [
-        "خصائص المحتوى",
-        "معرف الجمهور"
-      ],
+      "applicableFileTypes": ["ebook", "image", "archive"],
+      "contextHints": ["خصائص المحتوى", "معرف الجمهور"],
       "triggerConditions": [
         {
           "parentDimension": "انهيار الحزمة المضغوطة",
-          "triggerTags": [
-            "حزمة مضغوطة مشفرة",
-            "حزمة مضغوطة غير مشفرة"
-          ]
+          "triggerTags": ["حزمة مضغوطة مشفرة", "حزمة مضغوطة غير مشفرة"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كتاب إلكتروني"
-          ]
+          "triggerTags": ["كتاب إلكتروني"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -2863,22 +2362,12 @@
         "منصة مستقلة"
       ],
       "description": "منصة الأجهزة التي تعمل عليها اللعبة",
-      "applicableFileTypes": [
-        "video",
-        "ebook",
-        "archive",
-        "executable"
-      ],
-      "contextHints": [
-        "تحديد المنصة",
-        "تنسيق الملف"
-      ],
+      "applicableFileTypes": ["video", "ebook", "archive", "executable"],
+      "contextHints": ["تحديد المنصة", "تنسيق الملف"],
       "triggerConditions": [
         {
           "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "ألعاب وترفيه"
-          ]
+          "triggerTags": ["ألعاب وترفيه"]
         }
       ],
       "metadata": {
@@ -2892,59 +2381,30 @@
       "id": 120,
       "name": "مصدر العمل",
       "level": 2,
-      "tags": [
-        "إبداعي",
-        "دوجين",
-        "ترجمة",
-        "ترجمة رسمية",
-        "فريق الترجمة",
-        "ترجمة آلية"
-      ],
+      "tags": ["إبداعي", "دوجين", "ترجمة", "ترجمة رسمية", "فريق الترجمة", "ترجمة آلية"],
       "description": "مصادر وطرق إنتاج المحتوى الإبداعي",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "archive"
-      ],
-      "contextHints": [
-        "بيان إبداعي",
-        "العلامة المائية الرقمية",
-        "البيانات الوصفية"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive"],
+      "contextHints": ["بيان إبداعي", "العلامة المائية الرقمية", "البيانات الوصفية"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الكتاب الإلكتروني",
-          "triggerTags": [
-            "رواية"
-          ]
+          "triggerTags": ["رواية"]
         },
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "كتاب مسموع",
-            "موسيقى"
-          ]
+          "triggerTags": ["كتاب مسموع", "موسيقى"]
         },
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كتاب إلكتروني",
-            "صورة"
-          ]
+          "triggerTags": ["كتاب إلكتروني", "صورة"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -2976,48 +2436,28 @@
         "هيمنة"
       ],
       "description": "الجو العاطفي الذي يثيره محتوى الوثيقة",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio"
-      ],
-      "contextHints": [
-        "تحليل المشاعر",
-        "نغمة المحتوى"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio"],
+      "contextHints": ["تحليل المشاعر", "نغمة المحتوى"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الكتاب الإلكتروني",
-          "triggerTags": [
-            "رواية"
-          ]
+          "triggerTags": ["رواية"]
         },
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "كتاب مسموع",
-            "موسيقى"
-          ]
+          "triggerTags": ["كتاب مسموع", "موسيقى"]
         },
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كتاب إلكتروني",
-            "صورة"
-          ]
+          "triggerTags": ["كتاب إلكتروني", "صورة"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -3031,36 +2471,18 @@
       "id": 122,
       "name": "مستوى جودة الصورة",
       "level": 2,
-      "tags": [
-        "سلسة 360P",
-        "SD 480P",
-        "HD 720P",
-        "الترا اتش دي 1080 بيكسل",
-        "2K",
-        "4K",
-        "8K"
-      ],
+      "tags": ["سلسة 360P", "SD 480P", "HD 720P", "الترا اتش دي 1080 بيكسل", "2K", "4K", "8K"],
       "description": "مستوى الجودة والوضوح للصورة أو الفيديو",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "كشف القرار",
-        "معلمات الترميز"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["كشف القرار", "معلمات الترميز"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة"
-          ]
+          "triggerTags": ["صورة"]
         }
       ],
       "metadata": {
@@ -3075,30 +2497,14 @@
       "id": 123,
       "name": "تصنيف الإباحية",
       "level": 3,
-      "tags": [
-        "الإباحية الناعمة",
-        "نصف عاري",
-        "عاري بالكامل",
-        "XP خاص",
-        "غرابة متطرفة"
-      ],
+      "tags": ["الإباحية الناعمة", "نصف عاري", "عاري بالكامل", "XP خاص", "غرابة متطرفة"],
       "description": "تفصيل مستوى الصراحة وسبل عرض المحتوى الإباحي",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "الاعتدال في المحتوى",
-        "تحديد الدرجات"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["الاعتدال في المحتوى", "تحديد الدرجات"],
       "triggerConditions": [
         {
           "parentDimension": "محتوى حساس",
-          "triggerTags": [
-            "المواد الإباحية"
-          ]
+          "triggerTags": ["المواد الإباحية"]
         }
       ],
       "metadata": {
@@ -3113,38 +2519,22 @@
       "id": 124,
       "name": "مستوى التشفير (الفسيفساء)",
       "level": 2,
-      "tags": [
-        "بدون رقابة / غير مشفر",
-        "تشفير خفيف",
-        "مع رقابة / مشفر"
-      ],
+      "tags": ["بدون رقابة / غير مشفر", "تشفير خفيف", "مع رقابة / مشفر"],
       "description": "مستوى التشفير والفسيفساء لمحتوى الملف",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "الاعتدال في المحتوى",
-        "تحديد الدرجات"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["الاعتدال في المحتوى", "تحديد الدرجات"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة"
-          ]
+          "triggerTags": ["صورة"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -3159,39 +2549,22 @@
       "id": 125,
       "name": "مستوى العلامة المائية",
       "level": 2,
-      "tags": [
-        "لا توجد علامة مائية",
-        "علامة مائية خفيفة",
-        "هناك علامة مائية"
-      ],
+      "tags": ["لا توجد علامة مائية", "علامة مائية خفيفة", "هناك علامة مائية"],
       "description": "درجة العلامة المائية في محتوى الملف",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "الاعتدال في المحتوى",
-        "تحديد الدرجات",
-        "علامة حقوق النشر"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["الاعتدال في المحتوى", "تحديد الدرجات", "علامة حقوق النشر"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة"
-          ]
+          "triggerTags": ["صورة"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -3218,23 +2591,15 @@
         "صور من رحلة",
         "لقطات من الشارع",
         "صور شخصية",
-        "التصوير الجوي"
+        "التصوير الجوي بالطائرات"
       ],
       "description": "التصنيف المهني لمحتوى الصور الفوتوغرافية وموضوعاتها",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "بيانات EXIF",
-        "التعرف على الموضوع",
-        "الوعي بالمشهد"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["بيانات EXIF", "التعرف على الموضوع", "الوعي بالمشهد"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي"]
         }
       ],
       "tagImplications": [
@@ -3278,20 +2643,12 @@
         "الصورة مائلة"
       ],
       "description": "تقييم تقنيات التصوير الفوتوغرافي وجودة الصورة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "فحص جودة الصورة",
-        "تحليل التعرض",
-        "تقييم الوضوح"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["فحص جودة الصورة", "تحليل التعرض", "تقييم الوضوح"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي"]
         }
       ],
       "metadata": {
@@ -3319,21 +2676,12 @@
         "وثائق المناقصة"
       ],
       "description": "التصنيف المهني لتنسيقات الأوراق التجارية والوثائق القانونية",
-      "applicableFileTypes": [
-        "image",
-        "document"
-      ],
-      "contextHints": [
-        "التعرف على التنسيق",
-        "الختم الرسمي",
-        "النماذج المالية"
-      ],
+      "applicableFileTypes": ["image", "document"],
+      "contextHints": ["التعرف على التنسيق", "الختم الرسمي", "النماذج المالية"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "العقود والفواتير"
-          ]
+          "triggerTags": ["العقود والفواتير"]
         }
       ],
       "tagImplications": [
@@ -3406,21 +2754,12 @@
         "بطاقة الضمان الاجتماعي"
       ],
       "description": "تصنيف بطاقات الهوية والوثائق الرسمية",
-      "applicableFileTypes": [
-        "image",
-        "document"
-      ],
-      "contextHints": [
-        "إطار البطاقة",
-        "خلفية مضادة للتزوير",
-        "الوثائق الرسمية"
-      ],
+      "applicableFileTypes": ["image", "document"],
+      "contextHints": ["إطار البطاقة", "خلفية مضادة للتزوير", "الوثائق الرسمية"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التراخيص والشهادات"
-          ]
+          "triggerTags": ["التراخيص والشهادات"]
         }
       ],
       "metadata": {
@@ -3443,49 +2782,28 @@
         "دموي"
       ],
       "description": "تصنيف محتويات الملفات حسب درجة حساسيتها ومراجعتها من حيث الامتثال والمعايير الأمنية",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "مراجعة المحتوى الحساس",
-        "فحص الامتثال والأمن",
-        "التصفية غير القانونية"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["مراجعة المحتوى الحساس", "فحص الامتثال والأمن", "التصفية غير القانونية"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الكتاب الإلكتروني",
-          "triggerTags": [
-            "رواية"
-          ]
+          "triggerTags": ["رواية"]
         },
         {
           "parentDimension": "تجزئة الصوت",
-          "triggerTags": [
-            "كتاب مسموع",
-            "موسيقى"
-          ]
+          "triggerTags": ["كتاب مسموع", "موسيقى"]
         },
         {
           "parentDimension": "تجزئة الفيديو",
-          "triggerTags": [
-            "السينما والتلفزيون"
-          ]
+          "triggerTags": ["السينما والتلفزيون"]
         },
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كتاب إلكتروني",
-            "صورة"
-          ]
+          "triggerTags": ["كتاب إلكتروني", "صورة"]
         },
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "كاريكاتير"
-          ]
+          "triggerTags": ["كاريكاتير"]
         }
       ],
       "metadata": {
@@ -3511,23 +2829,12 @@
         "إيذاء النفس عن طريق إراقة الدم"
       ],
       "description": "تصنيفات مواضيع الدم والعنف والمحتوى المثير للفضول الشديد",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "الرقابة العنيفة",
-        "تصنيف العنف الدموي",
-        "كشف المحتوى الغريب"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["الرقابة العنيفة", "تصنيف العنف الدموي", "كشف المحتوى الغريب"],
       "triggerConditions": [
         {
           "parentDimension": "محتوى حساس",
-          "triggerTags": [
-            "دموي"
-          ]
+          "triggerTags": ["دموي"]
         }
       ],
       "metadata": {
@@ -3552,23 +2859,12 @@
         "التيارات الفكرية المتطرفة"
       ],
       "description": "تصنيف المخالفات المتعلقة بالحساسيات السياسية والأمن القومي والأيديولوجيا",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "الامتثال السياسي",
-        "شخصيات حساسة",
-        "الرقابة الأيديولوجية"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["الامتثال السياسي", "شخصيات حساسة", "الرقابة الأيديولوجية"],
       "triggerConditions": [
         {
           "parentDimension": "محتوى حساس",
-          "triggerTags": [
-            "المسائل السياسية"
-          ]
+          "triggerTags": ["المسائل السياسية"]
         }
       ],
       "metadata": {
@@ -3595,23 +2891,12 @@
         "المواد المحظورة"
       ],
       "description": "تصنيف المواد والأفعال غير القانونية والمخالفة للقوانين واللوائح التي يحظر تداولها",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "كشف المخالفات",
-        "التعرف على المواد المحظورة",
-        "تصفية الأنشطة غير المشروعة"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["كشف المخالفات", "التعرف على المواد المحظورة", "تصفية الأنشطة غير المشروعة"],
       "triggerConditions": [
         {
           "parentDimension": "محتوى حساس",
-          "triggerTags": [
-            "مخالفة"
-          ]
+          "triggerTags": ["مخالفة"]
         }
       ],
       "metadata": {
@@ -3640,23 +2925,12 @@
         "توجهات جنسية متنوعة"
       ],
       "description": "تقسيم الفئات الأساسية للإباحية للبالغين والمواضيع الرأسية",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "التصنيف للبالغين",
-        "تصنيف الموضوع",
-        "التعرف على المحتوى المثير"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["التصنيف للبالغين", "تصنيف الموضوع", "التعرف على المحتوى المثير"],
       "triggerConditions": [
         {
           "parentDimension": "محتوى حساس",
-          "triggerTags": [
-            "المواد الإباحية"
-          ]
+          "triggerTags": ["المواد الإباحية"]
         }
       ],
       "metadata": {
@@ -3687,20 +2961,12 @@
         "لقطة شاشة بملء الشاشة لسطح المكتب"
       ],
       "description": "التصنيف المتخصص لمختلف أنواع التقاط الشاشة ومحتوى لقطات الشاشة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "لقطة شاشة",
-        "تحليل الواجهة",
-        "التعرف على الصور الملتقطة"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["لقطة شاشة", "تحليل الواجهة", "التعرف على الصور الملتقطة"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "لقطة شاشة"
-          ]
+          "triggerTags": ["لقطة شاشة"]
         }
       ],
       "tagImplications": [
@@ -3736,29 +3002,14 @@
       "id": 136,
       "name": "وسيط التوليد",
       "level": 2,
-      "tags": [
-        "لقطة حقيقية",
-        "مرسومة باليد",
-        "تقديم CG",
-        "تم إنشاؤه بالذكاء الاصطناعي"
-      ],
+      "tags": ["لقطة حقيقية", "مرسومة باليد", "تقديم CG", "تم إنشاؤه بالذكاء الاصطناعي"],
       "description": "طرق التوليد المادي وناقلات الصور والمحتوى المرئي",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "طريقة التوليد",
-        "نوع العرض",
-        "تحديد الوسيط"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["طريقة التوليد", "نوع العرض", "تحديد الوسيط"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة",
-            "فيديو"
-          ]
+          "triggerTags": ["صورة", "فيديو"]
         }
       ],
       "metadata": {
@@ -3774,30 +3025,14 @@
       "id": 137,
       "name": "حجم اللقطة",
       "level": 3,
-      "tags": [
-        "لقطة مقربة",
-        "نصف الجسم",
-        "الجسم كله",
-        "منظر بانورامي",
-        "ماكرو"
-      ],
+      "tags": ["لقطة مقربة", "نصف الجسم", "الجسم كله", "منظر بانورامي", "ماكرو"],
       "description": "مجموعة تأطير ومناظر التصوير الفوتوغرافي والأعمال الفنية الجميلة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "نطاق العرض",
-        "تكوين الإطار",
-        "حجم لقطة الشخصية"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["نطاق العرض", "تكوين الإطار", "حجم لقطة الشخصية"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي",
-            "كاريكاتير",
-            "لوحة"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي", "كاريكاتير", "لوحة"]
         }
       ],
       "metadata": {
@@ -3813,28 +3048,14 @@
       "id": 138,
       "name": "إضاءة",
       "level": 3,
-      "tags": [
-        "ضوء الشمس",
-        "غروب الشمس",
-        "منظر ليلي",
-        "ضوء خافت",
-        "ضوء داخلي"
-      ],
+      "tags": ["ضوء الشمس", "غروب الشمس", "منظر ليلي", "ضوء خافت", "ضوء داخلي"],
       "description": "الإضاءة المحيطة وأجواء وقت التصوير للصور الفوتوغرافية",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "تحليل الضوء",
-        "وقت التصوير",
-        "التعرف على الغلاف الجوي"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["تحليل الضوء", "وقت التصوير", "التعرف على الغلاف الجوي"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي"]
         }
       ],
       "metadata": {
@@ -3850,26 +3071,14 @@
       "id": 139,
       "name": "الخلفية",
       "level": 2,
-      "tags": [
-        "خلفية شفافة",
-        "خلفية ملونة صلبة",
-        "خلفية حية"
-      ],
+      "tags": ["خلفية شفافة", "خلفية ملونة صلبة", "خلفية حية"],
       "description": "قنوات الخلفية وأنواع البيئة لأصول ومواد تصميم الصور",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "قناة ألفا",
-        "انقطاع الخلفية",
-        "مواد التصميم"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["قناة ألفا", "انقطاع الخلفية", "مواد التصميم"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة"
-          ]
+          "triggerTags": ["صورة"]
         }
       ],
       "metadata": {
@@ -3885,29 +3094,14 @@
       "id": 140,
       "name": "وجهة نظر",
       "level": 3,
-      "tags": [
-        "مستوى العين",
-        "منظر من الأعلى",
-        "ابحث عن",
-        "أول شخص"
-      ],
+      "tags": ["مستوى العين", "منظر من الأعلى", "ابحث عن", "أول شخص"],
       "description": "زوايا المنظور وزوايا المشاهدة للتصوير ورسم اللقطات",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "زاوية التصوير",
-        "منظور العدسة",
-        "زاوية المشاهدة"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["زاوية التصوير", "منظور العدسة", "زاوية المشاهدة"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي",
-            "لقطة شاشة"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي", "لقطة شاشة"]
         }
       ],
       "metadata": {
@@ -3930,22 +3124,12 @@
         "ملاحظات مكتوبة بخط اليد"
       ],
       "description": "تكوين التخطيط البصري للوثيقة والصفحة",
-      "applicableFileTypes": [
-        "document",
-        "image"
-      ],
-      "contextHints": [
-        "هيكل التنضيد",
-        "تحليل التخطيط",
-        "نسبة الصورة والنص"
-      ],
+      "applicableFileTypes": ["document", "image"],
+      "contextHints": ["هيكل التنضيد", "تحليل التخطيط", "نسبة الصورة والنص"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "وثيقة",
-            "صورة"
-          ]
+          "triggerTags": ["وثيقة", "صورة"]
         }
       ],
       "metadata": {
@@ -3969,20 +3153,12 @@
         "لقطة شاشة لينكس"
       ],
       "description": "واجهة نظام التشغيل وتجزئة المصدر البيئي للجهاز الطرفي",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "نظام التشغيل",
-        "نمط الواجهة",
-        "مصدر المعدات"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["نظام التشغيل", "نمط الواجهة", "مصدر المعدات"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "لقطة شاشة"
-          ]
+          "triggerTags": ["لقطة شاشة"]
         }
       ],
       "metadata": {
@@ -3998,29 +3174,14 @@
       "id": 143,
       "name": "إطار",
       "level": 2,
-      "tags": [
-        "شاشة أفقية",
-        "شاشة عمودية",
-        "مربع",
-        "شريط عريض جدًا"
-      ],
+      "tags": ["شاشة أفقية", "شاشة عمودية", "مربع", "شريط عريض جدًا"],
       "description": "نسبة العرض إلى الارتفاع للصورة واتجاه التكوين",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "نسبة الارتفاع",
-        "تحليل القرار",
-        "اتجاه الإطار"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["نسبة الارتفاع", "تحليل القرار", "اتجاه الإطار"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة",
-            "فيديو"
-          ]
+          "triggerTags": ["صورة", "فيديو"]
         }
       ],
       "metadata": {
@@ -4036,29 +3197,14 @@
       "id": 144,
       "name": "عدد المواضيع",
       "level": 3,
-      "tags": [
-        "شخص واحد",
-        "مزدوج",
-        "صورة جماعية",
-        "مشهد فارغ"
-      ],
+      "tags": ["شخص واحد", "مزدوج", "صورة جماعية", "مشهد فارغ"],
       "description": "عدد وتركيب الشخصيات أو المواضيع الأساسية في الصورة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "عدد العناصر",
-        "كشف الصورة",
-        "تكوين المشهد"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["عدد العناصر", "كشف الصورة", "تكوين المشهد"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي",
-            "كاريكاتير",
-            "لوحة"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي", "كاريكاتير", "لوحة"]
         }
       ],
       "metadata": {
@@ -4082,20 +3228,12 @@
         "العمارة البيئية"
       ],
       "description": "النوع الأساسي للتركيز البصري الأمامي في الصورة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "كشف الهدف",
-        "تحديد العنصر",
-        "التركيز البصري"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["كشف الهدف", "تحديد العنصر", "التركيز البصري"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة"
-          ]
+          "triggerTags": ["صورة"]
         }
       ],
       "metadata": {
@@ -4111,26 +3249,14 @@
       "id": 146,
       "name": "كثافة النص",
       "level": 2,
-      "tags": [
-        "نص صغير",
-        "عنوان الصورة والنص",
-        "الطباعة الكثيفة"
-      ],
+      "tags": ["نص صغير", "عنوان الصورة والنص", "الطباعة الكثيفة"],
       "description": "مقدار كثافة النص والتخطيط الموجود في الصورة أو الصفحة",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "التعرف الضوئي على الحروف",
-        "تغطية النص",
-        "تخطيط النص"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["التعرف الضوئي على الحروف", "تغطية النص", "تخطيط النص"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "صورة تحتوي على نص"
-          ]
+          "triggerTags": ["صورة تحتوي على نص"]
         }
       ],
       "metadata": {
@@ -4204,21 +3330,12 @@
         "الجسيمات الديناميكية"
       ],
       "description": "النغمة الفنية وأسلوب نسيج الصورة للأعمال المرئية",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "نمط اللون",
-        "تقديم الملمس",
-        "النمط الفني"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["نمط اللون", "تقديم الملمس", "النمط الفني"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي",
-            "لوحة"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي", "لوحة"]
         }
       ],
       "metadata": {
@@ -4234,27 +3351,14 @@
       "id": 148,
       "name": "الموسم الزمني",
       "level": 3,
-      "tags": [
-        "مشهد زهرة الربيع",
-        "ظل الصيف",
-        "الخريف الذهبي",
-        "مشهد الثلوج في فصل الشتاء"
-      ],
+      "tags": ["مشهد زهرة الربيع", "ظل الصيف", "الخريف الذهبي", "مشهد الثلوج في فصل الشتاء"],
       "description": "خصائص التوقيت الموسمي للمناظر الطبيعية وصور السفر في الهواء الطلق",
-      "applicableFileTypes": [
-        "image"
-      ],
-      "contextHints": [
-        "لون السلسلة الزمنية",
-        "النباتات الموسمية",
-        "خصائص المناخ"
-      ],
+      "applicableFileTypes": ["image"],
+      "contextHints": ["لون السلسلة الزمنية", "النباتات الموسمية", "خصائص المناخ"],
       "triggerConditions": [
         {
           "parentDimension": "تجزئة الصورة",
-          "triggerTags": [
-            "التصوير الفوتوغرافي"
-          ]
+          "triggerTags": ["التصوير الفوتوغرافي"]
         }
       ],
       "metadata": {
@@ -4289,22 +3393,12 @@
         "رمادي"
       ],
       "description": "درجة حرارة اللون السائدة بشكل عام واتجاه درجة اللون في الصورة",
-      "applicableFileTypes": [
-        "image",
-        "video"
-      ],
-      "contextHints": [
-        "تحليل درجة حرارة اللون",
-        "الرسم البياني اللون",
-        "ميل درجة اللون"
-      ],
+      "applicableFileTypes": ["image", "video"],
+      "contextHints": ["تحليل درجة حرارة اللون", "الرسم البياني اللون", "ميل درجة اللون"],
       "triggerConditions": [
         {
           "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "صورة",
-            "فيديو"
-          ]
+          "triggerTags": ["صورة", "فيديو"]
         }
       ],
       "metadata": {
@@ -4339,23 +3433,12 @@
         "الجد والحفيد بين الأجيال الشبقية"
       ],
       "description": "تقسيم قرابة الدم والأقدمية العائلية والمواضيع الأخلاقية المحرمة",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "موضوع الأقارب المقربين",
-        "المحرمات الأخلاقية",
-        "رواية الدم"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["موضوع الأقارب المقربين", "المحرمات الأخلاقية", "رواية الدم"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "سفاح القربى العائلي"
-          ]
+          "triggerTags": ["سفاح القربى العائلي"]
         }
       ],
       "metadata": {
@@ -4380,23 +3463,12 @@
         "إثارة رومانسية فارق السن"
       ],
       "description": "تجزئة العقود العاطفية خارج نطاق الزواج وتبادل الشركاء وموضوعات الزوجة",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "مبادلة الشريك",
-        "أسرار خارج نطاق الزواج",
-        "موضوع الزوجة"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["مبادلة الشريك", "أسرار خارج نطاق الزواج", "موضوع الزوجة"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "شهوة خارج نطاق الزواج"
-          ]
+          "triggerTags": ["شهوة خارج نطاق الزواج"]
         }
       ],
       "metadata": {
@@ -4423,23 +3495,12 @@
         "إثارة المدرس الخاص"
       ],
       "description": "تفصيل الموضوع لشهوة المعلم والطالب، والجنس في الحرم الجامعي للشباب وإثارة زملاء الدراسة",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "المعلم الطالب شهوة",
-        "الحرم الجامعي الجنس",
-        "زميل الشبقية"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["المعلم الطالب شهوة", "الحرم الجامعي الجنس", "زميل الشبقية"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "إثارة المعلم والطالب"
-          ]
+          "triggerTags": ["إثارة المعلم والطالب"]
         }
       ],
       "metadata": {
@@ -4467,23 +3528,12 @@
         "شهوة الإنترنت"
       ],
       "description": "انهيار مكان العمل المثيرة ، حي المثيرة والاجتماعية الدوائر المثيرة",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "مكان العمل شهوة",
-        "إثارة بين الجيران",
-        "الاجتماعية شهوة"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["مكان العمل شهوة", "إثارة بين الجيران", "الاجتماعية شهوة"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "إثارة مكان العمل"
-          ]
+          "triggerTags": ["إثارة مكان العمل"]
         }
       ],
       "metadata": {
@@ -4505,12 +3555,7 @@
         "حفلة جنس متعددة الأشخاص"
       ],
       "description": "التعاون متعدد الوكلاء والتفاعل الجماعي وتجزئة موضوع التفاعل متعدد الأشخاص",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
       "contextHints": [
         "التفاعل الإيروتيكي متعدد الأطراف",
         "التفاعل الإيروتيكي الجماعي",
@@ -4519,9 +3564,7 @@
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "الجنس الجماعي"
-          ]
+          "triggerTags": ["الجنس الجماعي"]
         }
       ],
       "metadata": {
@@ -4547,23 +3590,12 @@
         "ميل جنسي فتشي"
       ],
       "description": "الهيمنة والخضوع، والأوثان الثقافية الفرعية والانهيار الجنسي الخطير",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "التدريب على الثقافة الفرعية",
-        "الخاضعة المهيمنة",
-        "مواجهة ثقيلة"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["التدريب على الثقافة الفرعية", "الخاضعة المهيمنة", "مواجهة ثقيلة"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "التدريب على الجنس"
-          ]
+          "triggerTags": ["التدريب على الجنس"]
         }
       ],
       "metadata": {
@@ -4588,23 +3620,12 @@
         "انكشاف"
       ],
       "description": "تقسيم التعري في الأماكن العامة والعرض الخارجي والتصوير الخفي والصريح",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "التعرض المكاني",
-        "التصوير الخفي",
-        "عرض خارجي"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["التعرض المكاني", "التصوير الخفي", "عرض خارجي"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "التلصص والتعري"
-          ]
+          "triggerTags": ["التلصص والتعري"]
         }
       ],
       "metadata": {
@@ -4629,23 +3650,12 @@
         "المواعدة المدفوعة والدعارة"
       ],
       "description": "المهن الخاصة بالصناعة، والأدوار الموحدة المحددة وتجزئة الشخصية",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "شخصية بالزي الرسمي",
-        "مهنة الصناعة",
-        "لعب الأدوار"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["شخصية بالزي الرسمي", "مهنة الصناعة", "لعب الأدوار"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "الإغواء بالزي الرسمي"
-          ]
+          "triggerTags": ["الإغواء بالزي الرسمي"]
         }
       ],
       "metadata": {
@@ -4673,23 +3683,12 @@
         "لقاءات مثيرة"
       ],
       "description": "إعدادات خلفية أدب الكبار، وخلفية الزمان والمكان، وتقسيمات فرعية محددة للنوع",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "الأدب المثير",
-        "إعدادات الخلفية",
-        "النوع الأدبي"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["الأدب المثير", "إعدادات الخلفية", "النوع الأدبي"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "الأدب المثير"
-          ]
+          "triggerTags": ["الأدب المثير"]
         }
       ],
       "metadata": {
@@ -4715,23 +3714,12 @@
         "مجمع العذرية"
       ],
       "description": "الحركات الفسيولوجية والسلوكية، لقطات مقربة للأعضاء، صور مثيرة وانهيار الخصائص الحسية",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "الإجراءات الفسيولوجية",
-        "لقطة مقربة للأعضاء",
-        "صورة مثيرة"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["الإجراءات الفسيولوجية", "لقطة مقربة للأعضاء", "صورة مثيرة"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "علم وظائف الأعضاء المثيرة"
-          ]
+          "triggerTags": ["علم وظائف الأعضاء المثيرة"]
         }
       ],
       "metadata": {
@@ -4753,23 +3741,12 @@
         "الإكراه العنيف"
       ],
       "description": "تصنيف محتوى الإكراه غير الطوعي والتعدي والانتهاك الشديد",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "ضد الإرادة",
-        "التعدي والانتهاك",
-        "انتهاك قسري"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["ضد الإرادة", "التعدي والانتهاك", "انتهاك قسري"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "اعتداء لا إرادي"
-          ]
+          "triggerTags": ["اعتداء لا إرادي"]
         }
       ],
       "metadata": {
@@ -4790,23 +3767,12 @@
         "المتحولين جنسيا الشبقية"
       ],
       "description": "الإدراك المتنوع للجنس والتوجهات المتنوعة وتقسيم موضوع التوجه الجنسي المحدد",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "archive"
-      ],
-      "contextHints": [
-        "توجهات جنسية متنوعة",
-        "مواضيع مثلية",
-        "تصنيف التوجه الجنسي"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "archive"],
+      "contextHints": ["توجهات جنسية متنوعة", "مواضيع مثلية", "تصنيف التوجه الجنسي"],
       "triggerConditions": [
         {
           "parentDimension": "التصنيفات الإباحية",
-          "triggerTags": [
-            "توجهات جنسية متنوعة"
-          ]
+          "triggerTags": ["توجهات جنسية متنوعة"]
         }
       ],
       "metadata": {
@@ -4820,27 +3786,10 @@
       "id": 162,
       "name": "تصنيف المحتوى",
       "level": 1,
-      "tags": [
-        "جميع الأعمار",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
-      ],
+      "tags": ["جميع الأعمار", "PG-13", "R-15", "R-18", "R-18G"],
       "description": "تصنيف مدى ملاءمة محتوى الملف للعمر",
-      "applicableFileTypes": [
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "archive",
-        "document"
-      ],
-      "contextHints": [
-        "تصنيف الملاءمة العمرية",
-        "تصنيف المحتوى",
-        "مراجعة العمر المستهدف للمتلقي"
-      ],
+      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive", "document"],
+      "contextHints": ["تصنيف الملاءمة العمرية", "تصنيف المحتوى", "مراجعة العمر المستهدف للمتلقي"],
       "triggerConditions": [],
       "metadata": {
         "flag": {
