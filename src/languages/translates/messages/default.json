@@ -571,6 +571,19 @@
     ],
     "$id": 7663
   },
+  "该目录已创建为{typeName}": {
+    "en-US": "This directory has been created as {typeName}",
+    "es-ES": "El directorio se ha creado como {typeName}",
+    "ar-EG": "تم إنشاء هذا المجلد كـ{typeName}",
+    "pt-PT": "O diretório foi criado como {typeName}",
+    "ru-RU": "Каталог создан как {typeName}",
+    "ja-JP": "このディレクトリは{typeName}として作成されました",
+    "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
+    "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
+    "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
+    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(8131-8152)"],
+    "$id": 8124
+  },
   "无法自动初始化数据库：尚未指定语言": {
     "en-US": "Unable to auto-initialize database: No language has been specified",
     "es-ES": "No se puede inicializar automáticamente la base de datos: no se ha especificado ningún idioma",
@@ -944,19 +957,6 @@
       "src/electron/runtime-services/database/database-service/query-proxy.ts(35119-35135)"
     ],
     "$id": 7660
-  },
-  "该目录已创建为{typeName}": {
-    "en-US": "This directory has been created as {typeName}",
-    "es-ES": "El directorio se ha creado como {typeName}",
-    "ar-EG": "تم إنشاء هذا المجلد كـ{typeName}",
-    "pt-PT": "O diretório foi criado como {typeName}",
-    "ru-RU": "Каталог создан как {typeName}",
-    "ja-JP": "このディレクトリは{typeName}として作成されました",
-    "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
-    "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
-    "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
-    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(8131-8152)"],
-    "$id": 8124
   },
   "文件路径记录不存在": {
     "en-US": "File path record does not exist",
