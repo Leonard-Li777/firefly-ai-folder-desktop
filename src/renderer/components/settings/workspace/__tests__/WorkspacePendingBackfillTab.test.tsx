@@ -158,9 +158,18 @@ describe('WorkspacePendingBackfillTab (Ticket 04 / V-05)', () => {
     fireEvent.click(screen.getByText(/重试全部失败片段/))
     await waitFor(() => expect(mockRetryFailed).toHaveBeenCalledWith(7))
 
-    // 区块 2 立即补全全部非视频项
+    // 切换到其它待补全文件 Tab，验证其内操作
+    fireEvent.click(screen.getByRole('tab', { name: /其它待补全文件/ }))
+
+    // 区块 2 立即补全全部非视频项（精准作用域，传入区块 2 待补文件 ID，杜绝把长视频切片误入队）
     fireEvent.click(screen.getByText('立即补全全部'))
-    await waitFor(() => expect(mockEnqueueRecovery).toHaveBeenCalledWith(7, undefined))
+    await waitFor(() => expect(mockEnqueueRecovery).toHaveBeenCalledWith(7, [101]))
+
+    // 单项文件的「立即补全」按钮
+    const singleRecoverBtn = screen.getByText('立即补全')
+    expect(singleRecoverBtn).toBeTruthy()
+    fireEvent.click(singleRecoverBtn)
+    await waitFor(() => expect(mockEnqueueRecovery).toHaveBeenCalledWith(7, [101]))
 
     // 清除待补列表按钮（顶部与区块 2 均支持，点击清空当前工作区所有待补项）
     mockClearRecovery.mockResolvedValue({ success: true, cleared: 3 })
@@ -187,6 +196,69 @@ describe('WorkspacePendingBackfillTab (Ticket 04 / V-05)', () => {
     await waitFor(() => {
       expect(mockClearRecovery).toHaveBeenCalledWith(7, [103])
       expect(mockRefreshRuntimeContext).toHaveBeenCalled()
+    })
+  })
+
+  it('V-07: 正确渲染双 Tab 导航与徽标，并支持点击 Tab 或统计卡片切换视图', async () => {
+    render(<WorkspacePendingBackfillTab workspace={workspace} isActive={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /长视频切片补全/ })).toBeTruthy()
+      expect(screen.getByRole('tab', { name: /其它待补全文件/ })).toBeTruthy()
+    })
+
+    // 验证 Tab 徽标数字
+    expect(screen.getByRole('tab', { name: /长视频切片补全/ })).toHaveTextContent('2')
+    expect(screen.getByRole('tab', { name: /其它待补全文件/ })).toHaveTextContent('1')
+
+    // 初始默认在长视频 Tab，长视频区域可见，环境区域隐藏
+    const videoTab = screen.getByTestId('pending-backfill-videos-tab')
+    const envTab = screen.getByTestId('pending-backfill-env-tab')
+    expect(videoTab.classList.contains('hidden')).toBe(false)
+    expect(envTab.classList.contains('hidden')).toBe(true)
+
+    // 点击 Tab 切换到其它待补全文件
+    fireEvent.click(screen.getByRole('tab', { name: /其它待补全文件/ }))
+    await waitFor(() => {
+      expect(videoTab.classList.contains('hidden')).toBe(true)
+      expect(envTab.classList.contains('hidden')).toBe(false)
+    })
+
+    // 点击统计卡片「待补长视频」切回长视频 Tab
+    fireEvent.click(screen.getByText('待补长视频'))
+    await waitFor(() => {
+      expect(videoTab.classList.contains('hidden')).toBe(false)
+      expect(envTab.classList.contains('hidden')).toBe(true)
+    })
+
+    // 点击统计卡片「其它待补缺口」切换到能力恢复 Tab
+    fireEvent.click(screen.getByText('其它待补缺口'))
+    await waitFor(() => {
+      expect(videoTab.classList.contains('hidden')).toBe(true)
+      expect(envTab.classList.contains('hidden')).toBe(false)
+    })
+  })
+
+  it('V-08: 单一 Tab 无数据时，展示对应的轻量空态卡片', async () => {
+    // 仅有视频，无其它文件
+    mockFetchRecovery.mockResolvedValueOnce({
+      success: true,
+      items: []
+    })
+
+    render(<WorkspacePendingBackfillTab workspace={workspace} isActive={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('长视频切片补全')).toBeTruthy()
+    })
+
+    // 切换到其它待补全文件 Tab
+    fireEvent.click(screen.getByRole('tab', { name: /其它待补全文件/ }))
+    await waitFor(() => {
+      expect(screen.getByTestId('pending-backfill-env-empty')).toBeTruthy()
+      expect(
+        screen.getByText('当前目录暂无其它环境恢复或缺失正文/OCR/转录的待补文件。')
+      ).toBeTruthy()
     })
   })
 })

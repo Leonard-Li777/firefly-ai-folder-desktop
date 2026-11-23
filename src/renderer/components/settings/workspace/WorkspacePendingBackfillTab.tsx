@@ -1,8 +1,9 @@
 // @doc-anchor: docs/specs/video-fast-first-slice-and-idle-backfill-spec.md#34-目录设置新增常驻-tab待补分析文件workspacependingbackfilltabtsx
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useRef } from 'react'
 import type { WorkspaceDirectory, WorkspacePendingBackfillVideoItem } from '@firefly/types'
 import { t } from '@app/languages'
 import { Button } from '../../ui/button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../ui/tabs'
 import { toast } from '../../common/Toast'
 import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
 import { useWorkspaceRuntimeContext } from '../../../stores/workspace-runtime-context-store'
@@ -61,6 +62,23 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
   const [envItems, setEnvItems] = useState<RecoverableFileItem[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [busyAction, setBusyAction] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<'videos' | 'env'>('videos')
+  const userSwitchedRef = useRef<boolean>(false)
+
+  const handleTabChange = (val: string) => {
+    userSwitchedRef.current = true
+    setActiveTab(val as 'videos' | 'env')
+  }
+
+  useEffect(() => {
+    if (!userSwitchedRef.current) {
+      if (videoItems.length === 0 && envItems.length > 0) {
+        setActiveTab('env')
+      } else if (videoItems.length > 0) {
+        setActiveTab('videos')
+      }
+    }
+  }, [videoItems.length, envItems.length])
 
   const loadData = useCallback(async () => {
     if (workspace?.id == null) return
@@ -178,8 +196,6 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
     }
   }
 
-  const handleClearEnvItems = () => handleClearAllItems()
-
   const totalFailedSlices = videoItems.reduce((sum, v) => sum + v.failedSlices, 0)
   const remainingMinutes = Math.round(
     videoItems.reduce(
@@ -260,21 +276,51 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
         </div>
 
         <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border/50">
-          <div className="rounded-lg bg-card border border-border/60 px-3 py-2">
+          <div
+            role="button"
+            tabIndex={0}
+            className={cn(
+              'rounded-lg bg-card border px-3 py-2 cursor-pointer transition-colors',
+              activeTab === 'videos'
+                ? 'border-primary/50 bg-primary/5 shadow-xs'
+                : 'border-border/60 hover:border-border'
+            )}
+            onClick={() => handleTabChange('videos')}
+          >
             <div className="text-xs text-muted-foreground">{t('待补长视频')}</div>
             <div className="text-base font-bold font-mono mt-0.5">
               {videoItems.length}{' '}
               <span className="text-xs font-normal text-muted-foreground">{t('个')}</span>
             </div>
           </div>
-          <div className="rounded-lg bg-card border border-border/60 px-3 py-2">
+          <div
+            role="button"
+            tabIndex={0}
+            className={cn(
+              'rounded-lg bg-card border px-3 py-2 cursor-pointer transition-colors',
+              activeTab === 'videos'
+                ? 'border-primary/50 bg-primary/5 shadow-xs'
+                : 'border-border/60 hover:border-border'
+            )}
+            onClick={() => handleTabChange('videos')}
+          >
             <div className="text-xs text-muted-foreground">{t('剩余待补画面时长')}</div>
             <div className="text-base font-bold font-mono mt-0.5">
               {remainingMinutes}{' '}
               <span className="text-xs font-normal text-muted-foreground">{t('分钟')}</span>
             </div>
           </div>
-          <div className="rounded-lg bg-card border border-border/60 px-3 py-2">
+          <div
+            role="button"
+            tabIndex={0}
+            className={cn(
+              'rounded-lg bg-card border px-3 py-2 cursor-pointer transition-colors',
+              activeTab === 'env'
+                ? 'border-primary/50 bg-primary/5 shadow-xs'
+                : 'border-border/60 hover:border-border'
+            )}
+            onClick={() => handleTabChange('env')}
+          >
             <div className="text-xs text-muted-foreground">{t('其它待补缺口')}</div>
             <div className="text-base font-bold font-mono mt-0.5">
               {envItems.length}{' '}
@@ -284,191 +330,281 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
         </div>
       </div>
 
-      {/* 区块 1：长视频空闲自动补全 */}
-      {hasVideos && (
-        <div className="space-y-2.5" data-testid="pending-backfill-video-section">
-          <div className="flex items-center justify-between gap-2">
-            <div className="text-xs font-semibold text-muted-foreground">
-              {t('长视频空闲自动补全')} · {t('按当前设定上限 {mins} 分钟补齐', { mins: limitMins })}
-            </div>
-            {onNavigateTab && (
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline cursor-pointer"
-                onClick={() => onNavigateTab('basic_ai_engine')}
+      {/* 两个 Tab：长视频切片补全 VS 其它待补全文件（能力恢复） */}
+      {(hasVideos || hasEnv) && (
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-4">
+          <div className="flex items-center justify-between gap-3 border-b border-border/60 pb-1">
+            <TabsList className="bg-muted/70 p-1">
+              <TabsTrigger
+                value="videos"
+                className="gap-2 px-3.5 py-1.5 text-xs data-[state=active]:font-semibold cursor-pointer"
+                onClick={() => handleTabChange('videos')}
               >
-                {t('调整时长上限')} →
-              </button>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            {videoItems.map(v => {
-              const isCurrent =
-                videoBackfill?.running &&
-                videoBackfill.current?.fileFingerprint === v.fileFingerprint
-              const completedSlices = isCurrent
-                ? videoBackfill.current!.completedSlices
-                : v.completedSlices
-              const targetSlices = Math.max(1, v.targetSlices)
-              const pct = isCurrent
-                ? Math.round(videoBackfill.current!.progressPct)
-                : Math.min(100, Math.round((completedSlices / targetSlices) * 100))
-              const completedMins = Math.round(v.completedDurationSec / 60)
-              const targetMins = Math.round(v.targetDurationSec / 60)
-              const totalMins = Math.round(v.totalDurationSec / 60)
-
-              return (
-                <div
-                  key={v.fileFingerprint}
+                <span>{t('长视频切片补全')}</span>
+                <span
                   className={cn(
-                    'rounded-xl border p-3.5 space-y-2 bg-card/60',
-                    isCurrent ? 'border-cyan-500/40' : 'border-border/60'
+                    'px-1.5 py-0.5 rounded-full text-[10px] font-mono leading-none',
+                    activeTab === 'videos'
+                      ? 'bg-primary/20 text-primary font-bold'
+                      : 'bg-muted-foreground/15 text-muted-foreground'
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-semibold text-foreground truncate">
-                          {v.name}
-                        </span>
-                        {isCurrent ? (
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
-                            {t('补全中')} {pct}%
-                          </span>
-                        ) : v.failedSlices > 0 ? (
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
-                            {t('部分片段失败')} ({v.failedSlices})
-                          </span>
-                        ) : (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                            {t('等待空闲补全')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        {t('已分析 {done} / 目标 {target} 分钟（共 {total} 分钟）', {
-                          done: completedMins,
-                          target: targetMins,
-                          total: totalMins
-                        })}
-                      </div>
-                    </div>
+                  {videoItems.length}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="env"
+                className="gap-2 px-3.5 py-1.5 text-xs data-[state=active]:font-semibold cursor-pointer"
+                onClick={() => handleTabChange('env')}
+              >
+                <span>{t('其它待补全文件（能力恢复）')}</span>
+                <span
+                  className={cn(
+                    'px-1.5 py-0.5 rounded-full text-[10px] font-mono leading-none',
+                    activeTab === 'env'
+                      ? 'bg-primary/20 text-primary font-bold'
+                      : 'bg-muted-foreground/15 text-muted-foreground'
+                  )}
+                >
+                  {envItems.length}
+                </span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                      {!isCurrent && (
+          <TabsContent
+            value="videos"
+            forceMount
+            data-testid="pending-backfill-videos-tab"
+            className={cn(
+              'space-y-3 mt-0 focus-visible:outline-none',
+              activeTab !== 'videos' && 'hidden'
+            )}
+          >
+            {hasVideos ? (
+              <div className="space-y-2.5" data-testid="pending-backfill-video-section">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    {t('长视频空闲自动补全')} ·{' '}
+                    {t('按当前设定上限 {mins} 分钟补齐', { mins: limitMins })}
+                  </div>
+                  {onNavigateTab && (
+                    <button
+                      type="button"
+                      className="text-xs text-primary hover:underline cursor-pointer"
+                      onClick={() => onNavigateTab('basic_ai_engine')}
+                    >
+                      {t('调整时长上限')} →
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {videoItems.map(v => {
+                    const isCurrent =
+                      videoBackfill?.running &&
+                      videoBackfill.current?.fileFingerprint === v.fileFingerprint
+                    const completedSlices = isCurrent
+                      ? videoBackfill.current!.completedSlices
+                      : v.completedSlices
+                    const targetSlices = Math.max(1, v.targetSlices)
+                    const pct = isCurrent
+                      ? Math.round(videoBackfill.current!.progressPct)
+                      : Math.min(100, Math.round((completedSlices / targetSlices) * 100))
+                    const completedMins = Math.round(v.completedDurationSec / 60)
+                    const targetMins = Math.round(v.targetDurationSec / 60)
+                    const totalMins = Math.round(v.totalDurationSec / 60)
+
+                    return (
+                      <div
+                        key={v.fileFingerprint}
+                        className={cn(
+                          'rounded-xl border p-3.5 space-y-2 bg-card/60',
+                          isCurrent ? 'border-cyan-500/40' : 'border-border/60'
+                        )}
+                      >
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-semibold text-foreground truncate">
+                                {v.name}
+                              </span>
+                              {isCurrent ? (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                                  {t('补全中')} {pct}%
+                                </span>
+                              ) : v.failedSlices > 0 ? (
+                                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                                  {t('部分片段失败')} ({v.failedSlices})
+                                </span>
+                              ) : (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                  {t('等待空闲补全')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {t('已分析 {done} / 目标 {target} 分钟（共 {total} 分钟）', {
+                                done: completedMins,
+                                target: targetMins,
+                                total: totalMins
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {!isCurrent && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="h-7 text-xs shrink-0"
+                                onClick={() => void handlePrioritizeVideo(v.fileFingerprint)}
+                              >
+                                {t('优先补全此文件')}
+                              </Button>
+                            )}
+                            {v.workspaceFileId != null && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs shrink-0 text-muted-foreground hover:text-foreground"
+                                disabled={busyAction}
+                                onClick={() => void handleClearAllItems([v.workspaceFileId!])}
+                              >
+                                {t('不再补全')}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all duration-300',
+                              isCurrent ? 'bg-cyan-500' : 'bg-primary/60'
+                            )}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div
+                data-testid="pending-backfill-video-empty"
+                className="rounded-xl border border-dashed border-border/80 p-8 text-center space-y-1 bg-card/20"
+              >
+                <div className="text-xs font-semibold text-foreground">
+                  {t('当前目录暂无待续跑的长视频片段。')}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {t('当导入时长超过 5 分钟的长视频时，首段分析完成后剩余片段会自动在此排队。')}
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent
+            value="env"
+            forceMount
+            data-testid="pending-backfill-env-tab"
+            className={cn(
+              'space-y-3 mt-0 focus-visible:outline-none',
+              activeTab !== 'env' && 'hidden'
+            )}
+          >
+            {hasEnv ? (
+              <div className="space-y-2.5" data-testid="pending-backfill-env-section">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {t('其它待补全文件（能力恢复）')}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('补齐图片文字识别、文档封面或语音转文字后，将自动重新整理标签与描述。')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={busyAction}
+                      onClick={() =>
+                        void handleRecoverEnvItems(envItems.map(i => i.workspaceFileId))
+                      }
+                    >
+                      {t('立即补全全部')}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={busyAction}
+                      onClick={() => void handleClearAllItems()}
+                    >
+                      {t('清除待补列表')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {envItems.map(item => (
+                    <div
+                      key={item.workspaceFileId}
+                      className="rounded-lg border border-border/60 bg-card/50 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-xs font-semibold text-foreground truncate">
+                          {item.name}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate">{item.path}</div>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {item.missingReasons.map(r => (
+                          <span
+                            key={r}
+                            className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
+                          >
+                            {formatMissingReasonLabel(r)}
+                          </span>
+                        ))}
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
-                          className="h-7 text-xs shrink-0"
-                          onClick={() => void handlePrioritizeVideo(v.fileFingerprint)}
-                        >
-                          {t('优先补全此文件')}
-                        </Button>
-                      )}
-                      {v.workspaceFileId != null && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs shrink-0 text-muted-foreground hover:text-foreground"
+                          className="h-7 text-xs"
                           disabled={busyAction}
-                          onClick={() => void handleClearAllItems([v.workspaceFileId!])}
+                          onClick={() => void handleRecoverEnvItems([item.workspaceFileId])}
                         >
-                          {t('不再补全')}
+                          {t('立即补全')}
                         </Button>
-                      )}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                    <div
-                      className={cn(
-                        'h-full rounded-full transition-all duration-300',
-                        isCurrent ? 'bg-cyan-500' : 'bg-primary/60'
-                      )}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* 区块 2：其它待补全文件（能力恢复：OCR / 封面 / 语音转文字等非视频缺口） */}
-      {hasEnv && (
-        <div
-          className="space-y-2.5 pt-3 border-t border-border/60"
-          data-testid="pending-backfill-env-section"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <div className="text-xs font-semibold text-foreground">
-                {t('其它待补全文件（能力恢复）')}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('补齐图片文字识别、文档封面或语音转文字后，将自动重新整理标签与描述。')}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                size="sm"
-                variant="secondary"
-                disabled={busyAction}
-                onClick={() => void handleRecoverEnvItems()}
-              >
-                {t('立即补全全部')}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                disabled={busyAction}
-                onClick={() => void handleClearAllItems()}
-              >
-                {t('清除待补列表')}
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {envItems.map(item => (
-              <div
-                key={item.workspaceFileId}
-                className="rounded-lg border border-border/60 bg-card/50 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-semibold text-foreground truncate">{item.name}</div>
-                  <div className="text-xs text-muted-foreground truncate">{item.path}</div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {item.missingReasons.map(r => (
-                    <span
-                      key={r}
-                      className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
-                    >
-                      {formatMissingReasonLabel(r)}
-                    </span>
                   ))}
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs"
-                    disabled={busyAction}
-                    onClick={() => void handleRecoverEnvItems([item.workspaceFileId])}
-                  >
-                    {t('立即补全')}
-                  </Button>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            ) : (
+              <div
+                data-testid="pending-backfill-env-empty"
+                className="rounded-xl border border-dashed border-border/80 p-8 text-center space-y-1 bg-card/20"
+              >
+                <div className="text-xs font-semibold text-foreground">
+                  {t('当前目录暂无其它环境恢复或缺失正文/OCR/转录的待补文件。')}
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  {t(
+                    '若环境恢复（如补全模型、安装依赖组件）后发现缺口，会自动在此列出以便一键补齐。'
+                  )}
+                </p>
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       )}
 
       {/* 双区全空态 */}

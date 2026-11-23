@@ -172,7 +172,7 @@ export function scanRecoverableFilesLight(db: any, workspaceId: number): Recover
     if (category === FileCategory.IMAGE) {
       if (!row.thumbnail_path) missingReasons.push('missing_thumbnail')
       if (!hasText(row.ocr) && attempted.ocrEmpty !== true) missingReasons.push('missing_image_ocr')
-    } else if (category === FileCategory.AUDIO) {
+    } else if (category === FileCategory.AUDIO || category === FileCategory.VIDEO) {
       if (
         !hasText(row.lrc) &&
         !hasText(row.asr) &&
@@ -181,7 +181,7 @@ export function scanRecoverableFilesLight(db: any, workspaceId: number): Recover
       ) {
         missingReasons.push('missing_audio_transcript')
       }
-    } else if (category !== FileCategory.VIDEO) {
+    } else {
       // 文档 / 文本 / 代码：缺正文内容
       if (!hasText(row.content)) missingReasons.push('missing_document_content')
       // Office 封面（按扩展名判定）
@@ -463,6 +463,39 @@ export async function enqueueRecovery(
     if (workspaceFileIds && workspaceFileIds.length > 0) {
       const idSet = new Set(workspaceFileIds)
       items = items.filter(it => idSet.has(it.workspaceFileId))
+
+      // 若传入的 ID 在轻量扫描中未完全命中（例如属于精确扫描发现的深层缺口），直查 workspace_files 补齐
+      const foundIdSet = new Set(items.map(it => it.workspaceFileId))
+      const missingIds = workspaceFileIds.filter(id => !foundIdSet.has(id))
+      if (missingIds.length > 0) {
+        const placeholders = missingIds.map(() => '?').join(',')
+        const missingRows = db
+          .prepare(
+            `SELECT wf.id, wf.file_fingerprint, wf.path, wf.name, wf.file_size, wf.meta
+             FROM workspace_files wf
+             WHERE wf.workspace_id = ? AND wf.id IN (${placeholders})`
+          )
+          .all(workspaceId, ...missingIds) as Array<{
+          id: number
+          file_fingerprint: string | null
+          path: string
+          name: string
+          file_size: number
+          meta: string
+        }>
+        for (const row of missingRows) {
+          if (isCleared(row.meta)) continue
+          items.push({
+            workspaceFileId: row.id,
+            fileFingerprint: row.file_fingerprint,
+            path: row.path,
+            name: row.name,
+            fileSize: Number(row.file_size ?? 0),
+            missingReasons: ['precise_recovery_item'],
+            isPendingVideo: false
+          })
+        }
+      }
     }
     if (items.length === 0) return { success: true, queued: 0 }
     const { analysisQueueService } = await import('../analysis-queue-service')
