@@ -36,22 +36,21 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({
     top: 0,
     right: 0
   })
 
-  // 常用区确定性规则：严格锁定 4 项，计算公式：[active, ...capabilityOrder.filter(k => k !== active)].slice(0, 4)
-  // 保证当前激活项恒在常用区首位高亮可见，并在窄视口下自然保留
+  // 常用区确定性规则：严格锁定前 4 项，按固定能力顺序排布（单选按钮组风格，选中后位置恒定，严禁跳位）
   const commonKeys = useMemo(() => {
-    if (allowedPresets.length <= MAX_COMMON_LAYOUT_COUNT) {
-      return allowedPresets
-    }
-    return [currentKey, ...allowedPresets.filter(k => k !== currentKey)].slice(
-      0,
-      MAX_COMMON_LAYOUT_COUNT
-    )
-  }, [allowedPresets, currentKey])
+    return allowedPresets.slice(0, MAX_COMMON_LAYOUT_COUNT)
+  }, [allowedPresets])
+
+  // 当前激活项是否属于下拉折叠项中
+  const isMoreActive = useMemo(() => {
+    return !commonKeys.includes(currentKey)
+  }, [commonKeys, currentKey])
 
   // 是否处于自定义子集（某伴随面板被单独关闭）
   const isCustomSubset = useMemo(() => {
@@ -73,12 +72,16 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
     setIsDropdownOpen(prev => !prev)
   }
 
-  // 点击外部关闭下拉
+  // 点击外部关闭下拉（放行触发按钮与 Portal 浮层内的正常点击）
   useEffect(() => {
     if (!isDropdownOpen) return
 
     const handleClickOutside = (e: MouseEvent) => {
-      if (triggerRef.current && triggerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        (triggerRef.current && triggerRef.current.contains(target)) ||
+        (dropdownRef.current && dropdownRef.current.contains(target))
+      ) {
         return
       }
       setIsDropdownOpen(false)
@@ -95,7 +98,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
   return (
     <div
       data-testid="layout-switcher-group"
-      role="toolbar"
+      role="radiogroup"
       aria-label={t('布局切换')}
       className={cn(
         'inline-flex items-center gap-0.5 p-0.5 rounded-lg border border-border/40 bg-muted/20 backdrop-blur-sm',
@@ -104,7 +107,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
       )}
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
-      {/* 常用区直达图标 */}
+      {/* 常用区直达图标（单选按钮组风格，位置恒定不动） */}
       {commonKeys.map((key, index) => {
         const def = LAYOUT_PRESETS[key]
         if (!def) return null
@@ -115,8 +118,10 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
           <button
             key={key}
             type="button"
+            role="radio"
             data-testid={`layout-btn-${key}`}
             aria-label={label}
+            aria-checked={isActive}
             aria-pressed={isActive}
             title={label}
             onClick={() => setPageLayout(targetPageId, key)}
@@ -148,12 +153,16 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
           title={t('更多布局')}
           onClick={toggleDropdown}
           className={cn(
-            'flex items-center justify-center w-6 h-7 rounded-md text-muted-foreground transition-colors',
+            'relative flex items-center justify-center w-6 h-7 rounded-md text-muted-foreground transition-colors',
             'hover:text-foreground hover:bg-background/80',
-            isDropdownOpen && 'bg-background text-foreground'
+            isDropdownOpen && 'bg-background text-foreground',
+            isMoreActive && !isDropdownOpen && 'text-primary bg-background/50 font-medium'
           )}
         >
           <MaterialIcon icon="expand_more" className="text-[16px]" />
+          {isMoreActive && (
+            <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />
+          )}
         </button>
       )}
 
@@ -161,7 +170,10 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
       {isDropdownOpen &&
         createPortal(
           <div
+            ref={dropdownRef}
             data-testid="layout-switcher-dropdown"
+            role="radiogroup"
+            aria-label={t('选择页面布局')}
             className={cn(
               'fixed z-[60] min-w-[150px] p-1 rounded-lg border border-border/60 bg-popover text-popover-foreground shadow-lg',
               'animate-in fade-in-0 zoom-in-95 duration-100 no-drag select-none'
@@ -187,6 +199,8 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
                 <button
                   key={key}
                   type="button"
+                  role="radio"
+                  aria-checked={isActive}
                   data-testid={`dropdown-item-${key}`}
                   onClick={() => {
                     setPageLayout(targetPageId, key)
@@ -194,7 +208,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
                   }}
                   className={cn(
                     'flex items-center w-full gap-2 px-2.5 py-1.5 text-xs rounded-md transition-colors',
-                    'hover:bg-accent hover:text-accent-foreground',
+                    'hover:bg-accent hover:text-accent-foreground cursor-pointer',
                     isActive && 'bg-accent/60 text-primary font-medium'
                   )}
                 >

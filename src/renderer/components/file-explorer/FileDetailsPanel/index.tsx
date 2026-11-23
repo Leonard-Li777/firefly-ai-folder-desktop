@@ -368,7 +368,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
   const openSettings = useSettingsStore(s => s.openSettings)
 
   return (
-    <aside className="flex-shrink-0 border-l border-border flex flex-col h-full overflow-hidden select-text">
+    <aside className="w-full flex-1 min-w-0 border-l border-border flex flex-col h-full overflow-hidden select-text @container/details">
       {onClose && (
         <div className="flex items-center justify-between px-4 py-2 border-b border-border/40 shrink-0 bg-muted/10">
           <span className="text-xs font-semibold text-muted-foreground">{t('文件属性')}</span>
@@ -387,180 +387,182 @@ const FileDetailsPanelComponent: React.FC<any> = ({
       {/* 容器感知双列流容器 (ISS-02 / §3.10) */}
       <div
         data-testid="file-details-container"
-        className="flex-1 min-h-0 w-full overflow-hidden @container/details grid grid-cols-1 content-start @[540px]/details:grid-cols-2 @[540px]/details:grid-rows-[minmax(0,1fr)]"
+        className="flex-1 min-h-0 w-full overflow-hidden grid grid-cols-1 content-start @[540px]/details:grid-cols-2 @[540px]/details:grid-rows-[minmax(0,1fr)]"
       >
         {/* 左列：基础信息、缩略图 PreviewSection、AI 标签 TagList 与维度 */}
         <div
           data-testid="details-left-column"
           className="min-h-0 min-w-0 flex flex-col overflow-y-auto border-b @[540px]/details:border-b-0 @[540px]/details:border-r border-border/40 p-4 space-y-4"
         >
-        {((item && 'status' in item && (item as any).status === 0) ||
-          (analysisResult &&
-            'status' in analysisResult &&
-            (analysisResult as any).status === 0)) && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm font-semibold">
-              <MaterialIcon icon="warning" className="text-red-500 text-base" />
-              <span>{t('原文件丢失')}</span>
+          {((item && 'status' in item && (item as any).status === 0) ||
+            (analysisResult &&
+              'status' in analysisResult &&
+              (analysisResult as any).status === 0)) && (
+            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm font-semibold">
+                <MaterialIcon icon="warning" className="text-red-500 text-base" />
+                <span>{t('原文件丢失')}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs border-red-500/40 hover:bg-red-500/20 text-red-600 dark:text-red-400 h-7 px-2.5"
+                onClick={() => openSettings(SettingsCategory.FILE_DISPLAY)}
+              >
+                {t('关闭显示所有丢失文件')}
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs border-red-500/40 hover:bg-red-500/20 text-red-600 dark:text-red-400 h-7 px-2.5"
-              onClick={() => openSettings(SettingsCategory.FILE_DISPLAY)}
+          )}
+
+          {/* 最小单元标识 */}
+          {item && (item as any).isUnit && (
+            <div
+              className="mb-4 p-3 rounded-xl border space-y-2"
+              style={{ borderColor: 'inherit', backgroundColor: 'inherit' }}
             >
-              {t('关闭显示所有丢失文件')}
-            </Button>
-          </div>
-        )}
-
-        {/* 最小单元标识 */}
-        {item && (item as any).isUnit && (
-          <div
-            className="mb-4 p-3 rounded-xl border space-y-2"
-            style={{ borderColor: 'inherit', backgroundColor: 'inherit' }}
-          >
-            {(() => {
-              const uType = (item as any).unitType
-              const uReason = (item as any).unitReason || ''
-              const uConfidence = (item as any).unitConfidence
-              const uLabel = getUnitTypeLabel(uType)
-              const uTheme = getUnitTheme(uType)
-              return (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span className={`material-icons text-lg ${uTheme.color} ${uTheme.darkColor}`}>
-                      {uTheme.icon}
-                    </span>
-                    <span className={`text-sm font-semibold ${uTheme.color} ${uTheme.darkColor}`}>
-                      {uLabel}
-                    </span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${uTheme.color} ${uTheme.darkColor} ${uTheme.border} ${uTheme.darkBorder} bg-white/80 dark:bg-gray-900/80`}
-                    >
-                      {t('最小单元')}
-                    </span>
-                    {uConfidence !== undefined && (
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        {t('置信度')}: {Math.round(uConfidence * 100)}%
-                      </span>
-                    )}
-                  </div>
-                  {uReason && (
-                    <p className="text-xs text-muted-foreground leading-relaxed">{uReason}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {t('已经有序，目录内文件不进行逐一分析')}
-                  </p>
-                  {/* 可选类型：可关闭最小单元识别 */}
-                  {['design_project', 'album', 'series'].includes(uType || '') && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2 text-xs h-7 px-2.5 text-orange-600 dark:text-orange-400 border-orange-300/50 dark:border-orange-700/50 hover:bg-orange-500/10"
-                      onClick={() => openSettings(SettingsCategory.UNIT_RECOGNITION)}
-                    >
-                      <MaterialIcon icon="tune" className="text-xs mr-1" />
-                      {t('关闭最小单元识别')}
-                    </Button>
-                  )}
-                </>
-              )
-            })()}
-          </div>
-        )}
-
-        <div className="text-center mb-6">
-          <PreviewSection
-            displayUrl={displayUrl}
-            item={item}
-            isDirectory={isDirectory}
-            showDirectory={showDirectory}
-            analysisResult={analysisResult}
-            isFileAnalysis={isFileAnalysis}
-          />
-          {analysisResult &&
-          isFileAnalysis(analysisResult) &&
-          analysisResult.isAnalyzed &&
-          (analysisResult.smartName ||
-            (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
-            <>
               {(() => {
-                const realName = item?.name || analysisResult.name || ''
-                const smartName = analysisResult.smartName || ''
-
-                if (smartName) {
-                  const primary = swapFileNameDisplay ? realName : smartName
-                  const secondary = swapFileNameDisplay ? smartName : realName
-
-                  return (
-                    <>
-                      <h2
-                        className="font-semibold text-base mt-3 text-primary break-all cursor-text"
-                        title={primary}
-                      >
-                        <HighlightText text={primary} title={primary} />
-                      </h2>
-                      {secondary && (
-                        <p
-                          className="text-xs text-muted-foreground mt-1 break-all cursor-text"
-                          title={secondary}
-                        >
-                          <HighlightText text={secondary} title={secondary} />
-                        </p>
-                      )}
-                    </>
-                  )
-                }
-
+                const uType = (item as any).unitType
+                const uReason = (item as any).unitReason || ''
+                const uConfidence = (item as any).unitConfidence
+                const uLabel = getUnitTypeLabel(uType)
+                const uTheme = getUnitTheme(uType)
                 return (
-                  <h2
-                    className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
-                    title={realName}
-                  >
-                    <HighlightText text={realName} title={realName} />
-                  </h2>
+                  <>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`material-icons text-lg ${uTheme.color} ${uTheme.darkColor}`}
+                      >
+                        {uTheme.icon}
+                      </span>
+                      <span className={`text-sm font-semibold ${uTheme.color} ${uTheme.darkColor}`}>
+                        {uLabel}
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${uTheme.color} ${uTheme.darkColor} ${uTheme.border} ${uTheme.darkBorder} bg-white/80 dark:bg-gray-900/80`}
+                      >
+                        {t('最小单元')}
+                      </span>
+                      {uConfidence !== undefined && (
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {t('置信度')}: {Math.round(uConfidence * 100)}%
+                        </span>
+                      )}
+                    </div>
+                    {uReason && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">{uReason}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {t('已经有序，目录内文件不进行逐一分析')}
+                    </p>
+                    {/* 可选类型：可关闭最小单元识别 */}
+                    {['design_project', 'album', 'series'].includes(uType || '') && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2 text-xs h-7 px-2.5 text-orange-600 dark:text-orange-400 border-orange-300/50 dark:border-orange-700/50 hover:bg-orange-500/10"
+                        onClick={() => openSettings(SettingsCategory.UNIT_RECOGNITION)}
+                      >
+                        <MaterialIcon icon="tune" className="text-xs mr-1" />
+                        {t('关闭最小单元识别')}
+                      </Button>
+                    )}
+                  </>
                 )
               })()}
-              {analysisResult.description && (
-                <div className="mt-2 text-left">
-                  <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
-                </div>
-              )}
-            </>
-          ) : item && !isDirectory ? (
-            <h2
-              className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
-              title={item.name}
-            >
-              <HighlightText text={item.name} title={item.name} />
-            </h2>
-          ) : null}
-          {analysisResult && isDirAnalysis(analysisResult) && (
-            <h2 className="font-semibold text-base mt-3 text-foreground break-all">
-              ⭐{analysisResult.name}
-              {analysisResult.contextAnalysis?.directoryType &&
-                ` (${analysisResult.contextAnalysis.directoryType})`}
-            </h2>
+            </div>
           )}
-          {!analysisResult && item && isDirectory && (
-            <h2 className="font-semibold text-base mt-3 text-foreground break-all">
-              📁{item.name}
-            </h2>
-          )}
-        </div>
 
-        {!isDirectory &&
-          !showDirectory &&
-          analysisResult &&
-          isFileAnalysis(analysisResult) &&
-          analysisResult.isAnalyzed && (
-            <TagList
+          <div className="text-center mb-6">
+            <PreviewSection
+              displayUrl={displayUrl}
+              item={item}
+              isDirectory={isDirectory}
+              showDirectory={showDirectory}
               analysisResult={analysisResult}
-              getTagColor={getTagColor}
-              onTagDeleted={refreshAnalysis}
+              isFileAnalysis={isFileAnalysis}
             />
-          )}
+            {analysisResult &&
+            isFileAnalysis(analysisResult) &&
+            analysisResult.isAnalyzed &&
+            (analysisResult.smartName ||
+              (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
+              <>
+                {(() => {
+                  const realName = item?.name || analysisResult.name || ''
+                  const smartName = analysisResult.smartName || ''
+
+                  if (smartName) {
+                    const primary = swapFileNameDisplay ? realName : smartName
+                    const secondary = swapFileNameDisplay ? smartName : realName
+
+                    return (
+                      <>
+                        <h2
+                          className="font-semibold text-base mt-3 text-primary break-all cursor-text"
+                          title={primary}
+                        >
+                          <HighlightText text={primary} title={primary} />
+                        </h2>
+                        {secondary && (
+                          <p
+                            className="text-xs text-muted-foreground mt-1 break-all cursor-text"
+                            title={secondary}
+                          >
+                            <HighlightText text={secondary} title={secondary} />
+                          </p>
+                        )}
+                      </>
+                    )
+                  }
+
+                  return (
+                    <h2
+                      className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
+                      title={realName}
+                    >
+                      <HighlightText text={realName} title={realName} />
+                    </h2>
+                  )
+                })()}
+                {analysisResult.description && (
+                  <div className="mt-2 text-left">
+                    <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
+                  </div>
+                )}
+              </>
+            ) : item && !isDirectory ? (
+              <h2
+                className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
+                title={item.name}
+              >
+                <HighlightText text={item.name} title={item.name} />
+              </h2>
+            ) : null}
+            {analysisResult && isDirAnalysis(analysisResult) && (
+              <h2 className="font-semibold text-base mt-3 text-foreground break-all">
+                ⭐{analysisResult.name}
+                {analysisResult.contextAnalysis?.directoryType &&
+                  ` (${analysisResult.contextAnalysis.directoryType})`}
+              </h2>
+            )}
+            {!analysisResult && item && isDirectory && (
+              <h2 className="font-semibold text-base mt-3 text-foreground break-all">
+                📁{item.name}
+              </h2>
+            )}
+          </div>
+
+          {!isDirectory &&
+            !showDirectory &&
+            analysisResult &&
+            isFileAnalysis(analysisResult) &&
+            analysisResult.isAnalyzed && (
+              <TagList
+                analysisResult={analysisResult}
+                getTagColor={getTagColor}
+                onTagDeleted={refreshAnalysis}
+              />
+            )}
         </div>
 
         {/* 右列：详细元数据 DirectoryProfileSection、分析指标 AnalysisTabs 等 */}
@@ -568,71 +570,72 @@ const FileDetailsPanelComponent: React.FC<any> = ({
           data-testid="details-right-column"
           className="min-h-0 min-w-0 flex flex-col overflow-y-auto p-4 space-y-4"
         >
+          {(showDirectory || isDirectory) && analysisResult && isDirAnalysis(analysisResult) && (
+            <DirectoryProfileSection
+              analysisResult={analysisResult}
+              isDirAnalysis={isDirAnalysis}
+              getTagColor={getTagColor}
+              formatDate={formatDate}
+              onRefresh={refreshAnalysis}
+              isUnit={!!(item as any)?.isUnit}
+              workspaceDirectoryPath={
+                workspaceDirectoryPath || (item as any)?.workspaceDirectoryPath
+              }
+            />
+          )}
 
-        {(showDirectory || isDirectory) && analysisResult && isDirAnalysis(analysisResult) && (
-          <DirectoryProfileSection
-            analysisResult={analysisResult}
-            isDirAnalysis={isDirAnalysis}
-            getTagColor={getTagColor}
-            formatDate={formatDate}
-            onRefresh={refreshAnalysis}
-            isUnit={!!(item as any)?.isUnit}
-            workspaceDirectoryPath={workspaceDirectoryPath || (item as any)?.workspaceDirectoryPath}
-          />
-        )}
-
-        {(showDirectory || isDirectory) && !analysisResult && item && (
-          <div className="border-t border-border pt-4 mb-6">
-            <h3 className="text-sm font-semibold mb-3 text-foreground">{t('目录属性')}</h3>
-            <div className="bg-muted/30 rounded-xl p-4 space-y-3 text-sm border border-border/50">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">{t('目录名')}</span>
-                <span className="font-bold break-all ml-4 text-right">{item.name}</span>
+          {(showDirectory || isDirectory) && !analysisResult && item && (
+            <div className="border-t border-border pt-4 mb-6">
+              <h3 className="text-sm font-semibold mb-3 text-foreground">{t('目录属性')}</h3>
+              <div className="bg-muted/30 rounded-xl p-4 space-y-3 text-sm border border-border/50">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">{t('目录名')}</span>
+                  <span className="font-bold break-all ml-4 text-right">{item.name}</span>
+                </div>
+                {item.path && (
+                  <div className="flex justify-between items-start flex-col gap-1">
+                    <span className="text-muted-foreground">{t('路径')}</span>
+                    <span className="text-xs break-all text-muted-foreground/80 font-mono bg-muted/50 p-2 rounded-md w-full border border-border/30">
+                      {item.path}
+                    </span>
+                  </div>
+                )}
+                {item.fileCount !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">{t('文件数量')}</span>
+                    <span className="font-bold">
+                      {item.fileCount} {t('个')}
+                    </span>
+                  </div>
+                )}
+                {item.subdirectoriesCount !== undefined && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">{t('子目录数量')}</span>
+                    <span className="font-bold">
+                      {item.subdirectoriesCount} {t('个')}
+                    </span>
+                  </div>
+                )}
+                {item.size !== undefined && item.size > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">{t('大小')}</span>
+                    <span className="font-bold">
+                      {((item.size || 0) / 1024 / 1024).toFixed(2)} MB
+                    </span>
+                  </div>
+                )}
               </div>
-              {item.path && (
-                <div className="flex justify-between items-start flex-col gap-1">
-                  <span className="text-muted-foreground">{t('路径')}</span>
-                  <span className="text-xs break-all text-muted-foreground/80 font-mono bg-muted/50 p-2 rounded-md w-full border border-border/30">
-                    {item.path}
-                  </span>
-                </div>
-              )}
-              {item.fileCount !== undefined && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t('文件数量')}</span>
-                  <span className="font-bold">
-                    {item.fileCount} {t('个')}
-                  </span>
-                </div>
-              )}
-              {item.subdirectoriesCount !== undefined && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t('子目录数量')}</span>
-                  <span className="font-bold">
-                    {item.subdirectoriesCount} {t('个')}
-                  </span>
-                </div>
-              )}
-              {item.size !== undefined && item.size > 0 && (
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{t('大小')}</span>
-                  <span className="font-bold">
-                    {((item.size || 0) / 1024 / 1024).toFixed(2)} MB
-                  </span>
-                </div>
-              )}
             </div>
-          </div>
-        )}
+          )}
 
-        <AnalysisTabs
-          availableTabs={availableTabs}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          analysisResult={analysisResult}
-          maskClass={maskClass}
-          formatDate={formatDate}
-        />
+          <AnalysisTabs
+            availableTabs={availableTabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            analysisResult={analysisResult}
+            maskClass={maskClass}
+            formatDate={formatDate}
+          />
         </div>
       </div>
 

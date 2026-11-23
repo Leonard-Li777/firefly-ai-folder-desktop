@@ -16,7 +16,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.LIST_ONLY]: {
     key: LAYOUT_KEYS.LIST_ONLY,
     name: '仅列表',
-    icon: 'view_agenda',
+    icon: 'view_list',
     panels: [PANEL_IDS.LIST],
     primaryDirection: 'horizontal',
     companionDirection: 'horizontal',
@@ -46,7 +46,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.PIN_LIST_TOP]: {
     key: LAYOUT_KEYS.PIN_LIST_TOP,
     name: '品字布局',
-    icon: 'table_rows',
+    icon: 'horizontal_split',
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'vertical',
     companionDirection: 'horizontal',
@@ -66,7 +66,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.TRI]: {
     key: LAYOUT_KEYS.TRI,
     name: '三宫格',
-    icon: 'dashboard',
+    icon: 'space_dashboard',
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'horizontal',
     companionDirection: 'vertical',
@@ -76,7 +76,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.ALL_COLUMN]: {
     key: LAYOUT_KEYS.ALL_COLUMN,
     name: '全竖排',
-    icon: 'splitscreen',
+    icon: 'table_rows',
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'vertical',
     companionDirection: 'vertical',
