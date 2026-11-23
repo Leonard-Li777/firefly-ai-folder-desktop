@@ -601,7 +601,7 @@ export const ExternalApiSettingsTab: React.FC = () => {
         >
           <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
           <span className="font-medium">
-            {t('安全承诺：纯本地运行 · 仅只读与整理建议权 · 绝不擅自修改或删除你的电脑物理文件')}
+            {t('安全承诺：纯本地运行 · 外部Agent仅只读数据· 绝无权擅自修改或删除你的电脑物理文件')}
           </span>
         </div>
       </Card>
