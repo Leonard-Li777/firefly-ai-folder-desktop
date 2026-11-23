@@ -88,6 +88,10 @@ export const DEFAULT_UNBOUND_AI_CONFIG: LocalWorkspaceAIConfig = {
 /** 单套预置工作流的声明模型 (文案经 t() 包裹) */
 export interface LocalWorkflowDefinition {
   id: string
+  /** 身份蓝图目录模板稳定 ID（SSOT 内声明，替代脚本侧 WORKFLOW_ID_TO_TEMPLATE_ID 硬编码表） */
+  templateId?: string
+  /** 目标身份 ID 列表（身份蓝图目录模板与身份的绑定事实源，烘焙期物化为 target_identities） */
+  targetIdentityIds?: string[]
   name: string
   summary: string
   version: '1.0.0'
@@ -279,6 +283,12 @@ export const WORKFLOW_AI_PRESETS: Record<WorkflowAIPresetKey, WorkflowAIPreset> 
 const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   {
     id: 'builtin.workflow.design-dev',
+    templateId: 'tpl_ui_ux_standard',
+    targetIdentityIds: [
+      'id.researcher.ux',
+      'id.designer.ui',
+      'id.designer.graphic'
+    ],
     name: t('UI/UX 设计素材库'),
     summary: t('基于项目与基础资产解耦的标准化设计团队工作流'),
     version: '1.0.0',
@@ -389,6 +399,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.frontend-dev',
+    templateId: 'tpl_frontend_dev',
+    targetIdentityIds: [
+      'id.student.self_learner',
+      'id.dev.frontend',
+      'id.dev.fullstack',
+      'id.dev.mobile'
+    ],
     name: t('现代前端与客户端工程工作流'),
     summary: t('包含构建包、静态资源、端侧测试与发布脚本的规范拓扑'),
     version: '1.0.0',
@@ -510,6 +527,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.backend-arch',
+    templateId: 'tpl_backend_arch',
+    targetIdentityIds: [
+      'id.dev.backend',
+      'id.dev.fullstack',
+      'id.ops.sre',
+      'id.dev.ai_ml',
+      'id.dev.embedded'
+    ],
     name: t('后端微服务与系统架构工作流'),
     summary: t('规范数据库迁移、API文档、K8s编排与压测日志结构'),
     version: '1.0.0',
@@ -631,6 +656,26 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.para-universal',
+    templateId: 'tpl_para_universal',
+    targetIdentityIds: [
+      'id.scene.desktop_declutter',
+      'id.scene.downloads_triage',
+      'id.hobby.gamer',
+      'id.life.tech_geek',
+      'id.hobby.photographer',
+      'id.life.minimalist',
+      'id.life.fitness',
+      'id.dev.frontend',
+      'id.pm.product',
+      'id.designer.ui',
+      'id.creator.writer',
+      'id.sales.bd',
+      'id.biz.consultant',
+      'id.student.undergrad',
+      'id.edu.k12_teacher',
+      'id.eng.architect',
+      'id.scene.scratchpad_drafts'
+    ],
     name: t('通用数字资产管理体系'),
     summary: t('业界公认的最适合高频数字创作者与知识工作者的经典结构 (项目/领域/资源/归档)'),
     version: '1.0.0',
@@ -725,6 +770,21 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.johnny-decimal',
+    templateId: 'tpl_johnny_decimal',
+    targetIdentityIds: [
+      'id.scene.temporary_staging',
+      'id.life.homemaker',
+      'id.life.digital_hoarder',
+      'id.dev.backend',
+      'id.finance.accountant',
+      'id.finance.cashier',
+      'id.hr.admin',
+      'id.hr.recruiter',
+      'id.legal.attorney',
+      'id.researcher.faculty',
+      'id.student.grad',
+      'id.eng.civil_engineer'
+    ],
     name: t('精准信息分类架构'),
     summary: t('绝不迷路的十进制数字编号系统，适合行政、法务与严谨结构化档案'),
     version: '1.0.0',
@@ -823,6 +883,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.photography-raw',
+    templateId: 'tpl_photography_pipeline',
+    targetIdentityIds: [
+      'id.hobby.photographer',
+      'id.life.traveler',
+      'id.scene.personal_photos_album'
+    ],
     name: t('专业摄影前后端调色交付工作流'),
     summary: t('从机身RAW导入、初筛挑片、工程修图到客户交付的全流程组织'),
     version: '1.0.0',
@@ -956,6 +1022,15 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.video-production',
+    templateId: 'tpl_video_production',
+    targetIdentityIds: [
+      'id.life.audiophile_cinephile',
+      'id.creator.sound_designer',
+      'id.hobby.vlogger',
+      'id.designer.3d',
+      'id.media.collector_hoarder',
+      'id.scene.video_production_clips'
+    ],
     name: t('影视视听与自媒体剪辑工业管线'),
     summary: t('适配PR/FCPX/达芬奇剪辑管线，涵盖音画分离、字幕花字与多端输出'),
     version: '1.0.0',
@@ -1090,6 +1165,16 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.academic-thesis',
+    templateId: 'tpl_academic_thesis',
+    targetIdentityIds: [
+      'id.researcher.faculty',
+      'id.student.grad',
+      'id.student.undergrad',
+      'id.student.exam',
+      'id.student.study_abroad',
+      'id.health.doctor',
+      'id.scene.study_research_docs'
+    ],
     name: t('学术科研、开题与学位论文工作流'),
     summary: t('论文开题、文献精读、实验原始记录与学位论文答辩终稿归纳'),
     version: '1.0.0',
@@ -1200,6 +1285,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.finance-contract',
+    templateId: 'tpl_finance_accounting',
+    targetIdentityIds: [
+      'id.finance.accountant',
+      'id.finance.cashier',
+      'id.finance.auditor',
+      'id.scene.finance_tax_docs'
+    ],
     name: t('企业财务凭证与会计审计管理体系'),
     summary: t('税务月结、发票票据、工资表与年报审计标准化归类'),
     version: '1.0.0',
@@ -1325,6 +1417,15 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.family-household',
+    templateId: 'tpl_family_household',
+    targetIdentityIds: [
+      'id.life.homemaker',
+      'id.life.pet_owner',
+      'id.life.cooking_foodie',
+      'id.life.minimalist',
+      'id.life.household_assets',
+      'id.scene.personal_photos_album'
+    ],
     name: t('家庭数字档案库与房产生活资产管理'),
     summary: t('家庭证件、房产购车合同、家电凭据、保单与健康医疗报告终身归档'),
     version: '1.0.0',
@@ -1440,6 +1541,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.newmedia-content',
+    templateId: 'tpl_newmedia_content',
+    targetIdentityIds: [
+      'id.hobby.vlogger',
+      'id.ops.newmedia',
+      'id.ops.private_domain',
+      'id.scene.video_production_clips'
+    ],
     name: t('新媒体全渠道内容孵化与宣发工作流'),
     summary: t('从小红书、抖音、公众号到视频号的内容策划、视觉素材与数据复盘'),
     version: '1.0.0',
@@ -1569,6 +1677,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.ecommerce-ops',
+    templateId: 'tpl_ecommerce_ops',
+    targetIdentityIds: [
+      'id.ops.ecommerce',
+      'id.ops.cross_border'
+    ],
     name: t('电商全平台店铺运营与选品归档'),
     summary: t('电商选品打样、直通车投流物料、商品主图详情页与大促活动复盘'),
     version: '1.0.0',
@@ -1671,6 +1784,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.game-dev-assets',
+    templateId: 'tpl_game_dev_assets',
+    targetIdentityIds: [
+      'id.hobby.gamer',
+      'id.designer.3d',
+    ],
     name: t('独立游戏开发与素材资源组织架构'),
     summary: t('覆盖Unity/Unreal/Godot策划案、美术精灵图、音效音频与构建Demo包'),
     version: '1.0.0',
@@ -1797,6 +1915,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.cross-border-ops',
+    templateId: 'tpl_cross_border_ops',
+    targetIdentityIds: [
+      'id.ops.ecommerce',
+      'id.ops.cross_border',
+      'id.ops.sem_seo',
+      'id.mgmt.supply_chain'
+    ],
     name: t('跨境电商多店铺运营'),
     summary: t('覆盖多语言Listing商品图、头程报关与FBA海外仓单、站外引流推广与退换货核算'),
     version: '1.0.0',
@@ -1891,6 +2016,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.legal-case-dossier',
+    templateId: 'tpl_legal_case_dossier',
+    targetIdentityIds: [
+      'id.legal.compliance',
+      'id.legal.attorney',
+      'id.legal.ip_agent'
+    ],
     name: t('律师诉讼卷宗库'),
     summary: t('按当事人起诉状、原告证据链、庭审笔录、代理词、裁决判决书严谨归类'),
     version: '1.0.0',
@@ -2247,6 +2378,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.clinical-medical-records',
+    templateId: 'tpl_clinical_medical_records',
+    targetIdentityIds: [
+      'id.health.doctor',
+      'id.health.nurse',
+      'id.health.psychologist'
+    ],
     name: t('病历随访与科研档案'),
     summary: t('规范患者化验单影像报告、专病队列随访表、伦理审查批件与SCI论文草稿'),
     version: '1.0.0',
@@ -2561,6 +2698,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.teacher-lesson-prep',
+    templateId: 'tpl_teacher_lesson_prep',
+    targetIdentityIds: [
+      'id.edu.k12_teacher',
+      'id.edu.trainer'
+    ],
     name: t('老师备课与班级管理'),
     summary: t('包含教学大纲课件PPT、单元试卷与解析、公开课录像、家校互访沟通记录'),
     version: '1.0.0',
@@ -2867,6 +3009,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.consulting-due-diligence',
+    templateId: 'tpl_consulting_due_diligence',
+    targetIdentityIds: [
+      'id.data.analyst',
+      'id.marketing.planner',
+      'id.finance.auditor',
+      'id.biz.consultant'
+    ],
     name: t('商业尽调与咨询报告库'),
     summary: t('涵盖行业宏观研报、标的企业财报梳理、高管专家访谈录音、战略建议汇报底稿'),
     version: '1.0.0',
@@ -3194,6 +3343,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.architectural-cad-design',
+    templateId: 'tpl_architectural_cad_design',
+    targetIdentityIds: [
+      'id.designer.industrial',
+      'id.eng.architect',
+      'id.eng.civil_engineer'
+    ],
     name: t('建筑方案与CAD施工图库'),
     summary: t('组织DWG/DXF总平面图、3D效果图渲染高精位图、结构力学计算书、工程预算清单'),
     version: '1.0.0',
@@ -3595,6 +3750,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.writing-publishing-pipeline',
+    templateId: 'tpl_writing_publishing_pipeline',
+    targetIdentityIds: [
+      'id.ops.newmedia',
+      'id.creator.freelance',
+      'id.creator.writer'
+    ],
     name: t('小说创作与出版档案'),
     summary: t('世界观大纲设定、角色小传关系图、分卷正文草稿、采风摄影资料与出版审校意见'),
     version: '1.0.0',
@@ -3865,6 +4026,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.wellness-health-portfolio',
+    templateId: 'tpl_wellness_health_portfolio',
+    targetIdentityIds: [
+      'id.life.fitness',
+      'id.health.nurse',
+      'id.health.psychologist',
+      'id.health.nutritionist'
+    ],
     name: t('健康管理与营养调理档案'),
     summary: t('记录来访者心理评估量表、定制膳食热量食谱、运动心率日志与复盘调理方案'),
     version: '1.0.0',
@@ -4131,6 +4299,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.pm-product-workflow',
+    templateId: 'tpl_pm_product_workflow',
+    targetIdentityIds: [
+      'id.pm.product',
+      'id.researcher.ux'
+    ],
     name: t('产品经理需求与PRD文档库'),
     summary: t(
       '覆盖产品愿景规划、PRD功能规格书、原型与交互设计、用户调研反馈与敏捷迭代交付的端到端管理架构'
@@ -4419,6 +4592,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.data-science-analytics',
+    templateId: 'tpl_data_science_analytics',
+    targetIdentityIds: [
+      'id.data.analyst',
+      'id.dev.ai_ml'
+    ],
     name: t('数据分析与建模项目库'),
     summary: t(
       '遵循CRISP-DM工业标准的数据挖掘与商业智能架构 (原始数据、特征清洗、Notebook实验、模型沉淀与BI看板)'
@@ -4881,6 +5059,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.qa-testing-lifecycle',
+    templateId: 'tpl_qa_testing_lifecycle',
+    targetIdentityIds: [
+      'id.qa.tester'
+    ],
     name: t('软件测试与缺陷档案库'),
     summary: t(
       '涵盖测试策略大纲、手工与自动化测试用例集、缺陷Bug复现与排查日志、性能压测指标及版本准出报告'
@@ -5308,6 +5490,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.sales-pipeline-crm',
+    templateId: 'tpl_sales_pipeline_crm',
+    targetIdentityIds: [
+      'id.sales.bd'
+    ],
     name: t('销售客户与商机跟进档案'),
     summary: t(
       '覆盖销售全漏斗生命周期：潜客线索挖掘、客户画像与拜访纪要、商业方案报价、招投标资质文件、签约合同与发票回款对账'
@@ -5617,6 +5803,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.hr-people-operations',
+    templateId: 'tpl_hr_people_operations',
+    targetIdentityIds: [
+      'id.hr.admin',
+      'id.hr.recruiter'
+    ],
     name: t('人事管理与员工档案'),
     summary: t(
       '人力资源经典模块全覆盖：组织架构与岗位JD、招聘简历与面试评估、入转调离手续合规、薪酬绩效考核、员工培训与企业文化'
@@ -5909,6 +6100,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.marketing-campaign-imc',
+    templateId: 'tpl_marketing_campaign_imc',
+    targetIdentityIds: [
+      'id.marketing.planner',
+      'id.ops.private_domain',
+      'id.ops.sem_seo'
+    ],
     name: t('品牌营销与活动策划全案'),
     summary: t(
       '4A与互联网品牌营销全流程：行业竞品调研、整合营销全案、创意文案与宣发物料、KOL与渠道媒介排期、活动ROI结案'
@@ -6289,6 +6486,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.corporate-legal-compliance',
+    templateId: 'tpl_corporate_legal_compliance',
+    targetIdentityIds: [
+      'id.legal.compliance',
+      'id.legal.ip_agent'
+    ],
     name: t('企业法务与知识产权档案'),
     summary: t(
       '专为公司法务打造的合同全生命周期管理、合规制度审查、知识产权商标专利布局与法律纠纷争议处理体系'
@@ -6622,6 +6824,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.embedded-iot-firmware',
+    templateId: 'tpl_embedded_iot_firmware',
+    targetIdentityIds: [
+      'id.dev.embedded'
+    ],
     name: t('嵌入式与物联网开发库'),
     summary: t(
       '软硬件协同开发工业标准：硬件原理图PCB与BOM、底层BSP驱动与SDK、RTOS固件源码、通信协议抓包与量产固件烧录包'
@@ -6961,6 +7167,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.creative-assets',
+    templateId: 'tpl_3d_cg_animation',
+    targetIdentityIds: [
+      'id.designer.3d',
+      'id.designer.industrial'
+    ],
     name: t('三维建模与动画渲染库'),
     summary: t(
       '专业CG视觉制作管线：概念原画参考、高低模模型工程(Blender/C4D/Maya)、材质贴图与PBR纹理、骨骼动画与高画质成片渲染'
@@ -7294,6 +7505,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.freelance-business-delivery',
+    templateId: 'tpl_freelance_business_delivery',
+    targetIdentityIds: [
+      'id.creator.freelance',
+      'id.edu.trainer'
+    ],
     name: t('自由职业接单与交付库'),
     summary: t(
       '适合独立创作者、自由职业者与独立顾问的商业管理架构：客户Brief与报价排期、签约合同、过程版交付、结算发票与作品集归档'
@@ -7550,6 +7766,13 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.pkm-knowledge-vault',
+    templateId: 'tpl_pkm_knowledge_vault',
+    targetIdentityIds: [
+      'id.life.novel_reader',
+      'id.life.digital_hoarder',
+      'id.student.self_learner',
+      'id.student.exam'
+    ],
     name: t('个人知识库与学习笔记'),
     summary: t(
       '适合自学者、终身学者与数字知识创作者的第二大脑架构：文献收集箱、卡片盒原子笔记、技能实战项目工程与长期思维复盘'
@@ -7712,6 +7935,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.gaming',
+    templateId: 'tpl_gamer_library',
+    targetIdentityIds: [
+      'id.hobby.gamer',
+      'id.life.acg_fan'
+    ],
     name: t('游戏玩家资料库'),
     summary: t(
       '专为单机/主机玩家设计，涵盖游戏安装本体、本地通关存档备份、MOD补丁与汉化、精彩录屏及攻略Wiki'
@@ -8041,6 +8269,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.novel',
+    templateId: 'tpl_novel_reading_library',
+    targetIdentityIds: [
+      'id.life.novel_reader'
+    ],
     name: t('小说与电子书书库'),
     summary: t(
       '专为小说读者与书友打造，分类收录网络小说连载、精排EPUB/TXT、出版物经典、轻小说与个人推书书单'
@@ -8240,6 +8472,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.movie-cinema',
+    templateId: 'tpl_home_theater_audiophile',
+    targetIdentityIds: [
+      'id.life.audiophile_cinephile',
+      'id.scene.movies_tv_collection',
+      'id.scene.music_collection_vault'
+    ],
     name: t('家庭影院影音收藏库'),
     summary: t('汇集4K UHD HDR原盘蓝光电影、无损音乐FLAC/DSD、追剧剧集季集归档与双语外挂字幕'),
     version: '1.0.0',
@@ -8555,6 +8793,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.anime-comic',
+    templateId: 'tpl_acg_anime_manga',
+    targetIdentityIds: [
+      'id.life.acg_fan'
+    ],
     name: t('动漫与同人收藏库'),
     summary: t(
       '专为动漫爱好者与ACG同好打造，涵盖季度新番追番、高清漫画分卷、Pixiv插画壁纸、广播剧Drama与展会周边'
@@ -8793,6 +9035,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.pc-hardware-gear',
+    templateId: 'tpl_pc_hardware_gear',
+    targetIdentityIds: [
+      'id.life.tech_geek'
+    ],
     name: t('电脑装机与硬件资料库'),
     summary: t(
       '收录装机方案配置单、主板显卡BIOS固件、外设按键宏、基准跑分截图与数码发票电子保修卡'
@@ -9015,6 +9261,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.cooking-recipes-vault',
+    templateId: 'tpl_cooking_recipes_vault',
+    targetIdentityIds: [
+      'id.life.cooking_foodie',
+      'id.health.nutritionist'
+    ],
     name: t('家常菜谱与烘焙食谱库'),
     summary: t(
       '管理私房家常快手菜、西式烘焙配方表、养生靓汤清单、精选调饮鸡尾酒与美食探店打卡记录'
@@ -9190,6 +9441,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.pet-care-diary',
+    templateId: 'tpl_pet_care_diary',
+    targetIdentityIds: [
+      'id.life.pet_owner'
+    ],
     name: t('宠物健康档案与成长相册'),
     summary: t('全面记录宠物疫苗免疫簿、驱虫化验单、日常高清萌照、主粮成分评测与每月养宠开销记账'),
     version: '1.0.0',
@@ -9344,6 +9599,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.travel-outdoor-journey',
+    templateId: 'tpl_travel_outdoor_journey',
+    targetIdentityIds: [
+      'id.life.traveler'
+    ],
     name: t('旅行规划与户外记录库'),
     summary: t(
       '涵盖自驾游路书、机票酒店订单凭单、相机RAW原始底片、精修风景照、GPX徒步轨迹与纪念票根'
@@ -9626,6 +9885,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.music-audio',
+    templateId: 'tpl_audio_sound_engineering',
+    targetIdentityIds: [
+      'id.creator.sound_designer',
+      'id.scene.voice_recordings_audio'
+    ],
     name: t('音乐制作与录音工程库'),
     summary: t(
       '支持DAW编曲宿主工程、采样音效库Loops、人声分轨干声、合成器音色预设、混音母带与商用版权'
@@ -9939,6 +10203,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.graphic-brand-design',
+    templateId: 'tpl_graphic_brand_design',
+    targetIdentityIds: [
+      'id.designer.graphic',
+      'id.designer.illustrator',
+      'id.scene.design_graphics_assets'
+    ],
     name: t('品牌设计与印刷物料库'),
     summary: t('规范管理企业VI视觉手册、印刷画册排版、CMYK印刷校色打样、商用矢量字体与品牌KV海报'),
     version: '1.0.0',
@@ -10172,6 +10442,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.illustration-cg-art',
+    templateId: 'tpl_illustration_cg_art',
+    targetIdentityIds: [
+      'id.designer.illustrator',
+      'id.scene.design_graphics_assets'
+    ],
     name: t('插画与原画作品库'),
     summary: t(
       '针对商业插画师与原画设计师，涵盖构图线稿草图、分层工程PSD/Procreate、专属笔刷与商用授权书'
@@ -10434,6 +10709,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.mobile-app-dev',
+    templateId: 'tpl_mobile_app_dev',
+    targetIdentityIds: [
+      'id.dev.mobile'
+    ],
     name: t('手机 App 开发与上架工程库'),
     summary: t(
       '支持iOS/Android原生与Flutter/RN跨平台，包含双端工程、开发者打包证书、商店提审截图与发布包'
@@ -10831,6 +11110,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.cloud-native-sre',
+    templateId: 'tpl_cloud_native_sre',
+    targetIdentityIds: [
+      'id.ops.sre'
+    ],
     name: t('服务器运维与故障复盘库'),
     summary: t(
       '覆盖Kubernetes集群编排清单、Terraform/Ansible脚本、Prometheus告警看板与生产巡检故障复盘'
@@ -11151,6 +11434,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.supply-chain-logistics',
+    templateId: 'tpl_supply_chain_logistics',
+    targetIdentityIds: [
+      'id.mgmt.supply_chain'
+    ],
     name: t('采购与仓库管理单据库'),
     summary: t(
       '包含供应商准入考核表、采购订单PO合同、来料IQC质检单、WMS实物盘点与国际货运报关凭单'
@@ -11358,6 +11645,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.study-abroad-application',
+    templateId: 'tpl_study_abroad_application',
+    targetIdentityIds: [
+      'id.student.study_abroad'
+    ],
     name: t('留学申请与签证材料库'),
     summary: t(
       '专为出国留学学子规划，收录择校方案清单、语言标化成绩、个人陈述PS/推荐信RL、中英成绩单与签证面签资料'
@@ -11520,6 +11811,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.desktop-declutter',
+    templateId: 'tpl_desktop_declutter',
+    targetIdentityIds: [
+      'id.scene.desktop_declutter'
+    ],
     name: t('桌面文件快速整理'),
     summary: t(
       '专为电脑桌面设计，快速收纳今日待办、当前工作草稿、临时截图、安装包与历史旧桌面备份'
@@ -11801,6 +12096,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.downloads-triage',
+    templateId: 'tpl_downloads_triage',
+    targetIdentityIds: [
+      'id.scene.downloads_triage'
+    ],
     name: t('下载文件夹自动分类'),
     summary: t(
       '根据介质与用途全景分流：软件安装程序、办公文档、图片影音、压缩归档包，并设立过期清理缓冲期'
@@ -12289,6 +12588,17 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.inbox-staging-universal',
+    templateId: 'tpl_inbox_staging_universal',
+    targetIdentityIds: [
+      'id.scene.temporary_staging',
+      'id.scene.voice_recordings_audio',
+      'id.scene.scanned_documents',
+      'id.scene.system_cache_appdata',
+      'id.scene.chat_software_files',
+      'id.scene.cross_device_transfer',
+      'id.scene.screenshots_recordings',
+      'id.scene.external_media_triage'
+    ],
     name: t('个人文件收件箱与待办整理'),
     summary: t('基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转'),
     version: '1.0.0',
@@ -12511,6 +12821,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.desktop-classic-classification',
+    templateId: 'tpl_desktop_classic_classification',
+    targetIdentityIds: [
+      'id.scene.desktop_declutter'
+    ],
     name: t('桌面软件与文件分类整理'),
     summary: t(
       '针对电脑桌面高频堆积的应用快捷方式、各业务文档、临时截图素材与安装包进行物理实体功能分类'
@@ -12807,6 +13121,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.qa-testing-asset-vault',
+    templateId: 'tpl_qa_testing_asset_vault',
+    targetIdentityIds: [
+      'id.qa.tester'
+    ],
     name: t('软件测试用例与报告库'),
     summary: t('归档自动化测试脚本工程、手工用例脑图、Bug复现截图抓包、压测基准与版本准出清单'),
     version: '1.0.0',
@@ -13117,6 +13435,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.k12-education-vault',
+    templateId: 'tpl_k12_education_vault',
+    targetIdentityIds: [
+      'id.life.k12_student_parent'
+    ],
     name: t('中小学学习资料与成长记录库'),
     summary: t('收纳语数英主科学科教辅、日常课后作业、错题重难点归纳、名师网课讲义与课外才艺考级'),
     version: '1.0.0',
@@ -13368,6 +13690,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.k12-school-term-pipeline',
+    templateId: 'tpl_k12_school_term_pipeline',
+    targetIdentityIds: [
+      'id.life.k12_student_parent'
+    ],
     name: t('学期学习计划与备考整理'),
     summary: t(
       '按学期生命周期分阶段管理：新学期规划课表、日常上课作业打卡、期中期末冲刺与寒暑假实践'
@@ -13548,6 +13874,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.senior-life-archive',
+    templateId: 'tpl_senior_life_archive',
+    targetIdentityIds: [
+      'id.life.senior_citizen'
+    ],
     name: t('长辈生活档案与家庭回忆录'),
     summary: t('家庭老照片数字化、历年体检病历单据、处方常用药品清单与经典戏曲养生音画库'),
     version: '1.0.0',
@@ -13809,6 +14139,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.senior-medical-care-pipeline',
+    templateId: 'tpl_senior_medical_care_pipeline',
+    targetIdentityIds: [
+      'id.life.senior_citizen'
+    ],
     name: t('长辈就医与体检记录库'),
     summary: t('按就医挂号、门诊检查进行中、医保报销结算与年度随访长期建档全流程管理'),
     version: '1.0.0',
@@ -13973,6 +14307,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.office-docs',
+    templateId: 'tpl_office_general_archive',
+    targetIdentityIds: [
+      'id.office.general_clerk'
+    ],
     name: t('行政办公资料库'),
     summary: t('收纳规范行政红头公文、办公物资盘点表、收发台账、日常报销发票与常用合同盖章审批件'),
     version: '1.0.0',
@@ -14162,6 +14500,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.office-document-dispatch-flow',
+    templateId: 'tpl_office_document_dispatch_flow',
+    targetIdentityIds: [
+      'id.office.general_clerk',
+      'id.scene.personal_office_docs'
+    ],
     name: t('公文收发与督办'),
     summary: t('外来文书收文承办、领导批示传阅交办、在办催办督查与办结归档销号全流程'),
     version: '1.0.0',
@@ -14327,6 +14670,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.household-dossier-vault',
+    templateId: 'tpl_household_dossier_vault',
+    targetIdentityIds: [
+      'id.life.household_assets',
+      'id.scene.finance_tax_docs'
+    ],
     name: t('家庭重要文件保险箱'),
     summary: t('家庭核心成员身份户口簿、房产土地契税合同、医疗人身车险保单与水电账单分类留存'),
     version: '1.0.0',
@@ -14488,6 +14836,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.media-collector-vault',
+    templateId: 'tpl_media_collector_vault',
+    targetIdentityIds: [
+      'id.media.collector_hoarder',
+      'id.scene.movies_tv_collection',
+      'id.scene.music_collection_vault'
+    ],
     name: t('影音与电子书收藏库'),
     summary: t(
       '电视剧集按季收纳、高清电影原盘、无损Hi-Res音频专辑、电子书漫画与装机镜像工具分类仓储'
@@ -14841,6 +15195,14 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.code-asset-vault',
+    templateId: 'tpl_code_asset_vault',
+    targetIdentityIds: [
+      'id.dev.frontend',
+      'id.dev.backend',
+      'id.dev.fullstack',
+      'id.dev.mobile',
+      'id.student.self_learner'
+    ],
     name: t('脚手架与代码组件库'),
     summary: t(
       '收纳前后端全栈Starter脚手架、通用UI组件库、工具函数封装、Docker配置及自动化运维脚本'
@@ -15211,6 +15573,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.system-cache-appdata-vault',
+    templateId: 'tpl_system_cache_appdata_vault',
+    targetIdentityIds: [
+      'id.scene.system_cache_appdata'
+    ],
     name: t('软件日志与临时缓存整理'),
     summary: t('针对应用运行日志、崩溃转储Dump、解压临时缓存与历史未删残留的分类隔离体系'),
     version: '1.0.0',
@@ -15370,6 +15736,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.chat-software-vault',
+    templateId: 'tpl_chat_software_vault',
+    targetIdentityIds: [
+      'id.scene.chat_software_files'
+    ],
     name: t('聊天接收文件库'),
     summary: t('针对微信WeChat Files、QQ、钉钉接收文档、发票、音视频与压缩包的结构化收敛体系'),
     version: '1.0.0',
@@ -15660,6 +16030,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.cross-device-transfer-vault',
+    templateId: 'tpl_cross_device_transfer_vault',
+    targetIdentityIds: [
+      'id.scene.cross_device_transfer'
+    ],
     name: t('手机电脑互传中转站'),
     summary: t('针对手机通过AirDrop、局域网快传传到电脑的照片、录音备忘与单据的中转分类体系'),
     version: '1.0.0',
@@ -15923,6 +16297,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.screenshots-screenrecord-vault',
+    templateId: 'tpl_screenshots_screenrecord_vault',
+    targetIdentityIds: [
+      'id.scene.screenshots_recordings'
+    ],
     name: t('截图与录屏库'),
     summary: t('针对快捷键截图、微信截图、Snipaste与录屏素材的按用途分流归档体系'),
     version: '1.0.0',
@@ -16067,6 +16445,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.scratchpad-drafts-vault',
+    templateId: 'tpl_scratchpad_drafts_vault',
+    targetIdentityIds: [
+      'id.scene.scratchpad_drafts'
+    ],
     name: t('草稿与便签收纳箱'),
     summary: t('针对散落的新建文本文档、未命名表格、副本文件与随手记事草稿的收敛急救体系'),
     version: '1.0.0',
@@ -16188,6 +16570,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.external-storage-vault',
+    templateId: 'tpl_external_storage_vault',
+    targetIdentityIds: [
+      'id.scene.external_media_triage'
+    ],
     name: t('U盘与移动硬盘整理'),
     summary: t('针对从他人U盘、移动硬盘或相机卡拷出的临时散乱数据文件夹的分流体系'),
     version: '1.0.0',
@@ -16537,6 +16923,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.scanned-documents-vault',
+    templateId: 'tpl_scanned_documents_vault',
+    targetIdentityIds: [
+      'id.scene.scanned_documents'
+    ],
     name: t('扫描与翻拍文件库'),
     summary: t('针对手机扫描全能王PDF、证件翻拍、合同盖章件与报销发票的数字化归档体系'),
     version: '1.0.0',
@@ -16658,6 +17048,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.docs-office-vault',
+    templateId: 'tpl_docs_office_vault',
+    targetIdentityIds: [
+      'id.scene.personal_office_docs'
+    ],
     name: t('个人工作文档库'),
     summary: t('针对个人Documents文档库中沉淀的日常办公文件的高效分类收纳体系'),
     version: '1.0.0',
@@ -16812,6 +17206,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.docs-study-research-vault',
+    templateId: 'tpl_docs_study_research_vault',
+    targetIdentityIds: [
+      'id.scene.study_research_docs'
+    ],
     name: t('学习与科研资料库'),
     summary: t('针对学生、自学者与科研人员课程讲义、电子书、学术论文与练习题库的归集体系'),
     version: '1.0.0',
@@ -17051,6 +17449,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.renovation-project',
+    templateId: 'tpl_renovation_project',
+    targetIdentityIds: [
+      'id.eng.architect',
+      'id.life.homemaker',
+      'id.life.household_assets'
+    ],
     name: t('家装装修工程全流程管理'),
     summary: t('从量房设计、预算合同到施工验收与入住保修的装修全过程档案'),
     version: '1.0.0',
@@ -17265,6 +17669,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.visual-appreciation-vault',
+    templateId: 'tpl_visual_appreciation_vault',
+    targetIdentityIds: [
+      'id.media.collector_hoarder',
+      'id.scene.personal_photos_album',
+    ],
     name: t('图片欣赏与灵感收藏库'),
     summary: t('壁纸、插画、AI出图、同人图等纯欣赏收藏图片的统一图墙归档'),
     version: '1.0.0',
@@ -17460,6 +17869,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.career-jobhunt-portfolio',
+    templateId: 'tpl_career_jobhunt_portfolio',
+    targetIdentityIds: [
+      'id.office.general_clerk',
+      'id.student.grad',
+    ],
     name: t('求职与职业发展档案'),
     summary: t('简历多版本、作品集、面试复盘与Offer对比的职业跃迁档案'),
     version: '1.0.0',
@@ -17599,6 +18013,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.online-course-production',
+    templateId: 'tpl_online_course_production',
+    targetIdentityIds: [
+      'id.edu.trainer',
+      'id.student.self_learner',
+    ],
     name: t('在线课程与网课制作'),
     summary: t('课程大纲、录课原片、课件讲义到剪辑交付的网课生产线'),
     version: '1.0.0',
@@ -17762,6 +18181,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.livestream-creator-ops',
+    templateId: 'tpl_livestream_creator_ops',
+    targetIdentityIds: [
+      'id.ops.newmedia',
+      'id.ops.private_domain',
+      'id.ops.ecommerce',
+    ],
     name: t('直播与主播运营'),
     summary: t('直播回放、高光切片、场控脚本到带货数据复盘的主播运营档案'),
     version: '1.0.0',
@@ -17909,6 +18334,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.foodblogger-recipe-studio',
+    templateId: 'tpl_foodblogger_recipe_studio',
+    targetIdentityIds: [
+      'id.life.cooking_foodie',
+      'id.hobby.vlogger',
+    ],
     name: t('美食博主与食谱研发'),
     summary: t('菜品拍摄、配方研发、探店素材到图文成稿的美食创作档案'),
     version: '1.0.0',
@@ -18056,6 +18486,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.travelblogger-shoot-studio',
+    templateId: 'tpl_travelblogger_shoot_studio',
+    targetIdentityIds: [
+      'id.hobby.photographer',
+      'id.hobby.vlogger',
+      'id.life.traveler',
+    ],
     name: t('旅行博主与旅拍工作室'),
     summary: t('行程机位、原片精修、视频航拍到图文商单的旅拍创作档案'),
     version: '1.0.0',
@@ -18227,6 +18663,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.study-tour-camp-organizer',
+    templateId: 'tpl_study_tour_camp_organizer',
+    targetIdentityIds: [
+      'id.edu.k12_teacher',
+      'id.edu.trainer',
+    ],
     name: t('研学营地与亲子活动组织'),
     summary: t('行程方案、安全预案、家长通知到活动复盘的研学营地组织档案'),
     version: '1.0.0',
@@ -18366,6 +18807,10 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
 {
     id: 'builtin.workflow.wedding-planning',
+    templateId: 'tpl_wedding_planning',
+    targetIdentityIds: [
+      'id.life.homemaker',
+    ],
     name: t('婚礼策划全案档案'),
     summary: t('备婚全周期6-12个月，婚纱照原片精修、场地供应商、预算合同、请柬视觉与当天跟拍素材一站归档'),
     version: '1.0.0',
@@ -18608,6 +19053,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.car-lifecycle',
+    templateId: 'tpl_car_lifecycle',
+    targetIdentityIds: [
+      'id.life.household_assets',
+      'id.life.homemaker',
+    ],
     name: t('汽车全生命周期档案'),
     summary: t('私家车购车到卖车5-10年，购车合同保险年检保养维修事故理赔改装记录一站留存，卖车最值钱的完整证据链'),
     version: '1.0.0',
@@ -18805,6 +19255,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.baby-growth-archive',
+    templateId: 'tpl_baby_growth_archive',
+    targetIdentityIds: [
+      'id.life.k12_student_parent',
+      'id.life.homemaker',
+    ],
     name: t('宝宝成长与育儿档案'),
     summary: t('0-6岁新手父母，成长照片视频、疫苗体检、医疗就诊、早教记录与成长纪念册归档，对应长辈端senior-life-archive的婴幼儿缺口'),
     version: '1.0.0',
@@ -18990,6 +19445,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.personal-finance-invest',
+    templateId: 'tpl_personal_finance_invest',
+    targetIdentityIds: [
+      'id.finance.accountant',
+      'id.life.household_assets',
+      'id.scene.finance_tax_docs',
+    ],
     name: t('家庭理财与投资记账'),
     summary: t('个人与家庭理财全链路，账户对账单、投资持仓、个税汇算、贷款负债与家庭预算表归档，与企业财务finance-contract形成个人线互补'),
     version: '1.0.0',
@@ -19213,6 +19674,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.insurance-policy-vault',
+    templateId: 'tpl_insurance_policy_vault',
+    targetIdentityIds: [
+      'id.life.household_assets',
+      'id.life.homemaker',
+    ],
     name: t('家庭保险保单中枢'),
     summary: t('给全家配置保险的决策人，重疾医疗意外寿险车险家财险电子保单、条款责任、缴费续保与理赔材料一站管理，出险时秒调保单'),
     version: '1.0.0',
@@ -19421,6 +19887,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.podcast-production',
+    templateId: 'tpl_podcast_production',
+    targetIdentityIds: [
+      'id.hobby.vlogger',
+      'id.creator.sound_designer',
+      'id.scene.voice_recordings_audio',
+    ],
     name: t('播客与音频节目制作'),
     summary: t('播客主播有声书配音创作者，原始录音、多轨工程、逐字稿shownotes、封面视觉与分发成片归档，区别于音乐制作与影视收藏的创作向空缺'),
     version: '1.0.0',
@@ -19671,6 +20143,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.3dprint-maker',
+    templateId: 'tpl_3dprint_maker',
+    targetIdentityIds: [
+      'id.dev.embedded',
+      'id.designer.3d',
+      'id.life.tech_geek',
+    ],
     name: t('3D打印与创客工坊'),
     summary: t('3D打印爱好者与Arduino树莓派创客，模型文件、切片参数、失败复盘照片、开源电子项目与耗材清单归档，与工程开发及动画渲染边界清晰'),
     version: '1.0.0',
@@ -19889,6 +20367,11 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.collectible-model-archive',
+    templateId: 'tpl_collectible_model_archive',
+    targetIdentityIds: [
+      'id.media.collector_hoarder',
+      'id.life.digital_hoarder',
+    ],
     name: t('模型手办与收藏品档案'),
     summary: t('高达乐高兵人雕像球鞋潮玩收藏者，素组进度照、涂装成品、盒照、购买凭证与藏品清单估值归档，区别于玩家资料的实体收藏线'),
     version: '1.0.0',
@@ -20091,6 +20574,12 @@ const WORKFLOW_DEFINITIONS: LocalWorkflowDefinition[] = [
   },
   {
     id: 'builtin.workflow.ai-generated-content',
+    templateId: 'tpl_ai_generated_content',
+    targetIdentityIds: [
+      'id.designer.graphic',
+      'id.hobby.vlogger',
+      'id.dev.ai_ml',
+    ],
     name: t('AI生成内容与提示词库'),
     summary: t('重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产'),
     version: '1.0.0',
@@ -20607,9 +21096,15 @@ export const LOCAL_WORKFLOW_SOURCE = (): Array<{
   preset_directory_tree: DirectoryTreeNode[]
   preview_tree: null
   icon_svg: string
+  /** 稳定模板 ID（烘焙管线派生模板目录的唯一事实源，见 scripts/generate-extra-configs.js） */
+  templateId?: string
+  /** 目标身份 ID（烘焙期物化为模板 target_identities） */
+  targetIdentityIds?: string[]
 }> => {
   return WORKFLOW_DEFINITIONS.map(def => ({
     id: def.id,
+    templateId: def.templateId,
+    targetIdentityIds: def.targetIdentityIds,
     user_id: null,
     author: 'Firefly Official',
     name: def.name,

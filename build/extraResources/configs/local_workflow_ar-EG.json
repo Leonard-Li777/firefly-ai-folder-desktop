@@ -1,6 +1,12 @@
 [
   {
     "id": "builtin.workflow.design-dev",
+    "templateId": "tpl_ui_ux_standard",
+    "targetIdentityIds": [
+      "id.researcher.ux",
+      "id.designer.ui",
+      "id.designer.graphic"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة تصميم واجهة المستخدم/UX",
@@ -85,7 +91,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".fig": 0.28,
         ".sketch": 0.12,
@@ -162,6 +170,13 @@
   },
   {
     "id": "builtin.workflow.frontend-dev",
+    "templateId": "tpl_frontend_dev",
+    "targetIdentityIds": [
+      "id.student.self_learner",
+      "id.dev.frontend",
+      "id.dev.fullstack",
+      "id.dev.mobile"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "سير العمل الهندسي الحديث للواجهة الأمامية ومن جانب العميل",
@@ -353,6 +368,14 @@
   },
   {
     "id": "builtin.workflow.backend-arch",
+    "templateId": "tpl_backend_arch",
+    "targetIdentityIds": [
+      "id.dev.backend",
+      "id.dev.fullstack",
+      "id.ops.sre",
+      "id.dev.ai_ml",
+      "id.dev.embedded"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الخدمات المصغرة الخلفية وسير عمل بنية النظام",
@@ -530,6 +553,26 @@
   },
   {
     "id": "builtin.workflow.para-universal",
+    "templateId": "tpl_para_universal",
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter",
+      "id.scene.downloads_triage",
+      "id.hobby.gamer",
+      "id.life.tech_geek",
+      "id.hobby.photographer",
+      "id.life.minimalist",
+      "id.life.fitness",
+      "id.dev.frontend",
+      "id.pm.product",
+      "id.designer.ui",
+      "id.creator.writer",
+      "id.sales.bd",
+      "id.biz.consultant",
+      "id.student.undergrad",
+      "id.edu.k12_teacher",
+      "id.eng.architect",
+      "id.scene.scratchpad_drafts"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "نظام عالمي لإدارة الأصول الرقمية",
@@ -683,6 +726,21 @@
   },
   {
     "id": "builtin.workflow.johnny-decimal",
+    "templateId": "tpl_johnny_decimal",
+    "targetIdentityIds": [
+      "id.scene.temporary_staging",
+      "id.life.homemaker",
+      "id.life.digital_hoarder",
+      "id.dev.backend",
+      "id.finance.accountant",
+      "id.finance.cashier",
+      "id.hr.admin",
+      "id.hr.recruiter",
+      "id.legal.attorney",
+      "id.researcher.faculty",
+      "id.student.grad",
+      "id.eng.civil_engineer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "بنية دقيقة لتصنيف المعلومات",
@@ -760,7 +818,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.1667,
         ".xlsx": 0.1667,
@@ -836,6 +896,12 @@
   },
   {
     "id": "builtin.workflow.photography-raw",
+    "templateId": "tpl_photography_pipeline",
+    "targetIdentityIds": [
+      "id.hobby.photographer",
+      "id.life.traveler",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "سير عمل تسليم درجات الألوان للتصوير الفوتوغرافي الاحترافي للواجهة الأمامية والخلفية",
@@ -1039,6 +1105,15 @@
   },
   {
     "id": "builtin.workflow.video-production",
+    "templateId": "tpl_video_production",
+    "targetIdentityIds": [
+      "id.life.audiophile_cinephile",
+      "id.creator.sound_designer",
+      "id.hobby.vlogger",
+      "id.designer.3d",
+      "id.media.collector_hoarder",
+      "id.scene.video_production_clips"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "خط الأنابيب الصناعي لتحرير الأفلام والتليفزيون والمسموع والمرئي والوسائط الذاتية",
@@ -1243,6 +1318,16 @@
   },
   {
     "id": "builtin.workflow.academic-thesis",
+    "templateId": "tpl_academic_thesis",
+    "targetIdentityIds": [
+      "id.researcher.faculty",
+      "id.student.grad",
+      "id.student.undergrad",
+      "id.student.exam",
+      "id.student.study_abroad",
+      "id.health.doctor",
+      "id.scene.study_research_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "البحث الأكاديمي ومقترح المشروع وسير عمل الأطروحة",
@@ -1426,6 +1511,13 @@
   },
   {
     "id": "builtin.workflow.finance-contract",
+    "templateId": "tpl_finance_accounting",
+    "targetIdentityIds": [
+      "id.finance.accountant",
+      "id.finance.cashier",
+      "id.finance.auditor",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "القسائم المالية للمؤسسات ونظام إدارة التدقيق المحاسبي",
@@ -1525,7 +1617,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".ofd": 0.2222,
         ".qbo": 0.2222,
@@ -1616,6 +1710,15 @@
   },
   {
     "id": "builtin.workflow.family-household",
+    "templateId": "tpl_family_household",
+    "targetIdentityIds": [
+      "id.life.homemaker",
+      "id.life.pet_owner",
+      "id.life.cooking_foodie",
+      "id.life.minimalist",
+      "id.life.household_assets",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "المحفوظات الرقمية العائلية وإدارة أصول الحياة العقارية",
@@ -1788,6 +1891,13 @@
   },
   {
     "id": "builtin.workflow.newmedia-content",
+    "templateId": "tpl_newmedia_content",
+    "targetIdentityIds": [
+      "id.hobby.vlogger",
+      "id.ops.newmedia",
+      "id.ops.private_domain",
+      "id.scene.video_production_clips"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "احتضان محتوى الوسائط الجديدة متعدد القنوات وسير عمل الدعاية",
@@ -1976,6 +2086,11 @@
   },
   {
     "id": "builtin.workflow.ecommerce-ops",
+    "templateId": "tpl_ecommerce_ops",
+    "targetIdentityIds": [
+      "id.ops.ecommerce",
+      "id.ops.cross_border"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "التجارة الإلكترونية تشغيل متجر منصة كاملة واختيار المنتجات والأرشفة",
@@ -2060,7 +2175,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".csv": 0.15,
@@ -2151,6 +2268,11 @@
   },
   {
     "id": "builtin.workflow.game-dev-assets",
+    "templateId": "tpl_game_dev_assets",
+    "targetIdentityIds": [
+      "id.hobby.gamer",
+      "id.designer.3d"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تطوير اللعبة المستقلة والهيكل التنظيمي للموارد المادية",
@@ -2256,7 +2378,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".unity": 0.1429,
         ".uproject": 0.1429,
@@ -2350,6 +2475,13 @@
   },
   {
     "id": "builtin.workflow.cross-border-ops",
+    "templateId": "tpl_cross_border_ops",
+    "targetIdentityIds": [
+      "id.ops.ecommerce",
+      "id.ops.cross_border",
+      "id.ops.sem_seo",
+      "id.mgmt.supply_chain"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "التجارة الإلكترونية عبر الحدود عملية متعددة المتاجر",
@@ -2427,7 +2559,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["object_detection_pro"],
+      "workflowPluginDefaults": [
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.1875,
         ".csv": 0.1875,
@@ -2503,6 +2637,12 @@
   },
   {
     "id": "builtin.workflow.legal-case-dossier",
+    "templateId": "tpl_legal_case_dossier",
+    "targetIdentityIds": [
+      "id.legal.compliance",
+      "id.legal.attorney",
+      "id.legal.ip_agent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة ملفات التقاضي للمحامي",
@@ -2908,6 +3048,12 @@
   },
   {
     "id": "builtin.workflow.clinical-medical-records",
+    "templateId": "tpl_clinical_medical_records",
+    "targetIdentityIds": [
+      "id.health.doctor",
+      "id.health.nurse",
+      "id.health.psychologist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "متابعة السجلات الطبية ومحفوظات البحث العلمي",
@@ -3182,7 +3328,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dcm": 0.18,
         ".nii": 0.02,
@@ -3277,6 +3426,11 @@
   },
   {
     "id": "builtin.workflow.teacher-lesson-prep",
+    "templateId": "tpl_teacher_lesson_prep",
+    "targetIdentityIds": [
+      "id.edu.k12_teacher",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "إعداد المعلم وإدارة الفصل",
@@ -3544,7 +3698,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pptx": 0.16,
         ".ppt": 0.06,
@@ -3638,6 +3795,13 @@
   },
   {
     "id": "builtin.workflow.consulting-due-diligence",
+    "templateId": "tpl_consulting_due_diligence",
+    "targetIdentityIds": [
+      "id.data.analyst",
+      "id.marketing.planner",
+      "id.finance.auditor",
+      "id.biz.consultant"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة تقارير العناية الواجبة والاستشارات التجارية",
@@ -4025,6 +4189,12 @@
   },
   {
     "id": "builtin.workflow.architectural-cad-design",
+    "templateId": "tpl_architectural_cad_design",
+    "targetIdentityIds": [
+      "id.designer.industrial",
+      "id.eng.architect",
+      "id.eng.civil_engineer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "المخطط المعماري ومكتبة رسم البناء كاد",
@@ -4369,7 +4539,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".dwg": 0.2,
         ".dxf": 0.04,
@@ -4470,6 +4643,12 @@
   },
   {
     "id": "builtin.workflow.writing-publishing-pipeline",
+    "templateId": "tpl_writing_publishing_pipeline",
+    "targetIdentityIds": [
+      "id.ops.newmedia",
+      "id.creator.freelance",
+      "id.creator.writer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "محفوظات إنشاء الرواية ونشرها",
@@ -4709,7 +4888,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.24,
         ".doc": 0.06,
@@ -4799,6 +4982,13 @@
   },
   {
     "id": "builtin.workflow.wellness-health-portfolio",
+    "templateId": "tpl_wellness_health_portfolio",
+    "targetIdentityIds": [
+      "id.life.fitness",
+      "id.health.nurse",
+      "id.health.psychologist",
+      "id.health.nutritionist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "محفوظات الإدارة الصحية والتكييف الغذائي",
@@ -5031,7 +5221,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.12,
@@ -5120,6 +5313,11 @@
   },
   {
     "id": "builtin.workflow.pm-product-workflow",
+    "templateId": "tpl_pm_product_workflow",
+    "targetIdentityIds": [
+      "id.pm.product",
+      "id.researcher.ux"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "متطلبات مدير المنتج ومكتبة المستندات",
@@ -5366,7 +5564,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rp": 0.1,
         ".xmind": 0.08,
@@ -5471,6 +5672,11 @@
   },
   {
     "id": "builtin.workflow.data-science-analytics",
+    "templateId": "tpl_data_science_analytics",
+    "targetIdentityIds": [
+      "id.data.analyst",
+      "id.dev.ai_ml"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مشروع تحليل البيانات والنمذجة",
@@ -5871,7 +6077,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".ipynb": 0.09,
         ".py": 0.09,
@@ -5996,6 +6204,10 @@
   },
   {
     "id": "builtin.workflow.qa-testing-lifecycle",
+    "templateId": "tpl_qa_testing_lifecycle",
+    "targetIdentityIds": [
+      "id.qa.tester"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "اختبار البرمجيات وأرشيف العيوب",
@@ -6354,7 +6566,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.12,
         ".xls": 0.03,
@@ -6473,6 +6688,10 @@
   },
   {
     "id": "builtin.workflow.sales-pipeline-crm",
+    "templateId": "tpl_sales_pipeline_crm",
+    "targetIdentityIds": [
+      "id.sales.bd"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "ملف متابعة عملاء المبيعات وفرص العمل",
@@ -6836,6 +7055,11 @@
   },
   {
     "id": "builtin.workflow.hr-people-operations",
+    "templateId": "tpl_hr_people_operations",
+    "targetIdentityIds": [
+      "id.hr.admin",
+      "id.hr.recruiter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "إدارة شؤون الموظفين وملفات الموظفين",
@@ -7191,6 +7415,12 @@
   },
   {
     "id": "builtin.workflow.marketing-campaign-imc",
+    "templateId": "tpl_marketing_campaign_imc",
+    "targetIdentityIds": [
+      "id.marketing.planner",
+      "id.ops.private_domain",
+      "id.ops.sem_seo"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تسويق العلامة التجارية وتخطيط الأحداث",
@@ -7634,6 +7864,11 @@
   },
   {
     "id": "builtin.workflow.corporate-legal-compliance",
+    "templateId": "tpl_corporate_legal_compliance",
+    "targetIdentityIds": [
+      "id.legal.compliance",
+      "id.legal.ip_agent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الشؤون القانونية للشركات وأرشيف الملكية الفكرية",
@@ -8021,6 +8256,10 @@
   },
   {
     "id": "builtin.workflow.embedded-iot-firmware",
+    "templateId": "tpl_embedded_iot_firmware",
+    "targetIdentityIds": [
+      "id.dev.embedded"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة تطوير إنترنت الأشياء المضمنة",
@@ -8316,7 +8555,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".c": 0.12,
         ".h": 0.1,
@@ -8419,6 +8660,11 @@
   },
   {
     "id": "builtin.workflow.creative-assets",
+    "templateId": "tpl_3d_cg_animation",
+    "targetIdentityIds": [
+      "id.designer.3d",
+      "id.designer.industrial"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "3د النمذجة والرسوم المتحركة تقديم مكتبة",
@@ -8815,6 +9061,11 @@
   },
   {
     "id": "builtin.workflow.freelance-business-delivery",
+    "templateId": "tpl_freelance_business_delivery",
+    "targetIdentityIds": [
+      "id.creator.freelance",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مستودع استلام وتسليم الطلبات لحسابهم الخاص",
@@ -9135,6 +9386,13 @@
   },
   {
     "id": "builtin.workflow.pkm-knowledge-vault",
+    "templateId": "tpl_pkm_knowledge_vault",
+    "targetIdentityIds": [
+      "id.life.novel_reader",
+      "id.life.digital_hoarder",
+      "id.student.self_learner",
+      "id.student.exam"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "قاعدة المعرفة الشخصية وملاحظات الدراسة",
@@ -9357,6 +9615,11 @@
   },
   {
     "id": "builtin.workflow.gaming",
+    "templateId": "tpl_gamer_library",
+    "targetIdentityIds": [
+      "id.hobby.gamer",
+      "id.life.acg_fan"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "قاعدة بيانات اللاعب",
@@ -9645,7 +9908,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".sav": 0.06,
         ".srm": 0.02,
@@ -9746,6 +10013,10 @@
   },
   {
     "id": "builtin.workflow.novel",
+    "templateId": "tpl_novel_reading_library",
+    "targetIdentityIds": [
+      "id.life.novel_reader"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة الروايات والكتب الإلكترونية",
@@ -9915,7 +10186,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".epub": 0.29,
         ".mobi": 0.1,
@@ -10004,6 +10278,12 @@
   },
   {
     "id": "builtin.workflow.movie-cinema",
+    "templateId": "tpl_home_theater_audiophile",
+    "targetIdentityIds": [
+      "id.life.audiophile_cinephile",
+      "id.scene.movies_tv_collection",
+      "id.scene.music_collection_vault"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مجموعة الصوت والفيديو المسرح المنزلي",
@@ -10383,6 +10663,10 @@
   },
   {
     "id": "builtin.workflow.anime-comic",
+    "templateId": "tpl_acg_anime_manga",
+    "targetIdentityIds": [
+      "id.life.acg_fan"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مجموعة الأنمي والدوجين",
@@ -10594,7 +10878,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".cbz": 0.18,
         ".cbr": 0.1,
@@ -10681,6 +10969,10 @@
   },
   {
     "id": "builtin.workflow.pc-hardware-gear",
+    "templateId": "tpl_pc_hardware_gear",
+    "targetIdentityIds": [
+      "id.life.tech_geek"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تركيب الكمبيوتر وقاعدة بيانات الأجهزة",
@@ -10878,7 +11170,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".rom": 0.06,
         ".cap": 0.05,
@@ -10963,6 +11257,11 @@
   },
   {
     "id": "builtin.workflow.cooking-recipes-vault",
+    "templateId": "tpl_cooking_recipes_vault",
+    "targetIdentityIds": [
+      "id.life.cooking_foodie",
+      "id.health.nutritionist"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "وصفات مطبوخة في المنزل ومكتبة وصفات الخبز",
@@ -11118,7 +11417,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".pdf": 0.241,
         ".docx": 0.1095,
@@ -11198,6 +11500,10 @@
   },
   {
     "id": "builtin.workflow.pet-care-diary",
+    "templateId": "tpl_pet_care_diary",
+    "targetIdentityIds": [
+      "id.life.pet_owner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "أرشيف صحة الحيوانات الأليفة وألبومات النمو",
@@ -11339,7 +11645,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".jpg": 0.1448,
         ".jpeg": 0.031,
@@ -11414,6 +11723,10 @@
   },
   {
     "id": "builtin.workflow.travel-outdoor-journey",
+    "templateId": "tpl_travel_outdoor_journey",
+    "targetIdentityIds": [
+      "id.life.traveler"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تخطيط السفر ومكتبة السجلات الخارجية",
@@ -11759,6 +12072,11 @@
   },
   {
     "id": "builtin.workflow.music-audio",
+    "templateId": "tpl_audio_sound_engineering",
+    "targetIdentityIds": [
+      "id.creator.sound_designer",
+      "id.scene.voice_recordings_audio"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة هندسة الإنتاج والتسجيل الموسيقي",
@@ -12033,7 +12351,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".als": 0.05,
         ".cpr": 0.04,
@@ -12132,6 +12453,12 @@
   },
   {
     "id": "builtin.workflow.graphic-brand-design",
+    "templateId": "tpl_graphic_brand_design",
+    "targetIdentityIds": [
+      "id.designer.graphic",
+      "id.designer.illustrator",
+      "id.scene.design_graphics_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تصميم العلامة التجارية ومكتبة مواد الطباعة",
@@ -12336,7 +12663,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".ai": 0.16,
         ".cdr": 0.08,
@@ -12427,6 +12757,11 @@
   },
   {
     "id": "builtin.workflow.illustration-cg-art",
+    "templateId": "tpl_illustration_cg_art",
+    "targetIdentityIds": [
+      "id.designer.illustrator",
+      "id.scene.design_graphics_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "معرض الرسم التوضيحي والرسم الأصلي",
@@ -12659,7 +12994,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".psd": 0.15,
         ".clip": 0.13,
@@ -12753,6 +13091,10 @@
   },
   {
     "id": "builtin.workflow.mobile-app-dev",
+    "templateId": "tpl_mobile_app_dev",
+    "targetIdentityIds": [
+      "id.dev.mobile"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تطوير تطبيقات الجوال وإدراج المكتبة الهندسية",
@@ -13104,7 +13446,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".swift": 0.11,
         ".m": 0.02,
@@ -13211,6 +13555,10 @@
   },
   {
     "id": "builtin.workflow.cloud-native-sre",
+    "templateId": "tpl_cloud_native_sre",
+    "targetIdentityIds": [
+      "id.ops.sre"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تشغيل الخادم وصيانته ومكتبة استرداد الأعطال",
@@ -13492,7 +13840,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".tf": 0.085,
         ".tfvars": 0.03,
@@ -13591,6 +13941,10 @@
   },
   {
     "id": "builtin.workflow.supply-chain-logistics",
+    "templateId": "tpl_supply_chain_logistics",
+    "targetIdentityIds": [
+      "id.mgmt.supply_chain"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "إدارة المشتريات والمستودعات مستودع الوثائق",
@@ -13774,7 +14128,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.23,
         ".xls": 0.05,
@@ -13861,6 +14217,10 @@
   },
   {
     "id": "builtin.workflow.study-abroad-application",
+    "templateId": "tpl_study_abroad_application",
+    "targetIdentityIds": [
+      "id.student.study_abroad"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة الدراسة في الخارج مواد الطلب والتأشيرة",
@@ -14002,7 +14362,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser", "password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser",
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.38,
         ".docx": 0.24,
@@ -14083,6 +14446,10 @@
   },
   {
     "id": "builtin.workflow.desktop-declutter",
+    "templateId": "tpl_desktop_declutter",
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تنظيم ملفات سطح المكتب بسرعة",
@@ -14329,7 +14696,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.131,
         ".url": 0.0273,
@@ -14431,6 +14802,10 @@
   },
   {
     "id": "builtin.workflow.downloads-triage",
+    "templateId": "tpl_downloads_triage",
+    "targetIdentityIds": [
+      "id.scene.downloads_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "التصنيف التلقائي لمجلدات التنزيل",
@@ -14983,6 +15358,17 @@
   },
   {
     "id": "builtin.workflow.inbox-staging-universal",
+    "templateId": "tpl_inbox_staging_universal",
+    "targetIdentityIds": [
+      "id.scene.temporary_staging",
+      "id.scene.voice_recordings_audio",
+      "id.scene.scanned_documents",
+      "id.scene.system_cache_appdata",
+      "id.scene.chat_software_files",
+      "id.scene.cross_device_transfer",
+      "id.scene.screenshots_recordings",
+      "id.scene.external_media_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "صندوق الوارد للملف الشخصي وفرز المهام",
@@ -15187,7 +15573,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".docx": 0.1595,
         ".doc": 0.0266,
@@ -15242,6 +15632,10 @@
   },
   {
     "id": "builtin.workflow.desktop-classic-classification",
+    "templateId": "tpl_desktop_classic_classification",
+    "targetIdentityIds": [
+      "id.scene.desktop_declutter"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "برامج سطح المكتب وتصنيف الملفات",
@@ -15495,7 +15889,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".lnk": 0.1687,
         ".url": 0.0315,
@@ -15595,6 +15993,10 @@
   },
   {
     "id": "builtin.workflow.qa-testing-asset-vault",
+    "templateId": "tpl_qa_testing_asset_vault",
+    "targetIdentityIds": [
+      "id.qa.tester"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "حالة اختبار البرمجيات ومكتبة التقرير",
@@ -15855,7 +16257,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".xlsx": 0.15,
         ".xls": 0.025,
@@ -15960,6 +16365,10 @@
   },
   {
     "id": "builtin.workflow.k12-education-vault",
+    "templateId": "tpl_k12_education_vault",
+    "targetIdentityIds": [
+      "id.life.k12_student_parent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "المواد التعليمية للمدارس الابتدائية والثانوية ومكتبة سجل النمو",
@@ -16178,7 +16587,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.21,
         ".docx": 0.11,
@@ -16261,6 +16673,10 @@
   },
   {
     "id": "builtin.workflow.k12-school-term-pipeline",
+    "templateId": "tpl_k12_school_term_pipeline",
+    "targetIdentityIds": [
+      "id.life.k12_student_parent"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الخطة الدراسية للفصل الدراسي وترتيب التحضير للامتحانات",
@@ -16416,7 +16832,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.27,
         ".docx": 0.17,
@@ -16488,6 +16907,10 @@
   },
   {
     "id": "builtin.workflow.senior-life-archive",
+    "templateId": "tpl_senior_life_archive",
+    "targetIdentityIds": [
+      "id.life.senior_citizen"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "أرشيف حياة المسنين ومذكرات الأسرة",
@@ -16799,6 +17222,10 @@
   },
   {
     "id": "builtin.workflow.senior-medical-care-pipeline",
+    "templateId": "tpl_senior_medical_care_pipeline",
+    "targetIdentityIds": [
+      "id.life.senior_citizen"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "العلاج الطبي للمسنين ومكتبة سجل الفحص البدني",
@@ -16947,7 +17374,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".pdf": 0.3972,
         ".jpg": 0.1648,
@@ -17018,6 +17447,10 @@
   },
   {
     "id": "builtin.workflow.office-docs",
+    "templateId": "tpl_office_general_archive",
+    "targetIdentityIds": [
+      "id.office.general_clerk"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "قاعدة بيانات المكتب الإداري",
@@ -17274,6 +17707,11 @@
   },
   {
     "id": "builtin.workflow.office-document-dispatch-flow",
+    "templateId": "tpl_office_document_dispatch_flow",
+    "targetIdentityIds": [
+      "id.office.general_clerk",
+      "id.scene.personal_office_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "استلام الوثائق الرسمية والإشراف عليها",
@@ -17506,6 +17944,11 @@
   },
   {
     "id": "builtin.workflow.household-dossier-vault",
+    "templateId": "tpl_household_dossier_vault",
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "صندوق ودائع آمن للوثائق العائلية الهامة",
@@ -17640,7 +18083,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["password_vault_cracker"],
+      "workflowPluginDefaults": [
+        "password_vault_cracker"
+      ],
       "extensionWeights": {
         ".pdf": 0.4349,
         ".jpg": 0.0759,
@@ -17722,6 +18167,12 @@
   },
   {
     "id": "builtin.workflow.media-collector-vault",
+    "templateId": "tpl_media_collector_vault",
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.scene.movies_tv_collection",
+      "id.scene.music_collection_vault"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مجموعة الكتب السمعية والبصرية والإلكترونية",
@@ -18139,6 +18590,14 @@
   },
   {
     "id": "builtin.workflow.code-asset-vault",
+    "templateId": "tpl_code_asset_vault",
+    "targetIdentityIds": [
+      "id.dev.frontend",
+      "id.dev.backend",
+      "id.dev.fullstack",
+      "id.dev.mobile",
+      "id.student.self_learner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مكونات السقالات والرمز",
@@ -18563,6 +19022,10 @@
   },
   {
     "id": "builtin.workflow.system-cache-appdata-vault",
+    "templateId": "tpl_system_cache_appdata_vault",
+    "targetIdentityIds": [
+      "id.scene.system_cache_appdata"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "ترتيب سجلات البرامج وذاكرة التخزين المؤقت المؤقتة",
@@ -18765,6 +19228,10 @@
   },
   {
     "id": "builtin.workflow.chat-software-vault",
+    "templateId": "tpl_chat_software_vault",
+    "targetIdentityIds": [
+      "id.scene.chat_software_files"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الدردشة تلقي مكتبة الملفات",
@@ -19097,6 +19564,10 @@
   },
   {
     "id": "builtin.workflow.cross-device-transfer-vault",
+    "templateId": "tpl_cross_device_transfer_vault",
+    "targetIdentityIds": [
+      "id.scene.cross_device_transfer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "محطة نقل الهاتف المحمول والكمبيوتر",
@@ -19343,7 +19814,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw", "archive_vfs_parser"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw",
+        "archive_vfs_parser"
+      ],
       "extensionWeights": {
         ".jpg": 0.0608,
         ".jpeg": 0.0152,
@@ -19403,6 +19878,10 @@
   },
   {
     "id": "builtin.workflow.screenshots-screenrecord-vault",
+    "templateId": "tpl_screenshots_screenrecord_vault",
+    "targetIdentityIds": [
+      "id.scene.screenshots_recordings"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة تسجيل لقطة الشاشة والشاشة",
@@ -19544,7 +20023,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".png": 0.48,
         ".jpg": 0.36,
@@ -19583,6 +20065,10 @@
   },
   {
     "id": "builtin.workflow.scratchpad-drafts-vault",
+    "templateId": "tpl_scratchpad_drafts_vault",
+    "targetIdentityIds": [
+      "id.scene.scratchpad_drafts"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "صندوق تخزين المسودة والملاحظة",
@@ -19743,6 +20229,10 @@
   },
   {
     "id": "builtin.workflow.external-storage-vault",
+    "templateId": "tpl_external_storage_vault",
+    "targetIdentityIds": [
+      "id.scene.external_media_triage"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "تنظيم يو القرص والقرص الصلب المحمول",
@@ -20134,6 +20624,10 @@
   },
   {
     "id": "builtin.workflow.scanned-documents-vault",
+    "templateId": "tpl_scanned_documents_vault",
+    "targetIdentityIds": [
+      "id.scene.scanned_documents"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مسح وإعادة تشكيل مكتبة الملفات",
@@ -20297,6 +20791,10 @@
   },
   {
     "id": "builtin.workflow.docs-office-vault",
+    "templateId": "tpl_docs_office_vault",
+    "targetIdentityIds": [
+      "id.scene.personal_office_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مستندات العمل الشخصي",
@@ -20493,6 +20991,10 @@
   },
   {
     "id": "builtin.workflow.docs-study-research-vault",
+    "templateId": "tpl_docs_study_research_vault",
+    "targetIdentityIds": [
+      "id.scene.study_research_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "قاعدة بيانات التعلم والبحث",
@@ -20774,6 +21276,12 @@
   },
   {
     "id": "builtin.workflow.renovation-project",
+    "templateId": "tpl_renovation_project",
+    "targetIdentityIds": [
+      "id.eng.architect",
+      "id.life.homemaker",
+      "id.life.household_assets"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "إدارة العمليات الكاملة لمشاريع الديكور المنزلي",
@@ -21063,6 +21571,11 @@
   },
   {
     "id": "builtin.workflow.visual-appreciation-vault",
+    "templateId": "tpl_visual_appreciation_vault",
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.scene.personal_photos_album"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مكتبة مجموعة صور التقدير والإلهام",
@@ -21232,7 +21745,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".png": 0.34,
         ".jpg": 0.3,
@@ -21328,6 +21844,11 @@
   },
   {
     "id": "builtin.workflow.career-jobhunt-portfolio",
+    "templateId": "tpl_career_jobhunt_portfolio",
+    "targetIdentityIds": [
+      "id.office.general_clerk",
+      "id.student.grad"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "البحث عن الوظائف وملفات التطوير الوظيفي",
@@ -21448,7 +21969,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.4,
         ".docx": 0.22,
@@ -21555,6 +22078,11 @@
   },
   {
     "id": "builtin.workflow.online-course-production",
+    "templateId": "tpl_online_course_production",
+    "targetIdentityIds": [
+      "id.edu.trainer",
+      "id.student.self_learner"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الدورات عبر الإنترنت وإنتاج الدورات عبر الإنترنت",
@@ -21696,7 +22224,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.3,
         ".mov": 0.1,
@@ -21806,6 +22337,12 @@
   },
   {
     "id": "builtin.workflow.livestream-creator-ops",
+    "templateId": "tpl_livestream_creator_ops",
+    "targetIdentityIds": [
+      "id.ops.newmedia",
+      "id.ops.private_domain",
+      "id.ops.ecommerce"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "البث المباشر وتشغيل المرساة",
@@ -21933,7 +22470,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".mp4": 0.34,
         ".flv": 0.12,
@@ -22041,6 +22581,11 @@
   },
   {
     "id": "builtin.workflow.foodblogger-recipe-studio",
+    "templateId": "tpl_foodblogger_recipe_studio",
+    "targetIdentityIds": [
+      "id.life.cooking_foodie",
+      "id.hobby.vlogger"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مدونو الطعام وتطوير الوصفات",
@@ -22168,7 +22713,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.32,
         ".jpeg": 0.12,
@@ -22276,6 +22825,12 @@
   },
   {
     "id": "builtin.workflow.travelblogger-shoot-studio",
+    "templateId": "tpl_travelblogger_shoot_studio",
+    "targetIdentityIds": [
+      "id.hobby.photographer",
+      "id.hobby.vlogger",
+      "id.life.traveler"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مدونو السفر واستوديوهات التصوير الفوتوغرافي للسفر",
@@ -22424,7 +22979,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.26,
         ".jpeg": 0.08,
@@ -22535,6 +23094,11 @@
   },
   {
     "id": "builtin.workflow.study-tour-camp-organizer",
+    "templateId": "tpl_study_tour_camp_organizer",
+    "targetIdentityIds": [
+      "id.edu.k12_teacher",
+      "id.edu.trainer"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "معسكر البحث ومنظمة نشاط الوالدين والطفل",
@@ -22655,7 +23219,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.22,
         ".docx": 0.18,
@@ -22762,6 +23330,10 @@
   },
   {
     "id": "builtin.workflow.wedding-planning",
+    "templateId": "tpl_wedding_planning",
+    "targetIdentityIds": [
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "ملف خطة حفل الزفاف الكاملة",
@@ -22952,7 +23524,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.2,
         ".jpeg": 0.04,
@@ -23070,6 +23646,11 @@
   },
   {
     "id": "builtin.workflow.car-lifecycle",
+    "templateId": "tpl_car_lifecycle",
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "سجل دورة حياة السيارة بالكامل",
@@ -23225,7 +23806,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".pdf": 0.32,
         ".jpg": 0.16,
@@ -23333,6 +23918,11 @@
   },
   {
     "id": "builtin.workflow.baby-growth-archive",
+    "templateId": "tpl_baby_growth_archive",
+    "targetIdentityIds": [
+      "id.life.k12_student_parent",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "سجل نمو الطفل وتربيته",
@@ -23481,7 +24071,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.3,
         ".jpeg": 0.05,
@@ -23518,7 +24112,7 @@
         "name": "02- اللقاحات والفحوصات الطبية",
         "children": [
           {
-            "name": "疫苗本扫描"
+            "name": "فحص اللقاح"
           },
           {
             "name": "نموذج الفحص الطبي لرعاية الطفل"
@@ -23576,6 +24170,12 @@
   },
   {
     "id": "builtin.workflow.personal-finance-invest",
+    "templateId": "tpl_personal_finance_invest",
+    "targetIdentityIds": [
+      "id.finance.accountant",
+      "id.life.household_assets",
+      "id.scene.finance_tax_docs"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الإدارة المالية للأسرة وتسجيل الاستثمارات",
@@ -23759,7 +24359,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro"
+      ],
       "extensionWeights": {
         ".xlsx": 0.24,
         ".xls": 0.04,
@@ -23857,6 +24460,11 @@
   },
   {
     "id": "builtin.workflow.insurance-policy-vault",
+    "templateId": "tpl_insurance_policy_vault",
+    "targetIdentityIds": [
+      "id.life.household_assets",
+      "id.life.homemaker"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "مركز وثائق التأمين الأسري",
@@ -24033,7 +24641,9 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw"],
+      "workflowPluginDefaults": [
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".pdf": 0.42,
         ".jpg": 0.12,
@@ -24121,6 +24731,12 @@
   },
   {
     "id": "builtin.workflow.podcast-production",
+    "templateId": "tpl_podcast_production",
+    "targetIdentityIds": [
+      "id.hobby.vlogger",
+      "id.creator.sound_designer",
+      "id.scene.voice_recordings_audio"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "إنتاج البودكاست والبرامج الصوتية",
@@ -24318,7 +24934,10 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["asr_sensevoice_onnx", "perception_nsfw"],
+      "workflowPluginDefaults": [
+        "asr_sensevoice_onnx",
+        "perception_nsfw"
+      ],
       "extensionWeights": {
         ".wav": 0.11,
         ".mp3": 0.25,
@@ -24435,6 +25054,12 @@
   },
   {
     "id": "builtin.workflow.3dprint-maker",
+    "templateId": "tpl_3dprint_maker",
+    "targetIdentityIds": [
+      "id.dev.embedded",
+      "id.designer.3d",
+      "id.life.tech_geek"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "الطباعة ثلاثية الأبعاد وورشة العمل لصانعي المنتجات",
@@ -24611,7 +25236,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".3mf": 0.16,
         ".gcode": 0.12,
@@ -24711,6 +25340,11 @@
   },
   {
     "id": "builtin.workflow.collectible-model-archive",
+    "templateId": "tpl_collectible_model_archive",
+    "targetIdentityIds": [
+      "id.media.collector_hoarder",
+      "id.life.digital_hoarder"
+    ],
     "user_id": null,
     "author": "Firefly Official",
     "name": "ملف المجسمات والمقتنيات",
@@ -24873,7 +25507,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".jpg": 0.24,
         ".jpeg": 0.06,
@@ -24971,13 +25609,19 @@
   },
   {
     "id": "builtin.workflow.ai-generated-content",
+    "templateId": "tpl_ai_generated_content",
+    "targetIdentityIds": [
+      "id.designer.graphic",
+      "id.hobby.vlogger",
+      "id.dev.ai_ml"
+    ],
     "user_id": null,
     "author": "Firefly Official",
-    "name": "AI生成内容与提示词库",
+    "name": "المحتوى الذي تم إنشاؤه بواسطة الذكاء الاصطناعي وقاموس المرادفات الفوري",
     "version": "1.0.0",
-    "persona": "重度AI生成内容创作者与提示词工程师",
+    "persona": "منشئ محتوى ثقيل تم إنشاؤه بواسطة الذكاء الاصطناعي ومهندس كلمات سريع",
     "category": "entertainment",
-    "summary": "重度AI用户MJ与SD出图、AI视频、GPT对话产物，生成图视频、提示词参数、模型版本工作流配置与精选作品集归档，当下增长最快的新型资产",
+    "summary": "المستخدمين منظمة العفو الدولية الثقيلة مج و سد تنتج الصور والفيديو منظمة العفو الدولية ، ومنتجات الحوار غت ، وتوليد أشرطة الفيديو الصورة ، المعلمات كلمة سريعة ، تكوين سير العمل نسخة النموذج ، وأرشفة الأعمال المختارة ، والأصول الجديدة الأسرع نموا في الوقت الراهن",
     "source": "official",
     "status": "published",
     "workspace_config": {
@@ -25168,7 +25812,11 @@
         "reuseBasicAnalysisData": true,
         "clipTextEnabled": true
       },
-      "workflowPluginDefaults": ["perception_nsfw", "object_detection_pro", "asr_sensevoice_onnx"],
+      "workflowPluginDefaults": [
+        "perception_nsfw",
+        "object_detection_pro",
+        "asr_sensevoice_onnx"
+      ],
       "extensionWeights": {
         ".png": 0.2,
         ".jpg": 0.08,
@@ -25196,72 +25844,72 @@
     "naming_template": "{date}_{topic}_{desc}",
     "preset_directory_tree": [
       {
-        "name": "01-生成图像",
+        "name": "01-توليد صورة",
         "children": [
           {
-            "name": "文生图"
+            "name": "خريطة ون شنغ"
           },
           {
-            "name": "图生图"
+            "name": "صورة صورة الحياة"
           },
           {
-            "name": "局部重绘"
+            "name": "إعادة رسم جزئي"
           }
         ]
       },
       {
-        "name": "02-生成视频",
+        "name": "02-توليد الفيديو",
         "children": [
           {
-            "name": "AI视频成片"
+            "name": "فيديو الذكاء الاصطناعي في فيلم"
           },
           {
-            "name": "图生视频"
+            "name": "فيديو رسومي"
           },
           {
-            "name": "视频工作流"
+            "name": "سير عمل الفيديو"
           }
         ]
       },
       {
-        "name": "03-提示词与参数",
+        "name": "03-الكلمات والمعلمات السريعة",
         "children": [
           {
-            "name": "正向提示词"
+            "name": "كلمة موجه إلى الأمام"
           },
           {
-            "name": "反向提示词"
+            "name": "عكس كلمة موجه"
           },
           {
-            "name": "种子参数"
+            "name": "معلمات البذور"
           }
         ]
       },
       {
-        "name": "04-模型与工作流",
+        "name": "04-نموذج وسير العمل",
         "children": [
           {
-            "name": "大模型权重"
+            "name": "وزن نموذج كبير"
           },
           {
             "name": "LoRA"
           },
           {
-            "name": "工作流配置"
+            "name": "تكوين سير العمل"
           }
         ]
       },
       {
-        "name": "05-精选作品集",
+        "name": "05-مجموعة أعمال مختارة",
         "children": [
           {
-            "name": "精选图集"
+            "name": "أطلس المميز"
           },
           {
-            "name": "作品标注"
+            "name": "شرح العمل"
           },
           {
-            "name": "复现参数"
+            "name": "معلمات الاستنساخ"
           }
         ]
       }
