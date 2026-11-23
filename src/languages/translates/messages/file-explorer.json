@@ -694,7 +694,7 @@
     "de-DE": "ReadTextLimit gibt einen Fehler zurück",
     "fr-FR": "ReadTextLimit renvoie un échec",
     "ko-KR": "readTextLimit이 실패를 반환합니다.",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(19330-19352)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(20661-20683)"],
     "$id": 8149
   },
   "无法读取文件内容": {
@@ -708,7 +708,7 @@
     "fr-FR": "Impossible de lire le contenu du fichier",
     "ko-KR": "파일 내용을 읽을 수 없습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(19551-19563)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(20882-20894)",
       "src/renderer/components/file-explorer/PreviewContent.tsx(2741-2753)",
       "src/renderer/components/file-explorer/PreviewContent.tsx(9380-9392)"
     ],
@@ -725,7 +725,7 @@
     "fr-FR": "Aucune application externe prenant en charge un positionnement précis n'a été détectée et elle a été ouverte de la manière par défaut",
     "ko-KR": "정확한 위치를 지원하는 외부 응용 프로그램이 검색되지 않았으며 기본 방식으로 열렸습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(20272-20300)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(21603-21631)",
       "src/renderer/components/file-explorer/PreviewToolbar.tsx(3044-3072)"
     ],
     "$id": 21924
@@ -741,7 +741,7 @@
     "fr-FR": "Échec de l'ouverture du fichier",
     "ko-KR": "파일을 열지 못했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(20418-20428)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(21749-21759)",
       "src/renderer/components/file-explorer/PreviewToolbar.tsx(3300-3310)"
     ],
     "$id": 21925
@@ -756,7 +756,7 @@
     "de-DE": "Der aktuelle Dateityp (.{ext}) unterstützt derzeit keine Vorschau",
     "fr-FR": "Le type de fichier actuel (.{ext}) ne prend actuellement pas en charge l'aperçu",
     "ko-KR": "현재 파일 형식(.{ext})은 현재 미리보기를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(23794-23818)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(25170-25194)"],
     "$id": 10248
   },
   "该格式暂无内置预览插件，我们将持续拓展支持的类型。建议您使用外部默认关联程序打开查看。": {
@@ -769,7 +769,7 @@
     "de-DE": "Für dieses Format gibt es derzeit kein integriertes Vorschau-Plug-in und wir werden die unterstützten Typen weiter erweitern. Es wird empfohlen, zum Öffnen und Anzeigen ein externes Standardprogramm zu verwenden.",
     "fr-FR": "Il n'existe actuellement aucun plug-in de prévisualisation intégré pour ce format et nous continuerons à étendre les types pris en charge. Il est recommandé d'utiliser un programme externe associé par défaut pour ouvrir et afficher.",
     "ko-KR": "현재 이 형식에 대한 미리 보기 플러그인이 내장되어 있지 않으며 지원되는 유형을 계속 확장할 예정입니다. 외부 기본 관련 프로그램을 이용하여 열어서 보실 것을 권장합니다.",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(23858-23914)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(25234-25290)"],
     "$id": 10249
   },
   "用系统默认程序打开": {
@@ -782,7 +782,7 @@
     "de-DE": "Mit dem Standardprogramm des Systems öffnen",
     "fr-FR": "Ouvrir avec le programme par défaut du système",
     "ko-KR": "시스템 기본 프로그램으로 열기",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(24208-24221)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(25584-25597)"],
     "$id": 10250
   },
   "在文件夹中定位": {
@@ -795,7 +795,7 @@
     "de-DE": "Im Ordner suchen",
     "fr-FR": "Localiser dans le dossier",
     "ko-KR": "폴더에서 찾기",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(24423-24434)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(25799-25810)"],
     "$id": 10251
   },
   "多模态描述": {
@@ -809,9 +809,9 @@
     "fr-FR": "Description multimodale",
     "ko-KR": "다중 모드 설명",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(25621-25630)",
-      "src/renderer/components/file-explorer/FilePreview.tsx(35040-35049)",
-      "src/renderer/components/file-explorer/FilePreview.tsx(36914-36923)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(26997-27006)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(36474-36483)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(38348-38357)",
       "src/renderer/components/file-explorer/PreviewContent.tsx(5090-5099)",
       "src/renderer/components/file-explorer/PreviewContent.tsx(7876-7885)"
     ],
@@ -827,7 +827,7 @@
     "de-DE": "Diese Datei kann nicht in der App abgespielt werden. Versuchen Sie, sie in einem externen Player zu öffnen, um sie anzusehen.",
     "fr-FR": "Impossible de lire ce fichier dans l'application. Essayez de l'ouvrir dans un lecteur externe pour le visionner.",
     "ko-KR": "이 파일을 앱 내에서 재생할 수 없습니다. 외부 플레이어에서 열어 확인해 보세요.",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(28250-28281)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(29626-29657)"],
     "$id": 38916
   },
   "在外部播放器播放此片段": {
@@ -840,7 +840,7 @@
     "de-DE": "Diesen Clip in einem externen Player abspielen",
     "fr-FR": "Lire ce clip dans un lecteur externe",
     "ko-KR": "외부 플레이어에서 이 클립 재생",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(28612-28627)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(29988-30003)"],
     "$id": 38917
   },
   "您的浏览器不支持视频播放": {
@@ -854,8 +854,8 @@
     "fr-FR": "Votre navigateur ne prend pas en charge la lecture vidéo",
     "ko-KR": "귀하의 브라우저는 비디오 재생을 지원하지 않습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(29874-29890)",
-      "src/renderer/components/file-explorer/FilePreview.tsx(32145-32161)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(31308-31324)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(33579-33595)"
     ],
     "$id": 10252
   },
@@ -869,7 +869,7 @@
     "de-DE": "Passendiges Fragment gefunden",
     "fr-FR": "Segment correspondante détectée",
     "ko-KR": "일치하는 필드로 이동",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(32724-32736)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(34158-34170)"],
     "$id": 20513
   },
   "重新播放片段": {
@@ -882,7 +882,7 @@
     "de-DE": "Fragment erneut abspielen",
     "fr-FR": "Rejouer le fragment",
     "ko-KR": "필드 재재생",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(33554-33564)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(34988-34998)"],
     "$id": 20514
   },
   "您的浏览器不支持音频播放": {
@@ -895,7 +895,7 @@
     "de-DE": "Ihr Browser unterstützt keine Audiowiedergabe",
     "fr-FR": "Votre navigateur ne prend pas en charge la lecture audio",
     "ko-KR": "귀하의 브라우저는 오디오 재생을 지원하지 않습니다",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(36449-36465)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(37883-37899)"],
     "$id": 10253
   },
   "当前文本文件体积较大（{size}），为保证流畅度系统已截断展示前 100,000 字。": {
@@ -908,7 +908,7 @@
     "de-DE": "Die aktuelle Textdatei ist groß ({size}) und das System hat die ersten 100.000 Wörter für die Anzeige gekürzt, um eine flüssige Darstellung zu gewährleisten.",
     "fr-FR": "Le fichier texte actuel est volumineux ({size}) et le système a tronqué les 100 000 premiers mots pour assurer la fluidité de l'affichage.",
     "ko-KR": "현재 텍스트 파일은 크기가 크며({size}) 시스템은 원활한 표시를 위해 처음 100,000단어를 잘랐습니다.",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(38019-38090)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(39453-39524)"],
     "$id": 10306
   },
   "打开完整文件": {
@@ -921,7 +921,7 @@
     "de-DE": "Vollständige Datei öffnen",
     "fr-FR": "Ouvrir le dossier complet",
     "ko-KR": "전체 파일 열기",
-    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(38517-38527)"],
+    "$files": ["src/renderer/components/file-explorer/FilePreview.tsx(39951-39961)"],
     "$id": 10307
   },
   "ESC 关闭": {
@@ -2006,19 +2006,6 @@
     "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(14246-14274)"],
     "$id": 7515
   },
-  "系统图标与元数据": {
-    "en-US": "System icons and metadata",
-    "es-ES": "Iconos y metadatos del sistema",
-    "ar-EG": "أيقونات النظام وبيانات التعريف",
-    "pt-PT": "Ícones e metadados do sistema",
-    "ru-RU": "Системные значки и метаданные",
-    "ja-JP": "システムアイコンとメタデータ",
-    "de-DE": "Systemsymbole und Metadaten",
-    "fr-FR": "Icônes système et métadonnées",
-    "ko-KR": "시스템 아이콘 및 메타데이터",
-    "$files": ["src/renderer/components/file-explorer/hooks/usePreviewSession.ts(1334-1346)"],
-    "$id": 38323
-  },
   "正在加载视觉搜索模型，相关图片稍后追加…": {
     "en-US": "Loading visual search model, related pictures will be appended later...",
     "es-ES": "Cargando modelo de búsqueda visual, las imágenes relacionadas se adjuntarán más adelante...",
@@ -2219,5 +2206,18 @@
     "ko-KR": "알림:결과가 최대 단일 디스플레이 제한(500 개 항목)에 도달했습니다.",
     "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(35850-35877)"],
     "$id": 21039
+  },
+  "系统图标与元数据": {
+    "en-US": "System icons and metadata",
+    "es-ES": "Iconos y metadatos del sistema",
+    "ar-EG": "أيقونات النظام وبيانات التعريف",
+    "pt-PT": "Ícones e metadados do sistema",
+    "ru-RU": "Системные значки и метаданные",
+    "ja-JP": "システムアイコンとメタデータ",
+    "de-DE": "Systemsymbole und Metadaten",
+    "fr-FR": "Icônes système et métadonnées",
+    "ko-KR": "시스템 아이콘 및 메타데이터",
+    "$files": ["src/renderer/components/file-explorer/hooks/usePreviewSession.ts(1334-1346)"],
+    "$id": 38323
   }
 }

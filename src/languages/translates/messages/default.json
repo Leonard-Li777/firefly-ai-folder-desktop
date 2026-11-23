@@ -165,7 +165,7 @@
     "de-DE": "Schnittstelle existiert nicht",
     "fr-FR": "L'interface n'existe pas",
     "ko-KR": "인터페이스가 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11592-11601)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11981-11990)"],
     "$id": 9521
   },
   "文件未找到": {
@@ -178,7 +178,7 @@
     "de-DE": "Datei nicht gefunden",
     "fr-FR": "Fichier introuvable",
     "ko-KR": "파일을 찾을 수 없습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(30825-30834)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(30945-30954)"],
     "$id": 7629
   },
   "缺少必填字段: filePath": {
@@ -191,7 +191,7 @@
     "de-DE": "Fehlendes Pflichtfeld: filePath",
     "fr-FR": "Champ obligatoire manquant : filePath",
     "ko-KR": "필수 필드 누락: filePath",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(31649-31669)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(32063-32083)"],
     "$id": 26598
   },
   "搜索关键词不能为空": {
@@ -204,7 +204,7 @@
     "de-DE": "Der Suchbegriff darf nicht leer sein",
     "fr-FR": "Le mot-clé de recherche ne peut pas être vide",
     "ko-KR": "검색 키워드는 비워둘 수 없습니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(32668-32681)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(33082-33095)"],
     "$id": 26647
   },
   "无效的搜索模式，仅支持 final 或 stream": {
@@ -217,7 +217,7 @@
     "de-DE": "Ungültiger Suchmodus, nur Final oder Stream wird unterstützt",
     "fr-FR": "Mode de recherche invalide, seul final ou stream est pris en charge",
     "ko-KR": "검색 모드가 잘못되었습니다. 최종 또는 스트림만 지원됩니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(32870-32900)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(33284-33314)"],
     "$id": 26666
   },
   "无效的搜索范围，仅支持 real、virtual 或 all": {
@@ -230,7 +230,7 @@
     "de-DE": "Ungültiger Suchbereich, nur real, virtuell oder alle werden unterstützt",
     "fr-FR": "Champ de recherche non valide, uniquement réel, virtuel ou tous pris en charge",
     "ko-KR": "검색 범위가 잘못되었습니다. 실제, 가상 또는 모두 지원됩니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(33111-33145)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(33525-33559)"],
     "$id": 26667
   },
   "工作区不存在": {
@@ -243,7 +243,7 @@
     "de-DE": "Arbeitsbereich existiert nicht",
     "fr-FR": "L'espace de travail n'existe pas",
     "ko-KR": "작업공간이 존재하지 않습니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(33806-33816)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(35492-35502)"],
     "$id": 26675
   },
   "内部服务异常": {
@@ -256,7 +256,7 @@
     "de-DE": "Interner Dienstfehler",
     "fr-FR": "Anomalie du service interne",
     "ko-KR": "내부 서비스 오류",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(42765-42775)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(47904-47914)"],
     "$id": 39240
   },
   "响应序列化失败": {
@@ -270,9 +270,9 @@
     "fr-FR": "La sérialisation de la réponse a échoué",
     "ko-KR": "응답 직렬화 실패",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(60511-60522)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(61225-61236)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(62028-62039)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(72620-72631)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(73334-73345)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(74137-74148)"
     ],
     "$id": 7631
   },
@@ -570,19 +570,6 @@
       "src/electron/runtime-services/user-tier/user-tier-service.ts(16522-16532)"
     ],
     "$id": 7663
-  },
-  "该目录已创建为{typeName}": {
-    "en-US": "This directory has been created as {typeName}",
-    "es-ES": "El directorio se ha creado como {typeName}",
-    "ar-EG": "تم إنشاء هذا المجلد كـ{typeName}",
-    "pt-PT": "O diretório foi criado como {typeName}",
-    "ru-RU": "Каталог создан как {typeName}",
-    "ja-JP": "このディレクトリは{typeName}として作成されました",
-    "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
-    "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
-    "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
-    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(8131-8152)"],
-    "$id": 8124
   },
   "无法自动初始化数据库：尚未指定语言": {
     "en-US": "Unable to auto-initialize database: No language has been specified",
@@ -957,6 +944,19 @@
       "src/electron/runtime-services/database/database-service/query-proxy.ts(35119-35135)"
     ],
     "$id": 7660
+  },
+  "该目录已创建为{typeName}": {
+    "en-US": "This directory has been created as {typeName}",
+    "es-ES": "El directorio se ha creado como {typeName}",
+    "ar-EG": "تم إنشاء هذا المجلد كـ{typeName}",
+    "pt-PT": "O diretório foi criado como {typeName}",
+    "ru-RU": "Каталог создан как {typeName}",
+    "ja-JP": "このディレクトリは{typeName}として作成されました",
+    "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
+    "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
+    "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
+    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(8131-8152)"],
+    "$id": 8124
   },
   "文件路径记录不存在": {
     "en-US": "File path record does not exist",

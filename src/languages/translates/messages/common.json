@@ -2833,7 +2833,7 @@
     "de-DE": "Klartext",
     "fr-FR": "Texte brut",
     "ko-KR": "일반 텍스트",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1068-1075)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1111-1118)"],
     "$id": 8939
   },
   "高级预览": {
@@ -2846,7 +2846,7 @@
     "de-DE": "Erweiterte Vorschau",
     "fr-FR": "Aperçu avancé",
     "ko-KR": "고급 미리보기",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1219-1227)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1262-1270)"],
     "$id": 8940
   },
   "复杂渲染": {
@@ -2859,7 +2859,7 @@
     "de-DE": "Komplexes Rendering",
     "fr-FR": "Rendu complexe",
     "ko-KR": "복잡한 렌더링",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1244-1252)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1287-1295)"],
     "$id": 8941
   },
   "文档": {
@@ -2872,7 +2872,7 @@
     "de-DE": "Dokument  ",
     "fr-FR": "Document  ",
     "ko-KR": "문서",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1373-1379)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1416-1422)"],
     "$id": 8942
   },
   "压缩包": {
@@ -2885,7 +2885,7 @@
     "de-DE": "Komprimiertes Archiv  ",
     "fr-FR": "Archive compressée  ",
     "ko-KR": "압축 파일",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2113-2120)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2156-2163)"],
     "$id": 8943
   },
   "邮件": {
@@ -2898,7 +2898,7 @@
     "de-DE": "Post",
     "fr-FR": "Mail",
     "ko-KR": "우편",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2836-2842)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2879-2885)"],
     "$id": 8944
   },
   "3D 模型": {
@@ -2911,7 +2911,7 @@
     "de-DE": "3D-Modell",
     "fr-FR": "Modèle 3D",
     "ko-KR": "3D 모델",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3081-3090)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3124-3133)"],
     "$id": 8946
   },
   "地理数据": {
@@ -2924,7 +2924,7 @@
     "de-DE": "Geografische Daten",
     "fr-FR": "Données géographiques",
     "ko-KR": "지리적 데이터",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3746-3754)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3789-3797)"],
     "$id": 8947
   },
   "脑图/绘图": {
@@ -2937,7 +2937,7 @@
     "de-DE": "Mind Mapping/Zeichnung",
     "fr-FR": "Cartographie mentale/dessin",
     "ko-KR": "마인드맵/드로잉",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3854-3863)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3897-3906)"],
     "$id": 8948
   },
   "电子书": {
@@ -2950,7 +2950,7 @@
     "de-DE": "E-Book  ",
     "fr-FR": "Livre électronique  ",
     "ko-KR": "전자책",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4009-4016)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4052-4059)"],
     "$id": 8949
   },
   "标记语言": {
@@ -2963,7 +2963,7 @@
     "de-DE": "Auszeichnungssprache",
     "fr-FR": "Langage de balisage",
     "ko-KR": "마크업 언어",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4099-4107)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4142-4150)"],
     "$id": 8950
   },
   "代码": {
@@ -2976,7 +2976,7 @@
     "de-DE": "Code",
     "fr-FR": "Code",
     "ko-KR": "암호",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4454-4460)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4497-4503)"],
     "$id": 8951
   },
   "设计/字体/数据": {
@@ -2989,7 +2989,7 @@
     "de-DE": "Design/Schriftart/Daten",
     "fr-FR": "Conception/Police/Données",
     "ko-KR": "디자인/글꼴/데이터",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5297-5309)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5340-5352)"],
     "$id": 8952
   },
   "图片/音视频扩展": {
@@ -3002,7 +3002,7 @@
     "de-DE": "Bild-/Audio-Video-Erweiterung",
     "fr-FR": "Extension image/audio vidéo",
     "ko-KR": "사진/오디오 비디오 확장",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5661-5673)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5704-5716)"],
     "$id": 8953
   },
   "支持的格式": {
@@ -3015,7 +3015,7 @@
     "de-DE": "Unterstützte Formate",
     "fr-FR": "Formats pris en charge",
     "ko-KR": "지원되는 형식",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6127-6136)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6170-6179)"],
     "$id": 10221
   },
   "支持 240+ 种预览格式": {
@@ -3028,7 +3028,7 @@
     "de-DE": "Unterstützt mehr als 240 Vorschauformate",
     "fr-FR": "Prise en charge de plus de 240 formats de prévisualisation",
     "ko-KR": "지원 240+미리보기 형식",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6577-6594)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6620-6637)"],
     "$id": 11419
   },
   "语音播放待安装或启动，请在插件中心开启": {
