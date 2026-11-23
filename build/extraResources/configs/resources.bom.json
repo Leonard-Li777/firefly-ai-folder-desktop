@@ -253,13 +253,13 @@
       }
     },
     "offline-bundle": {
-      "version": "1.0.0",
+      "version": "1.1.0",
       "source": "shared",
       "asset": {
-        "name": "firefly-offline-bundle-1.0.0.zip",
-        "sha256": "1339677f2b5f2c75f1f9f008d7ddc8816ef925e92636510b2ae57b9936a5ea94",
-        "size": 1543875879,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-offline-bundle-1.0.0.zip"
+        "name": "firefly-offline-bundle-1.1.0.zip",
+        "sha256": "ed5db8c91458a2df18dbbf2af05799d87d9fc98f52ed3f466b4af81976df0648",
+        "size": 1506449825,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-offline-bundle-1.1.0.zip"
       }
     }
   },
