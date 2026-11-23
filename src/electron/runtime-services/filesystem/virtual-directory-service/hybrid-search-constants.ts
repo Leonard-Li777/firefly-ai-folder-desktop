@@ -204,9 +204,22 @@ const round4 = (v: number): number => Math.round(v * 10000) / 10000
  * - 当 0.25 <= userThreshold < 0.35 时，显著性门禁线性放宽至 0，确保拉低滑块可见更多切片。
  */
 export function resolveSearchThresholds(
-  similarityThreshold?: number
+  similarityThreshold?: number,
+  options?: { exactMinScore?: boolean }
 ): ResolvedSearchThresholds {
   const isValid = typeof similarityThreshold === 'number' && Number.isFinite(similarityThreshold)
+  // 外部 Skill API 精确等值下推模式：跳过 [0.25, 0.60] 钳制与分通道偏移，全通道严格采用调用方 minScore
+  if (options?.exactMinScore && isValid) {
+    const exact = round4(clampValue(similarityThreshold, 0, 1))
+    return {
+      userThreshold: exact,
+      genericVector: exact,
+      chunkConfidence: exact,
+      chunkProminence: TEMPORAL_CHUNK_MIN_PROMINENCE,
+      clipVector: exact,
+      omniVectorPushdown: exact
+    }
+  }
   const userThreshold = round4(
     isValid
       ? clampValue(

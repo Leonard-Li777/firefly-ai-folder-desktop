@@ -5,7 +5,17 @@ import * as os from 'node:os'
 import * as crypto from 'node:crypto'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
-import { logger, LogCategory, APP_PORTS, ServiceDiscoveryFile, isPidAlive } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  APP_PORTS,
+  ServiceDiscoveryFile,
+  isPidAlive,
+  VIDEO_EXTENSIONS,
+  isDecodableImage,
+  CATEGORY_EXT_MAP,
+  FileCategory
+} from '@firefly/shared'
 import * as iconv from 'iconv-lite'
 import {
   type ExternalApiActivityInfo,
@@ -21,6 +31,26 @@ import { VoiceSeamDispatcher, VoiceSeamError } from './ai/voice-seam-dispatcher'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { modularResourceService } from './system/modular-resource-service'
 import { omniService } from './system/omni-service'
+import {
+  SKILL_API_CONSTRAINTS,
+  countCodePoints,
+  requireObjectBody,
+  parseStrictInt,
+  parseQueryFloat,
+  validateOcrFilePath,
+  validateTranscribeFilePath,
+  validateAbsoluteLocalPath,
+  validateSynthesizePreFlight,
+  validateApplyPlanBody,
+  hasKnownImageMagic,
+  hasKnownNonAudioMagic,
+  assertSearchDtosMinScore
+} from './ai-skill-api-validators'
+import {
+  statRegularFile,
+  readBoundedUtf8File,
+  VOICE_SEAM_HTTP_ERROR_MAP
+} from './ai-skill-api-fs'
 
 export interface VideoSegmentItem {
   chunkIndices: number[]
@@ -98,40 +128,20 @@ export class SseChannel {
   }
 }
 
-function detectMediaType(filePath: string, name: string): 'video' | 'image' | 'document' | 'other' {
-  const ext = path
-    .extname(name || filePath)
-    .toLowerCase()
-    .replace('.', '')
-  const videoExts = new Set(['mp4', 'mkv', 'mov', 'avi', 'webm', 'flv', 'wmv', 'm4v'])
-  const imageExts = new Set([
-    'jpg',
-    'jpeg',
-    'png',
-    'gif',
-    'webp',
-    'svg',
-    'bmp',
-    'ico',
-    'tiff',
-    'heic'
-  ])
-  const docExts = new Set([
-    'pdf',
-    'doc',
-    'docx',
-    'txt',
-    'md',
-    'xls',
-    'xlsx',
-    'ppt',
-    'pptx',
-    'csv',
-    'epub'
-  ])
-  if (videoExts.has(ext)) return 'video'
-  if (imageExts.has(ext)) return 'image'
-  if (docExts.has(ext)) return 'document'
+const SHARED_DOC_EXT_SET: ReadonlySet<string> = new Set([
+  ...(CATEGORY_EXT_MAP[FileCategory.DOCUMENT] || []),
+  ...(CATEGORY_EXT_MAP[FileCategory.TEXT] || [])
+])
+
+function resolveSearchMediaType(
+  filePath: string,
+  name: string
+): 'video' | 'image' | 'document' | 'other' {
+  const target = name || filePath
+  const ext = path.extname(target).toLowerCase()
+  if (VIDEO_EXTENSIONS.has(ext)) return 'video'
+  if (isDecodableImage(target)) return 'image'
+  if (SHARED_DOC_EXT_SET.has(ext)) return 'document'
   return 'other'
 }
 
@@ -163,7 +173,7 @@ function mapItemsToDTO(items: any[]): SearchResultItemDTO[] {
     })
 
     const hasVideoSegments = videoSegments.length > 0
-    const mediaType = detectMediaType(item.path || '', item.name || '')
+    const mediaType = resolveSearchMediaType(item.path || '', item.name || '')
     const snippet = item.snippet
       ? item.snippet.slice(0, 200)
       : item.description
@@ -215,6 +225,7 @@ export class AISkillApiService {
   private inFlightAbortControllers: Set<AbortController> = new Set()
   private activeSearchesCount = 0
   private activeMultimodalCount = 0
+  private activeTtsCount = 0
   private readonly maxBodyBytes = 1024 * 1024 // 普通接口 1MB
   private readonly maxMultimodalBodyBytes = 20 * 1024 * 1024 // 多模态 Base64 接口 20MB
   private readonly ttsTempDir = path.join(os.tmpdir(), 'firefly-skill-tts')
@@ -767,16 +778,6 @@ export class AISkillApiService {
     })
   }
 
-  private safeDecodeURIComponent(str: string): string {
-    const trimmed = str.trim().replace(/^["']|["']$/g, '')
-    if (!/%[0-9a-fA-F]{2}/.test(trimmed)) return trimmed
-    try {
-      return decodeURIComponent(trimmed)
-    } catch {
-      return trimmed
-    }
-  }
-
   private filterInfrastructureFields(data: any): any {
     if (!data || typeof data !== 'object') return data
 
@@ -1038,7 +1039,16 @@ export class AISkillApiService {
 
       if (method === 'POST' && pathname === '/api/files/analysis-data-smart') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
-        const body = await this.readBody(req)
+        const rawBody = await this.readBody(req)
+        const bodyRes = requireObjectBody(rawBody)
+        if (!bodyRes.ok) {
+          this.sendStructuredError(res, bodyRes.statusCode, {
+            error: bodyRes.error,
+            message: bodyRes.message
+          })
+          return true
+        }
+        const body = bodyRes.value
         const filePath = body.filePath as string
         const autoQueue = body.autoQueue !== false
         const priority = typeof body.priority === 'number' ? body.priority : 100
@@ -1091,8 +1101,44 @@ export class AISkillApiService {
             return true
           }
 
-          const limit = Math.min(50, Math.max(1, Number(query.limit) || 20))
-          const offset = Math.max(0, Number(query.offset) || 0)
+          const limitRes = parseStrictInt(query.limit, {
+            name: 'limit',
+            min: 1,
+            max: SKILL_API_CONSTRAINTS.search.maxLimit,
+            defaultValue: SKILL_API_CONSTRAINTS.search.defaultLimit
+          })
+          if (!limitRes.ok) {
+            this.sendStructuredError(res, 400, { error: limitRes.error, message: limitRes.message })
+            return true
+          }
+          const offsetRes = parseStrictInt(query.offset, {
+            name: 'offset',
+            min: 0,
+            defaultValue: 0
+          })
+          if (!offsetRes.ok) {
+            this.sendStructuredError(res, 400, {
+              error: offsetRes.error,
+              message: offsetRes.message
+            })
+            return true
+          }
+          const minScoreRes = parseQueryFloat(query.minScore, {
+            name: 'minScore',
+            min: SKILL_API_CONSTRAINTS.search.minScoreRange[0],
+            max: SKILL_API_CONSTRAINTS.search.minScoreRange[1],
+            defaultValue: SKILL_API_CONSTRAINTS.search.defaultMinScore
+          })
+          if (!minScoreRes.ok) {
+            this.sendStructuredError(res, 400, {
+              error: minScoreRes.error,
+              message: minScoreRes.message
+            })
+            return true
+          }
+          const limit = limitRes.value
+          const offset = offsetRes.value
+          const minScore = minScoreRes.value
           const virtualDirectoryId = query.virtualDirectoryId
             ? Number(query.virtualDirectoryId)
             : undefined
@@ -1117,8 +1163,51 @@ export class AISkillApiService {
             virtualDirectoryId: scope === 'virtual' ? virtualDirectoryId : undefined,
             limit,
             offset,
+            similarityThreshold: minScore,
+            exactMinScore: true,
             includeUnanalyzed: true,
             signal: abortController.signal
+          }
+
+          const buildSearchMeta = (
+            rawItems: any[],
+            rawTotal: number | undefined,
+            baseDegraded: boolean,
+            baseReasons: string[]
+          ) => {
+            const mapped = mapItemsToDTO(rawItems)
+            const checked = assertSearchDtosMinScore(mapped, minScore)
+            let degraded = baseDegraded
+            const degradedReasons = [...baseReasons]
+            if (checked.driftedCount > 0) {
+              degraded = true
+              if (!degradedReasons.includes('threshold_drift')) {
+                degradedReasons.push('threshold_drift')
+              }
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[AISkillApiService] 检索精确下推发生漂移，兜底剔除 ${checked.driftedCount} 条低分语义项 (minScore=${minScore})`
+              )
+            }
+            const total = rawTotal ?? checked.items.length
+            const poolTruncated = total >= SKILL_API_CONSTRAINTS.search.maxResultWindow
+            const relaxable =
+              minScore > SKILL_API_CONSTRAINTS.search.wideRecallMinScore &&
+              checked.items.length < limit
+            return {
+              total,
+              items: checked.items,
+              degraded,
+              degradedReasons,
+              appliedMinScore: minScore,
+              poolTruncated,
+              relaxable,
+              ...(relaxable
+                ? {
+                    hint: `未找到足够高相关结果。如需弱相关候选可传 minScore=${SKILL_API_CONSTRAINTS.search.wideRecallMinScore}，结果可能包含不相关项。`
+                  }
+                : {})
+            }
           }
 
           if (mode === 'stream') {
@@ -1132,28 +1221,38 @@ export class AISkillApiService {
             })
             params.onProgress = async (phase: 'phase1' | 'phase2' | 'phase3', progRes: any) => {
               if (channel.isClosed()) return
-              const dtoItems = mapItemsToDTO(progRes?.items || [])
+              const meta = buildSearchMeta(progRes?.items || [], progRes?.total, false, [])
               if (phase === 'phase1') {
                 await channel.sendEvent('phase1', {
                   phase: 1,
-                  total: progRes?.total || dtoItems.length,
+                  total: meta.total,
                   isSettled: false,
-                  items: dtoItems
+                  appliedMinScore: meta.appliedMinScore,
+                  poolTruncated: meta.poolTruncated,
+                  items: meta.items
                 })
               } else if (phase === 'phase2') {
                 await channel.sendEvent('phase2', {
                   phase: 2,
-                  total: progRes?.total || dtoItems.length,
+                  total: meta.total,
                   isSettled: true,
                   clipPending: Boolean(progRes?.clipPending),
-                  items: dtoItems
+                  appliedMinScore: meta.appliedMinScore,
+                  poolTruncated: meta.poolTruncated,
+                  relaxable: meta.relaxable,
+                  ...(meta.hint ? { hint: meta.hint } : {}),
+                  items: meta.items
                 })
               } else if (phase === 'phase3') {
                 await channel.sendEvent('phase3', {
                   phase: 3,
-                  total: progRes?.total || dtoItems.length,
+                  total: meta.total,
                   isSettled: true,
-                  items: dtoItems
+                  appliedMinScore: meta.appliedMinScore,
+                  poolTruncated: meta.poolTruncated,
+                  relaxable: meta.relaxable,
+                  ...(meta.hint ? { hint: meta.hint } : {}),
+                  items: meta.items
                 })
               }
             }
@@ -1211,25 +1310,39 @@ export class AISkillApiService {
 
             if (raceResult === 'timeout') {
               abortController.abort()
-              const fallbackItems = lastProgressResult?.items || []
+              const meta = buildSearchMeta(
+                lastProgressResult?.items || [],
+                lastProgressResult?.total,
+                true,
+                ['search_timeout']
+              )
               this.sendSuccess(res, {
-                total: lastProgressResult?.total || fallbackItems.length,
+                total: meta.total,
                 isSettled: true,
                 searchDurationMs: duration,
-                degraded: true,
-                degradedReasons: ['search_timeout'],
-                items: mapItemsToDTO(fallbackItems)
+                degraded: meta.degraded,
+                degradedReasons: meta.degradedReasons,
+                appliedMinScore: meta.appliedMinScore,
+                poolTruncated: meta.poolTruncated,
+                relaxable: meta.relaxable,
+                ...(meta.hint ? { hint: meta.hint } : {}),
+                items: meta.items
               })
             } else {
               const searchRes = raceResult
+              const meta = buildSearchMeta(searchRes.items, searchRes.total, false, [])
               this.sendSuccess(res, {
-                total: searchRes.total,
+                total: meta.total,
                 isSettled: true,
                 searchDurationMs: duration,
-                degraded: false,
-                degradedReasons: [],
+                degraded: meta.degraded,
+                degradedReasons: meta.degradedReasons,
                 clipPending: Boolean((searchRes as any).clipPending),
-                items: mapItemsToDTO(searchRes.items)
+                appliedMinScore: meta.appliedMinScore,
+                poolTruncated: meta.poolTruncated,
+                relaxable: meta.relaxable,
+                ...(meta.hint ? { hint: meta.hint } : {}),
+                items: meta.items
               })
             }
           } catch (err: any) {
@@ -1245,12 +1358,26 @@ export class AISkillApiService {
 
       if (method === 'GET' && pathname === '/api/organize/templates') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
-        const workspaceId = Number(query.workspaceId)
+        const wsIdRes = parseStrictInt(query.workspaceId, {
+          name: 'workspaceId',
+          min: 1,
+          required: true
+        })
+        if (!wsIdRes.ok) {
+          this.sendStructuredError(res, 400, { error: wsIdRes.error, message: wsIdRes.message })
+          return true
+        }
+        const workspaceId = wsIdRes.value
         const userInstruction = (query.userInstruction as string) || ''
 
-        if (!workspaceId) throw new Error('Missing workspaceId')
         const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
-        if (!ws) throw new Error('Workspace not found')
+        if (!ws) {
+          this.sendStructuredError(res, 400, {
+            error: 'INVALID_ARGUMENT',
+            message: '目标工作区不存在'
+          })
+          return true
+        }
 
         if (!organizeRealDirectoryService) throw new Error('Organize service not ready')
 
@@ -1271,8 +1398,24 @@ export class AISkillApiService {
 
       if (method === 'GET' && pathname === '/api/virtual-directories') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
-        const workspaceId = Number(query.workspaceId)
-        if (!workspaceId) throw new Error('Missing workspaceId')
+        const wsIdRes = parseStrictInt(query.workspaceId, {
+          name: 'workspaceId',
+          min: 1,
+          required: true
+        })
+        if (!wsIdRes.ok) {
+          this.sendStructuredError(res, 400, { error: wsIdRes.error, message: wsIdRes.message })
+          return true
+        }
+        const workspaceId = wsIdRes.value
+        const ws = await databaseService.getWorkspaceDirectoryById(workspaceId)
+        if (!ws) {
+          this.sendStructuredError(res, 400, {
+            error: 'INVALID_ARGUMENT',
+            message: '目标工作区不存在'
+          })
+          return true
+        }
 
         if (!virtualDirectoryService) throw new Error('Virtual directory service not ready')
         const list = await virtualDirectoryService.list(workspaceId)
@@ -1283,15 +1426,12 @@ export class AISkillApiService {
       if (method === 'POST' && pathname === '/api/organize/apply-plan') {
         this.recordBusinessRequest(req, pathname, res, isProbe)
         const body = await this.readBody(req)
-        const rawName = body.name
-        const rawStrategy = body.strategy
-
-        if (!rawName) throw new Error('缺少必填字段: name')
-        if (!rawStrategy) throw new Error('缺少必填字段: strategy')
-
-        const name = this.safeDecodeURIComponent(rawName)
-        const strategy = this.safeDecodeURIComponent(rawStrategy)
-        const perspective = body.perspective ? this.safeDecodeURIComponent(body.perspective) : ''
+        const planRes = validateApplyPlanBody(body)
+        if (!planRes.ok) {
+          this.sendStructuredError(res, 400, { error: planRes.error, message: planRes.message })
+          return true
+        }
+        const { name, strategy, perspective } = planRes.value
 
         const windows = BrowserWindow.getAllWindows()
         windows.forEach(w => {
@@ -1347,11 +1487,21 @@ export class AISkillApiService {
         id: 'search',
         method: 'GET',
         path: '/api/files/search',
-        description: '按关键词、模糊语义或音视频对白检索本地文件',
+        description:
+          '按关键词、模糊语义或音视频对白检索本地文件（单次查询最多可翻看前 200 条最相关结果）',
         inputSchema: {
           keyword: 'string (required)',
-          limit: 'number (optional, 1-50)',
+          limit: 'number (optional, 1-50, default 20)',
+          offset: 'number (optional, >= 0, default 0)',
+          minScore: 'number (optional, 0-1, default 0.55; pass 0.35 for broader recall)',
           scope: 'string (optional: real | virtual | all)'
+        },
+        constraints: {
+          defaultMinScore: SKILL_API_CONSTRAINTS.search.defaultMinScore,
+          wideRecallMinScore: SKILL_API_CONSTRAINTS.search.wideRecallMinScore,
+          minScoreRange: [...SKILL_API_CONSTRAINTS.search.minScoreRange],
+          maxLimit: SKILL_API_CONSTRAINTS.search.maxLimit,
+          maxResultWindow: SKILL_API_CONSTRAINTS.search.maxResultWindow
         }
       },
       {
@@ -1377,9 +1527,14 @@ export class AISkillApiService {
         path: '/api/organize/apply-plan',
         description: '向桌面端推送多维文件分类整理草案（需用户人工确认后生效）',
         inputSchema: {
-          name: 'string (required)',
-          strategy: 'string (required)',
-          perspective: 'string (optional)'
+          name: 'string (required, 1-128 chars)',
+          strategy: 'string (required, 1-2500 chars)',
+          perspective: 'string (optional, <= 500 chars)'
+        },
+        constraints: {
+          maxNameChars: SKILL_API_CONSTRAINTS.organize.maxNameChars,
+          maxStrategyChars: SKILL_API_CONSTRAINTS.organize.maxStrategyChars,
+          maxPerspectiveChars: SKILL_API_CONSTRAINTS.organize.maxPerspectiveChars
         }
       },
       {
@@ -1392,17 +1547,25 @@ export class AISkillApiService {
           imageBase64: 'string (optional, base64 image or data URI)',
           mimeType: 'string (optional, e.g. image/png)',
           text: 'string (optional, passthrough text)'
+        },
+        constraints: {
+          maxDocumentBytes: SKILL_API_CONSTRAINTS.ocr.maxDocumentBytes
         }
       },
       {
         id: 'asr',
         method: 'POST',
         path: '/api/ai/transcribe',
-        description: '将本地音视频文件或 Base64 音频中的说话内容转写为文字与时间戳台词',
+        description:
+          '将本地音视频文件或 Base64 音频中的说话内容转写为文字与整段覆盖时长（不提供逐词时间戳，超长音频按引擎分析窗口截取前段）',
         inputSchema: {
           filePath: 'string (optional, absolute local audio/video path)',
           audioBase64: 'string (optional, base64 audio or data URI)',
           language: 'string (optional)'
+        },
+        constraints: {
+          maxFileBytes: SKILL_API_CONSTRAINTS.asr.maxFileBytes,
+          timestamps: SKILL_API_CONSTRAINTS.asr.timestamps
         }
       },
       {
@@ -1410,13 +1573,22 @@ export class AISkillApiService {
         method: 'POST',
         path: '/api/ai/synthesize',
         description:
-          '将文本或本地文本文件内容合成为自然流畅的 WAV 语音（支持返回文件路径或 Base64）',
+          '将短文本或本地 UTF-8 文本文件内容合成为自然流畅的 WAV 语音（单次最多 150 字，长文请分句串行调用）',
         inputSchema: {
-          text: 'string (optional, 1-10000 chars)',
-          filePath: 'string (optional, local text file path)',
+          text: 'string (optional, 1-150 chars, mutually exclusive with filePath)',
+          filePath: 'string (optional, local UTF-8 text file <= 64KB)',
           voiceId: 'string (optional)',
-          speed: 'number (optional)',
+          speed: 'number (optional, 0.5-2.0)',
           responseFormat: 'string (optional: file | base64, default file)'
+        },
+        constraints: {
+          maxTextChars: SKILL_API_CONSTRAINTS.tts.maxTextChars,
+          maxFileBytes: SKILL_API_CONSTRAINTS.tts.maxFileBytes,
+          maxChunkChars: SKILL_API_CONSTRAINTS.tts.maxChunkChars,
+          chunkTimeoutMs: SKILL_API_CONSTRAINTS.tts.chunkTimeoutMs,
+          firstChunkTimeoutMs: SKILL_API_CONSTRAINTS.tts.firstChunkTimeoutMs,
+          requestTimeoutMs: SKILL_API_CONSTRAINTS.tts.requestTimeoutMs,
+          maxConcurrent: SKILL_API_CONSTRAINTS.tts.maxConcurrent
         }
       },
       {
@@ -1426,10 +1598,13 @@ export class AISkillApiService {
         description:
           '检测本地图片/文档、Base64 图片或纯文本是否包含暴恐、涉政、违规、色情、辱骂、血腥等敏感内容并返回合规分级结果',
         inputSchema: {
-          text: 'string (optional, plain text for FastText + nsfw-l3)',
-          filePath: 'string (optional, local image/document path)',
-          imageBase64: 'string (optional, base64 image for nsfw-mobilenetv2)',
+          text: 'string (optional, plain text)',
+          filePath: 'string (optional, local image/document path <= 50MB)',
+          imageBase64: 'string (optional, base64 image)',
           language: 'string (optional)'
+        },
+        constraints: {
+          maxFileBytes: SKILL_API_CONSTRAINTS.sensitive.maxFileBytes
         }
       }
     ]
@@ -1437,33 +1612,107 @@ export class AISkillApiService {
   }
 
   /**
-   * 统一处理多模态扩展能力路由：并发守卫(429) + AbortController 停机联动 + 既有单例复用
+   * 统一处理多模态扩展能力路由：先 readBody + 零 I/O 参数校验，再原子占槽(429) + AbortController 联动
    */
   private async handleMultimodalRequest(
     pathname: string,
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): Promise<boolean> {
-    if (this.activeMultimodalCount >= 2) {
-      res.writeHead(429, {
-        'Content-Type': 'application/json',
-        'Retry-After': '2'
-      })
-      res.end(
-        JSON.stringify({
-          success: false,
-          error: 'TOO_MANY_REQUESTS',
-          message: 'Too many multimodal inference requests, please retry shortly'
+    const rawBody = await this.readBody(req, this.maxMultimodalBodyBytes)
+    const objRes = requireObjectBody(rawBody)
+    if (!objRes.ok) {
+      this.sendStructuredError(res, 400, { error: objRes.error, message: objRes.message })
+      return true
+    }
+    const body = objRes.value
+
+    // 零 I/O 前置校验（在抢占并发槽之前完成，确保繁忙态非法入参亦稳定返 400）
+    let ttsPreFlight: ReturnType<typeof validateSynthesizePreFlight> | null = null
+    let ocrFileRoute: 'image' | 'document' | null = null
+
+    if (pathname === '/api/ai/synthesize') {
+      ttsPreFlight = validateSynthesizePreFlight(body)
+      if (!ttsPreFlight.ok) {
+        this.sendStructuredError(res, 400, {
+          error: ttsPreFlight.error,
+          message: ttsPreFlight.message
         })
+        return true
+      }
+    } else if (pathname === '/api/ai/ocr') {
+      const ocrEnabled =
+        ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
+      if (!ocrEnabled) {
+        this.sendStructuredError(res, 400, {
+          error: 'FEATURE_DISABLED',
+          message: '图片文字识别功能未开启',
+          requiredSetting: 'ENABLE_IMAGE_OCR'
+        })
+        return true
+      }
+      if (body.filePath !== undefined && body.filePath !== null && String(body.filePath).trim()) {
+        const ocrCheck = validateOcrFilePath(body.filePath)
+        if (!ocrCheck.ok) {
+          this.sendStructuredError(res, 400, { error: ocrCheck.error, message: ocrCheck.message })
+          return true
+        }
+        ocrFileRoute = ocrCheck.value.route
+      }
+    } else if (pathname === '/api/ai/transcribe') {
+      if (body.filePath !== undefined && body.filePath !== null && String(body.filePath).trim()) {
+        const asrCheck = validateTranscribeFilePath(body.filePath)
+        if (!asrCheck.ok) {
+          this.sendStructuredError(res, 400, { error: asrCheck.error, message: asrCheck.message })
+          return true
+        }
+      }
+    } else if (pathname === '/api/ai/assert-sensitive') {
+      if (body.filePath !== undefined && body.filePath !== null && String(body.filePath).trim()) {
+        const pathCheck = validateAbsoluteLocalPath(body.filePath)
+        if (!pathCheck.ok) {
+          this.sendStructuredError(res, 400, {
+            error: pathCheck.error,
+            message: pathCheck.message
+          })
+          return true
+        }
+      }
+    }
+
+    // 同步原子检查并发槽：先查 TTS 单飞槽（429 TTS_BUSY + Retry-After: 10），再查多模态总槽（429 + Retry-After: 2）
+    const isTts = pathname === '/api/ai/synthesize'
+    if (isTts && this.activeTtsCount >= SKILL_API_CONSTRAINTS.tts.maxConcurrent) {
+      this.sendStructuredError(
+        res,
+        429,
+        {
+          error: 'TTS_BUSY',
+          message: '语音合成通道正忙，请稍后重试',
+          retryable: true
+        },
+        { 'Retry-After': '10' }
+      )
+      return true
+    }
+    if (this.activeMultimodalCount >= 2) {
+      this.sendStructuredError(
+        res,
+        429,
+        {
+          error: 'TOO_MANY_REQUESTS',
+          message: 'Too many multimodal inference requests, please retry shortly',
+          retryable: true
+        },
+        { 'Retry-After': '2' }
       )
       return true
     }
 
-    // 同步递增防 await readBody 期间的 TOCTOU 竞态击穿并发上限
+    if (isTts) this.activeTtsCount++
     this.activeMultimodalCount++
     const abortController = new AbortController()
     this.inFlightAbortControllers.add(abortController)
-    // 注意：Node 18+ 中 req 'close' 在请求体读完即触发；监听 res 'close' 且 !writableEnded 才是客户端提前断开
     const onResClose = () => {
       if (!res.writableEnded) {
         abortController.abort()
@@ -1493,43 +1742,30 @@ export class AISkillApiService {
       })
     }
 
-    try {
-      const body = await this.readBody(req, this.maxMultimodalBodyBytes)
-
-      const decodeBase64Payload = (raw: string): { buffer: Buffer; ext: string } => {
-        const trimmed = raw.trim()
-        let ext = 'bin'
-        let b64 = trimmed
-        const dataUriMatch = trimmed.match(/^data:([^;]+);base64,(.*)$/s)
-        if (dataUriMatch) {
-          const mime = dataUriMatch[1].toLowerCase()
-          b64 = dataUriMatch[2]
-          if (mime.includes('png')) ext = 'png'
-          else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg'
-          else if (mime.includes('webp')) ext = 'webp'
-          else if (mime.includes('bmp')) ext = 'bmp'
-          else if (mime.includes('gif')) ext = 'gif'
-          else if (mime.includes('wav')) ext = 'wav'
-          else if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3'
-        }
-        return { buffer: Buffer.from(b64, 'base64'), ext }
+    const decodeBase64Payload = (raw: string): { buffer: Buffer; ext: string } => {
+      const trimmed = raw.trim()
+      let ext = 'bin'
+      let b64 = trimmed
+      const dataUriMatch = trimmed.match(/^data:([^;]+);base64,(.*)$/s)
+      if (dataUriMatch) {
+        const mime = dataUriMatch[1].toLowerCase()
+        b64 = dataUriMatch[2]
+        if (mime.includes('png')) ext = 'png'
+        else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg'
+        else if (mime.includes('webp')) ext = 'webp'
+        else if (mime.includes('bmp')) ext = 'bmp'
+        else if (mime.includes('gif')) ext = 'gif'
+        else if (mime.includes('wav')) ext = 'wav'
+        else if (mime.includes('mpeg') || mime.includes('mp3')) ext = 'mp3'
       }
+      return { buffer: Buffer.from(b64, 'base64'), ext }
+    }
 
+    try {
       if (pathname === '/api/ai/ocr') {
-        const ocrEnabled =
-          ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
-        if (!ocrEnabled) {
-          this.sendStructuredError(res, 400, {
-            error: 'FEATURE_DISABLED',
-            message: '图片文字识别功能未开启',
-            requiredSetting: 'ENABLE_IMAGE_OCR'
-          })
-          return true
-        }
-
-        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        const imageBase64 = typeof body?.imageBase64 === 'string' ? body.imageBase64.trim() : ''
-        const rawText = typeof body?.text === 'string' ? body.text.trim() : ''
+        const filePath = typeof body.filePath === 'string' ? body.filePath.trim() : ''
+        const imageBase64 = typeof body.imageBase64 === 'string' ? body.imageBase64.trim() : ''
+        const rawText = typeof body.text === 'string' ? body.text.trim() : ''
 
         if (!filePath && !imageBase64 && !rawText) {
           this.sendStructuredError(res, 400, {
@@ -1553,7 +1789,14 @@ export class AISkillApiService {
             })
             return true
           }
-          const mimeHint = typeof body?.mimeType === 'string' ? body.mimeType.toLowerCase() : ''
+          if (!hasKnownImageMagic(buffer)) {
+            this.sendStructuredError(res, 400, {
+              error: 'UNSUPPORTED_FILE_TYPE',
+              message: 'imageBase64 内容不是有效的图像格式（仅支持 PNG/JPEG/WEBP/GIF/BMP/TIFF）'
+            })
+            return true
+          }
+          const mimeHint = typeof body.mimeType === 'string' ? body.mimeType.toLowerCase() : ''
           const ext =
             inferredExt !== 'bin'
               ? inferredExt
@@ -1579,18 +1822,16 @@ export class AISkillApiService {
           return true
         }
 
-        try {
-          await fs.access(filePath)
-        } catch {
-          this.sendStructuredError(res, 400, {
-            error: 'FILE_NOT_FOUND',
-            message: '目标本地文件不存在或无法访问'
-          })
+        const statRes = await statRegularFile(
+          filePath,
+          ocrFileRoute === 'document' ? SKILL_API_CONSTRAINTS.ocr.maxDocumentBytes : undefined
+        )
+        if (!statRes.ok) {
+          this.sendStructuredError(res, 400, { error: statRes.error, message: statRes.message })
           return true
         }
 
-        const mediaType = detectMediaType(filePath, path.basename(filePath))
-        if (mediaType === 'image') {
+        if (ocrFileRoute === 'image') {
           const perceived = await raceWithAbort(
             omniService.perceive(filePath, { enableImageOcr: true })
           )
@@ -1609,8 +1850,8 @@ export class AISkillApiService {
       }
 
       if (pathname === '/api/ai/transcribe') {
-        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        const audioBase64 = typeof body?.audioBase64 === 'string' ? body.audioBase64.trim() : ''
+        const filePath = typeof body.filePath === 'string' ? body.filePath.trim() : ''
+        const audioBase64 = typeof body.audioBase64 === 'string' ? body.audioBase64.trim() : ''
         if (!filePath && !audioBase64) {
           this.sendStructuredError(res, 400, {
             error: 'INVALID_ARGUMENT',
@@ -1629,26 +1870,36 @@ export class AISkillApiService {
             })
             return true
           }
+          if (hasKnownNonAudioMagic(buffer)) {
+            this.sendStructuredError(res, 400, {
+              error: 'UNSUPPORTED_FILE_TYPE',
+              message: 'audioBase64 内容不是有效的音频或视频数据'
+            })
+            return true
+          }
           audioInput = buffer
         } else {
-          try {
-            await fs.access(filePath)
-          } catch {
-            this.sendStructuredError(res, 400, {
-              error: 'FILE_NOT_FOUND',
-              message: '目标音视频文件不存在或无法访问'
-            })
+          const statRes = await statRegularFile(filePath, SKILL_API_CONSTRAINTS.asr.maxFileBytes)
+          if (!statRes.ok) {
+            this.sendStructuredError(res, 400, { error: statRes.error, message: statRes.message })
             return true
           }
           audioInput = filePath
         }
 
-        const language = typeof body?.language === 'string' ? body.language.trim() : undefined
+        const language = typeof body.language === 'string' ? body.language.trim() : undefined
         try {
           const result = await VoiceSeamDispatcher.getInstance().transcribe(audioInput, {
             language,
             signal: abortController.signal
           })
+          if (result.decodeFailed) {
+            this.sendStructuredError(res, 400, {
+              error: 'UNSUPPORTED_FILE_TYPE',
+              message: '无法解码为有效音频或视频不含音轨'
+            })
+            return true
+          }
           const segments = Array.isArray(result.segments)
             ? result.segments.map(seg => ({
                 start: Number((seg.startMs / 1000).toFixed(3)),
@@ -1658,19 +1909,32 @@ export class AISkillApiService {
             : []
           this.sendSuccess(res, {
             text: result.text || '',
-            segments
+            segments,
+            timestamps: segments.length > 0 ? 'span_only' : 'none'
           })
         } catch (err: any) {
-          if (err instanceof VoiceSeamError && err.code === 'NO_ACTIVE_PLUGIN') {
-            this.sendStructuredError(res, 400, {
-              error: 'PLUGIN_NOT_ACTIVE',
-              message: '语音转文字功能需安装并启用对应插件',
-              requiredSlot: 'voice_asr'
-            })
-            return true
-          }
-          if (err instanceof VoiceSeamError && err.code === 'ABORTED') {
-            this.sendError(res, 503, '语音转录已中止')
+          if (err instanceof VoiceSeamError) {
+            const mapping = VOICE_SEAM_HTTP_ERROR_MAP[err.code]
+            if (err.code === 'ABORTED' && (res.writableEnded || res.destroyed)) {
+              logger.debug(LogCategory.SYSTEM, '[AI Skill API] ASR 客户端已断连，跳过响应写回')
+              return true
+            }
+            const extra =
+              err.code === 'NO_ACTIVE_PLUGIN' ? { requiredSlot: 'voice_asr' } : undefined
+            const headers = mapping.retryAfterSec
+              ? { 'Retry-After': String(mapping.retryAfterSec) }
+              : undefined
+            this.sendStructuredError(
+              res,
+              mapping.statusCode,
+              {
+                error: mapping.error,
+                message: err.message || mapping.defaultMessage,
+                retryable: mapping.retryable,
+                ...extra
+              },
+              headers
+            )
             return true
           }
           throw err
@@ -1678,71 +1942,99 @@ export class AISkillApiService {
         return true
       }
 
-      if (pathname === '/api/ai/synthesize') {
-        let text = typeof body?.text === 'string' ? body.text.trim() : ''
-        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        if (!text && filePath) {
-          try {
-            await fs.access(filePath)
-            text = (await fs.readFile(filePath, 'utf-8')).trim()
-          } catch {
+      if (pathname === '/api/ai/synthesize' && ttsPreFlight && ttsPreFlight.ok) {
+        const pre = ttsPreFlight.value
+        let text = pre.text || ''
+        if (pre.mode === 'filePath' && pre.filePath) {
+          const readRes = await readBoundedUtf8File(
+            pre.filePath,
+            SKILL_API_CONSTRAINTS.tts.maxFileBytes
+          )
+          if (!readRes.ok) {
+            this.sendStructuredError(res, 400, { error: readRes.error, message: readRes.message })
+            return true
+          }
+          text = readRes.value.trim()
+          if (!text || countCodePoints(text) > SKILL_API_CONSTRAINTS.tts.maxTextChars) {
             this.sendStructuredError(res, 400, {
-              error: 'FILE_NOT_FOUND',
-              message: '目标文本文件不存在或无法读取'
+              error: 'INVALID_ARGUMENT',
+              message: text
+                ? `单次语音合成文本不得超过 ${SKILL_API_CONSTRAINTS.tts.maxTextChars} 字，请按句切分后串行调用`
+                : '目标文本文件内容为空'
             })
             return true
           }
         }
-        if (!text || text.length > 10000) {
-          this.sendStructuredError(res, 400, {
-            error: 'INVALID_ARGUMENT',
-            message: text
-              ? '朗读文本长度超过 10,000 字符上限'
-              : '至少需要提供 text 或 filePath 之一'
-          })
-          return true
-        }
 
-        const voiceId = typeof body?.voiceId === 'string' ? body.voiceId.trim() : undefined
-        const speed =
-          typeof body?.speed === 'number' && Number.isFinite(body.speed) ? body.speed : undefined
-        const responseFormat = body?.responseFormat === 'base64' ? 'base64' : 'file'
+        const totalBudgetSignal = AbortSignal.timeout(SKILL_API_CONSTRAINTS.tts.requestTimeoutMs)
+        const combinedSignal = AbortSignal.any([abortController.signal, totalBudgetSignal])
+        let writtenAudioPath: string | null = null
 
         try {
           const wavBuf = await VoiceSeamDispatcher.getInstance().synthesizeToWav(text, {
-            voiceId,
-            speed,
-            signal: abortController.signal
+            voiceId: pre.voiceId,
+            speed: pre.speed,
+            signal: combinedSignal,
+            chunkTimeoutMs: SKILL_API_CONSTRAINTS.tts.chunkTimeoutMs,
+            firstChunkTimeoutMs: SKILL_API_CONSTRAINTS.tts.firstChunkTimeoutMs,
+            totalBudgetMs: SKILL_API_CONSTRAINTS.tts.requestTimeoutMs,
+            maxChunkChars: SKILL_API_CONSTRAINTS.tts.maxChunkChars
           })
-          if (abortController.signal.aborted) {
-            this.sendError(res, 503, '语音合成已中止')
-            return true
+          if (combinedSignal.aborted) {
+            const code =
+              (combinedSignal.reason as any)?.name === 'TimeoutError' ? 'TIMEOUT' : 'ABORTED'
+            throw new VoiceSeamError(code)
           }
           await this.cleanupTtsTempDir('prune')
           await fs.mkdir(this.ttsTempDir, { recursive: true })
           const audioPath = path.join(this.ttsTempDir, `${crypto.randomUUID()}.wav`)
           const wavNodeBuf = Buffer.from(wavBuf)
           await fs.writeFile(audioPath, wavNodeBuf)
+          writtenAudioPath = audioPath
           const pcmBytes = Math.max(0, wavBuf.byteLength - 44)
           const durationSec = Number((pcmBytes / (48000 * 2)).toFixed(2))
           this.sendSuccess(res, {
             audioPath,
             durationSec,
-            ...(responseFormat === 'base64'
+            ...(pre.responseFormat === 'base64'
               ? { audioBase64: wavNodeBuf.toString('base64'), mimeType: 'audio/wav' }
               : {})
           })
         } catch (err: any) {
-          if (err instanceof VoiceSeamError && err.code === 'NO_ACTIVE_PLUGIN') {
-            this.sendStructuredError(res, 400, {
-              error: 'PLUGIN_NOT_ACTIVE',
-              message: '语音朗读功能需安装并启用对应插件',
-              requiredSlot: 'voice_tts'
+          if (writtenAudioPath) {
+            await fs.unlink(writtenAudioPath).catch(unlinkErr => {
+              logger.warn(
+                LogCategory.SYSTEM,
+                '[AI Skill API] TTS 失败临时文件清理异常:',
+                unlinkErr
+              )
             })
-            return true
           }
-          if (err instanceof VoiceSeamError && err.code === 'ABORTED') {
-            this.sendError(res, 503, '语音合成已中止')
+          if (err instanceof VoiceSeamError) {
+            const mapping = VOICE_SEAM_HTTP_ERROR_MAP[err.code]
+            if (err.code === 'ABORTED' && (res.writableEnded || res.destroyed)) {
+              logger.debug(LogCategory.SYSTEM, '[AI Skill API] TTS 客户端已断连，跳过响应写回')
+              return true
+            }
+            const extra =
+              err.code === 'NO_ACTIVE_PLUGIN' ? { requiredSlot: 'voice_tts' } : undefined
+            const headers = mapping.retryAfterSec
+              ? { 'Retry-After': String(mapping.retryAfterSec) }
+              : undefined
+            this.sendStructuredError(
+              res,
+              mapping.statusCode,
+              {
+                error: mapping.error,
+                message:
+                  err.code === 'TIMEOUT'
+                    ? mapping.defaultMessage
+                    : err.message || mapping.defaultMessage,
+                retryable: mapping.retryable,
+                ...extra
+              },
+              headers
+            )
             return true
           }
           throw err
@@ -1764,10 +2056,10 @@ export class AISkillApiService {
           return true
         }
 
-        const text = typeof body?.text === 'string' ? body.text.trim() : ''
-        const filePath = typeof body?.filePath === 'string' ? body.filePath.trim() : ''
-        const imageBase64 = typeof body?.imageBase64 === 'string' ? body.imageBase64.trim() : ''
-        const language = typeof body?.language === 'string' ? body.language.trim() : undefined
+        const text = typeof body.text === 'string' ? body.text.trim() : ''
+        const filePath = typeof body.filePath === 'string' ? body.filePath.trim() : ''
+        const imageBase64 = typeof body.imageBase64 === 'string' ? body.imageBase64.trim() : ''
+        const language = typeof body.language === 'string' ? body.language.trim() : undefined
 
         if (!text && !filePath && !imageBase64) {
           this.sendStructuredError(res, 400, {
@@ -1778,13 +2070,12 @@ export class AISkillApiService {
         }
 
         if (filePath) {
-          try {
-            await fs.access(filePath)
-          } catch {
-            this.sendStructuredError(res, 400, {
-              error: 'FILE_NOT_FOUND',
-              message: '目标文件不存在或无法访问'
-            })
+          const statRes = await statRegularFile(
+            filePath,
+            SKILL_API_CONSTRAINTS.sensitive.maxFileBytes
+          )
+          if (!statRes.ok) {
+            this.sendStructuredError(res, 400, { error: statRes.error, message: statRes.message })
             return true
           }
         }
@@ -1826,13 +2117,17 @@ export class AISkillApiService {
       res.off('close', onResClose)
       this.inFlightAbortControllers.delete(abortController)
       this.activeMultimodalCount = Math.max(0, this.activeMultimodalCount - 1)
+      if (isTts) {
+        this.activeTtsCount = Math.max(0, this.activeTtsCount - 1)
+      }
     }
   }
 
   private sendStructuredError(
     res: http.ServerResponse,
     statusCode: number,
-    payload: { error: string; message: string; [key: string]: any }
+    payload: { error: string; message: string; [key: string]: any },
+    headers?: Record<string, string>
   ) {
     if (res.writableEnded || res.destroyed) return
     try {
@@ -1840,6 +2135,11 @@ export class AISkillApiService {
       const responseData = JSON.stringify({ success: false, ...payload })
       res.setHeader('Content-Type', 'application/json')
       res.setHeader('Content-Length', Buffer.byteLength(responseData))
+      if (headers) {
+        for (const [k, v] of Object.entries(headers)) {
+          res.setHeader(k, v)
+        }
+      }
       res.end(responseData)
     } catch (error: any) {
       logger.error(LogCategory.SYSTEM, '[AI Skill API] 发送结构化错误响应失败', error)

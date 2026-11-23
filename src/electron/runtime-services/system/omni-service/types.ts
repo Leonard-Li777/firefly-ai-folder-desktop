@@ -371,6 +371,8 @@ export interface OmniAudioTranscribeResponse {
   events: string[]
   language?: string
   duration_ms: number
+  /** 本次实际解码送入 ASR 的真实音频时长（秒，受 duration_seconds 截断窗口约束） */
+  audio_duration_sec?: number
 }
 
 export interface OmniAudioConvertResponse {

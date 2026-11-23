@@ -159,6 +159,21 @@ describe('resolveSearchThresholds (多通道阈值联动与动态显著性)', ()
     }
   })
 
+  it('exactMinScore=true 时跳过 [0.25, 0.60] 钳制与分通道偏移，全通道严格等于调用方 minScore', () => {
+    for (const v of [0, 0.2, 0.55, 0.9]) {
+      const r = resolveSearchThresholds(v, { exactMinScore: true })
+      expect(r.userThreshold).toBe(v)
+      expect(r.genericVector).toBe(v)
+      expect(r.chunkConfidence).toBe(v)
+      expect(r.clipVector).toBe(v)
+      expect(r.omniVectorPushdown).toBe(v)
+      expect(r.chunkProminence).toBe(TEMPORAL_CHUNK_MIN_PROMINENCE)
+    }
+    // 桌面端缺省模式不受影响
+    expect(resolveSearchThresholds(0.55).genericVector).toBe(0.5)
+    expect(resolveSearchThresholds(0.55).clipVector).toBe(0.58)
+  })
+
   it('调低至 25% 与 30% 时按比例放宽各通道与显著性门禁', () => {
     const low25 = resolveSearchThresholds(0.25)
     expect(low25).toEqual({

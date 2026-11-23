@@ -97,6 +97,10 @@ export function registerTTSIPCHandlers(): void {
         return result
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
+        if (msg === 'ABORTED') {
+          logger.debug(LogCategory.MAIN, `[TTS IPC] 分片请求已中止 (sessionId=${sessionId})`)
+          return null
+        }
         if (msg === 'ENGINE_BUSY_STREAMING') {
           logger.warn(
             LogCategory.MAIN,
@@ -734,6 +738,10 @@ export function registerTTSIPCHandlers(): void {
           recorder.finalize(false).catch(() => {})
         }
         const msg = err instanceof Error ? err.message : String(err)
+        if (msg === 'ABORTED') {
+          logger.debug(LogCategory.MAIN, '[TTS Stream IPC] 流式会话已中止 (ABORTED)')
+          return { ok: false, errorCode: 'ABORTED' }
+        }
         if (msg === 'ENGINE_BUSY_STREAMING') {
           event.sender.send('tts:busy-rejected', {
             code: 'ENGINE_BUSY_STREAMING',

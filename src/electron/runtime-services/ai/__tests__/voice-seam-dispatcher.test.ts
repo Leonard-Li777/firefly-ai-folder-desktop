@@ -106,7 +106,8 @@ describe('VoiceSeamDispatcher (Ticket 04) 语音中继调度与 PCM 流式测试
         transcript: '你好世界',
         events: [],
         language: 'zh',
-        duration_ms: 1500
+        duration_ms: 420,
+        audio_duration_sec: 1.5
       })
 
       const res = await voiceSeamDispatcher.transcribe('C:/test/sample.wav', {
@@ -117,7 +118,7 @@ describe('VoiceSeamDispatcher (Ticket 04) 语音中继调度与 PCM 流式测试
         text: '你好世界',
         language: 'zh',
         durationSec: 1.5,
-        segments: undefined
+        segments: [{ startMs: 0, endMs: 1500, text: '你好世界' }]
       })
       expect(mockTranscribeAudio).toHaveBeenCalledWith(
         'C:/test/sample.wav',
@@ -383,6 +384,60 @@ describe('VoiceSeamDispatcher (Ticket 04) 语音中继调度与 PCM 流式测试
       const logits = new Float32Array([1.0, 10.0, 2.0])
       const token = sampler.sampleC0(logits, 20, 10, { temperature: 0, minFrames: 5 })
       expect(token).toBe(1)
+    })
+  })
+
+  describe('Skill API 加固契约 (Ticket 02: TC-HARD-02/03/04)', () => {
+    it('无标点 150 码点硬折行为 3 块 (60/60/30)', () => {
+      const chunks = splitTextIntoSentences('字'.repeat(150), 60, true)
+      expect(chunks.map(c => Array.from(c).length)).toEqual([60, 60, 30])
+    })
+
+    it('omniClient 抛出 ENGINE_BUSY_STREAMING / TIMEOUT 时精准转译为 VoiceSeamError', async () => {
+      mockActiveModules['voice_tts'] = {
+        id: 'tts_m5_onnx',
+        capability_slot: 'voice_tts',
+        backend_type: 'omni_onnx'
+      }
+      mockSplitTTSChunks.mockRejectedValueOnce(new Error('split failed'))
+      mockSynthesizeTTSChunk.mockRejectedValueOnce(new Error('ENGINE_BUSY_STREAMING'))
+      await expect(voiceSeamDispatcher.synthesizeToWav('测试冲突')).rejects.toMatchObject({
+        code: 'ENGINE_BUSY'
+      })
+
+      mockSplitTTSChunks.mockResolvedValueOnce({ chunks: ['超时'], totalChunks: 1, totalChars: 2 })
+      mockSynthesizeTTSChunk.mockRejectedValueOnce(new Error('TIMEOUT'))
+      await expect(voiceSeamDispatcher.synthesizeToWav('超时')).rejects.toMatchObject({
+        code: 'TIMEOUT'
+      })
+    })
+
+    it('transcribe 严格使用 audio_duration_sec（非 duration_ms），并分离解码失败与真静音', async () => {
+      mockActiveModules['voice_asr'] = {
+        id: 'asr_sensevoice_onnx',
+        capability_slot: 'voice_asr',
+        backend_type: 'omni_onnx'
+      }
+      mockTranscribeAudio.mockResolvedValueOnce({
+        file_path: 'C:\\a.wav',
+        transcript: '测试',
+        audio_duration_sec: 2.617,
+        duration_ms: 893,
+        events: []
+      })
+      const ok = await voiceSeamDispatcher.transcribe('C:\\a.wav')
+      expect(ok.durationSec).toBe(2.617)
+      expect(ok.segments).toEqual([{ startMs: 0, endMs: 2617, text: '测试' }])
+
+      mockTranscribeAudio.mockResolvedValueOnce({
+        file_path: 'C:\\bad.wav',
+        transcript: '',
+        duration_ms: 15,
+        events: []
+      })
+      const bad = await voiceSeamDispatcher.transcribe('C:\\bad.wav')
+      expect(bad.decodeFailed).toBe(true)
+      expect(bad.segments).toEqual([])
     })
   })
 })

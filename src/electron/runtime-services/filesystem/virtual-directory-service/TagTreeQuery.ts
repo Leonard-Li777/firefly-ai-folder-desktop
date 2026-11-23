@@ -52,6 +52,8 @@ export interface FilterFilesParams {
   includeUnanalyzed?: boolean
   /** 用户可调语义匹配度阈值（0.25 ~ 0.60，默认 0.35） */
   similarityThreshold?: number
+  /** 外部 Skill API 精确等值下推开关（开启后跳过分通道偏移与 [0.25, 0.60] 钳制） */
+  exactMinScore?: boolean
   /**
    * 流式检索进度回调。
    *

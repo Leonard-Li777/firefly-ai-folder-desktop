@@ -25,6 +25,8 @@ export interface TranscriptionResult {
   text: string
   language: string
   durationSec: number
+  /** 底层音频无法解码出任何有效样本（用于与真静音区分，映射到 400 UNSUPPORTED_FILE_TYPE） */
+  decodeFailed?: boolean
   segments?: Array<{
     startMs: number
     endMs: number
@@ -46,6 +48,20 @@ export interface AudioChunk {
   isLastChunk: boolean
 }
 
+export interface SynthesizeOptions {
+  voiceId?: string
+  speed?: number
+  signal?: AbortSignal
+  /** 后续分句单块超时上限（ms，不传则不施加短超时） */
+  chunkTimeoutMs?: number
+  /** 首块超时上限（ms，含冷启动余量；缺省同 chunkTimeoutMs） */
+  firstChunkTimeoutMs?: number
+  /** 整请求总预算（ms），用于单块动态截断与注定超时块早停 */
+  totalBudgetMs?: number
+  /** 硬切句上限（码点数，默认 60） */
+  maxChunkChars?: number
+}
+
 /** 统一语音服务标准接口 */
 export interface IVoiceSeamService {
   /** 语音转录 (支持文件路径或内存音频 Buffer) */
@@ -55,16 +71,10 @@ export interface IVoiceSeamService {
   ): Promise<TranscriptionResult>
 
   /** 流式语音合成 (纯 PCM 流) */
-  synthesizeStream(
-    text: string,
-    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
-  ): AsyncIterable<AudioChunk>
+  synthesizeStream(text: string, options?: SynthesizeOptions): AsyncIterable<AudioChunk>
 
   /** 非流式整段音频合成 (直接返回标准带头部的 WAV 格式) */
-  synthesizeToWav(
-    text: string,
-    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
-  ): Promise<ArrayBuffer>
+  synthesizeToWav(text: string, options?: SynthesizeOptions): Promise<ArrayBuffer>
 }
 
 export type VoiceSeamErrorCode =
@@ -73,6 +83,9 @@ export type VoiceSeamErrorCode =
   | 'ABORTED'
   | 'EMPTY_TEXT'
   | 'UNSUPPORTED_BACKEND'
+  | 'ENGINE_UNAVAILABLE'
+  | 'ENGINE_BUSY'
+  | 'TIMEOUT'
 
 export class VoiceSeamError extends Error {
   readonly code: VoiceSeamErrorCode
@@ -201,25 +214,108 @@ export function createWavFromPcm(
   return buffer
 }
 
+/** 按 Unicode 码点计算字符数（与校验器同口径） */
+export function countCodePoints(text: string): number {
+  return Array.from(text).length
+}
+
 /**
- * 本地句子切分算法（标点切分与最大字数兜底）
+ * 本地句子切分算法（标点切分 + <=maxChunkChars 码点硬折行 + 相邻短句贪心合并）
+ * 保证无标点长串严格 <= maxChunkChars 码点，且硬切余段同样参与相邻合并，使块数 k <= floor(N/30) + 1
  */
-export function splitTextIntoSentences(text: string): string[] {
-  if (!text || !text.trim()) return []
-  const rawParts = text.split(/([。！？!?；;\n\r]+)/).filter(Boolean)
-  const chunks: string[] = []
-  let current = ''
+export function splitTextIntoSentences(
+  text: string,
+  maxChunkChars = 60,
+  mergeShort = false
+): string[] {
+  const trimmed = text ? text.trim() : ''
+  if (!trimmed) return []
+  const limit = Math.max(1, Math.floor(maxChunkChars))
+
+  // 1. 按标点拆出自然句（保留标点附着在句尾）
+  const rawParts = trimmed.split(/([。！？!?；;\n\r]+)/).filter(Boolean)
+  const rawSentences: string[] = []
+  let acc = ''
   for (let i = 0; i < rawParts.length; i++) {
-    current += rawParts[i]
-    if (i % 2 === 1 || current.length >= 50) {
-      if (current.trim()) chunks.push(current.trim())
-      current = ''
+    acc += rawParts[i]
+    if (i % 2 === 1) {
+      if (acc.trim()) rawSentences.push(acc.trim())
+      acc = ''
     }
   }
-  if (current.trim()) {
-    chunks.push(current.trim())
+  if (acc.trim()) rawSentences.push(acc.trim())
+  if (rawSentences.length === 0) rawSentences.push(trimmed)
+
+  // 2. 对超过 limit 码点的无标点长句硬折行（拆出的余段保留在序列中参与下一步贪心合并）
+  const atomicPieces: string[] = []
+  for (const s of rawSentences) {
+    const cps = Array.from(s)
+    if (cps.length <= limit) {
+      atomicPieces.push(s)
+    } else {
+      for (let idx = 0; idx < cps.length; idx += limit) {
+        const piece = cps.slice(idx, idx + limit).join('').trim()
+        if (piece) atomicPieces.push(piece)
+      }
+    }
   }
-  return chunks.length > 0 ? chunks : [text.trim()]
+
+  if (!mergeShort) {
+    return atomicPieces
+  }
+
+  // 3. 相邻短句/余段贪心合并至 <= limit 码点
+  const merged: string[] = []
+  let current = ''
+  let currentLen = 0
+  for (const piece of atomicPieces) {
+    const pieceLen = Array.from(piece).length
+    if (!current) {
+      current = piece
+      currentLen = pieceLen
+    } else if (currentLen + pieceLen <= limit) {
+      current += piece
+      currentLen += pieceLen
+    } else {
+      merged.push(current)
+      current = piece
+      currentLen = pieceLen
+    }
+  }
+  if (current) merged.push(current)
+  return merged
+}
+
+/** 区分 TimeoutError 与主动 AbortError，避免整请求超时被吞成 ABORTED */
+function throwIfSignalAborted(signal?: AbortSignal, abortMsg = '语音合成已中止'): void {
+  if (!signal?.aborted) return
+  if ((signal.reason as any)?.name === 'TimeoutError') {
+    throw new VoiceSeamError('TIMEOUT', '语音合成超出预算时间限制')
+  }
+  throw new VoiceSeamError('ABORTED', abortMsg)
+}
+
+/** 将 omniClient 抛出的底层错误精准转译为 VoiceSeamError */
+function translateOmniTtsError(err: unknown, signal?: AbortSignal): VoiceSeamError {
+  if (err instanceof VoiceSeamError) return err
+  const msg = err instanceof Error ? err.message : String(err)
+  if (msg === 'ENGINE_BUSY_STREAMING') {
+    return new VoiceSeamError('ENGINE_BUSY', 'TTS 引擎正被桌面朗读流式会话占用')
+  }
+  if (msg === 'ENGINE_UNAVAILABLE') {
+    return new VoiceSeamError('ENGINE_UNAVAILABLE', 'TTS 语音引擎暂不可用')
+  }
+  if (
+    msg === 'TIMEOUT' ||
+    (err as any)?.name === 'TimeoutError' ||
+    (signal?.reason as any)?.name === 'TimeoutError'
+  ) {
+    return new VoiceSeamError('TIMEOUT', '语音合成超出预算时间限制')
+  }
+  if (msg === 'ABORTED' || (err as any)?.name === 'AbortError' || signal?.aborted) {
+    return new VoiceSeamError('ABORTED', '语音合成已中止')
+  }
+  return new VoiceSeamError('INFERENCE_FAILED', msg || 'TTS 分句合成推理失败')
 }
 
 export class VoiceSeamDispatcher implements IVoiceSeamService {
@@ -276,11 +372,33 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
           throw new VoiceSeamError('INFERENCE_FAILED', 'Omni 语音转录推理失败')
         }
 
+        // 严格读取音频真实时长 audio_duration_sec（严禁用推理耗时 duration_ms 顶替）
+        const hasValidDuration =
+          typeof res.audio_duration_sec === 'number' &&
+          Number.isFinite(res.audio_duration_sec) &&
+          res.audio_duration_sec >= 0
+        const durationSec = hasValidDuration ? res.audio_duration_sec! : 0
+        const text = res.transcript || ''
+        // 区分「底层无法解码出有效音频样本」与「真实静音（audio_duration_sec > 0 但 transcript 为空）」
+        const decodeFailed = !text && (!hasValidDuration || durationSec <= 0)
+        // 旧版 Omni 偏斜（transcript 非空但缺失 audio_duration_sec）显式上报 warn，禁止静默降级
+        if (text && (!hasValidDuration || durationSec <= 0)) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            '[VoiceSeamDispatcher] 转录文本非空但缺失有效 audio_duration_sec，降级返回空 segments'
+          )
+        }
+        const segments =
+          text && durationSec > 0
+            ? [{ startMs: 0, endMs: Math.max(1, Math.round(durationSec * 1000)), text }]
+            : []
+
         return {
-          text: res.transcript || '',
+          text,
           language: res.language || options?.language || 'zh',
-          durationSec: (res.duration_ms || 0) / 1000,
-          segments: undefined
+          durationSec,
+          segments,
+          ...(decodeFailed ? { decodeFailed: true } : {})
         }
       } catch (err) {
         if (err instanceof VoiceSeamError) throw err
@@ -312,7 +430,7 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
    */
   public async *synthesizeStream(
     text: string,
-    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
+    options?: SynthesizeOptions
   ): AsyncIterable<AudioChunk> {
     const trimmed = text ? text.trim() : ''
     if (!trimmed) {
@@ -324,9 +442,7 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
       throw new VoiceSeamError('NO_ACTIVE_PLUGIN', '未激活 TTS 语音合成插件')
     }
 
-    if (options?.signal?.aborted) {
-      throw new VoiceSeamError('ABORTED', '语音合成已中止')
-    }
+    throwIfSignalAborted(options?.signal)
 
     try {
       if (
@@ -341,28 +457,42 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
         throw new VoiceSeamError('UNSUPPORTED_BACKEND', `不支持的 TTS 模块: ${activeModule.id}`)
       }
     } catch (err) {
-      if (options?.signal?.aborted) return
       if (err instanceof VoiceSeamError) throw err
+      throwIfSignalAborted(options?.signal)
       logger.error(LogCategory.SYSTEM, `[VoiceSeamDispatcher] 合成失败 (${activeModule.id}):`, err)
-      throw err
+      throw translateOmniTtsError(err, options?.signal)
     }
   }
 
   private async *dispatchOmniTTS(
     text: string,
-    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
+    options?: SynthesizeOptions
   ): AsyncIterable<AudioChunk> {
-    // 优先请求 Omni 智能分句，失败或空时降级到本地切分
+    const maxChunkChars = options?.maxChunkChars ?? 60
+    // 优先请求 Omni 智能分句，失败或空时显式 warn 并降级到本地切分（严禁空 catch 静默降级）
     let chunks: string[] = []
     try {
-      const splitRes = await omniClient.splitTTSChunks(text, undefined, options?.signal)
+      const splitRes = await omniClient.splitTTSChunks(
+        text,
+        { maxChunkChars },
+        options?.signal
+      )
       if (splitRes && splitRes.chunks && splitRes.chunks.length > 0) {
-        chunks = splitRes.chunks
+        // 对 Omni 返回分片再做一次上限校验，防止无标点长串超限
+        chunks = splitRes.chunks.every(c => countCodePoints(c) <= maxChunkChars)
+          ? splitRes.chunks
+          : splitTextIntoSentences(text, maxChunkChars, true)
       }
-    } catch {}
+    } catch (err) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[VoiceSeamDispatcher] Omni splitTTSChunks 失败，降级本地分句:',
+        err instanceof Error ? err.message : String(err)
+      )
+    }
 
     if (chunks.length === 0) {
-      chunks = splitTextIntoSentences(text)
+      chunks = splitTextIntoSentences(text, maxChunkChars, true)
     }
 
     if (chunks.length === 0) {
@@ -371,24 +501,44 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
 
     const voiceId = options?.voiceId || 'default'
     const speed = options?.speed || 1.0
+    const startTimeMs = Date.now()
+    const totalBudgetMs = options?.totalBudgetMs
 
     for (let i = 0; i < chunks.length; i++) {
-      if (options?.signal?.aborted) {
-        throw new VoiceSeamError('ABORTED', '语音合成已中止')
-      }
+      throwIfSignalAborted(options?.signal)
 
       const chunkText = chunks[i]
-      const chunkRes = await omniClient.synthesizeTTSChunk(
-        chunkText,
-        voiceId,
-        speed,
-        undefined,
-        options?.signal
-      )
+      let effectiveTimeoutMs: number | undefined =
+        i === 0 ? (options?.firstChunkTimeoutMs ?? options?.chunkTimeoutMs) : options?.chunkTimeoutMs
 
-      if (options?.signal?.aborted) {
-        throw new VoiceSeamError('ABORTED', '语音合成已中止')
+      if (typeof totalBudgetMs === 'number' && Number.isFinite(totalBudgetMs) && totalBudgetMs > 0) {
+        const remainingMs = totalBudgetMs - (Date.now() - startTimeMs)
+        // 进入下一分句前若剩余总预算低于注定超时下界（codePoints * 240ms + 2000ms），立即早停不空烧 CPU
+        const minRequiredMs = countCodePoints(chunkText) * 240 + 2000
+        if (remainingMs <= 0 || (i > 0 && remainingMs < minRequiredMs)) {
+          throw new VoiceSeamError('TIMEOUT', '语音合成超出总预算时间限制')
+        }
+        effectiveTimeoutMs =
+          typeof effectiveTimeoutMs === 'number'
+            ? Math.min(effectiveTimeoutMs, remainingMs)
+            : remainingMs
       }
+
+      let chunkRes: Awaited<ReturnType<typeof omniClient.synthesizeTTSChunk>>
+      try {
+        chunkRes = await omniClient.synthesizeTTSChunk(
+          chunkText,
+          voiceId,
+          speed,
+          undefined,
+          options?.signal,
+          effectiveTimeoutMs
+        )
+      } catch (err) {
+        throw translateOmniTtsError(err, options?.signal)
+      }
+
+      throwIfSignalAborted(options?.signal)
 
       if (!chunkRes || !chunkRes.buffer) {
         throw new VoiceSeamError(
@@ -415,19 +565,15 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
    */
   public async synthesizeToWav(
     text: string,
-    options?: { voiceId?: string; speed?: number; signal?: AbortSignal }
+    options?: SynthesizeOptions
   ): Promise<ArrayBuffer> {
-    if (options?.signal?.aborted) {
-      throw new VoiceSeamError('ABORTED', '语音合成已中止')
-    }
+    throwIfSignalAborted(options?.signal)
     const pcmChunks: Uint8Array[] = []
     for await (const chunk of this.synthesizeStream(text, options)) {
       pcmChunks.push(chunk.data)
     }
 
-    if (options?.signal?.aborted) {
-      throw new VoiceSeamError('ABORTED', '语音合成已中止')
-    }
+    throwIfSignalAborted(options?.signal)
 
     if (pcmChunks.length === 0) {
       return createWavFromPcm(new Uint8Array(0), 48000, 1, 16)

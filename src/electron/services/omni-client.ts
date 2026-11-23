@@ -12,6 +12,7 @@
 import http from 'node:http'
 import { LogCategory, logger } from '@firefly/shared'
 import { omniService } from '../runtime-services/system/omni-service'
+import { isTransientStatusFetchError } from '../runtime-services/system/omni-service/mount-verify-classify'
 import {
   M5FrameParser,
   type StreamChunkPayload,
@@ -792,15 +793,21 @@ export class OmniClient {
 
   /**
    * 分句语音合成：POST /api/audio/tts/chunk
-   * 返回 48kHz WAV 格式的 ArrayBuffer，若失败或被取消返回 null
+   * 返回 48kHz WAV 格式的 ArrayBuffer；按 6 级优先级显式上抛结构化错误，不再静默吞错
    */
   async synthesizeTTSChunk(
     text: string,
     voiceId: string | number,
     speed: number,
     sid?: number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    timeoutMs?: number
   ): Promise<TTSChunkResult | null> {
+    let combinedSignal: AbortSignal | undefined = signal
+    if (typeof timeoutMs === 'number' && Number.isFinite(timeoutMs) && timeoutMs > 0) {
+      const timeoutSignal = AbortSignal.timeout(timeoutMs)
+      combinedSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal
+    }
     try {
       await omniService.ensureRunning()
       const payload: Record<string, any> = {
@@ -817,7 +824,7 @@ export class OmniClient {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload),
-        signal
+        signal: combinedSignal
       })
       if (res.status === 409) {
         logger.warn(
@@ -826,9 +833,13 @@ export class OmniClient {
         )
         throw new Error('ENGINE_BUSY_STREAMING')
       }
+      if (res.status === 503) {
+        logger.warn(LogCategory.MAIN, '[OmniClient] TTS 合成服务暂不可用 HTTP 503')
+        throw new Error('ENGINE_UNAVAILABLE')
+      }
       if (!res.ok) {
-        logger.warn(LogCategory.MAIN, `[OmniClient] TTS 合成失败 HTTP ${res.status}`)
-        return null
+        logger.warn(LogCategory.MAIN, `[OmniClient] TTS 合成确定性失败 HTTP ${res.status}`)
+        throw new Error('INFERENCE_FAILED')
       }
       const hitCap = res.headers.get('X-Moss-Hit-Cap') === 'true'
       const steps = parseInt(res.headers.get('X-Moss-Steps') || '0', 10)
@@ -841,13 +852,42 @@ export class OmniClient {
       const buffer = await res.arrayBuffer()
       return { buffer, hitCap, steps }
     } catch (err: unknown) {
-      if ((err as any)?.name === 'AbortError') {
-        logger.debug(LogCategory.MAIN, '[OmniClient] TTS 合成请求已中止')
-        return null
-      }
       const msg = err instanceof Error ? err.message : String(err)
+      // 1. 既有显式业务错误直接透传
+      if (
+        msg === 'ENGINE_BUSY_STREAMING' ||
+        msg === 'ENGINE_UNAVAILABLE' ||
+        msg === 'INFERENCE_FAILED' ||
+        msg === 'TIMEOUT' ||
+        msg === 'ABORTED'
+      ) {
+        throw err
+      }
+      // 2. HTTP 409 裸错误形态兜底
+      const status = (err as any)?.status ?? (err as any)?.statusCode
+      if (status === 409) {
+        throw new Error('ENGINE_BUSY_STREAMING')
+      }
+      // 3. 超时判定（必须在 isTransientStatusFetchError 之前）
+      const errName = (err as any)?.name
+      const reasonName = (combinedSignal?.reason as any)?.name
+      if (errName === 'TimeoutError' || reasonName === 'TimeoutError') {
+        logger.warn(LogCategory.MAIN, '[OmniClient] TTS 分块合成超时 (TIMEOUT)')
+        throw new Error('TIMEOUT')
+      }
+      // 4. 主动中止判定（必须在 isTransientStatusFetchError 之前）
+      if (errName === 'AbortError' || signal?.aborted) {
+        logger.debug(LogCategory.MAIN, '[OmniClient] TTS 合成请求已中止 (ABORTED)')
+        throw new Error('ABORTED')
+      }
+      // 5. 网络瞬态故障判定（严禁使用 isTransientStatusHttpCode 以防下游 500 混入 503）
+      if (isTransientStatusFetchError(err)) {
+        logger.warn(LogCategory.MAIN, '[OmniClient] TTS 合成网络瞬态不可用:', msg)
+        throw new Error('ENGINE_UNAVAILABLE')
+      }
+      // 6. 其余确定性失败统一归入 INFERENCE_FAILED
       logger.warn(LogCategory.MAIN, '[OmniClient] TTS 合成请求异常:', msg)
-      return null
+      throw new Error('INFERENCE_FAILED')
     }
   }
 

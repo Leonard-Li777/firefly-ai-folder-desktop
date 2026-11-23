@@ -298,6 +298,8 @@ export interface HybridSearchContext {
   queryEmbedding?: number[]
   /** 用户可调语义匹配度阈值（0.25 ~ 0.60，默认 0.35） */
   similarityThreshold?: number
+  /** 外部 Skill API 精确等值下推开关 */
+  exactMinScore?: boolean
 }
 
 /**
@@ -839,9 +841,10 @@ export class HybridSearchArbiter {
       workspaceDirectoryPath,
       poolSize = HYBRID_SEARCH_POOL_SIZE,
       queryEmbedding,
-      similarityThreshold
+      similarityThreshold,
+      exactMinScore
     } = context
-    const thresholds = resolveSearchThresholds(similarityThreshold)
+    const thresholds = resolveSearchThresholds(similarityThreshold, { exactMinScore })
 
     // Ticket 09：解析双字短词倒排点查快道的工作区隔离 ID。
     // 优先采用调用方显式注入的 workspaceId；否则尝试从 workspaceDirectoryPath 反查根工作区；
