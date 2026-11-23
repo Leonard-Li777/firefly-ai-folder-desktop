@@ -25,6 +25,12 @@ import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
 import { computeLocalEffectiveConfig } from '../../lib/workspace-policy/workspace-ai-client'
+import {
+  LayoutActionSlot,
+  LayoutSwitcherButtons,
+  PAGE_IDS,
+  PageId
+} from './layout-switcher'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -38,6 +44,7 @@ interface DirectoryHeaderProps {
   onSearch: (keyword: string) => void // 搜索回调
   exportTooltipVisible?: boolean
   isLoading?: boolean
+  layoutPageId?: PageId
 }
 
 export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
@@ -52,7 +59,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     dropdownRef,
     onSearch,
     exportTooltipVisible = false,
-    isLoading = false
+    isLoading = false,
+    layoutPageId
   }) => {
     const navigate = useNavigate()
     const location = useLocation()
@@ -68,6 +76,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const togglePluginCenter = usePluginCenterStore(s => s.toggleOverlay)
 
     // 全域搜索状态与输入控制
+    const isSearchOverlayOpen = useSearchStore(state => state.isSearchOverlayOpen)
     const globalSearchKeyword = useSearchStore(state => state.globalSearchKeyword)
     const setGlobalSearchKeyword = useSearchStore(state => state.setGlobalSearchKeyword)
     const clearGlobalSearch = useSearchStore(state => state.clearGlobalSearch)
@@ -1387,6 +1396,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               </div>
             )}
           </div>
+
+          {/* 恒定布局操作槽位与切换按钮组 (ISS-01/AC-1) */}
+          <LayoutActionSlot className="ml-2">
+            <LayoutSwitcherButtons
+              layoutPageId={isSearchOverlayOpen ? PAGE_IDS.SEARCH_OVERLAY : (layoutPageId || '')}
+            />
+          </LayoutActionSlot>
         </div>
 
         {/* 算力争抢横幅（处于 DirectoryHeader 底边）：仅在界面卡顿且分析队列在跑时出现 */}

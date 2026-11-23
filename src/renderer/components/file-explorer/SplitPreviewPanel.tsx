@@ -14,6 +14,8 @@ import { logger, LogCategory } from '@firefly/shared'
 interface SplitPreviewPanelProps {
   /** 页面标识，用于隔离预览状态 */
   pageId: PageId
+  /** 关闭预览面板回调（可选，优先于 closePreview） */
+  onClose?: () => void
 }
 
 /**
@@ -21,7 +23,7 @@ interface SplitPreviewPanelProps {
  * 在分栏模式下，右侧显示文件预览内容。
  * 每个页面通过 pageStates[pageId] 独立保存预览文件信息，切换页面不会导致其他页面的预览丢失。
  */
-export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) => {
+export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId, onClose }) => {
   const filePath = usePreviewOverlayStore(s => s.filePath)
   const fileName = usePreviewOverlayStore(s => s.fileName)
   const extension = usePreviewOverlayStore(s => s.extension)
@@ -72,7 +74,19 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
 
   if (!previewFilePath) {
     return (
-      <div className="h-full flex flex-col items-center justify-start text-muted-foreground p-6 overflow-y-auto pt-8 select-none">
+      <div className="h-full flex flex-col items-center justify-start text-muted-foreground p-6 overflow-y-auto pt-8 select-none relative">
+        {onClose && (
+          <button
+            type="button"
+            data-testid="preview-close-button"
+            aria-label={t('关闭预览')}
+            title={t('关闭预览')}
+            onClick={onClose}
+            className="absolute top-3 right-3 p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          >
+            <MaterialIcon icon="close" className="text-base" />
+          </button>
+        )}
         <MaterialIcon icon="visibility" className="text-5xl mb-3 opacity-20 shrink-0" />
         <p className="text-sm font-medium mb-1 shrink-0">{t('选择一个文件以预览')}</p>
         <p className="text-xs text-muted-foreground/70 mb-2 shrink-0">
@@ -94,6 +108,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
         showRawText={showRawText}
         onToggleRawText={setShowRawText}
         textContent={rawTextContent}
+        onClose={onClose}
       />
 
       <div className="flex-1 relative h-full mr-2 overflow-hidden">

@@ -1,31 +1,26 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '../../../lib/utils'
 
-interface SplitPaneHandleProps {
+export interface SplitPaneHandleProps {
+  direction?: 'horizontal' | 'vertical'
   onResize: (delta: number) => void
   onDoubleClick: () => void
+  onResizeEnd?: () => void
 }
 
-/** 热区默认向左右各扩展的像素（Tailwind w-4 = 16px 的对称一半） */
-const HIT_LEFT_DEFAULT = 8
-const HIT_RIGHT = 8
-/** 指针进入此带宽才开始探测，避免全局 mousemove 每次都做命中反查 */
+/** 热区默认向左右/上下各扩展的像素（Tailwind w-4 = 16px 的对称一半） */
+const HIT_DEFAULT = 8
+/** 指针进入此带宽才开始探测，避免全局 pointermove 每次都做命中反查 */
 const PROBE_BAND = 16
 /** 滚动结束后继续让位的时间窗 */
 const SCROLL_IDLE_MS = 250
-/** 刚滚动完的瞬间拒绝接管 mousedown 的时间窗 */
+/** 刚滚动完的瞬间拒绝接管 mousedown/pointerdown 的时间窗 */
 const SCROLL_LOCK_MS = 120
 
 /**
  * 判断 (x, y) 是否落在某个「垂直滚动容器的滚动条条带」上。
- *
- * 不能用 `el.scrollHeight > el.clientHeight` 去判断相邻面板是否有滚动条：
- * SplitPane 的 section 外层是 `overflow: hidden`（index.tsx 的 getSectionStyle），
- * 真正的滚动容器埋在 section.content 深处（FileList / DimensionTreeSidebar 等），
- * 因此只能靠 elementsFromPoint 命中反查。
  */
 function isOnVerticalScrollbar(x: number, y: number, exclude: HTMLElement | null): boolean {
-  // jsdom 未实现 elementsFromPoint，单测环境下直接放弃探测（退化为原始对称热区）
   if (typeof document.elementsFromPoint !== 'function') return false
 
   for (const node of document.elementsFromPoint(x, y)) {
@@ -37,13 +32,11 @@ function isOnVerticalScrollbar(x: number, y: number, exclude: HTMLElement | null
     const overflowY = cs.overflowY
     if (overflowY !== 'auto' && overflowY !== 'scroll' && overflowY !== 'overlay') continue
 
-    // offsetWidth - clientWidth = 垂直滚动条 + 左右边框，必须扣掉边框才是真实条带宽度
     const border = parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth)
     const scrollbarWidth = el.offsetWidth - el.clientWidth - border
     if (scrollbarWidth <= 0) continue
 
     const rect = el.getBoundingClientRect()
-    // 条带区间为 [right - scrollbarWidth, right)，right 本身属于右侧面板
     if (x >= rect.right - scrollbarWidth && x < rect.right - 1) return true
   }
   return false
@@ -51,69 +44,46 @@ function isOnVerticalScrollbar(x: number, y: number, exclude: HTMLElement | null
 
 /**
  * SplitPaneHandle — 可拖拽的分隔手柄
- *
- * 事件管理策略（混合模式）：
- * - handleMouseDown 直接调用 document.addEventListener 添加监听器，
- *   保证即时响应（测试中 fireEvent.mouseDown + fireEvent.mouseMove 也能正确工作）。
- * - useEffect cleanup 在组件卸载时移除监听器，兜底清理孤儿监听器。
- * - window.blur 事件兜底处理鼠标在浏览器外释放的场景。
- * - onResize 通过 ref 透传，避免原生监听器的闭包过期（#399）。
- *
- * iframe兼容策略：
- * - 拖拽开始时，给所有iframe添加pointer-events: none，阻止它们捕获鼠标事件
- * - 拖拽结束时，恢复iframe的pointer-events
- * - 使用capture阶段的事件监听器，确保事件能被捕获
- *
- * UI策略：
- * - 分隔线默认不占用布局空间（width: 0），通过overflow-visible显示视觉元素
- * - 鼠标hover时显示细线，按下时高亮加粗
- * - 使用负边距确保拖拽热区覆盖在面板边缘
- *
- * 滚动条礼让策略（热区抢夺滚动条焦点）：
- * - 手柄是 0 宽 overlay，热区对称外扩 8px；而全局 `::-webkit-scrollbar` 宽度也是 8px，
- *   滚动容器又贴面板右边缘 ⇒ 左面板的整条滚动条被热区 100% 覆盖，点不到也拖不动。
- * - 解决：热区左边界受探测结果驱动。指针靠近分隔线时用 elementsFromPoint 反查
- *   左邻面板是否正处于垂直滚动条条带上，是则把左侧热区收到 0（整条滚动条还给面板），
- *   离开条带后自动恢复。
- * - 让位用「收缩热区几何」而不是 `pointer-events: none`：后者会把 mousemove 一起吃掉，
- *   导致无法再检测到恢复时机（经典抖动陷阱）。
- * - 滚动锁：scroll 不冒泡，必须 capture 阶段挂在 document 上才能捕获所有后代滚动。
+ * 支持水平与垂直双向、Pointer Events 与 Mouse Events 兼容、滚动条防抢夺与双击重置
  */
-export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDoubleClick }) => {
+export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
+  direction = 'horizontal',
+  onResize,
+  onDoubleClick,
+  onResizeEnd
+}) => {
   const rootRef = useRef<HTMLDivElement>(null)
-  const startXRef = useRef(0)
-  // 用 ref 持有最新的 onResize，避免原生 mousemove 监听器的闭包过期（#399）
+  const isHorizontal = direction === 'horizontal'
+
+  const startCoordRef = useRef(0)
   const onResizeRef = useRef(onResize)
   onResizeRef.current = onResize
+  const onResizeEndRef = useRef(onResizeEnd)
+  onResizeEndRef.current = onResizeEnd
 
-  // 保存当前事件处理函数引用，供 useEffect cleanup 移除
-  const mouseMoveRef = useRef<((e: MouseEvent) => void) | null>(null)
-  const mouseUpRef = useRef<((e: MouseEvent) => void) | null>(null)
-  const blurHandlerRef = useRef<(() => void) | null>(null)
   const [isResizing, setIsResizing] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const isResizingRef = useRef(false)
 
-  /** 左邻面板正在显示垂直滚动条 → 左侧热区收到分隔线上，整条滚动条还给面板 */
+  // 保存事件监听引用供 cleanup
+  const mouseMoveRef = useRef<((e: MouseEvent) => void) | null>(null)
+  const mouseUpRef = useRef<((e: MouseEvent) => void) | null>(null)
+  const blurHandlerRef = useRef<(() => void) | null>(null)
+  const pointerIdRef = useRef<number | null>(null)
+
+  /** 水平模式下左邻面板正在显示垂直滚动条 → 左侧热区收到分隔线上，整条滚动条还给面板 */
   const [yieldLeft, setYieldLeft] = useState(false)
   const yieldLeftRef = useRef(false)
   const lastScrollAtRef = useRef(0)
 
-  /**
-   * 禁用所有iframe的鼠标事件，防止iframe捕获鼠标导致拖拽失效
-   */
   const disableIframes = useCallback(() => {
     const iframes = document.querySelectorAll('iframe')
     iframes.forEach(iframe => {
       iframe.style.pointerEvents = 'none'
-      // 存储原始值以便恢复
       iframe.dataset.prevPointerEvents = iframe.getAttribute('data-prev-pointer-events') || ''
     })
   }, [])
 
-  /**
-   * 恢复所有iframe的鼠标事件
-   */
   const enableIframes = useCallback(() => {
     const iframes = document.querySelectorAll('iframe')
     iframes.forEach(iframe => {
@@ -122,6 +92,17 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
   }, [])
 
   const cleanup = useCallback(() => {
+    if (pointerIdRef.current !== null && rootRef.current) {
+      try {
+        if (rootRef.current.hasPointerCapture(pointerIdRef.current)) {
+          rootRef.current.releasePointerCapture(pointerIdRef.current)
+        }
+      } catch {
+        // pointer already released
+      }
+      pointerIdRef.current = null
+    }
+
     if (mouseMoveRef.current) {
       document.removeEventListener('mousemove', mouseMoveRef.current, true)
       mouseMoveRef.current = null
@@ -134,12 +115,19 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
       window.removeEventListener('blur', blurHandlerRef.current)
       blurHandlerRef.current = null
     }
-    isResizingRef.current = false
-    setIsResizing(false)
-    document.body.style.cursor = ''
-    document.body.style.userSelect = ''
-    document.body.classList.remove('split-pane-resizing')
-    enableIframes()
+
+    if (isResizingRef.current) {
+      isResizingRef.current = false
+      setIsResizing(false)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      document.body.classList.remove('split-pane-resizing')
+      if (rootRef.current) {
+        rootRef.current.removeAttribute('data-resizing')
+      }
+      enableIframes()
+      onResizeEndRef.current?.()
+    }
   }, [enableIframes])
 
   // 滚动锁：scroll 不冒泡，必须 capture 阶段挂在 document 上才能捕获所有后代滚动
@@ -151,8 +139,10 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
     return () => document.removeEventListener('scroll', onScroll, true)
   }, [])
 
-  // 意图探测：rAF 节流，且只在指针靠近分隔线时才做一次命中反查
+  // 水平模式意图探测：rAF 节流，指针靠近分隔线时做滚动条让位探测
   useEffect(() => {
+    if (!isHorizontal) return
+
     let raf = 0
     let last: MouseEvent | null = null
 
@@ -166,13 +156,11 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
       const near = Math.abs(last.clientX - boundaryX) <= PROBE_BAND
       const scrolling = performance.now() - lastScrollAtRef.current < SCROLL_IDLE_MS
 
-      // 只探测左半带：右邻面板的滚动条在它自己的右边缘，与本热区不相邻
       const onScrollbarStrip =
         near &&
         last.clientX < boundaryX &&
         isOnVerticalScrollbar(last.clientX - 0.5, last.clientY, root)
 
-      // 让位边界（boundaryX - 8）与探测边界重合，因此收缩/恢复不会来回抖动
       const next = onScrollbarStrip || (scrolling && near)
       if (next !== yieldLeftRef.current) {
         yieldLeftRef.current = next
@@ -190,56 +178,102 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
       document.removeEventListener('mousemove', onMove)
       if (raf) cancelAnimationFrame(raf)
     }
-  }, [])
+  }, [isHorizontal])
 
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      // 兜底：指针确实压在滚动条条带上时绝不抢 mousedown（正常路径已由 yieldLeft 让出）
-      if (isOnVerticalScrollbar(e.clientX - 0.5, e.clientY, rootRef.current)) return
-      // 兜底：刚滚完的瞬间不接管，避免「松开滚动条立刻变成拖分隔线」
+  const startDrag = useCallback(
+    (clientX: number, clientY: number, pointerId?: number) => {
+      startCoordRef.current = isHorizontal ? clientX : clientY
+      isResizingRef.current = true
+      setIsResizing(true)
+      document.body.style.cursor = isHorizontal ? 'col-resize' : 'row-resize'
+      document.body.style.userSelect = 'none'
+      document.body.classList.add('split-pane-resizing')
+      if (rootRef.current) {
+        rootRef.current.setAttribute('data-resizing', 'true')
+      }
+
+      disableIframes()
+
+      if (pointerId !== undefined && rootRef.current?.setPointerCapture) {
+        try {
+          rootRef.current.setPointerCapture(pointerId)
+          pointerIdRef.current = pointerId
+        } catch {
+          // pointer capture not supported or failed
+        }
+      }
+
+      const onMove = (moveEvent: MouseEvent) => {
+        if (!isResizingRef.current) return
+        const currentCoord = isHorizontal ? moveEvent.clientX : moveEvent.clientY
+        const delta = currentCoord - startCoordRef.current
+        if (delta !== 0) {
+          onResizeRef.current(delta)
+        }
+        startCoordRef.current = currentCoord
+      }
+
+      const onEnd = () => {
+        cleanup()
+      }
+
+      mouseMoveRef.current = onMove
+      mouseUpRef.current = onEnd
+      blurHandlerRef.current = onEnd
+
+      document.addEventListener('mousemove', onMove, true)
+      document.addEventListener('mouseup', onEnd, true)
+      window.addEventListener('blur', onEnd)
+    },
+    [isHorizontal, disableIframes, cleanup]
+  )
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      // 仅在明确传入了非 0 的 button 时才拦截（兼容单测缺省值）
+      if (e.button !== undefined && e.button !== 0) return
+
+      if (isHorizontal) {
+        if (isOnVerticalScrollbar(e.clientX - 0.5, e.clientY, rootRef.current)) return
+      }
       if (performance.now() - lastScrollAtRef.current < SCROLL_LOCK_MS) return
 
       e.preventDefault()
       e.stopPropagation()
-      startXRef.current = e.clientX
-      isResizingRef.current = true
-      setIsResizing(true)
-      document.body.style.cursor = 'col-resize'
-      document.body.style.userSelect = 'none'
-      document.body.classList.add('split-pane-resizing')
-
-      // 禁用iframe鼠标事件，防止iframe捕获导致拖拽失效
-      disableIframes()
-
-      const onMouseMove = (moveEvent: MouseEvent) => {
-        // 使用ref检查是否仍在拖拽状态，避免释放后继续响应
-        if (!isResizingRef.current) return
-
-        const delta = moveEvent.clientX - startXRef.current
-        if (delta !== 0) {
-          onResizeRef.current(delta)
-        }
-        startXRef.current = moveEvent.clientX
-      }
-
-      const onMouseUp = () => {
-        cleanup()
-      }
-
-      const onWindowBlur = () => {
-        cleanup()
-      }
-
-      mouseMoveRef.current = onMouseMove
-      mouseUpRef.current = onMouseUp
-      blurHandlerRef.current = onWindowBlur
-
-      // 使用capture阶段，确保在iframe之前捕获事件
-      document.addEventListener('mousemove', onMouseMove, true)
-      document.addEventListener('mouseup', onMouseUp, true)
-      window.addEventListener('blur', onWindowBlur)
+      startDrag(e.clientX, e.clientY, e.pointerId)
     },
-    [cleanup, disableIframes]
+    [isHorizontal, startDrag]
+  )
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button !== undefined && e.button !== 0) return
+      // 如果已在拖拽状态，则跳过重复 mousedown
+      if (isResizingRef.current) return
+
+      if (isHorizontal) {
+        if (isOnVerticalScrollbar(e.clientX - 0.5, e.clientY, rootRef.current)) return
+      }
+      if (performance.now() - lastScrollAtRef.current < SCROLL_LOCK_MS) return
+
+      e.preventDefault()
+      e.stopPropagation()
+      startDrag(e.clientX, e.clientY)
+    },
+    [isHorizontal, startDrag]
+  )
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isResizingRef.current || pointerIdRef.current === null) return
+      const currentCoord = isHorizontal ? e.clientX : e.clientY
+      const delta = currentCoord - startCoordRef.current
+      if (delta !== 0) {
+        onResizeRef.current(delta)
+      }
+      startCoordRef.current = currentCoord
+    },
+    [isHorizontal]
   )
 
   const handleDoubleClickFn = useCallback(
@@ -251,7 +285,6 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
     [onDoubleClick]
   )
 
-  // 组件卸载时清理孤儿监听器
   useEffect(() => {
     return () => {
       cleanup()
@@ -262,44 +295,60 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({ onResize, onDo
     <div
       ref={rootRef}
       role="separator"
-      aria-orientation="vertical"
+      aria-orientation={isHorizontal ? 'vertical' : 'horizontal'}
       className={cn(
-        'relative shrink-0',
-        'w-0',
-        'flex items-center justify-center',
-        'overflow-visible',
-        'group',
+        'relative shrink-0 flex items-center justify-center overflow-visible group',
+        isHorizontal ? 'w-0 h-full cursor-col-resize' : 'h-0 w-full cursor-row-resize',
         isResizing ? 'z-30' : 'z-20'
       )}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={cleanup}
+      onPointerCancel={cleanup}
+      onLostPointerCapture={cleanup}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClickFn}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {/* 可视化分隔线 - 使用负边距使其居中 */}
+      {/* 可视化分隔线 */}
       <div
         className={cn(
-          'absolute top-0 bottom-0',
-          'transition-all duration-150',
-          // 默认显示细线
-          'w-[1px] bg-border',
-          // hover时加粗
-          (isHovering || isResizing) && 'w-[2px] bg-border/60',
-          // 按下时高亮加粗
-          isResizing && 'w-[3px] bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]'
+          'absolute transition-all duration-150',
+          isHorizontal ? 'top-0 bottom-0' : 'left-0 right-0',
+          // 细线与加粗
+          isHorizontal
+            ? cn(
+                'w-[1px] bg-border',
+                (isHovering || isResizing) && 'w-[2px] bg-border/60',
+                isResizing && 'w-[3px] bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]'
+              )
+            : cn(
+                'h-[1px] bg-border',
+                (isHovering || isResizing) && 'h-[2px] bg-border/60',
+                isResizing && 'h-[3px] bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]'
+              )
         )}
-        style={{
-          left: '50%',
-          transform: 'translateX(-50%)'
-        }}
+        style={
+          isHorizontal
+            ? { left: '50%', transform: 'translateX(-50%)' }
+            : { top: '50%', transform: 'translateY(-50%)' }
+        }
       />
-      {/* 拖拽热区 - 增加可点击区域；有滚动条时左边界收到 0，把 8px 条带完全还给左面板 */}
+      {/* 拖拽热区 */}
       <div
-        className={cn('absolute top-0 bottom-0', 'cursor-col-resize')}
-        style={{
-          left: yieldLeft ? 0 : -HIT_LEFT_DEFAULT,
-          right: -HIT_RIGHT
-        }}
+        className={cn('absolute', isHorizontal ? 'top-0 bottom-0 cursor-col-resize' : 'left-0 right-0 cursor-row-resize')}
+        style={
+          isHorizontal
+            ? {
+                left: yieldLeft ? 0 : -HIT_DEFAULT,
+                right: -HIT_DEFAULT
+              }
+            : {
+                top: -HIT_DEFAULT,
+                bottom: -HIT_DEFAULT
+              }
+        }
       />
     </div>
   )

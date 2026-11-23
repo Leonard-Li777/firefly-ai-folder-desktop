@@ -36,8 +36,10 @@ export interface FileExplorerLayoutProps {
   selectedFiles?: (FileItem | DirectoryItem)[]
   /** 外部指定的当前激活/高亮项目 */
   activeItem?: FileItem | DirectoryItem | null
-  /** 关联页面标识 (用于 SplitPreviewPanel 状态隔离) */
+  /** 关联页面标识 (用于 SplitPreviewPanel 状态隔离与布局切换) */
   pageId?: PageId
+  /** 属性面板在业务上不可用（如 VirtualDirectory 未选中目录时） */
+  isDetailsUnavailable?: boolean
   /** 文件选中回调 */
   onFileSelect?: (filesOrItem: any, isFromCheckbox?: boolean) => void
   /** 文件双击回调 */

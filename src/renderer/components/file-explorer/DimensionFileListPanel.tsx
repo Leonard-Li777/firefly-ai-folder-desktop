@@ -66,6 +66,7 @@ interface DimensionFileListPanelProps {
   onFileUpdated?: () => void
   workspaceDirectoryType?: 'SPEEDY' | 'PRIVATE'
   pageId?: PageId
+  isDetailsUnavailable?: boolean
 }
 
 const PAGE_SIZE = 100
@@ -121,7 +122,8 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   onFileDeleted,
   onFileUpdated,
   workspaceDirectoryType,
-  pageId = PAGE_IDS.ANALYZED_DIRECTORY
+  pageId = PAGE_IDS.ANALYZED_DIRECTORY,
+  isDetailsUnavailable = false
 }) => {
   const [filteredFiles, setFilteredFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -530,6 +532,7 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
         workspaceDirectoryType={workspaceDirectoryType}
         currentPath={currentPath}
         pageId={pageId}
+        isDetailsUnavailable={isDetailsUnavailable}
         refreshKey={refreshKey}
         renderToolbar={layoutContext => (
           <div className="px-3 py-1.5 border-b border-border bg-card flex items-center flex-wrap gap-y-1.5 flex-shrink-0 min-h-[44px]">

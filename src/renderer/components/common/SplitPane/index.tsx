@@ -9,11 +9,16 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
   storageKey,
   sections,
   className,
-  dragSensitivity = 2.0
+  dragSensitivity = 1.0,
+  rawKey = false,
+  onResizeEnd
 }) => {
-  const { sizes, getSize, setSize, batchSetSizes } = useSplitPaneSizes(storageKey, sections)
+  const { sizes, getSize, setSize, batchSetSizes, flushStorage } = useSplitPaneSizes(
+    storageKey,
+    sections,
+    { rawKey }
+  )
   const containerRef = useRef<HTMLDivElement>(null)
-  // 用 ref 持有 dragSensitivity，避免 handleResize 闭包过期
   const dragSensitivityRef = useRef(dragSensitivity)
   dragSensitivityRef.current = dragSensitivity
 
@@ -22,46 +27,83 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
   const totalFlexGrow = useMemo(() => {
     return (
       sections
-        .filter(s => s.type === 'flex')
+        .filter(s => s.type === 'flex' && (!s.collapsed || (s.collapsedSize ?? 0) > 0))
         .reduce((sum, s) => sum + (sizes[s.id] ?? s.defaultSize), 0) || 1
     )
   }, [sections, sizes])
 
+  // 计算当前处于可见状态的 section
+  const visibleSections = useMemo(() => {
+    return sections.filter(s => !s.collapsed || (s.collapsedSize ?? 0) > 0)
+  }, [sections])
+
   const getSectionStyle = useCallback(
     (section: SplitPaneSection, index: number) => {
+      const isCollapsed = Boolean(section.collapsed)
+      const collapsedSize = section.collapsedSize ?? 0
+
+      // 折叠且尺寸为 0：彻底隐藏，不占用任何布局空间
+      if (isCollapsed && collapsedSize === 0) {
+        return {
+          flex: '0 0 0px',
+          width: '0px',
+          height: '0px',
+          minWidth: '0px',
+          minHeight: '0px',
+          overflow: 'hidden',
+          display: 'none'
+        } as React.CSSProperties
+      }
+
+      // 孤岛唯一可见格自动满铺公理 (Single Visible Section Full-Fill Axiom)
+      // 当全组件仅有 1 个 Section 未折叠时，无条件赋满 100% 容器宽高，彻底杜绝右侧/下方空白
+      const isOnlyVisible = visibleSections.length === 1 && (!isCollapsed || collapsedSize > 0)
+      if (isOnlyVisible) {
+        return {
+          flex: '1 1 auto',
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: isHorizontal ? 'column' : 'row',
+          minWidth: 0,
+          minHeight: 0
+        } as React.CSSProperties
+      }
+
       const size = sizes[section.id] ?? section.defaultSize
       const minSize = section.minSize
       const hasFlexSection = sections.some(s => s.type === 'flex')
       const isLast = index === sections.length - 1
 
       if (section.type === 'pixel') {
-        const isCollapsed = section.collapsed
-        const w = isCollapsed ? (section.collapsedSize ?? 0) : size
+        const w = isCollapsed ? collapsedSize : size
 
         const style: React.CSSProperties = {
           overflow: 'hidden',
           display: 'flex',
           flexDirection: isHorizontal ? 'column' : 'row',
-          // 显式设定高度，确保内部 `h-full` / `height: 100%` 子元素有确定父高度可参考
-          ...(isHorizontal && { height: '100%' })
+          ...(isHorizontal ? { height: '100%' } : { width: '100%' })
         }
 
         // 没有 flex section 时，最后一个 pixel section 可伸缩填充剩余空间（#401）
         if (!hasFlexSection && isLast) {
-          // flex: 1 1 <width>px → 可增长填充，可收缩防止溢出
           style.flex = `1 1 ${w}px`
         } else {
-          // 普通 pixel section：固定宽度
           style.flex = '0 0 auto'
           if (isHorizontal) {
             style.width = w + 'px'
+          } else {
+            style.height = w + 'px'
           }
         }
 
-        // 折叠状态下不应用 minSize，避免 minWidth(200px) > collapsedSize(72px) 导致折叠失效
+        // 折叠状态下不应用 minSize，避免 minWidth/minHeight 破坏折叠
         if (minSize !== undefined && !isCollapsed) {
           if (isHorizontal) {
             style.minWidth = minSize + 'px'
+          } else {
+            style.minHeight = minSize + 'px'
           }
         }
         return style
@@ -74,18 +116,13 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
         overflow: 'hidden',
         display: 'flex',
         flexDirection: isHorizontal ? 'column' : 'row',
-        // 显式设定高度，确保内部 `h-full` / `height: 100%` 子元素有确定父高度可参考
-        ...(isHorizontal && { height: '100%' })
-      }
-      // flex 类型不支持 collapsed，minSize 始终生效
-      if (minSize !== undefined) {
-        if (isHorizontal) {
-          style.minWidth = minSize + 'px'
-        }
+        minWidth: isHorizontal ? (minSize !== undefined ? minSize + 'px' : 0) : 0,
+        minHeight: !isHorizontal ? (minSize !== undefined ? minSize + 'px' : 0) : 0,
+        ...(isHorizontal ? { height: '100%' } : { width: '100%' })
       }
       return style
     },
-    [sizes, isHorizontal, sections]
+    [sizes, isHorizontal, sections, visibleSections]
   )
 
   const handleResize = useCallback(
@@ -96,7 +133,7 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
       const rightSection = sections.find(s => s.id === rightId)
       if (!leftSection || !rightSection) return
 
-      // 任一侧折叠时不响应拖拽：折叠列宽度固定为 collapsedSize，拖拽会破坏折叠态
+      // 任一侧折叠时不响应拖拽
       if (leftSection.collapsed || rightSection.collapsed) return
 
       // 读取容器像素尺寸用于边界约束
@@ -107,22 +144,17 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           : containerRect.height
         : 0
 
-      // 计算容器中“其它列”（未参与本次拖拽的列）已占用的最小宽度。
-      // 关键修复：边界约束必须扣除所有其它列的占用，否则在多列布局中
-      // （如 dimension-tree | file-list | details）拖动会把未参与列挤出窗口。
-      // - 折叠的 pixel 列：占用 collapsedSize（minSize 在折叠态不生效）
-      // - 非折叠 pixel 列：占用其当前 size（已含 minSize 下限）
-      // - flex 列：占用 minSize（flex 至少占这么多，剩余空间按比例分配）
+      // 计算容器中“其它列”已占用的最小空间（扣除已折叠列）
       const computeOthersUsed = (
         sizesSnapshot: Record<string, number>,
         excludeIds: string[]
       ): number => {
         return sections.reduce((sum, s) => {
           if (excludeIds.includes(s.id)) return sum
+          if (s.collapsed) {
+            return sum + (s.collapsedSize ?? 0)
+          }
           if (s.type === 'pixel') {
-            if (s.collapsed) {
-              return sum + (s.collapsedSize ?? 0)
-            }
             return sum + (sizesSnapshot[s.id] ?? s.defaultSize)
           }
           // flex 列：至少占 minSize
@@ -131,27 +163,23 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
       }
 
       if (leftSection.type === 'pixel' && rightSection.type === 'pixel') {
-        // pixel | pixel: 用 batchSetSizes 确保不溢出容器（#401）
         batchSetSizes(prev => {
           const currentLeft = prev[leftId] ?? leftSection.defaultSize
           const currentRight = prev[rightId] ?? rightSection.defaultSize
 
-          // 边界检查：如果已经到达最小值且继续同方向拖动，直接返回当前值
           if (delta < 0 && currentLeft <= (leftSection.minSize ?? 0)) {
-            return prev // 左侧已达最小，阻止继续向左拖动
+            return prev
           }
           if (delta > 0 && currentRight <= (rightSection.minSize ?? 0)) {
-            return prev // 右侧已达最小，阻止继续向右拖动
+            return prev
           }
 
           const newLeft = Math.max(leftSection.minSize ?? 0, currentLeft + delta)
           const newRight = Math.max(rightSection.minSize ?? 0, currentRight - delta)
 
-          // 双方总宽度不得超过容器减去其它列占用（含未参与拖拽的列）
           if (containerSize > 0) {
             const othersUsed = computeOthersUsed(prev, [leftId, rightId])
             if (newLeft + newRight > containerSize - othersUsed) {
-              // 已触达边界，不再调整
               return prev
             }
           }
@@ -163,15 +191,12 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           }
         })
       } else if (leftSection.type === 'pixel') {
-        // pixel | flex: 只改 pixel，用函数式更新
         setSize(leftId, prev => {
-          // 阻止越过最小值继续向左
           if (delta < 0 && prev <= (leftSection.minSize ?? 0)) {
             return prev
           }
           let newVal = Math.max(leftSection.minSize ?? 0, prev + delta)
           if (containerSize > 0) {
-            // 可用宽度 = 容器 - 其它列占用 - 右侧 flex 列的 minSize
             const othersUsed = computeOthersUsed(sizes, [leftId, rightId])
             const available = containerSize - othersUsed - (rightSection.minSize ?? 0)
             newVal = Math.min(newVal, Math.max(leftSection.minSize ?? 0, available))
@@ -179,15 +204,12 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           return newVal
         })
       } else if (rightSection.type === 'pixel') {
-        // flex | pixel: 只改 pixel，用函数式更新
         setSize(rightId, prev => {
-          // 阻止越过最小值继续向右
           if (delta > 0 && prev <= (rightSection.minSize ?? 0)) {
             return prev
           }
           let newVal = Math.max(rightSection.minSize ?? 0, prev - delta)
           if (containerSize > 0) {
-            // 可用宽度 = 容器 - 其它列占用 - 左侧 flex 列的 minSize
             const othersUsed = computeOthersUsed(sizes, [leftId, rightId])
             const available = containerSize - othersUsed - (leftSection.minSize ?? 0)
             newVal = Math.min(newVal, Math.max(rightSection.minSize ?? 0, available))
@@ -195,7 +217,7 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           return newVal
         })
       } else {
-        // flex | flex: 双方 flexGrow 同增减
+        // flex | flex
         const MIN_FLEX_RATIO = 0.1
         const rawContainerSize = containerRect
           ? isHorizontal
@@ -204,7 +226,6 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           : 0
         const flexContainerSize = rawContainerSize > 0 ? rawContainerSize : 200
 
-        // 计算 flex 列的实际可用宽度（扣除 pixel 列的固定占用），确保 1:1 跟随鼠标
         const pixelColumnsWidth = sections.reduce((sum, s) => {
           if (s.id === leftId || s.id === rightId) return sum
           if (s.type === 'pixel') {
@@ -220,11 +241,9 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           const rightSize = prev[rightId] ?? rightSection.defaultSize
           const totalFlex = leftSize + rightSize
 
-          // 边界检查：当 delta 方向导致 left 已到最小且继续同方向时，return prev
           if (delta < 0 && leftSize <= MIN_FLEX_RATIO) {
             return prev
           }
-          // 边界检查：当 delta 方向导致 right 已到最小且继续同方向时，return prev
           if (delta > 0 && rightSize <= MIN_FLEX_RATIO) {
             return prev
           }
@@ -244,8 +263,7 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
         })
       }
     },
-    // sizes 用于 computeOthersUsed 在 pixel|flex、flex|pixel 分支中读取其它列占用宽度
-    [sections, setSize, batchSetSizes, sizes]
+    [sections, isHorizontal, setSize, batchSetSizes, sizes]
   )
 
   const handleDoubleClick = useCallback(
@@ -258,6 +276,11 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
     [sections, setSize]
   )
 
+  const handleResizeEndInternal = useCallback(() => {
+    flushStorage()
+    onResizeEnd?.()
+  }, [flushStorage, onResizeEnd])
+
   if (sections.length === 0) return null
 
   return (
@@ -269,17 +292,29 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
         className
       )}
     >
-      {sections.map((section, index) => (
-        <React.Fragment key={section.id}>
-          <div style={getSectionStyle(section, index)}>{section.content}</div>
-          {index < sections.length - 1 && (
-            <SplitPaneHandle
-              onResize={delta => handleResize(section.id, sections[index + 1].id, delta)}
-              onDoubleClick={() => handleDoubleClick(section.id)}
-            />
-          )}
-        </React.Fragment>
-      ))}
+      {sections.map((section, index) => {
+        const nextSection = sections[index + 1]
+        // 折叠相邻把手隐藏守卫：若当前 section 或下一 section 处于折叠且尺寸为 0，不渲染把手
+        const curCollapsed = Boolean(section.collapsed && (section.collapsedSize ?? 0) === 0)
+        const nextCollapsed = Boolean(
+          nextSection && nextSection.collapsed && (nextSection.collapsedSize ?? 0) === 0
+        )
+        const shouldShowHandle = index < sections.length - 1 && !curCollapsed && !nextCollapsed
+
+        return (
+          <React.Fragment key={section.id}>
+            <div style={getSectionStyle(section, index)}>{section.content}</div>
+            {shouldShowHandle && (
+              <SplitPaneHandle
+                direction={direction}
+                onResize={delta => handleResize(section.id, nextSection.id, delta)}
+                onDoubleClick={() => handleDoubleClick(section.id)}
+                onResizeEnd={handleResizeEndInternal}
+              />
+            )}
+          </React.Fragment>
+        )
+      })}
     </div>
   )
 }

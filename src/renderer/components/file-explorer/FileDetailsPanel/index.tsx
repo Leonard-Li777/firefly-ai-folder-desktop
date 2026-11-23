@@ -369,7 +369,31 @@ const FileDetailsPanelComponent: React.FC<any> = ({
 
   return (
     <aside className="flex-shrink-0 border-l border-border flex flex-col h-full overflow-hidden select-text">
-      <div className="flex-1 overflow-y-auto p-6">
+      {onClose && (
+        <div className="flex items-center justify-between px-4 py-2 border-b border-border/40 shrink-0 bg-muted/10">
+          <span className="text-xs font-semibold text-muted-foreground">{t('文件属性')}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            data-testid="details-close-button"
+            onClick={onClose}
+            title={t('关闭属性面板')}
+            className="h-7 w-7 p-0 shrink-0 text-muted-foreground hover:text-foreground"
+          >
+            <MaterialIcon icon="close" className="text-sm" />
+          </Button>
+        </div>
+      )}
+      {/* 容器感知双列流容器 (ISS-02 / §3.10) */}
+      <div
+        data-testid="file-details-container"
+        className="flex-1 min-h-0 w-full overflow-hidden @container/details grid grid-cols-1 content-start @[540px]/details:grid-cols-2 @[540px]/details:grid-rows-[minmax(0,1fr)]"
+      >
+        {/* 左列：基础信息、缩略图 PreviewSection、AI 标签 TagList 与维度 */}
+        <div
+          data-testid="details-left-column"
+          className="min-h-0 min-w-0 flex flex-col overflow-y-auto border-b @[540px]/details:border-b-0 @[540px]/details:border-r border-border/40 p-4 space-y-4"
+        >
         {((item && 'status' in item && (item as any).status === 0) ||
           (analysisResult &&
             'status' in analysisResult &&
@@ -537,6 +561,13 @@ const FileDetailsPanelComponent: React.FC<any> = ({
               onTagDeleted={refreshAnalysis}
             />
           )}
+        </div>
+
+        {/* 右列：详细元数据 DirectoryProfileSection、分析指标 AnalysisTabs 等 */}
+        <div
+          data-testid="details-right-column"
+          className="min-h-0 min-w-0 flex flex-col overflow-y-auto p-4 space-y-4"
+        >
 
         {(showDirectory || isDirectory) && analysisResult && isDirAnalysis(analysisResult) && (
           <DirectoryProfileSection
@@ -602,6 +633,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
           maskClass={maskClass}
           formatDate={formatDate}
         />
+        </div>
       </div>
 
       {/* 底部操作按钮 — 仅真实目录显示分析相关操作 */}

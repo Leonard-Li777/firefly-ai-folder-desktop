@@ -49,7 +49,6 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
   const [settledSeq, setSettledSeq] = useState<number>(-1)
   const [activeItem, setActiveItem] = useState<FileItem | null>(null)
   const [selectedFiles, setSelectedFiles] = useState<FileItem[]>([])
-  const [showDetailsPanel, setShowDetailsPanel] = useState(true)
   const SEARCH_OVERLAY_VIEW_KEY = 'page_view_mode_search_overlay'
   const SEARCH_SIMILARITY_THRESHOLD_KEY = 'search_similarity_threshold'
   const DEFAULT_SIMILARITY_PCT = 35
@@ -814,9 +813,6 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
             onFileDoubleClick={handleFileDoubleClick}
             viewMode={viewMode}
             onViewModeChange={handleViewModeChange}
-            showPreviewPanel={true}
-            showDetailsPanel={showDetailsPanel}
-            onCloseDetailsPanel={() => setShowDetailsPanel(false)}
             pageId={PAGE_IDS.SEARCH_OVERLAY}
             disableClientSort={true}
             isRealDirectory={true}

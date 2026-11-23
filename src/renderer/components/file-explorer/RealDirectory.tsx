@@ -49,7 +49,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   const navigate = useNavigate()
   const location = useLocation()
   const [selectedItem, setSelectedItem] = useState<FileType | DirectoryItem | null>(null)
-  const [showDetailsPanel, setShowDetailsPanel] = useState(true)
 
   const pageStates = usePreviewOverlayStore(s => s.pageStates)
 
@@ -134,7 +133,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         } else if (resolvedSelection.length === 0) {
           setSelectedItem(null)
         }
-        setShowDetailsPanel(true)
         effectiveSelection = resolvedSelection
       } else {
         if (newSelection.length > 0) {
@@ -154,12 +152,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
               setSelectedItem(selectedItemObject)
               setSelectedFiles([selectedItemObject as FileType])
             }
-            setShowDetailsPanel(true)
           }
         } else {
           setSelectedItem(null)
           setSelectedFiles([])
-          setShowDetailsPanel(true)
           effectiveSelection = []
         }
       }
@@ -1019,7 +1015,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       }
       // 清空选中状态
       setSelectedItem(null)
-      setShowDetailsPanel(true)
       useFileExplorerStore.getState().setSelectedFiles([])
       // 清空搜索关键词，避免过滤目录
       clearRealDirectorySearch()
@@ -1032,7 +1027,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       expandDirectory,
       getParentPath,
       setSelectedItem,
-      setShowDetailsPanel,
       clearRealDirectorySearch,
       onDirectoryChange
     ]
@@ -1376,6 +1370,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         dropdownRef={dropdownRef}
         onSearch={handleSearch}
         isLoading={effectiveIsSearchingAllDirs}
+        layoutPageId={PAGE_IDS.REAL_DIRECTORY}
       />
 
       {currentWorkspaceDirectory ? (
@@ -1408,9 +1403,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                 onForward={handleForward}
                 onUp={handleUp}
                 pageId={PAGE_IDS.REAL_DIRECTORY}
-                showDetailsPanel={showDetailsPanel}
-                showPreviewPanel={isSplitView}
-                onCloseDetailsPanel={() => setShowDetailsPanel(false)}
                 onFileDeleted={refreshDirectoryContents}
                 onFileUpdated={refreshDirectoryContents}
                 renderToolbar={renderToolbar}
