@@ -237,9 +237,17 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
         const flexAvailableSize = Math.max(flexContainerSize - pixelColumnsWidth, 100)
 
         batchSetSizes(prev => {
-          const leftSize = prev[leftId] ?? leftSection.defaultSize
-          const rightSize = prev[rightId] ?? rightSection.defaultSize
-          const totalFlex = leftSize + rightSize
+          let leftSize = prev[leftId] ?? leftSection.defaultSize
+          let rightSize = prev[rightId] ?? rightSection.defaultSize
+          let totalFlex = leftSize + rightSize
+
+          // 若历史存储中存在过大的像素遗留值（如 totalFlex > 20），自愈归一化到当前默认比例
+          if (totalFlex > 20) {
+            const targetTotal = (leftSection.defaultSize ?? 1) + (rightSection.defaultSize ?? 1)
+            leftSize = (leftSize / totalFlex) * targetTotal
+            rightSize = (rightSize / totalFlex) * targetTotal
+            totalFlex = targetTotal
+          }
 
           if (delta < 0 && leftSize <= MIN_FLEX_RATIO) {
             return prev
@@ -249,12 +257,34 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
           }
 
           let newLeft = leftSize + (delta / flexAvailableSize) * totalFlex
-          if (newLeft < MIN_FLEX_RATIO) newLeft = MIN_FLEX_RATIO
           let newRight = totalFlex - newLeft
-          if (newRight < MIN_FLEX_RATIO) {
-            newRight = MIN_FLEX_RATIO
+
+          // 尊重 minSize 物理约束，防止拖拽将任一 flex 区块压缩至 minSize 以下引发容器撑破溢出
+          const minLeft = Math.max(
+            MIN_FLEX_RATIO,
+            leftSection.minSize !== undefined && flexAvailableSize > 0
+              ? (leftSection.minSize / flexAvailableSize) * totalFlex
+              : MIN_FLEX_RATIO
+          )
+          const minRight = Math.max(
+            MIN_FLEX_RATIO,
+            rightSection.minSize !== undefined && flexAvailableSize > 0
+              ? (rightSection.minSize / flexAvailableSize) * totalFlex
+              : MIN_FLEX_RATIO
+          )
+
+          if (newLeft < minLeft) {
+            newLeft = minLeft
+            newRight = totalFlex - newLeft
+          }
+          if (newRight < minRight) {
+            newRight = minRight
             newLeft = totalFlex - newRight
           }
+
+          if (newLeft < MIN_FLEX_RATIO) newLeft = MIN_FLEX_RATIO
+          if (newRight < MIN_FLEX_RATIO) newRight = MIN_FLEX_RATIO
+
           return {
             ...prev,
             [leftId]: Math.round(newLeft * 10000) / 10000,

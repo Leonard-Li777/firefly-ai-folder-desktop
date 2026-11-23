@@ -14,11 +14,7 @@ export const LayoutActionSlot: React.FC<LayoutActionSlotProps> = ({ className, c
   return (
     <div
       data-testid="layout-action-slot"
-      className={cn(
-        'flex items-center shrink-0 h-9 relative @container/layout-slot',
-        'no-drag',
-        className
-      )}
+      className={cn('flex items-center shrink-0 h-9 relative', 'no-drag', className)}
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
       {children || <div className="w-0 h-0" aria-hidden="true" />}

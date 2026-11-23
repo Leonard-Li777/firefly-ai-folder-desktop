@@ -203,6 +203,25 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
     return resolveLayoutProjection(layoutDef, effectivePanels, unavailableSet)
   }, [targetPageId, layoutDef, transientCollapsed, unavailableSet, customPanels])
 
+  // 伴随区物理最小尺寸：依据可见面板数量与轴向确定，杜绝外层压缩撑破或子元素溢出
+  const companionMinSize = useMemo(() => {
+    if (projection.collapsed.companion) return 0
+    if (projection.primaryDirection === 'horizontal') {
+      if (projection.companionDirection === 'horizontal') {
+        const activeCount =
+          (!projection.collapsed.preview ? 1 : 0) + (!projection.collapsed.details ? 1 : 0)
+        return activeCount * 280
+      }
+      return 280
+    }
+    if (projection.companionDirection === 'vertical') {
+      const activeCount =
+        (!projection.collapsed.preview ? 1 : 0) + (!projection.collapsed.details ? 1 : 0)
+      return activeCount * 200
+    }
+    return 200
+  }, [projection])
+
   // 优先级：优先使用外部传入的 selectedFiles；若无则根据 selectedFileIds 计算；若均无则使用内部状态
   const selectedFiles = useMemo(() => {
     if (externalSelectedFiles !== undefined) {
@@ -443,7 +462,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
           {
             id: 'file-list-main',
             type: 'flex' as const,
-            defaultSize: layoutDef.primaryDefaultSize ?? 2,
+            defaultSize: layoutDef.primaryDefaultSize ?? 1.5,
             minSize: projection.primaryDirection === 'horizontal' ? 360 : 200,
             content: (
               <div
@@ -534,7 +553,13 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
           {
             id: 'companion',
             type: 'flex' as const,
-            defaultSize: 1,
+            defaultSize:
+              projection.primaryDirection === projection.companionDirection &&
+              !projection.collapsed.preview &&
+              !projection.collapsed.details
+                ? 2
+                : 1,
+            minSize: companionMinSize,
             collapsed: projection.collapsed.companion,
             collapsedSize: 0,
             content: (
@@ -550,7 +575,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                   {
                     id: 'preview',
                     type: 'flex' as const,
-                    defaultSize: 1,
+                    defaultSize: layoutDef.companionDefaultSize ?? 1,
                     minSize: projection.companionDirection === 'horizontal' ? 280 : 200,
                     collapsed: projection.collapsed.preview,
                     collapsedSize: 0,
@@ -579,10 +604,14 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                         className="h-full w-full relative flex flex-col overflow-hidden"
                       >
                         <FileDetailsPanel
-                          item={activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : undefined)}
+                          item={
+                            activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : undefined)
+                          }
                           workspaceDirectoryPath={workspaceDirectoryPath}
                           workspaceDirectoryType={workspaceDirectoryType}
-                          currentDirectoryPath={isRealDirectory ? currentPath : workspaceDirectoryPath}
+                          currentDirectoryPath={
+                            isRealDirectory ? currentPath : workspaceDirectoryPath
+                          }
                           onClose={() => {
                             closePanel(targetPageId, PANEL_IDS.DETAILS)
                             onCloseDetailsPanel?.()

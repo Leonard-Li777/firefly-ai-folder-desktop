@@ -154,9 +154,7 @@ describe('FileExplorerLayout (恒定两级树拓扑架构与资源静默)', () =
     })
 
     // layout-switcher 标记 preview 关闭
-    const visible = useLayoutSwitcherStore
-      .getState()
-      .getVisiblePanels(PAGE_IDS.REAL_DIRECTORY)
+    const visible = useLayoutSwitcherStore.getState().getVisiblePanels(PAGE_IDS.REAL_DIRECTORY)
     expect(visible.includes(PANEL_IDS.PREVIEW)).toBe(false)
 
     // preview-overlay-store 的页面状态未被破坏
@@ -195,5 +193,24 @@ describe('FileExplorerLayout (恒定两级树拓扑架构与资源静默)', () =
     // 两个伴随面板均恢复可见
     expect(screen.getByTestId('file-preview-slot')).toBeDefined()
     expect(screen.getByTestId('file-details-slot')).toBeDefined()
+  })
+
+  it('AC-6: 预设比例纯净性 - 无缓存初次加载时外层与内层均为纯净 flex 比例，杜绝 420:1 溢出', () => {
+    render(
+      <MemoryRouter>
+        <FileExplorerLayout files={mockFiles} pageId={PAGE_IDS.REAL_DIRECTORY} />
+      </MemoryRouter>
+    )
+
+    const fileListElement = screen.getByTestId('file-list-main')
+    const outerSectionDiv = fileListElement.parentElement
+    expect(outerSectionDiv).toBeDefined()
+    const style = outerSectionDiv?.getAttribute('style') || ''
+    // flex-grow 应为纯净小数字比例（如 1 或 1.5），绝对严禁 480/420 这类像素污染值
+    const match = style.match(/flex:\s*([\d.]+)/)
+    expect(match).not.toBeNull()
+    const flexGrow = parseFloat(match![1])
+    expect(flexGrow).toBeGreaterThanOrEqual(0.5)
+    expect(flexGrow).toBeLessThanOrEqual(3)
   })
 })

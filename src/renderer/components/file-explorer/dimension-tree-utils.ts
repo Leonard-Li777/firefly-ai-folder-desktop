@@ -360,8 +360,9 @@ interface TagParentIndex {
 }
 
 /**
- * 构建标签父子索引：根据 viaParentCode 归类子标签，
+ * 构建标签父子索引：根据 code_path（主要建树依据）与 parentCodes / viaParentCode（本体来源）归类子标签，
  * 优先精确按 Code 登记父子关系，杜绝跨异码同名标签错误广播子树
+ * （标签树是通过 code_path 建立的，源头来自于 parentCodes）
  */
 function buildTagParentIndex(tags: DimensionTag[]): TagParentIndex {
   // 1. 构建 code -> tag 与 tagValue -> tag 快速索引
@@ -374,29 +375,51 @@ function buildTagParentIndex(tags: DimensionTag[]): TagParentIndex {
     if (t.tagValue) tagByName.set(t.tagValue, t)
   }
 
-  // 2. 根据 viaParentCode 归类子标签（机器码精确匹配优先）
+  // 2. 根据 code_path（主要）与 parentCodes / viaParentCode（来源）归类子标签（机器码精确匹配优先）
   for (const t of tags) {
-    const parentKey = t.viaParentCode
-    if (!parentKey) continue
+    const parentCandidates = new Set<string>()
 
-    // 优先精确按 Code 查找父节点
-    const parentByCode = tagByCode.get(parentKey)
-    if (parentByCode) {
-      // 父子关系是由确切机器码绑定的，严格仅在 parentKey 和 parentByCode.code 上登记，
-      // 严禁向 parentByCode.tagValue（自然语言名称）广播，防止同名异码节点错误继承子树
-      const pKeys = new Set([parentKey, parentByCode.code].filter(Boolean) as string[])
-      for (const pk of pKeys) {
-        const list = tagsByParent.get(pk) || []
-        if (!list.includes(t)) {
-          list.push(t)
-          tagsByParent.set(pk, list)
+    // A. 优先从 code_path 沿祖先链反向寻找最邻近且存在于组内的父标签（支持跳级段与完整树形还原）
+    const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+    if (segs.length > 2) {
+      for (let i = segs.length - 2; i >= 1; i--) {
+        const segCode = segs[i]
+        if (tagByCode.has(segCode)) {
+          parentCandidates.add(segCode)
+          break
         }
       }
-    } else {
-      // 仅在按 Code 找不到父节点时，说明 parentKey 可能是自然语言展示名，尝试按 tagByName 兜底查找
-      const parentByName = tagByName.get(parentKey)
-      if (parentByName) {
-        const pKeys = new Set([parentKey, parentByName.code, parentByName.tagValue].filter(Boolean) as string[])
+      // 若沿途祖先段均未在组内找到，仍记录直接父段以保持父子链
+      if (parentCandidates.size === 0) {
+        parentCandidates.add(segs[segs.length - 2])
+      }
+    }
+
+    // B. 从 viaParentCode 与 parentCodes 回溯（源头来自 parentCodes）
+    const rootCode = segs.length > 0 ? segs[0] : (t.dimensionCode || '')
+    if (t.viaParentCode && t.viaParentCode !== rootCode) {
+      if (tagByCode.has(t.viaParentCode) || parentCandidates.size === 0) {
+        parentCandidates.add(t.viaParentCode)
+      }
+    }
+
+    if (Array.isArray(t.parentCodes) && t.parentCodes.length > 0) {
+      for (const p of t.parentCodes) {
+        if (p && p !== rootCode && (tagByCode.has(p) || parentCandidates.size === 0)) {
+          parentCandidates.add(p)
+        }
+      }
+    }
+
+    for (const parentKey of parentCandidates) {
+      if (!parentKey) continue
+
+      // 优先精确按 Code 查找父节点
+      const parentByCode = tagByCode.get(parentKey)
+      if (parentByCode) {
+        // 父子关系是由确切机器码绑定的，严格仅在 parentKey 和 parentByCode.code 上登记，
+        // 严禁向 parentByCode.tagValue（自然语言名称）广播，防止同名异码节点错误继承子树
+        const pKeys = new Set([parentKey, parentByCode.code].filter(Boolean) as string[])
         for (const pk of pKeys) {
           const list = tagsByParent.get(pk) || []
           if (!list.includes(t)) {
@@ -405,11 +428,24 @@ function buildTagParentIndex(tags: DimensionTag[]): TagParentIndex {
           }
         }
       } else {
-        // 如果都未找到映射实体，直接以原始 parentKey 登记
-        const list = tagsByParent.get(parentKey) || []
-        if (!list.includes(t)) {
-          list.push(t)
-          tagsByParent.set(parentKey, list)
+        // 仅在按 Code 找不到父节点时，说明 parentKey 可能是自然语言展示名，尝试按 tagByName 兜底查找
+        const parentByName = tagByName.get(parentKey)
+        if (parentByName) {
+          const pKeys = new Set([parentKey, parentByName.code, parentByName.tagValue].filter(Boolean) as string[])
+          for (const pk of pKeys) {
+            const list = tagsByParent.get(pk) || []
+            if (!list.includes(t)) {
+              list.push(t)
+              tagsByParent.set(pk, list)
+            }
+          }
+        } else {
+          // 如果都未找到映射实体，直接以原始 parentKey 登记
+          const list = tagsByParent.get(parentKey) || []
+          if (!list.includes(t)) {
+            list.push(t)
+            tagsByParent.set(parentKey, list)
+          }
         }
       }
     }
@@ -566,11 +602,24 @@ export function nestGroupTags(
   const { tagsByParent } = index
 
   // 3. 确定当前层级的直属候选标签 (rawDirectTags)：
-  // 顶层直属标签优先由 level === 1 或 viaParentCode === group.code 确定
+  // 契约：标签树是通过 code_path 建立的，源头来自于 parentCodes。
+  // 路径深度 > 2 的节点或 parentCodes 指向组内有效父节点的标签为深层子孙，绝不能作为顶层直属标签
   const rawDirectTags: DimensionTag[] = []
   for (const t of tags) {
     const parentKey = t.viaParentCode
-    const isLevel1 = t.level === 1 || parentKey === group.code || (!parentKey && (!t.level || t.level <= 1))
+    const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+    const isDeepByPath = segs.length > 2
+    const hasParentInGroup =
+      Array.isArray(t.parentCodes) &&
+      t.parentCodes.some(p => p && p !== group.code && index.tagByCode.has(p))
+
+    const isLevel1 =
+      !isDeepByPath &&
+      !hasParentInGroup &&
+      (t.level === 1 ||
+        parentKey === group.code ||
+        (!parentKey && (!t.level || t.level <= 1)) ||
+        (segs.length === 2 && (!group.code || segs[0] === group.code)))
     if (isLevel1) {
       rawDirectTags.push(t)
     }
@@ -1435,6 +1484,9 @@ export function getSelectedTagsFromSet(
         ...new Set(candidates.map(t => t.codePath).filter((p): p is string => !!p))
       ]
       codePaths = distinctPaths.length > 1 ? distinctPaths : undefined
+    } else if (tagItem?.codePaths && tagItem.codePaths.length > 0) {
+      // 聚类节点或携带物化路径集合的节点，多选必须透传保真 (ADR-0034 §4)
+      codePaths = tagItem.codePaths
     }
 
     results.push({

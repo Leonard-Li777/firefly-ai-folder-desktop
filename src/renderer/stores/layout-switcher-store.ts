@@ -24,6 +24,7 @@ export interface LayoutSwitcherState {
   getLayoutKey: (pageId: string) => LayoutKey
   resetPageLayout: (pageId: string) => void
   resetAll: () => void
+  clearUserLayout: (workspaceId?: string | number) => void
 }
 
 /** 生成方向敏感持久化尺寸键 */
@@ -199,5 +200,9 @@ export const useLayoutSwitcherStore = create<LayoutSwitcherState>((set, get) => 
       pageLayouts: {},
       visiblePanels: {}
     })
+  },
+
+  clearUserLayout: (_workspaceId?: string | number) => {
+    get().resetAll()
   }
 }))

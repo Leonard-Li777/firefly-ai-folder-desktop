@@ -22,6 +22,15 @@ describe('Layout Types, Presets & Capability Gating (Ticket 02)', () => {
       expect(def.key).toBe(key)
       expect(def.panels).toContain(PANEL_IDS.LIST)
       expect(def.panels[0]).toBe(PANEL_IDS.LIST)
+      // 预设默认尺寸必须是纯净 flex 比例（0.5~3），严禁填入像素值破坏布局
+      if (def.primaryDefaultSize !== undefined) {
+        expect(def.primaryDefaultSize).toBeGreaterThanOrEqual(0.5)
+        expect(def.primaryDefaultSize).toBeLessThanOrEqual(3)
+      }
+      if (def.companionDefaultSize !== undefined) {
+        expect(def.companionDefaultSize).toBeGreaterThanOrEqual(0.5)
+        expect(def.companionDefaultSize).toBeLessThanOrEqual(3)
+      }
     }
   })
 

@@ -20,7 +20,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST],
     primaryDirection: 'horizontal',
     companionDirection: 'horizontal',
-    primaryDefaultSize: 480
+    primaryDefaultSize: 1,
+    companionDefaultSize: 1
   },
   [LAYOUT_KEYS.LIST_PREVIEW]: {
     key: LAYOUT_KEYS.LIST_PREVIEW,
@@ -29,8 +30,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW],
     primaryDirection: 'horizontal',
     companionDirection: 'vertical',
-    primaryDefaultSize: 480,
-    companionDefaultSize: 320
+    primaryDefaultSize: 1.5,
+    companionDefaultSize: 1
   },
   [LAYOUT_KEYS.LIST_DETAILS]: {
     key: LAYOUT_KEYS.LIST_DETAILS,
@@ -39,8 +40,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST, PANEL_IDS.DETAILS],
     primaryDirection: 'horizontal',
     companionDirection: 'vertical',
-    primaryDefaultSize: 480,
-    companionDefaultSize: 300
+    primaryDefaultSize: 1.5,
+    companionDefaultSize: 1
   },
   [LAYOUT_KEYS.PIN_LIST_TOP]: {
     key: LAYOUT_KEYS.PIN_LIST_TOP,
@@ -49,8 +50,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'vertical',
     companionDirection: 'horizontal',
-    primaryDefaultSize: 360,
-    companionDefaultSize: 400
+    primaryDefaultSize: 1,
+    companionDefaultSize: 1
   },
   [LAYOUT_KEYS.ALL_ROW]: {
     key: LAYOUT_KEYS.ALL_ROW,
@@ -59,8 +60,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'horizontal',
     companionDirection: 'horizontal',
-    primaryDefaultSize: 420,
-    companionDefaultSize: 360
+    primaryDefaultSize: 1,
+    companionDefaultSize: 1
   },
   [LAYOUT_KEYS.TRI]: {
     key: LAYOUT_KEYS.TRI,
@@ -69,8 +70,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'horizontal',
     companionDirection: 'vertical',
-    primaryDefaultSize: 460,
-    companionDefaultSize: 320
+    primaryDefaultSize: 1.5,
+    companionDefaultSize: 1
   },
   [LAYOUT_KEYS.ALL_COLUMN]: {
     key: LAYOUT_KEYS.ALL_COLUMN,
@@ -79,8 +80,8 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'vertical',
     companionDirection: 'vertical',
-    primaryDefaultSize: 300,
-    companionDefaultSize: 260
+    primaryDefaultSize: 1,
+    companionDefaultSize: 1
   }
 }
 

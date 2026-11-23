@@ -58,13 +58,34 @@ export function useSplitPaneSizes(
     return rawKey ? storageKey : `${storageKey}:${sectionIdsStr}`
   }, [storageKey, sectionIdsStr, rawKey])
 
+  const computeNormalizedSizes = useCallback(
+    (stored: Record<string, number>) => {
+      const isAllFlex = sections.length > 0 && sections.every(s => s.type === 'flex')
+      let totalStoredFlex = 0
+      if (isAllFlex) {
+        for (const sec of sections) {
+          if (stored[sec.id] !== undefined) {
+            totalStoredFlex += stored[sec.id]
+          }
+        }
+      }
+      const shouldNormalize = isAllFlex && totalStoredFlex > 20
+      const defaultTotal = sections.reduce((sum, s) => sum + s.defaultSize, 0)
+      const scale = shouldNormalize && totalStoredFlex > 0 ? defaultTotal / totalStoredFlex : 1
+
+      return sections.reduce<Record<string, number>>((acc, sec) => {
+        const rawVal = stored[sec.id] ?? sec.defaultSize
+        acc[sec.id] = shouldNormalize ? Math.round(rawVal * scale * 10000) / 10000 : rawVal
+        return acc
+      }, {})
+    },
+    [sections]
+  )
+
   // 加载初始大小 (React 只在首次挂载时执行此初始化函数)
   const getInitialSizes = () => {
     const stored = compositeStorageKey ? loadFromStorage(compositeStorageKey, rawKey) : {}
-    return sections.reduce<Record<string, number>>((acc, sec) => {
-      acc[sec.id] = stored[sec.id] ?? sec.defaultSize
-      return acc
-    }, {})
+    return computeNormalizedSizes(stored)
   }
 
   const [sizes, setSizes] = useState<Record<string, number>>(getInitialSizes)
@@ -79,15 +100,12 @@ export function useSplitPaneSizes(
   useEffect(() => {
     if (compositeStorageKey !== prevCompositeKeyRef.current) {
       const stored = compositeStorageKey ? loadFromStorage(compositeStorageKey, rawKey) : {}
-      const targetSizes = sections.reduce<Record<string, number>>((acc, sec) => {
-        acc[sec.id] = stored[sec.id] ?? sec.defaultSize
-        return acc
-      }, {})
+      const targetSizes = computeNormalizedSizes(stored)
       setSizes(targetSizes)
       sizesRef.current = targetSizes
       prevCompositeKeyRef.current = compositeStorageKey
     }
-  }, [compositeStorageKey, sections, rawKey])
+  }, [compositeStorageKey, computeNormalizedSizes, rawKey])
 
   const getSize = useCallback(
     (id: string) => sizes[id] ?? sections.find(s => s.id === id)?.defaultSize ?? 0,

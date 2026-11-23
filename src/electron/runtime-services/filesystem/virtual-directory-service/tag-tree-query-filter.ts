@@ -233,6 +233,8 @@ export const tagTreeQueryFilterMixin = {
       if (typeof candidate !== 'string') continue
       const trimmed = candidate.trim()
       if (!trimmed || seen.has(trimmed)) continue
+      // 过滤未在 tag_paths 微型字典中物理存在的聚类纯内存合成路径（避免 LIKE 盲查失败阻断后续受控 code 展开）
+      if (trimmed.includes('.cluster_')) continue
       seen.add(trimmed)
       paths.push(trimmed)
     }

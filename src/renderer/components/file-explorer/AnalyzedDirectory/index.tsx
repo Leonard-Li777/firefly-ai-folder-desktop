@@ -721,6 +721,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                           loadDimensionGroups()
                         }}
                         workspaceDirectoryType={currentWorkspaceDirectory?.type as any}
+                        pageId={PAGE_IDS.ANALYZED_DIRECTORY}
                       />
                     )}
                   </div>
