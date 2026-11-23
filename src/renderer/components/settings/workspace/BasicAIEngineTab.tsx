@@ -12,7 +12,6 @@ import {
   ChevronRight,
   Sliders,
   ShieldCheck,
-  Crown,
   Loader2,
   CheckCircle2,
   RotateCcw
@@ -481,25 +480,13 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
           </div>
         </div>
 
-        {/* 每个视频分析时长上限：所有用户可调，免费用户最终按 5 分钟结算 */}
+        {/* 每个视频分析时长上限：所有用户可调 */}
         <div className="space-y-1.5 pt-2 border-t border-border/30">
           <div className="flex items-center justify-between text-xs">
             <Label className="font-semibold text-foreground">{t('每个视频分析时长上限')}</Label>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                {Math.round(localDurationSec / 60)} {t('分钟')}
-              </span>
-              {isFreeUser && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 px-2 text-[11px] text-amber-600 dark:text-amber-400"
-                  onClick={() => setIsUpgradeOpen(true)}
-                >
-                  {t('解锁更长')}
-                </Button>
-              )}
-            </div>
+            <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
+              {Math.round(localDurationSec / 60)} {t('分钟')}
+            </span>
           </div>
           <input
             type="range"
@@ -516,18 +503,13 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
             onKeyUp={e => handleCommit(parseInt(e.currentTarget.value, 10))}
             className="w-full accent-primary cursor-pointer"
           />
-          {isAnalyzeCapped && isFreeUser && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400">
-              {t('当前你是免费用户，最终结算值为5分钟，升级后可应用设置值。')}
-            </p>
-          )}
           <p className="text-[11px] text-muted-foreground">
             {t(
               '每个视频最多整理多长时间，5 分钟一档，最长 3 小时；普通电脑建议选短一些，放后台慢慢整理。'
             )}
           </p>
-          {/* Spec §3.3：取消 Switch 后，当用户设定时长 > 5 分钟时提供大白话解释与直达「待补分析文件」引导 */}
-          {localDurationSec > 300 && !isFreeUser && (
+          {/* 当用户设定时长 > 5 分钟时提供大白话解释与直达「待补分析文件」引导 */}
+          {localDurationSec > 300 && (
             <div
               data-testid="video-fast-first-slice-guide"
               className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-700 dark:text-sky-300 flex items-start justify-between gap-3"
@@ -550,30 +532,6 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
             </div>
           )}
         </div>
-
-        {/* 免费会员权益说明与 Pro 升级引导 */}
-        {isFreeUser && (
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-between gap-3 flex-wrap transition-all">
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <Crown className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <div className="text-xs leading-relaxed">
-                <p className="font-bold text-amber-700 dark:text-amber-300">
-                  {t('免费版每个视频分析精彩前 5 分钟。')}
-                </p>
-                <p className="text-muted-foreground">
-                  {t('升级 Pro 会员可解锁整部视频全量分析，支持单视频长达 3 小时。')}
-                </p>
-              </div>
-            </div>
-            <Button
-              size="sm"
-              onClick={() => setIsUpgradeOpen(true)}
-              className="h-7 px-3 text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90 transition-opacity shrink-0 shadow-xs"
-            >
-              {t('立即升级 Pro')}
-            </Button>
-          </div>
-        )}
       </div>
     )
   }

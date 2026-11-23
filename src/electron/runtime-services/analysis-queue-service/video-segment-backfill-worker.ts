@@ -48,6 +48,8 @@ export function computeVideoBackfillProgressPct(
 
 export interface VideoBackfillWorkspaceContext {
   effectiveLimitSec: number
+  /** 用户在工作区配置中设定的目标分析上限（从 workspace.config.videoAnalyzeDurationSec 读取，如 1800 秒） */
+  configuredLimitSec: number
   videoVisualAnalysisEnabled: boolean
   workspaceName?: string
   paramsHash: string
@@ -75,7 +77,7 @@ export interface VideoSegmentBackfillWorkerDeps {
   }>
   getWorkspacePendingBackfillVideos: (
     workspaceId: number,
-    effectiveLimitSec: number
+    displayLimitSec: number
   ) => Array<{
     workspaceFileId?: number
     fileFingerprint: string
@@ -265,15 +267,17 @@ export class VideoSegmentBackfillWorker {
     try {
       const ctx = await this.deps.resolveWorkspaceContext(workspaceId)
       const effectiveLimitSec = ctx?.effectiveLimitSec ?? 300
+      const displayLimitSec = ctx?.configuredLimitSec ?? effectiveLimitSec
       const items =
-        ctx && ctx.videoVisualAnalysisEnabled && effectiveLimitSec > 300
-          ? this.deps.getWorkspacePendingBackfillVideos(workspaceId, effectiveLimitSec)
+        ctx && ctx.videoVisualAnalysisEnabled && displayLimitSec > 300
+          ? this.deps.getWorkspacePendingBackfillVideos(workspaceId, displayLimitSec)
           : []
       await this.refreshPendingCounts()
       return {
         success: true,
         workspaceId,
         effectiveLimitSec,
+        configuredLimitSec: displayLimitSec,
         items,
         snapshot: this.getSnapshot()
       }

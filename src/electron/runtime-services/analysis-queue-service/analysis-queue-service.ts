@@ -257,6 +257,7 @@ export class AnalysisQueueService {
         const ws = allWs.find((w: any) => Number(w.id) === Number(workspaceId))
         return {
           effectiveLimitSec,
+          configuredLimitSec: configuredLimit,
           videoVisualAnalysisEnabled: effectiveConfig.capabilities.videoVisualAnalysisEnabled,
           workspaceName: ws?.name,
           paramsHash,

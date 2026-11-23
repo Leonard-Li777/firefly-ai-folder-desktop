@@ -684,6 +684,52 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
     // 提供「重新开启」一键引导
     expect(screen.getByRole('button', { name: '重新开启' })).toBeInTheDocument()
   })
+
+  it('Spec §4.2: BasicAIEngineTab 彻底净化营销文案，消除 Nagware 叫卖与 5 分钟限制提示', () => {
+    const cleanWorkspace: any = {
+      id: 12,
+      name: 'CleanTest',
+      path: 'D:\\CleanTest',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'ready',
+        policyVersion: 1,
+        baseAIConfig: {
+          analysisMode: 'full',
+          videoAnalyzeDurationSec: 1800,
+          videoQuotaMax: 60,
+          videoCutSensitivity: 'medium',
+          videoSoftTokenBudget: 48,
+          videoAsrDurationSec: 60,
+          audioAnalysisDurationSec: 60,
+          enableImageOcr: true,
+          maxDocumentOcrItems: 0,
+          ocrModelSize: 'tiny',
+          extractPages: 10,
+          maxContentSizeKb: 1024,
+          enableOfficeCover: true,
+          reuseBasicAnalysisData: true
+        }
+      })
+    }
+
+    render(<BasicAIEngineTab workspace={cleanWorkspace} />)
+
+    // 1. 验证彻底删除了滑块旁的「解锁更长」
+    expect(screen.queryByText('解锁更长')).toBeNull()
+
+    // 2. 验证彻底删除了黄色营销大横幅
+    expect(screen.queryByText(/免费版每个视频分析精彩前 5 分钟/)).toBeNull()
+    expect(screen.queryByText('立即升级 Pro')).toBeNull()
+
+    // 3. 验证删除了「当前你是免费用户，最终结算值为5分钟」提示
+    expect(screen.queryByText(/最终结算值为5分钟/)).toBeNull()
+
+    // 4. 验证中性引导卡片正常呈现并可直达「待补分析文件」
+    expect(screen.getByTestId('video-fast-first-slice-guide')).toBeTruthy()
+    expect(screen.getByText(/为避免长视频卡住其它文件/)).toBeTruthy()
+    expect(screen.getByText('查看待补分析文件 →')).toBeTruthy()
+  })
 })
 
 describe('SLICE-08: 设置值四态表格（四态表格）', () => {
