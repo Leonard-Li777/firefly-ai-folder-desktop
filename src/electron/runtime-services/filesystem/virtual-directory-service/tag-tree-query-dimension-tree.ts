@@ -35,6 +35,7 @@ import {
 } from '@firefly/shared'
 import path from 'path'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
+import type { OmniClusterDocument } from '../../system/omni-service/types'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { omniClient } from '../../../services/omni-client'
@@ -56,12 +57,19 @@ export interface TagTreeQueryDimensionTree {
     opts: GetDimensionGroupsOptions,
     locale: string,
     startTime: number
-  ): DimensionGroupsResponse
+  ): Promise<DimensionGroupsResponse>
 
   getDimensionGroups(
     options?: GetDimensionGroupsOptions | string,
     language?: string
   ): Promise<DimensionGroupsResponse>
+
+  clusterPanDimensionTags(
+    groups: DimensionGroup[],
+    pathCountMap?: Record<string, number>,
+    tagFilesMap?: Map<string, Set<string>>,
+    opts?: GetDimensionGroupsOptions
+  ): Promise<void>
 
   resolveAuthorityDimensions(): {
     byCode: Map<
@@ -78,14 +86,213 @@ export interface TagTreeQueryDimensionTree {
   resolveAuthorityDimensionsByCode(): Map<string, { id?: number; flag?: DimensionFlags }>
 }
 
+/**
+ * 获取维度组的标准根代码（消除 dim.{id} 伪受控码构造）
+ */
+function getGroupRootCode(g: DimensionGroup): string {
+  if (g.code && g.code.trim()) return g.code.trim()
+  const id = Number(g.id)
+  if (id === 4) return concept('作者')
+  if (id === 16) return concept('地理位置')
+  if (id === 28) return concept('内容标签')
+  const entry = Object.entries(ROOT_DIMENSION_META).find(([_, meta]) => meta.id === id)
+  if (entry) return entry[0]
+  return `group_${g.id}`
+}
+
+/**
+ * 判断指定维度组是否为泛维度轴（作者、地理位置、内容标签或带有 isPanDimension 标志）
+ */
+function isPanDimensionGroup(g: DimensionGroup): boolean {
+  if (!g) return false
+  const id = Number(g.id)
+  const authorCode = concept('作者')
+  const geoCode = concept('地理位置')
+  const contentCode = concept('内容标签')
+
+  // 1. 三个泛维度轴：作者 (id: 4), 地理位置 (id: 16), 内容标签 (id: 28)
+  if (id === 4 || id === 16 || id === 28) return true
+
+  const code = g.code || ''
+  if (
+    code === authorCode ||
+    code === geoCode ||
+    code === 'hownet.000000010078.n' ||
+    code === CONTENT_TAGS_CODE ||
+    code === contentCode
+  ) {
+    return true
+  }
+
+  const name = g.name || ''
+  if (name === '作者' || name === '地理位置' || name === '内容标签') {
+    return true
+  }
+
+  // 2. 任何 metadata/meta 带有 isPanDimension 标记的组（支持对象或 JSON 字符串）
+  const parseMeta = (meta: any): any => {
+    if (!meta) return null
+    if (typeof meta === 'object') return meta
+    if (typeof meta === 'string') {
+      try {
+        return JSON.parse(meta)
+      } catch {
+        return null
+      }
+    }
+    return null
+  }
+
+  const metadataObj = parseMeta(g.metadata)
+  const metaObj = parseMeta(g.meta)
+
+  if (metadataObj?.flag?.isPanDimension === true || metadataObj?.isPanDimension === true) {
+    return true
+  }
+  if (metaObj?.flag?.isPanDimension === true || metaObj?.isPanDimension === true) {
+    return true
+  }
+  if ((g as any).isPanDimension === true) {
+    return true
+  }
+
+  return false
+}
+
+/**
+ * 判断指定的父级编码/名称是否指向泛维度根自身
+ */
+function isRootDimensionCodeOrName(g: DimensionGroup, viaParentCode?: string | null): boolean {
+  if (!viaParentCode || !viaParentCode.trim()) return true
+  const p = viaParentCode.trim()
+  const rootCode = getGroupRootCode(g)
+  if (p === g.code || p === rootCode || p === g.name) return true
+
+  const id = Number(g.id)
+  const authorCode = concept('作者')
+  if (id === 4 || g.code === authorCode || g.name === '作者') {
+    if (p === authorCode || p === '作者') {
+      return true
+    }
+  }
+
+  const geoCode = concept('地理位置')
+  if (
+    id === 16 ||
+    g.code === geoCode ||
+    g.code === 'hownet.000000010078.n' ||
+    g.name === '地理位置'
+  ) {
+    if (p === geoCode || p === 'hownet.000000010078.n' || p === '地理位置') {
+      return true
+    }
+  }
+
+  const contentCode = concept('内容标签')
+  if (
+    id === 28 ||
+    g.code === CONTENT_TAGS_CODE ||
+    g.code === contentCode ||
+    g.name === '内容标签'
+  ) {
+    if (
+      p === CONTENT_TAGS_CODE ||
+      p === contentCode ||
+      p === '内容标签' ||
+      p === CANONICAL_NAMES.CONTENT_TAGS
+    ) {
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
+ * 确定性本地标签词根/频次聚类兜底算法
+ * 当 Omni 端侧微服务未就绪、离线或单测沙箱环境下，按共享词根与主题词频聚类为层级分类
+ */
+function fallbackClusterTags(
+  tags: DimensionTag[],
+  groupName: string
+): Array<{ folderName: string; tags: DimensionTag[] }> {
+  if (tags.length < 2) {
+    return []
+  }
+
+  const substringCounts = new Map<string, number>()
+  const tagsBySubstring = new Map<string, DimensionTag[]>()
+
+  for (const t of tags) {
+    const val = t.tagValue?.trim()
+    if (!val || val.length < 2) continue
+
+    const seenGramsInTag = new Set<string>()
+    for (let len = 2; len <= Math.min(val.length, 6); len++) {
+      for (let i = 0; i <= val.length - len; i++) {
+        const rawSub = val.substring(i, i + len)
+        if (/^[\d\s\p{P}]+$/u.test(rawSub)) continue
+        const sub = rawSub.replace(/^[\p{P}\s]+|[\p{P}\s]+$/gu, '')
+        if (sub.length < 2) continue
+        if (!seenGramsInTag.has(sub)) {
+          seenGramsInTag.add(sub)
+          substringCounts.set(sub, (substringCounts.get(sub) || 0) + 1)
+          if (!tagsBySubstring.has(sub)) tagsBySubstring.set(sub, [])
+          tagsBySubstring.get(sub)!.push(t)
+        }
+      }
+    }
+  }
+
+  const groupNameTrimmed = groupName?.trim() || ''
+  const candidates: Array<{ sub: string; count: number; score: number }> = []
+
+  for (const [sub, count] of substringCounts.entries()) {
+    if (count >= 2) {
+      if (
+        groupNameTrimmed &&
+        (sub === groupNameTrimmed ||
+          sub.includes(groupNameTrimmed) ||
+          groupNameTrimmed.includes(sub))
+      ) {
+        continue
+      }
+      if (sub === '未归类' || sub === '未命名' || sub === '其他') continue
+      // 加权分数：出现频次 * 长度权重（长词根更具语义特定性）
+      const score = count * (sub.length >= 4 ? 2.0 : sub.length >= 3 ? 1.5 : 1.0)
+      candidates.push({ sub, count, score })
+    }
+  }
+
+  candidates.sort((a, b) => b.score - a.score || b.count - a.count || b.sub.length - a.sub.length)
+
+  const assigned = new Set<DimensionTag>()
+  const clusters: Array<{ folderName: string; tags: DimensionTag[] }> = []
+
+  for (const cand of candidates) {
+    const matchingTags = (tagsBySubstring.get(cand.sub) || []).filter(t => !assigned.has(t))
+    if (matchingTags.length >= 2) {
+      clusters.push({
+        folderName: cand.sub,
+        tags: matchingTags
+      })
+      for (const t of matchingTags) {
+        assigned.add(t)
+      }
+    }
+  }
+
+  return clusters
+}
+
 export const tagTreeQueryDimensionTreeMixin = {
-  buildResponseFromOmniTree(
+  async buildResponseFromOmniTree(
     rootNodes: OmniTaxonomyNode[],
     totalNodes: number,
     opts: GetDimensionGroupsOptions,
     locale: string,
     startTime: number
-  ): DimensionGroupsResponse {
+  ): Promise<DimensionGroupsResponse> {
     const pathCountMap: Record<string, number> = {}
 
     // 1. 递归提取全量物化路径的去重文件计数
@@ -160,6 +367,7 @@ export const tagTreeQueryDimensionTreeMixin = {
             codePath: currentCodePath,
             namePath: currentNamePath,
             viaParentCode: parentCode || root.code,
+            parentCodes: child.parentCodes || (parentCode ? [parentCode] : []),
             isMultiSelect: false,
             order: child.sortOrder,
             meta: { sort_order: child.sortOrder, order: child.sortOrder, fromControlledTree: true }
@@ -233,6 +441,9 @@ export const tagTreeQueryDimensionTreeMixin = {
       return false
     })
 
+    // 泛维度轴标签智能聚类层级化（作者、地理位置、内容标签等泛维度）
+    await this.clusterPanDimensionTags(validGroups, pathCountMap, undefined, opts)
+
     return {
       groups: validGroups,
       pathCountMap,
@@ -287,7 +498,7 @@ export const tagTreeQueryDimensionTreeMixin = {
           }
         )
         if (treeRes?.rootNodes && treeRes.rootNodes.length > 0) {
-          return this.buildResponseFromOmniTree(
+          return await this.buildResponseFromOmniTree(
             treeRes.rootNodes,
             treeRes.totalNodes,
             opts,
@@ -637,9 +848,10 @@ export const tagTreeQueryDimensionTreeMixin = {
         for (const chain of chains) {
           if (!chain.name_path && chain.code_path) {
             const segments = chain.code_path.split('/').filter(Boolean)
-            chain.name_path = segments.length > 0
-              ? '/' + segments.map(segment => aliasResolver(segment)).join('/')
-              : ''
+            chain.name_path =
+              segments.length > 0
+                ? '/' + segments.map(segment => aliasResolver(segment)).join('/')
+                : ''
           }
         }
       }
@@ -651,6 +863,7 @@ export const tagTreeQueryDimensionTreeMixin = {
           code: string
           name: string
           meta: any
+          parentCodes?: string[]
           count: number
         }>
       >()
@@ -686,6 +899,7 @@ export const tagTreeQueryDimensionTreeMixin = {
             code: t.code,
             name: resolvedName,
             meta: parsedMeta,
+            parentCodes: effectiveParents,
             count
           })
         }
@@ -821,6 +1035,7 @@ export const tagTreeQueryDimensionTreeMixin = {
             codePath: childCodePath,
             namePath: childNamePath,
             viaParentCode: childParentCodes[0] || dimCode,
+            parentCodes: childParentCodes,
             isMultiSelect: childMeta?.isMultiSelect === true
           })
         }
@@ -862,6 +1077,7 @@ export const tagTreeQueryDimensionTreeMixin = {
               codePath: subCodePath,
               namePath: subNamePath,
               viaParentCode: parentCodeKey,
+              parentCodes: (sub as any).parentCodes || (parentCodeKey ? [parentCodeKey] : []),
               isMultiSelect: sub.meta?.isMultiSelect === true
             })
             collectDynInDim(sub.code, curLevel + 1)
@@ -1043,6 +1259,7 @@ export const tagTreeQueryDimensionTreeMixin = {
                     codePath: currentCodePath,
                     namePath: currentNamePath,
                     viaParentCode: parentCode || root.code,
+                    parentCodes: child.parentCodes || (parentCode ? [parentCode] : []),
                     isMultiSelect: false,
                     order: child.sortOrder,
                     // fromControlledTree：Omni 受控树节点来源标记（铁闸门禁跨域撞名豁免的判定锚，
@@ -1099,6 +1316,8 @@ export const tagTreeQueryDimensionTreeMixin = {
                       codePath: dynCodePath,
                       namePath: dynNamePath,
                       viaParentCode: parentCodeKey,
+                      parentCodes:
+                        (dyn as any).parentCodes || (parentCodeKey ? [parentCodeKey] : []),
                       isMultiSelect: dyn.meta?.isMultiSelect === true,
                       order: 9999,
                       meta: dyn.meta
@@ -2142,17 +2361,19 @@ export const tagTreeQueryDimensionTreeMixin = {
                 }
               }
               const resolvedTagName = aliasResolver(tagCode, trimmed)
+              const groupRootCode = getGroupRootCode(targetGroup)
               targetGroup.tags.push({
                 dimensionId: targetGroup.id,
-                dimensionCode: targetGroup.code || '',
+                dimensionCode: groupRootCode,
                 dimensionName: targetGroup.name,
                 tagValue: resolvedTagName,
                 fileCount: 0,
                 level: 1,
                 code: tagCode,
-                codePath: `/${targetGroup.code || `dim.${targetGroup.id}`}/${tagCode}`,
+                codePath: `/${groupRootCode}/${tagCode}`,
                 namePath: `/${targetGroup.name}/${resolvedTagName}`,
-                viaParentCode: targetGroup.code || '',
+                viaParentCode: groupRootCode,
+                parentCodes: [groupRootCode],
                 isMultiSelect: targetGroup.isMultiSelect ?? false,
                 order: tagIdx + 1,
                 meta: { order: tagIdx + 1, sort_order: tagIdx + 1 }
@@ -2165,6 +2386,9 @@ export const tagTreeQueryDimensionTreeMixin = {
         }
       }
 
+      // 泛维度轴标签智能聚类层级化（作者、地理位置、内容标签等泛维度）
+      await this.clusterPanDimensionTags(finalGroups, pathCountMap, tagFilesMap, opts)
+
       // 同步将所有维度组（含受控树、动态扩展标签与内容标签组）内的多级父子关系注入邻接图，
       // 确保点击任意父标签时右侧 FileList 均能递归穿透展开
       if (this._omniChildrenMap) {
@@ -2175,18 +2399,47 @@ export const tagTreeQueryDimensionTreeMixin = {
           }
         }
         for (const g of finalGroups) {
+          const rootGroupCode = getGroupRootCode(g)
           for (const t of g.tags || []) {
-            if (t.viaParentCode && t.code && t.viaParentCode !== t.code) {
-              const pCode = t.viaParentCode
-              const pName = codeToName.get(pCode)
-              const parentKeys = [pCode, pName].filter(Boolean) as string[]
-              for (const pk of parentKeys) {
-                if (!this._omniChildrenMap.has(pk)) {
-                  this._omniChildrenMap.set(pk, new Set())
+            if (!t.code) continue
+            const parentKeysSet = new Set<string>()
+
+            if (
+              t.viaParentCode &&
+              t.viaParentCode !== t.code &&
+              t.viaParentCode !== rootGroupCode
+            ) {
+              parentKeysSet.add(t.viaParentCode)
+              const pName = codeToName.get(t.viaParentCode)
+              if (pName) parentKeysSet.add(pName)
+            }
+
+            if (Array.isArray(t.parentCodes)) {
+              for (const pc of t.parentCodes) {
+                if (pc && pc !== t.code && pc !== rootGroupCode) {
+                  parentKeysSet.add(pc)
+                  const pName = codeToName.get(pc)
+                  if (pName) parentKeysSet.add(pName)
                 }
-                this._omniChildrenMap.get(pk)!.add(t.code)
-                if (t.tagValue) this._omniChildrenMap.get(pk)!.add(t.tagValue)
               }
+            }
+
+            const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+            if (segs.length > 2) {
+              const pSeg = segs[segs.length - 2]
+              if (pSeg && pSeg !== t.code && pSeg !== rootGroupCode) {
+                parentKeysSet.add(pSeg)
+                const pName = codeToName.get(pSeg)
+                if (pName) parentKeysSet.add(pName)
+              }
+            }
+
+            for (const pk of parentKeysSet) {
+              if (!this._omniChildrenMap.has(pk)) {
+                this._omniChildrenMap.set(pk, new Set())
+              }
+              this._omniChildrenMap.get(pk)!.add(t.code)
+              if (t.tagValue) this._omniChildrenMap.get(pk)!.add(t.tagValue)
             }
           }
         }
@@ -2348,5 +2601,308 @@ export const tagTreeQueryDimensionTreeMixin = {
   resolveAuthorityDimensionsByCode(): Map<string, { id?: number; flag?: DimensionFlags }> {
     const { byCode } = this.resolveAuthorityDimensions()
     return byCode
+  },
+
+  /**
+   * 泛维度轴标签智能聚类层级化（作者、地理位置、内容标签等泛维度）
+   *
+   * 契约规范：
+   * 1. 泛维度判定：作者 (id=4, concept('作者') 即 hownet.000000043396.n)、
+   *    地理位置 (id=16, concept('地理位置') 即 builtin.geographical_location / hownet.000000010078.n)、
+   *    内容标签 (id=28, builtin.content_tags) 或 metadata.flag.isPanDimension: true；
+   * 2. 标签树是通过 code_path 建立的，源头来自于 parentCodes：
+   *    已经依靠 code_path / parentCodes 层级化的标签（作为子标签存在父级、作为父标签拥有子标签、或 level > 1）
+   *    优先保持原有层级 100% 不变展示；
+   * 3. 其余无法层级化的平铺标签参与聚类（复用 Omni 端侧 HAC 聚类引擎，带确定性词根/词频兜底）；
+   * 4. 聚类簇构建为层级节点（clusterCode: `${rootGroupCode}.cluster_xxx`，level: 1，viaParentCode: group.code），
+   *    簇内标签降为 level: 2 并绑定 viaParentCode: clusterCode；
+   * 5. 同步维护 pathCountMap 与 _omniChildrenMap，确保前端树形展开与文件穿透筛选正常工作。
+   */
+  async clusterPanDimensionTags(
+    groups: DimensionGroup[],
+    pathCountMap?: Record<string, number>,
+    tagFilesMap?: Map<string, Set<string>>,
+    opts?: GetDimensionGroupsOptions
+  ): Promise<void> {
+    for (const g of groups) {
+      if (!isPanDimensionGroup(g)) continue
+      const tags = g.tags || []
+      if (tags.length < 2) continue
+
+      // 1. 识别并分离「已通过 code_path / parentCodes 层级化」的标签
+      // 契约：标签树是通过 code_path 建立的，源头来自于 parentCodes
+      const parentCodesInGroup = new Set<string>()
+      const parentCodesByCodePath = new Set<string>()
+
+      for (const t of tags) {
+        if (t.viaParentCode && !isRootDimensionCodeOrName(g, t.viaParentCode)) {
+          parentCodesInGroup.add(t.viaParentCode)
+        }
+        if (Array.isArray(t.parentCodes)) {
+          for (const pc of t.parentCodes) {
+            if (pc && !isRootDimensionCodeOrName(g, pc)) {
+              parentCodesInGroup.add(pc)
+            }
+          }
+        }
+
+        const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+        if (segs.length > 2) {
+          for (let i = 1; i < segs.length - 1; i++) {
+            parentCodesByCodePath.add(segs[i])
+          }
+        }
+        if (t.codePaths && t.codePaths.length > 0) {
+          for (const cp of t.codePaths) {
+            const cpSegs = cp ? cp.split('/').filter(Boolean) : []
+            if (cpSegs.length > 2) {
+              for (let i = 1; i < cpSegs.length - 1; i++) {
+                parentCodesByCodePath.add(cpSegs[i])
+              }
+            }
+          }
+        }
+      }
+
+      const hierarchizedTags: DimensionTag[] = []
+      const unhierarchizedTags: DimensionTag[] = []
+
+      for (const t of tags) {
+        const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+        const hasParentByVia = Boolean(
+          t.viaParentCode && !isRootDimensionCodeOrName(g, t.viaParentCode)
+        )
+        const hasParentByParentCodes = Boolean(
+          Array.isArray(t.parentCodes) &&
+          t.parentCodes.some(pc => pc && !isRootDimensionCodeOrName(g, pc))
+        )
+        const isDirectUnderRoot = !hasParentByVia && !hasParentByParentCodes && segs.length <= 2
+
+        const isParentToOthers =
+          Boolean(
+            t.code && (parentCodesInGroup.has(t.code) || parentCodesByCodePath.has(t.code))
+          ) || Boolean(t.tagValue && parentCodesInGroup.has(t.tagValue))
+
+        const isDeep = (t.level ?? 1) > 1 || segs.length > 2
+
+        if (!isDirectUnderRoot || isParentToOthers || isDeep) {
+          hierarchizedTags.push(t)
+        } else {
+          unhierarchizedTags.push(t)
+        }
+      }
+
+      // 若未层级化的平铺标签不足 2 个，无法聚类，保持原状
+      if (unhierarchizedTags.length < 2) continue
+
+      // 2. 构造聚类文档并执行聚类（优先 Omni HAC，降级走确定性词根聚类）
+      const tagByFingerprint = new Map<string, DimensionTag>()
+      const clusterDocs: OmniClusterDocument[] = unhierarchizedTags.map((tag, idx) => {
+        const fp = tag.code || `${g.code || g.id}__${tag.tagValue || idx}`
+        tagByFingerprint.set(fp, tag)
+        return {
+          fingerprint: fp,
+          embedding: [],
+          keywords: [tag.tagValue],
+          embeddingText: tag.tagValue,
+          canonicalText: tag.tagValue,
+          preferEmbeddingText: true
+        }
+      })
+
+      let clusters: Array<{ folderName: string; tags: DimensionTag[] }> = []
+
+      // A 路：Omni 端侧 HAC 聚类引擎
+      if (typeof omniService?.clusterDocuments === 'function') {
+        try {
+          const res = await omniService.clusterDocuments({
+            documents: clusterDocs,
+            distanceThreshold: 0.45,
+            maxLeafSize: 30,
+            maxDepth: 2,
+            maxRootDirectories: 10,
+            clusteringMode: 'balanced'
+          })
+          if (res && res.success && res.result?.clusters && res.result.clusters.length > 0) {
+            for (const c of res.result.clusters) {
+              const matchedMemberTags: DimensionTag[] = []
+              for (const fp of c.fingerprints || []) {
+                const member = tagByFingerprint.get(fp)
+                if (member && !matchedMemberTags.includes(member)) {
+                  matchedMemberTags.push(member)
+                }
+              }
+              if (matchedMemberTags.length >= 2) {
+                clusters.push({
+                  folderName: c.folderName || c.path?.[0] || '推荐分类',
+                  tags: matchedMemberTags
+                })
+              }
+            }
+          }
+        } catch (err) {
+          logger.debug(
+            LogCategory.VIRTUAL_DIRECTORY,
+            `[TagTreeQuery] omniService.clusterDocuments 异常，将使用确定性本地聚类:`,
+            err
+          )
+        }
+      }
+
+      // B 路：确定性本地词根/频次聚类兜底
+      if (clusters.length === 0) {
+        clusters = fallbackClusterTags(unhierarchizedTags, g.name || g.code || '')
+      }
+
+      // 若聚类未产出有效簇（簇内成员 >= 2），保持平铺
+      if (clusters.length === 0) continue
+
+      // 3. 构建聚类父节点并重塑标签层级
+      const assignedMemberTags = new Set<DimensionTag>()
+      const clusterParentTags: DimensionTag[] = []
+      const clusteredMemberTags: DimensionTag[] = []
+      const seenClusterNames = new Set<string>()
+
+      for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
+        const cluster = clusters[cIdx]
+        const memberTags = cluster.tags.filter(t => !assignedMemberTags.has(t))
+        if (memberTags.length < 2) continue
+
+        for (const m of memberTags) assignedMemberTags.add(m)
+
+        let clusterName = cluster.folderName?.trim() || `分类 ${cIdx + 1}`
+        if (clusterName === g.name?.trim()) {
+          clusterName = `${clusterName}分类`
+        }
+        if (tags.some(t => t.tagValue === clusterName)) {
+          clusterName = `${clusterName}分类`
+        }
+        if (seenClusterNames.has(clusterName)) {
+          clusterName = `${clusterName} (${cIdx + 1})`
+        }
+        seenClusterNames.add(clusterName)
+
+        const rootGroupCode = getGroupRootCode(g)
+        const clusterCode = `${rootGroupCode}.cluster_${DeterministicCodeGenerator.generate(clusterName, 'zh-CN')}`
+        const clusterCodePath = `/${rootGroupCode}/${clusterCode}`
+        const clusterNamePath = `/${g.name}/${clusterName}`
+
+        let clusterFileCount = 0
+        if (tagFilesMap && tagFilesMap.size > 0) {
+          const fileSet = new Set<string>()
+          for (const m of memberTags) {
+            if (m.code && tagFilesMap.has(m.code)) {
+              for (const fp of tagFilesMap.get(m.code)!) {
+                fileSet.add(fp)
+              }
+            }
+          }
+          clusterFileCount =
+            fileSet.size > 0
+              ? fileSet.size
+              : memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+        } else {
+          clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+        }
+
+        const memberCodePaths: string[] = []
+        for (const m of memberTags) {
+          if (m.codePaths && m.codePaths.length > 0) {
+            memberCodePaths.push(...m.codePaths.filter(p => p && !p.includes('.cluster_')))
+          } else if (m.codePath && !m.codePath.includes('.cluster_')) {
+            memberCodePaths.push(m.codePath)
+          }
+        }
+        const validMemberCodePaths = Array.from(new Set(memberCodePaths))
+
+        const clusterParentTag: DimensionTag = {
+          dimensionId: g.id,
+          dimensionCode: rootGroupCode,
+          dimensionName: g.name,
+          tagValue: clusterName,
+          fileCount: clusterFileCount,
+          level: 1,
+          code: clusterCode,
+          codePath: clusterCodePath,
+          codePaths: validMemberCodePaths.length > 0 ? validMemberCodePaths : undefined,
+          namePath: clusterNamePath,
+          viaParentCode: rootGroupCode,
+          parentCodes: [rootGroupCode],
+          isMultiSelect: g.isMultiSelect ?? false,
+          order: 9999,
+          meta: {
+            isClusterNode: true,
+            clusterMemberCount: memberTags.length,
+            fromControlledTree: true,
+            order: 9999,
+            sort_order: 9999
+          }
+        }
+        clusterParentTags.push(clusterParentTag)
+
+        if (pathCountMap) {
+          const normClusterPath = normalizeCodePath(clusterCodePath)
+          if (normClusterPath) {
+            pathCountMap[normClusterPath] = clusterFileCount
+          }
+        }
+
+        for (const m of memberTags) {
+          const originalCodePath = m.codePath
+          m.viaParentCode = clusterCode
+          m.parentCodes = [clusterCode]
+          m.level = 2
+          const memberCodeSeg = m.code || m.tagValue
+          const memberClusterCodePath = `${clusterCodePath}/${memberCodeSeg}`
+          const memberClusterNamePath = `${clusterNamePath}/${m.tagValue}`
+
+          // 保留原有物化路径在 codePaths 中供底层 SQL 检索过滤，主 codePath 更新为当前树形分支路径
+          if (!m.codePaths || m.codePaths.length === 0) {
+            m.codePaths =
+              originalCodePath && !originalCodePath.includes('.cluster_') ? [originalCodePath] : []
+          } else {
+            m.codePaths = m.codePaths.filter(p => p && !p.includes('.cluster_'))
+          }
+          m.codePath = memberClusterCodePath
+          m.namePath = memberClusterNamePath
+          if (pathCountMap) {
+            pathCountMap[normalizeCodePath(memberClusterCodePath)] = m.fileCount || 0
+            if (originalCodePath) {
+              const normOrig = normalizeCodePath(originalCodePath)
+              if (normOrig && pathCountMap[normOrig] === undefined) {
+                pathCountMap[normOrig] = m.fileCount || 0
+              }
+            }
+          }
+          clusteredMemberTags.push(m)
+        }
+      }
+
+      // 未被聚类的独立标签仍平铺在第一层
+      const unassignedFlatTags = unhierarchizedTags.filter(t => !assignedMemberTags.has(t))
+
+      // 更新维度组标签列表：已经依靠 code_path / parentCodes 层级化的标签优先展示
+      g.tags = [
+        ...hierarchizedTags,
+        ...clusterParentTags,
+        ...clusteredMemberTags,
+        ...unassignedFlatTags
+      ]
+
+      // 4. 同步更新 _omniChildrenMap 邻接边
+      if ((this as any)._omniChildrenMap) {
+        for (const clusterParent of clusterParentTags) {
+          const clusterCode = clusterParent.code!
+          if (!(this as any)._omniChildrenMap.has(clusterCode)) {
+            ;(this as any)._omniChildrenMap.set(clusterCode, new Set())
+          }
+          const members = clusteredMemberTags.filter(m => m.viaParentCode === clusterCode)
+          for (const m of members) {
+            if (m.code) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.code)
+            if (m.tagValue) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.tagValue)
+          }
+        }
+      }
+    }
   }
 } satisfies ThisType<TagTreeQuery> & TagTreeQueryDimensionTree
