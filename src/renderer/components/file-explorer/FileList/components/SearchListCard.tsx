@@ -104,19 +104,12 @@ export const VideoChunkFrame: React.FC<{
         ? Math.round(Math.min(1, Math.max(0, chunk.score)) * 100)
         : null
 
-  // 是否走了 ffmpeg 抽帧兜底（即浏览器无法原生解码该格式）
-  const isFallbackFrame = hasError && Boolean(frameDataUrl)
-
-  // 悬浮到单帧上显示精准起止时间与相似度
+  // 悬浮到单帧上显示精准起止时间与相似度（所有支持的视频格式均已接入应用内预览/流式播放，统一交互）
   const frameTooltip = `${formatVideoTimestamp(chunk.startSec)} - ${formatVideoTimestamp(chunk.endSec)}${
     chunkPercent !== null ? ` (${t('相似度')}: ${chunkPercent}%)` : ''
-  }\n${
-    isFallbackFrame
-      ? t('单击显示静态缩图并在外部播放器跳轴')
-      : t('单击跳轴预览，双击外部播放器打开')
-  }`
+  }\n${t('单击跳轴预览，双击外部播放器打开')}`
 
-  /** 调用外部播放器精准跳到切片时间点（原生/兜底两路径共用） */
+  /** 调用外部播放器精准跳到切片时间点（双击时触发） */
   const launchExternalAtChunk = async () => {
     try {
       const rawCat = category
@@ -139,15 +132,10 @@ export const VideoChunkFrame: React.FC<{
     e.stopPropagation()
     onItemSelect?.(e)
     onPreviewSeek(chunk.seekSec ?? chunk.startSec, chunk.startSec, chunk.endSec)
-    // 非原生格式：<video> 解码失败走 ffmpeg 静态缩图，单击时同步在外部播放器跳轴播放。
-    // e.detail >= 2 是双击的第二次 click，跳过以避免一次双击拉起两个播放器实例。
-    if (isFallbackFrame && e.detail < 2) void launchExternalAtChunk()
   }
 
   const handleDoubleClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    // 兜底路径单击已触发跳轴，双击不再重复拉起外部播放器
-    if (isFallbackFrame) return
     await launchExternalAtChunk()
   }
 

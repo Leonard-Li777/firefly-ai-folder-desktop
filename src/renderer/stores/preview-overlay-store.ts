@@ -24,6 +24,12 @@ interface PreviewOverlayState {
   extension: string
   currentTime?: number
   highlightRange?: [number, number]
+  /** 全局视频静音状态（持久化于 localStorage，仅限视频，TTS/音乐不受影响） */
+  isVideoMuted: boolean
+  setVideoMuted: (muted: boolean) => void
+  /** 全局视频音量大小 0.0~1.0（持久化于 localStorage，仅限视频，TTS/音乐不受影响） */
+  videoVolume: number
+  setVideoVolume: (volume: number) => void
   /** 兼容测试/单页的全局预览模式 */
   previewMode: PagePreviewMode
   /** 当前预览所属的页面标识 */
@@ -43,9 +49,7 @@ interface PreviewOverlayState {
   /** 获取指定页面的预览模式 */
   getPagePreviewMode: (pageId: string) => PagePreviewMode
   /** 获取指定页面独立保存的预览文件信息（不受 activePageId 影响） */
-  getPagePreviewFile: (
-    pageId: string
-  ) => {
+  getPagePreviewFile: (pageId: string) => {
     filePath: string
     fileName: string
     extension: string
@@ -63,6 +67,70 @@ export function setCurrentVideoPlaybackTime(time: number | undefined): void {
 
 export function getCurrentVideoPlaybackTime(): number | undefined {
   return currentVideoPlaybackTime
+}
+
+export const VIDEO_MUTED_STORAGE_KEY = 'firefly_video_muted_state'
+
+export function loadVideoMutedState(): boolean {
+  try {
+    const val = localStorage.getItem(VIDEO_MUTED_STORAGE_KEY)
+    if (val !== null) {
+      return val === 'true'
+    }
+  } catch (err) {
+    console.error('加载视频静音状态失败:', err)
+  }
+  return false
+}
+
+export function saveVideoMutedState(muted: boolean): void {
+  try {
+    localStorage.setItem(VIDEO_MUTED_STORAGE_KEY, String(muted))
+  } catch (err) {
+    console.error('保存视频静音状态失败:', err)
+  }
+}
+
+export function getVideoMuted(): boolean {
+  return usePreviewOverlayStore.getState().isVideoMuted
+}
+
+export function setVideoMuted(muted: boolean): void {
+  usePreviewOverlayStore.getState().setVideoMuted(muted)
+}
+
+export const VIDEO_VOLUME_STORAGE_KEY = 'firefly_video_volume_state'
+
+export function loadVideoVolumeState(): number {
+  try {
+    const val = localStorage.getItem(VIDEO_VOLUME_STORAGE_KEY)
+    if (val !== null) {
+      const num = Number(val)
+      if (Number.isFinite(num) && num >= 0 && num <= 1) {
+        return num
+      }
+    }
+  } catch (err) {
+    console.error('加载视频音量状态失败:', err)
+  }
+  return 1.0
+}
+
+export function saveVideoVolumeState(volume: number): void {
+  try {
+    const safe = Math.min(1, Math.max(0, volume))
+    localStorage.setItem(VIDEO_VOLUME_STORAGE_KEY, String(safe))
+  } catch (err) {
+    console.error('保存视频音量状态失败:', err)
+  }
+}
+
+export function getVideoVolume(): number {
+  return usePreviewOverlayStore.getState().videoVolume
+}
+
+export function setVideoVolume(volume: number): void {
+  usePreviewOverlayStore.getState().setVideoVolume(volume)
 }
 
 function getStorageKey(pageId: string): string {
@@ -108,6 +176,17 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
   previewMode: 'split',
   activePageId: '',
   pageStates: {},
+  isVideoMuted: loadVideoMutedState(),
+  setVideoMuted: (muted: boolean) => {
+    saveVideoMutedState(muted)
+    set({ isVideoMuted: muted })
+  },
+  videoVolume: loadVideoVolumeState(),
+  setVideoVolume: (volume: number) => {
+    const safe = Math.min(1, Math.max(0, volume))
+    saveVideoVolumeState(safe)
+    set({ videoVolume: safe })
+  },
 
   getPagePreviewMode: (pageId: string) => {
     const state = get()

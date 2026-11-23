@@ -33,7 +33,7 @@ export const SupportedFormats: React.FC<SupportedFormatsProps> = ({
           },
           {
             name: t('视频'),
-            formats: ['mp4', 'webm']
+            formats: ['mp4', 'webm', 'm3u8', 'avi', 'mkv', 'mov', 'wmv', 'flv']
           },
           {
             name: t('纯文本'),

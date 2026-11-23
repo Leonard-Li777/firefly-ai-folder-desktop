@@ -88,11 +88,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   /** 进入降级瞬间从当前 <video> 快照的播放位置，绑定文件+切点键，避免跨文件串位与切点锁死 */
   const degradeSeekSnapshotRef = useRef<DegradeSeekSnapshot | null>(null)
   /** 降级抽帧时间点：仅在降级态生效，由共享 hook 统一发起请求 */
-  const fallbackSeekSec = pickFallbackSeekSec(
-    degradeSeekSnapshotRef.current,
-    filePath,
-    currentTime
-  )
+  const fallbackSeekSec = pickFallbackSeekSec(degradeSeekSnapshotRef.current, filePath, currentTime)
   /** 共享抽帧层：键归一、去重、取消与乱序防护统一收口（工单 03 FrameBroker） */
   const { frameUrl: staticFrameUrl } = useVideoFrame(filePath, {
     seekSec: fallbackSeekSec,
@@ -108,7 +104,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const logicalTimeRef = useRef(0)
   const [streamLogicalTime, setStreamLogicalTime] = useState(0)
   const [streamPlaying, setStreamPlaying] = useState(false)
-  const [streamMuted, setStreamMuted] = useState(false)
+  const isVideoMuted = usePreviewOverlayStore(s => s.isVideoMuted)
+  const setVideoMuted = usePreviewOverlayStore(s => s.setVideoMuted)
   const [streamVolume, setStreamVolume] = useState(1)
   const lastStreamActivityRef = useRef(Date.now())
   const pendingSeekRef = useRef(false)
@@ -119,6 +116,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const seekOpGenRef = useRef(0)
   const watchdogGenRef = useRef(0)
   const nativeErrorHandledRef = useRef(false)
+  /** 流式播放中触发 Seek 时记录播放意图，新流就绪后自动恢复播放（换 src 会被 HTML5 <video> 重置为 paused） */
+  const resumePlayAfterSeekRef = useRef(false)
 
   // 切换文件路径时重置视频时长、流式会话与抽帧降级状态
   useEffect(() => {
@@ -137,6 +136,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     pendingSeekRef.current = false
     streamLoadedRef.current = false
     setStreamLoaded(false)
+    resumePlayAfterSeekRef.current = false
     if (seekDebounceRef.current) clearTimeout(seekDebounceRef.current)
     nativeErrorHandledRef.current = false
     setVideoDuration(0)
@@ -144,6 +144,13 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setStaticFrameBroken(false)
     degradeSeekSnapshotRef.current = null
   }, [filePath])
+
+  // 保持当前视频静音状态与全局视频静音偏好一致（仅限视频，TTS/音乐不限，办公场景静音防打扰）
+  useEffect(() => {
+    if (category === FileCategory.VIDEO && videoRef.current) {
+      videoRef.current.muted = isVideoMuted
+    }
+  }, [isVideoMuted, category])
 
   const markStreamActivity = () => {
     lastStreamActivityRef.current = Date.now()
@@ -166,6 +173,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     pendingSeekRef.current = false
     streamLoadedRef.current = false
     setStreamLoaded(false)
+    resumePlayAfterSeekRef.current = false
     // 原生 error 已写入的快照必须保留；只有 Stream 模式才用逻辑时间覆盖
     if (hadStreamSession && logicalTimeRef.current > 0) {
       degradeSeekSnapshotRef.current = {
@@ -203,6 +211,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       pendingSeekRef.current = true
       streamLoadedRef.current = false
       setStreamLoaded(false)
+      // 切换视频/首播启动时自动起播
+      resumePlayAfterSeekRef.current = true
       streamSessionRef.current = session
       setVideoDuration(session.durationSec ?? 0)
       setStreamSession(session)
@@ -216,6 +226,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   /** Seek 唯一入口：200ms 防抖，代际守卫 + 三错误码细分收敛 */
   const handleStreamSeek = (targetSec: number) => {
     if (!streamSessionRef.current) return
+    // 记录 Seek 发起前的播放意图：连续快速拖动时沿用已置位的 resumePlayAfterSeekRef，避免被换 src 后的瞬态 paused 冲掉
+    const wasPlaying =
+      Boolean(videoRef.current && !videoRef.current.paused) ||
+      streamPlaying ||
+      resumePlayAfterSeekRef.current
+    if (wasPlaying) {
+      resumePlayAfterSeekRef.current = true
+    }
+    setStreamLogicalTime(targetSec)
     pendingSeekRef.current = true
     streamLoadedRef.current = false
     setStreamLoaded(false)
@@ -324,7 +343,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       } catch (err) {
         rvfcActive = false
         rvfcHandle = null
-        logger.warn(LogCategory.RENDERER, `[视频预览] rVFC 注册失败，回退 currentTime 停滞检测: ${String(err)}`)
+        logger.warn(
+          LogCategory.RENDERER,
+          `[视频预览] rVFC 注册失败，回退 currentTime 停滞检测: ${String(err)}`
+        )
       }
     }
     if (rvfcActive) scheduleNextFrameCallback()
@@ -409,9 +431,28 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     }
   }, [streamSession?.streamId, streamSession?.streamUrl, streamLoaded])
 
+  /** 原生视频自动播放防御性尝试（静默忽略策略阻断与快切打断） */
+  const tryPlayNative = (v: HTMLVideoElement) => {
+    if (!v.paused || v.ended) return
+    try {
+      const playPromise = v.play()
+      if (playPromise && typeof playPromise.then === 'function') {
+        void playPromise.catch(err => {
+          // 自动播放被策略阻止（NotAllowedError）或切换/更新被打断（AbortError）属预期行为
+          if (err?.name === 'AbortError' || err?.name === 'NotAllowedError') return
+          logger.warn(LogCategory.RENDERER, '[视频预览] 原生自动播放受阻:', err)
+        })
+      }
+    } catch {
+      // 兼容无原生多媒体实现的测试或特殊环境
+    }
+  }
+
   const jumpToTime = (targetTime: number) => {
     const session = streamSessionRef.current
     if (session) {
+      // 流式视频跳转切片：无论此前是否暂停，明确标记恢复播放
+      resumePlayAfterSeekRef.current = true
       const dur = session.durationSec ?? Number.POSITIVE_INFINITY
       handleStreamSeek(clampVideoTime(targetTime, dur))
       return
@@ -420,8 +461,33 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     const duration = videoRef.current.duration
     const safeTime = clampVideoTime(targetTime, duration)
     videoRef.current.currentTime = safeTime
-    // 保持系统原声输出
-    videoRef.current.muted = false
+    // 对齐全局视频静音偏好（仅限视频，办公防打扰）
+    videoRef.current.muted = isVideoMuted
+    tryPlayNative(videoRef.current)
+  }
+
+  /** Seek 切换新流就绪后自动恢复播放（仅消费一次，避免与 loadeddata/canplay 双触发） */
+  const tryResumeStreamPlay = (v: HTMLVideoElement) => {
+    if (!resumePlayAfterSeekRef.current) return
+    resumePlayAfterSeekRef.current = false
+    try {
+      const playPromise = v.play()
+      if (playPromise && typeof playPromise.then === 'function') {
+        void playPromise.then(
+          () => setStreamPlaying(true),
+          err => {
+            // 连续快拖切流触发的 AbortError 属正常打断，绝不误降级 Level 3
+            if ((err as { name?: string })?.name === 'AbortError') return
+            setStreamPlaying(false)
+            logger.warn(LogCategory.RENDERER, '[视频预览] Seek 后自动恢复播放失败:', err)
+          }
+        )
+      } else {
+        setStreamPlaying(true)
+      }
+    } catch {
+      // 兼容无原生多媒体实现的测试或特殊环境
+    }
   }
 
   const handleCanPlay = (e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -429,6 +495,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     markStreamActivity()
     if (streamSessionRef.current) {
       pendingSeekRef.current = false
+      tryResumeStreamPlay(v)
       return
     }
     if (typeof currentTime === 'number' && Number.isFinite(currentTime) && currentTime > 0) {
@@ -437,6 +504,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         v.currentTime = clampVideoTime(currentTime, duration)
       }
     }
+    // 对齐全局视频静音偏好
+    v.muted = isVideoMuted
+    tryPlayNative(v)
   }
 
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
@@ -459,19 +529,22 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     markStreamActivity()
     if (streamSessionRef.current) {
       pendingSeekRef.current = false
-      setStreamPlaying(!v.paused)
-      v.muted = streamMuted
+      if (!resumePlayAfterSeekRef.current) {
+        setStreamPlaying(!v.paused)
+      }
+      v.muted = isVideoMuted
       v.volume = streamVolume
       return
     }
-    // 保持系统原声输出
-    v.muted = false
+    // 对齐全局视频静音偏好
+    v.muted = isVideoMuted
     const validDuration = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0
     setVideoDuration(validDuration)
     if (typeof currentTime === 'number' && Number.isFinite(currentTime)) {
       const safeTime = clampVideoTime(currentTime, validDuration)
       v.currentTime = safeTime
     }
+    tryPlayNative(v)
   }
 
   // 监听外部跳转时间戳变化（如从搜索列表切换命中切片）
@@ -604,24 +677,28 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         () => fallbackToStatic()
       )
     } else {
+      resumePlayAfterSeekRef.current = false
       video.pause()
       setStreamPlaying(false)
     }
   }
 
   const toggleStreamMute = () => {
-    const next = !streamMuted
-    setStreamMuted(next)
+    const next = !isVideoMuted
+    setVideoMuted(next)
     if (videoRef.current) videoRef.current.muted = next
   }
 
   const handleStreamVolumeChange = (value: number) => {
     const safe = Math.min(1, Math.max(0, value))
     setStreamVolume(safe)
-    setStreamMuted(safe === 0)
+    const nextMuted = safe === 0
+    if (nextMuted !== isVideoMuted) {
+      setVideoMuted(nextMuted)
+    }
     if (videoRef.current) {
       videoRef.current.volume = safe
-      videoRef.current.muted = safe === 0
+      videoRef.current.muted = nextMuted
     }
   }
 
@@ -817,15 +894,25 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     ref={videoRef}
                     src={streamSession.streamUrl}
                     controls={false}
+                    autoPlay
+                    muted={isVideoMuted}
                     onLoadedMetadata={handleVideoLoadedMetadata}
                     onCanPlay={handleCanPlay}
                     onTimeUpdate={handleTimeUpdate}
+                    onVolumeChange={e => {
+                      const v = e.currentTarget
+                      const muted = v.muted || v.volume === 0
+                      if (muted !== isVideoMuted) {
+                        setVideoMuted(muted)
+                      }
+                    }}
                     onProgress={markStreamActivity}
-                    onLoadedData={() => {
+                    onLoadedData={e => {
                       markStreamActivity()
                       pendingSeekRef.current = false
                       streamLoadedRef.current = true
                       setStreamLoaded(true)
+                      tryResumeStreamPlay(e.currentTarget)
                     }}
                     onPlay={() => setStreamPlaying(true)}
                     onPause={() => setStreamPlaying(false)}
@@ -839,7 +926,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     currentSec={streamLogicalTime}
                     durationSec={streamSession.durationSec}
                     playing={streamPlaying}
-                    muted={streamMuted}
+                    muted={isVideoMuted}
                     volume={streamVolume}
                     highlightRange={highlightRange}
                     onTogglePlay={toggleStreamPlay}
@@ -855,9 +942,18 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   ref={videoRef}
                   src={fileUrl}
                   controls
+                  autoPlay
+                  muted={isVideoMuted}
                   onLoadedMetadata={handleVideoLoadedMetadata}
                   onCanPlay={handleCanPlay}
                   onTimeUpdate={handleTimeUpdate}
+                  onVolumeChange={e => {
+                    const v = e.currentTarget
+                    const muted = v.muted || v.volume === 0
+                    if (muted !== isVideoMuted) {
+                      setVideoMuted(muted)
+                    }
+                  }}
                   onError={e => {
                     // 只读当前 <video> 实例的时间点：切文件后该实例时间会重置，
                     // 不会读到模块级全局单例里上一个文件残留的播放进度（V-01 根因）。
