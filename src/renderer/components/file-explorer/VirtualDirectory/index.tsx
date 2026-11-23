@@ -177,6 +177,7 @@ export const VirtualDirectory: React.FC = () => {
           onSearch={kw => {
             setVirtualDirectoryKeyword(kw)
           }}
+          layoutPageId={PAGE_IDS.VIRTUAL_DIRECTORY}
         />
       </div>
 
@@ -420,8 +421,7 @@ export const VirtualDirectory: React.FC = () => {
                                 }}
                                 showOrganizeButton={false}
                                 unionMode={unionMode}
-                                showDetailsPanel={!!currentWorkspaceDirectory}
-                                showPreviewPanel={isSplitView}
+                                isDetailsUnavailable={!currentWorkspaceDirectory}
                                 pageId={PAGE_IDS.VIRTUAL_DIRECTORY}
                                 currentPath={location.pathname}
                               />

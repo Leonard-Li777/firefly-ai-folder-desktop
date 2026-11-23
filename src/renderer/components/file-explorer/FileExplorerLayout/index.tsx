@@ -14,7 +14,20 @@ import { useSettingsStore } from '../../../stores/settings-store'
 import { usePreviewOverlayStore } from '../../../stores/preview-overlay-store'
 import { getPreviewRouteType, getExtFromSmartName } from '../../../lib/preview-utils'
 import { FileExplorerLayoutProps, ViewMode, FileExplorerLayoutContext } from './types'
-import { cn } from '../../../lib/utils'
+import { cn, MaterialIcon } from '../../../lib/utils'
+import {
+  PANEL_IDS,
+  PanelId,
+  getLayoutDefinition,
+  getPageDefaultLayout,
+  resolveEffectiveCollapse,
+  resolveLayoutProjection,
+  areSetsEqual
+} from '../layout-switcher'
+import {
+  useLayoutSwitcherStore,
+  getDirectionalStorageKey
+} from '../../../stores/layout-switcher-store'
 
 /**
  * 通用文件浏览器布局容器组件 (FileExplorerLayout)
@@ -30,6 +43,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   selectedFiles: externalSelectedFiles,
   activeItem: externalActiveItem = null,
   pageId,
+  isDetailsUnavailable = false,
   onFileSelect: externalOnFileSelect,
   onFileDoubleClick,
   onSelectionChange,
@@ -119,6 +133,75 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
 
   // 优先级：优先使用外部传入的 activeItem，若无则使用内部选中的 activeItem
   const activeItem = externalActiveItem !== undefined ? externalActiveItem : internalActiveItem
+
+  // 布局切换引擎核心状态 (SSOT)
+  const targetPageId = pageId || PAGE_IDS.REAL_DIRECTORY
+  const layoutKey = useLayoutSwitcherStore(
+    s => s.pageLayouts[targetPageId] ?? getPageDefaultLayout(targetPageId)
+  )
+  const customPanels = useLayoutSwitcherStore(s => s.visiblePanels[targetPageId])
+  const layoutDef = useMemo(() => getLayoutDefinition(layoutKey), [layoutKey])
+  const closePanel = useLayoutSwitcherStore(s => s.closePanel)
+
+  const unavailableSet = useMemo(
+    () => (isDetailsUnavailable ? new Set<PanelId>([PANEL_IDS.DETAILS]) : new Set<PanelId>()),
+    [isDetailsUnavailable]
+  )
+
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const prevCollapsedRef = React.useRef<Set<PanelId>>(new Set())
+  const [transientCollapsed, setTransientCollapsed] = useState<Set<PanelId>>(new Set())
+
+  // 宏观切换清空瞬态折叠记忆 (AC-5)
+  useEffect(() => {
+    prevCollapsedRef.current.clear()
+    setTransientCollapsed(new Set())
+  }, [targetPageId, layoutKey, customPanels, unavailableSet])
+
+  // 容器尺寸监听与瞬态折叠消赤调度 (AC-4 / AC-6)
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const updateSize = (w: number, h: number) => {
+      if (w <= 0 || h <= 0) return
+      const storedPanels = useLayoutSwitcherStore.getState().getVisiblePanels(targetPageId)
+      const next = resolveEffectiveCollapse(
+        w,
+        h,
+        layoutDef,
+        new Set(storedPanels),
+        prevCollapsedRef.current,
+        16,
+        unavailableSet
+      )
+      if (!areSetsEqual(next, prevCollapsedRef.current)) {
+        prevCollapsedRef.current = next
+        setTransientCollapsed(new Set(next))
+      }
+    }
+
+    const rect = el.getBoundingClientRect()
+    updateSize(rect.width, rect.height)
+
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        updateSize(width, height)
+      }
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [targetPageId, layoutDef, customPanels, unavailableSet])
+
+  // 恒定两级树槽位投影推导
+  const projection = useMemo(() => {
+    const storedPanels = useLayoutSwitcherStore.getState().getVisiblePanels(targetPageId)
+    const effectivePanels = storedPanels.filter(
+      p => !transientCollapsed.has(p) && !unavailableSet.has(p)
+    )
+    return resolveLayoutProjection(layoutDef, effectivePanels, unavailableSet)
+  }, [targetPageId, layoutDef, transientCollapsed, unavailableSet, customPanels])
 
   // 优先级：优先使用外部传入的 selectedFiles；若无则根据 selectedFileIds 计算；若均无则使用内部状态
   const selectedFiles = useMemo(() => {
@@ -344,6 +427,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
 
   return (
     <div
+      ref={containerRef}
       id={id}
       className={cn(
         // 列表内容区改用独立表面令牌：亮色为纯白卡片面（比灰面 Toolbar 更亮），暗色沿用原 --background
@@ -352,18 +436,20 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
       )}
     >
       <SplitPane
-        direction="horizontal"
-        storageKey={
-          id ? `file-explorer-${id}` : pageId ? `file-explorer-${pageId}` : 'file-explorer-layout'
-        }
+        direction={projection.primaryDirection}
+        rawKey={true}
+        storageKey={getDirectionalStorageKey(targetPageId, 'primary', projection.primaryDirection)}
         sections={[
           {
             id: 'file-list-main',
             type: 'flex' as const,
-            defaultSize: 2,
-            minSize: 100,
+            defaultSize: layoutDef.primaryDefaultSize ?? 2,
+            minSize: projection.primaryDirection === 'horizontal' ? 360 : 200,
             content: (
-              <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+              <div
+                data-testid="file-list-main"
+                className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative"
+              >
                 {/* 1. 工具栏插槽 (renderToolbar) - 仅限定在第一个区块 (FileList 关联宽度) */}
                 {renderToolbar && (
                   <div className="flex-shrink-0 border-b border-border bg-card">
@@ -445,69 +531,73 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
               </div>
             )
           },
-          ...(showPreviewPanel
-            ? [
-                {
-                  id: 'preview',
-                  type: 'flex' as const,
-                  defaultSize: 1,
-                  minSize: 300,
-                  content: pageId ? (
-                    <SplitPreviewPanel pageId={pageId} />
-                  ) : currentFile ? (
-                    <FilePreviewPanel
-                      filePath={currentFile.path}
-                      fileName={currentFile.smartName || currentFile.name}
-                      extension={currentFile.extension}
-                      workspaceDirectoryType={workspaceDirectoryType}
-                      currentTime={
-                        (currentFile as any).currentTime ??
-                        (currentFile as any).matchedChunk?.startSec
-                      }
-                      highlightRange={
-                        (currentFile as any).highlightRange ??
-                        ((currentFile as any).matchedChunk
-                          ? [
-                              (currentFile as any).matchedChunk.startSec,
-                              (currentFile as any).matchedChunk.endSec
-                            ]
-                          : undefined)
-                      }
-                      onBack={() => setInternalActiveItem(null)}
-                    />
-                  ) : (
-                    <div className="h-full border-l border-border bg-card" />
-                  )
-                }
-              ]
-            : []),
-          ...(showDetailsPanel
-            ? [
-                {
-                  id: 'details',
-                  type: 'pixel' as const,
-                  defaultSize: 380,
-                  minSize: 100,
-                  content: (
-                    <FileDetailsPanel
-                      item={activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : undefined)}
-                      workspaceDirectoryPath={workspaceDirectoryPath}
-                      workspaceDirectoryType={workspaceDirectoryType}
-                      currentDirectoryPath={isRealDirectory ? currentPath : workspaceDirectoryPath}
-                      onClose={() => {
-                        setInternalActiveItem(null)
-                        if (onCloseDetailsPanel) {
-                          onCloseDetailsPanel()
-                        }
-                      }}
-                      onFileDeleted={onFileDeleted}
-                      onFileUpdated={onFileUpdated}
-                      showPreview={true}
-                    />
-                  )
-                }
-              ]
-            : [])
+          {
+            id: 'companion',
+            type: 'flex' as const,
+            defaultSize: 1,
+            collapsed: projection.collapsed.companion,
+            collapsedSize: 0,
+            content: (
+              <SplitPane
+                direction={projection.companionDirection}
+                rawKey={true}
+                storageKey={getDirectionalStorageKey(
+                  targetPageId,
+                  'companion',
+                  projection.companionDirection
+                )}
+                sections={[
+                  {
+                    id: 'preview',
+                    type: 'flex' as const,
+                    defaultSize: 1,
+                    minSize: projection.companionDirection === 'horizontal' ? 280 : 200,
+                    collapsed: projection.collapsed.preview,
+                    collapsedSize: 0,
+                    content: projection.collapsed.preview ? null : (
+                      <div
+                        data-testid="file-preview-slot"
+                        className="h-full w-full relative flex flex-col overflow-hidden"
+                      >
+                        <SplitPreviewPanel
+                          pageId={targetPageId}
+                          onClose={() => closePanel(targetPageId, PANEL_IDS.PREVIEW)}
+                        />
+                      </div>
+                    )
+                  },
+                  {
+                    id: 'details',
+                    type: 'flex' as const,
+                    defaultSize: 1,
+                    minSize: projection.companionDirection === 'horizontal' ? 280 : 200,
+                    collapsed: projection.collapsed.details,
+                    collapsedSize: 0,
+                    content: projection.collapsed.details ? null : (
+                      <div
+                        data-testid="file-details-slot"
+                        className="h-full w-full relative flex flex-col overflow-hidden"
+                      >
+                        <FileDetailsPanel
+                          item={activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : undefined)}
+                          workspaceDirectoryPath={workspaceDirectoryPath}
+                          workspaceDirectoryType={workspaceDirectoryType}
+                          currentDirectoryPath={isRealDirectory ? currentPath : workspaceDirectoryPath}
+                          onClose={() => {
+                            closePanel(targetPageId, PANEL_IDS.DETAILS)
+                            onCloseDetailsPanel?.()
+                          }}
+                          onFileDeleted={onFileDeleted}
+                          onFileUpdated={onFileUpdated}
+                          showPreview={true}
+                        />
+                      </div>
+                    )
+                  }
+                ]}
+              />
+            )
+          }
         ]}
       />
     </div>

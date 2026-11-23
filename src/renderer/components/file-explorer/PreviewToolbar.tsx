@@ -204,6 +204,7 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
         {/* 关闭按钮 - 不收缩 */}
         <Button
           variant="ghost"
+          data-testid="preview-close-button"
           onClick={handleClose}
           title={t('关闭预览')}
           className="h-8 w-8 p-0 shrink-0"

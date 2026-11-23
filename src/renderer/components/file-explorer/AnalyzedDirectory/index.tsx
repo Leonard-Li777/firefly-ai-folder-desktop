@@ -501,6 +501,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
             if (selectedTags.length > 0) clearSelectedTags()
             setAnalyzedDirectoryKeyword(kw)
           }}
+          layoutPageId={PAGE_IDS.ANALYZED_DIRECTORY}
         />
       </div>
 
