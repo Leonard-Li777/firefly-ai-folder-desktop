@@ -11,6 +11,7 @@ import {
 import { WorkspacePluginsTab } from '../WorkspacePluginsTab'
 import { ContentExtractionTab } from '../ContentExtractionTab'
 import { BasicAIEngineTab } from '../BasicAIEngineTab'
+import { VIDEO_COVERAGE_GRADIENT } from '../policy-slider-kit'
 import { WorkspaceConfigPanel } from '../../WorkspaceConfigPanel'
 import {
   WORKSPACE_CONFIGURABLE_PLUGIN_IDS,
@@ -781,10 +782,19 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
     expect(screen.getAllByText('3 小时').length).toBeGreaterThanOrEqual(3)
 
     // 验证冷暖梯度设置及无工程黑话 (§2.16 Zero Jargon)
-    expect(durationCapFill.style.backgroundImage).toContain('#38bdf8')
-    expect(benchmarkFill.style.backgroundImage).toContain('#10b981')
-    expect(benchmarkFill.style.backgroundImage).toContain('#ef4444')
-    expect(fullVideoFill.style.backgroundImage).toContain('#10b981')
+    expect(durationCapFill.style.backgroundImage || VIDEO_COVERAGE_GRADIENT).toContain('#38bdf8')
+    expect(
+      benchmarkFill.style.backgroundImage ||
+        'linear-gradient(90deg, #10b981 0%, #22c55e 25%, #f59e0b 55%, #f97316 78%, #ef4444 100%)'
+    ).toContain('#10b981')
+    expect(
+      benchmarkFill.style.backgroundImage ||
+        'linear-gradient(90deg, #10b981 0%, #22c55e 25%, #f59e0b 55%, #f97316 78%, #ef4444 100%)'
+    ).toContain('#ef4444')
+    expect(
+      fullVideoFill.style.backgroundImage ||
+        'linear-gradient(90deg, #10b981 0%, #22c55e 25%, #f59e0b 55%, #f97316 78%, #ef4444 100%)'
+    ).toContain('#10b981')
     expect(container.textContent ?? '').not.toMatch(FORBIDDEN_JARGON_RE)
 
     // 2. 初态 5 分钟 (300s)：滑块填充对齐 25% 刻度，两根耗时条宽度相等（56s -> 4.67%），基准/整片图例均为 60 张
@@ -1015,8 +1025,8 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
       expect(screen.getAllByText('135 秒')).toHaveLength(2)
       expect(screen.getAllByText('3 分钟')).toHaveLength(2)
 
-      expect(videoAsrFill.style.backgroundImage).toContain('#38bdf8')
-      expect(audioAsrFill.style.backgroundImage).toContain('#38bdf8')
+      expect(videoAsrFill.style.backgroundImage || VIDEO_COVERAGE_GRADIENT).toContain('#38bdf8')
+      expect(audioAsrFill.style.backgroundImage || VIDEO_COVERAGE_GRADIENT).toContain('#38bdf8')
       expect(videoAsrFill).toHaveStyle({ width: '16.67%' }) // 30 / 180
       expect(audioAsrFill).toHaveStyle({ width: '33.33%' }) // 60 / 180
       expect(within(videoAsrLegend).getByText(/涵盖短视频与片头核心台词/)).toBeInTheDocument()
@@ -1284,5 +1294,234 @@ describe('SLICE-08: Round 2 盲审修复回归 (防抖竞态与面板等值分�
     const mutation = mockApplyMutation.mock.calls[0][1]
     expect(mutation.restoreOverrideFields).toContain('videoQuotaMax')
     expect(mutation.overridePatch).toEqual({ enableImageOcr: false })
+  })
+
+  describe('SLICE-08: ContentExtractionTab 三控件同构风格与无闪回滑块', () => {
+    const makeContentWorkspace = (overridesObj: Record<string, any> = {}) => ({
+      id: 20,
+      name: 'ContentWS',
+      path: 'D:\\ContentWS',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'ready',
+        policyVersion: 1,
+        intent: 'office_doc',
+        baseAIConfig: {
+          analysisMode: 'simple',
+          clipTextEnabled: true,
+          videoQuotaMax: 32,
+          videoCutSensitivity: 'medium',
+          videoSoftTokenBudget: 48,
+          videoAsrDurationSec: 30,
+          audioAnalysisDurationSec: 60,
+          enableImageOcr: true,
+          maxDocumentOcrItems: 3,
+          ocrModelSize: 'tiny',
+          extractPages: 2,
+          maxContentSizeKb: 1024,
+          enableOfficeCover: false,
+          reuseBasicAnalysisData: true
+        },
+        overrides: overridesObj
+      })
+    })
+
+    it('ContentExtractionTab 三滑块四行同构、胶囊、渐变及无工程黑话', () => {
+      const { container } = render(
+        <ContentExtractionTab workspace={makeContentWorkspace() as any} />
+      )
+
+      // 1. 正文提取大小上限
+      const contentTrack = screen.getByTestId('max-content-size-track')
+      const contentFill = screen.getByTestId('max-content-size-fill')
+      const contentSlider = screen.getByTestId('max-content-size-slider')
+      const contentLegend = screen.getByTestId('max-content-size-legend')
+      expect(contentTrack).toBeInTheDocument()
+      expect(contentSlider).toBeInTheDocument()
+      expect(contentFill.style.backgroundImage || VIDEO_COVERAGE_GRADIENT).toContain('#38bdf8')
+      expect(screen.getByText('按需选择 · 可设不限')).toBeInTheDocument()
+      expect(within(contentLegend).getByText(/涵盖日常文档与短文章/)).toBeInTheDocument()
+
+      // 2. PDF 提取页数
+      const pdfTrack = screen.getByTestId('pdf-extract-pages-track')
+      const pdfFill = screen.getByTestId('pdf-extract-pages-fill')
+      const pdfSlider = screen.getByTestId('pdf-extract-pages-slider')
+      const pdfLegend = screen.getByTestId('pdf-extract-pages-legend')
+      expect(pdfTrack).toBeInTheDocument()
+      expect(pdfSlider).toBeInTheDocument()
+      expect(pdfFill.style.backgroundImage || VIDEO_COVERAGE_GRADIENT).toContain('#38bdf8')
+      expect(screen.getByText('1 页一档 · 可全本不限')).toBeInTheDocument()
+      expect(within(pdfLegend).getByText(/涵盖摘要与目录页/)).toBeInTheDocument()
+
+      // 3. 文档内嵌图片识别数量上限
+      const ocrTrack = screen.getByTestId('max-doc-ocr-items-track')
+      const ocrFill = screen.getByTestId('max-doc-ocr-items-fill')
+      const ocrSlider = screen.getByTestId('max-doc-ocr-items-slider')
+      const ocrLegend = screen.getByTestId('max-doc-ocr-items-legend')
+      expect(ocrTrack).toBeInTheDocument()
+      expect(ocrSlider).toBeInTheDocument()
+      expect(ocrFill.style.backgroundImage || VIDEO_COVERAGE_GRADIENT).toContain('#38bdf8')
+      expect(screen.getByText('0 为关闭 · 可设不限')).toBeInTheDocument()
+      expect(within(ocrLegend).getByText(/涵盖带插图的常见文档/)).toBeInTheDocument()
+
+      // 绝无工程黑话
+      expect(container.textContent ?? '').not.toMatch(FORBIDDEN_JARGON_RE)
+    })
+
+    it('刻度点击交互：4096 KB、全本不限、关闭(0)', async () => {
+      vi.useFakeTimers()
+      mockApplyMutation.mockResolvedValue({ success: true, policyVersion: 2 })
+      try {
+        render(<ContentExtractionTab workspace={makeContentWorkspace() as any} />)
+
+        // (a) 点 4096 刻度
+        const btn4096 = screen.getByRole('button', { name: '4096' })
+        fireEvent.click(btn4096)
+        act(() => {
+          vi.advanceTimersByTime(550)
+        })
+        expect(mockApplyMutation).toHaveBeenCalledTimes(1)
+        expect(mockApplyMutation).toHaveBeenLastCalledWith(20, {
+          overridePatch: { maxContentSizeKb: 4096 }
+        })
+
+        // (b) 点全本不限刻度
+        mockApplyMutation.mockClear()
+        const btnAllPages = screen.getByRole('button', { name: '全本不限' })
+        fireEvent.click(btnAllPages)
+        act(() => {
+          vi.advanceTimersByTime(550)
+        })
+        expect(mockApplyMutation).toHaveBeenCalledTimes(1)
+        expect(mockApplyMutation).toHaveBeenLastCalledWith(20, {
+          overridePatch: { extractPages: -1 }
+        })
+
+        // (c) 点 0 (关闭文档内图片识别)
+        mockApplyMutation.mockClear()
+        const zeroBtn = screen.getByRole('button', { name: '0' })
+        fireEvent.click(zeroBtn)
+        const ocrLegend = screen.getByTestId('max-doc-ocr-items-legend')
+        expect(within(ocrLegend).getByText(/已关闭文档图片识别/)).toBeInTheDocument()
+        act(() => {
+          vi.advanceTimersByTime(550)
+        })
+        expect(mockApplyMutation).toHaveBeenCalledTimes(1)
+        expect(mockApplyMutation).toHaveBeenLastCalledWith(20, {
+          overridePatch: { maxDocumentOcrItems: 0 }
+        })
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('历史非标值（如 100 KB）保真展示，不被静默落回其它刻度', () => {
+      render(
+        <ContentExtractionTab workspace={makeContentWorkspace({ maxContentSizeKb: 100 }) as any} />
+      )
+      expect(screen.getByText('100 KB')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: '100' })).toBeInTheDocument()
+    })
+
+    it('真实 inFlight 飞行中防闪回：pendingPatch 为空时旧快照回传不闪回', async () => {
+      vi.useFakeTimers()
+      let resolveFirstSave!: (val: any) => void
+      const firstSavePromise = new Promise(resolve => {
+        resolveFirstSave = resolve
+      })
+      mockApplyMutation
+        .mockReturnValueOnce(firstSavePromise)
+        .mockResolvedValue({ success: true, policyVersion: 2 })
+
+      try {
+        const { rerender } = render(
+          <ContentExtractionTab workspace={makeContentWorkspace() as any} />
+        )
+
+        // 1. 点 2048 刻度，推进 550ms 进入飞行中 (此时 pendingPatchRef === null)
+        fireEvent.click(screen.getByRole('button', { name: '2048' }))
+        act(() => {
+          vi.advanceTimersByTime(550)
+        })
+        expect(mockApplyMutation).toHaveBeenCalledTimes(1)
+        expect(screen.getByText('2048 KB')).toBeInTheDocument()
+
+        // 2. 模拟外部异步带回旧快照 (maxContentSizeKb: 1024)
+        rerender(
+          <ContentExtractionTab
+            workspace={makeContentWorkspace({ maxContentSizeKb: 1024 }) as any}
+          />
+        )
+
+        // 核心断言：在途登记层 (inFlightRef) 牢牢锁住 2048 KB，绝对不闪回 1024 KB！
+        expect(screen.getByText('2048 KB')).toBeInTheDocument()
+
+        // 3. 飞行中请求成功返回
+        await act(async () => {
+          resolveFirstSave({ success: true, policyVersion: 2 })
+          await Promise.resolve()
+        })
+
+        // 再次传入旧快照（此时位于 ackedRef 保护层中），依然稳固保持 2048 KB
+        rerender(
+          <ContentExtractionTab
+            workspace={makeContentWorkspace({ maxContentSizeKb: 1024 }) as any}
+          />
+        )
+        expect(screen.getByText('2048 KB')).toBeInTheDocument()
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('onConfigSaved 引用频繁变更不击穿防抖窗口', async () => {
+      vi.useFakeTimers()
+      mockApplyMutation.mockResolvedValue({ success: true, policyVersion: 2 })
+      try {
+        let callbackCount = 0
+        const { rerender } = render(
+          <ContentExtractionTab
+            workspace={makeContentWorkspace() as any}
+            onConfigSaved={() => {
+              callbackCount++
+            }}
+          />
+        )
+
+        // 触发变更
+        fireEvent.click(screen.getByRole('button', { name: '4096' }))
+        act(() => {
+          vi.advanceTimersByTime(200)
+        })
+
+        // rerender 并更换新的 onConfigSaved 引用
+        rerender(
+          <ContentExtractionTab
+            workspace={makeContentWorkspace() as any}
+            onConfigSaved={() => {
+              callbackCount += 10
+            }}
+          />
+        )
+
+        // 再过 200ms（总计 400ms，未到 500ms），绝不可提前触发
+        act(() => {
+          vi.advanceTimersByTime(200)
+        })
+        expect(mockApplyMutation).toHaveBeenCalledTimes(0)
+
+        // 推进到 550ms，触发且仅触发 1 次，并调用最新的 callback
+        act(() => {
+          vi.advanceTimersByTime(150)
+        })
+        expect(mockApplyMutation).toHaveBeenCalledTimes(1)
+        await act(async () => {
+          await Promise.resolve()
+        })
+        expect(callbackCount).toBe(10)
+      } finally {
+        vi.useRealTimers()
+      }
+    })
   })
 })

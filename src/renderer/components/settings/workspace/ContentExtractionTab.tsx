@@ -18,11 +18,11 @@ import { cn } from '../../../lib/utils'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
 import {
-  submitWorkspacePolicyMutation,
-  getMutationErrorText,
   type DegradationFixAction,
   type ResolvedTriStateField
 } from '../../../lib/workspace-policy/workspace-ai-client'
+import { PolicySliderRow, PolicySliderTick, useStickyStops } from './policy-slider-kit'
+import { useWorkspacePolicyPatchChannel } from './use-workspace-policy-patch-channel'
 import { getOcrModelSizeLabel, TriStateFieldFeedback } from './TriStateFieldFeedback'
 import { TriStateCustomFieldsTable, type TriStateCustomFieldRow } from './TriStateCustomFieldsTable'
 import { openExternalLink } from '../../../lib/external-link'
@@ -47,12 +47,6 @@ export interface ContentExtractionTabProps {
   resolvedFields?: Record<string, ResolvedTriStateField>
   hasBoundWorkflow?: boolean
   onFixAction?: (action: DegradationFixAction, pluginId?: string) => void
-}
-
-/** 待提交的补丁累积 */
-interface PendingPolicyPatch {
-  patch: Partial<TechnicalEngineParameters>
-  restore: Set<keyof TechnicalEngineParameters>
 }
 
 /** 属于文件内容萃取 Tab 专管的参数键列表 (与基础AI引擎隔离，防跨Tab全量抹杀) */
@@ -147,8 +141,6 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
   hasBoundWorkflow = false,
   onFixAction
 }) => {
-  const [isSaving, setIsSaving] = useState(false)
-
   // LibreOffice 状态检测
   const [libreOfficeInstalled, setLibreOfficeInstalled] = useState<boolean | null>(null)
   const [libreOfficeVersion, setLibreOfficeVersion] = useState<string | undefined>(undefined)
@@ -171,152 +163,39 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
     return mapIntentToParameters(currentIntent, hardwareInfo) as BaseAIConfig
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
 
-  const [overrides, setOverrides] = useState<Partial<TechnicalEngineParameters>>(() => {
-    if (isReady && parsedConfig.overrides) {
-      return { ...parsedConfig.overrides }
-    }
-    return {}
+  const {
+    overrides,
+    effectiveParams,
+    isSaving,
+    handleParamChange,
+    flushPending,
+    restoreField,
+    resetKeys
+  } = useWorkspacePolicyPatchChannel({
+    workspaceId: workspace.id,
+    workspaceConfig: workspace.workspace_config,
+    baseDerived,
+    isActive: Boolean(isActive),
+    onConfigSaved,
+    logTag: 'ContentExtractionTab'
   })
-
-  // 当外部 workspace 改变时同步更新
-  useEffect(() => {
-    const fresh = parseWorkspaceConfig(workspace.workspace_config)
-    if (fresh.status === 'ready' && fresh.overrides) {
-      setOverrides({ ...fresh.overrides })
-    } else {
-      setOverrides({})
-    }
-  }, [workspace.id, workspace.workspace_config])
-
-  // 当前有效参数合成 (基线 + overrides)
-  const effectiveParams: BaseAIConfig = useMemo(() => {
-    return {
-      ...baseDerived,
-      ...overrides
-    }
-  }, [baseDerived, overrides])
-
-  // 待提交的补丁累积（用户触碰字段 / 待恢复字段）与防抖计时器
-  const pendingPatchRef = useRef<PendingPolicyPatch | null>(null)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
-
-  /** 通过统一补丁通道提交（严禁整份拼装 WorkspaceConfigReady 直写） */
-  const persistMutation = useCallback(
-    async (pending: PendingPolicyPatch) => {
-      if (!workspace.id) return
-      const restoreKeys = Array.from(pending.restore)
-      const hasPatch = Object.keys(pending.patch).length > 0
-      if (!hasPatch && restoreKeys.length === 0) return
-      setIsSaving(true)
-      try {
-        const res = await submitWorkspacePolicyMutation(workspace.id, {
-          ...(hasPatch ? { overridePatch: pending.patch } : {}),
-          ...(restoreKeys.length > 0 ? { restoreOverrideFields: restoreKeys } : {})
-        })
-        if (res.success) {
-          onConfigSaved?.()
-        } else {
-          toast.error(getMutationErrorText(res, t('保存失败')))
-        }
-      } catch (err: any) {
-        console.error('[ContentExtractionTab] 提交配置补丁异常:', err)
-        toast.error(t('保存失败'))
-      } finally {
-        setIsSaving(false)
-      }
-    },
-    [workspace.id, onConfigSaved]
-  )
-
-  const flushPending = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-      debounceTimerRef.current = null
-    }
-    const pending = pendingPatchRef.current
-    if (pending !== null) {
-      pendingPatchRef.current = null
-      void persistMutation(pending)
-    }
-  }, [persistMutation])
-
-  // 切 Tab (isActive 变为 false) 或卸载时立即 flush 未落盘数据，杜绝并发覆盖竞态
-  useEffect(() => {
-    if (!isActive) flushPending()
-  }, [isActive, flushPending])
-
-  useEffect(() => {
-    return () => flushPending()
-  }, [flushPending])
-
-  // 修改单个参数：等值回退——设值与当前基线（工作流默认/系统默认）一致时精确 delete 覆盖键算回默认态，
-  // 仅值 ≠ 基线的显式覆盖写入补丁保留 user_custom，500ms 防抖提交
-  const handleParamChange = <K extends keyof TechnicalEngineParameters>(
-    key: K,
-    val: TechnicalEngineParameters[K]
-  ) => {
-    const baselineVal = (baseDerived as Partial<TechnicalEngineParameters>)[key]
-    if (val === baselineVal) {
-      // 等值回退：本地覆盖字典同步删除该键，effectiveParams 自动回落基线（值相同）
-      setOverrides(prev => {
-        if (prev[key] === undefined) return prev
-        const next = { ...prev }
-        delete next[key]
-        return next
-      })
-    } else {
-      setOverrides(prev => ({ ...prev, [key]: val }))
-    }
-    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
-    if (val === baselineVal) {
-      delete pending.patch[key]
-      pending.restore.add(key)
-    } else {
-      pending.patch = { ...pending.patch, [key]: val }
-      pending.restore.delete(key)
-    }
-    pendingPatchRef.current = pending
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-    debounceTimerRef.current = setTimeout(flushPending, 500)
-  }
 
   // 检查当前 Tab 是否存在个性化覆盖项
   const hasContentOverrides = useMemo(() => {
     return CONTENT_EXTRACTION_KEYS.some(k => overrides[k] !== undefined)
   }, [overrides])
 
-  /** 恢复单个字段默认：先冲刷防抖队列（防 patch 胜出竞态）再精确 delete 覆盖键 + 本地同步清理（表格行与降级反馈共用） */
-  const restoreContentExtractionField = (fieldKey: string) => {
-    if (workspace.id == null) return
-    flushPending()
-    void submitWorkspacePolicyMutation(workspace.id, {
-      restoreOverrideFields: [fieldKey as keyof BaseAIConfig]
-    }).then(res => {
-      if (res.success) {
-        setOverrides(prev => {
-          const next = { ...prev }
-          delete next[fieldKey as keyof TechnicalEngineParameters]
-          return next
-        })
-        onConfigSaved?.()
-      } else {
-        toast.error(getMutationErrorText(res, t('恢复默认失败')))
-      }
-    })
-  }
+  /** 恢复单个字段默认：先冲刷防抖队列再发 restoreOverrideFields */
+  const restoreContentExtractionField = useCallback(
+    (fieldKey: string) => {
+      restoreField(fieldKey as keyof TechnicalEngineParameters)
+    },
+    [restoreField]
+  )
 
   // 恢复默认：仅对本 Tab 管辖且已覆盖的键发送 restoreOverrideFields（严禁传 null）
   const handleResetToPreset = () => {
-    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
-    for (const k of CONTENT_EXTRACTION_KEYS.filter(k => overrides[k] !== undefined)) {
-      pending.restore.add(k)
-      delete pending.patch[k]
-    }
-    pendingPatchRef.current = pending
-    const next = { ...overrides }
-    for (const k of CONTENT_EXTRACTION_KEYS) delete next[k]
-    setOverrides(next)
-    flushPending()
+    resetKeys(CONTENT_EXTRACTION_KEYS)
     toast.success(t('已恢复当前场景的文件内容萃取推荐参数'))
   }
 
@@ -476,149 +355,149 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
             <span>{t('文档与正文内容提取')}</span>
           </div>
 
-          {/* 内容提取大小上限 */}
-          <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="max-content-size" className="text-sm font-medium">
-                  {t('正文提取大小上限')}
-                </Label>
-                <HelpTooltip
-                  content={t(
-                    '单个文件中可提取的文字内容大小上限，超长内容会被自动截断，避免过多占用存储。'
-                  )}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                  {currentMaxContentSizeKb === -1 || currentMaxContentSizeKb === 0
-                    ? t('不限')
-                    : `${currentMaxContentSizeKb} KB`}
-                </span>
-                {currentMaxContentSizeKb > 0 && (
-                  <span className="text-xs text-muted-foreground">
-                    {(() => {
-                      const chineseChars = currentMaxContentSizeKb * 333
-                      const englishWords = Math.round(chineseChars / 2)
-                      const formattedZh =
-                        chineseChars >= 10000
-                          ? `${(chineseChars / 10000).toLocaleString(undefined, {
-                              maximumFractionDigits: 1
-                            })}${t('万')}`
-                          : chineseChars.toLocaleString()
-                      const formattedEn =
-                        englishWords >= 10000
-                          ? `${(englishWords / 10000).toLocaleString(undefined, {
-                              maximumFractionDigits: 1
-                            })}${t('万')}`
-                          : englishWords.toLocaleString()
-                      return `（${t('相当于约 {zh} 字或 {en} 单词', {
-                        zh: formattedZh,
-                        en: formattedEn
-                      })}）`
-                    })()}
-                  </span>
-                )}
-              </div>
-            </div>
+          {/* 正文提取大小上限 */}
+          {(() => {
+            const rawContentKb = currentMaxContentSizeKb === 0 ? -1 : currentMaxContentSizeKb
+            const STANDARD_CONTENT_STOPS = [256, 512, 1024, 2048, 4096, 8192, 16384, -1] as const
+            const contentStops = useStickyStops(STANDARD_CONTENT_STOPS, rawContentKb)
+            const contentTicks: PolicySliderTick[] = contentStops.map(s => ({
+              value: s,
+              label: s === -1 ? t('不限') : String(s)
+            }))
 
-            {(() => {
-              const STANDARD_TICKS = [256, 512, 1024, 2048, 4096, 8192, 16384, -1]
-              const normalizedValue = currentMaxContentSizeKb === 0 ? -1 : currentMaxContentSizeKb
-              // 历史非标值（如 100）按实际值插入刻度并保真展示，禁止静默落回其它刻度
-              const ticks =
-                normalizedValue > 0 && !STANDARD_TICKS.includes(normalizedValue)
-                  ? [...STANDARD_TICKS.slice(0, -1), normalizedValue, -1].sort((a, b) =>
-                      a === -1 ? 1 : b === -1 ? -1 : a - b
-                    )
-                  : STANDARD_TICKS
-              const currentIndex = Math.max(0, ticks.indexOf(normalizedValue))
+            const renderValue = (n: number) => {
+              const isUnlimited = n === -1 || n === 0
+              const chineseChars = !isUnlimited ? n * 333 : 0
+              const englishWords = Math.round(chineseChars / 2)
+              const formattedZh =
+                chineseChars >= 10000
+                  ? `${(chineseChars / 10000).toLocaleString(undefined, {
+                      maximumFractionDigits: 1
+                    })}${t('万')}`
+                  : chineseChars.toLocaleString()
+              const formattedEn =
+                englishWords >= 10000
+                  ? `${(englishWords / 10000).toLocaleString(undefined, {
+                      maximumFractionDigits: 1
+                    })}${t('万')}`
+                  : englishWords.toLocaleString()
 
               return (
-                <div className="space-y-2 pt-1 pb-1 px-1">
-                  <input
-                    id="max-content-size"
-                    type="range"
-                    min={0}
-                    max={ticks.length - 1}
-                    step={1}
-                    value={currentIndex}
-                    onChange={e => {
-                      const idx = parseInt(e.target.value, 10)
-                      handleParamChange('maxContentSizeKb', ticks[idx])
-                    }}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
-                  />
-                  <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
-                    {ticks.map((tick, index) => {
-                      const isActive = index === currentIndex
-                      const isUnlimited = tick === -1
-                      return (
-                        <button
-                          key={tick}
-                          type="button"
-                          onClick={() => handleParamChange('maxContentSizeKb', tick)}
-                          className={cn(
-                            'flex flex-col items-center gap-1 transition-colors hover:text-foreground cursor-pointer',
-                            isActive && 'text-primary font-bold scale-110'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'w-0.5 h-1.5 rounded-full',
-                              isActive ? 'bg-primary h-2.5' : 'bg-muted-foreground/30'
-                            )}
-                          />
-                          <span>{isUnlimited ? t('不限') : tick}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+                <>
+                  <span className="text-sm font-extrabold font-mono text-primary">
+                    {isUnlimited ? t('不限') : `${n} KB`}
+                  </span>
+                  {!isUnlimited && (
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      ({t('相当于约 {zh} 字或 {en} 单词', { zh: formattedZh, en: formattedEn })})
+                    </span>
+                  )}
+                </>
               )
-            })()}
-          </div>
+            }
+
+            const renderLegend = (n: number) => {
+              if (n === -1 || n === 0) {
+                return {
+                  left: t('不限制提取文字量，超长文件整理会更久、占用更多存储'),
+                  badge: { paused: false, text: t('涵盖整本书籍与超长资料') }
+                }
+              }
+              return {
+                left: t('单个文件最多提取 {size} KB 文字，超长内容自动截断，不占过多存储', {
+                  size: n
+                }),
+                badge:
+                  n <= 1024
+                    ? { paused: false, text: t('涵盖日常文档与短文章') }
+                    : n <= 8192
+                      ? { paused: false, text: t('涵盖长篇报告与小说章节') }
+                      : { paused: false, text: t('涵盖整本书籍与超长资料') }
+              }
+            }
+
+            return (
+              <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
+                <PolicySliderRow
+                  testIdPrefix="max-content-size"
+                  title={t('正文提取大小上限')}
+                  titleExtra={
+                    <HelpTooltip
+                      content={t(
+                        '单个文件中可提取的文字内容大小上限，超长内容会被自动截断，避免过多占用存储。'
+                      )}
+                    />
+                  }
+                  capsuleText={t('按需选择 · 可设不限')}
+                  renderValue={renderValue}
+                  stops={contentStops}
+                  value={rawContentKb}
+                  onChange={val => handleParamChange('maxContentSizeKb', val === -1 ? -1 : val)}
+                  ticks={contentTicks}
+                  renderLegend={renderLegend}
+                />
+              </div>
+            )
+          })()}
 
           {/* PDF 提取页数 */}
-          <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="pdf-extract-pages" className="text-sm font-medium">
-                  {t('PDF 文档正文提取页数')}
-                </Label>
-                <HelpTooltip content={t('控制 PDF 文档提取前多少页的文字内容用于搜索。')} />
-              </div>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                {currentExtractPages === -1 ? t('全本不限') : `${currentExtractPages} ${t('页')}`}
+          {(() => {
+            const PDF_STOPS: ReadonlyArray<number> = [
+              ...Array.from({ length: 20 }, (_, i) => i + 1),
+              -1
+            ]
+            const PDF_TICKS: PolicySliderTick[] = [
+              { value: 1, label: '1' },
+              { value: 5, label: '5' },
+              { value: 10, label: '10' },
+              { value: 15, label: '15' },
+              { value: 20, label: '20' },
+              { value: -1, label: t('全本不限') }
+            ]
+
+            const renderValue = (pages: number) => (
+              <span className="text-sm font-extrabold font-mono text-primary">
+                {pages === -1 ? t('全本不限') : `${pages} ${t('页')}`}
               </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                id="pdf-extract-pages"
-                type="range"
-                min={1}
-                max={20}
-                step={1}
-                value={currentExtractPages === -1 ? 20 : currentExtractPages}
-                onChange={e => handleParamChange('extractPages', Number(e.target.value))}
-                className="flex-1 h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
-              />
-              <Button
-                type="button"
-                variant={currentExtractPages === -1 ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 text-xs px-2.5 shrink-0"
-                onClick={() =>
-                  handleParamChange(
-                    'extractPages',
-                    currentExtractPages === -1 ? (baseDerived.extractPages ?? 2) : -1
-                  )
+            )
+
+            const renderLegend = (pages: number) => {
+              if (pages === -1) {
+                return {
+                  left: t('PDF 全部页面的文字都会被提取用于搜索'),
+                  badge: { paused: false, text: t('涵盖长篇文档与整本电子书') }
                 }
-              >
-                {t('全本不限')}
-              </Button>
-            </div>
-          </div>
+              }
+              return {
+                left: t('PDF 仅提取前 {pages} 页文字用于搜索', { pages }),
+                badge:
+                  pages <= 3
+                    ? { paused: false, text: t('涵盖摘要与目录页') }
+                    : pages <= 10
+                      ? { paused: false, text: t('涵盖论文与短报告') }
+                      : { paused: false, text: t('涵盖长篇文档与整本电子书') }
+              }
+            }
+
+            return (
+              <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
+                <PolicySliderRow
+                  testIdPrefix="pdf-extract-pages"
+                  title={t('PDF 文档正文提取页数')}
+                  titleExtra={
+                    <HelpTooltip content={t('控制 PDF 文档提取前多少页的文字内容用于搜索。')} />
+                  }
+                  capsuleText={t('1 页一档 · 可全本不限')}
+                  renderValue={renderValue}
+                  stops={PDF_STOPS}
+                  value={currentExtractPages}
+                  onChange={val => handleParamChange('extractPages', val)}
+                  ticks={PDF_TICKS}
+                  renderLegend={renderLegend}
+                />
+              </div>
+            )
+          })()}
 
           {/* 开启 Office 文档封面截图与 LibreOffice 联动 */}
           <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
@@ -768,78 +647,70 @@ export const ContentExtractionTab: React.FC<ContentExtractionTabProps> = ({
 
           {/* 文档 OCR 识别数量上限 */}
           <div className="p-3.5 rounded-xl bg-muted/20 border border-border/60 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor="max-doc-ocr-items" className="text-sm font-medium">
-                  {t('文档内嵌图片文字识别数量上限')}
-                </Label>
-                <HelpTooltip
-                  content={t(
-                    '办公文档内嵌图片数量与 PDF 扫描版识别页数上限。设为 0 表示跳过文档内图片文字识别。'
-                  )}
-                />
-              </div>
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                {currentMaxDocOcrItems === -1
-                  ? t('不限')
-                  : currentMaxDocOcrItems === 0
-                    ? t('关闭 (0)')
-                    : `${currentMaxDocOcrItems} ${t('项/页')}`}
-              </span>
-            </div>
-
             {(() => {
-              const ticks = Array.from({ length: 31 }, (_, i) => i).concat([-1])
-              const currentIndex =
-                ticks.indexOf(currentMaxDocOcrItems) !== -1
-                  ? ticks.indexOf(currentMaxDocOcrItems)
-                  : 0
+              const OCR_STOPS: ReadonlyArray<number> = [
+                ...Array.from({ length: 31 }, (_, i) => i),
+                -1
+              ]
+              const OCR_TICKS: PolicySliderTick[] = [0, 5, 10, 15, 20, 25, 30, -1].map(v => ({
+                value: v,
+                label: v === -1 ? t('不限') : String(v)
+              }))
+
+              const renderValue = (n: number) => (
+                <>
+                  <span className="text-sm font-extrabold font-mono text-primary">
+                    {n === -1 ? t('不限') : n === 0 ? t('关闭 (0)') : `${n} ${t('项/页')}`}
+                  </span>
+                  {n === 0 && (
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      ({t('已跳过文档图片识别')})
+                    </span>
+                  )}
+                </>
+              )
+
+              const renderLegend = (n: number) => {
+                if (n === 0) {
+                  return {
+                    left: t('已跳过文档内图片文字识别'),
+                    badge: { paused: true, text: t('已关闭文档图片识别') }
+                  }
+                }
+                if (n === -1) {
+                  return {
+                    left: t('不限制数量，扫描版文档整理耗时会明显变长'),
+                    badge: { paused: false, text: t('涵盖整本扫描版资料') }
+                  }
+                }
+                return {
+                  left: t('办公文档内嵌图片与扫描版 PDF 最多识别 {count} 项/页', { count: n }),
+                  badge:
+                    n <= 10
+                      ? { paused: false, text: t('涵盖带插图的常见文档') }
+                      : { paused: false, text: t('涵盖多图排版与长图文档') }
+                }
+              }
 
               return (
-                <div className="space-y-2 pt-1 pb-1 px-1">
-                  <input
-                    id="max-doc-ocr-items"
-                    type="range"
-                    min={0}
-                    max={ticks.length - 1}
-                    step={1}
-                    value={currentIndex}
-                    onChange={e => {
-                      const idx = parseInt(e.target.value, 10)
-                      handleParamChange('maxDocumentOcrItems', ticks[idx])
-                    }}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
-                  />
-                  <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
-                    {ticks.map((tick, idx) => {
-                      const isMajorTick = [0, 5, 10, 15, 20, 25, 30, -1].includes(tick)
-                      const isActive = idx === currentIndex
-                      const isUnlimited = tick === -1
-                      if (!isMajorTick) {
-                        return <span key={tick} className="flex-1" />
-                      }
-                      return (
-                        <button
-                          key={tick}
-                          type="button"
-                          onClick={() => handleParamChange('maxDocumentOcrItems', tick)}
-                          className={cn(
-                            'flex flex-col items-center gap-1 transition-colors hover:text-foreground cursor-pointer',
-                            isActive && 'text-primary font-bold scale-110'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'w-0.5 h-1.5 rounded-full',
-                              isActive ? 'bg-primary h-2.5' : 'bg-muted-foreground/30'
-                            )}
-                          />
-                          <span>{isUnlimited ? t('不限') : tick}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
+                <PolicySliderRow
+                  testIdPrefix="max-doc-ocr-items"
+                  title={t('文档内嵌图片文字识别数量上限')}
+                  titleExtra={
+                    <HelpTooltip
+                      content={t(
+                        '办公文档内嵌图片数量与 PDF 扫描版识别页数上限。设为 0 表示跳过文档内图片文字识别。'
+                      )}
+                    />
+                  }
+                  capsuleText={t('0 为关闭 · 可设不限')}
+                  renderValue={renderValue}
+                  stops={OCR_STOPS}
+                  value={currentMaxDocOcrItems}
+                  onChange={val => handleParamChange('maxDocumentOcrItems', val)}
+                  ticks={OCR_TICKS}
+                  renderLegend={renderLegend}
+                />
               )
             })()}
           </div>

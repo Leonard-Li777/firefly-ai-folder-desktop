@@ -31,7 +31,10 @@ import {
   getParentDimensionCodeOfTag,
   ROOT_DIMENSION_META,
   isControlledConcept,
-  CONTROLLED_CODE_TO_CANONICAL_NAME
+  CONTROLLED_CODE_TO_CANONICAL_NAME,
+  resolveMediaDomainFromFile,
+  resolveMediaDomainFromCategory,
+  type MediaDomain
 } from '@firefly/shared'
 import path from 'path'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
@@ -77,6 +80,15 @@ export interface TagTreeQueryDimensionTree {
     tagFilesMap?: Map<string, Set<string>>,
     opts?: GetDimensionGroupsOptions
   ): Promise<void>
+
+  clusterDomainTagSubset(
+    g: DimensionGroup,
+    domain: MediaDomain,
+    domainTags: DimensionTag[]
+  ): Promise<{
+    clusters: Array<{ folderName: string; tags: DimensionTag[] }>
+    unclusteredTags: DimensionTag[]
+  }>
 
   resolveAuthorityDimensions(): {
     byCode: Map<
@@ -303,6 +315,200 @@ function fallbackClusterTags(
   }
 
   return clusters
+}
+
+/**
+ * 清理泛维度标签聚类缓存（供单元测试或工作区重载时重置状态）
+ */
+export function clearPanDimensionClusterCache(): void {
+  panDimensionClusterCache.clear()
+}
+
+/**
+ * 获取媒体领域的规范展示名（PRD-0058 不变量，使用单一事实源 CANONICAL_NAMES）
+ */
+export function getMediaDomainCanonicalName(domain: MediaDomain): string {
+  switch (domain) {
+    case 'audio':
+      return CANONICAL_NAMES.MEDIA_AUDIO
+    case 'document':
+      return CANONICAL_NAMES.MEDIA_DOCUMENT
+    case 'text':
+      return CANONICAL_NAMES.MEDIA_TEXT
+    case 'code':
+      return CANONICAL_NAMES.MEDIA_CODE
+    case 'image':
+      return CANONICAL_NAMES.MEDIA_IMAGE
+    case 'video':
+      return CANONICAL_NAMES.MEDIA_VIDEO
+    case 'ebook':
+      return CANONICAL_NAMES.MEDIA_EBOOK
+    case 'archive':
+      return CANONICAL_NAMES.MEDIA_ARCHIVE
+    case 'manga':
+      return '漫画'
+    case 'general':
+    default:
+      return ''
+  }
+}
+
+/**
+ * 批量解析标签关联的媒体领域（MediaDomain）
+ *
+ * 契约规范与优先级：
+ * 1. 标签显式元数据 (tag.meta.mediaDomain / tag.meta.fileGroup / tag.meta.category) 优先；
+ * 2. tagFilesMap 提供的关联文件集合：支持完整物理路径（带后缀名/跨端格式判定）、
+ *    相对路径、文件名、或直接媒体分类名；执行多文件多数票裁决（Majority Vote），平局回退 general；
+ * 3. SQLite 持久化数据库自动回填：若 tagFilesMap 为空且 db 可用，批量点查 file_tag_relations
+ *    关联的 files.file_group / files.extension / workspace_files.path，执行多数票裁决；
+ * 4. 无法判定媒体领域时安全兜底为 'general'。
+ */
+export function batchResolveTagsMediaDomain(
+  tags: DimensionTag[],
+  tagFilesMap?: Map<string, Set<string>>,
+  db?: any
+): Map<string, MediaDomain> {
+  const result = new Map<string, MediaDomain>()
+  const tagsNeedingDb: DimensionTag[] = []
+
+  for (const tag of tags) {
+    const key = tag.code || tag.tagValue || ''
+    if (!key) continue
+
+    // 1. 显式 metadata 优先级最高
+    if (tag.meta?.mediaDomain) {
+      result.set(key, tag.meta.mediaDomain as MediaDomain)
+      continue
+    }
+    const metaCategory = tag.meta?.fileGroup || tag.meta?.category
+    if (metaCategory) {
+      const d = resolveMediaDomainFromCategory(metaCategory)
+      if (d !== 'general') {
+        result.set(key, d)
+        continue
+      }
+    }
+
+    // 2. tagFilesMap 提供的关联文件多数票统计
+    const files =
+      (tag.code ? tagFilesMap?.get(tag.code) : undefined) ||
+      (tag.tagValue ? tagFilesMap?.get(tag.tagValue) : undefined)
+
+    if (files && files.size > 0) {
+      const counts = new Map<MediaDomain, number>()
+      for (const f of files) {
+        let d: MediaDomain = 'general'
+        if (f.includes('/') || f.includes('\\') || f.includes('.')) {
+          d = resolveMediaDomainFromFile(undefined, f)
+        } else {
+          d = resolveMediaDomainFromCategory(f)
+        }
+        if (d !== 'general') {
+          counts.set(d, (counts.get(d) || 0) + 1)
+        }
+      }
+      if (counts.size > 0) {
+        let bestDomain: MediaDomain = 'general'
+        let maxCount = 0
+        let isTie = false
+        for (const [dom, cnt] of counts.entries()) {
+          if (cnt > maxCount) {
+            maxCount = cnt
+            bestDomain = dom
+            isTie = false
+          } else if (cnt === maxCount) {
+            isTie = true
+          }
+        }
+        if (!isTie && bestDomain !== 'general') {
+          result.set(key, bestDomain)
+          continue
+        }
+      }
+    }
+
+    // 3. 待查数据库回填
+    if (tag.code && db && typeof db.prepare === 'function') {
+      tagsNeedingDb.push(tag)
+    } else {
+      result.set(key, 'general')
+    }
+  }
+
+  // 4. 批量查询 SQLite 数据库
+  if (tagsNeedingDb.length > 0 && db && typeof db.prepare === 'function') {
+    try {
+      const placeholders = tagsNeedingDb.map(() => '?').join(',')
+      const codes = tagsNeedingDb.map(t => t.code!)
+      const sql = `
+        SELECT ftr.tag_code, f.file_group, f.extension, wf.path
+        FROM file_tag_relations ftr
+        JOIN files f ON f.file_fingerprint = ftr.file_fingerprint
+        LEFT JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+        WHERE ftr.tag_code IN (${placeholders})
+        LIMIT 500
+      `
+      const rows = db.prepare(sql).all(...codes) as Array<{
+        tag_code: string
+        file_group: string | null
+        extension: string | null
+        path: string | null
+      }>
+
+      const countsByTag = new Map<string, Map<MediaDomain, number>>()
+      for (const row of rows) {
+        if (!countsByTag.has(row.tag_code)) {
+          countsByTag.set(row.tag_code, new Map())
+        }
+        const counts = countsByTag.get(row.tag_code)!
+        const d = row.path
+          ? resolveMediaDomainFromFile(row.file_group, row.path)
+          : row.file_group
+            ? resolveMediaDomainFromCategory(row.file_group)
+            : row.extension
+              ? resolveMediaDomainFromFile(undefined, 'dummy.' + row.extension)
+              : 'general'
+        if (d !== 'general') {
+          counts.set(d, (counts.get(d) || 0) + 1)
+        }
+      }
+
+      for (const tag of tagsNeedingDb) {
+        const key = tag.code || tag.tagValue || ''
+        const counts = countsByTag.get(tag.code!)
+        if (counts && counts.size > 0) {
+          let bestDomain: MediaDomain = 'general'
+          let maxCount = 0
+          let isTie = false
+          for (const [dom, cnt] of counts.entries()) {
+            if (cnt > maxCount) {
+              maxCount = cnt
+              bestDomain = dom
+              isTie = false
+            } else if (cnt === maxCount) {
+              isTie = true
+            }
+          }
+          result.set(key, !isTie && bestDomain !== 'general' ? bestDomain : 'general')
+        } else {
+          result.set(key, 'general')
+        }
+      }
+    } catch (err) {
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] 批量解析标签媒体领域失败，兜底 general:',
+        err
+      )
+      for (const tag of tagsNeedingDb) {
+        const key = tag.code || tag.tagValue || ''
+        if (!result.has(key)) result.set(key, 'general')
+      }
+    }
+  }
+
+  return result
 }
 
 export const tagTreeQueryDimensionTreeMixin = {
@@ -2740,10 +2946,217 @@ export const tagTreeQueryDimensionTreeMixin = {
     // 若未层级化的平铺标签不足 2 个，无法聚类，保持原状
     if (unhierarchizedTags.length < 2) return
 
-    // 2. 构造聚类文档并执行聚类（优先复用指纹缓存 -> 运行就绪的 Omni HAC -> 确定性本地词根聚类兜底）
+    // 2. 媒体领域正交投影聚类（Media-Domain Aware Orthogonal Projection Clustering）
+    // 遵从 AGENTS.md §2 与 controlled-concepts-guide.md §7 全媒体领域排他门控铁律，
+    // 结合介质领域（音频、文档、代码、图像、视频等）做领域隔离聚类投影，杜绝跨介质语义污染
+    const tagDomainMap = batchResolveTagsMediaDomain(
+      unhierarchizedTags,
+      tagFilesMap,
+      (this as any).db
+    )
+    const tagsByDomain = new Map<MediaDomain, DimensionTag[]>()
+
+    for (const t of unhierarchizedTags) {
+      const domain = tagDomainMap.get(t.code || t.tagValue || '') || 'general'
+      t.meta = { ...t.meta, mediaDomain: domain }
+      if (!tagsByDomain.has(domain)) {
+        tagsByDomain.set(domain, [])
+      }
+      tagsByDomain.get(domain)!.push(t)
+    }
+
+    // 并发按领域执行隔离聚类（消灭跨介质语义污染）
+    const domainClusterEntries = Array.from(tagsByDomain.entries())
+    const domainResults = await Promise.all(
+      domainClusterEntries.map(async ([domain, domainTags]) => {
+        if (domainTags.length < 2) {
+          return { domain, clusters: [], unclusteredTags: domainTags }
+        }
+        const res = await this.clusterDomainTagSubset(g, domain, domainTags)
+        return { domain, clusters: res.clusters, unclusteredTags: res.unclusteredTags }
+      })
+    )
+
+    const totalClusters = domainResults.reduce((sum, r) => sum + r.clusters.length, 0)
+    if (totalClusters === 0) return
+
+    // 3. 构建聚类父节点并重塑标签层级
+    const assignedMemberTags = new Set<DimensionTag>()
+    const clusterParentTags: DimensionTag[] = []
+    const clusteredMemberTags: DimensionTag[] = []
+    const seenClusterNames = new Set<string>()
+
+    for (const { domain, clusters } of domainResults) {
+      for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
+        const cluster = clusters[cIdx]
+        const memberTags = cluster.tags.filter(t => !assignedMemberTags.has(t))
+        if (memberTags.length < 2) continue
+
+        for (const m of memberTags) assignedMemberTags.add(m)
+
+        let clusterName = cluster.folderName?.trim() || `分类 ${cIdx + 1}`
+        if (clusterName === g.name?.trim()) {
+          clusterName = `${clusterName}分类`
+        }
+        if (tags.some(t => t.tagValue === clusterName)) {
+          clusterName = `${clusterName}分类`
+        }
+        if (seenClusterNames.has(clusterName)) {
+          const domainName = getMediaDomainCanonicalName(domain)
+          clusterName =
+            domainName && domain !== 'general'
+              ? `${clusterName} (${domainName})`
+              : `${clusterName} (${cIdx + 1})`
+        }
+        seenClusterNames.add(clusterName)
+
+        const rootGroupCode = getGroupRootCode(g)
+        const domainSlug = domain && domain !== 'general' ? `${domain}_` : ''
+        const clusterCode = `${rootGroupCode}.cluster_${domainSlug}${DeterministicCodeGenerator.generate(clusterName, 'zh-CN')}`
+        const clusterCodePath = `/${rootGroupCode}/${clusterCode}`
+        const clusterNamePath = `/${g.name}/${clusterName}`
+
+        let clusterFileCount = 0
+        if (tagFilesMap && tagFilesMap.size > 0) {
+          const fileSet = new Set<string>()
+          for (const m of memberTags) {
+            if (m.code && tagFilesMap.has(m.code)) {
+              for (const fp of tagFilesMap.get(m.code)!) {
+                fileSet.add(fp)
+              }
+            } else if (m.tagValue && tagFilesMap.has(m.tagValue)) {
+              for (const fp of tagFilesMap.get(m.tagValue)!) {
+                fileSet.add(fp)
+              }
+            }
+          }
+          clusterFileCount =
+            fileSet.size > 0
+              ? fileSet.size
+              : memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+        } else {
+          clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+        }
+
+        const memberCodePaths: string[] = []
+        for (const m of memberTags) {
+          if (m.codePaths && m.codePaths.length > 0) {
+            memberCodePaths.push(...m.codePaths.filter(p => p && !p.includes('.cluster_')))
+          } else if (m.codePath && !m.codePath.includes('.cluster_')) {
+            memberCodePaths.push(m.codePath)
+          }
+        }
+        const validMemberCodePaths = Array.from(new Set(memberCodePaths))
+
+        const clusterParentTag: DimensionTag = {
+          dimensionId: g.id,
+          dimensionCode: rootGroupCode,
+          dimensionName: g.name,
+          tagValue: clusterName,
+          fileCount: clusterFileCount,
+          level: 1,
+          code: clusterCode,
+          codePath: clusterCodePath,
+          codePaths: validMemberCodePaths.length > 0 ? validMemberCodePaths : undefined,
+          namePath: clusterNamePath,
+          viaParentCode: rootGroupCode,
+          parentCodes: [rootGroupCode],
+          isMultiSelect: g.isMultiSelect ?? false,
+          order: 9999,
+          meta: {
+            isClusterNode: true,
+            mediaDomain: domain,
+            clusterMemberCount: memberTags.length,
+            fromControlledTree: true,
+            order: 9999,
+            sort_order: 9999
+          }
+        }
+        clusterParentTags.push(clusterParentTag)
+
+        if (pathCountMap) {
+          const normClusterPath = normalizeCodePath(clusterCodePath)
+          if (normClusterPath) {
+            pathCountMap[normClusterPath] = clusterFileCount
+          }
+        }
+
+        for (const m of memberTags) {
+          const originalCodePath = m.codePath
+          m.viaParentCode = clusterCode
+          m.parentCodes = [clusterCode]
+          m.level = 2
+          const memberCodeSeg = m.code || m.tagValue
+          const memberClusterCodePath = `${clusterCodePath}/${memberCodeSeg}`
+          const memberClusterNamePath = `${clusterNamePath}/${m.tagValue}`
+
+          // 保留原有物化路径在 codePaths 中供底层 SQL 检索过滤，主 codePath 更新为当前树形分支路径
+          if (!m.codePaths || m.codePaths.length === 0) {
+            m.codePaths =
+              originalCodePath && !originalCodePath.includes('.cluster_') ? [originalCodePath] : []
+          } else {
+            m.codePaths = m.codePaths.filter(p => p && !p.includes('.cluster_'))
+          }
+          m.codePath = memberClusterCodePath
+          m.namePath = memberClusterNamePath
+          m.meta = { ...m.meta, mediaDomain: domain }
+          if (pathCountMap) {
+            pathCountMap[normalizeCodePath(memberClusterCodePath)] = m.fileCount || 0
+            if (originalCodePath) {
+              const normOrig = normalizeCodePath(originalCodePath)
+              if (normOrig && pathCountMap[normOrig] === undefined) {
+                pathCountMap[normOrig] = m.fileCount || 0
+              }
+            }
+          }
+          clusteredMemberTags.push(m)
+        }
+      }
+    }
+
+    // 未被聚类的独立标签（包含单标签在所属领域无法成簇者）仍平铺在第一层
+    const unassignedFlatTags = unhierarchizedTags.filter(t => !assignedMemberTags.has(t))
+
+    // 更新维度组标签列表：已经依靠 code_path / parentCodes 层级化的标签优先展示
+    g.tags = [
+      ...hierarchizedTags,
+      ...clusterParentTags,
+      ...clusteredMemberTags,
+      ...unassignedFlatTags
+    ]
+
+    // 4. 同步更新 _omniChildrenMap 邻接边（若未初始化则主动建立，确保 Omni 快速通道下穿透边不丢失）
+    if (!(this as any)._omniChildrenMap) {
+      ;(this as any)._omniChildrenMap = new Map<string, Set<string>>()
+    }
+    for (const clusterParent of clusterParentTags) {
+      const clusterCode = clusterParent.code!
+      if (!(this as any)._omniChildrenMap.has(clusterCode)) {
+        ;(this as any)._omniChildrenMap.set(clusterCode, new Set())
+      }
+      const members = clusteredMemberTags.filter(m => m.viaParentCode === clusterCode)
+      for (const m of members) {
+        if (m.code) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.code)
+        if (m.tagValue) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.tagValue)
+      }
+    }
+  },
+
+  async clusterDomainTagSubset(
+    g: DimensionGroup,
+    domain: MediaDomain,
+    domainTags: DimensionTag[]
+  ): Promise<{
+    clusters: Array<{ folderName: string; tags: DimensionTag[] }>
+    unclusteredTags: DimensionTag[]
+  }> {
+    if (domainTags.length < 2) {
+      return { clusters: [], unclusteredTags: domainTags }
+    }
+
     const tagByFingerprint = new Map<string, DimensionTag>()
-    const clusterDocs: OmniClusterDocument[] = unhierarchizedTags.map((tag, idx) => {
-      const fp = tag.code || `${g.code || g.id}__${tag.tagValue || idx}`
+    const clusterDocs: OmniClusterDocument[] = domainTags.map((tag, idx) => {
+      const fp = tag.code || `${g.code || g.id}__${domain}__${tag.tagValue || idx}`
       tagByFingerprint.set(fp, tag)
       return {
         fingerprint: fp,
@@ -2759,8 +3172,9 @@ export const tagTreeQueryDimensionTreeMixin = {
     let isOmniClustered = false
     const isOmniReady = typeof omniService?.isReady === 'function' && omniService.isReady()
 
-    // 0 路：内存指纹缓存（同组标签指纹未变化时直接命中，0ms 无额外计算；若缓存来自本地兜底且 Omni 已就绪，则主动突破缓存升级聚类质量）
-    const cacheKey = `${getGroupRootCode(g)}::${unhierarchizedTags.length}::${unhierarchizedTags
+    // 0 路：内存指纹缓存（同组同领域标签指纹未变化时直接命中，0ms 无额外计算；若缓存来自本地兜底且 Omni 已就绪，则主动突破缓存升级聚类质量）
+    const domainPart = domain !== 'general' ? `domain_${domain}::` : ''
+    const cacheKey = `${getGroupRootCode(g)}::${domainPart}${domainTags.length}::${domainTags
       .map(t => `${t.code || t.tagValue}:${t.fileCount || 0}`)
       .sort()
       .join(';')}`
@@ -2836,7 +3250,7 @@ export const tagTreeQueryDimensionTreeMixin = {
       } catch (err) {
         logger.debug(
           LogCategory.VIRTUAL_DIRECTORY,
-          `[TagTreeQuery] omniService.clusterDocuments 异常或超时，将使用确定性本地聚类:`,
+          `[TagTreeQuery] omniService.clusterDocuments 异常或超时 (${domain})，将使用确定性本地聚类:`,
           err
         )
       }
@@ -2844,7 +3258,7 @@ export const tagTreeQueryDimensionTreeMixin = {
 
     // B 路：确定性本地词根/频次聚类兜底（毫秒级无外部依赖，冷启动与超时平滑托底）
     if (clusters.length === 0) {
-      clusters = fallbackClusterTags(unhierarchizedTags, g.name || g.code || '')
+      clusters = fallbackClusterTags(domainTags, g.name || g.code || '')
       isOmniClustered = false
     }
 
@@ -2857,7 +3271,7 @@ export const tagTreeQueryDimensionTreeMixin = {
         clusters: clusters.map(c => ({
           folderName: c.folderName,
           fingerprints: c.tags
-            .map(t => t.code || `${g.code || g.id}__${t.tagValue}`)
+            .map(t => t.code || `${g.code || g.id}__${domain}__${t.tagValue}`)
             .filter(Boolean)
         })),
         timestamp: Date.now(),
@@ -2865,155 +3279,12 @@ export const tagTreeQueryDimensionTreeMixin = {
       })
     }
 
-    // 若聚类未产出有效簇（簇内成员 >= 2），保持平铺
-    if (clusters.length === 0) return
-
-    // 3. 构建聚类父节点并重塑标签层级
-    const assignedMemberTags = new Set<DimensionTag>()
-    const clusterParentTags: DimensionTag[] = []
-    const clusteredMemberTags: DimensionTag[] = []
-    const seenClusterNames = new Set<string>()
-
-    for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
-      const cluster = clusters[cIdx]
-      const memberTags = cluster.tags.filter(t => !assignedMemberTags.has(t))
-      if (memberTags.length < 2) continue
-
-      for (const m of memberTags) assignedMemberTags.add(m)
-
-      let clusterName = cluster.folderName?.trim() || `分类 ${cIdx + 1}`
-      if (clusterName === g.name?.trim()) {
-        clusterName = `${clusterName}分类`
-      }
-      if (tags.some(t => t.tagValue === clusterName)) {
-        clusterName = `${clusterName}分类`
-      }
-      if (seenClusterNames.has(clusterName)) {
-        clusterName = `${clusterName} (${cIdx + 1})`
-      }
-      seenClusterNames.add(clusterName)
-
-      const rootGroupCode = getGroupRootCode(g)
-      const clusterCode = `${rootGroupCode}.cluster_${DeterministicCodeGenerator.generate(clusterName, 'zh-CN')}`
-      const clusterCodePath = `/${rootGroupCode}/${clusterCode}`
-      const clusterNamePath = `/${g.name}/${clusterName}`
-
-      let clusterFileCount = 0
-      if (tagFilesMap && tagFilesMap.size > 0) {
-        const fileSet = new Set<string>()
-        for (const m of memberTags) {
-          if (m.code && tagFilesMap.has(m.code)) {
-            for (const fp of tagFilesMap.get(m.code)!) {
-              fileSet.add(fp)
-            }
-          }
-        }
-        clusterFileCount =
-          fileSet.size > 0
-            ? fileSet.size
-            : memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
-      } else {
-        clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
-      }
-
-      const memberCodePaths: string[] = []
-      for (const m of memberTags) {
-        if (m.codePaths && m.codePaths.length > 0) {
-          memberCodePaths.push(...m.codePaths.filter(p => p && !p.includes('.cluster_')))
-        } else if (m.codePath && !m.codePath.includes('.cluster_')) {
-          memberCodePaths.push(m.codePath)
-        }
-      }
-      const validMemberCodePaths = Array.from(new Set(memberCodePaths))
-
-      const clusterParentTag: DimensionTag = {
-        dimensionId: g.id,
-        dimensionCode: rootGroupCode,
-        dimensionName: g.name,
-        tagValue: clusterName,
-        fileCount: clusterFileCount,
-        level: 1,
-        code: clusterCode,
-        codePath: clusterCodePath,
-        codePaths: validMemberCodePaths.length > 0 ? validMemberCodePaths : undefined,
-        namePath: clusterNamePath,
-        viaParentCode: rootGroupCode,
-        parentCodes: [rootGroupCode],
-        isMultiSelect: g.isMultiSelect ?? false,
-        order: 9999,
-        meta: {
-          isClusterNode: true,
-          clusterMemberCount: memberTags.length,
-          fromControlledTree: true,
-          order: 9999,
-          sort_order: 9999
-        }
-      }
-      clusterParentTags.push(clusterParentTag)
-
-      if (pathCountMap) {
-        const normClusterPath = normalizeCodePath(clusterCodePath)
-        if (normClusterPath) {
-          pathCountMap[normClusterPath] = clusterFileCount
-        }
-      }
-
-      for (const m of memberTags) {
-        const originalCodePath = m.codePath
-        m.viaParentCode = clusterCode
-        m.parentCodes = [clusterCode]
-        m.level = 2
-        const memberCodeSeg = m.code || m.tagValue
-        const memberClusterCodePath = `${clusterCodePath}/${memberCodeSeg}`
-        const memberClusterNamePath = `${clusterNamePath}/${m.tagValue}`
-
-        // 保留原有物化路径在 codePaths 中供底层 SQL 检索过滤，主 codePath 更新为当前树形分支路径
-        if (!m.codePaths || m.codePaths.length === 0) {
-          m.codePaths =
-            originalCodePath && !originalCodePath.includes('.cluster_') ? [originalCodePath] : []
-        } else {
-          m.codePaths = m.codePaths.filter(p => p && !p.includes('.cluster_'))
-        }
-        m.codePath = memberClusterCodePath
-        m.namePath = memberClusterNamePath
-        if (pathCountMap) {
-          pathCountMap[normalizeCodePath(memberClusterCodePath)] = m.fileCount || 0
-          if (originalCodePath) {
-            const normOrig = normalizeCodePath(originalCodePath)
-            if (normOrig && pathCountMap[normOrig] === undefined) {
-              pathCountMap[normOrig] = m.fileCount || 0
-            }
-          }
-        }
-        clusteredMemberTags.push(m)
-      }
+    const assigned = new Set<DimensionTag>()
+    for (const c of clusters) {
+      for (const t of c.tags) assigned.add(t)
     }
+    const unclusteredTags = domainTags.filter(t => !assigned.has(t))
 
-    // 未被聚类的独立标签仍平铺在第一层
-    const unassignedFlatTags = unhierarchizedTags.filter(t => !assignedMemberTags.has(t))
-
-    // 更新维度组标签列表：已经依靠 code_path / parentCodes 层级化的标签优先展示
-    g.tags = [
-      ...hierarchizedTags,
-      ...clusterParentTags,
-      ...clusteredMemberTags,
-      ...unassignedFlatTags
-    ]
-
-    // 4. 同步更新 _omniChildrenMap 邻接边（若未初始化则主动建立，确保 Omni 快速通道下穿透边不丢失）
-    if (!(this as any)._omniChildrenMap) {
-      ;(this as any)._omniChildrenMap = new Map<string, Set<string>>()
-    }
-    for (const clusterParent of clusterParentTags) {
-      const clusterCode = clusterParent.code!
-      if (!(this as any)._omniChildrenMap.has(clusterCode)) {
-        ;(this as any)._omniChildrenMap.set(clusterCode, new Set())
-      }
-      const members = clusteredMemberTags.filter(m => m.viaParentCode === clusterCode)
-      for (const m of members) {
-        if (m.code) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.code)
-        if (m.tagValue) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.tagValue)
-      }
-    }
+    return { clusters, unclusteredTags }
   }
 } satisfies ThisType<TagTreeQuery> & TagTreeQueryDimensionTree

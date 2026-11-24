@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react'
 import {
   WorkspaceDirectory,
   WorkspaceConfig,
@@ -340,7 +340,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
   }
 
   // 刷新工作区列表数据
-  const refreshWorkspaceData = async () => {
+  const refreshWorkspaceData = useCallback(async () => {
     try {
       if (window.electronAPI?.getAllWorkspaceDirectories) {
         const dirs = await window.electronAPI.getAllWorkspaceDirectories()
@@ -358,7 +358,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
     } catch (err) {
       console.warn('[WorkspaceSettingsDialog] 刷新工作目录失败:', err)
     }
-  }
+  }, [currentWorkspace?.id])
 
   // 4-Tab 完整还原定义 (目录维护、检索式引擎、文件内容萃取、忽略规则)
   // 内置常驻项：目录维护与安全重置、检索式引擎、文件准入与包含排除；
@@ -759,7 +759,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       )}
                     >
                       <MemoizedBasicAIEngineTab
-                        key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
+                        key={activeWorkspace.id}
                         workspace={activeWorkspace}
                         hardwareInfo={hardwareInfo}
                         isActive={activeTab === 'basic_ai_engine'}
@@ -780,7 +780,7 @@ export const WorkspaceSettingsDialog: React.FC = () => {
                       )}
                     >
                       <MemoizedContentExtractionTab
-                        key={`${activeWorkspace.id}-${activeWorkspace.workspace_config}`}
+                        key={activeWorkspace.id}
                         workspace={activeWorkspace}
                         hardwareInfo={hardwareInfo}
                         isActive={activeTab === 'content_extraction'}
