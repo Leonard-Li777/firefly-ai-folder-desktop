@@ -16,11 +16,9 @@ import {
 
 import { useFileDetails } from './hooks/useFileDetails'
 import { resolveThumbnailUrl, toSafeFileUrl } from '../FileList/components/thumbnail-url-utils'
-import {
-  useDetailsCardsStore,
-  DETAILS_CARD_IDS,
-  DetailsCardId
-} from './stores/details-cards-store'
+import { useDetailsCardsStore, DETAILS_CARD_IDS, DetailsCardId } from './stores/details-cards-store'
+import { PANEL_IDS } from '../layout-switcher'
+import { useLayoutSwitcherStore } from '../../../stores/layout-switcher-store'
 import { DetailsMicroActionStrip } from './components/DetailsMicroActionStrip'
 import { DetailsPinnedBanner } from './components/DetailsPinnedBanner'
 import { DetailsBottomActions } from './components/DetailsBottomActions'
@@ -54,7 +52,7 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
   workspaceDirectoryType,
   currentDirectoryPath,
   isRealDirectory = true,
-  previewCollapsed = true
+  previewCollapsed
 }) => {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const {
@@ -82,18 +80,35 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
   const showDirectory = !item
   const isDir = Boolean(isDirectory)
 
+  // 监听全局布局状态中预览面板的开启/折叠态
+  const isPreviewInStore = useLayoutSwitcherStore(s =>
+    (s.visiblePanels[pageId] ?? []).includes(PANEL_IDS.PREVIEW)
+  )
+  const isPreviewOpen = previewCollapsed !== undefined ? !previewCollapsed : isPreviewInStore
+
   // 微宫格 4 大卡片开闭状态管理
   const visibleCards = useDetailsCardsStore(s => s.getVisibleCards(pageId))
   const toggleCard = useDetailsCardsStore(s => s.toggleCard)
 
-  // 目录模式下仅展示分析指标，单文件模式展示用户可见的微宫格卡片集合
+  // 目录模式下仅展示分析指标；单文件模式展示用户可见的微宫格卡片集合
+  // 交互需求：如果当前开启了大预览区块，则迷你预览卡片默认排到最后；否则排到最前
   const isDirMode = isDir || showDirectory
   const effectiveCards = useMemo(() => {
     if (isDirMode) {
       return [DETAILS_CARD_IDS.METRICS]
     }
-    return visibleCards
-  }, [isDirMode, visibleCards])
+    const cards = [...visibleCards]
+    const miniIdx = cards.indexOf(DETAILS_CARD_IDS.MINI_PREVIEW)
+    if (miniIdx !== -1) {
+      cards.splice(miniIdx, 1)
+      if (isPreviewOpen) {
+        cards.push(DETAILS_CARD_IDS.MINI_PREVIEW)
+      } else {
+        cards.unshift(DETAILS_CARD_IDS.MINI_PREVIEW)
+      }
+    }
+    return cards
+  }, [isDirMode, visibleCards, isPreviewOpen])
 
   const isFileAnalysis = React.useCallback(
     (res: any) =>
@@ -249,7 +264,7 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
             showDirectory={showDirectory}
             analysisResult={analysisResult}
             isFileAnalysis={isFileAnalysis}
-            previewCollapsed={previewCollapsed}
+            previewCollapsed={!isPreviewOpen}
           />
         )
       case DETAILS_CARD_IDS.SUMMARY:
