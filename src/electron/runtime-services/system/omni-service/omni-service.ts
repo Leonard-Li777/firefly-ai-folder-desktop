@@ -7,6 +7,7 @@ import * as crypto from 'node:crypto'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow, dialog, powerMonitor, shell } from 'electron'
+import { Agent as UndiciAgent, Dispatcher } from 'undici'
 import {
   ResourceLocator,
   logger,
@@ -137,6 +138,30 @@ export class OmniService {
   private dmlCrashMarkerPath: string | null = null
   /** 是否已判定需强制纯 CPU（进程内即时生效，供自愈重试；跨进程由标记文件承载） */
   private forceCpuForNextStarts = false
+
+  /**
+   * Omni 本地微服务专用 HTTP Dispatcher
+   * 将 headersTimeout 与 bodyTimeout 设为 0（禁用 undici 内部默认 300s 超时），
+   * 确保长耗时视频/音频多模态感知或批量向量计算完全由 AbortSignal 业务超时控制，
+   * 杜绝在 300s 时触发 UND_ERR_HEADERS_TIMEOUT 扼杀 CPU 兜底推理。
+   */
+  private readonly omniDispatcher: Dispatcher = new UndiciAgent({
+    headersTimeout: 0,
+    bodyTimeout: 0,
+    connectTimeout: 10_000,
+    keepAliveTimeout: 30_000,
+    keepAliveMaxTimeout: 60_000
+  })
+
+  /**
+   * 针对 Omni 本地进程的 fetch 请求封装，统一注入 omniDispatcher
+   */
+  private omniFetch(url: string | URL, init?: RequestInit): Promise<Response> {
+    return fetch(url, {
+      ...init,
+      dispatcher: this.omniDispatcher
+    } as RequestInit)
+  }
 
   /** 开发态二进制热更新检测周期 (毫秒) */
   private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
@@ -2860,7 +2885,7 @@ export class OmniService {
     )
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/extract`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -3257,7 +3282,7 @@ export class OmniService {
       const combinedSignal = options?.signal
         ? AbortSignal.any([timeoutSignal, options.signal])
         : timeoutSignal
-      const res = await fetch(`${this.baseUrl}/api/perceive`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/perceive`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3443,7 +3468,7 @@ export class OmniService {
           fetchSignal = options.signal
         }
       }
-      const res = await fetch(`${this.baseUrl}/api/audio/transcribe`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/audio/transcribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -3491,7 +3516,7 @@ export class OmniService {
     }
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/audio/convert`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/audio/convert`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -3536,7 +3561,7 @@ export class OmniService {
     const timeoutMs = options?.timeoutMs || 30000
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/vision/tags`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/vision/tags`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -3688,7 +3713,7 @@ export class OmniService {
   ): Promise<OmniHybridSearchResponse | null> {
     await this.ensureRunning()
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/search/hybrid`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/search/hybrid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(options),
