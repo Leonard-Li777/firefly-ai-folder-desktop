@@ -466,7 +466,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     return (
       <header
         ref={headerRef}
-        className="relative z-50 flex-shrink-0 bg-background/98 dark:bg-background/98 backdrop-blur-md border-b border-border/60 dark:border-border/40 shadow-sm w-full flex flex-col"
+        className={cn(
+          'relative flex-shrink-0 bg-background/98 dark:bg-background/98 backdrop-blur-md border-b border-border/60 dark:border-border/40 shadow-sm w-full flex flex-col',
+          isAnyDropdownOpen ? 'z-[100]' : 'z-50'
+        )}
         style={{ WebkitAppRegion: isAnyDropdownOpen ? 'no-drag' : 'drag' } as React.CSSProperties}
       >
         {/* Dropdown Overlays */}
@@ -714,7 +717,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
         {/* 第二排：拉通背景、无圆角的统一 Hub 与弹性宽度自适应搜索框 */}
         {/* 拖拽：本排不整体设 no-drag，条带空白处继承 header 的 drag；仅 Hub 与搜索框各自 no-drag */}
-        <div className="flex items-center w-full min-w-0 gap-3 sm:gap-4 md:gap-6 px-3 sm:px-4 py-1.5 border-t border-[var(--surface-band-border)] bg-[var(--surface-hub)] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.55)] dark:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95] overflow-hidden">
+        <div className="flex items-center w-full min-w-0 gap-3 sm:gap-4 md:gap-6 px-3 sm:px-4 py-1.5 border-t border-[var(--surface-band-border)] bg-[var(--surface-hub)] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.55)] dark:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95]">
           {/* Hub 区域：工作目录选择器 + 步骤指示器（移除独立外层胶囊与圆角，与第二排背景融为一体；空间不足时允许等比压缩） */}
           <div
             data-testid="directory-header-hub"

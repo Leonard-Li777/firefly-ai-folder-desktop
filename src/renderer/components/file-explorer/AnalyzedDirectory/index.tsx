@@ -441,69 +441,67 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-300 slide-in-from-bottom-1">
-      <div>
-        <DirectoryHeader
-          currentWorkspaceDirectory={currentWorkspaceDirectory}
-          workspaceDirectories={workspaceDirectories}
-          showDirectoryDropdown={showDirectoryDropdown}
-          isRealDirectory={false}
-          onToggleDirectoryDropdown={forceState =>
-            setShowDirectoryDropdown(forceState !== undefined ? forceState : !showDirectoryDropdown)
-          }
-          onSelectWorkspaceDirectory={async d => {
-            await window.electronAPI!.setCurrentWorkspaceDirectory(d.path)
-            setCurrentWorkspaceDirectory(d)
-            setShowDirectoryDropdown(false)
-          }}
-          onAddWorkspaceDirectory={async type => {
-            const res = await window.electronAPI!.utils.showOpenDialog({
-              properties: ['openDirectory']
-            })
-            if (!res.canceled && res.filePaths.length > 0) {
-              const p = res.filePaths[0]
-              const n = p.split(/[\\/]/).pop() || p
-              const newDir: WorkspaceDirectory = {
-                path: p,
-                name: n,
-                type,
-                recursive: true,
-                isActive: true,
-                createdAt: new Date(),
-                updatedAt: new Date()
-              }
-              try {
-                await window.electronAPI!.addWorkspaceDirectory(newDir)
-                await loadWorkspaceDirectories()
-                const { isPathEqual } = window.electronAPI!.utils
-                const allDirs = await window.electronAPI!.getAllWorkspaceDirectories()
-                const official = allDirs.find(d => isPathEqual(d.path, p))
-                const target = official || newDir
-                await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
-                setCurrentWorkspaceDirectory(target)
-                useFileExplorerStore.getState().setFiles([])
-                useFileExplorerStore.getState().setDirectories([])
-                useFileExplorerStore.getState().setSelectedFiles([])
-                navigate('/real-directory')
-                if (target?.id) {
-                  useSettingsStore.getState().openWorkspaceSettings({
-                    workspaceId: target.id,
-                    targetTab: 'wizard'
-                  })
-                }
-              } catch (e: any) {
-                toast.error(e?.message || t('添加工作目录失败'))
-              }
+      <DirectoryHeader
+        currentWorkspaceDirectory={currentWorkspaceDirectory}
+        workspaceDirectories={workspaceDirectories}
+        showDirectoryDropdown={showDirectoryDropdown}
+        isRealDirectory={false}
+        onToggleDirectoryDropdown={forceState =>
+          setShowDirectoryDropdown(forceState !== undefined ? forceState : !showDirectoryDropdown)
+        }
+        onSelectWorkspaceDirectory={async d => {
+          await window.electronAPI!.setCurrentWorkspaceDirectory(d.path)
+          setCurrentWorkspaceDirectory(d)
+          setShowDirectoryDropdown(false)
+        }}
+        onAddWorkspaceDirectory={async type => {
+          const res = await window.electronAPI!.utils.showOpenDialog({
+            properties: ['openDirectory']
+          })
+          if (!res.canceled && res.filePaths.length > 0) {
+            const p = res.filePaths[0]
+            const n = p.split(/[\\/]/).pop() || p
+            const newDir: WorkspaceDirectory = {
+              path: p,
+              name: n,
+              type,
+              recursive: true,
+              isActive: true,
+              createdAt: new Date(),
+              updatedAt: new Date()
             }
-          }}
-          dropdownRef={dropdownRef}
-          isLoading={isLoading || isDimensionLoading}
-          onSearch={kw => {
-            if (selectedTags.length > 0) clearSelectedTags()
-            setAnalyzedDirectoryKeyword(kw)
-          }}
-          layoutPageId={PAGE_IDS.ANALYZED_DIRECTORY}
-        />
-      </div>
+            try {
+              await window.electronAPI!.addWorkspaceDirectory(newDir)
+              await loadWorkspaceDirectories()
+              const { isPathEqual } = window.electronAPI!.utils
+              const allDirs = await window.electronAPI!.getAllWorkspaceDirectories()
+              const official = allDirs.find(d => isPathEqual(d.path, p))
+              const target = official || newDir
+              await window.electronAPI!.setCurrentWorkspaceDirectory(target.path)
+              setCurrentWorkspaceDirectory(target)
+              useFileExplorerStore.getState().setFiles([])
+              useFileExplorerStore.getState().setDirectories([])
+              useFileExplorerStore.getState().setSelectedFiles([])
+              navigate('/real-directory')
+              if (target?.id) {
+                useSettingsStore.getState().openWorkspaceSettings({
+                  workspaceId: target.id,
+                  targetTab: 'wizard'
+                })
+              }
+            } catch (e: any) {
+              toast.error(e?.message || t('添加工作目录失败'))
+            }
+          }
+        }}
+        dropdownRef={dropdownRef}
+        isLoading={isLoading || isDimensionLoading}
+        onSearch={kw => {
+          if (selectedTags.length > 0) clearSelectedTags()
+          setAnalyzedDirectoryKeyword(kw)
+        }}
+        layoutPageId={PAGE_IDS.ANALYZED_DIRECTORY}
+      />
 
       {currentWorkspaceDirectory ? (
         <div className="flex flex-1 flex-col overflow-hidden relative">
