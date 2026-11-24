@@ -211,10 +211,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
               const targetHighlightRange =
                 (fileItem as any)?.highlightRange ??
                 ((fileItem as any)?.matchedChunk
-                  ? [
-                      (fileItem as any).matchedChunk.startSec,
-                      (fileItem as any).matchedChunk.endSec
-                    ]
+                  ? [(fileItem as any).matchedChunk.startSec, (fileItem as any).matchedChunk.endSec]
                   : undefined)
 
               if (routeType !== 'unsupported') {
@@ -417,12 +414,12 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
         const target = e.target as HTMLElement
         if (!target.closest('.checkbox-cell')) {
           data.onItemClick(index, e)
-          // 分栏模式下，单击可预览文件则切换预览，不可预览则回到提示页
+          // 分栏与全屏模式下，单击可预览文件则自动触发预览，不可预览则回到提示页
           const splitState = usePreviewOverlayStore.getState()
           const pageMode = data.pageId
             ? (splitState.pageStates[data.pageId]?.mode ?? 'split')
             : undefined
-          if (pageMode === 'split' && fileItem) {
+          if (pageMode !== 'closed' && fileItem) {
             const ext =
               fileItem.extension ||
               getExtFromSmartName(fileItem.smartName || item.name) ||
@@ -441,10 +438,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
             const targetHighlightRange =
               (fileItem as any)?.highlightRange ??
               ((fileItem as any)?.matchedChunk
-                ? [
-                    (fileItem as any).matchedChunk.startSec,
-                    (fileItem as any).matchedChunk.endSec
-                  ]
+                ? [(fileItem as any).matchedChunk.startSec, (fileItem as any).matchedChunk.endSec]
                 : undefined)
 
             if (routeType !== 'unsupported') {
@@ -484,20 +478,23 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
         const targetHighlightRange =
           (fileItem as any)?.highlightRange ??
           ((fileItem as any)?.matchedChunk
-            ? [
-                (fileItem as any).matchedChunk.startSec,
-                (fileItem as any).matchedChunk.endSec
-              ]
+            ? [(fileItem as any).matchedChunk.startSec, (fileItem as any).matchedChunk.endSec]
             : undefined)
 
         if (routeType !== 'unsupported') {
           // 可预览 → 打开全局覆盖层
           usePreviewOverlayStore
             .getState()
-            .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, data.pageId, {
-              currentTime: targetCurrentTime,
-              highlightRange: targetHighlightRange
-            })
+            .openPreview(
+              fileItem.path,
+              fileItem.smartName || fileItem.name || '',
+              ext,
+              data.pageId,
+              {
+                currentTime: targetCurrentTime,
+                highlightRange: targetHighlightRange
+              }
+            )
         } else {
           // 不可预览 → 使用系统默认程序打开
           try {
@@ -554,19 +551,14 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
       {(() => {
         const isSwapped = data.swapFileNameDisplay
         const safeItemName = fileItem.name || ''
-        const primaryName = isSwapped
-          ? safeItemName
-          : fileItem.smartName || safeItemName || '-'
-        const hasDiffSmartName =
-          Boolean(fileItem.smartName) && fileItem.smartName !== safeItemName
+        const primaryName = isSwapped ? safeItemName : fileItem.smartName || safeItemName || '-'
+        const hasDiffSmartName = Boolean(fileItem.smartName) && fileItem.smartName !== safeItemName
         const secondaryName = hasDiffSmartName
           ? isSwapped
             ? fileItem.smartName || ''
             : safeItemName
           : ''
-        const nameTooltip = secondaryName
-          ? `${primaryName}\n${secondaryName}`
-          : primaryName
+        const nameTooltip = secondaryName ? `${primaryName}\n${secondaryName}` : primaryName
         const combinedTitle = fileItem.description
           ? `${nameTooltip}\n\n${fileItem.description}`
           : nameTooltip

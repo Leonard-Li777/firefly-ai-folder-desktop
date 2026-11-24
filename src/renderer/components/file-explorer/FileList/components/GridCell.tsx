@@ -207,10 +207,10 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
         const isCheckboxClick = !!(e.target as HTMLElement).closest('.checkbox-cell')
         if (!isCheckboxClick) {
           onItemClick(index, e)
-          // 分栏模式下，单击可预览文件则切换预览，不可预览则回到提示页
+          // 分栏与全屏模式下，单击可预览文件则自动触发预览，不可预览则回到提示页
           const splitState = usePreviewOverlayStore.getState()
           const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : undefined
-          if (pageMode === 'split' && fileItem) {
+          if (pageMode !== 'closed' && fileItem) {
             const ext =
               fileItem.extension ||
               getExtFromSmartName(fileItem.smartName || item.name) ||

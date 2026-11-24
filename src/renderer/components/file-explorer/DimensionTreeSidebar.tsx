@@ -117,9 +117,6 @@ interface DimensionTreeRowProps {
   handleTagClickInternal: (tag: any) => void
 }
 
-const ANCESTOR_GUIDE_BG =
-  'repeating-linear-gradient(to right, transparent 0px, transparent 8px, hsl(var(--muted-foreground) / 0.38) 8px, hsl(var(--muted-foreground) / 0.38) 9px, transparent 9px, transparent 18px)'
-
 const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
   ({
     row,
@@ -195,19 +192,22 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
               : { paddingLeft: `${depth * 18}px` }
           }
         >
-          {/* 贯穿所有 L2+ 父级中轴线的垂直贯线：单层 CSS repeating-linear-gradient 替代 depth 个 div，减少 60%+ DOM 节点 */}
-          {depth > 0 && (
-            <div
-              className="absolute pointer-events-none z-0"
-              style={{
-                left: 0,
-                top: 0,
-                width: `${depth * 18}px`,
-                height: '100%',
-                backgroundImage: ANCESTOR_GUIDE_BG
-              }}
-            />
-          )}
+          {/* 贯穿每一个父级中轴线的垂直贯线 │ (8px 基准，绝对对齐父级箭头中心，末尾分支自然截断) */}
+          {depth > 0 &&
+            Array.from({ length: depth }).map((_, d) => {
+              if (row.ancestorIsLast && row.ancestorIsLast[d]) return null
+              return (
+                <div
+                  key={`ancestor-v-line-${d}`}
+                  className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+                  style={{
+                    left: `${d * 18 + 8}px`,
+                    top: 0,
+                    height: '100%'
+                  }}
+                />
+              )
+            })}
 
           {/* 本层级的 ├── 树分支与贯穿线 */}
           <div
@@ -215,7 +215,10 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
             style={{
               left: `${depth * 18 + 8}px`,
               top: 0,
-              height: row.isLastInGroup ? '13px' : '100%'
+              height:
+                row.isLastInGroup && (!row.hasChildDimensions || !row.isTagExpanded)
+                  ? '13px'
+                  : '100%'
             }}
           />
           {/* 分支横线 ─ */}
@@ -228,6 +231,29 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
               height: '13px'
             }}
           />
+
+          {/* 展开节点向下连接到子级竖轴的拐角引导线 └─ (从当前节点中心 13px 引到行底，再横折到子级层级轴心，抗高分屏像素裂缝) */}
+          {row.hasChildDimensions && row.isTagExpanded && (
+            <>
+              <div
+                className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+                style={{
+                  left: `${depth * 18 + 8}px`,
+                  top: '13px',
+                  bottom: 0
+                }}
+              />
+              <div
+                data-testid="corner-guide-h-line"
+                className="absolute border-b border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+                style={{
+                  left: `${depth * 18 + 8}px`,
+                  bottom: 0,
+                  width: '18px'
+                }}
+              />
+            </>
+          )}
 
           {/* 箭头与 Dot 节点的垂直统一 Icon 框 (-ml-0.5 稍微左移 2px，完美压在 8px 连线上) */}
           <div className="w-5 h-5 flex items-center justify-center shrink-0 mr-0.5 z-10 -ml-0.5">
@@ -1127,7 +1153,9 @@ const DimensionTreeSidebarInner: React.FC<DimensionTreeSidebarProps> = ({
       parentTagValue?: string,
       ancestorChain?: string[],
       depth: number = 0,
-      hostScopeCode?: string
+      hostScopeCode?: string,
+      ancestorIsLast: boolean[] = [],
+      isLastSiblingGroup: boolean = true
     ) {
       const isCollapsed = collapsedDimensionGroups.has(node.id)
       const isTopLevel = node.level === 0
@@ -1206,6 +1234,9 @@ const DimensionTreeSidebarInner: React.FC<DimensionTreeSidebarProps> = ({
         }
         seenRowIds.add(rowId)
 
+        const isLastTagInNode = index === tagsToShow.length - 1
+        const isLastInGroup = isLastSiblingGroup && isLastTagInNode
+
         rows.push({
           id: rowId,
           type: 'tag',
@@ -1220,14 +1251,43 @@ const DimensionTreeSidebarInner: React.FC<DimensionTreeSidebarProps> = ({
           hasChildDimensions,
           isTagExpanded,
           depth,
-          isLastInGroup: index === tagsToShow.length - 1
+          isLastInGroup,
+          ancestorIsLast
         })
 
-        if (hasChildDimensions && isTagExpanded) {
-          childDimensions.forEach(childNode => {
+        if (hasChildDimensions && isTagExpanded && childDimensions) {
+          const activeChildDims = childDimensions.filter(childNode => {
+            let tagsToUse = childNode.tags
+            if (
+              tag.tagValue &&
+              childNode.contextualTags &&
+              childNode.contextualTags[tag.tagValue]
+            ) {
+              const isL3Ext = /扩展名|Extension/i.test(childNode.name)
+              if (!isL3Ext) {
+                tagsToUse = childNode.contextualTags[tag.tagValue]
+              }
+            }
+            const { tagsToShow: childTagsToShow } = handleVisibleAndHiddenTags(
+              { ...childNode, tags: tagsToUse },
+              childNode.childTags
+            )
+            return childTagsToShow && childTagsToShow.length > 0
+          })
+
+          activeChildDims.forEach((childNode, cIdx) => {
+            const isLastChildDim = cIdx === activeChildDims.length - 1
             const nextHostCode =
               tag.hostScopeCode || (depth === 0 ? tag.code : hostScopeCode) || tag.code || undefined
-            traverse(childNode, tag.tagValue, currentChain, depth + 1, nextHostCode)
+            traverse(
+              childNode,
+              tag.tagValue,
+              currentChain,
+              depth + 1,
+              nextHostCode,
+              [...ancestorIsLast, isLastInGroup],
+              isLastChildDim
+            )
           })
         }
       })
@@ -1501,7 +1561,7 @@ const DimensionTreeSidebarInner: React.FC<DimensionTreeSidebarProps> = ({
         ref={containerRef}
         onScroll={handleScroll}
         style={{ overflowAnchor: 'none' }}
-        className="flex-1 overflow-y-auto p-4 custom-scrollbar relative"
+        className="flex-1 overflow-y-auto p-4 custom-scrollbar relative mr-1.5"
       >
         {isVirtualized ? (
           <div style={{ height: `${totalContentHeight}px`, position: 'relative' }}>

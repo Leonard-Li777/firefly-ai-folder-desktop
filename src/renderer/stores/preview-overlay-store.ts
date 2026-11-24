@@ -312,6 +312,9 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
       : state.previewMode
 
     if (pageMode === 'fullscreen') {
+      if (targetPageId) {
+        savePagePreviewMode(targetPageId, 'fullscreen')
+      }
       set({
         isOpen: false,
         filePath: '',
@@ -320,13 +323,14 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
         currentTime: undefined,
         highlightRange: undefined,
         activePageId: '',
-        // 同步清空页面独立状态中的文件信息与跳轴参数
+        previewMode: 'fullscreen',
+        // 同步清空页面独立状态中的文件信息与跳轴参数，但保留全屏模式偏好记忆
         ...(targetPageId
           ? {
               pageStates: {
                 ...state.pageStates,
                 [targetPageId]: {
-                  mode: 'split',
+                  mode: 'fullscreen',
                   filePath: '',
                   fileName: '',
                   extension: '',

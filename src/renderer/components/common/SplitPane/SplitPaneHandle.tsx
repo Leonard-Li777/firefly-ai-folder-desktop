@@ -8,8 +8,8 @@ export interface SplitPaneHandleProps {
   onResizeEnd?: () => void
 }
 
-/** 热区默认向左右/上下各扩展的像素（Tailwind w-4 = 16px 的对称一半） */
-const HIT_DEFAULT = 8
+/** 热区默认向左右/上下各扩展的像素（对称 6px，保证舒适拖拽命中且不干扰相邻面板滚动条） */
+const HIT_DEFAULT = 6
 /** 刚滚动完的瞬间拒绝接管 mousedown/pointerdown 的时间窗 */
 const SCROLL_LOCK_MS = 120
 

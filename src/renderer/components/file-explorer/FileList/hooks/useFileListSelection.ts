@@ -16,7 +16,7 @@ function tryTriggerSplitPreview(item: FileType | DirectoryItem, pageId?: string)
   const state = usePreviewOverlayStore.getState()
   if (!pageId) return
   const pageMode = state.pageStates[pageId]?.mode ?? 'split'
-  if (pageMode !== 'split') return
+  if (pageMode === 'closed') return
   const ext = (item as any).extension || item.path?.split('.').pop() || ''
   const targetCurrentTime = (item as any).currentTime ?? (item as any).matchedChunk?.startSec
   const targetHighlightRange =
