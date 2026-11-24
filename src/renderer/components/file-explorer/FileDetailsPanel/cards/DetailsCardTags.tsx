@@ -26,8 +26,8 @@ export const DetailsCardTags: React.FC<DetailsCardTagsProps> = ({
 
   const hasFileTags = Boolean(
     analysisResult &&
-      ((Array.isArray(analysisResult.tagGroups) && analysisResult.tagGroups.length > 0) ||
-        (Array.isArray(analysisResult.dimensionTags) && analysisResult.dimensionTags.length > 0))
+    ((Array.isArray(analysisResult.tagGroups) && analysisResult.tagGroups.length > 0) ||
+      (Array.isArray(analysisResult.dimensionTags) && analysisResult.dimensionTags.length > 0))
   )
 
   return (
@@ -35,7 +35,7 @@ export const DetailsCardTags: React.FC<DetailsCardTagsProps> = ({
       <div className="w-full flex items-center justify-between mb-2">
         <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
           <MaterialIcon icon="label" className="text-sm text-primary" />
-          {t('受控标签')}
+          {t('文件标签')}
         </span>
       </div>
 
@@ -49,7 +49,7 @@ export const DetailsCardTags: React.FC<DetailsCardTagsProps> = ({
         ) : isFile ? (
           <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-muted-foreground/60 text-xs">
             <MaterialIcon icon="label_off" className="text-2xl mb-1 opacity-50" />
-            <span>{t('暂无受控标签')}</span>
+            <span>{t('暂无文件标签')}</span>
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-4 text-center text-muted-foreground/60 text-xs">

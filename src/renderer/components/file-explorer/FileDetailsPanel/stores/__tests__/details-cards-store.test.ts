@@ -88,7 +88,7 @@ describe('DetailsCardsStore (4微宫格卡片状态代数与单卡防御)', () =
   it('纯函数标题与图标映射正确', () => {
     expect(getDetailsCardTitle(DETAILS_CARD_IDS.MINI_PREVIEW)).toBe('迷你预览')
     expect(getDetailsCardTitle(DETAILS_CARD_IDS.SUMMARY)).toBe('文件名与描述')
-    expect(getDetailsCardTitle(DETAILS_CARD_IDS.TAGS)).toBe('受控标签')
+    expect(getDetailsCardTitle(DETAILS_CARD_IDS.TAGS)).toBe('文件标签')
     expect(getDetailsCardTitle(DETAILS_CARD_IDS.METRICS)).toBe('分析指标')
 
     expect(getDetailsCardIcon(DETAILS_CARD_IDS.MINI_PREVIEW)).toBe('image')
