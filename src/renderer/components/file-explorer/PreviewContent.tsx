@@ -159,7 +159,7 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
               isPrivate && 'ph-mask'
             )}
           >
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
               <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
               <TTSActionGroup
                 text={multimodalContent}
@@ -242,7 +242,7 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
               isPrivate && 'ph-mask'
             )}
           >
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5">
               <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
               <TTSActionGroup
                 text={multimodalContent}

@@ -1041,7 +1041,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 data-testid="preview-multimodal-box"
                 className={cn(multimodalBoxClasses, isPrivate && 'ph-mask')}
               >
-                <div className="flex items-center justify-between mb-1.5 shrink-0">
+                <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
                     text={multimodalContent}
@@ -1300,7 +1300,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 data-testid="preview-multimodal-box"
                 className={cn(multimodalBoxClasses, isPrivate && 'ph-mask')}
               >
-                <div className="flex items-center justify-between mb-1.5 shrink-0">
+                <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
                     text={multimodalContent}

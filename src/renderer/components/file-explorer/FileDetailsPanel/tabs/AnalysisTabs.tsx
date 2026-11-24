@@ -90,12 +90,16 @@ function makeMarkdownComponents(anchorMap: Map<string, string>, tokens: string[]
     ol: ({ children }: any) => (
       <ol className="list-decimal pl-5 space-y-1 mb-2 last:mb-0">{children}</ol>
     ),
-    li: ({ children }: any) => <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>,
+    li: ({ children }: any) => (
+      <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>
+    ),
     strong: ({ children }: any) => (
       <strong className="font-bold text-foreground">{highlightChildren(children, tokens)}</strong>
     ),
     code: ({ children }: any) => (
-      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
+      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">
+        {children}
+      </code>
     ),
     a: ({ href, children }: any) => (
       <a
@@ -129,7 +133,10 @@ function SummaryMarkdown({ content, maskClass }: { content: string; maskClass?: 
   }, [tokens, globalKeyword])
 
   const anchorMap = useMemo(() => extractAnchorMap(content), [content])
-  const components = useMemo(() => makeMarkdownComponents(anchorMap, effectiveTokens), [anchorMap, effectiveTokens])
+  const components = useMemo(
+    () => makeMarkdownComponents(anchorMap, effectiveTokens),
+    [anchorMap, effectiveTokens]
+  )
   return (
     <div
       className={cn(
@@ -252,8 +259,10 @@ const AnalysisTabsComponent: React.FC<any> = ({
 
             {analysisResult.multimodalContent ? (
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">{t('多模态评估描述')}</span>
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {t('多模态评估描述')}
+                  </span>
                   <TTSActionGroup
                     text={analysisResult.multimodalContent}
                     textId={`quality-multimodal-${analysisResult.id || 'current'}`}
@@ -275,8 +284,10 @@ const AnalysisTabsComponent: React.FC<any> = ({
               </div>
             ) : analysisResult.qualityReasoning ? (
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground font-medium">{t('评分推导说明')}</span>
+                <div className="flex items-center justify-between flex-wrap gap-1.5">
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {t('评分推导说明')}
+                  </span>
                   <TTSActionGroup
                     text={analysisResult.qualityReasoning}
                     textId={`quality-reasoning-${analysisResult.id || 'current'}`}
@@ -305,81 +316,84 @@ const AnalysisTabsComponent: React.FC<any> = ({
             )}
           </div>
         )}
-        {activeTab === 'ocr' && (() => {
-          const ocrText = (analysisResult.ocr?.trim() || analysisResult.content?.trim()) || ''
-          return (
-            <div className="space-y-2">
-              {ocrText && (
-                <div className="flex justify-end">
-                  <TTSActionGroup
-                    text={ocrText}
-                    textId={`ocr-${analysisResult.id || 'current'}`}
-                    filePath={analysisResult.path || analysisResult.filePath}
-                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
-                    fieldName="ocr"
-                    defaultFileName="ocr-text.wav"
-                    compact
-                  />
-                </div>
-              )}
-              <SummaryMarkdown
-                content={ocrText || `> ${t('暂无 OCR 识别结果')}`}
-                maskClass={maskClass}
-              />
-            </div>
-          )
-        })()}
+        {activeTab === 'ocr' &&
+          (() => {
+            const ocrText = analysisResult.ocr?.trim() || analysisResult.content?.trim() || ''
+            return (
+              <div className="space-y-2">
+                {ocrText && (
+                  <div className="flex justify-end">
+                    <TTSActionGroup
+                      text={ocrText}
+                      textId={`ocr-${analysisResult.id || 'current'}`}
+                      filePath={analysisResult.path || analysisResult.filePath}
+                      fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                      fieldName="ocr"
+                      defaultFileName="ocr-text.wav"
+                      compact
+                    />
+                  </div>
+                )}
+                <SummaryMarkdown
+                  content={ocrText || `> ${t('暂无 OCR 识别结果')}`}
+                  maskClass={maskClass}
+                />
+              </div>
+            )
+          })()}
 
-        {activeTab === 'asr' && (() => {
-          const asrText = (analysisResult.asr?.trim() || analysisResult.content?.trim()) || ''
-          return (
-            <div className="space-y-2">
-              {asrText && (
-                <div className="flex justify-end">
-                  <TTSActionGroup
-                    text={asrText}
-                    textId={`asr-${analysisResult.id || 'current'}`}
-                    filePath={analysisResult.path || analysisResult.filePath}
-                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
-                    fieldName="asr"
-                    defaultFileName="asr-transcript.wav"
-                    compact
-                  />
-                </div>
-              )}
-              <SummaryMarkdown
-                content={asrText || `> ${t('暂无语音转录文本')}`}
-                maskClass={maskClass}
-              />
-            </div>
-          )
-        })()}
+        {activeTab === 'asr' &&
+          (() => {
+            const asrText = analysisResult.asr?.trim() || analysisResult.content?.trim() || ''
+            return (
+              <div className="space-y-2">
+                {asrText && (
+                  <div className="flex justify-end">
+                    <TTSActionGroup
+                      text={asrText}
+                      textId={`asr-${analysisResult.id || 'current'}`}
+                      filePath={analysisResult.path || analysisResult.filePath}
+                      fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                      fieldName="asr"
+                      defaultFileName="asr-transcript.wav"
+                      compact
+                    />
+                  </div>
+                )}
+                <SummaryMarkdown
+                  content={asrText || `> ${t('暂无语音转录文本')}`}
+                  maskClass={maskClass}
+                />
+              </div>
+            )
+          })()}
 
-        {activeTab === 'lrc' && (() => {
-          const lrcText = analysisResult.lrc?.trim() || ''
-          return (
-            <div className="space-y-2">
-              {lrcText && (
-                <div className="flex justify-end">
-                  <TTSActionGroup
-                    text={lrcText}
-                    textId={`lrc-${analysisResult.id || 'current'}`}
-                    filePath={analysisResult.path || analysisResult.filePath}
-                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
-                    fieldName="lrc"
-                    defaultFileName="lrc-lyrics.wav"
-                    isLrc={true}
-                    compact
-                  />
-                </div>
-              )}
-              <SummaryMarkdown
-                content={lrcText || `> ${t('暂无歌词数据')}`}
-                maskClass={maskClass}
-              />
-            </div>
-          )
-        })()}
+        {activeTab === 'lrc' &&
+          (() => {
+            const lrcText = analysisResult.lrc?.trim() || ''
+            return (
+              <div className="space-y-2">
+                {lrcText && (
+                  <div className="flex justify-end">
+                    <TTSActionGroup
+                      text={lrcText}
+                      textId={`lrc-${analysisResult.id || 'current'}`}
+                      filePath={analysisResult.path || analysisResult.filePath}
+                      fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                      fieldName="lrc"
+                      defaultFileName="lrc-lyrics.wav"
+                      isLrc={true}
+                      compact
+                    />
+                  </div>
+                )}
+                <SummaryMarkdown
+                  content={lrcText || `> ${t('暂无歌词数据')}`}
+                  maskClass={maskClass}
+                />
+              </div>
+            )
+          })()}
 
         {activeTab === 'summary' && (
           <div className="space-y-2">
@@ -515,10 +529,15 @@ const AnalysisTabsComponent: React.FC<any> = ({
             {/* 文本统计信息 (text_stats)，展示在 Magika 卡片下方 */}
             {(() => {
               const meta = analysisResult.metadata || {}
-              const ts = meta.text_stats || meta.textStats || meta.text || (analysisResult as any).text_stats
+              const ts =
+                meta.text_stats || meta.textStats || meta.text || (analysisResult as any).text_stats
               if (!ts || typeof ts !== 'object') return null
 
-              const encodingVal = ts.encoding ? String(ts.encoding).replace(/\s*\/\s*Smart\s+Detection/gi, '').trim() : undefined
+              const encodingVal = ts.encoding
+                ? String(ts.encoding)
+                    .replace(/\s*\/\s*Smart\s+Detection/gi, '')
+                    .trim()
+                : undefined
               const charCountVal = ts.char_count ?? ts.charCount ?? ts.character_count
               const lineCountVal = ts.line_count ?? ts.lineCount
               const wordCountVal = ts.word_count ?? ts.wordCount
@@ -539,9 +558,7 @@ const AnalysisTabsComponent: React.FC<any> = ({
                       key={key}
                       className="flex items-center justify-between p-2.5 text-xs hover:bg-muted/40 transition-colors"
                     >
-                      <span className="font-mono text-muted-foreground shrink-0 mr-3">
-                        {label}
-                      </span>
+                      <span className="font-mono text-muted-foreground shrink-0 mr-3">{label}</span>
                       <span className="text-foreground text-right break-all">
                         {typeof val === 'number' ? val.toLocaleString() : String(val)}
                       </span>
@@ -619,7 +636,11 @@ const AnalysisTabsComponent: React.FC<any> = ({
                         // 全局过滤无意义字段或超长二进制字段（如 MakerNote / exif.MakerNote）
                         if (SKIP_KEYS.has(key) || SKIP_KEYS.has(fullKey)) return []
                         // 如果值是超过 500 字符的纯 Hex/Base64 二进制乱码，自动过滤
-                        if (typeof val === 'string' && val.length > 500 && /^[0-9a-fA-F\s]+$/.test(val)) {
+                        if (
+                          typeof val === 'string' &&
+                          val.length > 500 &&
+                          /^[0-9a-fA-F\s]+$/.test(val)
+                        ) {
                           return []
                         }
                         // ExifDateTime 对象：直接渲染格式化日期，不递归展开子字段

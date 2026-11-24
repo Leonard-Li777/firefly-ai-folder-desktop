@@ -64,6 +64,22 @@ describe('FilePreview & PreviewSection 响应式弹性与多模态布局契约',
     expect(inner?.getAttribute('data-layout-direction')).toBe('auto')
   })
 
+  it('多模态描述标题头容器具备 flex-wrap 与 gap 弹性换行样式，保障 TTS 工具条空间自适应', () => {
+    render(
+      <FilePreview
+        filePath="D:/photos/landscape.jpg"
+        fileName="landscape.jpg"
+        extension="jpg"
+        multimodalContent="这是一张壮阔的日落雪山风景图，红霞漫天，湖面波光粼粼。"
+      />
+    )
+
+    const headerTitle = screen.getByText('多模态描述')
+    const headerContainer = headerTitle.parentElement
+    expect(headerContainer?.className).toContain('flex-wrap')
+    expect(headerContainer?.className).toContain('gap-1.5')
+  })
+
   it('图片触发 onLoad 事件后，正确记录 naturalWidth 与 naturalHeight 并触发响应式计算', () => {
     render(
       <FilePreview
