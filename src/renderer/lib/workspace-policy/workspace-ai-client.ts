@@ -465,7 +465,11 @@ function normalizeRuntimeSnapshot(raw: unknown): WorkspaceRuntimeContextSnapshot
       generativeAiEnabled: Boolean(nested.isGenerativeAiEnabled),
       globalEmbeddingProfile: nested.globalEmbeddingProfile ?? 'classic_light',
       videoInferenceBackend: nested.videoInferenceBackend ?? 'unknown',
-      isProTier: tierStr === 'pro' || tierStr === 'enterprise' || tierStr === 'max',
+      isProTier:
+        tierStr === 'pro' ||
+        tierStr === 'enterprise' ||
+        tierStr === 'agent' ||
+        tierStr === 'max',
       moduleStates,
       recoverableCount: typeof obj.recoverableCount === 'number' ? obj.recoverableCount : undefined,
       recoverableNonVideoCount:

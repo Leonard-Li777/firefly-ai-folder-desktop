@@ -80,8 +80,9 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
   const refreshRuntimeContext = useWorkspaceRuntimeContext(s => s.refresh)
   const runtimeSnapshot = useWorkspaceRuntimeContext(s => s.snapshot)
 
-  // 权威判定会员 Pro 状态：工作区运行时快照优先，回落 tier-store 枚举判定
-  const isPro = runtimeSnapshot?.isProTier ?? (useTierStore.getState().tier !== UserTier.FREE)
+  // 权威判定会员 Pro 状态：工作区运行时快照优先，回落响应式 tier-store 枚举判定
+  const storeTier = useTierStore(s => s.tier)
+  const isPro = runtimeSnapshot?.isProTier ?? (storeTier !== UserTier.FREE)
 
   const [videoItems, setVideoItems] = useState<WorkspacePendingBackfillVideoItem[]>([])
   const [effectiveLimitSec, setEffectiveLimitSec] = useState<number>(300)
@@ -402,6 +403,39 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                     </Button>
                   </div>
                 </div>
+
+                {/* 免费用户 Pro 权益升级横幅（对齐 UI 定稿 pending-backfill-redesign.html） */}
+                {!isPro && (
+                  <div
+                    data-testid="pending-backfill-free-upgrade-banner"
+                    className="rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-500/15 via-orange-500/5 to-transparent p-4 flex items-center justify-between gap-3 flex-wrap"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base shrink-0 font-bold shadow-xs">
+                        👑
+                      </div>
+                      <div className="text-xs leading-relaxed">
+                        <div className="font-bold text-amber-800 dark:text-amber-200 text-sm">
+                          {t('免费版已为您完成前 5 分钟画面分析与秒级检索')}
+                        </div>
+                        <div className="text-muted-foreground mt-0.5">
+                          {t(
+                            '升级 Pro 可自动解锁长视频剩余 {minutes} 分钟全量画面分析，支持最长 3 小时整部视频任意画面找图。',
+                            { minutes: remainingMinutes }
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-sm shrink-0"
+                      onClick={handleOpenUpgradeDialog}
+                    >
+                      {t('立即升级 Pro 解锁 →')}
+                    </Button>
+                  </div>
+                )}
 
                 {/* 视频卡片列表 */}
                 <div className="space-y-2.5">

@@ -178,6 +178,8 @@ describe('WorkspacePendingBackfillTab (Spec v2.1 方案 A 英雄卡片与 Pro �
     expect(screen.getByRole('tab', { name: /长视频深度分析/ })).toBeTruthy()
     expect(screen.getByRole('tab', { name: /其它文件待补全/ })).toBeTruthy()
     expect(screen.getByText('★ PRO')).toBeTruthy()
+    // Pro 用户不显示免费升级 Pro 横幅 Banner
+    expect(screen.queryByTestId('pending-backfill-free-upgrade-banner')).toBeNull()
 
     // 验证视频项渲染
     expect(screen.getByText('vlog_30m.mp4')).toBeTruthy()
@@ -212,17 +214,30 @@ describe('WorkspacePendingBackfillTab (Spec v2.1 方案 A 英雄卡片与 Pro �
       expect(screen.getByTestId('pending-backfill-video-section')).toBeTruthy()
     })
 
+    // 免费用户升级 Pro 权益横幅 Banner（含剩余分钟数大白话引导与升级按钮直达 UpgradeDialog）
+    const upgradeBanner = screen.getByTestId('pending-backfill-free-upgrade-banner')
+    expect(upgradeBanner).toBeTruthy()
+    expect(screen.getByText('免费版已为您完成前 5 分钟画面分析与秒级检索')).toBeTruthy()
+    expect(
+      screen.getByText(
+        '升级 Pro 可自动解锁长视频剩余 35 分钟全量画面分析，支持最长 3 小时整部视频任意画面找图。'
+      )
+    ).toBeTruthy()
+    const bannerUpgradeBtn = screen.getByText('立即升级 Pro 解锁 →')
+    fireEvent.click(bannerUpgradeBtn)
+    expect(mockOpenUpgradeDialog).toHaveBeenCalledTimes(1)
+
     // 顶部主按钮显示为「👑 升级 Pro 立即补全」
     const upgradeTopBtn = screen.getByText('👑 升级 Pro 立即补全')
     expect(upgradeTopBtn).toBeTruthy()
     fireEvent.click(upgradeTopBtn)
-    expect(mockOpenUpgradeDialog).toHaveBeenCalledTimes(1)
+    expect(mockOpenUpgradeDialog).toHaveBeenCalledTimes(2)
 
     // 单卡按钮明确渲染为「👑 解锁整片分析」
     const unlockCardBtns = screen.getAllByText('👑 解锁整片分析')
     expect(unlockCardBtns.length).toBeGreaterThanOrEqual(1)
     fireEvent.click(unlockCardBtns[0])
-    expect(mockOpenUpgradeDialog).toHaveBeenCalledTimes(2)
+    expect(mockOpenUpgradeDialog).toHaveBeenCalledTimes(3)
 
     // 铁律验证：严禁出现欺诈性的假「优先补全此文件」按钮
     expect(screen.queryByText('优先补全此文件')).toBeNull()
