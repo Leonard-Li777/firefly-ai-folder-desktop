@@ -933,6 +933,13 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
                 )}
               </div>
             )}
+            renderEmptyState={layoutContext => (
+              <EmptyState
+                icon="travel_explore"
+                title={t('没有找到匹配的文件')}
+                description={t('试试调低右上角的匹配度滑块，或换一个更简短的关键词。')}
+              />
+            )}
           />
         )}
       </div>

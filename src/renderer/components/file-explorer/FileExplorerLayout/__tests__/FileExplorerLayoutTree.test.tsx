@@ -213,4 +213,30 @@ describe('FileExplorerLayout (恒定两级树拓扑架构与资源静默)', () =
     expect(flexGrow).toBeGreaterThanOrEqual(0.5)
     expect(flexGrow).toBeLessThanOrEqual(3)
   })
+
+  it('AC-7: 当无文件时优先响应 renderEmptyState，无 renderEmptyState 时按 pageId 展现对应空状态', () => {
+    const { rerender } = render(
+      <MemoryRouter>
+        <FileExplorerLayout
+          files={[]}
+          directories={[]}
+          pageId={PAGE_IDS.ANALYZED_DIRECTORY}
+          renderEmptyState={() => <div data-testid="custom-empty">自定义空状态</div>}
+        />
+      </MemoryRouter>
+    )
+
+    // 1. 优先渲染自定义空状态
+    expect(screen.getByTestId('custom-empty')).toBeDefined()
+    expect(screen.getByText('自定义空状态')).toBeDefined()
+
+    // 2. 移除 renderEmptyState，在已分析目录下渲染默认维度空状态
+    rerender(
+      <MemoryRouter>
+        <FileExplorerLayout files={[]} directories={[]} pageId={PAGE_IDS.ANALYZED_DIRECTORY} />
+      </MemoryRouter>
+    )
+    expect(screen.queryByTestId('custom-empty')).toBeNull()
+    expect(screen.getByText('在此维度中未找到文件')).toBeDefined()
+  })
 })

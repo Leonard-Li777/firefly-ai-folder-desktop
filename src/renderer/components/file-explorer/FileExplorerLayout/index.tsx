@@ -66,6 +66,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   defaultViewMode = 'grid',
   renderToolbar,
   renderFooter,
+  renderEmptyState,
   isLoading = false,
   hasMore,
   onLoadMore,
@@ -509,6 +510,8 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                           : t('正在读取目录内容与文件元数据...')
                       }
                     />
+                  ) : displayFiles.length === 0 && directories.length === 0 && renderEmptyState ? (
+                    renderEmptyState(layoutContext)
                   ) : displayFiles.length === 0 &&
                     directories.length === 0 &&
                     (pageId === PAGE_IDS.ANALYZED_DIRECTORY ||

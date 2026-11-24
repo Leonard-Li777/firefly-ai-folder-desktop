@@ -80,6 +80,12 @@ export interface FileExplorerLayoutProps {
   renderToolbar?: (context: FileExplorerLayoutContext) => React.ReactNode
   /** 自定义底部状态栏插槽 */
   renderFooter?: (context: FileExplorerLayoutContext) => React.ReactNode
+  /**
+   * 自定义空态插槽：当列表为空且非加载态时渲染。
+   * 传入后将优先于各页面的默认空态（含 SEARCH_OVERLAY 默认渲染的空 FileList），
+   * 供调用方（如全域搜索浮层）输出带引导动作的友好提示。
+   */
+  renderEmptyState?: (context: FileExplorerLayoutContext) => React.ReactNode
   /** 是否正在加载 */
   isLoading?: boolean
   /** 是否有更多数据 (无限滚动) */
