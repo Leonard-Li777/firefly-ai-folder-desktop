@@ -71,7 +71,7 @@ function makeMarkdownComponents(anchorMap: Map<string, string>, tokens: string[]
     h3: heading('h3'),
     h4: heading('h4'),
     p: ({ children }: any) => (
-      <p className="mb-2 text-sm leading-relaxed last:mb-0 break-words whitespace-pre-line">
+      <p className="mb-2 text-xs leading-relaxed last:mb-0 break-words whitespace-pre-line">
         {highlightChildren(children, tokens)}
       </p>
     ),

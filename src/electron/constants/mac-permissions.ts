@@ -1,4 +1,4 @@
-import { t } from '@app/languages'
+import { t } from '../../languages'
 
 /**
  * macOS 隐私与权限说明（TCC 权限保护：Downloads / Desktop / Documents 等）

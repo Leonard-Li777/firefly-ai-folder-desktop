@@ -1,3 +1,14 @@
+; ── ProgramData 路径解析（内置 NSIS 3.04 没有 $COMMONAPPDATA / $PROGRAMSDATA）──
+; electron-builder 调用 makensis 时把 warning 视为致命错误（warning 6000 会直接中断打包），
+; 因此严禁直接引用未定义的内置变量；统一从系统环境变量 ProgramData 解析，
+; 缺失时回落 $WINDIR\..\ProgramData（ProgramData 恒与 %WINDIR% 同盘）。
+!macro ffCommonAppDataDir outVar
+    ClearErrors
+    ReadEnvStr ${outVar} "ProgramData"
+    IfErrors 0 +2
+        StrCpy ${outVar} "$WINDIR\..\ProgramData"
+!macroend
+
 ; 卸载时清理数据目录
 !macro customRemoveFiles
     ; 优先根据 .region_cn 哨兵或 PRODUCT_NAME 判断区域清理
@@ -72,10 +83,10 @@
     ; ── 卸载时清理 ProgramData 共享副本（P0-2 · A1 B 路径）───────────────
     ; 仅清本产品目录，不动用户级 installer.exe（由各用户自行管理）
     ClearErrors
-    RMDir /r "$COMMONAPPDATA\firefly-ai-folder\installer"
-    RMDir "$COMMONAPPDATA\firefly-ai-folder"
-    IfErrors 0 +2
-        ClearErrors
+    !insertmacro ffCommonAppDataDir $0
+    RMDir /r "$0\firefly-ai-folder\installer"
+    RMDir "$0\firefly-ai-folder"
+    ClearErrors
 !macroend
 
 ; 安装前检测 VC++ Redistributable 并关闭正在运行的应用
@@ -171,10 +182,11 @@
     ;   真正的用户级 installer.exe 播种由客户端 installer-baseline-seeder.ts 在普通用户上下文完成。
     ; $EXEPATH = 本次运行的安装器本体（即完整安装包），${VERSION} = appInfo.version。
     ClearErrors
-    CreateDirectory "$COMMONAPPDATA\firefly-ai-folder\installer"
-    IfFileExists "$COMMONAPPDATA\firefly-ai-folder\installer\installer-${VERSION}.exe" 0 +2
-        Delete "$COMMONAPPDATA\firefly-ai-folder\installer\installer-${VERSION}.exe"
-    CopyFiles /SILENT "$EXEPATH" "$COMMONAPPDATA\firefly-ai-folder\installer\installer-${VERSION}.exe"
+    !insertmacro ffCommonAppDataDir $1
+    CreateDirectory "$1\firefly-ai-folder\installer"
+    IfFileExists "$1\firefly-ai-folder\installer\installer-${VERSION}.exe" 0 +2
+        Delete "$1\firefly-ai-folder\installer\installer-${VERSION}.exe"
+    CopyFiles /SILENT "$EXEPATH" "$1\firefly-ai-folder\installer\installer-${VERSION}.exe"
     IfErrors 0 seedInstDirCopy
         ; 严禁静默降级：ProgramData 副本写失败须留痕（DetailPrint 在 assisted 安装界面可见；
         ;   不阻断安装，差分届时退化为全量下载，客户端 seeder 会 logger.warn 上报 no-source-candidate）

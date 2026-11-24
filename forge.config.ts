@@ -739,9 +739,8 @@ const config: ForgeConfig = {
       }
 
       const aiEngine = process.env.AI_ENGINE || 'llama.cpp'
-      if (aiEngine !== 'ollama') {
-        // 数据源统一为 preset-resources.lock.json（ADR-0029）
-        // 若构建目录已存在由 download/consume 动态写入的最真实 lock，优先使用构建目录中的 lock
+      if (aiEngine === 'llamafile') {
+        // 兼容历史 llamafile 模式打包验证
         const dynamicBuildLock = path.join(
           __dirname,
           'build/extraResources/configs/preset-resources.lock.json'
@@ -749,106 +748,38 @@ const config: ForgeConfig = {
         const lockPath = fs.existsSync(dynamicBuildLock)
           ? dynamicBuildLock
           : resolveResourcePath(`build/extraResources/configs/preset-resources.lock.json`)
-        if (!fs.existsSync(lockPath)) {
-          throw new Error(
-            `❌ 错误: 缺少统一资源清单 build/extraResources/configs/preset-resources.lock.json，无法验证 AI 引擎二进制包完整性！请确保运行了下载流程。`
-          )
+        if (fs.existsSync(lockPath)) {
+          try {
+            const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'))
+            const engine = lock?.engines?.['llamafile']
+            if (engine?.platforms) {
+              const osKey = process.platform === 'darwin' ? 'darwin' : process.platform === 'win32' ? 'win32' : 'linux'
+              const targetArch = getArch()
+              const archKey = targetArch === 'arm64' ? 'arm64' : 'x64'
+              const key = `${osKey}-${archKey}`
+              const files = engine.platforms[key]?.files || []
+              const presetBundlesDir = resolveResourcePath(`build/presetResources/llamafile`)
+              files.forEach((file: any) => {
+                const filePath = path.join(presetBundlesDir, file.name)
+                if (!fs.existsSync(filePath)) {
+                  console.warn(`[prePackage] ⚠️ 缺少 llamafile 资源包: ${file.name}`)
+                }
+              })
+            }
+          } catch (_) {}
         }
+      } else {
+        // V4 创世架构：llama.cpp 引擎及模型完全由 firefly-ai-engine 在线按需管理与下载，构建期不随包携带
+        console.log(`[prePackage] ℹ️ V4 架构：AI 引擎 (${aiEngine}) 由 firefly-ai-engine 运行时在线按需下载，构建期免打包`)
+      }
 
-        try {
-          const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'))
-          const engineId = aiEngine === 'llamafile' ? 'llamafile' : 'llama.cpp'
-          const engine = lock?.engines?.[engineId]
-          if (!engine || !engine.platforms) {
-            throw new Error(`统一资源清单中缺少 ${engineId} 引擎段 (engines.${engineId}.platforms)`)
-          }
-
-          const osKey =
-            process.platform === 'darwin'
-              ? 'darwin'
-              : process.platform === 'win32'
-                ? 'win32'
-                : 'linux'
-          const targetArch = getArch()
-          const archKey =
-            targetArch === 'arm64'
-              ? 'arm64'
-              : targetArch === 'x64'
-                ? 'x64'
-                : process.arch === 'arm64'
-                  ? 'arm64'
-                  : 'x64'
-          const key = `${osKey}-${archKey}`
-          const platformEntry = engine.platforms[key]
-          let files = platformEntry?.files
-          if (targetArch === 'universal' && osKey === 'darwin') {
-            files = [
-              ...(engine.platforms['darwin-arm64']?.files || []),
-              ...(engine.platforms['darwin-x64']?.files || [])
-            ]
-          }
-          const presetBundlesDir = resolveResourcePath(`build/presetResources/${aiEngine}`)
-          const errors: string[] = []
-
-          if (!files || !Array.isArray(files) || files.length === 0) {
-            throw new Error(
-              `统一资源清单中 ${engineId} 引擎缺少当前平台 (${key}) 的文件列表 (platforms.${key}.files 缺失或为空)`
-            )
-          }
-
-          const isSizeMatching = (
-            actualSize: number,
-            expectedSize: number,
-            filename: string
-          ): boolean => {
-            if (actualSize === expectedSize) return true
-            if (filename.toLowerCase() === 'llamafile.zip') {
-              if (actualSize === 248853732 || actualSize === 213711740) {
-                return true
-              }
-            }
-            const isCI = process.env.CI === 'true' || !process.stdout.isTTY
-            if (isCI) {
-              const diff = Math.abs(actualSize - expectedSize)
-              const percentageDiff = diff / expectedSize
-              if (percentageDiff < 0.05 || diff < 15 * 1024 * 1024) {
-                console.log(
-                  `[prePackage] ℹ️ [大小校验] 文件实际大小 ${actualSize} 字节与期望大小 ${expectedSize} 字节存在微小差异，但在容差范围内，判定通过。`
-                )
-                return true
-              }
-            }
-            return false
-          }
-
-          files.forEach((file: any) => {
-            const filePath = path.join(presetBundlesDir, file.name)
-            if (!fs.existsSync(filePath)) {
-              errors.push(`缺少资源包: ${file.name}`)
-            } else {
-              const stats = fs.statSync(filePath)
-              if (!isSizeMatching(stats.size, file.size, file.name)) {
-                errors.push(
-                  `资源包 ${file.name} 大小不匹配: 期望 ${file.size} 字节, 实际 ${stats.size} 字节`
-                )
-              }
-            }
-          })
-
-          if (errors.length > 0) {
-            throw new Error(
-              `❌ 错误: AI 引擎二进制包验证失败，打包已中断！\n${errors.join('\n')}\n请确保重新运行下载流程 (pnpm make 或 scripts/download-llama-cpp-releases.js) 完成下载。`
-            )
-          }
-          console.log(`[prePackage] ✅ AI 引擎二进制包完整性验证通过 (共 ${files.length} 个包)`)
-
-          const binDir = resolveResourcePath('build/extraResources/bin')
-          if (!fs.existsSync(binDir)) {
-            console.warn(
-              `[prePackage] ⚠️ 未发现 bin 目录: ${binDir}，请确保运行了 setup-extra-resources.js`
-            )
-          } else {
-            console.log(`[prePackage] ✅ 发现 bin 目录，将直接打包二进制工具。`)
+      const binDir = resolveResourcePath('build/extraResources/bin')
+      if (!fs.existsSync(binDir)) {
+        console.warn(
+          `[prePackage] ⚠️ 未发现 bin 目录: ${binDir}，请确保运行了 setup-extra-resources.js`
+        )
+      } else {
+        console.log(`[prePackage] ✅ 发现 bin 目录，将直接打包二进制工具。`)
 
             // slice-3 极致瘦身：剔除 llama.cpp 重型加速引擎包（CUDA/ROCm/SYCL/HIP），
             // 可缩减数百 MB 安装体积而不影响 Tier 1（Omni）保底能力。
@@ -894,13 +825,6 @@ const config: ForgeConfig = {
               }
             }
           }
-        } catch (e: any) {
-          if (e.message && e.message.includes('AI 引擎二进制包验证失败')) {
-            throw e
-          }
-          throw new Error(`❌ 错误: 读取、验证或压缩版本资源失败: ${e.message}`)
-        }
-      }
 
       nativeModuleDependenciesToPackage = Array.from(
         await getExternalNestedDependencies(EXTERNAL_DEPENDENCIES)

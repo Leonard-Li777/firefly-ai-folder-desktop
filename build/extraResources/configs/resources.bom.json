@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-23T17:05:55.606Z",
+  "generatedAt": "2026-11-24T15:27:10.953Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -66,16 +66,6 @@
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/onnxruntime-directml-1.24.4-win32-x64.zip"
       }
     },
-    "sensevoice-onnx": {
-      "version": "int8",
-      "source": "shared",
-      "asset": {
-        "name": "sensevoice-onnx-int8.zip",
-        "sha256": "a5cd6e2836c3916e18efb2ee81bd6fd536c92bf957fd29a524b8a7e82c6cdceb",
-        "size": 160304482,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/sensevoice-onnx-int8.zip"
-      }
-    },
     "silero-vad": {
       "version": "1.0.0",
       "source": "shared",
@@ -106,120 +96,6 @@
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ced-mini-1.0.0.zip"
       }
     },
-    "chinese-clip": {
-      "version": "INT8-v5",
-      "source": "shared",
-      "asset": {
-        "name": "chinese-clip-int8-v5.zip",
-        "sha256": "db4a06074f508b45c1ceefc25ab276342122bdab048f599adb01d414138656ca",
-        "size": 242780794,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8-v5.zip"
-      },
-      "files": [
-        {
-          "name": "chinese-clip-vit-b-16-int8.onnx",
-          "size": 89448944,
-          "sha256": "bf37c26e5b9174f5a2084a7a67ebf1827cfea440fd55f642ab1de23b1eb10121"
-        },
-        {
-          "name": "cn_clip_text.onnx",
-          "size": 153221930,
-          "sha256": "dcde5ef0a62c052b3418587e118978cb61f57ca77d77e49638dd5af21e0a20db"
-        },
-        {
-          "name": "cn_clip_vocab.txt",
-          "size": 109540,
-          "sha256": "45bbac6b341c319adc98a532532882e91a9cefc0329aa57bac9ae761c27b291c"
-        }
-      ]
-    },
-    "mobile-clip": {
-      "version": "INT8",
-      "source": "shared",
-      "asset": {
-        "name": "mobile-clip-int8.zip",
-        "sha256": "a236176147ad695655d2d54c810f925d574620689299b713484018b7dd8a910c",
-        "size": 57910236,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/mobile-clip-int8.zip"
-      }
-    },
-    "nsfw-mobilenetv2": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "nsfw-d1a5b4e4-1.0.0.zip",
-        "sha256": "9c9d455e205e380d9406f90e0a19b6ffc107f60ce8fd057b21412c25fedd0a14",
-        "size": 10300309,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-d1a5b4e4-1.0.0.zip"
-      }
-    },
-    "nsfw-l3": {
-      "version": "1.3.0",
-      "source": "shared",
-      "asset": {
-        "name": "nsfw-71e9aaa6-1.3.0.zip",
-        "sha256": "86515fe1561e0c0711ee435bea61b97f0ebda761ad409957b4530c9c7885d697",
-        "size": 33288889,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-71e9aaa6-1.3.0.zip"
-      },
-      "files": [
-        {
-          "name": "current.json",
-          "size": 214,
-          "sha256": "d44971738aba3d7556f60439ebaba0aff999b315f0cb666faf2a7e2cd9634be8"
-        },
-        {
-          "name": "model.97d4bbd193a030fa945b484ad4ad484c8bc791fe2e3aabcf74b1d4d42470d7d7.ffpc",
-          "size": 33272361,
-          "sha256": "97d4bbd193a030fa945b484ad4ad484c8bc791fe2e3aabcf74b1d4d42470d7d7"
-        },
-        {
-          "name": "model_manifest.json",
-          "size": 22106,
-          "sha256": "a6f19734980a7493569cb7ea4b40f713ea8c7d616890205eca1dfdf4f3e5c018"
-        }
-      ]
-    },
-    "embeddinggemma-2-onnx": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "emb-391b9a03-1.0.0.zip",
-        "sha256": "3f6e94c5e30cafc88dd88d3e0e0a502b81b7133aba5fcadd18d565314d749569",
-        "size": 315619905,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-391b9a03-1.0.0.zip"
-      }
-    },
-    "bekko-a8m": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "emb-a70ec85a-1.0.0.zip",
-        "sha256": "60add8e1e973d10f63408dd0f6cc4510cb5efbe7b96aa87eb6797cb3d2e55e15",
-        "size": 130113517,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/emb-a70ec85a-1.0.0.zip"
-      }
-    },
-    "m5-tts": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "tts-e43ab9e3-1.0.0.zip",
-        "sha256": "68f099330712f72e4056b99f9b2af9e6d1e692f9851cb51c166fbe5606d4fc36",
-        "size": 315301983,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/tts-e43ab9e3-1.0.0.zip"
-      }
-    },
-    "moss-tts": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "moss-tts-1.0.0.zip",
-        "sha256": "4374fe73fd27e9544674037890e773826727b959c6a63313989d787a263b7069",
-        "size": 240822786,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/moss-tts-1.0.0.zip"
-      }
-    },
     "ram-assets": {
       "version": "1.0.0",
       "source": "shared",
@@ -241,26 +117,6 @@
           "sha256": "3e418e7d7d13f5baee77e3db3eb2d11b78eb8ee08b93a408aa0e3145520c6747"
         }
       ]
-    },
-    "pocket-cpu-int8-onnx": {
-      "version": "1.0.0",
-      "source": "shared",
-      "asset": {
-        "name": "cpu-485c04b7-1.0.0.zip",
-        "sha256": "e4fb012270f48172a5621fed848193af88d131f44ae03083823aa727d4e516db",
-        "size": 367596403,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/cpu-485c04b7-1.0.0.zip"
-      }
-    },
-    "offline-bundle": {
-      "version": "1.1.0",
-      "source": "shared",
-      "asset": {
-        "name": "firefly-offline-bundle-1.1.0.zip",
-        "sha256": "ed5db8c91458a2df18dbbf2af05799d87d9fc98f52ed3f466b4af81976df0648",
-        "size": 1506449825,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-offline-bundle-1.1.0.zip"
-      }
     }
   },
   "engines": {
@@ -277,74 +133,15 @@
         }
       ]
     },
-    "llama.cpp": {
-      "version": "b11011",
+    "firefly-ai-engine": {
+      "version": "v1.0.0",
       "source": "upstream",
       "files": [
         {
-          "name": "cudart-llama-bin-win-cuda-12.4-x64.zip",
-          "size": 391443627,
+          "name": "firefly-ai-engine-v1.0.0-win32-x64.zip",
           "platform": "win32",
           "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/cudart-llama-bin-win-cuda-12.4-x64.zip"
-        },
-        {
-          "name": "llama-b11011-bin-win-cpu-x64.zip",
-          "size": 18438128,
-          "platform": "win32",
-          "arch": "x64"
-        },
-        {
-          "name": "llama-b11011-bin-win-cuda-12.4-x64.zip",
-          "size": 254190475,
-          "platform": "win32",
-          "arch": "x64"
-        },
-        {
-          "name": "llama-b11011-bin-win-rocm-10.0-x64.zip",
-          "size": 256090617,
-          "platform": "win32",
-          "arch": "x64"
-        },
-        {
-          "name": "llama-b11011-bin-win-sycl-x64.zip",
-          "size": 119790761,
-          "platform": "win32",
-          "arch": "x64"
-        },
-        {
-          "name": "llama-b11011-bin-win-vulkan-x64.zip",
-          "size": 31710621,
-          "platform": "win32",
-          "arch": "x64"
-        },
-        {
-          "name": "llama-b11063-bin-win-cuda-12.4-x64.zip",
-          "size": 254735279,
-          "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-cuda-12.4-x64.zip"
-        },
-        {
-          "name": "llama-b11063-bin-win-rocm-10.0-x64.zip",
-          "size": 256160942,
-          "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-rocm-10.0-x64.zip"
-        },
-        {
-          "name": "llama-b11063-bin-win-sycl-x64.zip",
-          "size": 119830086,
-          "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-sycl-x64.zip"
-        },
-        {
-          "name": "llama-b11063-bin-win-vulkan-x64.zip",
-          "size": 31851331,
-          "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-vulkan-x64.zip"
+          "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-ai-engine-v1.0.0-win32-x64.zip"
         }
       ]
     }

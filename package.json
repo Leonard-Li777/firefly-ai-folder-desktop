@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "productName": "firefly-ai-folder",
+  "productName": "firefly-ai-folder_v4_cn",
   "appId": "com.firefly.ai-folder",
   "version": "4.0.0",
   "description": "基于本地 AI 的智能虚拟文件管理系统。支持跨媒体元数据自动提取、多维度分类与虚拟目录管理。深度优化压缩包（如漫画归档）管理，告别文件混乱，实现一键智能化整理。",
@@ -59,12 +59,12 @@
     "start:error": "cross-env LOG_LEVEL=warn,error BUILD_REGION=CN electron-vite dev -- --log-categories=ALL,-LLAMA_SERVER",
     "start:ai-only": "cross-env BUILD_REGION=CN electron-vite dev -- --log-categories=AI_SERVICE,PROCESS_MANAGER,MODEL_MANAGER",
     "start:analysis": "cross-env BUILD_REGION=CN electron-vite dev -- --log-categories=ANALYSIS_QUEUE,FILE_ANALYSIS,DIMENSION_SERVICE",
-    "package": "cross-env AI_ENGINE=llama.cpp BUILD_REGION=CN node pro/scripts/run.js fix-pnpm-modules.js && cross-env AI_ENGINE=llama.cpp BUILD_REGION=CN pnpm run build:prebuild && cross-env AI_ENGINE=llama.cpp BUILD_REGION=CN node pro/scripts/run.js patch-product-name.js patch && cross-env AI_ENGINE=llama.cpp BUILD_REGION=CN electron-vite build && cross-env AI_ENGINE=llama.cpp BUILD_REGION=CN electron-forge package && cross-env BUILD_REGION=CN node pro/scripts/run.js patch-product-name.js restore",
-    "package:intl": "cross-env AI_ENGINE=llama.cpp BUILD_REGION=INTL node pro/scripts/run.js fix-pnpm-modules.js && cross-env AI_ENGINE=llama.cpp BUILD_REGION=INTL pnpm run build:prebuild && cross-env AI_ENGINE=llama.cpp BUILD_REGION=INTL node pro/scripts/run.js patch-product-name.js patch && cross-env AI_ENGINE=llama.cpp BUILD_REGION=INTL electron-vite build && cross-env AI_ENGINE=llama.cpp BUILD_REGION=INTL electron-forge package && cross-env BUILD_REGION=INTL node pro/scripts/run.js patch-product-name.js restore",
-    "make": "cross-env BUILD_REGION=CN AI_ENGINE=llama.cpp node pro/scripts/run.js download-llama-cpp-releases.js && cross-env BUILD_REGION=CN AI_ENGINE=llama.cpp node pro/scripts/run.js wait-for-download.js && cross-env BUILD_REGION=CN AI_ENGINE=llama.cpp node pro/scripts/run.js make-installers.js",
-    "make:intl": "cross-env BUILD_REGION=INTL AI_ENGINE=llama.cpp node pro/scripts/run.js download-llama-cpp-releases.js && cross-env BUILD_REGION=INTL AI_ENGINE=llama.cpp node pro/scripts/run.js wait-for-download.js && cross-env BUILD_REGION=INTL AI_ENGINE=llama.cpp node pro/scripts/run.js make-installers.js",
-    "make:llamafile": "cross-env AI_ENGINE=llamafile node pro/scripts/run.js download-llama-cpp-releases.js && cross-env AI_ENGINE=llamafile node pro/scripts/run.js wait-for-download.js && cross-env AI_ENGINE=llamafile node pro/scripts/run.js make-installers.js",
-    "publish": "pnpm run build:prebuild && node pro/scripts/run.js patch-product-name.js patch && electron-vite build && node pro/scripts/run.js wait-for-download.js && electron-forge publish && node pro/scripts/run.js patch-product-name.js restore",
+    "package": "cross-env BUILD_REGION=CN node pro/scripts/run.js fix-pnpm-modules.js && cross-env BUILD_REGION=CN pnpm run build:prebuild && cross-env BUILD_REGION=CN node pro/scripts/run.js patch-product-name.js patch && cross-env BUILD_REGION=CN electron-vite build && cross-env BUILD_REGION=CN electron-forge package && cross-env BUILD_REGION=CN node pro/scripts/run.js patch-product-name.js restore",
+    "package:intl": "cross-env BUILD_REGION=INTL node pro/scripts/run.js fix-pnpm-modules.js && cross-env BUILD_REGION=INTL pnpm run build:prebuild && cross-env BUILD_REGION=INTL node pro/scripts/run.js patch-product-name.js patch && cross-env BUILD_REGION=INTL electron-vite build && cross-env BUILD_REGION=INTL electron-forge package && cross-env BUILD_REGION=INTL node pro/scripts/run.js patch-product-name.js restore",
+    "make": "cross-env BUILD_REGION=CN node pro/scripts/run.js make-installers.js",
+    "make:intl": "cross-env BUILD_REGION=INTL node pro/scripts/run.js make-installers.js",
+    "make:llamafile": "cross-env BUILD_REGION=CN node pro/scripts/run.js make-installers.js",
+    "publish": "pnpm run build:prebuild && node pro/scripts/run.js patch-product-name.js patch && electron-vite build && electron-forge publish && node pro/scripts/run.js patch-product-name.js restore",
     "validate-deployment": "node pro/scripts/run.js validate-deployment.js",
     "verify-sharp": "node pro/scripts/run.js verify-sharp.js",
     "verify-native-modules": "node pro/scripts/run.js verify-native-modules.js",
@@ -290,7 +290,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
