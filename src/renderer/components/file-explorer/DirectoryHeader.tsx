@@ -1433,7 +1433,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           {/* 恒定布局操作槽位与切换按钮组 (ISS-01/AC-1) */}
           <LayoutActionSlot className="shrink-0 ml-1 sm:ml-2">
             <LayoutSwitcherButtons
-              layoutPageId={isSearchOverlayOpen ? PAGE_IDS.SEARCH_OVERLAY : layoutPageId || ''}
+              layoutPageId={
+                isSearchOverlayOpen
+                  ? PAGE_IDS.SEARCH_OVERLAY
+                  : currentPath === '/virtual-directory/export'
+                    ? ''
+                    : layoutPageId || ''
+              }
             />
           </LayoutActionSlot>
         </div>

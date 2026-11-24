@@ -224,4 +224,17 @@ describe('DirectoryHeader (LayoutSwitcherButtons & LayoutActionSlot 恒定槽位
       expect(btn.className).not.toContain('max-[879px]:hidden')
     })
   })
+
+  it('AC-6: 导出页面 (/virtual-directory/export) 禁用布局切换器，不显示布局按钮组', () => {
+    render(
+      <MemoryRouter initialEntries={['/virtual-directory/export']}>
+        <DirectoryHeader {...mockProps} layoutPageId={PAGE_IDS.VIRTUAL_DIRECTORY} />
+      </MemoryRouter>
+    )
+
+    // 槽位包装器恒定存在以杜绝抖动，但布局按钮组不渲染
+    const slot = screen.getByTestId('layout-action-slot')
+    expect(slot).toBeDefined()
+    expect(screen.queryByTestId('layout-switcher-group')).toBeNull()
+  })
 })

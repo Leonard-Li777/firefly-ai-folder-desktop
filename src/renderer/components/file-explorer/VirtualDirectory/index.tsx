@@ -177,7 +177,7 @@ export const VirtualDirectory: React.FC = () => {
           onSearch={kw => {
             setVirtualDirectoryKeyword(kw)
           }}
-          layoutPageId={PAGE_IDS.VIRTUAL_DIRECTORY}
+          layoutPageId={isExportMode ? undefined : PAGE_IDS.VIRTUAL_DIRECTORY}
         />
       </div>
 
