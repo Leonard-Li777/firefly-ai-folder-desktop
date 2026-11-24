@@ -130,9 +130,88 @@ export class HybridSearchSession {
     const fullPool: HybridPageRef[] = []
 
     // 1. 仲裁候选（已分析）
+    // 外部 Skill API 精确等值下推模式：按物理通道判定 eligibility，彻底避免 RRF 融合分切余弦量纲导致的误杀与缺页
+    let filterByEligibility = false
+    let minScore = 0.55
+    let videoMinScore = 0.45
+    let effectiveChunkThreshold = 0.45
+
+    if (params.exactMinScore) {
+      filterByEligibility = true
+      minScore =
+        typeof params.similarityThreshold === 'number' && Number.isFinite(params.similarityThreshold)
+          ? params.similarityThreshold
+          : 0.55
+      videoMinScore =
+        typeof params.videoMinScore === 'number' && Number.isFinite(params.videoMinScore)
+          ? params.videoMinScore
+          : 0.45
+
+      // 跨召回源全局上下文锚定判定 (Cross-source Context Anchoring)：
+      // 1. 全局或单文件命中字面 (hasLiteral || exactRank > 0 || ftsRank > 0 || pinyinRank > 0)
+      // 2. 或工作区存在达到 minScore 的正文文本命中 (topTextVecScore >= minScore)
+      // 3. 或纯视频工作区下视频切片具备显著性波峰 (topVideoChunkScore >= 0.50)
+      const globalHasLiteral =
+        pool.candidates.some(
+          c => c.hasLiteral || (c.exactRank && c.exactRank > 0) || (c.ftsRank && c.ftsRank > 0)
+        ) ||
+        pool.unanalyzedHits.length > 0 ||
+        fieldCoverageRefs.analyzed.length > 0 ||
+        fieldCoverageRefs.unanalyzed.length > 0
+
+      const textCandidates = pool.candidates.filter(
+        c => !c.matchedChunk && !c.matchedChunks?.length && typeof c.vecScore === 'number'
+      )
+      const topTextVecScore =
+        textCandidates.length > 0 ? Math.max(...textCandidates.map(c => c.vecScore!)) : undefined
+
+      const videoCandidatesWithChunks = pool.candidates.filter(
+        c => c.matchedChunk?.similarity !== undefined || c.matchedChunks?.[0]?.similarity !== undefined
+      )
+      const topVideoChunkScore =
+        videoCandidatesWithChunks.length > 0
+          ? Math.max(
+              ...videoCandidatesWithChunks.map(
+                c => c.matchedChunk?.similarity ?? c.matchedChunks?.[0]?.similarity ?? 0
+              )
+            )
+          : 0
+
+      const isGloballyAnchored =
+        globalHasLiteral ||
+        (topTextVecScore !== undefined && topTextVecScore >= minScore) ||
+        topVideoChunkScore >= 0.5
+
+      effectiveChunkThreshold = isGloballyAnchored
+        ? videoMinScore
+        : Math.max(videoMinScore, minScore)
+    }
+
     for (const c of pool.candidates) {
       if (!c.fileFingerprint) continue
       if (seenFp.has(c.fileFingerprint)) continue
+
+      if (filterByEligibility) {
+        // 通道 1: exact / fuzzy 直接放行（与 validators bypass 一致）
+        const hasLiteralOrFts = Boolean(
+          c.hasLiteral ||
+          (c.exactRank && c.exactRank > 0) ||
+          (c.ftsRank && c.ftsRank > 0) ||
+          (c.pinyinRank && c.pinyinRank > 0)
+        )
+        // 通道 2: clip 视觉通道物理余弦分 >= minScore
+        const hasClipMatch = typeof c.clipScore === 'number' && c.clipScore >= minScore
+        // 通道 3: semantic 正文文本物理余弦分 >= minScore
+        const hasSemanticMatch = typeof c.vecScore === 'number' && c.vecScore >= minScore
+        // 通道 4: video_chunk 视频切片物理余弦分 >= effectiveChunkThreshold
+        const chunkSim = c.matchedChunk?.similarity ?? c.matchedChunks?.[0]?.similarity
+        const hasVideoChunkMatch = typeof chunkSim === 'number' && chunkSim >= effectiveChunkThreshold
+
+        if (!hasLiteralOrFts && !hasClipMatch && !hasSemanticMatch && !hasVideoChunkMatch) {
+          continue
+        }
+      }
+
       seenFp.add(c.fileFingerprint)
       fullPool.push({
         kind: 'analyzed',
@@ -375,7 +454,8 @@ export class HybridSearchSession {
           workspaceDirectoryPath,
           poolSize: HYBRID_SEARCH_POOL_SIZE,
           similarityThreshold: params.similarityThreshold,
-          exactMinScore: params.exactMinScore
+          exactMinScore: params.exactMinScore,
+          videoMinScore: params.videoMinScore
         },
         onPhase1
       )

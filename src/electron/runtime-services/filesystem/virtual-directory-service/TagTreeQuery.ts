@@ -54,6 +54,8 @@ export interface FilterFilesParams {
   similarityThreshold?: number
   /** 外部 Skill API 精确等值下推开关（开启后跳过分通道偏移与 [0.25, 0.60] 钳制） */
   exactMinScore?: boolean
+  /** 外部 Skill API 独立视频切片门限（默认 0.45，仅在 exactMinScore 模式下生效） */
+  videoMinScore?: number
   /**
    * 流式检索进度回调。
    *

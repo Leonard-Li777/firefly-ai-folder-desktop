@@ -205,19 +205,23 @@ const round4 = (v: number): number => Math.round(v * 10000) / 10000
  */
 export function resolveSearchThresholds(
   similarityThreshold?: number,
-  options?: { exactMinScore?: boolean }
+  options?: { exactMinScore?: boolean; videoMinScore?: number }
 ): ResolvedSearchThresholds {
   const isValid = typeof similarityThreshold === 'number' && Number.isFinite(similarityThreshold)
   // 外部 Skill API 精确等值下推模式：跳过 [0.25, 0.60] 钳制与分通道偏移，全通道严格采用调用方 minScore
   if (options?.exactMinScore && isValid) {
     const exact = round4(clampValue(similarityThreshold, 0, 1))
+    const exactVideo =
+      typeof options.videoMinScore === 'number' && Number.isFinite(options.videoMinScore)
+        ? round4(clampValue(options.videoMinScore, 0, 1))
+        : exact
     return {
       userThreshold: exact,
       genericVector: exact,
-      chunkConfidence: exact,
+      chunkConfidence: exactVideo,
       chunkProminence: TEMPORAL_CHUNK_MIN_PROMINENCE,
       clipVector: exact,
-      omniVectorPushdown: exact
+      omniVectorPushdown: Math.min(exact, exactVideo)
     }
   }
   const userThreshold = round4(

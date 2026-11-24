@@ -480,4 +480,77 @@ describe('HybridSearchArbiter 视频切片召回门禁一致性与相似度滑�
     expect(byFp.get('fp-clip-pass')?.clipScore).toBe(0.52)
     expect(byFp.has('fp-clip-low')).toBe(false)
   })
+
+  it('P0-1: exactMinScore 下 omniVectorPushdown 取 Math.min(exact, exactVideo)，防止切片在 Omni 侧被提前剪枝', () => {
+    // 当 minScore=0.55, videoMinScore=0.45 时，omniVectorPushdown 必须为 0.45（放行候选至切片最低门限）
+    const t1 = resolveSearchThresholds(0.55, { exactMinScore: true, videoMinScore: 0.45 })
+    expect(t1.genericVector).toBe(0.55)
+    expect(t1.chunkConfidence).toBe(0.45)
+    expect(t1.omniVectorPushdown).toBe(0.45)
+
+    // 当未指定 videoMinScore 时，二者同为 0.55
+    const t2 = resolveSearchThresholds(0.55, { exactMinScore: true })
+    expect(t2.genericVector).toBe(0.55)
+    expect(t2.chunkConfidence).toBe(0.55)
+    expect(t2.omniVectorPushdown).toBe(0.55)
+
+    // 当用户显式提高 videoMinScore=0.60, minScore=0.55 时，omniVectorPushdown 为 0.55
+    const t3 = resolveSearchThresholds(0.55, { exactMinScore: true, videoMinScore: 0.6 })
+    expect(t3.genericVector).toBe(0.55)
+    expect(t3.chunkConfidence).toBe(0.6)
+    expect(t3.omniVectorPushdown).toBe(0.55)
+  })
+
+  it('P0-2: 短视频 (1~2 个切片) 显著性与绝对门限拦截平铺乱码背景噪声，杜绝无条件短路穿透', async () => {
+    // 种子视频：一个 1 切片短视频（纯乱码平铺分 0.46），一个 2 切片短视频（纯平铺分 0.46, 0.455，落差 0.005 < 0.015）
+    // 一个 2 切片真实高光短视频（0.52, 0.46，落差 0.06 >= 0.015）
+    seedVideo(db, 'fp-flat-1chunk', 'flat-1.mp4', [{ idx: 1, start: 0, end: 10 }])
+    seedVideo(db, 'fp-flat-2chunk', 'flat-2.mp4', [
+      { idx: 1, start: 0, end: 10 },
+      { idx: 2, start: 10, end: 20 }
+    ])
+    seedVideo(db, 'fp-peak-2chunk', 'peak-2.mp4', [
+      { idx: 1, start: 0, end: 10 },
+      { idx: 2, start: 10, end: 20 }
+    ])
+
+    mockSearchVectors.mockResolvedValue({
+      matches: [
+        { fileFingerprint: 'fp-flat-1chunk:c1', score: 0.46 },
+        { fileFingerprint: 'fp-flat-2chunk:c1', score: 0.46 },
+        { fileFingerprint: 'fp-flat-2chunk:c2', score: 0.455 },
+        { fileFingerprint: 'fp-peak-2chunk:c1', score: 0.52 },
+        { fileFingerprint: 'fp-peak-2chunk:c2', score: 0.46 }
+      ]
+    })
+
+    const arbiter = new HybridSearchArbiter(db, {
+      networkSignals: true,
+      enablePinyinReconcileTimer: false
+    })
+
+    const pool = await arbiter.searchHybrid({
+      keyword: 'zzzqqqxxx',
+      whereClauses: ['wf.workspace_id = ?'],
+      queryParams: [1],
+      queryEmbedding: [0.1, 0.2, 0.3],
+      similarityThreshold: 0.55,
+      exactMinScore: true,
+      videoMinScore: 0.45
+    })
+
+    const byFp = new Map(pool.candidates.map(c => [c.fileFingerprint, c]))
+
+    // 1 切片短视频：0.46 < 0.52 绝对置信度，且无整文件高分，被拦截
+    expect(byFp.get('fp-flat-1chunk')?.matchedChunks?.length ?? 0).toBe(0)
+    expect(byFp.has('fp-flat-1chunk')).toBe(false)
+
+    // 2 切片短视频：无波峰显著性落差 (0.005 < 0.015)，被拦截
+    expect(byFp.get('fp-flat-2chunk')?.matchedChunks?.length ?? 0).toBe(0)
+    expect(byFp.has('fp-flat-2chunk')).toBe(false)
+
+    // 2 切片真实高光：显著落差 (0.06 >= 0.015)，保留高光切片
+    expect(byFp.get('fp-peak-2chunk')?.matchedChunks?.length).toBeGreaterThan(0)
+    expect(byFp.get('fp-peak-2chunk')?.matchedChunks?.[0].similarity).toBe(0.52)
+  })
 })

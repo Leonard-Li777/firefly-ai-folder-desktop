@@ -300,6 +300,8 @@ export interface HybridSearchContext {
   similarityThreshold?: number
   /** 外部 Skill API 精确等值下推开关 */
   exactMinScore?: boolean
+  /** 外部 Skill API 独立视频切片门限（默认 0.45） */
+  videoMinScore?: number
 }
 
 /**
@@ -842,9 +844,10 @@ export class HybridSearchArbiter {
       poolSize = HYBRID_SEARCH_POOL_SIZE,
       queryEmbedding,
       similarityThreshold,
-      exactMinScore
+      exactMinScore,
+      videoMinScore
     } = context
-    const thresholds = resolveSearchThresholds(similarityThreshold, { exactMinScore })
+    const thresholds = resolveSearchThresholds(similarityThreshold, { exactMinScore, videoMinScore })
 
     // Ticket 09：解析双字短词倒排点查快道的工作区隔离 ID。
     // 优先采用调用方显式注入的 workspaceId；否则尝试从 workspaceDirectoryPath 反查根工作区；
@@ -2088,7 +2091,12 @@ export class HybridSearchArbiter {
         // 核心门禁 1：若视频全片切片得分平铺（peakProminence < minChunkProminence），
         // 证明没有任何切片能够突出于全局背景基线，属于纯背景噪声，彻底阻断跳轴与切片下发！
         const hasSignificantPeak =
-          agg.chunks.length <= 2 || minChunkProminence <= 0 || peakProminence >= minChunkProminence
+          minChunkProminence <= 0 ||
+          (agg.chunks.length <= 2
+            ? (agg.chunks.length === 2
+                ? peakProminence >= minChunkProminence
+                : maxScore >= Math.max(minChunkConfidence, thresholds.genericVector ?? 0.52))
+            : peakProminence >= minChunkProminence)
 
         // 高光波峰切片集合（用于甄别伴生背景噪声 vs 独立离散高光）
         const highPeakChunks = agg.chunks.filter(c => c.score >= maxScore - 0.02)
@@ -2158,6 +2166,7 @@ export class HybridSearchArbiter {
             agg.matchedChunks = []
             agg.bestChunkIndex = undefined
             agg.bestChunkScore = undefined
+            agg.bestScore = agg.wholeBestScore ?? 0
           } else {
             // 1. 双向时序区间间隙保护 (Interval Gap)，避免前序铺垫或后置飞驰镜头被误杀
             const filteredChunks = mergedIntervals.filter(chunk => {
@@ -2217,6 +2226,7 @@ export class HybridSearchArbiter {
             } else {
               agg.bestChunkIndex = undefined
               agg.bestChunkScore = undefined
+              agg.bestScore = agg.wholeBestScore ?? 0
             }
           }
         } else {
@@ -2234,6 +2244,7 @@ export class HybridSearchArbiter {
           } else {
             agg.bestChunkIndex = undefined
             agg.bestChunkScore = undefined
+            agg.bestScore = agg.wholeBestScore ?? 0
           }
         }
       }

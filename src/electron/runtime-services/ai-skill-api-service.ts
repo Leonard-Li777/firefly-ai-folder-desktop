@@ -43,8 +43,7 @@ import {
   validateSynthesizePreFlight,
   validateApplyPlanBody,
   hasKnownImageMagic,
-  hasKnownNonAudioMagic,
-  assertSearchDtosMinScore
+  hasKnownNonAudioMagic
 } from './ai-skill-api-validators'
 import {
   statRegularFile,
@@ -1139,6 +1138,31 @@ export class AISkillApiService {
           const limit = limitRes.value
           const offset = offsetRes.value
           const minScore = minScoreRes.value
+
+          let videoMinScore = SKILL_API_CONSTRAINTS.search.defaultVideoMinScore
+          if (query.videoMinScore !== undefined) {
+            const videoMinScoreRes = parseQueryFloat(query.videoMinScore, {
+              name: 'videoMinScore',
+              min: SKILL_API_CONSTRAINTS.search.videoMinScoreRange[0],
+              max: SKILL_API_CONSTRAINTS.search.videoMinScoreRange[1]
+            })
+            if (!videoMinScoreRes.ok) {
+              this.sendStructuredError(res, 400, {
+                error: videoMinScoreRes.error,
+                message: videoMinScoreRes.message
+              })
+              return true
+            }
+            if (videoMinScoreRes.value > minScore) {
+              this.sendStructuredError(res, 400, {
+                error: 'INVALID_ARGUMENT',
+                message: `显式传入的 videoMinScore (${videoMinScoreRes.value}) 不得大于 minScore (${minScore})`
+              })
+              return true
+            }
+            videoMinScore = videoMinScoreRes.value
+          }
+
           const virtualDirectoryId = query.virtualDirectoryId
             ? Number(query.virtualDirectoryId)
             : undefined
@@ -1164,6 +1188,7 @@ export class AISkillApiService {
             limit,
             offset,
             similarityThreshold: minScore,
+            videoMinScore,
             exactMinScore: true,
             includeUnanalyzed: true,
             signal: abortController.signal
@@ -1176,30 +1201,18 @@ export class AISkillApiService {
             baseReasons: string[]
           ) => {
             const mapped = mapItemsToDTO(rawItems)
-            const checked = assertSearchDtosMinScore(mapped, minScore)
-            let degraded = baseDegraded
-            const degradedReasons = [...baseReasons]
-            if (checked.driftedCount > 0) {
-              degraded = true
-              if (!degradedReasons.includes('threshold_drift')) {
-                degradedReasons.push('threshold_drift')
-              }
-              logger.warn(
-                LogCategory.SYSTEM,
-                `[AISkillApiService] 检索精确下推发生漂移，兜底剔除 ${checked.driftedCount} 条低分语义项 (minScore=${minScore})`
-              )
-            }
-            const total = rawTotal ?? checked.items.length
+            const total = rawTotal ?? mapped.length
             const poolTruncated = total >= SKILL_API_CONSTRAINTS.search.maxResultWindow
             const relaxable =
               minScore > SKILL_API_CONSTRAINTS.search.wideRecallMinScore &&
-              checked.items.length < limit
+              mapped.length < limit
             return {
               total,
-              items: checked.items,
-              degraded,
-              degradedReasons,
+              items: mapped,
+              degraded: baseDegraded,
+              degradedReasons: baseReasons,
               appliedMinScore: minScore,
+              appliedVideoMinScore: videoMinScore,
               poolTruncated,
               relaxable,
               ...(relaxable
@@ -1228,6 +1241,7 @@ export class AISkillApiService {
                   total: meta.total,
                   isSettled: false,
                   appliedMinScore: meta.appliedMinScore,
+                  appliedVideoMinScore: meta.appliedVideoMinScore,
                   poolTruncated: meta.poolTruncated,
                   items: meta.items
                 })
@@ -1238,6 +1252,7 @@ export class AISkillApiService {
                   isSettled: true,
                   clipPending: Boolean(progRes?.clipPending),
                   appliedMinScore: meta.appliedMinScore,
+                  appliedVideoMinScore: meta.appliedVideoMinScore,
                   poolTruncated: meta.poolTruncated,
                   relaxable: meta.relaxable,
                   ...(meta.hint ? { hint: meta.hint } : {}),
@@ -1249,6 +1264,7 @@ export class AISkillApiService {
                   total: meta.total,
                   isSettled: true,
                   appliedMinScore: meta.appliedMinScore,
+                  appliedVideoMinScore: meta.appliedVideoMinScore,
                   poolTruncated: meta.poolTruncated,
                   relaxable: meta.relaxable,
                   ...(meta.hint ? { hint: meta.hint } : {}),
@@ -1323,6 +1339,7 @@ export class AISkillApiService {
                 degraded: meta.degraded,
                 degradedReasons: meta.degradedReasons,
                 appliedMinScore: meta.appliedMinScore,
+                appliedVideoMinScore: meta.appliedVideoMinScore,
                 poolTruncated: meta.poolTruncated,
                 relaxable: meta.relaxable,
                 ...(meta.hint ? { hint: meta.hint } : {}),
@@ -1339,6 +1356,7 @@ export class AISkillApiService {
                 degradedReasons: meta.degradedReasons,
                 clipPending: Boolean((searchRes as any).clipPending),
                 appliedMinScore: meta.appliedMinScore,
+                appliedVideoMinScore: meta.appliedVideoMinScore,
                 poolTruncated: meta.poolTruncated,
                 relaxable: meta.relaxable,
                 ...(meta.hint ? { hint: meta.hint } : {}),
@@ -1494,12 +1512,17 @@ export class AISkillApiService {
           limit: 'number (optional, 1-50, default 20)',
           offset: 'number (optional, >= 0, default 0)',
           minScore: 'number (optional, 0-1, default 0.55; pass 0.35 for broader recall)',
+          videoMinScore:
+            'number (optional, 0.25-1.0, default 0.45; must be <= minScore when explicitly specified)',
           scope: 'string (optional: real | virtual | all)'
         },
         constraints: {
           defaultMinScore: SKILL_API_CONSTRAINTS.search.defaultMinScore,
+          defaultVideoMinScore: SKILL_API_CONSTRAINTS.search.defaultVideoMinScore,
           wideRecallMinScore: SKILL_API_CONSTRAINTS.search.wideRecallMinScore,
           minScoreRange: [...SKILL_API_CONSTRAINTS.search.minScoreRange],
+          videoMinScoreRange: [...SKILL_API_CONSTRAINTS.search.videoMinScoreRange],
+          explicitVideoMinScoreLeMinScore: true,
           maxLimit: SKILL_API_CONSTRAINTS.search.maxLimit,
           maxResultWindow: SKILL_API_CONSTRAINTS.search.maxResultWindow
         }

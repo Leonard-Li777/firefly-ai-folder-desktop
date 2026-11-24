@@ -28,8 +28,10 @@ export function countCodePoints(text: string): number {
 export const SKILL_API_CONSTRAINTS = {
   search: {
     defaultMinScore: 0.55,
+    defaultVideoMinScore: 0.45,
     wideRecallMinScore: 0.35,
     minScoreRange: [0, 1] as readonly [number, number],
+    videoMinScoreRange: [0.25, 1.0] as readonly [number, number],
     defaultLimit: 20,
     maxLimit: 50,
     maxResultWindow: 200
