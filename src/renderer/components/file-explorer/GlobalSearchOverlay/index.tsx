@@ -823,7 +823,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
             workspaceDirectoryType={workspaceDirectory?.type}
             renderToolbar={layoutContext => (
               <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex items-center justify-between bg-card gap-2 min-h-[44px]">
-                {/* 左侧：全域搜索状态与统计 */}
+                {/* 左侧：全域搜索状态与关键词 */}
                 <div className="flex items-center gap-2 min-w-0 flex-1">
                   <MaterialIcon
                     icon="travel_explore"
@@ -834,14 +834,6 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
                   </span>
                   <span className="font-semibold text-foreground truncate max-w-[120px] sm:max-w-[200px] md:max-w-[320px]">
                     "{keyword}"
-                  </span>
-                  <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap hidden sm:inline">
-                    {t('（共 {count} 项，包含未分析与已分析文件）', {
-                      count: searchResults.length
-                    })}
-                  </span>
-                  <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap sm:hidden">
-                    {t('（{count} 项）', { count: searchResults.length })}
                   </span>
                   {(searchCommit.phase === 'lexical' || searchCommit.phase === 'vector') && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20 whitespace-nowrap shrink-0 animate-pulse flex items-center gap-1">
@@ -876,7 +868,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
                       value={similarityThresholdPct}
                       aria-label={t('匹配度')}
                       onChange={e => handleSimilarityChange(Number(e.target.value))}
-                      className="w-20 sm:w-24 h-1.5 accent-primary cursor-pointer"
+                      className="w-32 sm:w-40 h-1.5 accent-primary cursor-pointer"
                     />
                     <span
                       data-testid="search-similarity-value"
@@ -915,6 +907,9 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({ worksp
               <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px]">
                 <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
                 <span>{t('匹配文件: {count} 个', { count: layoutContext.files.length })}</span>
+                <span className="ml-1.5 text-muted-foreground/70 text-[11px] whitespace-nowrap">
+                  {t('（包含未分析与已分析文件）')}
+                </span>
                 {selectedFiles.length > 0 && (
                   <>
                     <span className="mx-2 text-border">|</span>
