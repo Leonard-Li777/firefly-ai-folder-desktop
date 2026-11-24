@@ -31,6 +31,10 @@ export interface WorkspacePendingBackfillTabProps {
 /** 静态徽标常量（严禁进入翻译字典） */
 const PRO_BADGE_TEXT = '★ PRO'
 
+function toSafeSec(sec: unknown): number {
+  return typeof sec === 'number' && Number.isFinite(sec) ? Math.max(0, sec) : 0
+}
+
 function formatMissingReasonLabel(reason: string): string {
   switch (reason) {
     case 'missing_image_ocr':
@@ -82,7 +86,7 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
 
   // 权威判定会员 Pro 状态：工作区运行时快照优先，回落响应式 tier-store 枚举判定
   const storeTier = useTierStore(s => s.tier)
-  const isPro = runtimeSnapshot?.isProTier ?? (storeTier !== UserTier.FREE)
+  const isPro = runtimeSnapshot?.isProTier ?? (storeTier ?? UserTier.FREE) !== UserTier.FREE
 
   const [videoItems, setVideoItems] = useState<WorkspacePendingBackfillVideoItem[]>([])
   const [effectiveLimitSec, setEffectiveLimitSec] = useState<number>(300)
@@ -227,12 +231,12 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
   }
 
   const totalFailedSlices = videoItems.reduce((sum, v) => sum + v.failedSlices, 0)
-  const remainingMinutes = Math.round(
-    videoItems.reduce(
-      (sum, v) => sum + Math.max(0, v.targetDurationSec - v.completedDurationSec),
-      0
-    ) / 60
+  const remainingSec = videoItems.reduce(
+    (sum, v) =>
+      sum + Math.max(0, toSafeSec(v.targetDurationSec) - toSafeSec(v.completedDurationSec)),
+    0
   )
+  const remainingMinutes = remainingSec > 0 ? Math.max(1, Math.round(remainingSec / 60)) : 0
   const totalMissingCapabilities = envItems.reduce((sum, e) => sum + e.missingReasons.length, 0)
   const hasVideos = videoItems.length > 0
   const hasEnv = envItems.length > 0
@@ -290,11 +294,15 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
               </div>
               <div className="w-full flex items-baseline gap-4 mt-0.5">
                 <div>
-                  <span className="text-2xl font-bold font-mono text-foreground">{videoItems.length}</span>
+                  <span className="text-2xl font-bold font-mono text-foreground">
+                    {videoItems.length}
+                  </span>
                   <span className="text-xs text-muted-foreground ml-1.5">{t('部视频')}</span>
                 </div>
                 <div>
-                  <span className="text-2xl font-bold font-mono text-foreground">{remainingMinutes}</span>
+                  <span className="text-2xl font-bold font-mono text-foreground">
+                    {remainingMinutes}
+                  </span>
                   <span className="text-xs text-muted-foreground ml-1.5">{t('分钟待补')}</span>
                 </div>
               </div>
@@ -324,11 +332,15 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
               </div>
               <div className="w-full flex items-baseline gap-4 mt-0.5">
                 <div>
-                  <span className="text-2xl font-bold font-mono text-foreground">{envItems.length}</span>
+                  <span className="text-2xl font-bold font-mono text-foreground">
+                    {envItems.length}
+                  </span>
                   <span className="text-xs text-muted-foreground ml-1.5">{t('个文件')}</span>
                 </div>
                 <div>
-                  <span className="text-2xl font-bold font-mono text-foreground">{totalMissingCapabilities}</span>
+                  <span className="text-2xl font-bold font-mono text-foreground">
+                    {totalMissingCapabilities}
+                  </span>
                   <span className="text-xs text-muted-foreground ml-1.5">{t('项能力缺口')}</span>
                 </div>
               </div>
@@ -381,7 +393,7 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                         {canStartBackfill ? t('立即补全全部长视频') : t('暂停后台补全')}
                       </Button>
                     )}
-                    {totalFailedSlices > 0 && (
+                    {isPro && totalFailedSlices > 0 && (
                       <Button
                         type="button"
                         size="sm"
@@ -450,16 +462,18 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                     const pct = isCurrent
                       ? Math.round(videoBackfill.current!.progressPct)
                       : Math.min(100, Math.round((completedSlices / targetSlices) * 100))
-                    const completedMins = Math.round(v.completedDurationSec / 60)
-                    const targetMins = Math.round(v.targetDurationSec / 60)
-                    const totalMins = Math.round(v.totalDurationSec / 60)
+                    const completedMins = Math.round(toSafeSec(v.completedDurationSec) / 60)
+                    const targetMins = Math.round(toSafeSec(v.targetDurationSec) / 60)
+                    const totalMins = Math.round(toSafeSec(v.totalDurationSec) / 60)
 
                     return (
                       <div
                         key={v.fileFingerprint}
                         className={cn(
                           'rounded-xl border p-3.5 space-y-2.5 bg-card/60 transition-colors',
-                          isCurrent ? 'border-cyan-500/50 bg-cyan-500/5' : 'border-border/60 hover:border-border'
+                          isCurrent
+                            ? 'border-cyan-500/50 bg-cyan-500/5'
+                            : 'border-border/60 hover:border-border'
                         )}
                       >
                         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -665,7 +679,9 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                   {t('当前目录暂无其它环境恢复或缺失正文/OCR/转录的待补文件。')}
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  {t('若环境恢复（如补全模型、安装依赖组件）后发现缺口，会自动在此列出以便一键补齐。')}
+                  {t(
+                    '若环境恢复（如补全模型、安装依赖组件）后发现缺口，会自动在此列出以便一键补齐。'
+                  )}
                 </p>
               </div>
             )}

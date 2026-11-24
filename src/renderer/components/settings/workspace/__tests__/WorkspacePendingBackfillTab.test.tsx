@@ -1,8 +1,9 @@
 import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react'
+import { UserTier } from '@firefly/types'
 import { WorkspacePendingBackfillTab } from '../WorkspacePendingBackfillTab'
-import { UserTier } from '../../../../stores/tier-store'
+import { useTierStore } from '../../../../stores/tier-store'
 
 const mockFetchVideos = vi.fn()
 const mockFetchRecovery = vi.fn()
@@ -15,7 +16,10 @@ const mockClearRecovery = vi.fn()
 const mockRefreshRuntimeContext = vi.fn().mockResolvedValue(undefined)
 const mockOpenUpgradeDialog = vi.fn()
 
-let mockRuntimeContext = {
+let mockRuntimeContext: {
+  refresh: typeof mockRefreshRuntimeContext
+  snapshot: { isProTier: boolean } | null
+} = {
   refresh: mockRefreshRuntimeContext,
   snapshot: {
     isProTier: true
@@ -33,25 +37,19 @@ vi.mock('../../../../stores/workspace-runtime-context-store', () => ({
   useWorkspaceRuntimeContext: (selector: any) => selector(mockRuntimeContext)
 }))
 
-vi.mock('../../../../stores/tier-store', () => ({
-  UserTier: {
-    FREE: 'free',
-    PRO: 'pro'
-  },
-  useTierStore: Object.assign(
-    (selector: any) =>
-      selector({
-        tier: UserTier.PRO,
-        openUpgradeDialog: mockOpenUpgradeDialog
-      }),
-    {
-      getState: () => ({
-        tier: UserTier.PRO,
-        openUpgradeDialog: mockOpenUpgradeDialog
-      })
-    }
-  )
-}))
+vi.mock('../../../../stores/tier-store', async () => {
+  const { create } = await import('zustand')
+  const useMockTierStore = create<{
+    tier: string
+    openUpgradeDialog: () => void
+  }>(() => ({
+    tier: 'pro',
+    openUpgradeDialog: () => mockOpenUpgradeDialog()
+  }))
+  return {
+    useTierStore: useMockTierStore
+  }
+})
 
 vi.mock('../../../../stores/analysis-queue-store', () => ({
   useAnalysisQueueStore: (selector: any) =>
@@ -96,6 +94,7 @@ describe('WorkspacePendingBackfillTab (Spec v2.1 方案 A 英雄卡片与 Pro �
 
   beforeEach(() => {
     vi.clearAllMocks()
+    ;(useTierStore as any).setState({ tier: UserTier.PRO })
     mockRuntimeContext = {
       refresh: mockRefreshRuntimeContext,
       snapshot: {
@@ -239,8 +238,9 @@ describe('WorkspacePendingBackfillTab (Spec v2.1 方案 A 英雄卡片与 Pro �
     fireEvent.click(unlockCardBtns[0])
     expect(mockOpenUpgradeDialog).toHaveBeenCalledTimes(3)
 
-    // 铁律验证：严禁出现欺诈性的假「优先补全此文件」按钮
+    // 铁律验证：严禁出现欺诈性的假「优先补全此文件」按钮，也禁止向免费用户渲染无作用的「重试全部失败片段」按钮
     expect(screen.queryByText('优先补全此文件')).toBeNull()
+    expect(screen.queryByText(/重试全部失败片段/)).toBeNull()
 
     // 盲区透视提示
     expect(screen.getAllByText(/超出部分未建立索引无法检索/).length).toBeGreaterThanOrEqual(1)
@@ -307,5 +307,120 @@ describe('WorkspacePendingBackfillTab (Spec v2.1 方案 A 英雄卡片与 Pro �
         screen.getByText('当前目录暂无其它环境恢复或缺失正文/OCR/转录的待补文件。')
       ).toBeTruthy()
     })
+  })
+
+  it('V-05: runtimeSnapshot 为 null 时响应式回落 useTierStore(s => s.tier)，升级后实时隐藏升级 Banner', async () => {
+    mockRuntimeContext = {
+      refresh: mockRefreshRuntimeContext,
+      snapshot: null
+    }
+    ;(useTierStore as any).setState({ tier: UserTier.FREE })
+
+    render(<WorkspacePendingBackfillTab workspace={workspace} isActive={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pending-backfill-free-upgrade-banner')).toBeTruthy()
+    })
+    expect(screen.queryByText('暂停后台补全')).toBeNull()
+
+    // 模拟异步刷新为 AGENT / PRO：组件通过 Zustand selector 立即重渲染并隐藏 Banner
+    act(() => {
+      ;(useTierStore as any).setState({ tier: UserTier.AGENT })
+    })
+    await waitFor(() => {
+      expect(screen.queryByTestId('pending-backfill-free-upgrade-banner')).toBeNull()
+    })
+    expect(screen.getByText('暂停后台补全')).toBeTruthy()
+  })
+
+  it('V-06: remainingMinutes 边界守卫——不足 30 秒按至少 1 分钟展示，含 NaN 时安全消毒不溢出', async () => {
+    mockRuntimeContext = {
+      refresh: mockRefreshRuntimeContext,
+      snapshot: { isProTier: false }
+    }
+    mockFetchVideos.mockResolvedValueOnce({
+      success: true,
+      workspaceId: 7,
+      effectiveLimitSec: 300,
+      configuredLimitSec: 1800,
+      items: [
+        {
+          workspaceFileId: 201,
+          fileFingerprint: 'fp_short_tail',
+          path: 'D:\\media\\tail.mp4',
+          name: 'tail.mp4',
+          completedSlices: 1,
+          targetSlices: 2,
+          totalSlices: 2,
+          completedDurationSec: 300,
+          targetDurationSec: 320,
+          totalDurationSec: 320,
+          failedSlices: 0
+        },
+        {
+          workspaceFileId: 202,
+          fileFingerprint: 'fp_nan',
+          path: 'D:\\media\\nan.mp4',
+          name: 'nan.mp4',
+          completedSlices: 1,
+          targetSlices: 2,
+          totalSlices: 2,
+          completedDurationSec: Number.NaN,
+          targetDurationSec: Number.NaN,
+          totalDurationSec: 300,
+          failedSlices: 0
+        }
+      ],
+      snapshot: { running: false, userPaused: false, pendingVideoCount: 2, pendingSliceCount: 2 }
+    })
+
+    render(<WorkspacePendingBackfillTab workspace={workspace} isActive={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByTestId('pending-backfill-free-upgrade-banner')).toBeTruthy()
+    })
+    // 20s 尾片 + 脏 NaN 项安全消毒：精准兜底为至少 1 分钟（严禁渲染 NaN 或 0 分钟）
+    expect(screen.queryByText(/NaN/)).toBeNull()
+    expect(screen.queryByText(/剩余 0 分钟/)).toBeNull()
+    expect(
+      screen.getByText(
+        '升级 Pro 可自动解锁长视频剩余 1 分钟全量画面分析，支持最长 3 小时整部视频任意画面找图。'
+      )
+    ).toBeTruthy()
+  })
+
+  it('V-07: 真实 workspace-ai-client 对 agent / enterprise / max / pro / free 的 isProTier 归一化判定', async () => {
+    const actualClient = await vi.importActual<
+      typeof import('../../../../lib/workspace-policy/workspace-ai-client')
+    >('../../../../lib/workspace-policy/workspace-ai-client')
+    const prevApi = (window as any).electronAPI
+    try {
+      const invokeCase = async (userTier: unknown) => {
+        ;(window as any).electronAPI = {
+          getWorkspaceRuntimeContextSnapshot: vi.fn().mockResolvedValue({
+            contextEpoch: 1,
+            workspaceId: 7,
+            snapshot: {
+              userTier,
+              isGenerativeAiEnabled: true,
+              globalEmbeddingProfile: 'gemma_unified',
+              globalPluginStates: {},
+              libreOfficeInstalled: true,
+              videoInferenceBackend: 'gpu'
+            }
+          })
+        }
+        return actualClient.fetchWorkspaceRuntimeContext(7)
+      }
+
+      expect((await invokeCase('free'))?.isProTier).toBe(false)
+      expect((await invokeCase('pro'))?.isProTier).toBe(true)
+      expect((await invokeCase('enterprise'))?.isProTier).toBe(true)
+      expect((await invokeCase('agent'))?.isProTier).toBe(true)
+      expect((await invokeCase('  AGENT  '))?.isProTier).toBe(true)
+      expect((await invokeCase('max'))?.isProTier).toBe(true)
+    } finally {
+      ;(window as any).electronAPI = prevApi
+    }
   })
 })

@@ -457,7 +457,9 @@ function normalizeRuntimeSnapshot(raw: unknown): WorkspaceRuntimeContextSnapshot
         error: st === 'error' ? 'MODULE_ERROR' : undefined
       }
     }
-    const tierStr = String(nested.userTier ?? '').toLowerCase()
+    const tierStr = String(nested.userTier ?? '')
+      .trim()
+      .toLowerCase()
     return {
       contextEpoch: Number(obj.contextEpoch ?? 0),
       workspaceId: (obj.workspaceId as number | null | undefined) ?? null,
@@ -466,10 +468,7 @@ function normalizeRuntimeSnapshot(raw: unknown): WorkspaceRuntimeContextSnapshot
       globalEmbeddingProfile: nested.globalEmbeddingProfile ?? 'classic_light',
       videoInferenceBackend: nested.videoInferenceBackend ?? 'unknown',
       isProTier:
-        tierStr === 'pro' ||
-        tierStr === 'enterprise' ||
-        tierStr === 'agent' ||
-        tierStr === 'max',
+        tierStr === 'pro' || tierStr === 'enterprise' || tierStr === 'agent' || tierStr === 'max',
       moduleStates,
       recoverableCount: typeof obj.recoverableCount === 'number' ? obj.recoverableCount : undefined,
       recoverableNonVideoCount:
