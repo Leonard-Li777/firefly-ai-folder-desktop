@@ -36,7 +36,7 @@ export const InterfaceSettings: React.FC = () => {
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const themeMode = useSettingsStore(s => (s.config?.ui as any)?.theme || (s.config as any)?.theme)
   const { t, changeLanguage, activeLanguage } = useVoerkaI18n(i18nScope)
-  const { setTheme, colorScheme, setColorScheme } = useTheme()
+  const { theme: currentTheme, setTheme, colorScheme, setColorScheme } = useTheme()
   const [showLanguageChangeDialog, setShowLanguageChangeDialog] = useState(false)
   const [pendingLanguage, setPendingLanguage] = useState<LanguageCode | null>(null)
   const [isSwitchingLanguage, setIsSwitchingLanguage] = useState(false)
@@ -44,11 +44,13 @@ export const InterfaceSettings: React.FC = () => {
   // 获取可用的配色方案
   const colorSchemes = useMemo(() => getAvailableColorSchemes(), [activeLanguage])
 
-  // 当主题配置变化时,应用主题
+  // 当主题配置发生实际变化时才同步应用主题，杜绝挂载时重复调用 setTheme 引发 root.offsetHeight 强制回流
   useEffect(() => {
     const theme = getConfigValue<'light' | 'dark' | 'auto'>('THEME_MODE') || 'auto'
-    setTheme(theme)
-  }, [themeMode, setTheme, getConfigValue])
+    if (theme !== currentTheme) {
+      setTheme(theme)
+    }
+  }, [themeMode, currentTheme, setTheme, getConfigValue])
 
   /**
    * 处理语言变更 - 即时提醒

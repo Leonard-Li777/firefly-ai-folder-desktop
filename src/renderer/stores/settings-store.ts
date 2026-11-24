@@ -237,6 +237,7 @@ export const useSettingsStore = create<ISettingsState>()(
 
       // --- 系统设置弹窗独立操作 ---
       openSystemSettings: async (category = SettingsCategory.INTERFACE) => {
+        // 1. 立即同步打开弹窗，确保 UI 零延迟响应用户点击
         set({
           isSystemSettingsOpen: true,
           isOpen: true,
@@ -244,17 +245,41 @@ export const useSettingsStore = create<ISettingsState>()(
           error: null
         })
 
+        // 2. 暂停 AI Service 引擎配置重载（非阻塞 fire-and-forget，避免 IPC 阻塞 UI 弹窗）
+        if (window.electronAPI?.aiService?.setConfigReloadSuspended) {
+          window.electronAPI.aiService.setConfigReloadSuspended(true).catch(err => {
+            console.warn('[settings-store] 暂停配置重载失败:', err)
+          })
+        }
+
+        // 3. 配置加载与静默校验：若已有内存缓存，后台异步对比，消除无意义的二次全量重渲染
         try {
           if (window.electronAPI?.getConfig) {
-            const latestConfig = await window.electronAPI.getConfig()
-            set({
-              config: latestConfig,
-              originalConfig: { ...latestConfig },
-              hasUnsavedChanges: false
-            })
-          }
-          if (window.electronAPI?.aiService?.setConfigReloadSuspended) {
-            await window.electronAPI.aiService.setConfigReloadSuspended(true)
+            const currentConfig = get().config
+            const hasExistingConfig = Boolean(currentConfig && Object.keys(currentConfig).length > 0)
+
+            if (!hasExistingConfig) {
+              const latestConfig = await window.electronAPI.getConfig()
+              set({
+                config: latestConfig,
+                originalConfig: { ...latestConfig },
+                hasUnsavedChanges: false
+              })
+            } else {
+              // 后台静默校验：仅当关键内容不一致时才做增量更新，避免弹窗弹出瞬间遭遇 Long Task 掉帧
+              void window.electronAPI.getConfig().then(latestConfig => {
+                const current = get().config
+                if (latestConfig && JSON.stringify(latestConfig) !== JSON.stringify(current)) {
+                  set({
+                    config: latestConfig,
+                    originalConfig: { ...latestConfig },
+                    hasUnsavedChanges: false
+                  })
+                }
+              }).catch(err => {
+                console.warn('[settings-store] 后台静默校验配置失败:', err)
+              })
+            }
           }
         } catch (error) {
           console.error('加载系统配置失败:', error)

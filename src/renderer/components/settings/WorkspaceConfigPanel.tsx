@@ -11,7 +11,7 @@ import {
 } from '@firefly/types'
 import { mapIntentToParameters } from '@firefly/shared'
 import { useTierStore } from '../../stores/tier-store'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { Card } from '../ui/card'
 import { Button } from '../ui/button'
@@ -149,6 +149,7 @@ export const WorkspaceConfigPanel: React.FC<WorkspaceConfigPanelProps> = ({
   }, [workspace.workspace_config])
 
   // 基础语义检索引擎 SSOT 解析
+  useSettingsConfig()
   const pluginModules = usePluginCenterStore(s => s.modules)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const activeBaseEmbeddingModule = useMemo(() => {
