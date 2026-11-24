@@ -1,6 +1,5 @@
 import {
   Check,
-  Cpu,
   Gauge,
   HelpCircle,
   Layers,
@@ -11,7 +10,6 @@ import {
   ChevronDown,
   ChevronRight,
   Sliders,
-  ShieldCheck,
   Loader2,
   CheckCircle2,
   RotateCcw
@@ -30,7 +28,6 @@ import {
   TechnicalEngineParameters,
   parseWorkspaceConfig,
   HardwareInfo,
-  UserTier,
   DEFAULT_UNBOUND_AI_CONFIG
 } from '@firefly/types'
 import {
@@ -42,8 +39,6 @@ import {
   isDedicatedGpu,
   mapIntentToParameters
 } from '@firefly/shared'
-import { useTierStore } from '../../../stores/tier-store'
-import { UpgradeAccountDialog } from '../../tier/UpgradeAccountDialog'
 import { captureEvent } from '../../../lib/posthog'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { usePluginCenterStore } from '../../../stores/plugin-center-store'
@@ -189,21 +184,174 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
   )
 }
 
+/** 3 小时统一分段标尺断点定义（0 → 5分钟 → 30分钟 → 1小时 → 3小时 垂直对齐） */
+const VIDEO_SCALE_BREAKPOINTS = [
+  { sec: 0, pct: 0 },
+  { sec: 300, pct: 25 },
+  { sec: 1800, pct: 50 },
+  { sec: 3600, pct: 75 },
+  { sec: 10800, pct: 100 }
+] as const
+
+/**
+ * 将时长/耗时秒数映射到统一 3 小时非线性分段标尺百分比 [minPct..100]
+ */
+function durationSecToScalePct(sec: number, minPct = 2): number {
+  if (!Number.isFinite(sec) || sec <= 0) return minPct
+  if (sec >= 10800) return 100
+  for (let i = 0; i < VIDEO_SCALE_BREAKPOINTS.length - 1; i++) {
+    const bp0 = VIDEO_SCALE_BREAKPOINTS[i]
+    const bp1 = VIDEO_SCALE_BREAKPOINTS[i + 1]
+    if (sec <= bp1.sec) {
+      const pct = bp0.pct + ((sec - bp0.sec) / (bp1.sec - bp0.sec)) * (bp1.pct - bp0.pct)
+      return Math.min(100, Math.max(minPct, Number(pct.toFixed(2))))
+    }
+  }
+  return 100
+}
+
+/**
+ * 将分段标尺上的百分比位置反解为 5 分钟步进（300s 整数倍）的合法分析时长上限 [300..10800]
+ */
+function scalePctToDurationSec(pct: number): number {
+  if (!Number.isFinite(pct)) return 300
+  const clamped = Math.min(100, Math.max(25, pct))
+  for (let i = 0; i < VIDEO_SCALE_BREAKPOINTS.length - 1; i++) {
+    const bp0 = VIDEO_SCALE_BREAKPOINTS[i]
+    const bp1 = VIDEO_SCALE_BREAKPOINTS[i + 1]
+    if (clamped <= bp1.pct) {
+      const rawSec = bp0.sec + ((clamped - bp0.pct) / (bp1.pct - bp0.pct)) * (bp1.sec - bp0.sec)
+      return Math.min(10800, Math.max(300, Math.round(rawSec / 300) * 300))
+    }
+  }
+  return 10800
+}
+
+/** 耗时进度条固定空间渐变（翠绿 → 琥珀橙 → 警示红，越长越有时间成本感） */
+const VIDEO_COST_GRADIENT =
+  'linear-gradient(90deg, #10b981 0%, #22c55e 25%, #f59e0b 55%, #f97316 78%, #ef4444 100%)'
+
+/** 时长上限正向能量渐变（浅天蓝 → 品牌靛紫，越长代表可检索范围越完整） */
+const VIDEO_COVERAGE_GRADIENT = 'linear-gradient(90deg, #38bdf8 0%, #6366f1 55%, #8b5cf6 100%)'
+
+interface VideoScaleTicksProps {
+  /** 可选：点击刻度跳转（仅第 1 项控制源滑块使用） */
+  onSelectSec?: (sec: number) => void
+  /** 可选：当前选中的时长秒数，用于高亮命中刻度 */
+  activeSec?: number
+}
+
+/** 三项共用的 3 小时统一分段刻度标尺（像素级垂直对齐） */
+const VideoScaleTicks: React.FC<VideoScaleTicksProps> = ({ onSelectSec, activeSec }) => {
+  const ticks = [
+    { sec: 0, pct: 0, label: '0', clickable: false },
+    { sec: 300, pct: 25, label: t('5 分钟'), clickable: true },
+    { sec: 1800, pct: 50, label: t('30 分钟'), clickable: true },
+    { sec: 3600, pct: 75, label: t('1 小时'), clickable: true },
+    { sec: 10800, pct: 100, label: t('3 小时'), clickable: true }
+  ]
+
+  return (
+    <div className="relative h-4 text-[10px] text-muted-foreground/70 font-mono select-none">
+      {ticks.map(tick => {
+        const isFirst = tick.pct === 0
+        const isLast = tick.pct === 100
+        const isActive = activeSec !== undefined && activeSec === tick.sec
+        const posStyle = !isFirst && !isLast ? { left: `${tick.pct}%` } : undefined
+        const alignClass = isFirst ? 'left-0' : isLast ? 'right-0' : '-translate-x-1/2'
+
+        if (onSelectSec && tick.clickable) {
+          return (
+            <button
+              key={tick.pct}
+              type="button"
+              onClick={() => onSelectSec(tick.sec)}
+              style={posStyle}
+              className={cn(
+                'absolute top-0 leading-none transition-colors hover:text-primary cursor-pointer',
+                alignClass,
+                isActive && 'text-primary font-bold'
+              )}
+            >
+              {tick.label}
+            </button>
+          )
+        }
+
+        return (
+          <span
+            key={tick.pct}
+            style={posStyle}
+            className={cn(
+              'absolute top-0 leading-none',
+              alignClass,
+              isActive && 'text-primary font-semibold'
+            )}
+          >
+            {tick.label}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
+interface VideoCostLegendProps {
+  testId: string
+  visualSec: number
+  framesCount: number
+  asrSec: number
+  asrCapSec: number
+  fixedSec: number
+  rightText: React.ReactNode
+}
+
+/** 耗时预估三项细分无色差图例行 */
+const VideoCostLegend: React.FC<VideoCostLegendProps> = ({
+  testId,
+  visualSec,
+  framesCount,
+  asrSec,
+  asrCapSec,
+  fixedSec,
+  rightText
+}) => (
+  <div
+    data-testid={testId}
+    className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2"
+  >
+    <div className="flex items-center gap-3 flex-wrap">
+      <span>
+        🖼️ {t('画面 AI 理解')}:{' '}
+        <strong className="text-foreground">{t('约 {sec} 秒', { sec: visualSec })}</strong> (
+        {t('{count} 张', { count: framesCount })})
+      </span>
+      <span>
+        🎙️ {t('台词识别')}:{' '}
+        <strong className="text-foreground">{t('约 {sec} 秒', { sec: asrSec })}</strong> (
+        {t('{sec} 秒音轨', { sec: asrCapSec })})
+      </span>
+      <span>
+        ⚙️ {t('基础开销')}:{' '}
+        <strong className="text-foreground">{t('约 {sec} 秒', { sec: fixedSec })}</strong>
+      </span>
+    </div>
+    <span className="text-[10px] font-semibold font-mono">{rightText}</span>
+  </div>
+)
+
 interface VideoAnalysisEstimateCardProps {
   videoQuotaMax: number
   localVideoSoftTokenBudget: 48 | 140
   videoAsrCap: number
   hasGpuPower: boolean
   videoAnalyzeDurationSec: number
-  isFreeUser: boolean
-  isAnalyzeCapped: boolean
   onDurationChange: (sec: number) => void
   onNavigateTab?: (tabId: 'pending_backfill') => void
-  setIsUpgradeOpen: (open: boolean) => void
 }
 
 /**
- * 实时整理分析耗时预估图形化卡片与每个视频分析时长上限设置卡片
+ * 实时整理分析耗时预估图形化卡片与每个视频分析时长上限设置卡片（耗时对比组）
  * 独立隔离子组件：维持局部即时状态以实现滑块 60fps+ 丝滑跟随，在拖拽结束后统一防抖提交，
  * 拖拽中屏蔽 transition 避免 CSS 动画与高频布局回流严重卡顿。
  */
@@ -214,19 +362,23 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
     videoAsrCap,
     hasGpuPower,
     videoAnalyzeDurationSec,
-    isFreeUser,
-    isAnalyzeCapped,
     onDurationChange,
-    onNavigateTab,
-    setIsUpgradeOpen
+    onNavigateTab
   }) => {
     const [localDurationSec, setLocalDurationSec] = useState(videoAnalyzeDurationSec)
     const [isDragging, setIsDragging] = useState(false)
     const isDraggingRef = useRef(false)
     const commitTimerRef = useRef<NodeJS.Timeout | null>(null)
+    const pendingCommitValRef = useRef<number | null>(null)
+    const keyboardDirtyRef = useRef(false)
+    const lastDraggedSecRef = useRef<number | null>(null)
+    const onDurationChangeRef = useRef(onDurationChange)
+    onDurationChangeRef.current = onDurationChange
+    const trackRef = useRef<HTMLDivElement | null>(null)
+    const inputRef = useRef<HTMLInputElement | null>(null)
 
     useEffect(() => {
-      if (!isDraggingRef.current) {
+      if (!isDraggingRef.current && pendingCommitValRef.current === null) {
         setLocalDurationSec(videoAnalyzeDurationSec)
       }
     }, [videoAnalyzeDurationSec])
@@ -234,22 +386,31 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
     useEffect(() => {
       return () => {
         if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+        if (pendingCommitValRef.current !== null) {
+          const pending = pendingCommitValRef.current
+          pendingCommitValRef.current = null
+          onDurationChangeRef.current(pending)
+        }
       }
     }, [])
 
-    const handleCommit = useCallback(
-      (val: number) => {
-        if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-        isDraggingRef.current = false
-        setIsDragging(false)
-        onDurationChange(val)
-      },
-      [onDurationChange]
-    )
+    const handleCommit = useCallback((val: number) => {
+      if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+      pendingCommitValRef.current = null
+      keyboardDirtyRef.current = false
+      lastDraggedSecRef.current = null
+      isDraggingRef.current = false
+      setIsDragging(false)
+      onDurationChangeRef.current(val)
+    }, [])
 
     const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const nextVal = parseInt(e.target.value, 10)
+      const parsed = parseInt(e.target.value, 10)
+      if (!Number.isFinite(parsed)) return
+      const nextVal = Math.min(10800, Math.max(300, parsed))
       setLocalDurationSec(nextVal)
+      pendingCommitValRef.current = nextVal
+      keyboardDirtyRef.current = true
       // 200ms 防抖兜底：即使鼠标拖出边界也能在松手后稳定提交
       if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
       commitTimerRef.current = setTimeout(() => {
@@ -257,17 +418,14 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
       }, 200)
     }
 
-    const est = estimateVideoAnalysisDurationSec(
-      videoQuotaMax,
-      localVideoSoftTokenBudget,
-      videoAsrCap,
-      hasGpuPower,
-      300
-    )
-    const totalMins = (est.totalSec / 60).toFixed(1)
-    const fillWidthPct = Math.min(100, Math.max(3, Math.round((est.perChunkSec / 300) * 100)))
+    const handleSliderKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!keyboardDirtyRef.current) return
+      if (e.key === 'Tab' || e.key === 'Shift' || e.key === 'Escape' || e.key === 'Alt') return
+      const parsed = parseInt(e.currentTarget.value, 10)
+      if (!Number.isFinite(parsed)) return
+      handleCommit(Math.min(10800, Math.max(300, parsed)))
+    }
 
-    // 整片口径：严格按滑块当前即时值 localDurationSec 估算，拖动时即时响应
     const safeDurationSec =
       typeof localDurationSec === 'number' &&
       Number.isFinite(localDurationSec) &&
@@ -279,6 +437,92 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
         ? videoQuotaMax
         : 60
 
+    const calcDurationFromClientX = useCallback((clientX: number): number | null => {
+      if (!Number.isFinite(clientX)) return null
+      const el = trackRef.current
+      if (!el) return null
+      const rect = el.getBoundingClientRect()
+      if (rect.width <= 0) return null
+      const pct = ((clientX - rect.left) / rect.width) * 100
+      return scalePctToDurationSec(pct)
+    }, [])
+
+    const applyQuickSelectSec = useCallback(
+      (sec: number) => {
+        setLocalDurationSec(sec)
+        handleCommit(sec)
+      },
+      [handleCommit]
+    )
+
+    const releaseCaptureQuietly = (target: HTMLDivElement, pointerId: number) => {
+      try {
+        if (target.hasPointerCapture?.(pointerId)) {
+          target.releasePointerCapture?.(pointerId)
+        }
+      } catch {
+        // 某些测试环境可能不支持 pointer capture
+      }
+    }
+
+    const handleTrackPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+      // 拦截非主键点击（右键、中键不修改配置）
+      if (typeof e.button === 'number' && e.button !== 0) return
+      isDraggingRef.current = true
+      setIsDragging(true)
+      pendingCommitValRef.current = null
+      inputRef.current?.focus({ preventScroll: true })
+      try {
+        e.currentTarget.setPointerCapture?.(e.pointerId)
+      } catch {
+        // 某些测试环境可能不支持 pointer capture
+      }
+      const nextSec = calcDurationFromClientX(e.clientX)
+      if (nextSec !== null) {
+        lastDraggedSecRef.current = nextSec
+        setLocalDurationSec(nextSec)
+        if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+      }
+    }
+
+    const handleTrackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingRef.current) return
+      const nextSec = calcDurationFromClientX(e.clientX)
+      if (nextSec !== null) {
+        lastDraggedSecRef.current = nextSec
+        setLocalDurationSec(nextSec)
+      }
+    }
+
+    const handleTrackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingRef.current) return
+      releaseCaptureQuietly(e.currentTarget, e.pointerId)
+      const nextSec = calcDurationFromClientX(e.clientX)
+      const finalSec = nextSec ?? lastDraggedSecRef.current ?? safeDurationSec
+      setLocalDurationSec(finalSec)
+      handleCommit(finalSec)
+    }
+
+    const handleTrackPointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDraggingRef.current) return
+      releaseCaptureQuietly(e.currentTarget, e.pointerId)
+      if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
+      isDraggingRef.current = false
+      setIsDragging(false)
+      lastDraggedSecRef.current = null
+      pendingCommitValRef.current = null
+      setLocalDurationSec(videoAnalyzeDurationSec)
+    }
+
+    const est = estimateVideoAnalysisDurationSec(
+      safeQuotaMax,
+      localVideoSoftTokenBudget,
+      videoAsrCap,
+      hasGpuPower,
+      300
+    )
+    const totalMins = (est.totalSec / 60).toFixed(1)
+
     const fullEst = estimateVideoAnalysisDurationSec(
       safeQuotaMax,
       localVideoSoftTokenBudget,
@@ -288,130 +532,197 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
     )
     const fullMins = (fullEst.totalSec / 60).toFixed(1)
     const fullVideoMins = Math.round(safeDurationSec / 60)
-    // 3 小时绝对视频时长基准 (10800 秒)
-    const fullScaleSec = 10800
-    // 进度轨填充：整片分析窗口覆盖度随滑块时长动态平滑映射 (3% ~ 100%)，保证极速与平衡档均清晰可感知
-    const fullFillPct = Math.min(
-      100,
-      Math.max(3, Math.round((safeDurationSec / fullScaleSec) * 100))
-    )
+
+    const sliderFillPct = durationSecToScalePct(safeDurationSec, 25)
+    const firstSliceFillPct = durationSecToScalePct(est.totalSec, 2)
+    const fullFillPct = durationSecToScalePct(fullEst.totalSec, 2)
+
     const numChunks = Math.max(1, Math.ceil(safeDurationSec / 300))
     const totalFrames = numChunks * safeQuotaMax
 
+    const coverageBadgeText =
+      fullVideoMins <= 15
+        ? t('涵盖短视频与日常片段')
+        : fullVideoMins <= 60
+          ? t('涵盖完整剧集与长视频')
+          : t('涵盖整部电影与超长录屏')
+
     return (
-      <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-base">⚡</span>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-foreground">
-                  {t('单视频首次整理耗时预估')}
+      <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-4">
+        {/* 第 1 项（控制源）：每个视频分析时长上限 */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-foreground">{t('每个视频分析时长上限')}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                {t('5 分钟一档 · 最长 3 小时')}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-extrabold font-mono text-primary">
+                {fullVideoMins} {t('分钟')}
+              </span>
+              {fullVideoMins >= 60 && (
+                <span className="text-[11px] text-muted-foreground font-mono">
+                  ({t('约 {hours} 小时', { hours: (safeDurationSec / 3600).toFixed(1) })})
                 </span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
-                  {t('以每 5 分钟视频分析基准测算')}
-                </span>
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                {t('耗时仅在首次整理时发生一次；搜索时均为毫秒级瞬发。')}
-              </p>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-extrabold font-mono text-primary">
-              {est.minSec} ~ {est.maxSec} {t('秒')}
+
+          <div
+            ref={trackRef}
+            data-testid="video-analyze-duration-track"
+            onPointerDown={handleTrackPointerDown}
+            onPointerMove={handleTrackPointerMove}
+            onPointerUp={handleTrackPointerUp}
+            onPointerCancel={handleTrackPointerCancel}
+            className="relative h-3 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40 cursor-pointer touch-none select-none focus-within:ring-2 focus-within:ring-primary/40"
+          >
+            <div
+              data-testid="duration-cap-fill"
+              style={{
+                width: `${sliderFillPct}%`,
+                backgroundImage: VIDEO_COVERAGE_GRADIENT
+              }}
+              className={cn('h-full rounded-full', !isDragging && 'transition-all duration-300')}
+            />
+            <span
+              style={{ left: `${sliderFillPct}%` }}
+              className={cn(
+                'pointer-events-none absolute top-1/2 -translate-y-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-background border-2 border-indigo-500 shadow-sm',
+                !isDragging && 'transition-all duration-300'
+              )}
+            />
+            <input
+              ref={inputRef}
+              type="range"
+              data-testid="video-analyze-duration-slider"
+              aria-label={t('每个视频分析时长上限')}
+              min={300}
+              max={10800}
+              step={300}
+              value={safeDurationSec}
+              onChange={handleSliderChange}
+              onKeyUp={handleSliderKeyUp}
+              className="sr-only"
+            />
+          </div>
+
+          <VideoScaleTicks onSelectSec={applyQuickSelectSec} activeSec={safeDurationSec} />
+
+          <div
+            data-testid="duration-cap-legend"
+            className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2"
+          >
+            <span>
+              🎯 {t('覆盖收益：可检索视频前 {mins} 分钟全部画面与台词', { mins: fullVideoMins })}
             </span>
-            {est.totalSec >= 60 && (
+            <span className="text-[10px] font-semibold font-mono text-indigo-600 dark:text-indigo-400">
+              ✨ {coverageBadgeText}
+            </span>
+          </div>
+        </div>
+
+        {/* 第 2 项（对比项 A）：单视频首次整理耗时预估 */}
+        <div className="space-y-2 pt-3 border-t border-border/30">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-foreground">
+                {t('单视频首次整理耗时预估')}
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-primary/10 text-primary border border-primary/20">
+                {t('以每 5 分钟视频分析基准测算')}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-extrabold font-mono text-primary">
+                {est.minSec} ~ {est.maxSec} {t('秒')}
+              </span>
               <span className="text-[11px] text-muted-foreground font-mono">
                 ({t('约 {min} 分钟', { min: totalMins })})
               </span>
-            )}
-            {est.speedTier === 'blazing' && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                ⚡ {t('极速飞快 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-              </span>
-            )}
-            {est.speedTier === 'balanced' && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                ⚖️ {t('平衡适中 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-              </span>
-            )}
-            {est.speedTier === 'deep' && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                🔍 {t('深度精细 (约 {speed}x 实时处理)', { speed: est.speedMultiplier })}
-              </span>
-            )}
+            </div>
           </div>
-        </div>
 
-        {/* 全局绝对标尺刻度轨道 */}
-        <div className="space-y-1.5">
-          <div className="h-3 w-full bg-muted/60 rounded-full overflow-hidden flex relative p-0.5 border border-border/40">
+          <div className="relative h-3 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40 overflow-hidden">
             <div
-              style={{ width: `${fillWidthPct}%` }}
-              className="h-full rounded-full overflow-hidden flex gap-0.5 transition-all duration-300"
-            >
-              <div
-                style={{ width: `${est.visualPct}%` }}
-                className="h-full bg-primary rounded-l-full transition-all duration-300"
-                title={t('画面 AI 理解')}
-              />
-              <div
-                style={{ width: `${est.asrPct}%` }}
-                className="h-full bg-emerald-500 transition-all duration-300"
-                title={t('台词语音识别')}
-              />
-              <div
-                style={{ width: `${est.fixedPct}%` }}
-                className="h-full bg-muted-foreground/30 rounded-r-full transition-all duration-300"
-                title={t('基础解包与索引')}
-              />
-            </div>
+              data-testid="benchmark-video-fill"
+              style={{
+                width: `${firstSliceFillPct}%`,
+                backgroundImage: VIDEO_COST_GRADIENT,
+                backgroundSize: `${(100 / Math.max(1, firstSliceFillPct)) * 100}% 100%`
+              }}
+              className="h-full rounded-full transition-all duration-300"
+            />
           </div>
 
-          {/* 实时线与刻度标尺 */}
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
-            <span>0s</span>
-            <span>60s</span>
-            <span>150s</span>
-            <span className="text-primary/80 font-medium">{t('5 分钟参考线')}</span>
-          </div>
+          <VideoScaleTicks />
 
-          {/* 细分耗时图例与百分比 */}
-          <div
-            data-testid="benchmark-video-legend"
-            className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-                <span>
-                  {t('画面 AI 理解')}:{' '}
-                  <strong className="text-foreground">~{est.visualSec}s</strong> ({videoQuotaMax}
-                  {t('张')})
-                </span>
+          <VideoCostLegend
+            testId="benchmark-video-legend"
+            visualSec={est.visualSec}
+            framesCount={safeQuotaMax}
+            asrSec={est.asrSec}
+            asrCapSec={videoAsrCap}
+            fixedSec={est.fixedSec}
+            rightText={
+              <span className="text-emerald-600 dark:text-emerald-400">
+                ⚡ {t('首次整理发生一次 · 搜索毫秒级瞬发')}
               </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                <span>
-                  {t('台词识别')}: <strong className="text-foreground">~{est.asrSec}s</strong> (
-                  {videoAsrCap}s{t('音轨')})
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
-                <span>
-                  {t('基础开销')}: <strong className="text-foreground">~{est.fixedSec}s</strong>
-                </span>
-              </span>
-            </div>
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
-              ⚡ {t('搜索时毫秒级瞬发响应')}
-            </span>
-          </div>
+            }
+          />
         </div>
 
-        {/* 纯 CPU 口径深度档慢于实时播放时的贴心提示 */}
+        {/* 第 3 项（对比项 B）：按整片时长测算 */}
+        <div className="space-y-2 pt-3 border-t border-border/30">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-foreground">{t('按整片时长测算')}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                {t('上限 {mins} 分钟', { mins: fullVideoMins })}
+              </span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-extrabold font-mono text-primary">
+                {fullEst.minSec} ~ {fullEst.maxSec} {t('秒')}
+              </span>
+              <span className="text-[11px] text-muted-foreground font-mono">
+                ({t('约 {min} 分钟', { min: fullMins })})
+              </span>
+            </div>
+          </div>
+
+          <div className="relative h-3 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40 overflow-hidden">
+            <div
+              data-testid="full-video-fill"
+              style={{
+                width: `${fullFillPct}%`,
+                backgroundImage: VIDEO_COST_GRADIENT,
+                backgroundSize: `${(100 / Math.max(1, fullFillPct)) * 100}% 100%`
+              }}
+              className={cn('h-full rounded-full', !isDragging && 'transition-all duration-300')}
+            />
+          </div>
+
+          <VideoScaleTicks />
+
+          <VideoCostLegend
+            testId="full-video-legend"
+            visualSec={fullEst.visualSec}
+            framesCount={totalFrames}
+            asrSec={fullEst.asrSec}
+            asrCapSec={videoAsrCap}
+            fixedSec={fullEst.fixedSec}
+            rightText={
+              <span className="text-sky-600 dark:text-sky-400">
+                ⚡ {t('约 {speed}x 实时处理', { speed: fullEst.speedMultiplier })}
+              </span>
+            }
+          />
+        </div>
+
+        {/* 辅助贴心提示与待补分析直达引导 */}
         {est.perChunkSec >= 300 && (
           <div className="p-2.5 rounded-lg bg-purple-500/10 border border-purple-500/20 text-xs text-purple-700 dark:text-purple-300 flex items-center gap-2">
             <span>💡</span>
@@ -423,161 +734,28 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
           </div>
         )}
 
-        {/* 整片口径耗时条：所有用户可见，随「每个视频分析时长上限」动态变化 */}
-        <div className="space-y-1.5 pt-2 border-t border-border/30">
-          <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] px-2 py-0.2 rounded-full font-medium bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
-                {t('按整片时长测算')}
-              </span>
-              <span className="text-muted-foreground">
-                {t('上限 {mins} 分钟', { mins: fullVideoMins })}
-              </span>
-            </div>
-            <span className="text-sm font-extrabold font-mono text-primary">
-              {fullEst.minSec} ~ {fullEst.maxSec} {t('秒')}
-              <span className="ml-1 text-[11px] text-muted-foreground font-mono">
-                ({t('约 {min} 分钟', { min: fullMins })})
-              </span>
-            </span>
-          </div>
-          <div className="relative h-2.5 w-full bg-muted/60 rounded-full flex p-0.5 border border-border/40">
-            <div
-              style={{ width: `${fullFillPct}%` }}
-              className={cn(
-                'h-full rounded-full overflow-hidden flex gap-0.5',
-                !isDragging && 'transition-all duration-300'
-              )}
-            >
-              <div
-                style={{ width: `${fullEst.visualPct}%` }}
-                className={cn(
-                  'h-full bg-primary rounded-l-full',
-                  !isDragging && 'transition-all duration-300'
-                )}
-                title={t('画面 AI 理解')}
-              />
-              <div
-                style={{ width: `${fullEst.asrPct}%` }}
-                className={cn(
-                  'h-full bg-emerald-500',
-                  !isDragging && 'transition-all duration-300'
-                )}
-                title={t('台词语音识别')}
-              />
-              <div
-                style={{ width: `${fullEst.fixedPct}%` }}
-                className={cn(
-                  'h-full bg-muted-foreground/30 rounded-r-full',
-                  !isDragging && 'transition-all duration-300'
-                )}
-                title={t('基础解包与索引')}
-              />
-            </div>
-            <span
-              style={{ left: `${fullFillPct}%` }}
-              className={cn(
-                'absolute -top-0.5 h-3.5 w-0.5 bg-sky-500 rounded-full',
-                !isDragging && 'transition-all duration-300'
-              )}
-              title={t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
-            />
-          </div>
-          <div className="flex items-center justify-between text-[10px] text-muted-foreground/70 px-0.5 font-mono">
-            <span>0</span>
-            <span>{t('1 小时')}</span>
-            <span>{t('2 小时')}</span>
-            <span>{t('3 小时')}</span>
-          </div>
-
-          {/* 整片口径细分耗时图例与百分比（动态联动） */}
+        {safeDurationSec > 300 && (
           <div
-            data-testid="full-video-legend"
-            className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2"
+            data-testid="video-fast-first-slice-guide"
+            className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-700 dark:text-sky-300 flex items-start justify-between gap-3"
           >
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-                <span>
-                  {t('画面 AI 理解')}:{' '}
-                  <strong className="text-foreground">~{fullEst.visualSec}s</strong> ({totalFrames}
-                  {t('张')})
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                <span>
-                  {t('台词识别')}: <strong className="text-foreground">~{fullEst.asrSec}s</strong> (
-                  {videoAsrCap}s{t('音轨')})
-                </span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
-                <span>
-                  {t('基础开销')}: <strong className="text-foreground">~{fullEst.fixedSec}s</strong>
-                </span>
-              </span>
-            </div>
-            <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold font-mono">
-              ⚡ {t('约 {speed}x 实时处理', { speed: fullEst.speedMultiplier })}
-            </span>
-          </div>
-        </div>
-
-        {/* 每个视频分析时长上限：所有用户可调 */}
-        <div className="space-y-1.5 pt-2 border-t border-border/30">
-          <div className="flex items-center justify-between text-xs">
-            <Label className="font-semibold text-foreground">{t('每个视频分析时长上限')}</Label>
-            <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-              {Math.round(localDurationSec / 60)} {t('分钟')}
-            </span>
-          </div>
-          <input
-            type="range"
-            data-testid="video-analyze-duration-slider"
-            aria-label={t('每个视频分析时长上限')}
-            min={300}
-            max={10800}
-            step={300}
-            value={localDurationSec}
-            onPointerDown={() => {
-              isDraggingRef.current = true
-              setIsDragging(true)
-            }}
-            onChange={handleSliderChange}
-            onPointerUp={e => handleCommit(parseInt(e.currentTarget.value, 10))}
-            onKeyUp={e => handleCommit(parseInt(e.currentTarget.value, 10))}
-            className="w-full accent-primary cursor-pointer"
-          />
-          <p className="text-[11px] text-muted-foreground">
-            {t(
-              '每个视频最多整理多长时间，5 分钟一档，最长 3 小时；普通电脑建议选短一些，放后台慢慢整理。'
-            )}
-          </p>
-          {/* 当用户设定时长 > 5 分钟时提供大白话解释与直达「待补分析文件」引导 */}
-          {localDurationSec > 300 && (
-            <div
-              data-testid="video-fast-first-slice-guide"
-              className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-[11px] text-sky-700 dark:text-sky-300 flex items-start justify-between gap-3"
+            <p className="leading-relaxed">
+              {t(
+                '为避免长视频卡住其它文件，超过 5 分钟的视频首次会先分析开头 5 分钟并快速出结果；剩余部分（至您设定的 {mins} 分钟上限）会在电脑空闲时自动补全，导入新文件时会自动让路。',
+                { mins: fullVideoMins }
+              )}
+            </p>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="h-6 px-2 text-[11px] text-sky-700 dark:text-sky-300 hover:bg-sky-500/15 shrink-0 font-semibold"
+              onClick={() => onNavigateTab?.('pending_backfill')}
             >
-              <p className="leading-relaxed">
-                {t(
-                  '为避免长视频卡住其它文件，超过 5 分钟的视频首次会先分析开头 5 分钟并快速出结果；剩余部分（至您设定的 {mins} 分钟上限）会在电脑空闲时自动补全，导入新文件时会自动让路。',
-                  { mins: Math.round(localDurationSec / 60) }
-                )}
-              </p>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-6 px-2 text-[11px] text-sky-700 dark:text-sky-300 hover:bg-sky-500/15 shrink-0 font-semibold"
-                onClick={() => onNavigateTab?.('pending_backfill')}
-              >
-                {t('查看待补分析文件')} →
-              </Button>
-            </div>
-          )}
-        </div>
+              {t('查看待补分析文件')} →
+            </Button>
+          </div>
+        )}
       </div>
     )
   }
@@ -603,9 +781,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     (typeof window !== 'undefined' && window.electronAPI?.isPackaged === false)
   )
 
-  const tier = useTierStore(s => s.tier)
-  const isFreeUser = (tier ?? UserTier.FREE) === UserTier.FREE
-  const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   // 解析当前工作区配置
@@ -731,6 +906,12 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     debounceTimerRef.current = setTimeout(flushPending, 500)
   }
 
+  const handleParamChangeRef = useRef(handleParamChange)
+  handleParamChangeRef.current = handleParamChange
+  const handleVideoDurationChange = useCallback((val: number) => {
+    handleParamChangeRef.current('videoAnalyzeDurationSec', val)
+  }, [])
+
   // 检查当前 Tab 是否存在个性化覆盖项
   const hasBasicAiOverrides = useMemo(() => {
     return BASIC_AI_KEYS.some(k => overrides[k] !== undefined)
@@ -832,11 +1013,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     10800,
     Math.max(300, Math.round(desiredAnalyzeSec / 300) * 300)
   )
-  // 用户设置值高于最终结算值（免费 5 分钟 / 硬件保守默认）时，就地提示而非禁止设置
-  const analyzeEffectiveSec = Number(
-    analyzeField?.effectiveValue ?? effectiveParams.videoAnalyzeDurationSec ?? 300
-  )
-  const isAnalyzeCapped = videoAnalyzeDurationSec > analyzeEffectiveSec
   const videoAsrCap = effectiveParams.videoAsrDurationSec ?? 30
   const audioAnalysisCap = effectiveParams.audioAnalysisDurationSec ?? 60
   // 耗时预估口径硬件分档：与 workspace-config-policy.ts footage_studio 的 hasGpuPower 判定同源
@@ -1736,11 +1912,8 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
               videoAsrCap={videoAsrCap}
               hasGpuPower={hasGpuPower}
               videoAnalyzeDurationSec={videoAnalyzeDurationSec}
-              isFreeUser={isFreeUser}
-              isAnalyzeCapped={isAnalyzeCapped}
-              onDurationChange={val => handleParamChange('videoAnalyzeDurationSec', val)}
+              onDurationChange={handleVideoDurationChange}
               onNavigateTab={onNavigateTab}
-              setIsUpgradeOpen={setIsUpgradeOpen}
             />
           </div>
         </Card>
@@ -1827,8 +2000,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
           </Button>
         </div>
       </Card>
-
-      <UpgradeAccountDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
     </div>
   )
 }

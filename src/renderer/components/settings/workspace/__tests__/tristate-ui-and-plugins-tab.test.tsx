@@ -731,7 +731,7 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
     expect(screen.getByText('查看待补分析文件 →')).toBeTruthy()
   })
 
-  it('Bugfix: 每个视频分析时长上限拖动后，整片时长测算区域彩条平滑映射且图例动态更新', () => {
+  it('Bugfix: 对比组三控件因果对齐、统一 3 小时分段标尺及冷暖渐变平滑联动', () => {
     const workspaceInitial: any = {
       id: 13,
       name: 'DurationTest',
@@ -752,37 +752,203 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
       })
     }
 
-    render(<BasicAIEngineTab workspace={workspaceInitial} />)
+    const { container } = render(<BasicAIEngineTab workspace={workspaceInitial} />)
 
-    const fullLegend = screen.getByTestId('full-video-legend')
-    const benchmarkLegend = screen.getByTestId('benchmark-video-legend')
     const slider = screen.getByTestId('video-analyze-duration-slider')
+    const durationCapFill = screen.getByTestId('duration-cap-fill')
+    const benchmarkFill = screen.getByTestId('benchmark-video-fill')
+    const fullVideoFill = screen.getByTestId('full-video-fill')
 
-    // 1. 初态 5 分钟：基准图例与整片图例均为 60 张，刻度包含 3 小时物理标尺
-    expect(screen.getByText('上限 5 分钟')).toBeInTheDocument()
+    const durationLegend = screen.getByTestId('duration-cap-legend')
+    const benchmarkLegend = screen.getByTestId('benchmark-video-legend')
+    const fullLegend = screen.getByTestId('full-video-legend')
+
+    // 1. 验证三项同构标题与排列顺序（控制源「每个视频分析时长上限」置顶 -> 首次整理耗时 -> 整片测算）
+    const titleCap = screen.getByText('每个视频分析时长上限')
+    const titleFirst = screen.getByText('单视频首次整理耗时预估')
+    const titleFull = screen.getByText('按整片时长测算')
+    expect(
+      Boolean(titleCap.compareDocumentPosition(titleFirst) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true)
+    expect(
+      Boolean(titleFirst.compareDocumentPosition(titleFull) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true)
+
+    // 验证统一 3 小时分段刻度标尺（三项均展示 5 分钟 / 30 分钟 / 1 小时 / 3 小时）
+    expect(screen.getAllByText('5 分钟').length).toBeGreaterThanOrEqual(3)
+    expect(screen.getAllByText('30 分钟').length).toBeGreaterThanOrEqual(3)
+    expect(screen.getAllByText('1 小时').length).toBeGreaterThanOrEqual(3)
+    expect(screen.getAllByText('3 小时').length).toBeGreaterThanOrEqual(3)
+
+    // 验证冷暖梯度设置及无工程黑话 (§2.16 Zero Jargon)
+    expect(durationCapFill.style.backgroundImage).toContain('#38bdf8')
+    expect(benchmarkFill.style.backgroundImage).toContain('#10b981')
+    expect(benchmarkFill.style.backgroundImage).toContain('#ef4444')
+    expect(fullVideoFill.style.backgroundImage).toContain('#10b981')
+    expect(container.textContent ?? '').not.toMatch(FORBIDDEN_JARGON_RE)
+
+    // 2. 初态 5 分钟 (300s)：滑块填充对齐 25% 刻度，两根耗时条宽度相等（56s -> 4.67%），基准/整片图例均为 60 张
+    expect(durationCapFill).toHaveStyle({ width: '25%' })
+    expect(benchmarkFill).toHaveStyle({ width: '4.67%' })
+    expect(fullVideoFill).toHaveStyle({ width: '4.67%' })
+    expect(fullVideoFill.style.backgroundSize).toBe(`${(100 / 4.67) * 100}% 100%`)
+    expect(
+      within(durationLegend).getByText(/可检索视频前 5 分钟全部画面与台词/)
+    ).toBeInTheDocument()
     expect(within(fullLegend).getByText(/60\s*张/)).toBeInTheDocument()
     expect(within(benchmarkLegend).getByText(/60\s*张/)).toBeInTheDocument()
-    expect(screen.getByText('3 小时')).toBeInTheDocument()
 
-    // 2. 模拟真实拖动至 30 分钟 (1800s = 6 个切片)
+    // 3. 模拟真实拖动至 30 分钟 (1800s = 6 个切片)
     fireEvent.change(slider, { target: { value: '1800' } })
 
-    // 验证整片口径即时动态更新：上限 30 分钟，总张数联动变为 360 张 (6 * 60)
+    // 滑块填充跃迁对齐 50% (30分钟刻度)，整片耗时 (300s) 映射为 25%，显著大于首次快出 (4.67%)
+    expect(durationCapFill).toHaveStyle({ width: '50%' })
+    expect(benchmarkFill).toHaveStyle({ width: '4.67%' })
+    expect(fullVideoFill).toHaveStyle({ width: '25%' })
+    expect(fullVideoFill.style.backgroundSize).toBe('400% 100%')
+    expect(
+      within(durationLegend).getByText(/可检索视频前 30 分钟全部画面与台词/)
+    ).toBeInTheDocument()
     expect(screen.getByText('上限 30 分钟')).toBeInTheDocument()
     expect(within(fullLegend).getByText(/360\s*张/)).toBeInTheDocument()
     expect(within(fullLegend).getByText(/台词识别/)).toBeInTheDocument()
     expect(within(fullLegend).getByText(/基础开销/)).toBeInTheDocument()
-
-    // 5 分钟基准图例必须保持稳定基准 (60 张)，不受整片滑块干扰
     expect(within(benchmarkLegend).getByText(/60\s*张/)).toBeInTheDocument()
 
-    // 3. 模拟拖动至极限 3 小时 (10800s = 36 个切片)
+    // 4. 模拟拖动至 1 小时 (3600s = 12 个切片)：验证 75% 刻度与小时辅助文案
+    fireEvent.change(slider, { target: { value: '3600' } })
+    expect(durationCapFill).toHaveStyle({ width: '75%' })
+    expect(screen.getByText('(约 1.0 小时)')).toBeInTheDocument()
+
+    // 5. 模拟拖动至极限 3 小时 (10800s = 36 个切片)
     fireEvent.change(slider, { target: { value: '10800' } })
 
-    // 验证整片口径即时跃迁至极限：上限 180 分钟，总张数联动变为 2160 张 (36 * 60)
+    expect(durationCapFill).toHaveStyle({ width: '100%' })
+    expect(fullVideoFill).toHaveStyle({ width: '49.4%' })
     expect(screen.getByText('上限 180 分钟')).toBeInTheDocument()
     expect(within(fullLegend).getByText(/2160\s*张/)).toBeInTheDocument()
     expect(within(benchmarkLegend).getByText(/60\s*张/)).toBeInTheDocument()
+  })
+
+  it('对比组交互安全性与落盘闭环：指针拖拽、右键/取消防护、刻度点击与键盘防 Tab 误保存', () => {
+    const originalPointerEvent = (globalThis as any).PointerEvent
+    // jsdom 默认未挂载 PointerEvent，补齐以 MouseEvent 为基类的构造器保证 clientX 与 button 透传
+    if (!originalPointerEvent) {
+      ;(globalThis as any).PointerEvent = class extends MouseEvent {
+        pointerType: string
+        constructor(type: string, params: PointerEventInit = {}) {
+          super(type, params)
+          this.pointerType = params.pointerType ?? 'mouse'
+        }
+      }
+    }
+    vi.useFakeTimers()
+    try {
+      const workspace: any = {
+        id: 14,
+        name: 'InteractionTest',
+        path: 'D:\\InteractionTest',
+        workspace_config: JSON.stringify({
+          schemaVersion: 1,
+          status: 'ready',
+          policyVersion: 1,
+          baseAIConfig: {
+            analysisMode: 'full',
+            videoAnalyzeDurationSec: 300,
+            videoQuotaMax: 60,
+            videoCutSensitivity: 'medium',
+            videoSoftTokenBudget: 48,
+            videoAsrDurationSec: 60,
+            audioAnalysisDurationSec: 60
+          }
+        })
+      }
+
+      render(<BasicAIEngineTab workspace={workspace} />)
+
+      const track = screen.getByTestId('video-analyze-duration-track')
+      const slider = screen.getByTestId('video-analyze-duration-slider')
+      const durationCapFill = screen.getByTestId('duration-cap-fill')
+
+      vi.spyOn(track, 'getBoundingClientRect').mockReturnValue({
+        left: 0,
+        right: 400,
+        top: 0,
+        bottom: 12,
+        width: 400,
+        height: 12,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      })
+
+      // 1. Tab 切入焦点抬起键不得误触发保存
+      fireEvent.keyUp(slider, { key: 'Tab' })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).not.toHaveBeenCalled()
+
+      // 2. 鼠标右键点击轨道不得修改值或提交
+      fireEvent.pointerDown(track, { pointerType: 'mouse', button: 2, clientX: 300 })
+      fireEvent.pointerUp(track, { pointerType: 'mouse', button: 2, clientX: 300 })
+      expect(durationCapFill).toHaveStyle({ width: '25%' })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).not.toHaveBeenCalled()
+
+      // 3. pointerCancel 中断拖拽时：回退初始值 300s (25%)，严禁读取 clientX:0 并提交
+      fireEvent.pointerDown(track, { pointerType: 'mouse', button: 0, clientX: 200 })
+      expect(durationCapFill).toHaveStyle({ width: '50%' })
+      fireEvent.pointerCancel(track, { pointerType: 'mouse', button: 0, clientX: 0 })
+      expect(durationCapFill).toHaveStyle({ width: '25%' })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).not.toHaveBeenCalled()
+
+      // 4. 左键真实拖动并松手：clientX=300 (75% -> 3600s / 1小时)，推进防抖后精确提交 3600
+      fireEvent.pointerDown(track, { pointerType: 'mouse', button: 0, clientX: 200 })
+      fireEvent.pointerMove(track, { pointerType: 'mouse', button: 0, clientX: 300 })
+      expect(durationCapFill).toHaveStyle({ width: '75%' })
+      fireEvent.pointerUp(track, { pointerType: 'mouse', button: 0, clientX: 300 })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).toHaveBeenLastCalledWith(14, {
+        overridePatch: { videoAnalyzeDurationSec: 3600 }
+      })
+
+      // 5. 点击「30 分钟」刻度按钮快捷跳转：立即跳转 1800s (50%) 并提交
+      mockApplyMutation.mockClear()
+      fireEvent.click(screen.getByRole('button', { name: '30 分钟' }))
+      expect(durationCapFill).toHaveStyle({ width: '50%' })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).toHaveBeenLastCalledWith(14, {
+        overridePatch: { videoAnalyzeDurationSec: 1800 }
+      })
+
+      // 6. 键盘导航改值 + keyUp 立即进入提交调度
+      mockApplyMutation.mockClear()
+      fireEvent.change(slider, { target: { value: '600' } })
+      fireEvent.keyUp(slider, { key: 'ArrowLeft' })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).toHaveBeenLastCalledWith(14, {
+        overridePatch: { videoAnalyzeDurationSec: 600 }
+      })
+    } finally {
+      vi.useRealTimers()
+      if (!originalPointerEvent) {
+        delete (globalThis as any).PointerEvent
+      } else {
+        ;(globalThis as any).PointerEvent = originalPointerEvent
+      }
+    }
   })
 })
 
