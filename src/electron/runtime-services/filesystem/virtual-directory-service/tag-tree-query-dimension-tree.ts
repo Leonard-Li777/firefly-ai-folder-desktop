@@ -718,7 +718,72 @@ export const tagTreeQueryDimensionTreeMixin = {
     })
 
     // 泛维度轴标签智能聚类层级化（作者、地理位置、内容标签等泛维度）
-    await this.clusterPanDimensionTags(validGroups, pathCountMap, undefined, opts)
+    // 提前提取当前工作区与筛选范围内各标签的底层文件指纹映射，杜绝多子标签命中同一文件时的虚高累加
+    const tagFilesMap = new Map<string, Set<string>>()
+    const panDimGroups = validGroups.filter(g => {
+      const isPan =
+        (typeof g.metadata === 'object' && g.metadata !== null
+          ? (g.metadata as any).flag?.isPanDimension
+          : false) === true || (g.metadata as any)?.isPanDimension === true
+      return isPan && g.tags && g.tags.length > 0
+    })
+
+    if (panDimGroups.length > 0 && this.db && typeof this.db.prepare === 'function') {
+      try {
+        const panTagCodes = new Set<string>()
+        for (const g of panDimGroups) {
+          for (const t of g.tags || []) {
+            if (t.code) panTagCodes.add(t.code)
+            if (t.tagValue) panTagCodes.add(t.tagValue)
+          }
+        }
+        if (panTagCodes.size > 0) {
+          const codes = Array.from(panTagCodes)
+          const placeholders = codes.map(() => '?').join(',')
+          let sql = `
+            SELECT DISTINCT ftr.tag_code, ftr.file_fingerprint
+            FROM file_tag_relations ftr
+            JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+            WHERE ftr.tag_code IN (${placeholders})
+              AND wf.is_analyzed = 1
+          `
+          const params: any[] = [...codes]
+          if (opts.workspaceDirectoryPath) {
+            const sep = path.sep
+            const prefix = opts.workspaceDirectoryPath.endsWith(sep)
+              ? opts.workspaceDirectoryPath
+              : opts.workspaceDirectoryPath + sep
+            const escapedPrefix = escapeLikePrefixWindows(prefix)
+            sql += " AND (wf.path = ? OR wf.path LIKE ? || '%' ESCAPE '|')"
+            params.push(opts.workspaceDirectoryPath, escapedPrefix)
+          } else if (opts.workspaceId !== undefined && opts.workspaceId !== null) {
+            sql += ' AND wf.workspace_id = ?'
+            params.push(opts.workspaceId)
+          }
+
+          const rows = this.db.prepare(sql).all(...params) as Array<{
+            tag_code: string
+            file_fingerprint: string
+          }>
+          for (const r of rows) {
+            let set = tagFilesMap.get(r.tag_code)
+            if (!set) {
+              set = new Set<string>()
+              tagFilesMap.set(r.tag_code, set)
+            }
+            set.add(r.file_fingerprint)
+          }
+        }
+      } catch (err) {
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[TagTreeQuery] buildResponseFromOmniTree 构建 tagFilesMap 失败:',
+          err
+        )
+      }
+    }
+
+    await this.clusterPanDimensionTags(validGroups, pathCountMap, tagFilesMap, opts)
 
     return {
       groups: validGroups,
@@ -1047,6 +1112,20 @@ export const tagTreeQueryDimensionTreeMixin = {
         code_path: string
       }>
 
+      // E. 提取标签与文件指纹多对多映射（供给聚类父节点唯一文件去重计算及媒体领域裁决）
+      const tagFilesSql = `
+        SELECT DISTINCT ftr.tag_code, ftr.file_fingerprint
+        FROM file_tag_relations ftr
+        JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+        WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
+      `
+      const tagFileRows = this.db
+        .prepare(tagFilesSql)
+        .all(...filteredFingerprintsParams) as Array<{
+        tag_code: string
+        file_fingerprint: string
+      }>
+
       dbQueryTime += performance.now() - countStartTime
 
       const tagCountMap = new Map<string, number>()
@@ -1054,6 +1133,15 @@ export const tagTreeQueryDimensionTreeMixin = {
       const tagFilesMap = new Map<string, Set<string>>()
       const tagChainsMap = new Map<string, Array<{ name_path: string; code_path: string }>>()
       const pathCountMap: Record<string, number> = {}
+
+      for (const r of tagFileRows) {
+        let set = tagFilesMap.get(r.tag_code)
+        if (!set) {
+          set = new Set<string>()
+          tagFilesMap.set(r.tag_code, set)
+        }
+        set.add(r.file_fingerprint)
+      }
 
       for (const r of prefixRows) {
         const norm = normalizeCodePath(r.prefix_code_path)
@@ -1147,6 +1235,15 @@ export const tagTreeQueryDimensionTreeMixin = {
       for (const t of tagRows) {
         const count = tagCountMap.get(t.code) || 0
         const resolvedName = aliasResolver(t.code, t.name)
+        const fps = tagFilesMap.get(t.code)
+        if (fps) {
+          if (t.name && !tagFilesMap.has(t.name)) {
+            tagFilesMap.set(t.name, fps)
+          }
+          if (resolvedName && !tagFilesMap.has(resolvedName)) {
+            tagFilesMap.set(resolvedName, fps)
+          }
+        }
         let parents: string[] = []
         try {
           parents = JSON.parse(t.parent_codes || '[]')
@@ -3074,8 +3171,8 @@ export const tagTreeQueryDimensionTreeMixin = {
         const clusterNamePath = `/${g.name}/${clusterName}`
 
         let clusterFileCount = 0
+        const fileSet = new Set<string>()
         if (tagFilesMap && tagFilesMap.size > 0) {
-          const fileSet = new Set<string>()
           for (const m of memberTags) {
             if (m.code && tagFilesMap.has(m.code)) {
               for (const fp of tagFilesMap.get(m.code)!) {
@@ -3088,12 +3185,86 @@ export const tagTreeQueryDimensionTreeMixin = {
               }
             }
           }
-          clusterFileCount =
-            fileSet.size > 0
-              ? fileSet.size
-              : memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+        }
+
+        // 兼容 memberTags 自身携带 files 集合（如 contentCandidates 管道）
+        for (const m of memberTags) {
+          if ((m as any).files instanceof Set) {
+            for (const fp of (m as any).files) {
+              fileSet.add(fp)
+            }
+          } else if (Array.isArray((m as any).files)) {
+            for (const fp of (m as any).files) {
+              fileSet.add(fp)
+            }
+          }
+        }
+
+        if (fileSet.size > 0) {
+          clusterFileCount = fileSet.size
         } else {
-          clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+          // 若 tagFilesMap 未包含或回退，且存在真实 SQLite DB，通过 file_tag_relations 真实去重查询
+          const db = (this as any).db
+          const hasWorkspaceScope = Boolean(opts?.workspaceDirectoryPath || opts?.workspaceId)
+          const isRealOrCountDb = Boolean(
+            (db as any)?.name ||
+            (db as any)?.filename ||
+            (db as any)?.supportsCountDistinct
+          )
+          if (db && typeof db.prepare === 'function' && (hasWorkspaceScope || isRealOrCountDb)) {
+            try {
+              const memberCodes = memberTags.map(m => m.code).filter(Boolean) as string[]
+              if (memberCodes.length > 0) {
+                const placeholders = memberCodes.map(() => '?').join(',')
+                let sql = `
+                  SELECT COUNT(DISTINCT ftr.file_fingerprint) AS cnt
+                  FROM file_tag_relations ftr
+                `
+                const params: any[] = [...memberCodes]
+                if (opts?.workspaceDirectoryPath) {
+                  const sep = path.sep
+                  const prefix = opts.workspaceDirectoryPath.endsWith(sep)
+                    ? opts.workspaceDirectoryPath
+                    : opts.workspaceDirectoryPath + sep
+                  const escapedPrefix = escapeLikePrefixWindows(prefix)
+                  sql += `
+                    JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+                    WHERE ftr.tag_code IN (${placeholders})
+                      AND wf.is_analyzed = 1
+                      AND (wf.path = ? OR wf.path LIKE ? || '%' ESCAPE '|')
+                  `
+                  params.push(opts.workspaceDirectoryPath, escapedPrefix)
+                } else if (opts?.workspaceId !== undefined && opts?.workspaceId !== null) {
+                  sql += `
+                    JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
+                    WHERE ftr.tag_code IN (${placeholders})
+                      AND wf.is_analyzed = 1
+                      AND wf.workspace_id = ?
+                  `
+                  params.push(opts.workspaceId)
+                } else {
+                  sql += ` WHERE ftr.tag_code IN (${placeholders})`
+                }
+
+                const stmt = db.prepare(sql)
+                const row = typeof stmt?.get === 'function' ? stmt.get(...params) : null
+                if (row && typeof row.cnt === 'number') {
+                  clusterFileCount = row.cnt
+                }
+              }
+            } catch (err) {
+              logger.warn(
+                LogCategory.VIRTUAL_DIRECTORY,
+                '[TagTreeQuery] 数据库去重计算聚类文件数失败，降级累加:',
+                err
+              )
+            }
+          }
+
+          // 最终兜底：如无 DB 且无文件映射（纯脱机单测），才降级累加
+          if (clusterFileCount === 0) {
+            clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+          }
         }
 
         const memberCodePaths: string[] = []
@@ -3131,6 +3302,11 @@ export const tagTreeQueryDimensionTreeMixin = {
           }
         }
         clusterParentTags.push(clusterParentTag)
+
+        if (tagFilesMap && fileSet.size > 0) {
+          tagFilesMap.set(clusterCode, fileSet)
+          tagFilesMap.set(clusterName, fileSet)
+        }
 
         if (pathCountMap) {
           const normClusterPath = normalizeCodePath(clusterCodePath)

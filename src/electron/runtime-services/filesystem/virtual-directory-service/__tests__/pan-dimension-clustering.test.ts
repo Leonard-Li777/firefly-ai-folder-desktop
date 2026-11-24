@@ -2569,4 +2569,247 @@ describe('泛维度轴标签智能聚类层级化 (clusterPanDimensionTags)', ()
     const members = group2.tags.filter(t => t.viaParentCode === clusterParents[0].code)
     expect(members.length).toBe(2)
   })
+
+  it('规则 39：聚类父节点文件计数去重唯一——两个子标签指向同一个文件时，严禁盲目叠加累加计数（重现并阻断图1中 in 计数为 3、实际仅 2 个文件的 Bug）', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'in executing',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_in_executing',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'in HOW-TO make Vin',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_in_howto',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'in interface',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_in_interface',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    // file_vim 同时被打上了 tag_in_executing 与 tag_in_howto，file_ui 含有 tag_in_interface
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['tag_in_executing', new Set(['fp_file_vim'])],
+      ['tag_in_howto', new Set(['fp_file_vim'])],
+      ['tag_in_interface', new Set(['fp_file_ui'])]
+    ])
+
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    const pathCountMap: Record<string, number> = {}
+    await context.clusterPanDimensionTags([group], pathCountMap, tagFilesMap)
+
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(1)
+    const inCluster = clusterParents[0]
+
+    // 关键断言：去重前每个子标签计数各为 1（若盲目累加则为 1+1+1=3），
+    // 经底层文件指纹去重后，实际唯一文件数只有 2 个（fp_file_vim 与 fp_file_ui）！
+    expect(inCluster.fileCount).toBe(2)
+    // 验证 pathCountMap 同样写入去重后的真实计数
+    expect(pathCountMap[inCluster.codePath!]).toBe(2)
+  })
+
+  it('规则 40：SQLite DB 回退时聚类父节点文件计数去重——tagFilesMap 缺省时通过 file_tag_relations 真实去重', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '网络通信TCP',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_net_tcp',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '网络通信UDP',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_net_udp',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    // 模拟真实 SQLite DB 的 COUNT(DISTINCT file_fingerprint) 去重查询
+    const mockDb = {
+      name: 'test-vdir.db',
+      prepare: vi.fn((sql: string) => ({
+        get: () => {
+          if (sql.includes('COUNT(DISTINCT')) {
+            // tag_net_tcp 与 tag_net_udp 共享同一个文件，真实去重计数为 1
+            return { cnt: 1 }
+          }
+          return null
+        },
+        all: () => []
+      }))
+    }
+    const dbContext = {
+      ...context,
+      db: mockDb
+    }
+
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    await dbContext.clusterPanDimensionTags([group], undefined, undefined)
+
+    expect(mockDb.prepare).toHaveBeenCalled()
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(1)
+    // 真实去重结果为 1（而不是 1+1=2）
+    expect(clusterParents[0].fileCount).toBe(1)
+  })
+
+  it('规则 41：memberTags 自带 files 集合时真实去重计算', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '图形管线OpenGL',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_gfx_gl',
+          viaParentCode: 'builtin.content_tags',
+          files: new Set(['file_a', 'file_b'])
+        } as any,
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '图形管线Vulkan',
+          fileCount: 1,
+          level: 1,
+          code: 'tag_gfx_vk',
+          viaParentCode: 'builtin.content_tags',
+          files: new Set(['file_b', 'file_c'])
+        } as any
+      ]
+    }
+
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    await context.clusterPanDimensionTags([group], undefined, undefined)
+
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(1)
+    // file_a, file_b, file_c 去重后为 3
+    expect(clusterParents[0].fileCount).toBe(3)
+  })
+
+  it('规则 42：buildResponseFromOmniTree 快速通道中自动构建泛维度 tagFilesMap，阻断 Omni 生产链路中父聚类计数虚高（重现图1生产真实链路）', async () => {
+    clearPanDimensionClusterCache()
+
+    const mockRootNode: any = {
+      code: 'builtin.content_tags',
+      name: '内容标签',
+      level: 0,
+      fileCount: 2,
+      children: [
+        {
+          code: 'tag_in_executing',
+          name: 'in executing',
+          level: 1,
+          fileCount: 1,
+          codePath: '/builtin.content_tags/tag_in_executing'
+        },
+        {
+          code: 'tag_in_howto',
+          name: 'in HOW-TO make Vin',
+          level: 1,
+          fileCount: 1,
+          codePath: '/builtin.content_tags/tag_in_howto'
+        },
+        {
+          code: 'tag_in_interface',
+          name: 'in interface',
+          level: 1,
+          fileCount: 1,
+          codePath: '/builtin.content_tags/tag_in_interface'
+        }
+      ]
+    }
+
+    const mockDb = {
+      name: 'prod.db',
+      prepare: vi.fn((sql: string) => ({
+        all: () => {
+          if (sql.includes('file_tag_relations')) {
+            return [
+              { tag_code: 'tag_in_executing', file_fingerprint: 'fp_vim' },
+              { tag_code: 'tag_in_howto', file_fingerprint: 'fp_vim' }, // 与 executing 同一个文件
+              { tag_code: 'tag_in_interface', file_fingerprint: 'fp_ui' }
+            ]
+          }
+          return []
+        },
+        get: () => null
+      }))
+    }
+
+    const dbContext = {
+      ...context,
+      db: mockDb,
+      resolveAuthorityDimensions: () => ({
+        byCode: new Map([
+          ['builtin.content_tags', { id: 28, code: 'builtin.content_tags', name: '内容标签', flag: { isPanDimension: true } }]
+        ]),
+        byId: new Map()
+      })
+    }
+
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    const res = await dbContext.buildResponseFromOmniTree(
+      [mockRootNode],
+      4,
+      { workspaceDirectoryPath: '/my/workspace' },
+      'zh-CN',
+      Date.now()
+    )
+
+    const contentGroup = res.groups.find(g => g.code === 'builtin.content_tags')
+    expect(contentGroup).toBeDefined()
+    const inCluster = contentGroup!.tags.find(t => t.meta?.isClusterNode === true)
+    expect(inCluster).toBeDefined()
+    // 关键生产链路断言：在 Omni 快速通道下，经真实文件指纹去重，in 计数为 2，而非 1+1+1=3
+    expect(inCluster!.fileCount).toBe(2)
+  })
 })
