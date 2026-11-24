@@ -37,6 +37,87 @@ interface MediaLayoutClasses {
   multimodalBox: string
 }
 
+export interface ComputeSideBySideParams {
+  containerWidth: number
+  containerHeight: number
+  naturalWidth?: number | null
+  naturalHeight?: number | null
+  mediaFitMode: MediaFitMode
+  hasMultimodalContent: boolean
+}
+
+/**
+ * 计算多媒体（图片/视频）预览区块是否应当与多模态描述左右分栏
+ *
+ * 判定原则：
+ * 1. 结合外层容器宽高与多媒体本身原始尺寸/宽高比；
+ * 2. 在 contain（等比全显）模式下，若图片缩放后水平宽度较窄（如竖图或小图），
+ *    右侧留白空间充足（>= 200px~230px），即使容器总宽度未达 600px（如 460px~580px），亦果断切换为左右分栏；
+ * 3. 若图片为横屏宽图（横向充满容器），为防止横图被左右分栏挤成细条，保持上下排布；
+ * 4. 容器超宽（>= 720px）时始终左右分栏；容器极窄（< 440px）时始终上下排布；
+ * 5. 尺寸尚未获取（SSR / 初始挂载阶段）返回 null，由 CSS 容器查询兜底。
+ */
+export function computeMediaMultimodalSideBySide({
+  containerWidth,
+  containerHeight,
+  naturalWidth,
+  naturalHeight,
+  mediaFitMode,
+  hasMultimodalContent
+}: ComputeSideBySideParams): boolean | null {
+  if (!hasMultimodalContent) return false
+  if (containerWidth <= 0 || containerHeight <= 0) return null
+
+  if (mediaFitMode === 'fit-width') {
+    return containerWidth >= 720
+  }
+
+  if (mediaFitMode === 'original') {
+    return false
+  }
+
+  // contain 模式
+  if (!naturalWidth || !naturalHeight) {
+    return containerWidth >= 600
+  }
+
+  const aspectRatio = naturalWidth / naturalHeight
+  const effectiveHeight = Math.max(80, containerHeight - 32)
+  const fittedImageWidth = Math.min(containerWidth - 32, Math.round(effectiveHeight * aspectRatio))
+  const remainingWidth = containerWidth - fittedImageWidth
+
+  // 1. 容器总宽度极窄 (< 440px)，左右并排会导致两边都极度拥挤，保持上下
+  if (containerWidth < 440) {
+    return false
+  }
+
+  // 2. 容器极宽 (>= 720px)，空间充裕，左右并排
+  if (containerWidth >= 720) {
+    return true
+  }
+
+  // 3. 竖图/窄图 (aspectRatio <= 0.85)：在容器高度下图片很窄，右侧空余空间充裕
+  // 只要右侧富余空间 >= 200px 且容器 >= 460px，果断开启左右分栏
+  if (aspectRatio <= 0.85 && containerWidth >= 460 && remainingWidth >= 200) {
+    return true
+  }
+
+  // 4. 图片实际占用宽度较小 (fittedImageWidth <= containerWidth * 0.52 且 remainingWidth >= 230px)
+  // 常见于小图或较窄图片，右侧留白充足，允许左右分栏
+  if (fittedImageWidth <= containerWidth * 0.52 && remainingWidth >= 230) {
+    return true
+  }
+
+  // 5. 横图/宽图 (aspectRatio >= 1.15)：横向占用较大
+  // 若强行分栏会导致横图缩成细条，因此除非总宽度 >= 660px 且右侧有 >= 250px，否则保持上下
+  if (aspectRatio >= 1.15) {
+    return containerWidth >= 660 && remainingWidth >= 250
+  }
+
+  // 6. 普通方图/中等比例图：容器达到 600px 且剩余空间 >= 220px 时左右分栏
+  return containerWidth >= 600 && remainingWidth >= 220
+}
+
 const MEDIA_LAYOUT_BY_MODE: Record<MediaFitMode, MediaLayoutClasses> = {
   contain: {
     outer:
@@ -164,6 +245,38 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const videoVolume = usePreviewOverlayStore(s => s.videoVolume)
   const setVideoVolume = usePreviewOverlayStore(s => s.setVideoVolume)
   const mediaFitMode = usePreviewOverlayStore(s => s.mediaFitMode)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0
+  })
+  const [imageNaturalSize, setImageNaturalSize] = useState<{ width: number; height: number } | null>(
+    null
+  )
+  const [videoNaturalSize, setVideoNaturalSize] = useState<{ width: number; height: number } | null>(
+    null
+  )
+
+  // 观测多媒体容器尺寸变化
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    if (el.clientWidth > 0 && el.clientHeight > 0) {
+      setContainerSize({ width: el.clientWidth, height: el.clientHeight })
+    }
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect
+        if (width > 0 && height > 0) {
+          setContainerSize({ width, height })
+        }
+      }
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const lastStreamActivityRef = useRef(Date.now())
   const pendingSeekRef = useRef(false)
   /** 8s 停滞看门狗仅在 loadeddata 后启用，避免冷启动与后端 10s 看门狗竞态 */
@@ -199,6 +312,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     setVideoDuration(0)
     setVideoDecodeFailed(false)
     setStaticFrameBroken(false)
+    setImageNaturalSize(null)
+    setVideoNaturalSize(null)
     degradeSeekSnapshotRef.current = null
   }, [filePath])
 
@@ -601,6 +716,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     v.muted = isVideoMuted
     const validDuration = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0
     setVideoDuration(validDuration)
+    if (v.videoWidth && v.videoHeight) {
+      setVideoNaturalSize({ width: v.videoWidth, height: v.videoHeight })
+    }
     if (typeof currentTime === 'number' && Number.isFinite(currentTime)) {
       const safeTime = clampVideoTime(currentTime, validDuration)
       v.currentTime = safeTime
@@ -858,18 +976,64 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   switch (category) {
     case FileCategory.IMAGE: {
       const mediaLayout = MEDIA_LAYOUT_BY_MODE[mediaFitMode]
+      const isSideBySide = computeMediaMultimodalSideBySide({
+        containerWidth: containerSize.width,
+        containerHeight: containerSize.height,
+        naturalWidth: imageNaturalSize?.width,
+        naturalHeight: imageNaturalSize?.height,
+        mediaFitMode,
+        hasMultimodalContent: Boolean(multimodalContent)
+      })
+
+      const innerClasses =
+        isSideBySide === true
+          ? 'flex-1 min-h-0 min-w-0 w-full flex flex-row items-stretch justify-center gap-4'
+          : isSideBySide === false
+            ? 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3'
+            : mediaLayout.inner
+
+      const bodyClasses =
+        isSideBySide === true
+          ? 'flex-1 min-h-0 min-w-0 w-full h-full flex flex-col items-center justify-center overflow-hidden gap-2'
+          : isSideBySide === false
+            ? 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center overflow-hidden gap-2'
+            : mediaLayout.body
+
+      const multimodalBoxClasses =
+        isSideBySide === true
+          ? 'w-72 sm:w-80 max-w-[42%] h-full flex flex-col overflow-hidden px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0'
+          : isSideBySide === false
+            ? 'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[30%] flex flex-col overflow-hidden'
+            : mediaLayout.multimodalBox
+
       return (
-        <div className={mediaLayout.outer}>
-          <div className={mediaLayout.inner}>
+        <div ref={containerRef} className={mediaLayout.outer}>
+          <div
+            data-testid="preview-media-inner"
+            data-layout-direction={
+              isSideBySide === true ? 'row' : isSideBySide === false ? 'col' : 'auto'
+            }
+            className={innerClasses}
+          >
             {/* 预览内容的正文区 */}
-            <div className={cn(mediaLayout.body, isPrivate && 'ph-no-capture')}>
-              <img src={fileUrl} alt={fileName} className={mediaLayout.mediaElement} />
+            <div className={cn(bodyClasses, isPrivate && 'ph-no-capture')}>
+              <img
+                src={fileUrl}
+                alt={fileName}
+                className={mediaLayout.mediaElement}
+                onLoad={e => {
+                  const { naturalWidth, naturalHeight } = e.currentTarget
+                  if (naturalWidth && naturalHeight) {
+                    setImageNaturalSize({ width: naturalWidth, height: naturalHeight })
+                  }
+                }}
+              />
             </div>
             {/* 多模态描述文本区 */}
             {multimodalContent && (
               <div
                 data-testid="preview-multimodal-box"
-                className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}
+                className={cn(multimodalBoxClasses, isPrivate && 'ph-mask')}
               >
                 <div className="flex items-center justify-between mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>

@@ -240,4 +240,51 @@ describe('Layout Switcher Store & State Algebra (Ticket 04 & Workflow Adaptive L
     )
     expect(buildLayoutStorageKey(PAGE_IDS.REAL_DIRECTORY)).toBe('hub_layout_v1_real-directory')
   })
+
+  it('AC-10: safeLayoutStorage 在 localStorage 异常或配额溢出时优雅降级并正确读回', () => {
+    const testKey = 'test_quota_key'
+    const testValue = JSON.stringify({ key: LAYOUT_KEYS.TRI })
+
+    // 模拟 localStorage.setItem 抛出配额溢出错误
+    const originalSetItem = localStorage.setItem
+    localStorage.setItem = () => {
+      throw new Error('QuotaExceededError')
+    }
+
+    try {
+      // 写入降级至内存存储
+      safeLayoutStorage.setItem(testKey, testValue)
+      // 读回时即便 localStorage.getItem(testKey) 返回 null，也能从内存降级中正确读回
+      const readBack = safeLayoutStorage.getItem(testKey)
+      expect(readBack).toBe(testValue)
+    } finally {
+      localStorage.setItem = originalSetItem
+      safeLayoutStorage.removeItem(testKey)
+    }
+  })
+
+  it('AC-11: closePanel 传入 workspaceConfig 时保留工作流推荐布局 (tri)，不被错误降级为 all-row', () => {
+    const pageId = PAGE_IDS.REAL_DIRECTORY
+    const wsId = 301
+    const movieConfig = { defaultLayout: LAYOUT_KEYS.TRI }
+    const store = useLayoutSwitcherStore.getState()
+
+    // 初始状态下工作区 301 为工作流推荐的 tri，可见三面板
+    expect(store.getEffectiveLayout(pageId, wsId, movieConfig)).toBe(LAYOUT_KEYS.TRI)
+    expect(store.getVisiblePanels(pageId, wsId, movieConfig)).toEqual([
+      PANEL_IDS.LIST,
+      PANEL_IDS.PREVIEW,
+      PANEL_IDS.DETAILS
+    ])
+
+    // 用户在没有手动修改过全局布局的情况下关闭 details 面板
+    store.closePanel(pageId, PANEL_IDS.DETAILS, wsId, movieConfig)
+
+    // 有效布局应当依然保持为 TRI，可见面板仅剩 LIST 与 PREVIEW
+    expect(store.getEffectiveLayout(pageId, wsId, movieConfig)).toBe(LAYOUT_KEYS.TRI)
+    expect(store.getVisiblePanels(pageId, wsId, movieConfig)).toEqual([
+      PANEL_IDS.LIST,
+      PANEL_IDS.PREVIEW
+    ])
+  })
 })

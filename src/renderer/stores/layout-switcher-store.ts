@@ -21,7 +21,9 @@ const memoryStorageFallback = new Map<string, string>()
 export const safeLayoutStorage = {
   getItem: (key: string): string | null => {
     try {
-      return localStorage.getItem(key)
+      const val = localStorage.getItem(key)
+      if (val !== null) return val
+      return memoryStorageFallback.get(key) ?? null
     } catch {
       return memoryStorageFallback.get(key) ?? null
     }
@@ -184,10 +186,20 @@ export interface LayoutSwitcherState {
   setPageLayout: (pageId: string, key: LayoutKey, workspaceId?: number | string | null) => void
 
   /** 关闭单个面板：更新 visiblePanels 并持久化 */
-  closePanel: (pageId: string, panel: PanelId, workspaceId?: number | string | null) => void
+  closePanel: (
+    pageId: string,
+    panel: PanelId,
+    workspaceId?: number | string | null,
+    workspaceConfig?: any
+  ) => void
 
   /** 重新展开单个面板：状态代数升级，更新 visiblePanels 并持久化 */
-  openPanel: (pageId: string, panel: PanelId, workspaceId?: number | string | null) => void
+  openPanel: (
+    pageId: string,
+    panel: PanelId,
+    workspaceId?: number | string | null,
+    workspaceConfig?: any
+  ) => void
 
   /** 重置单个页面布局为默认 */
   resetPageLayout: (pageId: string, workspaceId?: number | string | null) => void
@@ -395,11 +407,16 @@ export const useLayoutSwitcherStore = create<LayoutSwitcherState>((set, get) => 
     })
   },
 
-  closePanel: (pageId: string, panel: PanelId, workspaceId?: number | string | null) => {
+  closePanel: (
+    pageId: string,
+    panel: PanelId,
+    workspaceId?: number | string | null,
+    workspaceConfig?: any
+  ) => {
     // 列表恒显不可关！(AC-1)
     if (panel === PANEL_IDS.LIST) return
 
-    const currentVisible = get().getVisiblePanels(pageId, workspaceId)
+    const currentVisible = get().getVisiblePanels(pageId, workspaceId, workspaceConfig)
     if (!currentVisible.includes(panel)) return
 
     const nextVisible = currentVisible.filter(p => p !== panel)
@@ -407,7 +424,7 @@ export const useLayoutSwitcherStore = create<LayoutSwitcherState>((set, get) => 
       nextVisible.unshift(PANEL_IDS.LIST)
     }
 
-    const currentKey = get().getEffectiveLayout(pageId, workspaceId)
+    const currentKey = get().getEffectiveLayout(pageId, workspaceId, workspaceConfig)
     const overrideKey = `${pageId}:${workspaceId ?? 'global'}`
     const item: UserLayoutItem = { key: currentKey, visiblePanels: nextVisible }
 
@@ -434,11 +451,16 @@ export const useLayoutSwitcherStore = create<LayoutSwitcherState>((set, get) => 
     })
   },
 
-  openPanel: (pageId: string, panel: PanelId, workspaceId?: number | string | null) => {
-    const currentVisible = get().getVisiblePanels(pageId, workspaceId)
+  openPanel: (
+    pageId: string,
+    panel: PanelId,
+    workspaceId?: number | string | null,
+    workspaceConfig?: any
+  ) => {
+    const currentVisible = get().getVisiblePanels(pageId, workspaceId, workspaceConfig)
     if (currentVisible.includes(panel)) return
 
-    const currentKey = get().getEffectiveLayout(pageId, workspaceId)
+    const currentKey = get().getEffectiveLayout(pageId, workspaceId, workspaceConfig)
     let nextKey = currentKey
     let nextPanels = [...currentVisible, panel]
 

@@ -138,16 +138,22 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
 
   // 布局切换引擎核心状态 (SSOT)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
-  const currentWorkspaceId =
-    currentWorkspaceDirectory?.workspace_id ?? currentWorkspaceDirectory?.id
-  const currentWorkspaceConfig = currentWorkspaceDirectory?.workspace_config
-
   const targetPageId = pageId || PAGE_IDS.REAL_DIRECTORY
+  const isSearchOverlay = targetPageId === PAGE_IDS.SEARCH_OVERLAY
+  const effectiveWorkspaceId = isSearchOverlay
+    ? null
+    : (currentWorkspaceDirectory?.workspace_id ?? currentWorkspaceDirectory?.id)
+  const effectiveWorkspaceConfig = isSearchOverlay
+    ? null
+    : currentWorkspaceDirectory?.workspace_config
+
   const layoutKey = useLayoutSwitcherStore(s =>
-    s.getEffectiveLayout(targetPageId, currentWorkspaceId, currentWorkspaceConfig)
+    s.getEffectiveLayout(targetPageId, effectiveWorkspaceId, effectiveWorkspaceConfig)
   )
   const customPanels = useLayoutSwitcherStore(
-    useShallow(s => s.getVisiblePanels(targetPageId, currentWorkspaceId, currentWorkspaceConfig))
+    useShallow(s =>
+      s.getVisiblePanels(targetPageId, effectiveWorkspaceId, effectiveWorkspaceConfig)
+    )
   )
   const layoutDef = useMemo(() => getLayoutDefinition(layoutKey), [layoutKey])
   const closePanel = useLayoutSwitcherStore(s => s.closePanel)
@@ -174,12 +180,11 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
 
     const updateSize = (w: number, h: number) => {
       if (w <= 0 || h <= 0) return
-      const storedPanels = useLayoutSwitcherStore.getState().getVisiblePanels(targetPageId)
       const next = resolveEffectiveCollapse(
         w,
         h,
         layoutDef,
-        new Set(storedPanels),
+        new Set(customPanels),
         prevCollapsedRef.current,
         16,
         unavailableSet
@@ -205,12 +210,11 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
 
   // 恒定两级树槽位投影推导
   const projection = useMemo(() => {
-    const storedPanels = useLayoutSwitcherStore.getState().getVisiblePanels(targetPageId)
-    const effectivePanels = storedPanels.filter(
+    const effectivePanels = customPanels.filter(
       p => !transientCollapsed.has(p) && !unavailableSet.has(p)
     )
     return resolveLayoutProjection(layoutDef, effectivePanels, unavailableSet)
-  }, [targetPageId, layoutDef, transientCollapsed, unavailableSet, customPanels])
+  }, [layoutDef, transientCollapsed, unavailableSet, customPanels])
 
   // 伴随区物理最小尺寸：依据可见面板数量与轴向确定，杜绝外层压缩撑破或子元素溢出
   const companionMinSize = useMemo(() => {
@@ -596,7 +600,12 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                         <SplitPreviewPanel
                           pageId={targetPageId}
                           onClose={() =>
-                            closePanel(targetPageId, PANEL_IDS.PREVIEW, currentWorkspaceId)
+                            closePanel(
+                              targetPageId,
+                              PANEL_IDS.PREVIEW,
+                              effectiveWorkspaceId,
+                              effectiveWorkspaceConfig
+                            )
                           }
                         />
                       </div>
@@ -625,7 +634,12 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                             isRealDirectory ? currentPath : workspaceDirectoryPath
                           }
                           onClose={() => {
-                            closePanel(targetPageId, PANEL_IDS.DETAILS, currentWorkspaceId)
+                            closePanel(
+                              targetPageId,
+                              PANEL_IDS.DETAILS,
+                              effectiveWorkspaceId,
+                              effectiveWorkspaceConfig
+                            )
                             onCloseDetailsPanel?.()
                           }}
                           onFileDeleted={onFileDeleted}
