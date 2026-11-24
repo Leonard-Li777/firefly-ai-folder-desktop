@@ -67,12 +67,19 @@ export const PreviewSection: React.FC<any> = ({
         {analysisResult &&
           isFileAnalysis(analysisResult) &&
           (analysisResult.isHit || analysisResult.analysisStats) && (
-            <div className="mt-3 flex justify-center">
-              <div className="inline-flex max-w-full items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold border border-primary/20 shadow-sm">
+            <div className="mt-3 flex justify-center w-full min-w-0 px-2">
+              <div
+                className="inline-flex max-w-full items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold border border-primary/20 shadow-sm min-w-0 overflow-hidden select-none"
+                title={
+                  analysisResult.isHit
+                    ? t('来自云端缓存')
+                    : `${t('分析耗时')}: ${formatDuration(getFreshRealDuration(analysisResult.analysisStats))}${modelName ? ` (${modelName})` : ''}`
+                }
+              >
                 {analysisResult.isHit ? (
                   <>
                     <MaterialIcon icon="cloud_done" className="text-xs shrink-0" />
-                    {t('来自云端缓存')}
+                    <span className="truncate">{t('来自云端缓存')}</span>
                   </>
                 ) : analysisResult.analysisStats ? (
                   <>
@@ -127,12 +134,19 @@ export const PreviewSection: React.FC<any> = ({
       {analysisResult &&
         isFileAnalysis(analysisResult) &&
         (analysisResult.isHit || analysisResult.analysisStats) && (
-          <div className="mt-2 flex justify-center">
-            <div className="inline-flex max-w-full items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold border border-primary/20">
+          <div className="mt-2 flex justify-center w-full min-w-0 px-2">
+            <div
+              className="inline-flex max-w-full items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold border border-primary/20 shadow-sm min-w-0 overflow-hidden select-none"
+              title={
+                analysisResult.isHit
+                  ? t('来自云端缓存')
+                  : `${t('分析耗时')}: ${formatDuration(getFreshRealDuration(analysisResult.analysisStats))}${modelName ? ` (${modelName})` : ''}`
+              }
+            >
               {analysisResult.isHit ? (
                 <>
                   <MaterialIcon icon="cloud_done" className="text-xs shrink-0" />
-                  {t('来自云端缓存')}
+                  <span className="truncate">{t('来自云端缓存')}</span>
                 </>
               ) : analysisResult.analysisStats ? (
                 <>

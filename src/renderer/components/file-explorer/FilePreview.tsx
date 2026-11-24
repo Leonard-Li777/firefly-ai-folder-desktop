@@ -40,20 +40,22 @@ interface MediaLayoutClasses {
 const MEDIA_LAYOUT_BY_MODE: Record<MediaFitMode, MediaLayoutClasses> = {
   contain: {
     outer:
-      'h-full w-full overflow-hidden p-3 flex flex-col items-center justify-center gap-3 preview-scrollbar min-w-0 min-h-0',
-    inner: 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3',
-    body: 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center overflow-hidden gap-2',
+      'h-full w-full overflow-hidden p-3 flex flex-col items-center justify-center gap-3 preview-scrollbar min-w-0 min-h-0 @container/preview',
+    inner:
+      'flex-1 min-h-0 min-w-0 w-full flex flex-col @[600px]/preview:flex-row items-center justify-center @[600px]/preview:items-stretch gap-3 @[600px]/preview:gap-4',
+    body: 'flex-1 min-h-0 min-w-0 w-full @[600px]/preview:h-full flex flex-col items-center justify-center overflow-hidden gap-2',
     streamWrapper:
-      'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-2',
+      'flex-1 min-h-0 min-w-0 w-full @[600px]/preview:h-full flex flex-col items-center justify-center gap-2',
     decodeFailedWrapper:
-      'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3 overflow-hidden',
+      'flex-1 min-h-0 min-w-0 w-full @[600px]/preview:h-full flex flex-col items-center justify-center gap-3 overflow-hidden',
     mediaElement:
       'min-h-0 max-w-full max-h-full w-auto h-auto object-contain shadow-lg rounded transition-all duration-150',
     multimodalBox:
-      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[28%] overflow-y-auto'
+      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[28%] @[600px]/preview:max-h-full @[600px]/preview:w-80 @[600px]/preview:max-w-[40%] @[600px]/preview:h-full flex flex-col overflow-hidden'
   },
   original: {
-    outer: 'h-full w-full overflow-auto p-4 flex preview-scrollbar min-w-0 min-h-0',
+    outer:
+      'h-full w-full overflow-auto p-4 flex preview-scrollbar min-w-0 min-h-0 @container/preview',
     inner: 'm-auto flex flex-col items-center gap-4 shrink-0',
     body: 'flex flex-col items-center justify-center shrink-0 gap-2',
     streamWrapper: 'flex flex-col items-center gap-2 shrink-0',
@@ -64,15 +66,18 @@ const MEDIA_LAYOUT_BY_MODE: Record<MediaFitMode, MediaLayoutClasses> = {
   },
   'fit-width': {
     outer:
-      'h-full w-full overflow-y-auto overflow-x-hidden p-4 flex flex-col items-center preview-scrollbar min-w-0 min-h-0',
-    inner: 'my-auto flex flex-col items-center gap-4 max-w-full w-full min-w-0',
-    body: 'flex flex-col items-center justify-center max-w-full w-full gap-2 min-w-0',
-    streamWrapper: 'flex flex-col items-center gap-2 max-w-full w-full min-w-0',
-    decodeFailedWrapper: 'flex flex-col items-center gap-3 max-w-full w-full min-w-0',
+      'h-full w-full overflow-y-auto overflow-x-hidden p-4 flex flex-col items-center preview-scrollbar min-w-0 min-h-0 @container/preview',
+    inner:
+      'my-auto flex flex-col @[720px]/preview:flex-row items-center @[720px]/preview:items-start gap-4 max-w-full w-full min-w-0',
+    body: 'flex flex-col items-center justify-center max-w-full w-full @[720px]/preview:flex-1 gap-2 min-w-0',
+    streamWrapper:
+      'flex flex-col items-center gap-2 max-w-full w-full @[720px]/preview:flex-1 min-w-0',
+    decodeFailedWrapper:
+      'flex flex-col items-center gap-3 max-w-full w-full @[720px]/preview:flex-1 min-w-0',
     mediaElement:
       'w-full max-w-full h-auto object-contain shadow-lg rounded transition-all duration-150',
     multimodalBox:
-      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto'
+      'w-full max-w-2xl @[720px]/preview:w-80 @[720px]/preview:max-w-[36%] px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto @[720px]/preview:sticky @[720px]/preview:top-0'
   }
 }
 
@@ -862,8 +867,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             </div>
             {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}>
-                <div className="flex items-center justify-between mb-1.5">
+              <div
+                data-testid="preview-multimodal-box"
+                className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}
+              >
+                <div className="flex items-center justify-between mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
                     text={multimodalContent}
@@ -876,7 +884,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 </div>
                 <p
                   className={cn(
-                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
+                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed flex-1 min-h-0 overflow-y-auto preview-scrollbar pr-1',
                     isPrivate && 'ph-mask'
                   )}
                 >
@@ -1090,8 +1098,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
             {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}>
-                <div className="flex items-center justify-between mb-1.5">
+              <div
+                data-testid="preview-multimodal-box"
+                className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}
+              >
+                <div className="flex items-center justify-between mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
                     text={multimodalContent}
@@ -1104,7 +1115,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 </div>
                 <p
                   className={cn(
-                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
+                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed flex-1 min-h-0 overflow-y-auto preview-scrollbar pr-1',
                     isPrivate && 'ph-mask'
                   )}
                 >
