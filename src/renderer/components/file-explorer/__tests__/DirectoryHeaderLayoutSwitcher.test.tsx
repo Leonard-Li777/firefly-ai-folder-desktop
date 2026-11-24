@@ -107,7 +107,9 @@ describe('DirectoryHeader (LayoutSwitcherButtons & LayoutActionSlot 恒定槽位
     // 槽位包装器必须存在
     const slot = screen.getByTestId('layout-action-slot')
     expect(slot).toBeDefined()
-    expect(slot.className).toContain('@container/layout-slot')
+    // 防腐断言：严禁挂载 @container/*（container-type: inline-size），避免 flex 项固有宽度坍缩为 0px 导致按钮组溢出窗口
+    expect(slot.className).not.toContain('@container/')
+    expect(slot.className).toContain('shrink-0')
 
     // 按钮组必须物理不存在
     expect(screen.queryByTestId('layout-switcher-group')).toBeNull()

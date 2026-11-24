@@ -139,10 +139,7 @@ describe('LayoutSwitcher 综合验收测试套件 (AC-1 ~ AC-14)', () => {
     it('在 real-directory 及打开全局搜索浮层时断言 layout-switcher-group 数量恒为 1', () => {
       const { unmount } = render(
         <MemoryRouter>
-          <DirectoryHeader
-            {...mockHeaderProps}
-            layoutPageId={PAGE_IDS.REAL_DIRECTORY}
-          />
+          <DirectoryHeader {...mockHeaderProps} layoutPageId={PAGE_IDS.REAL_DIRECTORY} />
         </MemoryRouter>
       )
 
@@ -157,10 +154,7 @@ describe('LayoutSwitcher 综合验收测试套件 (AC-1 ~ AC-14)', () => {
 
       render(
         <MemoryRouter>
-          <DirectoryHeader
-            {...mockHeaderProps}
-            layoutPageId={undefined}
-          />
+          <DirectoryHeader {...mockHeaderProps} layoutPageId={undefined} />
         </MemoryRouter>
       )
       expect(screen.getAllByTestId('layout-switcher-group').length).toBe(1)
@@ -173,17 +167,16 @@ describe('LayoutSwitcher 综合验收测试套件 (AC-1 ~ AC-14)', () => {
 
       render(
         <MemoryRouter>
-          <DirectoryHeader
-            {...mockHeaderProps}
-            layoutPageId={undefined}
-          />
+          <DirectoryHeader {...mockHeaderProps} layoutPageId={undefined} />
         </MemoryRouter>
       )
 
       expect(screen.queryByTestId('layout-switcher-group')).toBeNull()
       const slot = screen.getByTestId('layout-action-slot')
       expect(slot).toBeDefined()
-      expect(slot.className).toContain('@container/layout-slot')
+      // 防腐断言：严禁挂载 @container/*（container-type: inline-size），避免 flex 项固有宽度坍缩为 0px 导致按钮组溢出窗口
+      expect(slot.className).not.toContain('@container/')
+      expect(slot.className).toContain('shrink-0')
     })
   })
 
@@ -221,7 +214,7 @@ describe('LayoutSwitcher 综合验收测试套件 (AC-1 ~ AC-14)', () => {
     ] as const
 
     it('支持 7 套预设的完整循环切换与状态保真', () => {
-      allPresets.forEach((presetKey) => {
+      allPresets.forEach(presetKey => {
         act(() => {
           useLayoutSwitcherStore.getState().setPageLayout(pageId, presetKey)
         })
@@ -471,7 +464,7 @@ describe('LayoutSwitcher 综合验收测试套件 (AC-1 ~ AC-14)', () => {
   // --------------------------------------------------------------------------
   describe('AC-13: i18n 构建提取合规', () => {
     it('预设名称与描述均使用白名单静态字面量', () => {
-      Object.values(LAYOUT_PRESETS).forEach((preset) => {
+      Object.values(LAYOUT_PRESETS).forEach(preset => {
         expect(typeof preset.name).toBe('string')
         expect(preset.name.length).toBeGreaterThan(0)
         const label = getLayoutLabel(preset.key)
