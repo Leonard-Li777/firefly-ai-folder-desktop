@@ -607,11 +607,19 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
             {/* Controls Group */}
             <div className="flex items-center space-x-3 flex-shrink-0">
-              {/* 全局 TTS 播放控制条：排在插件中心左侧，位于 Controls Group 首位 */}
+              {/* 全局 TTS 播放控制条：排在 Controls Group 首位 */}
               <GlobalTTSPlaybackBar />
 
-              {/* 插件中心全局入口按钮：排在 GlobalTTSPlaybackBar 右侧，紧邻用户头像区域 */}
-              {/* 图标采用 Material Symbols 矢量 extension（拼图块），带主题色圆形底托，与工具栏其它图标统一质感 */}
+              {/* User Avatar Menu: 移至插件中心与设置按钮之前 */}
+              <div
+                data-no-drag
+                className="no-drag flex-shrink-0"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
+                <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
+              </div>
+
+              {/* 插件中心全局入口按钮：弱化按钮形态（图标+文字，无胶囊），位于用户头像之后 */}
               <button
                 type="button"
                 data-no-drag
@@ -626,54 +634,41 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 }}
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
                 className={cn(
-                  'no-drag group flex-shrink-0 h-8 pl-1.5 pr-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none hover:shadow-sm active:scale-95',
+                  'no-drag group flex-shrink-0 h-7 px-2 rounded-md text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 select-none active:scale-95',
                   isPluginCenterOpen
-                    ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-sm'
-                    : 'bg-[var(--surface-field)] border-[var(--surface-field-border)] hover:bg-accent text-foreground'
+                    ? 'bg-primary/10 text-primary font-semibold hover:bg-primary/15'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
                 )}
                 title={isPluginCenterOpen ? t('关闭插件中心') : t('插件中心')}
               >
-                {isPluginCenterOpen ? (
-                  <>
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center bg-primary-foreground/20 shrink-0">
-                      <MaterialIcon icon="close" className="text-[13px] leading-none" />
-                    </span>
-                    <span>{t('关闭插件中心')}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center bg-violet-500/10 text-violet-600 dark:text-violet-400 shrink-0 transition-colors duration-150 group-hover:bg-violet-500/20">
-                      <MaterialIcon icon="extension" className="text-[13px] leading-none" />
-                    </span>
-                    <span>{t('插件中心')}</span>
-                  </>
-                )}
+                <MaterialIcon
+                  icon={isPluginCenterOpen ? 'close' : 'extension'}
+                  className={cn(
+                    'text-sm leading-none transition-colors',
+                    isPluginCenterOpen
+                      ? 'text-primary'
+                      : 'text-muted-foreground group-hover:text-foreground'
+                  )}
+                />
+                <span>{isPluginCenterOpen ? t('关闭插件中心') : t('插件中心')}</span>
               </button>
 
-              {/* 设置入口按钮：位于插件中心右侧、用户头像左侧 */}
+              {/* 设置入口按钮：弱化按钮形态（图标+文字，无胶囊），紧随插件中心之后 */}
               <button
                 type="button"
                 data-no-drag
                 data-testid="header-settings-btn"
                 onClick={() => useSettingsStore.getState().openSettings()}
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                className="no-drag group flex-shrink-0 h-8 pl-1.5 pr-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none hover:shadow-sm active:scale-95 bg-[var(--surface-field)] border-[var(--surface-field-border)] hover:bg-accent text-foreground"
+                className="no-drag group flex-shrink-0 h-7 px-2 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-150 cursor-pointer flex items-center gap-1.5 select-none active:scale-95"
                 title={t('设置')}
               >
-                <span className="w-5 h-5 rounded-full flex items-center justify-center bg-sky-500/10 text-sky-600 dark:text-sky-400 shrink-0 transition-colors duration-150 group-hover:bg-sky-500/20">
-                  <MaterialIcon icon="settings" className="text-[13px] leading-none" />
-                </span>
+                <MaterialIcon
+                  icon="settings"
+                  className="text-sm leading-none text-muted-foreground group-hover:text-foreground transition-colors"
+                />
                 <span>{t('设置')}</span>
               </button>
-
-              {/* User Avatar Menu */}
-              <div
-                data-no-drag
-                className="no-drag flex-shrink-0"
-                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-              >
-                <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
-              </div>
 
               {/* Window Controls */}
               <div

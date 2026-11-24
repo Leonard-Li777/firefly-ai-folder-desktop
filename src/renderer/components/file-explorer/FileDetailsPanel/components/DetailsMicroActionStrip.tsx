@@ -27,9 +27,7 @@ export const DetailsMicroActionStrip: React.FC<DetailsMicroActionStripProps> = (
 }) => {
   const { t } = useVoerkaI18n(i18nScope)
   // 目录模式下仅支持分析指标，不呈现其它 3 类单文件卡片的复原胶囊
-  const closedCards = isDirMode
-    ? []
-    : ALL_DETAILS_CARD_IDS.filter(id => !visibleCards.includes(id))
+  const closedCards = isDirMode ? [] : ALL_DETAILS_CARD_IDS.filter(id => !visibleCards.includes(id))
 
   return (
     <div
@@ -55,7 +53,7 @@ export const DetailsMicroActionStrip: React.FC<DetailsMicroActionStripProps> = (
           ))
         ) : (
           <span className="text-[11px] text-muted-foreground/60 select-none">
-            {isDirMode ? t('目录指标') : t('微宫格视图')}
+            {isDirMode ? t('目录指标') : t('文件属性')}
           </span>
         )}
       </div>

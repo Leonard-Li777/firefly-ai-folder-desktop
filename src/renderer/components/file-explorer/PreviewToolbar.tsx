@@ -128,24 +128,24 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   }, [togglePreviewMode, pageId])
 
   return (
-    <div className="flex items-center px-3 py-1.5 border-b border-border bg-muted/20 shrink-0 gap-2 min-w-0">
-      {/* 文件名 - 可收缩 */}
-      <span className="text-sm font-medium truncate min-w-0" title={fileName}>
+    <div className="flex items-center px-3 py-1 border-b border-border bg-muted/20 shrink-0 gap-2 min-w-0 min-h-[34px] h-[34px]">
+      {/* 文件名 - 采用微宫格小号字体 text-xs font-semibold */}
+      <span className="text-xs font-semibold text-foreground/90 truncate min-w-0" title={fileName}>
         {fileName}
       </span>
       {/* 提示文字 - 小屏隐藏 */}
       {showHint && hint && (
-        <span className="text-xs text-muted-foreground/50 shrink-0 hidden lg:inline whitespace-nowrap">
+        <span className="text-[11px] text-muted-foreground/60 shrink-0 hidden lg:inline whitespace-nowrap">
           ({hint})
         </span>
       )}
-      {/* 右侧按钮组 - flex-shrink 允许收缩，但保持最小宽度 */}
+      {/* 右侧按钮组 - flex-shrink 允许收缩，采用微宫格紧凑尺寸与小号字体 */}
       <div className="flex items-center gap-1 ml-auto shrink min-w-0">
         {showSwitch && (
           <div className="flex items-center gap-1 mr-1 border-r border-border pr-1 shrink-0">
             <Label
               htmlFor="preview-raw-toggle"
-              className="text-xs cursor-pointer text-muted-foreground select-none hidden sm:inline"
+              className="text-[11px] cursor-pointer text-muted-foreground select-none hidden sm:inline"
             >
               {t('原文')}
             </Label>
@@ -157,7 +157,7 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
             />
             <Label
               htmlFor="preview-raw-toggle"
-              className="text-xs cursor-pointer text-muted-foreground select-none hidden sm:inline"
+              className="text-[11px] cursor-pointer text-muted-foreground select-none hidden sm:inline"
             >
               {t('预览')}
             </Label>
@@ -213,10 +213,15 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
                 data-fit-mode={mediaFitMode}
                 aria-pressed={mediaFitMode !== 'fit-width'}
                 title={currentMeta.title}
-                className={cn('shrink min-w-0 group/btn transition-colors', currentMeta.className)}
+                className={cn(
+                  'h-7 px-2 text-xs font-normal shrink min-w-0 group/btn transition-colors gap-1',
+                  currentMeta.className
+                )}
               >
-                <MaterialIcon icon={currentMeta.icon} className="shrink-0" />
-                <span className="truncate min-w-0 hidden md:inline ml-1">{currentMeta.label}</span>
+                <MaterialIcon icon={currentMeta.icon} className="text-sm shrink-0" />
+                <span className="truncate min-w-0 hidden md:inline ml-0.5">
+                  {currentMeta.label}
+                </span>
               </Button>
             )
           })()}
@@ -226,32 +231,32 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
           variant="ghost"
           onClick={handleOpenNewWindow}
           size="sm"
-          className="shrink min-w-0 group/btn"
+          className="h-7 px-2 text-xs font-normal shrink min-w-0 group/btn gap-1"
         >
-          <MaterialIcon icon="open_in_new" className="shrink-0" />
-          <span className="truncate min-w-0 hidden md:inline ml-1">{t('在新窗口打开')}</span>
+          <MaterialIcon icon="open_in_new" className="text-sm shrink-0" />
+          <span className="truncate min-w-0 hidden md:inline ml-0.5">{t('在新窗口打开')}</span>
         </Button>
         <Button
           variant="ghost"
           onClick={handleLaunch}
           size="sm"
-          className="shrink min-w-0 group/btn"
+          className="h-7 px-2 text-xs font-normal shrink min-w-0 group/btn gap-1"
         >
-          <MaterialIcon icon="open_in_browser" className="shrink-0" />
-          <span className="truncate min-w-0 hidden md:inline ml-1">{t('默认程序打开')}</span>
+          <MaterialIcon icon="open_in_browser" className="text-sm shrink-0" />
+          <span className="truncate min-w-0 hidden md:inline ml-0.5">{t('默认程序打开')}</span>
         </Button>
         {showModeToggle && (
           <Button
             variant="ghost"
             onClick={handleToggleMode}
             size="sm"
-            className="shrink min-w-0 group/btn"
+            className="h-7 px-2 text-xs font-normal shrink min-w-0 group/btn gap-1"
           >
             <MaterialIcon
               icon={pageMode === 'split' ? 'fullscreen' : 'view_column'}
-              className="shrink-0"
+              className="text-sm shrink-0"
             />
-            <span className="truncate min-w-0 hidden lg:inline ml-1">
+            <span className="truncate min-w-0 hidden lg:inline ml-0.5">
               {pageMode === 'split' ? t('全屏模式') : t('分栏模式')}
             </span>
           </Button>
@@ -262,9 +267,9 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
           data-testid="preview-close-button"
           onClick={handleClose}
           title={t('关闭预览')}
-          className="h-8 w-8 p-0 shrink-0"
+          className="h-7 w-7 p-0 shrink-0 text-muted-foreground/70 hover:text-foreground"
         >
-          <MaterialIcon icon="close" />
+          <MaterialIcon icon="close" className="text-sm" />
         </Button>
       </div>
     </div>
