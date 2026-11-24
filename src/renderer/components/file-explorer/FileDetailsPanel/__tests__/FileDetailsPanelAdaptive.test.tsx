@@ -40,6 +40,8 @@ import {
   DETAILS_CARD_IDS,
   clearDetailsCardsMemoryCache
 } from '../stores/details-cards-store'
+import { PANEL_IDS } from '../../layout-switcher'
+import { useLayoutSwitcherStore } from '../../../../stores/layout-switcher-store'
 import type { FileItem } from '@firefly/types'
 
 describe('FileDetailsPanel (微宫格四卡片架构与自适应布局)', () => {
@@ -68,6 +70,7 @@ describe('FileDetailsPanel (微宫格四卡片架构与自适应布局)', () => 
     localStorage.clear()
     clearDetailsCardsMemoryCache()
     useDetailsCardsStore.setState({ visibleCardsByPage: {} })
+    useLayoutSwitcherStore.setState({ visiblePanels: {} })
     vi.clearAllMocks()
   })
 
@@ -209,5 +212,57 @@ describe('FileDetailsPanel (微宫格四卡片架构与自适应布局)', () => 
     const dirProfileBtn = screen.getByText('目录画像').closest('button')
     expect(dirProfileBtn?.className).toContain('max-w-[130px]')
     expect(dirProfileBtn?.className).toContain('h-8')
+  })
+
+  it('AC-8: 迷你预览卡片根据大预览区块开启状态动态排序（开启排末尾，关闭排首位）', () => {
+    // 1. 大预览未开启（previewCollapsed: true），迷你预览排第一位
+    const { unmount } = render(
+      <MemoryRouter>
+        <FileDetailsPanel pageId="test_page" item={mockFile} previewCollapsed={true} />
+      </MemoryRouter>
+    )
+
+    const container = screen.getByTestId('file-details-container')
+    const cards = container.children
+    expect(cards[0].getAttribute('data-testid')).toBe(
+      `details-card-${DETAILS_CARD_IDS.MINI_PREVIEW}`
+    )
+    expect(cards[cards.length - 1].getAttribute('data-testid')).toBe(
+      `details-card-${DETAILS_CARD_IDS.METRICS}`
+    )
+    unmount()
+
+    // 2. 大预览已开启（previewCollapsed: false），迷你预览排最后一位
+    const { unmount: unmount2 } = render(
+      <MemoryRouter>
+        <FileDetailsPanel pageId="test_page" item={mockFile} previewCollapsed={false} />
+      </MemoryRouter>
+    )
+
+    const containerExpanded = screen.getByTestId('file-details-container')
+    const cardsExpanded = containerExpanded.children
+    expect(cardsExpanded[0].getAttribute('data-testid')).toBe(
+      `details-card-${DETAILS_CARD_IDS.SUMMARY}`
+    )
+    expect(cardsExpanded[cardsExpanded.length - 1].getAttribute('data-testid')).toBe(
+      `details-card-${DETAILS_CARD_IDS.MINI_PREVIEW}`
+    )
+    unmount2()
+
+    // 3. 不传 previewCollapsed，由 layoutSwitcherStore 决定
+    useLayoutSwitcherStore.setState({
+      visiblePanels: { test_page: [PANEL_IDS.DETAILS, PANEL_IDS.PREVIEW] }
+    })
+    render(
+      <MemoryRouter>
+        <FileDetailsPanel pageId="test_page" item={mockFile} />
+      </MemoryRouter>
+    )
+
+    const containerFromStore = screen.getByTestId('file-details-container')
+    const cardsFromStore = containerFromStore.children
+    expect(cardsFromStore[cardsFromStore.length - 1].getAttribute('data-testid')).toBe(
+      `details-card-${DETAILS_CARD_IDS.MINI_PREVIEW}`
+    )
   })
 })
