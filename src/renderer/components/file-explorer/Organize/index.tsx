@@ -898,6 +898,7 @@ export const Organize: React.FC = () => {
                   minSize: 150,
                   content: (
                     <FileExplorerLayout
+                      pageId={PAGE_IDS.ORGANIZE}
                       files={toOrganizeFiles}
                       selectionEnabled={false}
                       activeItem={inspectedFile}

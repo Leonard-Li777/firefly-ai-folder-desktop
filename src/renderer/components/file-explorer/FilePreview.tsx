@@ -929,6 +929,22 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
+  // 竖排模式下，多模态卡片最大高度动态感知容器尺寸（占用 ~48%，上限 360px，下限 160px），
+  // 杜绝使用内部高度百分比循环导致卡片被挤压成狭缝或过早触发滚动条
+  // 注意：所有 Hook 必须声明在下方的提前 return（初始/加载/错误占位）之前，
+  // 否则同一组件两次渲染的 Hook 数量不一致，会触发 "Rendered fewer hooks than expected" 崩溃。
+  const verticalMultimodalMaxHeight = useMemo(() => {
+    if (containerSize.height <= 0) return 300
+    return Math.min(360, Math.max(160, Math.round(containerSize.height * 0.48)))
+  }, [containerSize.height])
+
+  // 竖排模式下，为媒体展示预留安全最大高度，避免超高图片挤压多模态描述卡片导致溢出
+  const maxVerticalMediaHeight = useMemo(() => {
+    if (containerSize.height <= 0 || !multimodalContent) return undefined
+    const reservedForCard = Math.min(260, Math.max(140, Math.round(containerSize.height * 0.35)))
+    return Math.max(80, containerSize.height - reservedForCard - 36)
+  }, [containerSize.height, multimodalContent])
+
   if (category === FileCategory.UNKNOWN && isTextFile === null) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -978,20 +994,6 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       </div>
     </EmptyState>
   )
-
-  // 竖排模式下，多模态卡片最大高度动态感知容器尺寸（占用 ~48%，上限 360px，下限 160px），
-  // 杜绝使用内部高度百分比循环导致卡片被挤压成狭缝或过早触发滚动条
-  const verticalMultimodalMaxHeight = useMemo(() => {
-    if (containerSize.height <= 0) return 300
-    return Math.min(360, Math.max(160, Math.round(containerSize.height * 0.48)))
-  }, [containerSize.height])
-
-  // 竖排模式下，为媒体展示预留安全最大高度，避免超高图片挤压多模态描述卡片导致溢出
-  const maxVerticalMediaHeight = useMemo(() => {
-    if (containerSize.height <= 0 || !multimodalContent) return undefined
-    const reservedForCard = Math.min(260, Math.max(140, Math.round(containerSize.height * 0.35)))
-    return Math.max(80, containerSize.height - reservedForCard - 36)
-  }, [containerSize.height, multimodalContent])
 
   switch (category) {
     case FileCategory.IMAGE: {

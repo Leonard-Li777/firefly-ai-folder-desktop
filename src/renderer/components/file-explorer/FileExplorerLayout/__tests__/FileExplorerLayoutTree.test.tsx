@@ -239,4 +239,30 @@ describe('FileExplorerLayout (恒定两级树拓扑架构与资源静默)', () =
     expect(screen.queryByTestId('custom-empty')).toBeNull()
     expect(screen.getByText('在此维度中未找到文件')).toBeDefined()
   })
+
+  it('AC-8: 整理页面与待整理列表门控铁律 - 严禁挂载预览槽位与属性槽位', () => {
+    // 1. 模拟真实目录处于 all-row（预览与属性均开启）状态
+    act(() => {
+      useLayoutSwitcherStore.getState().setPageLayout(PAGE_IDS.REAL_DIRECTORY, LAYOUT_KEYS.ALL_ROW)
+    })
+
+    // 2. 渲染整理页面待整理列表
+    render(
+      <MemoryRouter>
+        <FileExplorerLayout
+          files={mockFiles}
+          pageId={PAGE_IDS.ORGANIZE}
+          showPreviewPanel={false}
+          showDetailsPanel={false}
+        />
+      </MemoryRouter>
+    )
+
+    // 3. 验证列表主体正常满铺
+    expect(screen.getByTestId('file-list-main')).toBeDefined()
+
+    // 4. 验证文件预览区块与属性区块完全未挂载
+    expect(screen.queryByTestId('file-preview-slot')).toBeNull()
+    expect(screen.queryByTestId('file-details-slot')).toBeNull()
+  })
 })

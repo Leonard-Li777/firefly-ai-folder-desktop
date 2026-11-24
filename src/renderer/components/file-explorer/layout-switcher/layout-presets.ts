@@ -117,8 +117,12 @@ export const PAGE_LAYOUT_CAPABILITY: Record<string, PageLayoutCapability> = {
     allowedPresets: ALL_LAYOUT_KEYS,
     defaultLayout: LAYOUT_KEYS.ALL_ROW,
     supportsSwitcher: true
+  },
+  [PAGE_IDS.ORGANIZE]: {
+    allowedPresets: [LAYOUT_KEYS.LIST_ONLY],
+    defaultLayout: LAYOUT_KEYS.LIST_ONLY,
+    supportsSwitcher: false
   }
-  // ORGANIZE 明确不在此表中声明（现状无预览/属性面板）
 }
 
 /** 检查页面是否支持布局切换器 */

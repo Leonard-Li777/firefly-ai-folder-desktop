@@ -20,6 +20,8 @@ import {
   PanelId,
   getLayoutDefinition,
   getPageDefaultLayout,
+  getPageLayouts,
+  isLayoutSwitcherEnabled,
   resolveEffectiveCollapse,
   resolveLayoutProjection,
   areSetsEqual
@@ -159,10 +161,28 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   const layoutDef = useMemo(() => getLayoutDefinition(layoutKey), [layoutKey])
   const closePanel = useLayoutSwitcherStore(s => s.closePanel)
 
-  const unavailableSet = useMemo(
-    () => (isDetailsUnavailable ? new Set<PanelId>([PANEL_IDS.DETAILS]) : new Set<PanelId>()),
-    [isDetailsUnavailable]
-  )
+  const unavailableSet = useMemo(() => {
+    const set = new Set<PanelId>()
+    // 1. 属性面板禁用：外部声明不可用、显式传入 showDetailsPanel === false、或页面能力未开放该面板
+    const pageAllowsDetails = getPageLayouts(targetPageId).some(k =>
+      getLayoutDefinition(k).panels.includes(PANEL_IDS.DETAILS)
+    )
+    if (isDetailsUnavailable || showDetailsPanel === false || !pageAllowsDetails) {
+      set.add(PANEL_IDS.DETAILS)
+    }
+
+    // 2. 预览面板禁用：页面能力未开放预览面板，或在非切换器页面显式传入 showPreviewPanel === false
+    const pageAllowsPreview = getPageLayouts(targetPageId).some(k =>
+      getLayoutDefinition(k).panels.includes(PANEL_IDS.PREVIEW)
+    )
+    if (
+      !pageAllowsPreview ||
+      (showPreviewPanel === false && !isLayoutSwitcherEnabled(targetPageId))
+    ) {
+      set.add(PANEL_IDS.PREVIEW)
+    }
+    return set
+  }, [isDetailsUnavailable, showDetailsPanel, showPreviewPanel, targetPageId])
 
   const containerRef = React.useRef<HTMLDivElement>(null)
   const prevCollapsedRef = React.useRef<Set<PanelId>>(new Set())

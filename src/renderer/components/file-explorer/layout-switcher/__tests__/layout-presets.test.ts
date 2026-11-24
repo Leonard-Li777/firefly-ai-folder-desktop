@@ -41,8 +41,9 @@ describe('Layout Types, Presets & Capability Gating (Ticket 02)', () => {
     expect(getPageLayouts(PAGE_IDS.VIRTUAL_DIRECTORY)).toHaveLength(7)
     expect(getPageLayouts(PAGE_IDS.SEARCH_OVERLAY)).toHaveLength(7)
 
-    // 整理页不声明门控，返回空数组
-    expect(getPageLayouts(PAGE_IDS.ORGANIZE)).toEqual([])
+    // 整理页声明仅支持仅列表预设，禁用预览与属性面板
+    expect(getPageLayouts(PAGE_IDS.ORGANIZE)).toEqual([LAYOUT_KEYS.LIST_ONLY])
+    expect(getPageDefaultLayout(PAGE_IDS.ORGANIZE)).toBe(LAYOUT_KEYS.LIST_ONLY)
     expect(getPageLayouts(null)).toEqual([])
     expect(getPageLayouts(undefined)).toEqual([])
   })
