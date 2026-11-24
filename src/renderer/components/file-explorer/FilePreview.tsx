@@ -127,12 +127,12 @@ const MEDIA_LAYOUT_BY_MODE: Record<MediaFitMode, MediaLayoutClasses> = {
     outer:
       'h-full w-full overflow-hidden p-3 flex flex-col items-center justify-center gap-3 preview-scrollbar min-w-0 min-h-0 @container/preview',
     inner:
-      'flex-1 min-h-0 min-w-0 w-full flex flex-col @[600px]/preview:flex-row items-center justify-center @[600px]/preview:items-stretch gap-3 @[600px]/preview:gap-4',
-    body: 'flex-1 min-h-0 min-w-0 w-full @[600px]/preview:h-full flex flex-col items-center justify-center overflow-hidden gap-2',
+      'my-auto max-h-full min-h-0 min-w-0 w-full flex flex-col @[600px]/preview:flex-1 @[600px]/preview:flex-row items-center justify-center @[600px]/preview:items-stretch gap-3 @[600px]/preview:gap-4',
+    body: 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden gap-2 shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
     streamWrapper:
-      'flex-1 min-h-0 min-w-0 w-full @[600px]/preview:h-full flex flex-col items-center justify-center gap-2',
+      'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-2 shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
     decodeFailedWrapper:
-      'flex-1 min-h-0 min-w-0 w-full @[600px]/preview:h-full flex flex-col items-center justify-center gap-3 overflow-hidden',
+      'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-3 overflow-hidden shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
     mediaElement:
       'min-h-0 max-w-full max-h-full w-auto h-auto object-contain shadow-lg rounded transition-all duration-150',
     multimodalBox:
@@ -995,14 +995,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         isSideBySide === true
           ? 'flex-1 min-h-0 min-w-0 w-full flex flex-row items-stretch justify-center gap-4'
           : isSideBySide === false
-            ? 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3'
+            ? 'my-auto max-h-full min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3'
             : mediaLayout.inner
 
       const bodyClasses =
         isSideBySide === true
           ? 'flex-1 min-h-0 min-w-0 w-full h-full flex flex-col items-center justify-center overflow-hidden gap-2'
           : isSideBySide === false
-            ? 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center overflow-hidden gap-2'
+            ? 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden gap-2 shrink'
             : mediaLayout.body
 
       const multimodalBoxClasses =
@@ -1084,8 +1084,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         isSideBySide === true
           ? 'flex-1 min-h-0 min-w-0 w-full flex flex-row items-stretch justify-center gap-4'
           : isSideBySide === false
-            ? 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3'
+            ? 'my-auto max-h-full min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3'
             : mediaLayout.inner
+
+      const bodyClasses =
+        isSideBySide === true
+          ? 'flex-1 min-h-0 min-w-0 w-full h-full flex flex-col items-center justify-center overflow-hidden gap-2'
+          : isSideBySide === false
+            ? 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden gap-2 shrink'
+            : mediaLayout.body
 
       const multimodalBoxClasses =
         isSideBySide === true
@@ -1104,7 +1111,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             className={innerClasses}
           >
             {/* 预览内容的正文区 */}
-            <div className={cn(mediaLayout.body, isPrivate && 'ph-no-capture')}>
+            <div className={cn(bodyClasses, isPrivate && 'ph-no-capture')}>
               {videoDecodeFailed ? (
                 /* 浏览器无法解码（AVI/MKV 等）：显示 ffmpeg 静态抽帧 + 外部播放器跳轴引导 */
                 <div className={mediaLayout.decodeFailedWrapper}>

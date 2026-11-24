@@ -102,6 +102,30 @@ describe('FilePreview & PreviewSection 响应式弹性与多模态布局契约',
     expect(inner).toBeDefined()
   })
 
+  it('多模态描述在竖排时应挨着预览图而不是吸底：内层具备 my-auto 与 max-h-full，正文区具备 shrink 紧贴内容', () => {
+    render(
+      <FilePreview
+        filePath="D:/photos/landscape.jpg"
+        fileName="landscape.jpg"
+        extension="jpg"
+        multimodalContent="这是一张壮阔的日落雪山风景图，红霞漫天，湖面波光粼粼。"
+      />
+    )
+
+    const multimodalBox = screen.getByTestId('preview-multimodal-box')
+    const inner = screen.getByTestId('preview-media-inner')
+    const img = screen.getByRole('img', { name: 'landscape.jpg' })
+    const body = img.parentElement
+
+    // 1. 内层容器具备 my-auto 与 max-h-full，使得内容作为一个整体在视口中居中，杜绝吸底
+    expect(inner.className).toContain('my-auto')
+    expect(inner.className).toContain('max-h-full')
+
+    // 2. 正文包裹层具备 shrink 且不强制在竖排下撑满，使多模态描述紧挨预览图下方
+    expect(body?.className).toContain('shrink')
+    expect(body?.className).toContain('max-h-full')
+  })
+
   it('PreviewSection 中分析耗时超长模型名具备 w-full min-w-0 防撑破与完整 title', () => {
     const mockStats = {
       durationMs: 2345,
