@@ -270,6 +270,12 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
     // 热区必须对指针透明，把 hover/拖动交还给原生滚动条
     expect(hitArea.style.pointerEvents).toBe('none')
 
+    // 当指针靠近分割线中心（x = 229，落入距离分割线 <= 2px 核心区），热区恢复响应，保证分割线 hover 与焦点优先
+    act(() => {
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 229, clientY: 150 }))
+    })
+    expect(hitArea.style.pointerEvents).not.toBe('none')
+
     // 还原垫片
     if (originalElementsFromPoint === undefined) {
       delete (document as any).elementsFromPoint

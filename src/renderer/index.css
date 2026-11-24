@@ -140,73 +140,58 @@ select {
 }
 
 /* ============================================
-   滚动条美化
+   滚动条美化（现代极简、无边框、无背景、明暗统一）
    ============================================ */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
+/* 亮色模式默认滑块：无边框无背景、极简半透明纯色 */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+  border-radius: 9999px;
+  border: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.48);
+}
+
+/* 暗色模式滑块：适配深色背景，无边框、高质感半透明 */
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
-  border: 2px solid var(--background);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  border: none;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.dark ::-webkit-scrollbar-thumb:active {
   background: rgba(255, 255, 255, 0.35);
 }
 
-.light ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
-  border: 2px solid var(--background);
+.dark ::-webkit-scrollbar-thumb:active {
+  background: rgba(255, 255, 255, 0.5);
 }
 
-.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.25);
+/* 隐藏滚动条工具类 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-.light ::-webkit-scrollbar-thumb:active {
-  background: rgba(0, 0, 0, 0.35);
-}
-
-/* 文件预览滚动条加宽 */
-.preview-scrollbar ::-webkit-scrollbar {
-  width: 12px;
-}
-
-.preview-scrollbar .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
-  border: 2px solid var(--background);
-}
-
-.preview-scrollbar .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.preview-scrollbar .light ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 6px;
-  border: 2px solid var(--background);
-}
-
-.preview-scrollbar .light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @keyframes fadeIn {

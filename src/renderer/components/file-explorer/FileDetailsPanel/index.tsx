@@ -329,10 +329,10 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
       {/* 置顶状态横幅（原文件丢失告警 / 最小单元标记） */}
       <DetailsPinnedBanner item={item} analysisResult={analysisResult} />
 
-      {/* 自适应内容高度网格容器 (微宫格无缝平铺架构：外周 0 边距直贴面板边缘，相邻卡片间通过 gap-px 自动透出 1px 分割线) */}
+      {/* 自适应内容高度网格容器 (微宫格无缝平铺架构：外周 0 边距直贴面板边缘，纯净 bg-card 消除滚动条灰底) */}
       <div
         data-testid="file-details-container"
-        className="flex-1 min-h-0 w-full overflow-y-auto p-0 grid grid-cols-1 @[540px]/details:grid-cols-2 auto-rows-min gap-px bg-border/40 content-start"
+        className="flex-1 min-h-0 w-full overflow-y-auto p-0 grid grid-cols-1 @[540px]/details:grid-cols-2 auto-rows-min gap-px bg-card content-start"
       >
         {effectiveCards.map((cardId, index) => {
           // 动态跨列规则：当仅有 1 张卡片可见时（包括目录画像），或者恰好有 3 张卡片可见的首张，在宽屏跨两列全宽
@@ -346,7 +346,11 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
               id={cardId}
               isOnlyOneVisible={isOnlyOneVisible}
               onCloseCard={() => toggleCard(pageId, cardId)}
-              className={cn(spanClass, effectiveCards.length === 1 && 'min-h-[260px]')}
+              className={cn(
+                spanClass,
+                effectiveCards.length === 1 && 'min-h-[260px]',
+                'border-b border-border/40 @[540px]/details:even:border-l @[540px]/details:even:border-border/40'
+              )}
             >
               {renderCardContent(cardId)}
             </DetailsCardWrapper>

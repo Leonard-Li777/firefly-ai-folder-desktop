@@ -33,7 +33,8 @@ function isOnVerticalScrollbar(x: number, y: number, exclude: HTMLElement | null
     if (scrollbarWidth <= 0) continue
 
     const rect = el.getBoundingClientRect()
-    if (x >= rect.right - scrollbarWidth && x < rect.right - 1) return true
+    // 当指针位于滚动条条带内部，但保留分割线中心边界 2px 安全操作区，避免分割线边缘 hover 抢夺或丢失焦点
+    if (x >= rect.right - scrollbarWidth && x < rect.right - 2) return true
   }
   return false
 }

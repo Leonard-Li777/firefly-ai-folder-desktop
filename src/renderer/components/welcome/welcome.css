@@ -1,9 +1,1 @@
-  ::-webkit-scrollbar-thumb {
-    background: rgba(105, 105, 105, 0.267)!important;
-    border-radius: 6px;
-    border: 2px solid var(--background);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(105, 105, 105, 0.267)!important;
-  }
+/* Welcome 向导样式 — 滚动条美化已统一收敛至 index.css */

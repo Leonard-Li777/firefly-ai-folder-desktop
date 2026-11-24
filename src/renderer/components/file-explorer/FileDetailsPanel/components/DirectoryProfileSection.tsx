@@ -446,7 +446,7 @@ const DirectoryProfileSectionComponent: React.FC<{
         !isUnit && (
           <div className="border-t border-border pt-4 mb-6 group/tooltip">
             <div className="">
-              <div className="bg-primary/10 rounded-lg px-4 py-3 -mx-4 space-y-5">
+              <div className="space-y-5">
                 {/* 1. 智能文件名格式（常显在最上方） */}
                 {(ctx?.namingPattern !== undefined ||
                   ctx?.namingPattern_suggestion !== undefined) && (
