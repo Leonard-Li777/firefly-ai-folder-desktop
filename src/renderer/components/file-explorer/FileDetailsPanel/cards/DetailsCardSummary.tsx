@@ -169,8 +169,8 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
         </span>
       </div>
 
-      <div className="flex-1 flex flex-col justify-start space-y-2.5">
-        {/* 单文件模式 */}
+      <div className="flex-1 flex flex-col justify-start space-y-2">
+        {/* 单文件模式：连续平铺展示（图标 + 值，无独立背景块） */}
         {analysisResult && isFileAnalysis(analysisResult) ? (
           <>
             {(() => {
@@ -187,63 +187,48 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
                 const secondaryValue = swapFileNameDisplay ? smartName : realName
 
                 return (
-                  <div className="space-y-2.5">
-                    {/* 主名称字段 */}
-                    <div className="rounded-lg border border-primary/20 bg-primary/[0.04] px-2.5 py-2">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="w-4 h-4 rounded flex items-center justify-center bg-primary/15 text-primary shrink-0">
-                          <MaterialIcon icon={primaryIcon} className="text-[11px] leading-none" />
-                        </span>
-                        <span className="text-[10px] font-semibold text-primary/80 tracking-wide">
-                          {primaryLabel}
-                        </span>
-                      </div>
+                  <>
+                    {/* 主名称字段：图标 + 值 */}
+                    <div className="flex items-start gap-2 min-w-0" title={primaryLabel}>
+                      <MaterialIcon
+                        icon={primaryIcon}
+                        className="text-sm text-primary shrink-0 mt-0.5"
+                      />
                       <h2
-                        className="font-semibold text-[13px] text-foreground break-all cursor-text leading-snug"
+                        className="font-semibold text-xs text-foreground break-all cursor-text leading-snug flex-1 min-w-0"
                         title={primaryValue}
                       >
                         <HighlightText text={primaryValue} title={primaryValue} />
                       </h2>
                     </div>
 
-                    {/* 次名称字段 */}
+                    {/* 次名称字段：图标 + 值 */}
                     {secondaryValue && (
-                      <div className="rounded-lg border border-border/40 bg-muted/35 px-2.5 py-1.5">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="w-4 h-4 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
-                            <MaterialIcon
-                              icon={secondaryIcon}
-                              className="text-[11px] leading-none"
-                            />
-                          </span>
-                          <span className="text-[10px] font-medium text-muted-foreground/85">
-                            {secondaryLabel}
-                          </span>
-                        </div>
+                      <div className="flex items-start gap-2 min-w-0" title={secondaryLabel}>
+                        <MaterialIcon
+                          icon={secondaryIcon}
+                          className="text-sm text-muted-foreground/70 shrink-0 mt-0.5"
+                        />
                         <p
-                          className="text-xs text-muted-foreground break-all cursor-text leading-snug"
+                          className="text-xs text-muted-foreground break-all cursor-text leading-snug flex-1 min-w-0"
                           title={secondaryValue}
                         >
                           <HighlightText text={secondaryValue} title={secondaryValue} />
                         </p>
                       </div>
                     )}
-                  </div>
+                  </>
                 )
               }
 
               return (
-                <div className="rounded-lg border border-border/50 bg-muted/30 px-2.5 py-2">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="w-4 h-4 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
-                      <MaterialIcon icon="insert_drive_file" className="text-[11px] leading-none" />
-                    </span>
-                    <span className="text-[10px] font-semibold text-muted-foreground">
-                      {t('原文件名')}
-                    </span>
-                  </div>
+                <div className="flex items-start gap-2 min-w-0" title={t('原文件名')}>
+                  <MaterialIcon
+                    icon="insert_drive_file"
+                    className="text-sm text-muted-foreground/70 shrink-0 mt-0.5"
+                  />
                   <h2
-                    className="font-semibold text-[13px] text-foreground break-all cursor-text leading-snug"
+                    className="font-semibold text-xs text-foreground break-all cursor-text leading-snug flex-1 min-w-0"
                     title={realName}
                   >
                     <HighlightText text={realName} title={realName} />
@@ -252,34 +237,24 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
               )
             })()}
 
+            {/* 内容描述：图标 + 值 */}
             {analysisResult.description && (
-              <div className="rounded-lg border border-border/40 bg-muted/25 px-3 py-2">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="w-4 h-4 rounded flex items-center justify-center bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0">
-                    <MaterialIcon icon="notes" className="text-[11px] leading-none" />
-                  </span>
-                  <span className="text-[10px] font-semibold text-muted-foreground/90">
-                    {t('内容描述')}
-                  </span>
-                </div>
-                <div className="text-left text-xs text-foreground/85 leading-relaxed max-h-[200px] overflow-y-auto no-scrollbar">
+              <div className="flex items-start gap-2 min-w-0" title={t('内容描述')}>
+                <MaterialIcon icon="notes" className="text-sm text-sky-500/80 shrink-0 mt-0.5" />
+                <div className="text-left text-xs text-foreground/85 leading-relaxed max-h-[200px] overflow-y-auto no-scrollbar flex-1 min-w-0">
                   <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
                 </div>
               </div>
             )}
           </>
         ) : item && !isDirectory ? (
-          <div className="rounded-lg border border-border/50 bg-muted/30 px-2.5 py-2">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="w-4 h-4 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
-                <MaterialIcon icon="insert_drive_file" className="text-[11px] leading-none" />
-              </span>
-              <span className="text-[10px] font-semibold text-muted-foreground">
-                {t('原文件名')}
-              </span>
-            </div>
+          <div className="flex items-start gap-2 min-w-0" title={t('原文件名')}>
+            <MaterialIcon
+              icon="insert_drive_file"
+              className="text-sm text-muted-foreground/70 shrink-0 mt-0.5"
+            />
             <h2
-              className="font-semibold text-[13px] text-foreground break-all cursor-text leading-snug"
+              className="font-semibold text-xs text-foreground break-all cursor-text leading-snug flex-1 min-w-0"
               title={item.name}
             >
               <HighlightText text={item.name} title={item.name} />
@@ -289,28 +264,34 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
 
         {/* 目录模式 */}
         {analysisResult && isDirAnalysis(analysisResult) && (
-          <div>
-            <h2 className="font-semibold text-sm text-foreground break-all flex items-center gap-1">
-              <span>⭐ {analysisResult.name}</span>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="shrink-0 text-sm">⭐</span>
+              <h2 className="font-semibold text-xs text-foreground break-all truncate">
+                {analysisResult.name}
+              </h2>
               {analysisResult.contextAnalysis?.directoryType && (
-                <span className="text-xs text-muted-foreground font-normal">
+                <span className="text-[11px] text-muted-foreground font-normal shrink-0">
                   ({analysisResult.contextAnalysis.directoryType})
                 </span>
               )}
-            </h2>
+            </div>
             {analysisResult.contextAnalysis?.description && (
-              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                {analysisResult.contextAnalysis.description}
-              </p>
+              <div className="flex items-start gap-2 min-w-0" title={t('内容描述')}>
+                <MaterialIcon icon="notes" className="text-sm text-sky-500/80 shrink-0 mt-0.5" />
+                <p className="text-xs text-muted-foreground leading-relaxed flex-1 min-w-0">
+                  {analysisResult.contextAnalysis.description}
+                </p>
+              </div>
             )}
           </div>
         )}
 
         {!analysisResult && item && isDirectory && (
-          <h2 className="font-semibold text-sm text-foreground break-all flex items-center gap-1.5">
-            <MaterialIcon icon="folder" className="text-base text-primary/80" />
-            <span>{item.name}</span>
-          </h2>
+          <div className="flex items-center gap-2 min-w-0" title={t('目录')}>
+            <MaterialIcon icon="folder" className="text-sm text-primary/80 shrink-0" />
+            <h2 className="font-semibold text-xs text-foreground break-all">{item.name}</h2>
+          </div>
         )}
       </div>
     </div>
