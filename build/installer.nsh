@@ -11,6 +11,10 @@
 
 ; 卸载时清理数据目录
 !macro customRemoveFiles
+    ; 用户级数据目录位于 %APPDATA%\Roaming 下；perMachine 安装时本宏运行在 all 上下文，
+    ; $APPDATA 会解析成 C:\ProgramData，必须先切回 current，否则用户数据永远删不到。
+    StrCmp $installMode "all" 0 +2
+        SetShellVarContext current
     ; 优先根据 .region_cn 哨兵或 PRODUCT_NAME 判断区域清理
     IfFileExists "$INSTDIR\.region_cn" cleanCNUserData checkLegacyUserData
     cleanCNUserData:
@@ -26,6 +30,9 @@
             RMDir /r "$APPDATA\firefly-ai-folder_v4_intl"
             RMDir /r "$APPDATA\firefly-ai-folder-intl"
     doneUserData:
+    ; 恢复 all 上下文：下面的公共快捷方式（$SMPROGRAMS/$DESKTOP）与 ProgramData 副本清理依赖 all
+    StrCmp $installMode "all" 0 +2
+        SetShellVarContext all
     Delete "$INSTDIR\.region_cn"
     Delete "$INSTDIR\app_env.json"
     ; 清理用户根目录下的 llamafile GPU 驱动
