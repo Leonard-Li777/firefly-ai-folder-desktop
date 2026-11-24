@@ -2,8 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import fs from 'fs'
 import path from 'path'
 import '../../../../../../pro/tests/mocks/electron-mock'
-import { concept } from '@firefly/shared'
-import { tagTreeQueryDimensionTreeMixin } from '../tag-tree-query-dimension-tree'
+import { concept, CANONICAL_NAMES } from '@firefly/shared'
+import {
+  tagTreeQueryDimensionTreeMixin,
+  batchResolveTagsMediaDomain,
+  getMediaDomainCanonicalName,
+  clearPanDimensionClusterCache
+} from '../tag-tree-query-dimension-tree'
 import { tagTreeQueryFilterMixin } from '../tag-tree-query-filter'
 import { omniService } from '../../../system/omni-service'
 import {
@@ -1765,5 +1770,803 @@ describe('泛维度轴标签智能聚类层级化 (clusterPanDimensionTags)', ()
     expect(omniService.clusterDocuments).toHaveBeenCalledTimes(1)
     const cluster2 = group2.tags.find(t => t.meta?.isClusterNode === true)
     expect(cluster2?.tagValue).toBe('Omni智能移动专家')
+  })
+
+  it('规则 28：媒体领域正交投影聚类基础——不同介质文件关联的平铺标签（音频 vs 文档）进行正交隔离聚类，杜绝跨介质语义污染', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        // 音频关联标签
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '交响乐演奏',
+          fileCount: 3,
+          level: 1,
+          code: 'tag_audio_symphony',
+          codePath: '/builtin.content_tags/tag_audio_symphony',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '协奏曲欣赏',
+          fileCount: 2,
+          level: 1,
+          code: 'tag_audio_concerto',
+          codePath: '/builtin.content_tags/tag_audio_concerto',
+          viaParentCode: 'builtin.content_tags'
+        },
+        // 文档关联标签
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '技术规格说明',
+          fileCount: 4,
+          level: 1,
+          code: 'tag_doc_spec',
+          codePath: '/builtin.content_tags/tag_doc_spec',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '系统架构设计',
+          fileCount: 5,
+          level: 1,
+          code: 'tag_doc_arch',
+          codePath: '/builtin.content_tags/tag_doc_arch',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    const pathCountMap: Record<string, number> = {
+      '/builtin.content_tags/tag_audio_symphony': 3,
+      '/builtin.content_tags/tag_audio_concerto': 2,
+      '/builtin.content_tags/tag_doc_spec': 4,
+      '/builtin.content_tags/tag_doc_arch': 5
+    }
+
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['tag_audio_symphony', new Set(['/music/beethoven.flac', '/music/mozart.mp3'])],
+      ['tag_audio_concerto', new Set(['/music/concerto.wav'])],
+      ['tag_doc_spec', new Set(['/docs/spec.pdf', '/docs/spec.docx'])],
+      ['tag_doc_arch', new Set(['/docs/architecture.md'])]
+    ])
+
+    // 模拟 Omni HAC 分别被两个领域调用并分别返回对应簇
+    vi.mocked(omniService.isReady).mockReturnValue(true)
+    vi.mocked(omniService.clusterDocuments).mockImplementation(async req => {
+      const fps = req.documents.map(d => d.fingerprint)
+      if (fps.includes('tag_audio_symphony')) {
+        return {
+          success: true,
+          result: {
+            durationMs: 5,
+            clusters: [
+              {
+                folderName: '古典音乐',
+                fingerprints: ['tag_audio_symphony', 'tag_audio_concerto']
+              }
+            ]
+          }
+        } as any
+      }
+      return {
+        success: true,
+        result: {
+          durationMs: 5,
+          clusters: [
+            {
+              folderName: '研发工程文档',
+              fingerprints: ['tag_doc_spec', 'tag_doc_arch']
+            }
+          ]
+        }
+      } as any
+    })
+
+    await context.clusterPanDimensionTags([group], pathCountMap, tagFilesMap)
+
+    // 应形成 2 个聚类父节点：分别对应 audio 与 document 领域
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(2)
+
+    const audioCluster = clusterParents.find(t => t.meta?.mediaDomain === 'audio')
+    expect(audioCluster).toBeDefined()
+    expect(audioCluster!.tagValue).toBe('古典音乐')
+    expect(audioCluster!.code).toContain('.cluster_audio_')
+
+    const docCluster = clusterParents.find(t => t.meta?.mediaDomain === 'document')
+    expect(docCluster).toBeDefined()
+    expect(docCluster!.tagValue).toBe('研发工程文档')
+    expect(docCluster!.code).toContain('.cluster_document_')
+
+    // 验证音频标签的 viaParentCode 仅指向音频聚类父节点，绝不污染到文档父节点
+    const audioSymphony = group.tags.find(t => t.code === 'tag_audio_symphony')!
+    const audioConcerto = group.tags.find(t => t.code === 'tag_audio_concerto')!
+    expect(audioSymphony.viaParentCode).toBe(audioCluster!.code)
+    expect(audioConcerto.viaParentCode).toBe(audioCluster!.code)
+    expect(audioSymphony.meta?.mediaDomain).toBe('audio')
+
+    // 验证文档标签的 viaParentCode 仅指向文档聚类父节点，绝不污染到音频父节点
+    const docSpec = group.tags.find(t => t.code === 'tag_doc_spec')!
+    const docArch = group.tags.find(t => t.code === 'tag_doc_arch')!
+    expect(docSpec.viaParentCode).toBe(docCluster!.code)
+    expect(docArch.viaParentCode).toBe(docCluster!.code)
+    expect(docSpec.meta?.mediaDomain).toBe('document')
+
+    // 验证 _omniChildrenMap 邻接边严格介质隔离
+    expect(context._omniChildrenMap.get(audioCluster!.code!).has('tag_audio_symphony')).toBe(true)
+    expect(context._omniChildrenMap.get(audioCluster!.code!).has('tag_doc_spec')).toBe(false)
+    expect(context._omniChildrenMap.get(docCluster!.code!).has('tag_doc_spec')).toBe(true)
+    expect(context._omniChildrenMap.get(docCluster!.code!).has('tag_audio_symphony')).toBe(false)
+  })
+
+  it('规则 29：媒体领域孤立标签防被跨域强行吸收——单标签在自身领域不足成簇时平铺保留，绝不串入其他领域聚类簇', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [
+        // 代码领域作者（2 个标签，足额成簇）
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'TS内核专家小李',
+          fileCount: 4,
+          level: 1,
+          code: 'author_ts_li',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'Rust底层开发老王',
+          fileCount: 6,
+          level: 1,
+          code: 'author_rust_wang',
+          viaParentCode: authorCode
+        },
+        // 音频领域作者（仅 1 个标签，不足成簇）
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '交响乐制作人赵六',
+          fileCount: 2,
+          level: 1,
+          code: 'author_composer_zhao',
+          viaParentCode: authorCode
+        }
+      ]
+    }
+
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['author_ts_li', new Set(['/src/main.ts', '/src/utils.ts'])],
+      ['author_rust_wang', new Set(['/crates/engine.rs'])],
+      ['author_composer_zhao', new Set(['/tracks/symphony.flac'])]
+    ])
+
+    vi.mocked(omniService.isReady).mockReturnValue(true)
+    vi.mocked(omniService.clusterDocuments).mockResolvedValue({
+      success: true,
+      result: {
+        clusters: [
+          {
+            folderName: '系统工程团队',
+            fingerprints: ['author_ts_li', 'author_rust_wang']
+          }
+        ]
+      }
+    } as any)
+
+    await context.clusterPanDimensionTags([group], undefined, tagFilesMap)
+
+    // 代码领域成簇，音频单标签无法成簇
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(1)
+    expect(clusterParents[0].meta?.mediaDomain).toBe('code')
+
+    // 验证孤立的音频标签严格保留在第一层，绝不被强行吸收到系统工程团队 (code) 簇下
+    const composerTag = group.tags.find(t => t.code === 'author_composer_zhao')!
+    expect(composerTag.level).toBe(1)
+    expect(composerTag.viaParentCode).toBe(authorCode)
+    expect(composerTag.meta?.mediaDomain).toBe('audio')
+  })
+
+  it('规则 30：跨媒体领域同名词根消歧——不同介质领域产生同名簇时依据规范媒体载体名进行消歧命名并隔离 code', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        // 音频领域：含词根「古典」
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '古典交响',
+          fileCount: 3,
+          level: 1,
+          code: 'tag_aud_c1',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '古典独奏',
+          fileCount: 2,
+          level: 1,
+          code: 'tag_aud_c2',
+          viaParentCode: 'builtin.content_tags'
+        },
+        // 文档领域：同样含词根「古典」
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '古典名著',
+          fileCount: 4,
+          level: 1,
+          code: 'tag_doc_c1',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '古典诗选',
+          fileCount: 5,
+          level: 1,
+          code: 'tag_doc_c2',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['tag_aud_c1', new Set(['/music/c1.mp3'])],
+      ['tag_aud_c2', new Set(['/music/c2.flac'])],
+      ['tag_doc_c1', new Set(['/books/novel.pdf'])],
+      ['tag_doc_c2', new Set(['/books/poem.docx'])]
+    ])
+
+    // Omni 离线，走确定性本地词根聚类 fallback，两边均提取出 '古典' 作为词根
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    await context.clusterPanDimensionTags([group], undefined, tagFilesMap)
+
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(2)
+
+    const names = clusterParents.map(c => c.tagValue)
+    // 两个同名字段必须被消歧：一个为 '古典'，另一个根据 CANONICAL_NAMES.MEDIA_DOCUMENT 消歧为 '古典 (文档)'
+    expect(names).toContain('古典')
+    expect(names).toContain(`古典 (${CANONICAL_NAMES.MEDIA_DOCUMENT})`)
+
+    // code 隔离：分别含有 audio 与 document 标识
+    const audioNode = clusterParents.find(c => c.meta?.mediaDomain === 'audio')!
+    const docNode = clusterParents.find(c => c.meta?.mediaDomain === 'document')!
+    expect(audioNode.code).toContain('.cluster_audio_')
+    expect(docNode.code).toContain('.cluster_document_')
+  })
+
+  it('规则 31：关联文件多介质投票机制——基于关联文件数量多数票裁决主导介质，平局安全回退 general', () => {
+    const tagA: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '测试多文件标签A',
+      fileCount: 4,
+      code: 'tag_a'
+    }
+    const tagB: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '测试平局标签B',
+      fileCount: 2,
+      code: 'tag_b'
+    }
+    const tagC: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '测试纯代码标签C',
+      fileCount: 3,
+      code: 'tag_c'
+    }
+
+    // tagA: 3 个音频文件，1 个文本文件 -> 多数票裁决为 audio
+    // tagB: 1 个音频文件，1 个文本文件 -> 平局回退 general
+    // tagC: 3 个代码文件 -> 裁决为 code
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['tag_a', new Set(['/music/a.mp3', '/music/b.flac', '/music/c.wav', '/doc/readme.txt'])],
+      ['tag_b', new Set(['/music/song.mp3', '/notes/diary.txt'])],
+      ['tag_c', new Set(['/src/a.ts', '/src/b.tsx', '/crates/lib.rs'])]
+    ])
+
+    const domainMap = batchResolveTagsMediaDomain([tagA, tagB, tagC], tagFilesMap)
+    expect(domainMap.get('tag_a')).toBe('audio')
+    expect(domainMap.get('tag_b')).toBe('general')
+    expect(domainMap.get('tag_c')).toBe('code')
+  })
+
+  it('规则 32：数据库持久化关系自动嗅探媒体领域——在 tagFilesMap 缺省时通过 SQLite DB file_tag_relations 自动识别媒体领域并执行正交隔离聚类', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'UI设计图稿',
+          fileCount: 3,
+          level: 1,
+          code: 'tag_image_ui',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '产品原型设计',
+          fileCount: 2,
+          level: 1,
+          code: 'tag_image_proto',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '航拍高清视频',
+          fileCount: 4,
+          level: 1,
+          code: 'tag_video_aerial',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '慢动作特效视频',
+          fileCount: 5,
+          level: 1,
+          code: 'tag_video_slow',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    // 模拟 context.db 批量查询返回图片与视频格式
+    const mockDb = {
+      prepare: vi.fn(() => ({
+        all: vi.fn(() => [
+          { tag_code: 'tag_image_ui', file_group: 'image', extension: 'png', path: '/imgs/ui.png' },
+          {
+            tag_code: 'tag_image_proto',
+            file_group: 'image',
+            extension: 'jpg',
+            path: '/imgs/proto.jpg'
+          },
+          {
+            tag_code: 'tag_video_aerial',
+            file_group: 'video',
+            extension: 'mp4',
+            path: '/vids/aerial.mp4'
+          },
+          {
+            tag_code: 'tag_video_slow',
+            file_group: 'video',
+            extension: 'mkv',
+            path: '/vids/slow.mkv'
+          }
+        ])
+      }))
+    }
+    const dbContext = {
+      ...context,
+      db: mockDb
+    }
+
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    // 未传入 tagFilesMap，依赖 mockDb 自动嗅探
+    await dbContext.clusterPanDimensionTags([group])
+
+    expect(mockDb.prepare).toHaveBeenCalledTimes(1)
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(2)
+
+    const imgCluster = clusterParents.find(c => c.meta?.mediaDomain === 'image')
+    const vidCluster = clusterParents.find(c => c.meta?.mediaDomain === 'video')
+    expect(imgCluster).toBeDefined()
+    expect(vidCluster).toBeDefined()
+    expect(imgCluster!.code).toContain('.cluster_image_')
+    expect(vidCluster!.code).toContain('.cluster_video_')
+  })
+
+  it('规则 33：媒体领域隔离聚类与前端 nestGroupTags 刻度联动深度守卫兼容性——深度 1/2 透明溶解，深度 >= 3 正常展开', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '爵士吉他独奏',
+          fileCount: 3,
+          level: 1,
+          code: 'tag_jazz_guitar',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '古典钢琴伴奏',
+          fileCount: 2,
+          level: 1,
+          code: 'tag_piano_accomp',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'React组件库',
+          fileCount: 4,
+          level: 1,
+          code: 'tag_react_comp',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: 'Vue状态管理',
+          fileCount: 5,
+          level: 1,
+          code: 'tag_vue_store',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['tag_jazz_guitar', new Set(['/music/jazz.mp3'])],
+      ['tag_piano_accomp', new Set(['/music/piano.flac'])],
+      ['tag_react_comp', new Set(['/code/react.tsx'])],
+      ['tag_vue_store', new Set(['/code/vue.ts'])]
+    ])
+
+    vi.mocked(omniService.isReady).mockReturnValue(true)
+    vi.mocked(omniService.clusterDocuments).mockImplementation(async req => {
+      const fps = req.documents.map(d => d.fingerprint)
+      if (fps.includes('tag_jazz_guitar')) {
+        return {
+          success: true,
+          result: {
+            clusters: [
+              { folderName: '乐器演奏', fingerprints: ['tag_jazz_guitar', 'tag_piano_accomp'] }
+            ]
+          }
+        } as any
+      }
+      return {
+        success: true,
+        result: {
+          clusters: [{ folderName: '前端框架', fingerprints: ['tag_react_comp', 'tag_vue_store'] }]
+        }
+      } as any
+    })
+
+    await context.clusterPanDimensionTags([group], undefined, tagFilesMap)
+
+    // 1. 深度刻度 maxScaleDepth = 2 (深度守卫生效)：聚类容器节点透明溶解，4个成员标签平铺展示
+    const flatResult = nestGroupTags(group, group.tags, 0, 2)
+    expect(flatResult.directTags.length).toBe(4)
+    expect(flatResult.directTags.every(t => !t.meta?.isClusterNode)).toBe(true)
+
+    // 2. 深度刻度 maxScaleDepth = 4 (深层展开)：2个媒体领域聚类容器节点成为顶级直属节点，成员收拢至 childTagsMap
+    const deepResult = nestGroupTags(group, group.tags, 0, 4)
+    expect(deepResult.directTags.length).toBe(2)
+    const clusterNames = deepResult.directTags.map(t => t.tagValue)
+    expect(clusterNames).toContain('乐器演奏')
+    expect(clusterNames).toContain('前端框架')
+  })
+
+  it('规则 34：SQLite 数据库聚合查询防单标签饿死——单标签海量文件不阻断后续标签媒体领域裁决', () => {
+    const tagHuge: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '海量音频标签',
+      fileCount: 500,
+      code: 'tag_huge_audio'
+    }
+    const tagSmall: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '少量视频标签',
+      fileCount: 2,
+      code: 'tag_small_video'
+    }
+
+    // 模拟数据库返回聚合统计：tag_huge 拥有 500 个音频文件，tag_small 拥有 2 个视频文件
+    const mockDb = {
+      prepare: vi.fn(() => ({
+        all: vi.fn(() => [
+          { tag_code: 'tag_huge_audio', file_group: 'audio', extension: 'mp3', cnt: 500 },
+          { tag_code: 'tag_small_video', file_group: 'video', extension: 'mp4', cnt: 2 }
+        ])
+      }))
+    }
+
+    const domainMap = batchResolveTagsMediaDomain([tagHuge, tagSmall], undefined, mockDb)
+    expect(domainMap.get('tag_huge_audio')).toBe('audio')
+    expect(domainMap.get('tag_small_video')).toBe('video')
+  })
+
+  it('规则 35：多重同名簇循环消歧——相同词根产生 3 个以上同名簇时确保展示名 100% 唯一，防止前端 nestGroupTags 塌陷合并', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        // 音频领域
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '交响乐1',
+          fileCount: 1,
+          level: 1,
+          code: 'a1',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '交响乐2',
+          fileCount: 1,
+          level: 1,
+          code: 'a2',
+          viaParentCode: 'builtin.content_tags'
+        },
+        // 文档领域 1
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '工程文档1',
+          fileCount: 1,
+          level: 1,
+          code: 'd1',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '工程文档2',
+          fileCount: 1,
+          level: 1,
+          code: 'd2',
+          viaParentCode: 'builtin.content_tags'
+        },
+        // 文档领域 2 (另一个簇，同名)
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '规范手册1',
+          fileCount: 1,
+          level: 1,
+          code: 'd3',
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '规范手册2',
+          fileCount: 1,
+          level: 1,
+          code: 'd4',
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['a1', new Set(['/m/1.mp3'])],
+      ['a2', new Set(['/m/2.mp3'])],
+      ['d1', new Set(['/d/1.pdf'])],
+      ['d2', new Set(['/d/2.pdf'])],
+      ['d3', new Set(['/d/3.pdf'])],
+      ['d4', new Set(['/d/4.pdf'])]
+    ])
+
+    vi.mocked(omniService.isReady).mockReturnValue(true)
+    vi.mocked(omniService.clusterDocuments).mockImplementation(async req => {
+      const fps = req.documents.map(d => d.fingerprint)
+      if (fps.includes('a1')) {
+        return {
+          success: true,
+          result: {
+            clusters: [{ folderName: '核心资料', fingerprints: ['a1', 'a2'] }]
+          }
+        } as any
+      }
+      return {
+        success: true,
+        result: {
+          clusters: [
+            { folderName: '核心资料', fingerprints: ['d1', 'd2'] },
+            { folderName: '核心资料', fingerprints: ['d3', 'd4'] }
+          ]
+        }
+      } as any
+    })
+
+    await context.clusterPanDimensionTags([group], undefined, tagFilesMap)
+    const clusterParents = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(3)
+    const names = clusterParents.map(c => c.tagValue)
+    // 3 个同名簇被依次消歧：'核心资料'、'核心资料 (文档)'、'核心资料 (文档 2)'
+    expect(names).toContain('核心资料')
+    expect(names).toContain(`核心资料 (${CANONICAL_NAMES.MEDIA_DOCUMENT})`)
+    expect(names).toContain(`核心资料 (${CANONICAL_NAMES.MEDIA_DOCUMENT} 2)`)
+    // 集合去重长度与原数组一致，证实 100% 零撞名
+    expect(new Set(names).size).toBe(3)
+  })
+
+  it('规则 36：tagFilesMap 支持无点文件裸扩展名识别媒体领域', () => {
+    const tagAud: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '音频扩展名标签',
+      fileCount: 2,
+      code: 't_aud'
+    }
+    const tagDoc: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '文档扩展名标签',
+      fileCount: 2,
+      code: 't_doc'
+    }
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['t_aud', new Set(['mp3', 'wav', 'flac'])],
+      ['t_doc', new Set(['docx', 'pdf', 'xlsx'])]
+    ])
+
+    const domainMap = batchResolveTagsMediaDomain([tagAud, tagDoc], tagFilesMap)
+    expect(domainMap.get('t_aud')).toBe('audio')
+    expect(domainMap.get('t_doc')).toBe('document')
+  })
+
+  it('规则 37：tagFilesMap 平局时遵守优先级 2 直接裁决 general，严禁越级穿透至 SQLite DB', () => {
+    const tagTie: DimensionTag = {
+      dimensionId: 28,
+      dimensionName: '内容标签',
+      tagValue: '平局标签',
+      fileCount: 2,
+      code: 'tag_tie'
+    }
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['tag_tie', new Set(['/m/1.mp3', '/d/1.pdf'])] // 1 音频 vs 1 文档，平局
+    ])
+
+    const mockDb = {
+      prepare: vi.fn(() => ({
+        all: vi.fn(() => [
+          // 若错误穿透到 DB，会误判定为 audio
+          { tag_code: 'tag_tie', file_group: 'audio', extension: 'mp3', cnt: 10 }
+        ])
+      }))
+    }
+
+    const domainMap = batchResolveTagsMediaDomain([tagTie], tagFilesMap, mockDb)
+    expect(mockDb.prepare).not.toHaveBeenCalled()
+    expect(domainMap.get('tag_tie')).toBe('general')
+  })
+
+  it('规则 38：无 code 标签在指纹缓存写入与读取时保持一致，杜绝缓存命中后成员丢弃', async () => {
+    clearPanDimensionClusterCache()
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '机器学习模型',
+          fileCount: 3,
+          level: 1,
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '深度学习模型',
+          fileCount: 2,
+          level: 1,
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+
+    const tagFilesMap = new Map<string, Set<string>>([
+      ['机器学习模型', new Set(['/code/ml.py'])],
+      ['深度学习模型', new Set(['/code/dl.py'])]
+    ])
+
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+    // 第一次聚类：写入缓存
+    await context.clusterPanDimensionTags([group], undefined, tagFilesMap)
+    expect(group.tags.some(t => t.meta?.isClusterNode)).toBe(true)
+
+    // 第二次聚类：命中缓存，验证正常恢复
+    const group2: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '机器学习模型',
+          fileCount: 3,
+          level: 1,
+          viaParentCode: 'builtin.content_tags'
+        },
+        {
+          dimensionId: 28,
+          dimensionCode: 'builtin.content_tags',
+          dimensionName: '内容标签',
+          tagValue: '深度学习模型',
+          fileCount: 2,
+          level: 1,
+          viaParentCode: 'builtin.content_tags'
+        }
+      ]
+    }
+    await context.clusterPanDimensionTags([group2], undefined, tagFilesMap)
+    const clusterParents = group2.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterParents.length).toBe(1)
+    expect(clusterParents[0].tagValue).toBe('学习模型')
+    const members = group2.tags.filter(t => t.viaParentCode === clusterParents[0].code)
+    expect(members.length).toBe(2)
   })
 })

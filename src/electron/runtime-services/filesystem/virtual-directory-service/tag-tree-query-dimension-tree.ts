@@ -346,7 +346,7 @@ export function getMediaDomainCanonicalName(domain: MediaDomain): string {
     case 'archive':
       return CANONICAL_NAMES.MEDIA_ARCHIVE
     case 'manga':
-      return '漫画'
+      return getCanonicalConceptName(concept('漫画')) || '漫画'
     case 'general':
     default:
       return ''
@@ -359,9 +359,9 @@ export function getMediaDomainCanonicalName(domain: MediaDomain): string {
  * 契约规范与优先级：
  * 1. 标签显式元数据 (tag.meta.mediaDomain / tag.meta.fileGroup / tag.meta.category) 优先；
  * 2. tagFilesMap 提供的关联文件集合：支持完整物理路径（带后缀名/跨端格式判定）、
- *    相对路径、文件名、或直接媒体分类名；执行多文件多数票裁决（Majority Vote），平局回退 general；
- * 3. SQLite 持久化数据库自动回填：若 tagFilesMap 为空且 db 可用，批量点查 file_tag_relations
- *    关联的 files.file_group / files.extension / workspace_files.path，执行多数票裁决；
+ *    相对路径、文件名、无点扩展名或直接媒体分类名；执行多文件多数票裁决（Majority Vote），平局回退 general；
+ * 3. SQLite 持久化数据库自动回填：若 tagFilesMap 为空且 db 可用，批量分块按领域聚合查询 file_tag_relations
+ *    关联的 files.file_group / files.extension / workspace_files.path，执行多数票裁决，杜绝单标签海量文件饿死后续标签；
  * 4. 无法判定媒体领域时安全兜底为 'general'。
  */
 export function batchResolveTagsMediaDomain(
@@ -376,12 +376,32 @@ export function batchResolveTagsMediaDomain(
     const key = tag.code || tag.tagValue || ''
     if (!key) continue
 
-    // 1. 显式 metadata 优先级最高
-    if (tag.meta?.mediaDomain) {
-      result.set(key, tag.meta.mediaDomain as MediaDomain)
+    // 1. 显式 metadata 优先级最高（支持对象或 JSON 字符串）
+    let meta = tag.meta as any
+    if (typeof meta === 'string') {
+      try {
+        meta = JSON.parse(meta)
+      } catch {
+        meta = undefined
+      }
+    }
+    let metadata = (tag as any).metadata
+    if (typeof metadata === 'string') {
+      try {
+        metadata = JSON.parse(metadata)
+      } catch {
+        metadata = undefined
+      }
+    }
+
+    const explicitDomain = meta?.mediaDomain || metadata?.mediaDomain
+    if (explicitDomain) {
+      result.set(key, explicitDomain as MediaDomain)
       continue
     }
-    const metaCategory = tag.meta?.fileGroup || tag.meta?.category
+
+    const metaCategory =
+      meta?.fileGroup || meta?.category || metadata?.fileGroup || metadata?.category
     if (metaCategory) {
       const d = resolveMediaDomainFromCategory(metaCategory)
       if (d !== 'general') {
@@ -390,12 +410,20 @@ export function batchResolveTagsMediaDomain(
       }
     }
 
-    // 2. tagFilesMap 提供的关联文件多数票统计
-    const files =
-      (tag.code ? tagFilesMap?.get(tag.code) : undefined) ||
-      (tag.tagValue ? tagFilesMap?.get(tag.tagValue) : undefined)
+    // 2. tagFilesMap 提供的关联文件多数票统计（同时支持 code 与 tagValue 键，支持路径与裸扩展名）
+    const files = new Set<string>()
+    if (tag.code && tagFilesMap?.has(tag.code)) {
+      for (const f of tagFilesMap.get(tag.code)!) {
+        if (f) files.add(f)
+      }
+    }
+    if (tag.tagValue && tagFilesMap?.has(tag.tagValue)) {
+      for (const f of tagFilesMap.get(tag.tagValue)!) {
+        if (f) files.add(f)
+      }
+    }
 
-    if (files && files.size > 0) {
+    if (files.size > 0) {
       const counts = new Map<MediaDomain, number>()
       for (const f of files) {
         let d: MediaDomain = 'general'
@@ -403,6 +431,9 @@ export function batchResolveTagsMediaDomain(
           d = resolveMediaDomainFromFile(undefined, f)
         } else {
           d = resolveMediaDomainFromCategory(f)
+          if (d === 'general') {
+            d = resolveMediaDomainFromFile(undefined, `dummy.${f}`)
+          }
         }
         if (d !== 'general') {
           counts.set(d, (counts.get(d) || 0) + 1)
@@ -421,56 +452,75 @@ export function batchResolveTagsMediaDomain(
             isTie = true
           }
         }
-        if (!isTie && bestDomain !== 'general') {
-          result.set(key, bestDomain)
-          continue
-        }
+        result.set(key, !isTie && bestDomain !== 'general' ? bestDomain : 'general')
+        continue
       }
     }
 
-    // 3. 待查数据库回填
-    if (tag.code && db && typeof db.prepare === 'function') {
-      tagsNeedingDb.push(tag)
+    // 3. 待查数据库回填（若无 code 且 tagValue 为受控概念，尝试补全 code 寻路）
+    let tagCode = tag.code
+    if (!tagCode && tag.tagValue && isControlledConcept(tag.tagValue)) {
+      tagCode = concept(tag.tagValue)
+    }
+
+    if (tagCode && db && typeof db.prepare === 'function') {
+      tagsNeedingDb.push({ ...tag, code: tagCode })
     } else {
       result.set(key, 'general')
     }
   }
 
-  // 4. 批量查询 SQLite 数据库
+  // 4. 批量分块聚合查询 SQLite 数据库（GROUP BY 消除笛卡尔积与单标签饿死，分块防 variables 超限）
   if (tagsNeedingDb.length > 0 && db && typeof db.prepare === 'function') {
     try {
-      const placeholders = tagsNeedingDb.map(() => '?').join(',')
-      const codes = tagsNeedingDb.map(t => t.code!)
-      const sql = `
-        SELECT ftr.tag_code, f.file_group, f.extension, wf.path
-        FROM file_tag_relations ftr
-        JOIN files f ON f.file_fingerprint = ftr.file_fingerprint
-        LEFT JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
-        WHERE ftr.tag_code IN (${placeholders})
-        LIMIT 500
-      `
-      const rows = db.prepare(sql).all(...codes) as Array<{
-        tag_code: string
-        file_group: string | null
-        extension: string | null
-        path: string | null
-      }>
-
+      const CHUNK_SIZE = 200
       const countsByTag = new Map<string, Map<MediaDomain, number>>()
-      for (const row of rows) {
-        if (!countsByTag.has(row.tag_code)) {
-          countsByTag.set(row.tag_code, new Map())
-        }
-        const counts = countsByTag.get(row.tag_code)!
-        const d = row.path
-          ? resolveMediaDomainFromFile(row.file_group, row.path)
-          : row.file_group
-            ? resolveMediaDomainFromCategory(row.file_group)
-            : row.extension
-              ? resolveMediaDomainFromFile(undefined, 'dummy.' + row.extension)
-              : 'general'
-        if (d !== 'general') {
-          counts.set(d, (counts.get(d) || 0) + 1)
+
+      for (let i = 0; i < tagsNeedingDb.length; i += CHUNK_SIZE) {
+        const chunk = tagsNeedingDb.slice(i, i + CHUNK_SIZE)
+        const placeholders = chunk.map(() => '?').join(',')
+        const codes = chunk.map(t => t.code!)
+        const sql = `
+          SELECT ftr.tag_code, f.file_group, f.extension, COUNT(DISTINCT ftr.file_fingerprint) AS cnt
+          FROM file_tag_relations ftr
+          JOIN files f ON f.file_fingerprint = ftr.file_fingerprint
+          WHERE ftr.tag_code IN (${placeholders})
+          GROUP BY ftr.tag_code, f.file_group, f.extension
+        `
+        const rows = db.prepare(sql).all(...codes) as Array<{
+          tag_code: string
+          file_group: string | null
+          extension: string | null
+          path?: string | null
+          cnt?: number
+        }>
+
+        for (const row of rows) {
+          if (!countsByTag.has(row.tag_code)) {
+            countsByTag.set(row.tag_code, new Map())
+          }
+          const counts = countsByTag.get(row.tag_code)!
+          let d: MediaDomain = 'general'
+          if (row.path) {
+            d = resolveMediaDomainFromFile(row.file_group, row.path)
+          } else if (row.file_group) {
+            d = resolveMediaDomainFromCategory(row.file_group)
+            if (d === 'general' && row.extension) {
+              d = resolveMediaDomainFromFile(
+                undefined,
+                `dummy${row.extension.startsWith('.') ? '' : '.'}${row.extension}`
+              )
+            }
+          } else if (row.extension) {
+            d = resolveMediaDomainFromFile(
+              undefined,
+              `dummy${row.extension.startsWith('.') ? '' : '.'}${row.extension}`
+            )
+          }
+          if (d !== 'general') {
+            const weight = typeof row.cnt === 'number' ? row.cnt : 1
+            counts.set(d, (counts.get(d) || 0) + weight)
+          }
         }
       }
 
@@ -3003,10 +3053,17 @@ export const tagTreeQueryDimensionTreeMixin = {
         }
         if (seenClusterNames.has(clusterName)) {
           const domainName = getMediaDomainCanonicalName(domain)
-          clusterName =
-            domainName && domain !== 'general'
-              ? `${clusterName} (${domainName})`
-              : `${clusterName} (${cIdx + 1})`
+          const baseName = clusterName
+          const domainSuffix = domainName && domain !== 'general' ? ` (${domainName})` : ''
+          let candidate = `${baseName}${domainSuffix}`
+          let counter = 2
+          while (seenClusterNames.has(candidate)) {
+            candidate = domainSuffix
+              ? `${baseName} (${domainName} ${counter})`
+              : `${baseName} (${counter})`
+            counter++
+          }
+          clusterName = candidate
         }
         seenClusterNames.add(clusterName)
 
@@ -3024,7 +3081,8 @@ export const tagTreeQueryDimensionTreeMixin = {
               for (const fp of tagFilesMap.get(m.code)!) {
                 fileSet.add(fp)
               }
-            } else if (m.tagValue && tagFilesMap.has(m.tagValue)) {
+            }
+            if (m.tagValue && tagFilesMap.has(m.tagValue)) {
               for (const fp of tagFilesMap.get(m.tagValue)!) {
                 fileSet.add(fp)
               }
@@ -3154,10 +3212,12 @@ export const tagTreeQueryDimensionTreeMixin = {
       return { clusters: [], unclusteredTags: domainTags }
     }
 
+    const tagToFingerprint = new Map<DimensionTag, string>()
     const tagByFingerprint = new Map<string, DimensionTag>()
     const clusterDocs: OmniClusterDocument[] = domainTags.map((tag, idx) => {
       const fp = tag.code || `${g.code || g.id}__${domain}__${tag.tagValue || idx}`
       tagByFingerprint.set(fp, tag)
+      tagToFingerprint.set(tag, fp)
       return {
         fingerprint: fp,
         embedding: [],
@@ -3173,7 +3233,7 @@ export const tagTreeQueryDimensionTreeMixin = {
     const isOmniReady = typeof omniService?.isReady === 'function' && omniService.isReady()
 
     // 0 路：内存指纹缓存（同组同领域标签指纹未变化时直接命中，0ms 无额外计算；若缓存来自本地兜底且 Omni 已就绪，则主动突破缓存升级聚类质量）
-    const domainPart = domain !== 'general' ? `domain_${domain}::` : ''
+    const domainPart = `domain_${domain}::`
     const cacheKey = `${getGroupRootCode(g)}::${domainPart}${domainTags.length}::${domainTags
       .map(t => `${t.code || t.tagValue}:${t.fileCount || 0}`)
       .sort()
@@ -3271,7 +3331,10 @@ export const tagTreeQueryDimensionTreeMixin = {
         clusters: clusters.map(c => ({
           folderName: c.folderName,
           fingerprints: c.tags
-            .map(t => t.code || `${g.code || g.id}__${domain}__${t.tagValue}`)
+            .map(
+              t =>
+                tagToFingerprint.get(t) || t.code || `${g.code || g.id}__${domain}__${t.tagValue}`
+            )
             .filter(Boolean)
         })),
         timestamp: Date.now(),
