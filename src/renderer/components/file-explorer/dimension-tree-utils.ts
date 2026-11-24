@@ -820,7 +820,18 @@ export function nestGroupTags(
         if (!isContainerSelf) directTags.push(lt)
       }
     }
-    return { directTags, childTagsMap }
+
+    // 刻度联动深度守卫 (depth <= 2 扁平化展示)：
+    // 当刻度深度压缩至顶级直属层 (baseVisualDepth >= maxScaleDepth，即 maxScaleDepth <= 2) 时，
+    // 聚类父节点 (isClusterNode: true) 作为合成的虚拟分组容器，必须透明溶解 (dissolve)，
+    // 仅保留其内部真实的成员标签平铺展示，杜绝合成目录与子标签并列重复呈现。
+    const finalFlatDirectTags = directTags.filter(
+      t => !(t.meta?.isClusterNode === true || t.code?.includes('.cluster_'))
+    )
+    return {
+      directTags: finalFlatDirectTags.length > 0 ? finalFlatDirectTags : directTags,
+      childTagsMap
+    }
   }
 
   // 5. 当 baseVisualDepth < maxScaleDepth 时：
@@ -846,12 +857,17 @@ export function nestGroupTags(
 
       if (removeEmptyTags && liftedTags.length === 0) return null
 
+      // 过滤深层提升中被平铺的合成聚类容器节点，仅保留真实成员标签
+      const cleanLiftedTags = liftedTags.filter(
+        t => !(t.meta?.isClusterNode === true || t.code?.includes('.cluster_'))
+      )
+
       return {
         id: group.id * 10000 + currentVisualDepth * 100 + (parentTag.order || 1),
         name: parentTag.tagValue,
         code: parentTag.code || `${resolveDimensionCode(group)}.${parentTag.tagValue}`,
         level: currentVisualDepth - 1,
-        tags: liftedTags,
+        tags: cleanLiftedTags.length > 0 ? cleanLiftedTags : liftedTags,
         childTags: undefined,
         isMultiSelect: parentTag.isMultiSelect ?? false,
         metadata: group.metadata

@@ -535,13 +535,13 @@ export class OmniService {
     if (this.connectedTarget.baseUrl !== expectedTarget.baseUrl) {
       return false
     }
-    if (
-      typeof expectedTarget.pid === 'number' &&
-      this.connectedTarget.pid !== expectedTarget.pid
-    ) {
+    if (typeof expectedTarget.pid === 'number' && this.connectedTarget.pid !== expectedTarget.pid) {
       return false
     }
-    if (expectedTarget.instanceId && this.connectedTarget.instanceId !== expectedTarget.instanceId) {
+    if (
+      expectedTarget.instanceId &&
+      this.connectedTarget.instanceId !== expectedTarget.instanceId
+    ) {
       return false
     }
     return true
@@ -603,7 +603,9 @@ export class OmniService {
         if (outcome === 'eof') {
           // 正常 EOF 后：先检查受管进程或发现文件是否仍存活
           const dfInfo = this.getDiscoveryFile()?.read({ verifyPid: true }) ?? null
-          const hasManagedChild = Boolean(this.process && !this.process.killed && this.process.exitCode === null)
+          const hasManagedChild = Boolean(
+            this.process && !this.process.killed && this.process.exitCode === null
+          )
           if (!hasManagedChild && !dfInfo) {
             this.applyOffline()
             return
@@ -1397,10 +1399,7 @@ export class OmniService {
       if (matchedPort !== null) {
         this.actualPort = matchedPort
         this.baseUrl = `http://127.0.0.1:${matchedPort}`
-        const adoptedPid =
-          typeof matchedData?.pid === 'number'
-            ? matchedData.pid
-            : discovered?.pid
+        const adoptedPid = typeof matchedData?.pid === 'number' ? matchedData.pid : discovered?.pid
         const adoptedInstanceId =
           typeof matchedData?.instanceId === 'string'
             ? matchedData.instanceId
@@ -3715,9 +3714,16 @@ export class OmniService {
       similarityStep?: number
       clusteringMode?: ClusteringMode
     },
-    timeoutMs: number = 30000
+    timeoutMs: number = 30000,
+    skipEnsureRunning: boolean = false
   ): Promise<OmniClusterResponse | null> {
-    await this.ensureRunning()
+    if (skipEnsureRunning) {
+      if (!this.isReady()) {
+        return null
+      }
+    } else {
+      await this.ensureRunning()
+    }
     const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/search/cluster`, {
         method: 'POST',
@@ -3738,13 +3744,7 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err.message)
-      const restarted = await this.start()
-      if (restarted) {
-        try {
-          return await doFetch()
-        } catch {}
-      }
+      logger.debug(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err?.message || err)
       return null
     }
   }

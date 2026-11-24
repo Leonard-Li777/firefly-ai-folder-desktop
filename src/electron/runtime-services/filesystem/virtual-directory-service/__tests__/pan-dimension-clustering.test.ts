@@ -9,7 +9,9 @@ import { omniService } from '../../../system/omni-service'
 import {
   nestGroupTags,
   getSelectedTagsFromSet,
-  makeTagKey
+  makeTagKey,
+  buildDimensionTree,
+  migrateTagKeysAcrossScale
 } from '../../../../../renderer/components/file-explorer/dimension-tree-utils'
 import type { DimensionGroup, DimensionTag } from '@firefly/types'
 
@@ -1313,5 +1315,455 @@ describe('泛维度轴标签智能聚类层级化 (clusterPanDimensionTags)', ()
     expect(omniChildrenMap.get('tag_ai')!.has('深度学习')).toBe(true)
     expect(omniChildrenMap.has('人工智能')).toBe(true)
     expect(omniChildrenMap.get('人工智能')!.has('tag_dl')).toBe(true)
+  })
+
+  it('规则 21：冷启动/离线兜底守护：当 omniService.isReady() 为 false 时，不阻塞等待冷启动，直接极速降级到本地确定性聚类 fallbackClusterTags (<5ms)，且不调用 omniService.clusterDocuments', async () => {
+    // 模拟 Omni 未就绪态 (例如正在冷启动或不可用)
+    vi.mocked(omniService.isReady).mockReturnValueOnce(false)
+
+    const group: DimensionGroup = {
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'UI设计小白',
+          fileCount: 2,
+          level: 1,
+          code: 'author_ui_novice',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'UI设计大师',
+          fileCount: 3,
+          level: 1,
+          code: 'author_ui_master',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'Python爬虫高手',
+          fileCount: 5,
+          level: 1,
+          code: 'author_py_pro',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'Python数据分析师',
+          fileCount: 4,
+          level: 1,
+          code: 'author_py_analyst',
+          viaParentCode: authorCode
+        }
+      ]
+    }
+
+    const start = Date.now()
+    await context.clusterPanDimensionTags([group])
+    const elapsed = Date.now() - start
+
+    // 严禁调用 omniService.clusterDocuments，严禁被冷启动阻塞
+    expect(omniService.clusterDocuments).not.toHaveBeenCalled()
+    // 确定性本地聚类毫秒级极速完成 (<100ms)
+    expect(elapsed).toBeLessThan(100)
+
+    // 标签应按本地公共前缀/词根聚类形成聚类节点
+    const clusterNodes = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterNodes.length).toBeGreaterThan(0)
+    // 成员标签挂载到了聚类节点下
+    const memberTags = group.tags.filter(t => t.level === 2)
+    expect(memberTags.length).toBe(4)
+  })
+
+  it('规则 22：内存指纹缓存：相同标签组二次请求命中指纹缓存，避免重复计算', async () => {
+    // 模拟 Omni 已就绪，但只在第一次调用时被调用一次
+    vi.mocked(omniService.isReady).mockReturnValue(true)
+    vi.mocked(omniService.clusterDocuments).mockResolvedValueOnce({
+      success: true,
+      result: {
+        clusters: [
+          {
+            clusterId: 1,
+            fingerprints: ['author_cached_a', 'author_cached_b'],
+            folderName: '测试缓存分类'
+          }
+        ]
+      }
+    } as any)
+
+    const makeGroup = (): DimensionGroup => ({
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '前端专家甲',
+          fileCount: 2,
+          level: 1,
+          code: 'author_cached_a',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '前端专家乙',
+          fileCount: 3,
+          level: 1,
+          code: 'author_cached_b',
+          viaParentCode: authorCode
+        }
+      ]
+    })
+
+    const group1 = makeGroup()
+    await context.clusterPanDimensionTags([group1])
+    expect(omniService.clusterDocuments).toHaveBeenCalledTimes(1)
+
+    // 第二次调用相同的标签与数量，直接命中指纹缓存
+    const group2 = makeGroup()
+    await context.clusterPanDimensionTags([group2])
+    // clusterDocuments 没有被再次调用，次数仍为 1
+    expect(omniService.clusterDocuments).toHaveBeenCalledTimes(1)
+    const clusterNodes = group2.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterNodes.length).toBe(1)
+    expect(clusterNodes[0].tagValue).toBe('测试缓存分类')
+  })
+
+  it('规则 23：前端刻度深度联动 (maxScaleDepth)：maxScaleDepth <= 2 时聚类节点透明穿透溶解直接平铺成员标签；maxScaleDepth >= 3 时聚类节点折叠成目录', () => {
+    const clusterParent: DimensionTag = {
+      dimensionId: 4,
+      dimensionCode: authorCode,
+      dimensionName: '作者',
+      tagValue: 'UI设计',
+      fileCount: 5,
+      level: 1,
+      code: `${authorCode}.cluster_uidesign`,
+      codePath: `/${authorCode}/${authorCode}.cluster_uidesign`,
+      viaParentCode: authorCode,
+      meta: {
+        isClusterNode: true
+      }
+    }
+
+    const member1: DimensionTag = {
+      dimensionId: 4,
+      dimensionCode: authorCode,
+      dimensionName: '作者',
+      tagValue: 'UI小张',
+      fileCount: 2,
+      level: 2,
+      code: 'author_ui_zhang',
+      codePath: `/${authorCode}/${authorCode}.cluster_uidesign/author_ui_zhang`,
+      viaParentCode: `${authorCode}.cluster_uidesign`
+    }
+
+    const member2: DimensionTag = {
+      dimensionId: 4,
+      dimensionCode: authorCode,
+      dimensionName: '作者',
+      tagValue: 'UI李四',
+      fileCount: 3,
+      level: 2,
+      code: 'author_ui_li',
+      codePath: `/${authorCode}/${authorCode}.cluster_uidesign/author_ui_li`,
+      viaParentCode: `${authorCode}.cluster_uidesign`
+    }
+
+    const group: DimensionGroup = {
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [clusterParent, member1, member2]
+    }
+
+    // 场景 A: 用户设置刻度 depth = 2 (扁平化展示)，聚类父节点透明穿透溶解，仅展示 UI小张、UI李四
+    const flatResult = nestGroupTags(group, group.tags, 0, 2)
+    // 顶层直属标签中不包含聚类虚拟文件夹，且直接平铺两个原子标签
+    expect(flatResult.directTags.some(t => t.meta?.isClusterNode)).toBe(false)
+    expect(flatResult.directTags.map(t => t.tagValue).sort()).toEqual(['UI小张', 'UI李四'])
+    // 扁平模式下无子树折叠
+    expect(flatResult.childTagsMap.size).toBe(0)
+
+    // 场景 B: 用户设置刻度 depth = 3 (层级化展示)，聚类父节点作为 level 1 折叠目录，原子标签挂在其子树下
+    const hierarchicalResult = nestGroupTags(group, group.tags, 0, 3)
+    expect(hierarchicalResult.directTags.length).toBe(1)
+    expect(hierarchicalResult.directTags[0].tagValue).toBe('UI设计')
+    expect(hierarchicalResult.directTags[0].code).toBe(`${authorCode}.cluster_uidesign`)
+    // 子树 childTagsMap 中挂载了其两个子标签
+    const children = hierarchicalResult.childTagsMap.get(`${authorCode}.cluster_uidesign`)
+    expect(children).toBeDefined()
+    expect(children![0].tags!.map(t => t.tagValue).sort()).toEqual(['UI小张', 'UI李四'])
+  })
+
+  it('规则 24：边界防御——平铺标签全为单字或无任何公共字符时，本地词根聚类安全兜底，不创建无意义单元素簇，保持原标签平铺展示且不报错', async () => {
+    vi.mocked(omniService.isReady).mockReturnValueOnce(false)
+
+    const group: DimensionGroup = {
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '张',
+          fileCount: 1,
+          level: 1,
+          code: 'author_zhang',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '李',
+          fileCount: 2,
+          level: 1,
+          code: 'author_li',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'Alice',
+          fileCount: 3,
+          level: 1,
+          code: 'author_alice',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: 'Bob',
+          fileCount: 4,
+          level: 1,
+          code: 'author_bob',
+          viaParentCode: authorCode
+        }
+      ]
+    }
+
+    await context.clusterPanDimensionTags([group])
+
+    // 无公共词根时，没有任何虚拟聚类父节点生成
+    const clusterNodes = group.tags.filter(t => t.meta?.isClusterNode === true)
+    expect(clusterNodes.length).toBe(0)
+    // 所有标签保持原有平铺层级展示，绝不丢失数据
+    expect(group.tags.length).toBe(4)
+    expect(group.tags.every(t => t.level === 1)).toBe(true)
+  })
+
+  it('规则 25：高维跨刻度自愈恢复——多选模式下快速切换 maxScaleDepth（从 2 滑到 5 再滑回 2），被选中的聚类子标签键值在 migrateTagKeysAcrossScale 能够 100% 精确映射', () => {
+    const clusterParent: DimensionTag = {
+      dimensionId: 4,
+      dimensionCode: authorCode,
+      dimensionName: '作者',
+      tagValue: 'UI设计',
+      fileCount: 5,
+      level: 1,
+      code: `${authorCode}.cluster_uidesign`,
+      codePath: `/${authorCode}/${authorCode}.cluster_uidesign`,
+      viaParentCode: authorCode,
+      meta: { isClusterNode: true }
+    }
+    const member1: DimensionTag = {
+      dimensionId: 4,
+      dimensionCode: authorCode,
+      dimensionName: '作者',
+      tagValue: 'UI小张',
+      fileCount: 2,
+      level: 2,
+      code: 'author_ui_zhang',
+      codePath: `/${authorCode}/${authorCode}.cluster_uidesign/author_ui_zhang`,
+      viaParentCode: `${authorCode}.cluster_uidesign`
+    }
+    const member2: DimensionTag = {
+      dimensionId: 4,
+      dimensionCode: authorCode,
+      dimensionName: '作者',
+      tagValue: 'UI李四',
+      fileCount: 3,
+      level: 2,
+      code: 'author_ui_li',
+      codePath: `/${authorCode}/${authorCode}.cluster_uidesign/author_ui_li`,
+      viaParentCode: `${authorCode}.cluster_uidesign`
+    }
+    const group: DimensionGroup = {
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [clusterParent, member1, member2]
+    }
+
+    // 1. 在 depth = 5 时构建可见树
+    const visibleScale5 = buildDimensionTree([group], null, null, 0, 5)
+    // 选中 UI小张
+    const keyAtScale5 = makeTagKey(
+      4,
+      'UI小张',
+      undefined,
+      `${authorCode}.cluster_uidesign`,
+      false,
+      `/${authorCode}/${authorCode}.cluster_uidesign/author_ui_zhang`
+    )
+    const prevSelected = new Set([keyAtScale5])
+    const prevStack = [keyAtScale5]
+
+    // 2. 模拟用户将滑块滑动至 depth = 2
+    const visibleScale2 = buildDimensionTree([group], null, null, 0, 2)
+    const migResultTo2 = migrateTagKeysAcrossScale({
+      prevSelected,
+      prevStack,
+      prevParentMap: new Map([[keyAtScale5, ['作者', 'UI设计', 'UI小张']]]),
+      currentVisibleGroups: visibleScale2,
+      masterDimensionGroups: [group]
+    })
+
+    expect(migResultTo2.migratedSelected.size).toBe(1)
+    const keyAtScale2 = Array.from(migResultTo2.migratedSelected)[0]
+    expect(keyAtScale2).toContain('liftCode:')
+    expect(keyAtScale2).toContain('UI小张')
+
+    // 3. 模拟用户将滑块再次滑回 depth = 5
+    const migResultBackTo5 = migrateTagKeysAcrossScale({
+      prevSelected: migResultTo2.migratedSelected,
+      prevStack: migResultTo2.migratedStack,
+      prevParentMap: migResultTo2.migratedParentMap,
+      currentVisibleGroups: visibleScale5,
+      masterDimensionGroups: [group]
+    })
+
+    expect(migResultBackTo5.migratedSelected.size).toBe(1)
+    expect(migResultBackTo5.migratedSelected.has(keyAtScale5)).toBe(true)
+  })
+
+  it('规则 26：Omni 快速通道 _omniChildrenMap 自愈：当 context._omniChildrenMap 初始为 null 时，clusterSinglePanDimensionGroup 自动初始化 Map 并注册聚类穿透边', async () => {
+    context._omniChildrenMap = null
+
+    const group: DimensionGroup = {
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '前端张三',
+          fileCount: 2,
+          level: 1,
+          code: 'author_fe_zhang',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '前端李四',
+          fileCount: 3,
+          level: 1,
+          code: 'author_fe_li',
+          viaParentCode: authorCode
+        }
+      ]
+    }
+
+    await context.clusterSinglePanDimensionGroup(group)
+
+    // _omniChildrenMap 被自动初始化且非空
+    expect(context._omniChildrenMap).not.toBeNull()
+    const clusterParent = group.tags.find(t => t.meta?.isClusterNode === true)
+    expect(clusterParent).toBeDefined()
+    expect(context._omniChildrenMap.has(clusterParent!.code!)).toBe(true)
+    const childrenSet = context._omniChildrenMap.get(clusterParent!.code!)!
+    expect(childrenSet.has('author_fe_zhang')).toBe(true)
+    expect(childrenSet.has('author_fe_li')).toBe(true)
+  })
+
+  it('规则 27：渐进式质量自愈：当首次离线落入 fallbackClusterTags 缓存后，Omni 服务就绪后重新查询能够突破降级缓存升级为 Omni HAC 聚类', async () => {
+    // 第一次：Omni 未就绪，落入本地词根降级缓存
+    vi.mocked(omniService.isReady).mockReturnValue(false)
+
+    const makeGroup = (): DimensionGroup => ({
+      id: 4,
+      name: '作者',
+      code: authorCode,
+      level: 0,
+      tags: [
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '移动开发甲',
+          fileCount: 2,
+          level: 1,
+          code: 'author_mobile_a',
+          viaParentCode: authorCode
+        },
+        {
+          dimensionId: 4,
+          dimensionCode: authorCode,
+          dimensionName: '作者',
+          tagValue: '移动开发乙',
+          fileCount: 3,
+          level: 1,
+          code: 'author_mobile_b',
+          viaParentCode: authorCode
+        }
+      ]
+    })
+
+    const group1 = makeGroup()
+    await context.clusterPanDimensionTags([group1])
+    expect(omniService.clusterDocuments).not.toHaveBeenCalled()
+    // 首次使用了本地词根分类
+    const cluster1 = group1.tags.find(t => t.meta?.isClusterNode === true)
+    expect(cluster1).toBeDefined()
+
+    // 第二次：Omni 引擎启动就绪 (isReady = true)
+    vi.mocked(omniService.isReady).mockReturnValue(true)
+    vi.mocked(omniService.clusterDocuments).mockResolvedValueOnce({
+      success: true,
+      result: {
+        clusters: [
+          {
+            clusterId: 101,
+            fingerprints: ['author_mobile_a', 'author_mobile_b'],
+            folderName: 'Omni智能移动专家'
+          }
+        ]
+      }
+    } as any)
+
+    const group2 = makeGroup()
+    await context.clusterPanDimensionTags([group2])
+    // 成功突破本地 fallback 缓存，触发 Omni HAC 升级
+    expect(omniService.clusterDocuments).toHaveBeenCalledTimes(1)
+    const cluster2 = group2.tags.find(t => t.meta?.isClusterNode === true)
+    expect(cluster2?.tagValue).toBe('Omni智能移动专家')
   })
 })

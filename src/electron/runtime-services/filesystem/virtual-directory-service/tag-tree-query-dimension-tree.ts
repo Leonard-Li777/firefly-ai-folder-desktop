@@ -71,6 +71,13 @@ export interface TagTreeQueryDimensionTree {
     opts?: GetDimensionGroupsOptions
   ): Promise<void>
 
+  clusterSinglePanDimensionGroup(
+    g: DimensionGroup,
+    pathCountMap?: Record<string, number>,
+    tagFilesMap?: Map<string, Set<string>>,
+    opts?: GetDimensionGroupsOptions
+  ): Promise<void>
+
   resolveAuthorityDimensions(): {
     byCode: Map<
       string,
@@ -207,6 +214,19 @@ function isRootDimensionCodeOrName(g: DimensionGroup, viaParentCode?: string | n
 
   return false
 }
+
+/**
+ * 泛维度标签聚类内存缓存（以维度根代码与平铺标签指纹为键，避免高频 IPC/切换重渲染重复聚类）
+ */
+const panDimensionClusterCache = new Map<
+  string,
+  {
+    clusters: Array<{ folderName: string; fingerprints: string[] }>
+    timestamp: number
+    isFromOmni?: boolean
+  }
+>()
+const PAN_CLUSTER_CACHE_TTL_MS = 60_000
 
 /**
  * 确定性本地标签词根/频次聚类兜底算法
@@ -2606,17 +2626,21 @@ export const tagTreeQueryDimensionTreeMixin = {
   /**
    * 泛维度轴标签智能聚类层级化（作者、地理位置、内容标签等泛维度）
    *
-   * 契约规范：
+   * 契约规范与性能韧性治理：
    * 1. 泛维度判定：作者 (id=4, concept('作者') 即 hownet.000000043396.n)、
    *    地理位置 (id=16, concept('地理位置') 即 builtin.geographical_location / hownet.000000010078.n)、
    *    内容标签 (id=28, builtin.content_tags) 或 metadata.flag.isPanDimension: true；
    * 2. 标签树是通过 code_path 建立的，源头来自于 parentCodes：
-   *    已经依靠 code_path / parentCodes 层级化的标签（作为子标签存在父级、作为父标签拥有子标签、或 level > 1）
-   *    优先保持原有层级 100% 不变展示；
-   * 3. 其余无法层级化的平铺标签参与聚类（复用 Omni 端侧 HAC 聚类引擎，带确定性词根/词频兜底）；
-   * 4. 聚类簇构建为层级节点（clusterCode: `${rootGroupCode}.cluster_xxx`，level: 1，viaParentCode: group.code），
+   *    已经依靠 code_path / parentCodes 层级化的标签优先保持原有层级 100% 不变展示；
+   * 3. 其余无法层级化的平铺标签参与聚类；
+   * 4. 性能与韧性铁律：
+   *    - 严禁冷启动阻塞：仅当 Omni 处于运行就绪态 (isReady: true) 时才尝试端侧 HAC，未就绪时立即走毫秒级本地词根聚类，杜绝触发 ensureRunning 导致的 40~80s 冷启动挂起引发前端 8s 超时（根治「分类维度树下显示：暂无数据」）；
+   *    - 严格 600ms 硬超时保护 + skipEnsureRunning 杜绝引擎重启；
+   *    - 内存指纹缓存：同组标签指纹未变时直接命中 O(1) 缓存直出 (0ms)；
+   *    - 并发水合：多泛维度组通过 Promise.all 并发处理，消除串行累加延迟；
+   * 5. 聚类簇构建为层级节点（clusterCode: `${rootGroupCode}.cluster_xxx`，level: 1，viaParentCode: group.code），
    *    簇内标签降为 level: 2 并绑定 viaParentCode: clusterCode；
-   * 5. 同步维护 pathCountMap 与 _omniChildrenMap，确保前端树形展开与文件穿透筛选正常工作。
+   * 6. 同步维护 pathCountMap 与 _omniChildrenMap，确保前端树形展开与文件穿透筛选正常工作。
    */
   async clusterPanDimensionTags(
     groups: DimensionGroup[],
@@ -2624,284 +2648,371 @@ export const tagTreeQueryDimensionTreeMixin = {
     tagFilesMap?: Map<string, Set<string>>,
     opts?: GetDimensionGroupsOptions
   ): Promise<void> {
-    for (const g of groups) {
-      if (!isPanDimensionGroup(g)) continue
-      const tags = g.tags || []
-      if (tags.length < 2) continue
+    const panGroups = groups.filter(g => isPanDimensionGroup(g) && (g.tags || []).length >= 2)
+    if (panGroups.length === 0) return
 
-      // 1. 识别并分离「已通过 code_path / parentCodes 层级化」的标签
-      // 契约：标签树是通过 code_path 建立的，源头来自于 parentCodes
-      const parentCodesInGroup = new Set<string>()
-      const parentCodesByCodePath = new Set<string>()
-
-      for (const t of tags) {
-        if (t.viaParentCode && !isRootDimensionCodeOrName(g, t.viaParentCode)) {
-          parentCodesInGroup.add(t.viaParentCode)
-        }
-        if (Array.isArray(t.parentCodes)) {
-          for (const pc of t.parentCodes) {
-            if (pc && !isRootDimensionCodeOrName(g, pc)) {
-              parentCodesInGroup.add(pc)
-            }
-          }
-        }
-
-        const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
-        if (segs.length > 2) {
-          for (let i = 1; i < segs.length - 1; i++) {
-            parentCodesByCodePath.add(segs[i])
-          }
-        }
-        if (t.codePaths && t.codePaths.length > 0) {
-          for (const cp of t.codePaths) {
-            const cpSegs = cp ? cp.split('/').filter(Boolean) : []
-            if (cpSegs.length > 2) {
-              for (let i = 1; i < cpSegs.length - 1; i++) {
-                parentCodesByCodePath.add(cpSegs[i])
-              }
-            }
-          }
-        }
-      }
-
-      const hierarchizedTags: DimensionTag[] = []
-      const unhierarchizedTags: DimensionTag[] = []
-
-      for (const t of tags) {
-        const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
-        const hasParentByVia = Boolean(
-          t.viaParentCode && !isRootDimensionCodeOrName(g, t.viaParentCode)
-        )
-        const hasParentByParentCodes = Boolean(
-          Array.isArray(t.parentCodes) &&
-          t.parentCodes.some(pc => pc && !isRootDimensionCodeOrName(g, pc))
-        )
-        const isDirectUnderRoot = !hasParentByVia && !hasParentByParentCodes && segs.length <= 2
-
-        const isParentToOthers =
-          Boolean(
-            t.code && (parentCodesInGroup.has(t.code) || parentCodesByCodePath.has(t.code))
-          ) || Boolean(t.tagValue && parentCodesInGroup.has(t.tagValue))
-
-        const isDeep = (t.level ?? 1) > 1 || segs.length > 2
-
-        if (!isDirectUnderRoot || isParentToOthers || isDeep) {
-          hierarchizedTags.push(t)
-        } else {
-          unhierarchizedTags.push(t)
-        }
-      }
-
-      // 若未层级化的平铺标签不足 2 个，无法聚类，保持原状
-      if (unhierarchizedTags.length < 2) continue
-
-      // 2. 构造聚类文档并执行聚类（优先 Omni HAC，降级走确定性词根聚类）
-      const tagByFingerprint = new Map<string, DimensionTag>()
-      const clusterDocs: OmniClusterDocument[] = unhierarchizedTags.map((tag, idx) => {
-        const fp = tag.code || `${g.code || g.id}__${tag.tagValue || idx}`
-        tagByFingerprint.set(fp, tag)
-        return {
-          fingerprint: fp,
-          embedding: [],
-          keywords: [tag.tagValue],
-          embeddingText: tag.tagValue,
-          canonicalText: tag.tagValue,
-          preferEmbeddingText: true
+    await Promise.all(
+      panGroups.map(async g => {
+        try {
+          await this.clusterSinglePanDimensionGroup(g, pathCountMap, tagFilesMap, opts)
+        } catch (err) {
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            `[TagTreeQuery] 泛维度轴 ${g.name || g.code || g.id} 聚类异常，保持原样展示:`,
+            err
+          )
         }
       })
+    )
+  },
 
-      let clusters: Array<{ folderName: string; tags: DimensionTag[] }> = []
+  async clusterSinglePanDimensionGroup(
+    g: DimensionGroup,
+    pathCountMap?: Record<string, number>,
+    tagFilesMap?: Map<string, Set<string>>,
+    opts?: GetDimensionGroupsOptions
+  ): Promise<void> {
+    const tags = g.tags || []
+    if (tags.length < 2) return
 
-      // A 路：Omni 端侧 HAC 聚类引擎
-      if (typeof omniService?.clusterDocuments === 'function') {
-        try {
-          const res = await omniService.clusterDocuments({
+    // 1. 识别并分离「已通过 code_path / parentCodes 层级化」的标签
+    // 契约：标签树是通过 code_path 建立的，源头来自于 parentCodes
+    const parentCodesInGroup = new Set<string>()
+    const parentCodesByCodePath = new Set<string>()
+
+    for (const t of tags) {
+      if (t.viaParentCode && !isRootDimensionCodeOrName(g, t.viaParentCode)) {
+        parentCodesInGroup.add(t.viaParentCode)
+      }
+      if (Array.isArray(t.parentCodes)) {
+        for (const pc of t.parentCodes) {
+          if (pc && !isRootDimensionCodeOrName(g, pc)) {
+            parentCodesInGroup.add(pc)
+          }
+        }
+      }
+
+      const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+      if (segs.length > 2) {
+        for (let i = 1; i < segs.length - 1; i++) {
+          parentCodesByCodePath.add(segs[i])
+        }
+      }
+      if (t.codePaths && t.codePaths.length > 0) {
+        for (const cp of t.codePaths) {
+          const cpSegs = cp ? cp.split('/').filter(Boolean) : []
+          if (cpSegs.length > 2) {
+            for (let i = 1; i < cpSegs.length - 1; i++) {
+              parentCodesByCodePath.add(cpSegs[i])
+            }
+          }
+        }
+      }
+    }
+
+    const hierarchizedTags: DimensionTag[] = []
+    const unhierarchizedTags: DimensionTag[] = []
+
+    for (const t of tags) {
+      const segs = t.codePath ? t.codePath.split('/').filter(Boolean) : []
+      const hasParentByVia = Boolean(
+        t.viaParentCode && !isRootDimensionCodeOrName(g, t.viaParentCode)
+      )
+      const hasParentByParentCodes = Boolean(
+        Array.isArray(t.parentCodes) &&
+        t.parentCodes.some(pc => pc && !isRootDimensionCodeOrName(g, pc))
+      )
+      const isDirectUnderRoot = !hasParentByVia && !hasParentByParentCodes && segs.length <= 2
+
+      const isParentToOthers =
+        Boolean(t.code && (parentCodesInGroup.has(t.code) || parentCodesByCodePath.has(t.code))) ||
+        Boolean(t.tagValue && parentCodesInGroup.has(t.tagValue))
+
+      const isDeep = (t.level ?? 1) > 1 || segs.length > 2
+
+      if (!isDirectUnderRoot || isParentToOthers || isDeep) {
+        hierarchizedTags.push(t)
+      } else {
+        unhierarchizedTags.push(t)
+      }
+    }
+
+    // 若未层级化的平铺标签不足 2 个，无法聚类，保持原状
+    if (unhierarchizedTags.length < 2) return
+
+    // 2. 构造聚类文档并执行聚类（优先复用指纹缓存 -> 运行就绪的 Omni HAC -> 确定性本地词根聚类兜底）
+    const tagByFingerprint = new Map<string, DimensionTag>()
+    const clusterDocs: OmniClusterDocument[] = unhierarchizedTags.map((tag, idx) => {
+      const fp = tag.code || `${g.code || g.id}__${tag.tagValue || idx}`
+      tagByFingerprint.set(fp, tag)
+      return {
+        fingerprint: fp,
+        embedding: [],
+        keywords: [tag.tagValue],
+        embeddingText: tag.tagValue,
+        canonicalText: tag.tagValue,
+        preferEmbeddingText: true
+      }
+    })
+
+    let clusters: Array<{ folderName: string; tags: DimensionTag[] }> = []
+    let isOmniClustered = false
+    const isOmniReady = typeof omniService?.isReady === 'function' && omniService.isReady()
+
+    // 0 路：内存指纹缓存（同组标签指纹未变化时直接命中，0ms 无额外计算；若缓存来自本地兜底且 Omni 已就绪，则主动突破缓存升级聚类质量）
+    const cacheKey = `${getGroupRootCode(g)}::${unhierarchizedTags.length}::${unhierarchizedTags
+      .map(t => `${t.code || t.tagValue}:${t.fileCount || 0}`)
+      .sort()
+      .join(';')}`
+    const cached = panDimensionClusterCache.get(cacheKey)
+    const shouldUpgradeFromFallback = Boolean(cached && !cached.isFromOmni && isOmniReady)
+
+    if (
+      cached &&
+      !shouldUpgradeFromFallback &&
+      Date.now() - cached.timestamp < PAN_CLUSTER_CACHE_TTL_MS
+    ) {
+      const validCachedClusters: Array<{ folderName: string; tags: DimensionTag[] }> = []
+      for (const cc of cached.clusters) {
+        const matchedTags: DimensionTag[] = []
+        for (const fp of cc.fingerprints) {
+          const member = tagByFingerprint.get(fp)
+          if (member && !matchedTags.includes(member)) {
+            matchedTags.push(member)
+          }
+        }
+        if (matchedTags.length >= 2) {
+          validCachedClusters.push({
+            folderName: cc.folderName,
+            tags: matchedTags
+          })
+        }
+      }
+      if (validCachedClusters.length > 0) {
+        clusters = validCachedClusters
+        isOmniClustered = Boolean(cached.isFromOmni)
+      }
+    }
+
+    // A 路：Omni 端侧 HAC 聚类引擎（仅当 Omni 已处于运行就绪态时尝试，严禁冷启动阻塞 UI 维度树加载；设 600ms 硬超时）
+    if (
+      clusters.length === 0 &&
+      isOmniReady &&
+      typeof omniService?.clusterDocuments === 'function'
+    ) {
+      try {
+        const res = await omniService.clusterDocuments(
+          {
             documents: clusterDocs,
             distanceThreshold: 0.45,
             maxLeafSize: 30,
             maxDepth: 2,
             maxRootDirectories: 10,
             clusteringMode: 'balanced'
-          })
-          if (res && res.success && res.result?.clusters && res.result.clusters.length > 0) {
-            for (const c of res.result.clusters) {
-              const matchedMemberTags: DimensionTag[] = []
-              for (const fp of c.fingerprints || []) {
-                const member = tagByFingerprint.get(fp)
-                if (member && !matchedMemberTags.includes(member)) {
-                  matchedMemberTags.push(member)
-                }
-              }
-              if (matchedMemberTags.length >= 2) {
-                clusters.push({
-                  folderName: c.folderName || c.path?.[0] || '推荐分类',
-                  tags: matchedMemberTags
-                })
+          },
+          600,
+          true // skipEnsureRunning: 严禁触发冷启动阻塞或重启守护进程
+        )
+        if (res && res.success && res.result?.clusters && res.result.clusters.length > 0) {
+          for (const c of res.result.clusters) {
+            const matchedMemberTags: DimensionTag[] = []
+            for (const fp of c.fingerprints || []) {
+              const member = tagByFingerprint.get(fp)
+              if (member && !matchedMemberTags.includes(member)) {
+                matchedMemberTags.push(member)
               }
             }
-          }
-        } catch (err) {
-          logger.debug(
-            LogCategory.VIRTUAL_DIRECTORY,
-            `[TagTreeQuery] omniService.clusterDocuments 异常，将使用确定性本地聚类:`,
-            err
-          )
-        }
-      }
-
-      // B 路：确定性本地词根/频次聚类兜底
-      if (clusters.length === 0) {
-        clusters = fallbackClusterTags(unhierarchizedTags, g.name || g.code || '')
-      }
-
-      // 若聚类未产出有效簇（簇内成员 >= 2），保持平铺
-      if (clusters.length === 0) continue
-
-      // 3. 构建聚类父节点并重塑标签层级
-      const assignedMemberTags = new Set<DimensionTag>()
-      const clusterParentTags: DimensionTag[] = []
-      const clusteredMemberTags: DimensionTag[] = []
-      const seenClusterNames = new Set<string>()
-
-      for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
-        const cluster = clusters[cIdx]
-        const memberTags = cluster.tags.filter(t => !assignedMemberTags.has(t))
-        if (memberTags.length < 2) continue
-
-        for (const m of memberTags) assignedMemberTags.add(m)
-
-        let clusterName = cluster.folderName?.trim() || `分类 ${cIdx + 1}`
-        if (clusterName === g.name?.trim()) {
-          clusterName = `${clusterName}分类`
-        }
-        if (tags.some(t => t.tagValue === clusterName)) {
-          clusterName = `${clusterName}分类`
-        }
-        if (seenClusterNames.has(clusterName)) {
-          clusterName = `${clusterName} (${cIdx + 1})`
-        }
-        seenClusterNames.add(clusterName)
-
-        const rootGroupCode = getGroupRootCode(g)
-        const clusterCode = `${rootGroupCode}.cluster_${DeterministicCodeGenerator.generate(clusterName, 'zh-CN')}`
-        const clusterCodePath = `/${rootGroupCode}/${clusterCode}`
-        const clusterNamePath = `/${g.name}/${clusterName}`
-
-        let clusterFileCount = 0
-        if (tagFilesMap && tagFilesMap.size > 0) {
-          const fileSet = new Set<string>()
-          for (const m of memberTags) {
-            if (m.code && tagFilesMap.has(m.code)) {
-              for (const fp of tagFilesMap.get(m.code)!) {
-                fileSet.add(fp)
-              }
+            if (matchedMemberTags.length >= 2) {
+              clusters.push({
+                folderName: c.folderName || c.path?.[0] || '推荐分类',
+                tags: matchedMemberTags
+              })
             }
           }
-          clusterFileCount =
-            fileSet.size > 0
-              ? fileSet.size
-              : memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
-        } else {
-          clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+          if (clusters.length > 0) {
+            isOmniClustered = true
+          }
         }
+      } catch (err) {
+        logger.debug(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[TagTreeQuery] omniService.clusterDocuments 异常或超时，将使用确定性本地聚类:`,
+          err
+        )
+      }
+    }
 
-        const memberCodePaths: string[] = []
+    // B 路：确定性本地词根/频次聚类兜底（毫秒级无外部依赖，冷启动与超时平滑托底）
+    if (clusters.length === 0) {
+      clusters = fallbackClusterTags(unhierarchizedTags, g.name || g.code || '')
+      isOmniClustered = false
+    }
+
+    // 写入聚类缓存
+    if (clusters.length > 0) {
+      if (panDimensionClusterCache.size > 200) {
+        panDimensionClusterCache.clear()
+      }
+      panDimensionClusterCache.set(cacheKey, {
+        clusters: clusters.map(c => ({
+          folderName: c.folderName,
+          fingerprints: c.tags
+            .map(t => t.code || `${g.code || g.id}__${t.tagValue}`)
+            .filter(Boolean)
+        })),
+        timestamp: Date.now(),
+        isFromOmni: isOmniClustered
+      })
+    }
+
+    // 若聚类未产出有效簇（簇内成员 >= 2），保持平铺
+    if (clusters.length === 0) return
+
+    // 3. 构建聚类父节点并重塑标签层级
+    const assignedMemberTags = new Set<DimensionTag>()
+    const clusterParentTags: DimensionTag[] = []
+    const clusteredMemberTags: DimensionTag[] = []
+    const seenClusterNames = new Set<string>()
+
+    for (let cIdx = 0; cIdx < clusters.length; cIdx++) {
+      const cluster = clusters[cIdx]
+      const memberTags = cluster.tags.filter(t => !assignedMemberTags.has(t))
+      if (memberTags.length < 2) continue
+
+      for (const m of memberTags) assignedMemberTags.add(m)
+
+      let clusterName = cluster.folderName?.trim() || `分类 ${cIdx + 1}`
+      if (clusterName === g.name?.trim()) {
+        clusterName = `${clusterName}分类`
+      }
+      if (tags.some(t => t.tagValue === clusterName)) {
+        clusterName = `${clusterName}分类`
+      }
+      if (seenClusterNames.has(clusterName)) {
+        clusterName = `${clusterName} (${cIdx + 1})`
+      }
+      seenClusterNames.add(clusterName)
+
+      const rootGroupCode = getGroupRootCode(g)
+      const clusterCode = `${rootGroupCode}.cluster_${DeterministicCodeGenerator.generate(clusterName, 'zh-CN')}`
+      const clusterCodePath = `/${rootGroupCode}/${clusterCode}`
+      const clusterNamePath = `/${g.name}/${clusterName}`
+
+      let clusterFileCount = 0
+      if (tagFilesMap && tagFilesMap.size > 0) {
+        const fileSet = new Set<string>()
         for (const m of memberTags) {
-          if (m.codePaths && m.codePaths.length > 0) {
-            memberCodePaths.push(...m.codePaths.filter(p => p && !p.includes('.cluster_')))
-          } else if (m.codePath && !m.codePath.includes('.cluster_')) {
-            memberCodePaths.push(m.codePath)
+          if (m.code && tagFilesMap.has(m.code)) {
+            for (const fp of tagFilesMap.get(m.code)!) {
+              fileSet.add(fp)
+            }
           }
         }
-        const validMemberCodePaths = Array.from(new Set(memberCodePaths))
+        clusterFileCount =
+          fileSet.size > 0
+            ? fileSet.size
+            : memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+      } else {
+        clusterFileCount = memberTags.reduce((sum, m) => sum + (m.fileCount || 0), 0)
+      }
 
-        const clusterParentTag: DimensionTag = {
-          dimensionId: g.id,
-          dimensionCode: rootGroupCode,
-          dimensionName: g.name,
-          tagValue: clusterName,
-          fileCount: clusterFileCount,
-          level: 1,
-          code: clusterCode,
-          codePath: clusterCodePath,
-          codePaths: validMemberCodePaths.length > 0 ? validMemberCodePaths : undefined,
-          namePath: clusterNamePath,
-          viaParentCode: rootGroupCode,
-          parentCodes: [rootGroupCode],
-          isMultiSelect: g.isMultiSelect ?? false,
+      const memberCodePaths: string[] = []
+      for (const m of memberTags) {
+        if (m.codePaths && m.codePaths.length > 0) {
+          memberCodePaths.push(...m.codePaths.filter(p => p && !p.includes('.cluster_')))
+        } else if (m.codePath && !m.codePath.includes('.cluster_')) {
+          memberCodePaths.push(m.codePath)
+        }
+      }
+      const validMemberCodePaths = Array.from(new Set(memberCodePaths))
+
+      const clusterParentTag: DimensionTag = {
+        dimensionId: g.id,
+        dimensionCode: rootGroupCode,
+        dimensionName: g.name,
+        tagValue: clusterName,
+        fileCount: clusterFileCount,
+        level: 1,
+        code: clusterCode,
+        codePath: clusterCodePath,
+        codePaths: validMemberCodePaths.length > 0 ? validMemberCodePaths : undefined,
+        namePath: clusterNamePath,
+        viaParentCode: rootGroupCode,
+        parentCodes: [rootGroupCode],
+        isMultiSelect: g.isMultiSelect ?? false,
+        order: 9999,
+        meta: {
+          isClusterNode: true,
+          clusterMemberCount: memberTags.length,
+          fromControlledTree: true,
           order: 9999,
-          meta: {
-            isClusterNode: true,
-            clusterMemberCount: memberTags.length,
-            fromControlledTree: true,
-            order: 9999,
-            sort_order: 9999
-          }
+          sort_order: 9999
         }
-        clusterParentTags.push(clusterParentTag)
+      }
+      clusterParentTags.push(clusterParentTag)
 
-        if (pathCountMap) {
-          const normClusterPath = normalizeCodePath(clusterCodePath)
-          if (normClusterPath) {
-            pathCountMap[normClusterPath] = clusterFileCount
-          }
-        }
-
-        for (const m of memberTags) {
-          const originalCodePath = m.codePath
-          m.viaParentCode = clusterCode
-          m.parentCodes = [clusterCode]
-          m.level = 2
-          const memberCodeSeg = m.code || m.tagValue
-          const memberClusterCodePath = `${clusterCodePath}/${memberCodeSeg}`
-          const memberClusterNamePath = `${clusterNamePath}/${m.tagValue}`
-
-          // 保留原有物化路径在 codePaths 中供底层 SQL 检索过滤，主 codePath 更新为当前树形分支路径
-          if (!m.codePaths || m.codePaths.length === 0) {
-            m.codePaths =
-              originalCodePath && !originalCodePath.includes('.cluster_') ? [originalCodePath] : []
-          } else {
-            m.codePaths = m.codePaths.filter(p => p && !p.includes('.cluster_'))
-          }
-          m.codePath = memberClusterCodePath
-          m.namePath = memberClusterNamePath
-          if (pathCountMap) {
-            pathCountMap[normalizeCodePath(memberClusterCodePath)] = m.fileCount || 0
-            if (originalCodePath) {
-              const normOrig = normalizeCodePath(originalCodePath)
-              if (normOrig && pathCountMap[normOrig] === undefined) {
-                pathCountMap[normOrig] = m.fileCount || 0
-              }
-            }
-          }
-          clusteredMemberTags.push(m)
+      if (pathCountMap) {
+        const normClusterPath = normalizeCodePath(clusterCodePath)
+        if (normClusterPath) {
+          pathCountMap[normClusterPath] = clusterFileCount
         }
       }
 
-      // 未被聚类的独立标签仍平铺在第一层
-      const unassignedFlatTags = unhierarchizedTags.filter(t => !assignedMemberTags.has(t))
+      for (const m of memberTags) {
+        const originalCodePath = m.codePath
+        m.viaParentCode = clusterCode
+        m.parentCodes = [clusterCode]
+        m.level = 2
+        const memberCodeSeg = m.code || m.tagValue
+        const memberClusterCodePath = `${clusterCodePath}/${memberCodeSeg}`
+        const memberClusterNamePath = `${clusterNamePath}/${m.tagValue}`
 
-      // 更新维度组标签列表：已经依靠 code_path / parentCodes 层级化的标签优先展示
-      g.tags = [
-        ...hierarchizedTags,
-        ...clusterParentTags,
-        ...clusteredMemberTags,
-        ...unassignedFlatTags
-      ]
-
-      // 4. 同步更新 _omniChildrenMap 邻接边
-      if ((this as any)._omniChildrenMap) {
-        for (const clusterParent of clusterParentTags) {
-          const clusterCode = clusterParent.code!
-          if (!(this as any)._omniChildrenMap.has(clusterCode)) {
-            ;(this as any)._omniChildrenMap.set(clusterCode, new Set())
-          }
-          const members = clusteredMemberTags.filter(m => m.viaParentCode === clusterCode)
-          for (const m of members) {
-            if (m.code) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.code)
-            if (m.tagValue) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.tagValue)
+        // 保留原有物化路径在 codePaths 中供底层 SQL 检索过滤，主 codePath 更新为当前树形分支路径
+        if (!m.codePaths || m.codePaths.length === 0) {
+          m.codePaths =
+            originalCodePath && !originalCodePath.includes('.cluster_') ? [originalCodePath] : []
+        } else {
+          m.codePaths = m.codePaths.filter(p => p && !p.includes('.cluster_'))
+        }
+        m.codePath = memberClusterCodePath
+        m.namePath = memberClusterNamePath
+        if (pathCountMap) {
+          pathCountMap[normalizeCodePath(memberClusterCodePath)] = m.fileCount || 0
+          if (originalCodePath) {
+            const normOrig = normalizeCodePath(originalCodePath)
+            if (normOrig && pathCountMap[normOrig] === undefined) {
+              pathCountMap[normOrig] = m.fileCount || 0
+            }
           }
         }
+        clusteredMemberTags.push(m)
+      }
+    }
+
+    // 未被聚类的独立标签仍平铺在第一层
+    const unassignedFlatTags = unhierarchizedTags.filter(t => !assignedMemberTags.has(t))
+
+    // 更新维度组标签列表：已经依靠 code_path / parentCodes 层级化的标签优先展示
+    g.tags = [
+      ...hierarchizedTags,
+      ...clusterParentTags,
+      ...clusteredMemberTags,
+      ...unassignedFlatTags
+    ]
+
+    // 4. 同步更新 _omniChildrenMap 邻接边（若未初始化则主动建立，确保 Omni 快速通道下穿透边不丢失）
+    if (!(this as any)._omniChildrenMap) {
+      ;(this as any)._omniChildrenMap = new Map<string, Set<string>>()
+    }
+    for (const clusterParent of clusterParentTags) {
+      const clusterCode = clusterParent.code!
+      if (!(this as any)._omniChildrenMap.has(clusterCode)) {
+        ;(this as any)._omniChildrenMap.set(clusterCode, new Set())
+      }
+      const members = clusteredMemberTags.filter(m => m.viaParentCode === clusterCode)
+      for (const m of members) {
+        if (m.code) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.code)
+        if (m.tagValue) (this as any)._omniChildrenMap.get(clusterCode)!.add(m.tagValue)
       }
     }
   }
