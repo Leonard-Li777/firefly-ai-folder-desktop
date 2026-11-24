@@ -74,6 +74,7 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
         ? t('低至 {price}/月，为生产力而生', { price: getProMonthlyPrice() })
         : t('为生产力而生'),
       features: [
+        t('长视频全量深度分析（支持 3 小时超长片，免费版限前 5 分钟）'),
         t('无限文件分析额度'),
         t('无限极速目录槽位'),
         t('无限私有目录槽位'),
