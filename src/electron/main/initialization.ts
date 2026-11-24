@@ -359,6 +359,11 @@ export async function initDatabaseAndDependentServices(
         logger.error(LogCategory.MAIN, '启动文件监听失败:', err)
       })
 
+      // [2026-11-24] 显式拉起云同步保底巡检：此前全仓没有任何 start() 调用点，
+      // 同步仅靠「分析完成事件 → triggerSync」驱动；分析一旦空闲，积压（含 24h 后才重试的失败批次）
+      // 就再无人捞取。启动即登记巡检并立即补一次，保证积压能被自动排干。
+      cloudSyncWorker.start()
+
       // 启动期电平自愈对账 (ALT-1 / Y-02 / Y-07)
       setImmediate(() => {
         void workspaceAdmissionService.reconcileAllWorkspacesOnStartup().catch(err => {

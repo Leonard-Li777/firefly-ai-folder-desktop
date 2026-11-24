@@ -113,30 +113,11 @@ export class CloudSyncWorker {
   }
 
   public start(): void {
-    if (this.checkInterval) return
-
-    // 保底检查：每 10 分钟检查一次是否有遗漏数据
-    const interval = 10 * 60 * 1000
-
-    logger.debug(LogCategory.SUPABASE, `CloudSyncWorker: Starting idle monitor (Interval: 10m)...`)
-
-    this.cycleValid = true
-    const runCycle = async () => {
-      if (!this.cycleValid) return
-      try {
-        await this.trySync()
-      } catch (error) {
-        logger.error(LogCategory.SUPABASE, 'CloudSyncWorker: Idle monitor sync failed', error)
-      } finally {
-        if (this.cycleValid) {
-          this.checkInterval = setTimeout(runCycle, interval)
-        }
-      }
-    }
-    this.checkInterval = setTimeout(runCycle, interval)
-
-    // 启动时立即尝试一次同步
-    void this.triggerSync(1000)
+    // 统一收敛到 updateInterval：历史上 start() 与 updateInterval() 各自维护一套定时器，
+    // 而 updateInterval 在「未启动」时 isRunning=false 会直接空转，导致保底巡检从来没真正生效；
+    // 若再叠加「全仓没有 start() 调用点」，同步就只剩分析完成事件的 triggerSync 一条路，
+    // 积压（尤其 sync_status=3 且超过 24h 才重试的失败批次）会长期无人捞（2026-11-24 排查结论）。
+    this.updateInterval(10 * 60 * 1000)
   }
 
   /**
@@ -162,22 +143,32 @@ export class CloudSyncWorker {
     this.stop()
     // 标记旧循环失效，防止 stop() 后旧 runCycle 继续调度新定时器
     this.cycleValid = false
-    if (isRunning) {
-      // 启动新循环，每次 updateInterval 产生独立的 cycleValid 标记
-      this.cycleValid = true
-      const runCycle = async () => {
+    // 启动新循环，每次 updateInterval 产生独立的 cycleValid 标记
+    this.cycleValid = true
+    const runCycle = async () => {
+      if (!this.cycleValid) return
+      try {
+        const hasData = await this.trySync()
         if (!this.cycleValid) return
-        try {
-          const hasData = await this.trySync()
-          if (!this.cycleValid) return
-          const nextInterval = hasData ? newInterval : Math.max(newInterval, 60 * 1000)
-          this.checkInterval = setTimeout(runCycle, nextInterval)
-        } catch (error) {
-          if (!this.cycleValid) return
-          this.checkInterval = setTimeout(runCycle, newInterval)
-        }
+        const nextInterval = hasData ? newInterval : Math.max(newInterval, 60 * 1000)
+        this.checkInterval = setTimeout(runCycle, nextInterval)
+      } catch (error) {
+        if (!this.cycleValid) return
+        this.checkInterval = setTimeout(runCycle, newInterval)
       }
-      this.checkInterval = setTimeout(runCycle, newInterval)
+    }
+    this.checkInterval = setTimeout(runCycle, newInterval)
+    logger.debug(
+      LogCategory.SUPABASE,
+      `CloudSyncWorker: 保底巡检已调度 (Interval: ${newInterval}ms)`,
+      {
+        firstStart: !isRunning
+      }
+    )
+
+    // 首次启用时立即补一次：否则积压要等满一个周期才被捞起
+    if (!isRunning) {
+      void this.triggerSync(1000)
     }
   }
 
