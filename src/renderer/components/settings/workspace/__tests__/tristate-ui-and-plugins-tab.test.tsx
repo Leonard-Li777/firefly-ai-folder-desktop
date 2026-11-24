@@ -730,6 +730,60 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
     expect(screen.getByText(/为避免长视频卡住其它文件/)).toBeTruthy()
     expect(screen.getByText('查看待补分析文件 →')).toBeTruthy()
   })
+
+  it('Bugfix: 每个视频分析时长上限拖动后，整片时长测算区域彩条平滑映射且图例动态更新', () => {
+    const workspaceInitial: any = {
+      id: 13,
+      name: 'DurationTest',
+      path: 'D:\\DurationTest',
+      workspace_config: JSON.stringify({
+        schemaVersion: 1,
+        status: 'ready',
+        policyVersion: 1,
+        baseAIConfig: {
+          analysisMode: 'full',
+          videoAnalyzeDurationSec: 300, // 初始 5 分钟 (1 个切片)
+          videoQuotaMax: 60,
+          videoCutSensitivity: 'medium',
+          videoSoftTokenBudget: 48,
+          videoAsrDurationSec: 60,
+          audioAnalysisDurationSec: 60
+        }
+      })
+    }
+
+    render(<BasicAIEngineTab workspace={workspaceInitial} />)
+
+    const fullLegend = screen.getByTestId('full-video-legend')
+    const benchmarkLegend = screen.getByTestId('benchmark-video-legend')
+    const slider = screen.getByTestId('video-analyze-duration-slider')
+
+    // 1. 初态 5 分钟：基准图例与整片图例均为 60 张，刻度包含 3 小时物理标尺
+    expect(screen.getByText('上限 5 分钟')).toBeInTheDocument()
+    expect(within(fullLegend).getByText(/60\s*张/)).toBeInTheDocument()
+    expect(within(benchmarkLegend).getByText(/60\s*张/)).toBeInTheDocument()
+    expect(screen.getByText('3 小时')).toBeInTheDocument()
+
+    // 2. 模拟真实拖动至 30 分钟 (1800s = 6 个切片)
+    fireEvent.change(slider, { target: { value: '1800' } })
+
+    // 验证整片口径即时动态更新：上限 30 分钟，总张数联动变为 360 张 (6 * 60)
+    expect(screen.getByText('上限 30 分钟')).toBeInTheDocument()
+    expect(within(fullLegend).getByText(/360\s*张/)).toBeInTheDocument()
+    expect(within(fullLegend).getByText(/台词识别/)).toBeInTheDocument()
+    expect(within(fullLegend).getByText(/基础开销/)).toBeInTheDocument()
+
+    // 5 分钟基准图例必须保持稳定基准 (60 张)，不受整片滑块干扰
+    expect(within(benchmarkLegend).getByText(/60\s*张/)).toBeInTheDocument()
+
+    // 3. 模拟拖动至极限 3 小时 (10800s = 36 个切片)
+    fireEvent.change(slider, { target: { value: '10800' } })
+
+    // 验证整片口径即时跃迁至极限：上限 180 分钟，总张数联动变为 2160 张 (36 * 60)
+    expect(screen.getByText('上限 180 分钟')).toBeInTheDocument()
+    expect(within(fullLegend).getByText(/2160\s*张/)).toBeInTheDocument()
+    expect(within(benchmarkLegend).getByText(/60\s*张/)).toBeInTheDocument()
+  })
 })
 
 describe('SLICE-08: 设置值四态表格（四态表格）', () => {

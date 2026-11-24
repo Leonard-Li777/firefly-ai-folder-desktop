@@ -268,25 +268,35 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
     const fillWidthPct = Math.min(100, Math.max(3, Math.round((est.perChunkSec / 300) * 100)))
 
     // 整片口径：严格按滑块当前即时值 localDurationSec 估算，拖动时即时响应
+    const safeDurationSec =
+      typeof localDurationSec === 'number' &&
+      Number.isFinite(localDurationSec) &&
+      localDurationSec > 0
+        ? localDurationSec
+        : 300
+    const safeQuotaMax =
+      typeof videoQuotaMax === 'number' && Number.isFinite(videoQuotaMax) && videoQuotaMax > 0
+        ? videoQuotaMax
+        : 60
+
     const fullEst = estimateVideoAnalysisDurationSec(
-      videoQuotaMax,
+      safeQuotaMax,
       localVideoSoftTokenBudget,
       videoAsrCap,
       hasGpuPower,
-      localDurationSec
+      safeDurationSec
     )
     const fullMins = (fullEst.totalSec / 60).toFixed(1)
-    const fullVideoMins = Math.round(localDurationSec / 60)
-    // 固定 3 小时绝对标尺：填充长度随估算耗时变化，避免用「耗时/整片时长」比值导致拖动时恒定
+    const fullVideoMins = Math.round(safeDurationSec / 60)
+    // 3 小时绝对视频时长基准 (10800 秒)
     const fullScaleSec = 10800
+    // 进度轨填充：整片分析窗口覆盖度随滑块时长动态平滑映射 (3% ~ 100%)，保证极速与平衡档均清晰可感知
     const fullFillPct = Math.min(
       100,
-      Math.max(3, Math.round((fullEst.totalSec / fullScaleSec) * 100))
+      Math.max(3, Math.round((safeDurationSec / fullScaleSec) * 100))
     )
-    const fullMarkPct = Math.min(
-      100,
-      Math.max(0, Math.round((localDurationSec / fullScaleSec) * 100))
-    )
+    const numChunks = Math.max(1, Math.ceil(safeDurationSec / 300))
+    const totalFrames = numChunks * safeQuotaMax
 
     return (
       <div className="p-4 rounded-xl bg-card border border-border shadow-xs space-y-3">
@@ -368,7 +378,10 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
           </div>
 
           {/* 细分耗时图例与百分比 */}
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2">
+          <div
+            data-testid="benchmark-video-legend"
+            className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2"
+          >
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-primary inline-block" />
@@ -462,7 +475,7 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
               />
             </div>
             <span
-              style={{ left: `${fullMarkPct}%` }}
+              style={{ left: `${fullFillPct}%` }}
               className={cn(
                 'absolute -top-0.5 h-3.5 w-0.5 bg-sky-500 rounded-full',
                 !isDragging && 'transition-all duration-300'
@@ -474,8 +487,39 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
             <span>0</span>
             <span>{t('1 小时')}</span>
             <span>{t('2 小时')}</span>
-            <span className="text-sky-500/80 font-medium">
-              {t('整片 {mins} 分钟参考线', { mins: fullVideoMins })}
+            <span>{t('3 小时')}</span>
+          </div>
+
+          {/* 整片口径细分耗时图例与百分比（动态联动） */}
+          <div
+            data-testid="full-video-legend"
+            className="flex items-center justify-between text-[11px] text-muted-foreground pt-0.5 flex-wrap gap-2"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-primary inline-block" />
+                <span>
+                  {t('画面 AI 理解')}:{' '}
+                  <strong className="text-foreground">~{fullEst.visualSec}s</strong> ({totalFrames}
+                  {t('张')})
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                <span>
+                  {t('台词识别')}: <strong className="text-foreground">~{fullEst.asrSec}s</strong> (
+                  {videoAsrCap}s{t('音轨')})
+                </span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground/40 inline-block" />
+                <span>
+                  {t('基础开销')}: <strong className="text-foreground">~{fullEst.fixedSec}s</strong>
+                </span>
+              </span>
+            </div>
+            <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold font-mono">
+              ⚡ {t('约 {speed}x 实时处理', { speed: fullEst.speedMultiplier })}
             </span>
           </div>
         </div>
@@ -490,6 +534,8 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
           </div>
           <input
             type="range"
+            data-testid="video-analyze-duration-slider"
+            aria-label={t('每个视频分析时长上限')}
             min={300}
             max={10800}
             step={300}
