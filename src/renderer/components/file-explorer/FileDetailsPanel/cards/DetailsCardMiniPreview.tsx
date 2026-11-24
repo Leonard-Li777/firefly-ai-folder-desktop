@@ -39,11 +39,6 @@ export const DetailsCardMiniPreview: React.FC<DetailsCardMiniPreviewProps> = ({
           <MaterialIcon icon="image" className="text-sm text-primary" />
           {t('迷你预览')}
         </span>
-        {isCompact && (
-          <span className="text-[10px] text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded">
-            {t('联动大预览')}
-          </span>
-        )}
       </div>
 
       <div className="w-full flex-1 flex flex-col items-center justify-center">

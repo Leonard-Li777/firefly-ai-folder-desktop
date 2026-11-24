@@ -3,7 +3,7 @@ import { logger, LogCategory } from '@firefly/shared'
 
 export type PagePreviewMode = 'split' | 'fullscreen' | 'closed'
 
-export type MediaFitMode = 'contain' | 'contain-natural' | 'fit-width'
+export type MediaFitMode = 'contain' | 'original' | 'fit-width'
 
 interface PagePreviewState {
   mode: PagePreviewMode
@@ -32,7 +32,7 @@ interface PreviewOverlayState {
   /** 全局视频音量大小 0.0~1.0（持久化于 localStorage，仅限视频，TTS/音乐不受影响） */
   videoVolume: number
   setVideoVolume: (volume: number) => void
-  /** 媒体预览缩放三态：contain-natural(原尺寸适配) | contain(等比全显) | fit-width(适应宽度) */
+  /** 媒体预览缩放三态：contain(等比全显) | original(原始尺寸) | fit-width(适应宽度) */
   mediaFitMode: MediaFitMode
   setMediaFitMode: (mode: MediaFitMode) => void
   cycleMediaFitMode: () => void
@@ -193,14 +193,14 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     saveVideoVolumeState(safe)
     set({ videoVolume: safe })
   },
-  mediaFitMode: 'contain-natural',
+  mediaFitMode: 'contain',
   setMediaFitMode: (mode: MediaFitMode) => set({ mediaFitMode: mode }),
   cycleMediaFitMode: () =>
     set(state => {
       const nextMap: Record<MediaFitMode, MediaFitMode> = {
-        'contain-natural': 'contain',
-        contain: 'fit-width',
-        'fit-width': 'contain-natural'
+        contain: 'original',
+        original: 'fit-width',
+        'fit-width': 'contain'
       }
       return { mediaFitMode: nextMap[state.mediaFitMode] }
     }),

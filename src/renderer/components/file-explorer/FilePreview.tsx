@@ -27,28 +27,53 @@ import {
   type MediaFitMode
 } from '../../stores/preview-overlay-store'
 
-function getMediaFitClass(
-  mode: MediaFitMode,
-  vh: '75vh' | '65vh' | '70vh',
-  isVideoElement = false
-): string {
-  if (mode === 'contain') {
-    const heightClass = vh === '75vh' ? 'h-[75vh]' : vh === '65vh' ? 'h-[65vh]' : 'h-[70vh]'
-    return cn(
-      'w-full object-contain rounded transition-all duration-150',
-      heightClass,
-      !isVideoElement && 'drop-shadow-md'
-    )
+interface MediaLayoutClasses {
+  outer: string
+  inner: string
+  body: string
+  streamWrapper: string
+  decodeFailedWrapper: string
+  mediaElement: string
+  multimodalBox: string
+}
+
+const MEDIA_LAYOUT_BY_MODE: Record<MediaFitMode, MediaLayoutClasses> = {
+  contain: {
+    outer:
+      'h-full w-full overflow-hidden p-3 flex flex-col items-center justify-center gap-3 preview-scrollbar min-w-0 min-h-0',
+    inner: 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3',
+    body: 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center overflow-hidden gap-2',
+    streamWrapper:
+      'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-2',
+    decodeFailedWrapper:
+      'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3 overflow-hidden',
+    mediaElement:
+      'min-h-0 max-w-full max-h-full w-auto h-auto object-contain shadow-lg rounded transition-all duration-150',
+    multimodalBox:
+      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[28%] overflow-y-auto'
+  },
+  original: {
+    outer: 'h-full w-full overflow-auto p-4 flex preview-scrollbar min-w-0 min-h-0',
+    inner: 'm-auto flex flex-col items-center gap-4 shrink-0',
+    body: 'flex flex-col items-center justify-center shrink-0 gap-2',
+    streamWrapper: 'flex flex-col items-center gap-2 shrink-0',
+    decodeFailedWrapper: 'flex flex-col items-center gap-3 shrink-0',
+    mediaElement: 'max-w-none max-h-none w-auto h-auto shadow-lg rounded shrink-0',
+    multimodalBox:
+      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto'
+  },
+  'fit-width': {
+    outer:
+      'h-full w-full overflow-y-auto overflow-x-hidden p-4 flex flex-col items-center preview-scrollbar min-w-0 min-h-0',
+    inner: 'my-auto flex flex-col items-center gap-4 max-w-full w-full min-w-0',
+    body: 'flex flex-col items-center justify-center max-w-full w-full gap-2 min-w-0',
+    streamWrapper: 'flex flex-col items-center gap-2 max-w-full w-full min-w-0',
+    decodeFailedWrapper: 'flex flex-col items-center gap-3 max-w-full w-full min-w-0',
+    mediaElement:
+      'w-full max-w-full h-auto object-contain shadow-lg rounded transition-all duration-150',
+    multimodalBox:
+      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto'
   }
-  if (mode === 'contain-natural') {
-    const maxHeightClass =
-      vh === '75vh' ? 'max-h-[75vh]' : vh === '65vh' ? 'max-h-[65vh]' : 'max-h-[70vh]'
-    return cn(
-      'max-w-full w-auto h-auto object-contain shadow-lg rounded transition-all duration-150',
-      maxHeightClass
-    )
-  }
-  return 'w-full max-w-full h-auto object-contain shadow-lg rounded transition-all duration-150'
 }
 
 interface StreamPlaybackSession {
@@ -826,31 +851,18 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   )
 
   switch (category) {
-    case FileCategory.IMAGE:
+    case FileCategory.IMAGE: {
+      const mediaLayout = MEDIA_LAYOUT_BY_MODE[mediaFitMode]
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar min-w-0">
-          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full min-w-0">
+        <div className={mediaLayout.outer}>
+          <div className={mediaLayout.inner}>
             {/* 预览内容的正文区 */}
-            <div
-              className={cn(
-                'flex items-center justify-center max-w-full w-full min-w-0',
-                isPrivate && 'ph-no-capture'
-              )}
-            >
-              <img
-                src={fileUrl}
-                alt={fileName}
-                className={getMediaFitClass(mediaFitMode, '75vh')}
-              />
+            <div className={cn(mediaLayout.body, isPrivate && 'ph-no-capture')}>
+              <img src={fileUrl} alt={fileName} className={mediaLayout.mediaElement} />
             </div>
             {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div
-                className={cn(
-                  'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto',
-                  isPrivate && 'ph-mask'
-                )}
-              >
+              <div className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}>
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
@@ -875,29 +887,26 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
           </div>
         </div>
       )
+    }
     case FileCategory.VIDEO: {
       const startSec = highlightRange?.[0] ?? (currentTime !== undefined ? currentTime : undefined)
       const endSec = highlightRange?.[1]
       const hasHighlight = startSec !== undefined && endSec !== undefined && endSec > startSec
+      const mediaLayout = MEDIA_LAYOUT_BY_MODE[mediaFitMode]
 
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar min-w-0">
-          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full min-w-0">
+        <div className={mediaLayout.outer}>
+          <div className={mediaLayout.inner}>
             {/* 预览内容的正文区 */}
-            <div
-              className={cn(
-                'flex flex-col items-center justify-center max-w-full w-full gap-2 min-w-0',
-                isPrivate && 'ph-no-capture'
-              )}
-            >
+            <div className={cn(mediaLayout.body, isPrivate && 'ph-no-capture')}>
               {videoDecodeFailed ? (
                 /* 浏览器无法解码（AVI/MKV 等）：显示 ffmpeg 静态抽帧 + 外部播放器跳轴引导 */
-                <div className="flex flex-col items-center gap-3 max-w-full w-full min-w-0">
+                <div className={mediaLayout.decodeFailedWrapper}>
                   {staticFrameUrl && !staticFrameBroken ? (
                     <img
                       src={staticFrameUrl}
                       alt={fileName}
-                      className={getMediaFitClass(mediaFitMode, '65vh')}
+                      className={mediaLayout.mediaElement}
                       onError={() => {
                         // WebP 头合法不代表整帧完整；渲染失败时回退占位图标且不立即重试同一坏帧
                         logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
@@ -905,11 +914,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       }}
                     />
                   ) : (
-                    <div className="w-72 h-40 flex items-center justify-center bg-muted/40 rounded">
+                    <div className="w-72 h-40 flex items-center justify-center bg-muted/40 rounded shrink-0">
                       <MaterialIcon icon="movie" className="text-5xl text-muted-foreground/50" />
                     </div>
                   )}
-                  <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="flex flex-col items-center gap-2 text-center shrink-0">
                     <p className="text-xs text-muted-foreground">
                       {t('无法在应用内播放此文件，可尝试在外部播放器中打开查看。')}
                     </p>
@@ -925,7 +934,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 </div>
               ) : streamSession ? (
                 /* 浏览器无法解码原生文件：本地 HTTP 双路流式播放 + 受控播放条 */
-                <div className="flex flex-col items-center gap-2 max-w-full w-full min-w-0">
+                <div className={mediaLayout.streamWrapper}>
                   <video
                     key="stream-video"
                     ref={videoRef}
@@ -959,7 +968,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     onPause={() => setStreamPlaying(false)}
                     onError={handleStreamError}
                     onEnded={handleStreamEnded}
-                    className={getMediaFitClass(mediaFitMode, '65vh', true)}
+                    className={mediaLayout.mediaElement}
                   >
                     {t('您的浏览器不支持视频播放')}
                   </video>
@@ -1023,7 +1032,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     )
                     void startStreamPlayback(startSec)
                   }}
-                  className={getMediaFitClass(mediaFitMode, '70vh', true)}
+                  className={mediaLayout.mediaElement}
                 >
                   {t('您的浏览器不支持视频播放')}
                 </video>
@@ -1031,7 +1040,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
               {/* 命中切片指示条与跳轴胶囊 */}
               {(hasHighlight || typeof currentTime === 'number') && (
-                <div className="w-full max-w-2xl px-3 py-2 bg-muted/60 rounded-lg border border-border/60 flex flex-col gap-1.5">
+                <div className="w-full max-w-2xl shrink-0 px-3 py-2 bg-muted/60 rounded-lg border border-border/60 flex flex-col gap-1.5">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5 text-primary font-medium">
                       <span className="material-icons text-[14px]">play_circle</span>
@@ -1081,12 +1090,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
             {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div
-                className={cn(
-                  'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto',
-                  isPrivate && 'ph-mask'
-                )}
-              >
+              <div className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}>
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup

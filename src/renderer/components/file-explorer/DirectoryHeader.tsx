@@ -1157,6 +1157,27 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
               </div>
             </div>
 
+            {/* 工作目录设置快捷齿轮图标：紧邻工作目录下拉选择器右侧 */}
+            <button
+              type="button"
+              data-no-drag
+              data-testid="workspace-settings-gear-btn"
+              style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              onClick={() => {
+                if (showDirectoryDropdown) {
+                  onToggleDirectoryDropdown(false)
+                }
+                useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                  workspaceId: currentWorkspaceDirectory?.id
+                })
+              }}
+              className="w-7 h-7 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-background/70 dark:hover:bg-white/[0.06] border border-transparent hover:border-border/40 dark:hover:border-white/10 transition-all duration-150 cursor-pointer flex-shrink-0"
+              title={t('工作目录设置')}
+              aria-label={t('配置当前工作目录')}
+            >
+              <MaterialIcon icon="settings" className="text-[16px] leading-none" />
+            </button>
+
             {/* Divider */}
             <div className="w-px h-5 bg-border/40 dark:bg-white/[0.07] flex-shrink-0 mx-0.5" />
 

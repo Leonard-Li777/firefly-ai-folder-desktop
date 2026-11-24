@@ -176,29 +176,29 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
           </div>
         )}
 
-        {/* 固定宽高媒体文件（图片/视频）三态缩放切换：原尺寸适配 -> 等比全显 -> 适应宽度 */}
+        {/* 固定宽高媒体文件（图片/视频）三态缩放切换：等比全显 -> 原始尺寸 -> 适应宽度 */}
         {isMediaFile &&
           (() => {
             const fitMeta: Record<
               MediaFitMode,
               { icon: string; label: string; title: string; className: string }
             > = {
-              'contain-natural': {
-                icon: 'photo_size_select_actual',
-                label: t('原尺寸适配'),
-                title: t('当前：原尺寸适配（等比显示全图且不超过原分辨率，点击切换为等比全显）'),
-                className: 'bg-accent/70 text-primary font-medium'
-              },
               contain: {
                 icon: 'fit_screen',
                 label: t('等比全显'),
-                title: t('当前：等比全显（自适应缩放铺满窗口，点击切换为适应宽度）'),
+                title: t('当前：等比全显（自适应窗口无滚动条，点击切换为原始尺寸）'),
                 className: 'bg-primary/15 text-primary font-medium'
+              },
+              original: {
+                icon: 'photo_size_select_actual',
+                label: t('原始尺寸'),
+                title: t('当前：原始尺寸（按原分辨率居中显示，超出可滚动，点击切换为适应宽度）'),
+                className: 'bg-accent/70 text-primary font-medium'
               },
               'fit-width': {
                 icon: 'width_normal',
                 label: t('适应宽度'),
-                title: t('当前：适应宽度（宽度铺满，点击切换为原尺寸适配）'),
+                title: t('当前：适应宽度（宽度铺满，点击切换为等比全显）'),
                 className: ''
               }
             }
