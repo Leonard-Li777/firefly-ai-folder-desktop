@@ -120,8 +120,10 @@ export const PreviewSection: React.FC<any> = ({
     )
   }
   return (
-    <div className="relative">
-      <MaterialIcon icon={iconName} className="text-6xl text-primary mx-auto" />
+    <div className="relative w-full flex flex-col items-center justify-center py-3">
+      <div className="w-20 h-20 rounded-2xl bg-primary/[0.06] border border-primary/15 flex items-center justify-center shadow-2xs">
+        <MaterialIcon icon={iconName} className="text-5xl text-primary/85 leading-none" />
+      </div>
       {analysisResult &&
         isFileAnalysis(analysisResult) &&
         (analysisResult.isHit || analysisResult.analysisStats) && (
