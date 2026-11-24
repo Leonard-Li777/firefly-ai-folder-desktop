@@ -3224,9 +3224,28 @@ export class OmniService {
     // perceive 超时 = CPU 阶段上限（总预算 − 按类型分配的 AI 保底），见 analysis-timeout-policy。
     // 音视频不再放宽到 10 分钟：那会让单文件真实上限变成「10 分钟 + AI 分析」。
     // 请求里带了音视频专属参数时以之为准，避免无扩展名的媒体文件被误判成文档。
+    const videoParams =
+      options?.videoFrameQuotaMax !== undefined ||
+      options?.videoSoftTokenBudget !== undefined ||
+      options?.videoAsrDurationSec !== undefined
+        ? {
+            videoFrameQuotaMax: options?.videoFrameQuotaMax,
+            videoSoftTokenBudget: options?.videoSoftTokenBudget,
+            videoAsrDurationSec: options?.videoAsrDurationSec
+          }
+        : undefined
     const isMediaHint =
-      options?.enableAudioTranscript === true || options?.audioAnalysisDuration !== undefined
-    const budget = resolveAnalysisTimeoutBudget(filePath, undefined, isMediaHint)
+      options?.enableAudioTranscript === true ||
+      options?.audioAnalysisDuration !== undefined ||
+      options?.enableVideoVisualAnalysis === true ||
+      videoParams !== undefined
+    const budget = resolveAnalysisTimeoutBudget(
+      filePath,
+      undefined,
+      isMediaHint,
+      undefined,
+      videoParams
+    )
     // 视频抽帧与多模态感知具有客观重计算开销（如 200s+ 视频 Route A 需约 80-90s），
     // 为防止压线 100s 触发 AbortSignal 导致整个视频切片与向量全毁，至少预留 totalMs - 20s 给 perceive
     const effectiveCpuCapMs =

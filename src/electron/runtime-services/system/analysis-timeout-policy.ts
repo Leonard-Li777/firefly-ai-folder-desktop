@@ -1,4 +1,4 @@
-import { getFileCategory, FileCategory } from '@firefly/shared'
+import { getFileCategory, FileCategory, computeDynamicVideoTimeoutMs } from '@firefly/shared'
 
 /**
  * 单文件分析超时预算策略
@@ -18,6 +18,9 @@ import { getFileCategory, FileCategory } from '@firefly/shared'
  * | 文档 | 120s |          75s |         45s |
  * | 音频 | 150s |         100s |         50s |
  * | 视频 | 180s |         100s |         80s |
+ *
+ * 注：视频类型总额受 Spec §9 `computeDynamicVideoTimeoutMs` 动态接管（传入 videoParams 或
+ * 运行时存在 ConfigOrchestrator 时，默认上浮至约 252s，高配额可达 900s；180s 为无配置时的静态基线）。
  *
  * 音视频的 CPU 上限都是 100s = 引擎侧向量预算 90s + 缩略图/水印/写盘 10s，两者对齐；
  * 剩下的增量全部落到 AI 阶段（视频 80s），解决「视频 AI 只剩 20s」的老问题。
@@ -106,7 +109,8 @@ export function detectAnalysisFileKind(
 export function readBaseAnalysisTimeoutMs(): number {
   try {
     // 类型用 `typeof import(...)` 引用（编译期擦除），运行时才真正 require
-    const mod = require('../../config/config-orchestrator') as typeof import('../../config/config-orchestrator')
+    const mod =
+      require('../../config/config-orchestrator') as typeof import('../../config/config-orchestrator')
     return (
       mod.ConfigOrchestrator.getInstance().getValue<number>('FILE_ANALYSIS_TOTAL_TIMEOUT') ??
       DEFAULT_BASE_ANALYSIS_TIMEOUT_MS
@@ -157,25 +161,24 @@ export function resolveAnalysisTimeoutBudget(
 
   // 视频分析动态看门狗水位上浮：若用户配置了高配额抓图，自动同步撑大总超时与 CPU 上限 (Spec §9)
   if (kind === 'video') {
-    try {
-// [SLICE-04] 优先消费工作区锁定参数，缺省才回退全局 ConfigOrchestrator
-      const mod = require('../../config/config-orchestrator') as typeof import('../../config/config-orchestrator')
-      const quota =
-        videoParams?.videoFrameQuotaMax ??
-        mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ??
-        60
-      const tokens =
-        videoParams?.videoSoftTokenBudget ??
-        mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ??
-        140
-      const asrSec =
-        videoParams?.videoAsrDurationSec ??
-        mod.ConfigOrchestrator.getInstance().getValue<number>('VIDEO_ASR_DURATION' as any) ??
-        60
-      const { computeDynamicVideoTimeoutMs } = require('@firefly/shared')
+    if (videoParams) {
+      const quota = videoParams.videoFrameQuotaMax ?? 60
+      const tokens = videoParams.videoSoftTokenBudget ?? 140
+      const asrSec = videoParams.videoAsrDurationSec ?? 60
       totalMs = computeDynamicVideoTimeoutMs(quota, tokens, asrSec, totalMs)
-    } catch {
-      // 单测或未初始化时回落基线
+    } else {
+      try {
+        // [SLICE-04] 优先消费工作区锁定参数，缺省才回退全局 ConfigOrchestrator
+        const mod =
+          require('../../config/config-orchestrator') as typeof import('../../config/config-orchestrator')
+        const orchestrator = mod.ConfigOrchestrator.getInstance()
+        const quota = orchestrator.getValue<number>('VIDEO_FRAME_QUOTA_MAX' as any) ?? 60
+        const tokens = orchestrator.getValue<number>('VIDEO_SOFT_TOKEN_BUDGET') ?? 140
+        const asrSec = orchestrator.getValue<number>('VIDEO_ASR_DURATION' as any) ?? 60
+        totalMs = computeDynamicVideoTimeoutMs(quota, tokens, asrSec, totalMs)
+      } catch {
+        // 单测或未初始化且未传 videoParams 时回落基线
+      }
     }
   }
   const desired = AI_STAGE_RESERVE_MS[kind]
