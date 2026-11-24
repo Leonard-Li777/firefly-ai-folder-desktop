@@ -99,7 +99,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId, on
   }
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden preview-scrollbar">
+    <div className="h-full w-full flex flex-col overflow-hidden preview-scrollbar min-w-0">
       <PreviewToolbar
         pageId={pageId}
         filePath={previewFilePath}
@@ -111,7 +111,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId, on
         onClose={onClose}
       />
 
-      <div className="flex-1 relative h-full mr-2 overflow-hidden">
+      <div className="flex-1 relative h-full mr-2 overflow-hidden min-w-0">
         <PreviewContent
           filePath={previewFilePath}
           fileName={previewFileName}

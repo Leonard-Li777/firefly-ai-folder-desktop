@@ -13,6 +13,7 @@ import {
 interface DetailsMicroActionStripProps {
   pageId: string
   visibleCards: DetailsCardId[]
+  isDirMode?: boolean
   onToggleCard: (pageId: string, cardId: DetailsCardId) => void
   onClose?: () => void
 }
@@ -20,19 +21,23 @@ interface DetailsMicroActionStripProps {
 export const DetailsMicroActionStrip: React.FC<DetailsMicroActionStripProps> = ({
   pageId,
   visibleCards,
+  isDirMode = false,
   onToggleCard,
   onClose
 }) => {
   const { t } = useVoerkaI18n(i18nScope)
-  const closedCards = ALL_DETAILS_CARD_IDS.filter(id => !visibleCards.includes(id))
+  // 目录模式下仅支持分析指标，不呈现其它 3 类单文件卡片的复原胶囊
+  const closedCards = isDirMode
+    ? []
+    : ALL_DETAILS_CARD_IDS.filter(id => !visibleCards.includes(id))
 
   return (
     <div
       data-testid="details-micro-action-strip"
-      className="h-[26px] px-3.5 flex items-center justify-between shrink-0 select-none text-xs text-muted-foreground border-b border-border/20 bg-muted/5"
+      className="min-h-[34px] px-3.5 py-1.5 flex items-center justify-between shrink-0 select-none text-xs text-muted-foreground border-b border-border/30 bg-muted/20"
     >
       {/* 左侧：已关闭卡片的复原胶囊区 */}
-      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+      <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 my-0.5">
         {closedCards.length > 0 ? (
           closedCards.map(id => (
             <button
@@ -40,7 +45,7 @@ export const DetailsMicroActionStrip: React.FC<DetailsMicroActionStripProps> = (
               type="button"
               data-testid={`restore-card-${id}`}
               onClick={() => onToggleCard(pageId, id)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-medium transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-medium transition-colors cursor-pointer shrink-0 shadow-2xs"
               title={t('点击复原卡片')}
             >
               <MaterialIcon icon="add" className="text-[12px]" />
@@ -50,7 +55,7 @@ export const DetailsMicroActionStrip: React.FC<DetailsMicroActionStripProps> = (
           ))
         ) : (
           <span className="text-[11px] text-muted-foreground/60 select-none">
-            {t('微宫格视图')}
+            {isDirMode ? t('目录指标') : t('微宫格视图')}
           </span>
         )}
       </div>

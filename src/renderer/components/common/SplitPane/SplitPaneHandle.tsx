@@ -10,10 +10,6 @@ export interface SplitPaneHandleProps {
 
 /** 热区默认向左右/上下各扩展的像素（Tailwind w-4 = 16px 的对称一半） */
 const HIT_DEFAULT = 8
-/** 指针进入此带宽才开始探测，避免全局 pointermove 每次都做命中反查 */
-const PROBE_BAND = 16
-/** 滚动结束后继续让位的时间窗 */
-const SCROLL_IDLE_MS = 250
 /** 刚滚动完的瞬间拒绝接管 mousedown/pointerdown 的时间窗 */
 const SCROLL_LOCK_MS = 120
 
@@ -62,7 +58,6 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
   onResizeEndRef.current = onResizeEnd
 
   const [isResizing, setIsResizing] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
   const isResizingRef = useRef(false)
 
   // 保存事件监听引用供 cleanup
@@ -71,9 +66,6 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
   const blurHandlerRef = useRef<(() => void) | null>(null)
   const pointerIdRef = useRef<number | null>(null)
 
-  /** 水平模式下左邻面板正在显示垂直滚动条 → 左侧热区收到分隔线上，整条滚动条还给面板 */
-  const [yieldLeft, setYieldLeft] = useState(false)
-  const yieldLeftRef = useRef(false)
   const lastScrollAtRef = useRef(0)
 
   const disableIframes = useCallback(() => {
@@ -138,47 +130,6 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
     document.addEventListener('scroll', onScroll, true)
     return () => document.removeEventListener('scroll', onScroll, true)
   }, [])
-
-  // 水平模式意图探测：rAF 节流，指针靠近分隔线时做滚动条让位探测
-  useEffect(() => {
-    if (!isHorizontal) return
-
-    let raf = 0
-    let last: MouseEvent | null = null
-
-    const evaluate = () => {
-      raf = 0
-      const root = rootRef.current
-      if (!last || !root || isResizingRef.current) return
-
-      const rect = root.getBoundingClientRect()
-      const boundaryX = rect.left + rect.width / 2
-      const near = Math.abs(last.clientX - boundaryX) <= PROBE_BAND
-      const scrolling = performance.now() - lastScrollAtRef.current < SCROLL_IDLE_MS
-
-      const onScrollbarStrip =
-        near &&
-        last.clientX < boundaryX &&
-        isOnVerticalScrollbar(last.clientX - 0.5, last.clientY, root)
-
-      const next = onScrollbarStrip || (scrolling && near)
-      if (next !== yieldLeftRef.current) {
-        yieldLeftRef.current = next
-        setYieldLeft(next)
-      }
-    }
-
-    const onMove = (e: MouseEvent) => {
-      last = e
-      if (!raf) raf = requestAnimationFrame(evaluate)
-    }
-
-    document.addEventListener('mousemove', onMove, { passive: true })
-    return () => {
-      document.removeEventListener('mousemove', onMove)
-      if (raf) cancelAnimationFrame(raf)
-    }
-  }, [isHorizontal])
 
   const startDrag = useCallback(
     (clientX: number, clientY: number, pointerId?: number) => {
@@ -308,24 +259,21 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       onLostPointerCapture={cleanup}
       onMouseDown={handleMouseDown}
       onDoubleClick={handleDoubleClickFn}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
     >
       {/* 可视化分隔线 */}
       <div
         className={cn(
           'absolute transition-all duration-150',
           isHorizontal ? 'top-0 bottom-0' : 'left-0 right-0',
-          // 细线与加粗
           isHorizontal
             ? cn(
                 'w-[1px] bg-border',
-                (isHovering || isResizing) && 'w-[2px] bg-border/60',
+                'group-hover:w-[3px] group-hover:bg-primary group-hover:shadow-[0_0_8px_rgba(var(--primary),0.5)]',
                 isResizing && 'w-[3px] bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]'
               )
             : cn(
                 'h-[1px] bg-border',
-                (isHovering || isResizing) && 'h-[2px] bg-border/60',
+                'group-hover:h-[3px] group-hover:bg-primary group-hover:shadow-[0_0_8px_rgba(var(--primary),0.5)]',
                 isResizing && 'h-[3px] bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]'
               )
         )}
@@ -337,11 +285,11 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       />
       {/* 拖拽热区 */}
       <div
-        className={cn('absolute', isHorizontal ? 'top-0 bottom-0 cursor-col-resize' : 'left-0 right-0 cursor-row-resize')}
+        className={cn('absolute z-10', isHorizontal ? 'top-0 bottom-0 cursor-col-resize' : 'left-0 right-0 cursor-row-resize')}
         style={
           isHorizontal
             ? {
-                left: yieldLeft ? 0 : -HIT_DEFAULT,
+                left: -HIT_DEFAULT,
                 right: -HIT_DEFAULT
               }
             : {

@@ -64,7 +64,7 @@ export const DetailsBottomActions: React.FC<DetailsBottomActionsProps> = ({
   return (
     <div
       data-testid="details-bottom-actions"
-      className="border-t border-border/40 px-3.5 py-2.5 bg-muted/10 shrink-0 flex items-center justify-between gap-3 overflow-hidden select-none"
+      className="border-t border-border/40 px-3.5 py-2.5 bg-card shrink-0 mt-auto flex items-center justify-between gap-3 overflow-hidden select-none"
     >
       {/* 左侧：轻量状态与统计指示槽（宽屏展示，窄屏截断折叠） */}
       <div className="flex-1 min-w-0 text-xs text-muted-foreground/80 truncate hidden @[540px]/details:block">

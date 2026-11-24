@@ -9,7 +9,7 @@ import {
 } from './types'
 
 /** 常用区最大展示数量 */
-export const MAX_COMMON_LAYOUT_COUNT = 4
+export const MAX_COMMON_LAYOUT_COUNT = 3
 
 /** 7 套标准预设池定义（恒定包含 list，且首项为 list） */
 export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
@@ -26,7 +26,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.LIST_PREVIEW]: {
     key: LAYOUT_KEYS.LIST_PREVIEW,
     name: '列表+预览',
-    icon: 'view_sidebar',
+    icon: 'vertical_split',
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW],
     primaryDirection: 'horizontal',
     companionDirection: 'vertical',
@@ -36,7 +36,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.LIST_DETAILS]: {
     key: LAYOUT_KEYS.LIST_DETAILS,
     name: '列表+属性',
-    icon: 'vertical_split',
+    icon: 'view_sidebar',
     panels: [PANEL_IDS.LIST, PANEL_IDS.DETAILS],
     primaryDirection: 'horizontal',
     companionDirection: 'vertical',
@@ -46,7 +46,7 @@ export const LAYOUT_PRESETS: Record<LayoutKey, LayoutDefinition> = {
   [LAYOUT_KEYS.PIN_LIST_TOP]: {
     key: LAYOUT_KEYS.PIN_LIST_TOP,
     name: '品字布局',
-    icon: 'horizontal_split',
+    icon: 'view_quilt',
     panels: [PANEL_IDS.LIST, PANEL_IDS.PREVIEW, PANEL_IDS.DETAILS],
     primaryDirection: 'vertical',
     companionDirection: 'horizontal',

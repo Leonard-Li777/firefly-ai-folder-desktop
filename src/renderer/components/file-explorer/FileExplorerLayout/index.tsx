@@ -582,7 +582,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                     content: projection.collapsed.preview ? null : (
                       <div
                         data-testid="file-preview-slot"
-                        className="h-full w-full relative flex flex-col overflow-hidden"
+                        className="h-full w-full relative flex flex-col overflow-hidden min-w-0 flex-1"
                       >
                         <SplitPreviewPanel
                           pageId={targetPageId}
@@ -601,7 +601,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                     content: projection.collapsed.details ? null : (
                       <div
                         data-testid="file-details-slot"
-                        className="h-full w-full relative flex flex-col overflow-hidden"
+                        className="h-full w-full relative flex flex-col overflow-hidden min-w-0 flex-1"
                       >
                         <FileDetailsPanel
                           pageId={targetPageId}

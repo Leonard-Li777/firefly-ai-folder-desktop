@@ -147,7 +147,7 @@ describe('DirectoryHeader (LayoutSwitcherButtons & LayoutActionSlot 恒定槽位
     expect(allRowBtn.getAttribute('aria-pressed')).toBe('true')
   })
 
-  it('AC-3: 在 real-directory 下常用区渲染 4 项，当前激活项在首位并高亮', () => {
+  it('AC-3: 在 real-directory 下常用区渲染 3 项，当前激活项在首位并高亮', () => {
     render(
       <MemoryRouter>
         <DirectoryHeader {...mockProps} layoutPageId={PAGE_IDS.REAL_DIRECTORY} />
@@ -161,9 +161,9 @@ describe('DirectoryHeader (LayoutSwitcherButtons & LayoutActionSlot 恒定槽位
     const activeBtn = screen.getByTestId(`layout-btn-${LAYOUT_KEYS.ALL_ROW}`)
     expect(activeBtn.getAttribute('aria-pressed')).toBe('true')
 
-    // 常用区总共 4 项
+    // 常用区总共 3 项
     const buttons = group.querySelectorAll('button[data-testid^="layout-btn-"]')
-    expect(buttons.length).toBe(4)
+    expect(buttons.length).toBe(3)
   })
 
   it('AC-4: 下拉菜单 Portal 至 document.body，点击项可完成布局切换', () => {

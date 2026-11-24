@@ -3,7 +3,7 @@ import { FileItem, DirectoryItem } from '@firefly/types'
 import { FileCategory, isCategory, getFileCategory, formatDateTime } from '@firefly/shared'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { MaterialIcon } from '../../../lib/utils'
+import { MaterialIcon, cn } from '../../../lib/utils'
 import { Button } from '../../ui/button'
 import {
   AlertDialog,
@@ -85,6 +85,15 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
   // 微宫格 4 大卡片开闭状态管理
   const visibleCards = useDetailsCardsStore(s => s.getVisibleCards(pageId))
   const toggleCard = useDetailsCardsStore(s => s.toggleCard)
+
+  // 目录模式下仅展示分析指标，单文件模式展示用户可见的微宫格卡片集合
+  const isDirMode = isDir || showDirectory
+  const effectiveCards = useMemo(() => {
+    if (isDirMode) {
+      return [DETAILS_CARD_IDS.METRICS]
+    }
+    return visibleCards
+  }, [isDirMode, visibleCards])
 
   const isFileAnalysis = React.useCallback(
     (res: any) =>
@@ -289,14 +298,15 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
     }
   }
 
-  const isOnlyOneVisible = visibleCards.length <= 1
+  const isOnlyOneVisible = effectiveCards.length <= 1
 
   return (
-    <aside className="w-full flex-1 min-w-0 border-l border-border flex flex-col h-full overflow-hidden select-text @container/details bg-background/50">
-      {/* 升维范式 1：26px 极简微型动作槽（左侧复原胶囊，右侧面板全局折叠 X） */}
+    <aside className="w-full flex-1 min-w-0 border-l border-border flex flex-col h-full overflow-hidden select-text @container/details bg-card">
+      {/* 升维范式 1：极简微型动作槽（左侧复原胶囊，右侧面板全局折叠 X） */}
       <DetailsMicroActionStrip
         pageId={pageId}
         visibleCards={visibleCards}
+        isDirMode={isDirMode}
         onToggleCard={toggleCard}
         onClose={onClose}
       />
@@ -309,10 +319,11 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
         data-testid="file-details-container"
         className="flex-1 min-h-0 w-full overflow-y-auto p-3.5 grid grid-cols-1 @[540px]/details:grid-cols-2 auto-rows-min gap-3.5 content-start"
       >
-        {visibleCards.map((cardId, index) => {
-          // 动态跨列规则：当且仅当恰好有 3 张卡片可见时，首张卡片在宽屏跨两列全宽
-          const isSpanTwo = visibleCards.length === 3 && index === 0
-          const spanClass = isSpanTwo ? '@[540px]/details:col-span-2' : ''
+        {effectiveCards.map((cardId, index) => {
+          // 动态跨列规则：当仅有 1 张卡片可见时（包括目录画像），或者恰好有 3 张卡片可见的首张，在宽屏跨两列全宽
+          const isSpanTwo =
+            effectiveCards.length === 1 || (effectiveCards.length === 3 && index === 0)
+          const spanClass = isSpanTwo ? '@[540px]/details:col-span-2 w-full' : ''
 
           return (
             <DetailsCardWrapper
@@ -320,7 +331,7 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
               id={cardId}
               isOnlyOneVisible={isOnlyOneVisible}
               onCloseCard={() => toggleCard(pageId, cardId)}
-              className={spanClass}
+              className={cn(spanClass, effectiveCards.length === 1 && 'min-h-[260px]')}
             >
               {renderCardContent(cardId)}
             </DetailsCardWrapper>

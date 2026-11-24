@@ -3,8 +3,6 @@ import { MaterialIcon } from '../../../../lib/utils'
 import { formatDuration } from '@firefly/shared'
 import { t } from '@app/languages'
 
-const HOVER_PREVIEW_DELAY = 500
-
 export const PreviewSection: React.FC<any> = ({
   displayUrl,
   item,
@@ -14,44 +12,15 @@ export const PreviewSection: React.FC<any> = ({
   isFileAnalysis
 }) => {
   const [imgError, setImgError] = useState(false)
-  const [hoverPreview, setHoverPreview] = useState(false)
-  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const imgRef = useRef<HTMLDivElement>(null)
 
   // displayUrl 变化时重置错误状态，避免旧图片的错误影响新图片
   useEffect(() => {
     setImgError(false)
-    setHoverPreview(false)
   }, [displayUrl])
-
-  // 组件卸载时清除定时器
-  useEffect(() => {
-    return () => {
-      if (hoverTimerRef.current) {
-        clearTimeout(hoverTimerRef.current)
-      }
-    }
-  }, [])
 
   const handleImgError = useCallback(() => {
     setImgError(true)
-  }, [])
-
-  const handleMouseEnter = useCallback(() => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current)
-    }
-    hoverTimerRef.current = setTimeout(() => {
-      setHoverPreview(true)
-    }, HOVER_PREVIEW_DELAY)
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current)
-      hoverTimerRef.current = null
-    }
-    setHoverPreview(false)
   }, [])
 
   const iconName = showDirectory || isDirectory ? 'folder' : 'description'
@@ -80,8 +49,6 @@ export const PreviewSection: React.FC<any> = ({
         <div
           ref={imgRef}
           className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden border border-border shadow-sm flex items-center justify-center group"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
         >
           {/* 图片加载失败时显示的兜底图标 */}
           {imgError && (
@@ -97,10 +64,6 @@ export const PreviewSection: React.FC<any> = ({
           />
         </div>
 
-        {/* Hover 延迟浮动大图预览 */}
-        {hoverPreview && !imgError && (
-          <HoverImagePreview displayUrl={displayUrl} itemName={item?.name} />
-        )}
         {analysisResult &&
           isFileAnalysis(analysisResult) &&
           (analysisResult.isHit || analysisResult.analysisStats) && (
@@ -211,40 +174,6 @@ export const PreviewSection: React.FC<any> = ({
             </div>
           </div>
         )}
-    </div>
-  )
-}
-
-// Hover 悬浮大图预览组件：自适应窗口大小，居中浮动显示原图
-const HoverImagePreview: React.FC<{ displayUrl: string; itemName?: string }> = ({
-  displayUrl,
-  itemName
-}) => {
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    setError(false)
-  }, [displayUrl])
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none animate-in fade-in"
-      role="presentation"
-    >
-      <div className="relative max-w-[85vw] max-h-[85vh] bg-background rounded-lg shadow-2xl border border-border overflow-hidden">
-        {error ? (
-          <div className="flex-1 min-w-[240px] min-h-[180px] flex items-center justify-center p-8">
-            <MaterialIcon icon="broken_image" className="text-4xl text-muted-foreground" />
-          </div>
-        ) : (
-          <img
-            src={displayUrl}
-            alt={itemName || ''}
-            className="block max-w-[85vw] max-h-[85vh] w-auto h-auto object-contain"
-            onError={() => setError(true)}
-          />
-        )}
-      </div>
     </div>
   )
 }

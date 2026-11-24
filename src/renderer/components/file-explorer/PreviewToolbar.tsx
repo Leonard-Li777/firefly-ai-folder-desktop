@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { t } from '@app/languages'
-import { MaterialIcon } from '../../lib/utils'
+import { MaterialIcon, cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
@@ -54,6 +54,8 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   const {
     filePath: storeFilePath,
     pageStates,
+    isMediaFitContain,
+    toggleMediaFitContain,
     togglePreviewMode,
     closePreview
   } = usePreviewOverlayStore()
@@ -61,6 +63,10 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
 
   // 优先使用当前预览文件路径，避免 store 中残留其他页面的文件路径导致打开错误文件
   const targetFilePath = currentFilePath || storeFilePath
+  const isMediaFile =
+    Boolean(targetFilePath || fileName) &&
+    (isCategory(targetFilePath || fileName, FileCategory.IMAGE) ||
+      isCategory(targetFilePath || fileName, FileCategory.VIDEO))
 
   const handleOpenNewWindow = useCallback(() => {
     if (targetFilePath) {
@@ -164,6 +170,34 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
               defaultFileName={fileName ? `${fileName}.wav` : undefined}
             />
           </div>
+        )}
+
+        {/* 固定宽高媒体文件（图片/视频）等比适应窗口 vs 适应宽度切换 */}
+        {isMediaFile && (
+          <Button
+            variant="ghost"
+            onClick={toggleMediaFitContain}
+            size="sm"
+            data-testid="preview-media-fit-toggle"
+            aria-pressed={isMediaFitContain}
+            title={
+              isMediaFitContain
+                ? t('当前：等比缩放显示全（点击切换为适应宽度）')
+                : t('当前：仅等比适应宽度（点击切换为等比缩放显示全）')
+            }
+            className={cn(
+              'shrink min-w-0 group/btn transition-colors',
+              isMediaFitContain && 'bg-accent/60 text-primary font-medium'
+            )}
+          >
+            <MaterialIcon
+              icon={isMediaFitContain ? 'fit_screen' : 'width_normal'}
+              className="shrink-0"
+            />
+            <span className="truncate min-w-0 hidden md:inline ml-1">
+              {isMediaFitContain ? t('等比全显') : t('适应宽度')}
+            </span>
+          </Button>
         )}
 
         {/* 可收缩按钮组 */}

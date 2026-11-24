@@ -101,13 +101,13 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
       role="radiogroup"
       aria-label={t('布局切换')}
       className={cn(
-        'inline-flex items-center gap-0.5 p-0.5 rounded-lg border border-border/40 bg-muted/20 backdrop-blur-sm',
+        'inline-flex items-center gap-0.5 p-0.5 rounded-full border border-border/40 bg-muted/20 backdrop-blur-sm shadow-2xs',
         'no-drag select-none',
         className
       )}
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
-      {/* 常用区直达图标（单选按钮组风格，位置恒定不动） */}
+      {/* 常用区直达图标（胶囊按钮组风格，位置恒定不动） */}
       {commonKeys.map((key, index) => {
         const def = LAYOUT_PRESETS[key]
         if (!def) return null
@@ -126,7 +126,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
             title={label}
             onClick={() => setPageLayout(targetPageId, key)}
             className={cn(
-              'relative flex items-center justify-center w-7 h-7 rounded-md transition-colors',
+              'relative flex items-center justify-center w-7 h-7 rounded-full transition-colors',
               'text-muted-foreground hover:text-foreground hover:bg-background/80',
               isActive && 'bg-background text-primary shadow-sm font-medium',
               // 响应式折叠：非首项在 <880px 时隐藏；首项在 <600px 时隐藏
@@ -153,7 +153,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
           title={t('更多布局')}
           onClick={toggleDropdown}
           className={cn(
-            'relative flex items-center justify-center w-6 h-7 rounded-md text-muted-foreground transition-colors',
+            'relative flex items-center justify-center w-6 h-7 rounded-full text-muted-foreground transition-colors',
             'hover:text-foreground hover:bg-background/80',
             isDropdownOpen && 'bg-background text-foreground',
             isMoreActive && !isDropdownOpen && 'text-primary bg-background/50 font-medium'

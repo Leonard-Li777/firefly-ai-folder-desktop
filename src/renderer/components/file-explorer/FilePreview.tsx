@@ -108,6 +108,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const setVideoMuted = usePreviewOverlayStore(s => s.setVideoMuted)
   const videoVolume = usePreviewOverlayStore(s => s.videoVolume)
   const setVideoVolume = usePreviewOverlayStore(s => s.setVideoVolume)
+  const isMediaFitContain = usePreviewOverlayStore(s => s.isMediaFitContain)
   const lastStreamActivityRef = useRef(Date.now())
   const pendingSeekRef = useRef(false)
   /** 8s 停滞看门狗仅在 loadeddata 后启用，避免冷启动与后端 10s 看门狗竞态 */
@@ -802,19 +803,22 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   switch (category) {
     case FileCategory.IMAGE:
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar">
-          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar min-w-0">
+          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full min-w-0">
             {/* 预览内容的正文区 */}
             <div
               className={cn(
-                'flex items-center justify-center max-w-full',
+                'flex items-center justify-center max-w-full w-full min-w-0',
                 isPrivate && 'ph-no-capture'
               )}
             >
               <img
                 src={fileUrl}
                 alt={fileName}
-                className="max-w-full max-h-[70vh] object-contain shadow-lg rounded"
+                className={cn(
+                  'object-contain shadow-lg rounded transition-all duration-150',
+                  isMediaFitContain ? 'max-w-full max-h-[75vh]' : 'w-full max-w-full h-auto'
+                )}
               />
             </div>
             {/* 多模态描述文本区 */}
@@ -855,23 +859,26 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       const hasHighlight = startSec !== undefined && endSec !== undefined && endSec > startSec
 
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar">
-          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar min-w-0">
+          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full min-w-0">
             {/* 预览内容的正文区 */}
             <div
               className={cn(
-                'flex flex-col items-center justify-center max-w-full w-full gap-2',
+                'flex flex-col items-center justify-center max-w-full w-full gap-2 min-w-0',
                 isPrivate && 'ph-no-capture'
               )}
             >
               {videoDecodeFailed ? (
                 /* 浏览器无法解码（AVI/MKV 等）：显示 ffmpeg 静态抽帧 + 外部播放器跳轴引导 */
-                <div className="flex flex-col items-center gap-3 max-w-full">
+                <div className="flex flex-col items-center gap-3 max-w-full w-full min-w-0">
                   {staticFrameUrl && !staticFrameBroken ? (
                     <img
                       src={staticFrameUrl}
                       alt={fileName}
-                      className="max-w-full max-h-[65vh] shadow-lg rounded object-contain"
+                      className={cn(
+                        'shadow-lg rounded object-contain transition-all duration-150',
+                        isMediaFitContain ? 'max-w-full max-h-[65vh]' : 'w-full max-w-full h-auto'
+                      )}
                       onError={() => {
                         // WebP 头合法不代表整帧完整；渲染失败时回退占位图标且不立即重试同一坏帧
                         logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
@@ -899,7 +906,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 </div>
               ) : streamSession ? (
                 /* 浏览器无法解码原生文件：本地 HTTP 双路流式播放 + 受控播放条 */
-                <div className="flex flex-col items-center gap-2 max-w-full w-full">
+                <div className="flex flex-col items-center gap-2 max-w-full w-full min-w-0">
                   <video
                     key="stream-video"
                     ref={videoRef}
@@ -933,7 +940,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     onPause={() => setStreamPlaying(false)}
                     onError={handleStreamError}
                     onEnded={handleStreamEnded}
-                    className="max-w-full max-h-[65vh] shadow-lg rounded"
+                    className={cn(
+                      'shadow-lg rounded transition-all duration-150',
+                      isMediaFitContain ? 'max-w-full max-h-[65vh] object-contain' : 'w-full max-w-full h-auto object-contain'
+                    )}
                   >
                     {t('您的浏览器不支持视频播放')}
                   </video>
@@ -997,7 +1007,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     )
                     void startStreamPlayback(startSec)
                   }}
-                  className="max-w-full max-h-[70vh] shadow-lg rounded"
+                  className={cn(
+                    'shadow-lg rounded transition-all duration-150',
+                    isMediaFitContain ? 'max-w-full max-h-[70vh] object-contain' : 'w-full max-w-full h-auto object-contain'
+                  )}
                 >
                   {t('您的浏览器不支持视频播放')}
                 </video>

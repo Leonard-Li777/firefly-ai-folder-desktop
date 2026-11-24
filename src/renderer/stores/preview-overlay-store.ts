@@ -30,6 +30,10 @@ interface PreviewOverlayState {
   /** 全局视频音量大小 0.0~1.0（持久化于 localStorage，仅限视频，TTS/音乐不受影响） */
   videoVolume: number
   setVideoVolume: (volume: number) => void
+  /** 媒体预览是否等比缩放显示全（适应窗口），关闭后仅等比适应宽度 */
+  isMediaFitContain: boolean
+  setMediaFitContain: (fit: boolean) => void
+  toggleMediaFitContain: () => void
   /** 兼容测试/单页的全局预览模式 */
   previewMode: PagePreviewMode
   /** 当前预览所属的页面标识 */
@@ -187,6 +191,9 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     saveVideoVolumeState(safe)
     set({ videoVolume: safe })
   },
+  isMediaFitContain: true,
+  setMediaFitContain: (fit: boolean) => set({ isMediaFitContain: fit }),
+  toggleMediaFitContain: () => set(state => ({ isMediaFitContain: !state.isMediaFitContain })),
 
   getPagePreviewMode: (pageId: string) => {
     const state = get()

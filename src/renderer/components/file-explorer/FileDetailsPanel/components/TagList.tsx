@@ -60,7 +60,6 @@ interface RenderedTagGroup {
  */
 export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, onTagDeleted }) => {
   const [deletingTagId, setDeletingTagId] = useState<number | string | null>(null)
-  const [hoveredTagId, setHoveredTagId] = useState<number | string | null>(null)
 
   const tagGroups = useMemo<RenderedTagGroup[]>(() => {
     // 组标题在渲染期动态求值：严禁模块级静态缓存 t()，否则语言切换后不刷新
@@ -193,18 +192,15 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
                 // 原生提示：hover 显示该标签自身置信度（复用既有「置信度」词条）
                 title={`${t('置信度')} ${Math.round(tag.normalizedConfidence * 100)}%`}
                 className={cn(
-                  'group relative text-xs px-2.5 py-1 rounded-full font-medium cursor-default transition-opacity',
+                  'group/tag relative text-xs px-2.5 py-1 rounded-full font-medium cursor-default transition-opacity',
                   deletingTagId === tag.id && 'opacity-50 pointer-events-none',
                   getTagColor(tag.colorIndex)
                 )}
-                onMouseEnter={() => setHoveredTagId(tag.id)}
-                onMouseLeave={() => setHoveredTagId(null)}
               >
                 {tag.name}
                 <button
                   className={cn(
-                    'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-muted-foreground/60 text-background text-[12px] leading-none flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-muted-foreground',
-                    hoveredTagId !== tag.id && 'opacity-0'
+                    'absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-muted-foreground/60 text-background text-[12px] leading-none flex items-center justify-center opacity-0 group-hover/tag:opacity-100 transition-opacity hover:bg-muted-foreground'
                   )}
                   onClick={e => handleDelete(tag.id, e)}
                   disabled={deletingTagId === tag.id}

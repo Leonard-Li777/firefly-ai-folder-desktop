@@ -171,11 +171,7 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
 
       <div className="flex-1 flex flex-col justify-start">
         {/* 单文件模式 */}
-        {analysisResult &&
-        isFileAnalysis(analysisResult) &&
-        analysisResult.isAnalyzed &&
-        (analysisResult.smartName ||
-          (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
+        {analysisResult && isFileAnalysis(analysisResult) ? (
           <>
             {(() => {
               const realName = item?.name || analysisResult.name || ''
