@@ -138,7 +138,7 @@ describe('FileDetailsPanel (微宫格四卡片架构与自适应布局)', () => 
     expect(screen.getByTestId(`details-card-${DETAILS_CARD_IDS.METRICS}`)).toBeDefined()
   })
 
-  it('AC-4: 容器感知网格与 auto-rows-min 高度流动模型', () => {
+  it('AC-4: 容器感知网格与 auto-rows-min 高度流动模型 (平铺无缝网格: 外周 p-0 零外边距，gap-px 自动透出分割线，卡片直角化)', () => {
     render(
       <MemoryRouter>
         <FileDetailsPanel pageId="test_page" item={mockFile} />
@@ -151,6 +151,13 @@ describe('FileDetailsPanel (微宫格四卡片架构与自适应布局)', () => 
     expect(container.className).toContain('@[540px]/details:grid-cols-2')
     expect(container.className).toContain('auto-rows-min')
     expect(container.className).toContain('overflow-y-auto')
+    expect(container.className).toContain('p-0')
+    expect(container.className).toContain('gap-px')
+
+    const card = screen.getByTestId(`details-card-${DETAILS_CARD_IDS.SUMMARY}`)
+    expect(card).toBeDefined()
+    expect(card.className).toContain('rounded-none')
+    expect(card.className).not.toContain('rounded-xl')
   })
 
   it('AC-5: 双预览冲突智能协调（大预览激活时 compact，折叠时 rich）', () => {

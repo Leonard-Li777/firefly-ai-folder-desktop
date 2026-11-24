@@ -45,11 +45,7 @@ import {
   hasKnownImageMagic,
   hasKnownNonAudioMagic
 } from './ai-skill-api-validators'
-import {
-  statRegularFile,
-  readBoundedUtf8File,
-  VOICE_SEAM_HTTP_ERROR_MAP
-} from './ai-skill-api-fs'
+import { statRegularFile, readBoundedUtf8File, VOICE_SEAM_HTTP_ERROR_MAP } from './ai-skill-api-fs'
 
 export interface VideoSegmentItem {
   chunkIndices: number[]
@@ -1139,7 +1135,7 @@ export class AISkillApiService {
           const offset = offsetRes.value
           const minScore = minScoreRes.value
 
-          let videoMinScore = SKILL_API_CONSTRAINTS.search.defaultVideoMinScore
+          let videoMinScore: number = SKILL_API_CONSTRAINTS.search.defaultVideoMinScore
           if (query.videoMinScore !== undefined) {
             const videoMinScoreRes = parseQueryFloat(query.videoMinScore, {
               name: 'videoMinScore',
@@ -1204,8 +1200,7 @@ export class AISkillApiService {
             const total = rawTotal ?? mapped.length
             const poolTruncated = total >= SKILL_API_CONSTRAINTS.search.maxResultWindow
             const relaxable =
-              minScore > SKILL_API_CONSTRAINTS.search.wideRecallMinScore &&
-              mapped.length < limit
+              minScore > SKILL_API_CONSTRAINTS.search.wideRecallMinScore && mapped.length < limit
             return {
               total,
               items: mapped,
@@ -2026,11 +2021,7 @@ export class AISkillApiService {
         } catch (err: any) {
           if (writtenAudioPath) {
             await fs.unlink(writtenAudioPath).catch(unlinkErr => {
-              logger.warn(
-                LogCategory.SYSTEM,
-                '[AI Skill API] TTS 失败临时文件清理异常:',
-                unlinkErr
-              )
+              logger.warn(LogCategory.SYSTEM, '[AI Skill API] TTS 失败临时文件清理异常:', unlinkErr)
             })
           }
           if (err instanceof VoiceSeamError) {

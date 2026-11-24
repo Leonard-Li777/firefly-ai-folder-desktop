@@ -329,10 +329,10 @@ const FileDetailsPanelComponent: React.FC<FileDetailsPanelProps> = ({
       {/* 置顶状态横幅（原文件丢失告警 / 最小单元标记） */}
       <DetailsPinnedBanner item={item} analysisResult={analysisResult} />
 
-      {/* 自适应内容高度网格容器 (L3 Spec: auto-rows-min，自然高度撑开，整体平滑滚动) */}
+      {/* 自适应内容高度网格容器 (微宫格无缝平铺架构：外周 0 边距直贴面板边缘，相邻卡片间通过 gap-px 自动透出 1px 分割线) */}
       <div
         data-testid="file-details-container"
-        className="flex-1 min-h-0 w-full overflow-y-auto p-3.5 grid grid-cols-1 @[540px]/details:grid-cols-2 auto-rows-min gap-3.5 content-start"
+        className="flex-1 min-h-0 w-full overflow-y-auto p-0 grid grid-cols-1 @[540px]/details:grid-cols-2 auto-rows-min gap-px bg-border/40 content-start"
       >
         {effectiveCards.map((cardId, index) => {
           // 动态跨列规则：当仅有 1 张卡片可见时（包括目录画像），或者恰好有 3 张卡片可见的首张，在宽屏跨两列全宽

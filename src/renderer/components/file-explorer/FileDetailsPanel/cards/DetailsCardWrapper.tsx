@@ -27,7 +27,7 @@ export const DetailsCardWrapper: React.FC<DetailsCardWrapperProps> = ({
     <div
       data-testid={`details-card-${id}`}
       className={cn(
-        'relative group rounded-xl border border-border/50 bg-card/60 backdrop-blur-xs p-3.5 shadow-2xs flex flex-col min-w-0 transition-all',
+        'relative group rounded-none bg-card p-3 flex flex-col min-w-0 transition-all',
         className
       )}
     >
