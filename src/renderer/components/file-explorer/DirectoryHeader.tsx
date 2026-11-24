@@ -25,12 +25,7 @@ import { GlobalTTSPlaybackBar } from './GlobalTTSPlaybackBar'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
 import { computeLocalEffectiveConfig } from '../../lib/workspace-policy/workspace-ai-client'
-import {
-  LayoutActionSlot,
-  LayoutSwitcherButtons,
-  PAGE_IDS,
-  PageId
-} from './layout-switcher'
+import { LayoutActionSlot, LayoutSwitcherButtons, PAGE_IDS, PageId } from './layout-switcher'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -650,6 +645,22 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     <span>{t('插件中心')}</span>
                   </>
                 )}
+              </button>
+
+              {/* 设置入口按钮：位于插件中心右侧、用户头像左侧 */}
+              <button
+                type="button"
+                data-no-drag
+                data-testid="header-settings-btn"
+                onClick={() => useSettingsStore.getState().openSettings()}
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                className="no-drag group flex-shrink-0 h-8 pl-1.5 pr-3 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer flex items-center gap-1.5 border shadow-2xs select-none hover:shadow-sm active:scale-95 bg-[var(--surface-field)] border-[var(--surface-field-border)] hover:bg-accent text-foreground"
+                title={t('设置')}
+              >
+                <span className="w-5 h-5 rounded-full flex items-center justify-center bg-sky-500/10 text-sky-600 dark:text-sky-400 shrink-0 transition-colors duration-150 group-hover:bg-sky-500/20">
+                  <MaterialIcon icon="settings" className="text-[13px] leading-none" />
+                </span>
+                <span>{t('设置')}</span>
               </button>
 
               {/* User Avatar Menu */}
@@ -1400,7 +1411,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           {/* 恒定布局操作槽位与切换按钮组 (ISS-01/AC-1) */}
           <LayoutActionSlot className="ml-2">
             <LayoutSwitcherButtons
-              layoutPageId={isSearchOverlayOpen ? PAGE_IDS.SEARCH_OVERLAY : (layoutPageId || '')}
+              layoutPageId={isSearchOverlayOpen ? PAGE_IDS.SEARCH_OVERLAY : layoutPageId || ''}
             />
           </LayoutActionSlot>
         </div>

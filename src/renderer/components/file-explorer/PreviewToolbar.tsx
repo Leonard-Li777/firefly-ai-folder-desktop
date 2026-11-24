@@ -4,7 +4,11 @@ import { MaterialIcon, cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
-import { usePreviewOverlayStore, getCurrentVideoPlaybackTime } from '../../stores/preview-overlay-store'
+import {
+  usePreviewOverlayStore,
+  getCurrentVideoPlaybackTime,
+  type MediaFitMode
+} from '../../stores/preview-overlay-store'
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { isCategory, FileCategory, logger, LogCategory } from '@firefly/shared'
 import { toast } from '../common/Toast'
@@ -54,8 +58,8 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   const {
     filePath: storeFilePath,
     pageStates,
-    isMediaFitContain,
-    toggleMediaFitContain,
+    mediaFitMode,
+    cycleMediaFitMode,
     togglePreviewMode,
     closePreview
   } = usePreviewOverlayStore()
@@ -172,33 +176,50 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
           </div>
         )}
 
-        {/* 固定宽高媒体文件（图片/视频）等比适应窗口 vs 适应宽度切换 */}
-        {isMediaFile && (
-          <Button
-            variant="ghost"
-            onClick={toggleMediaFitContain}
-            size="sm"
-            data-testid="preview-media-fit-toggle"
-            aria-pressed={isMediaFitContain}
-            title={
-              isMediaFitContain
-                ? t('当前：等比缩放显示全（点击切换为适应宽度）')
-                : t('当前：仅等比适应宽度（点击切换为等比缩放显示全）')
+        {/* 固定宽高媒体文件（图片/视频）三态缩放切换：原尺寸适配 -> 等比全显 -> 适应宽度 */}
+        {isMediaFile &&
+          (() => {
+            const fitMeta: Record<
+              MediaFitMode,
+              { icon: string; label: string; title: string; className: string }
+            > = {
+              'contain-natural': {
+                icon: 'photo_size_select_actual',
+                label: t('原尺寸适配'),
+                title: t('当前：原尺寸适配（等比显示全图且不超过原分辨率，点击切换为等比全显）'),
+                className: 'bg-accent/70 text-primary font-medium'
+              },
+              contain: {
+                icon: 'fit_screen',
+                label: t('等比全显'),
+                title: t('当前：等比全显（自适应缩放铺满窗口，点击切换为适应宽度）'),
+                className: 'bg-primary/15 text-primary font-medium'
+              },
+              'fit-width': {
+                icon: 'width_normal',
+                label: t('适应宽度'),
+                title: t('当前：适应宽度（宽度铺满，点击切换为原尺寸适配）'),
+                className: ''
+              }
             }
-            className={cn(
-              'shrink min-w-0 group/btn transition-colors',
-              isMediaFitContain && 'bg-accent/60 text-primary font-medium'
-            )}
-          >
-            <MaterialIcon
-              icon={isMediaFitContain ? 'fit_screen' : 'width_normal'}
-              className="shrink-0"
-            />
-            <span className="truncate min-w-0 hidden md:inline ml-1">
-              {isMediaFitContain ? t('等比全显') : t('适应宽度')}
-            </span>
-          </Button>
-        )}
+            const currentMeta = fitMeta[mediaFitMode]
+
+            return (
+              <Button
+                variant="ghost"
+                onClick={cycleMediaFitMode}
+                size="sm"
+                data-testid="preview-media-fit-toggle"
+                data-fit-mode={mediaFitMode}
+                aria-pressed={mediaFitMode !== 'fit-width'}
+                title={currentMeta.title}
+                className={cn('shrink min-w-0 group/btn transition-colors', currentMeta.className)}
+              >
+                <MaterialIcon icon={currentMeta.icon} className="shrink-0" />
+                <span className="truncate min-w-0 hidden md:inline ml-1">{currentMeta.label}</span>
+              </Button>
+            )
+          })()}
 
         {/* 可收缩按钮组 */}
         <Button

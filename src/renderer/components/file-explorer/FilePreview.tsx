@@ -23,8 +23,33 @@ import {
 import {
   usePreviewOverlayStore,
   setCurrentVideoPlaybackTime,
-  getCurrentVideoPlaybackTime
+  getCurrentVideoPlaybackTime,
+  type MediaFitMode
 } from '../../stores/preview-overlay-store'
+
+function getMediaFitClass(
+  mode: MediaFitMode,
+  vh: '75vh' | '65vh' | '70vh',
+  isVideoElement = false
+): string {
+  if (mode === 'contain') {
+    const heightClass = vh === '75vh' ? 'h-[75vh]' : vh === '65vh' ? 'h-[65vh]' : 'h-[70vh]'
+    return cn(
+      'w-full object-contain rounded transition-all duration-150',
+      heightClass,
+      !isVideoElement && 'drop-shadow-md'
+    )
+  }
+  if (mode === 'contain-natural') {
+    const maxHeightClass =
+      vh === '75vh' ? 'max-h-[75vh]' : vh === '65vh' ? 'max-h-[65vh]' : 'max-h-[70vh]'
+    return cn(
+      'max-w-full w-auto h-auto object-contain shadow-lg rounded transition-all duration-150',
+      maxHeightClass
+    )
+  }
+  return 'w-full max-w-full h-auto object-contain shadow-lg rounded transition-all duration-150'
+}
 
 interface StreamPlaybackSession {
   streamId: string
@@ -108,7 +133,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const setVideoMuted = usePreviewOverlayStore(s => s.setVideoMuted)
   const videoVolume = usePreviewOverlayStore(s => s.videoVolume)
   const setVideoVolume = usePreviewOverlayStore(s => s.setVideoVolume)
-  const isMediaFitContain = usePreviewOverlayStore(s => s.isMediaFitContain)
+  const mediaFitMode = usePreviewOverlayStore(s => s.mediaFitMode)
   const lastStreamActivityRef = useRef(Date.now())
   const pendingSeekRef = useRef(false)
   /** 8s 停滞看门狗仅在 loadeddata 后启用，避免冷启动与后端 10s 看门狗竞态 */
@@ -815,10 +840,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               <img
                 src={fileUrl}
                 alt={fileName}
-                className={cn(
-                  'object-contain shadow-lg rounded transition-all duration-150',
-                  isMediaFitContain ? 'max-w-full max-h-[75vh]' : 'w-full max-w-full h-auto'
-                )}
+                className={getMediaFitClass(mediaFitMode, '75vh')}
               />
             </div>
             {/* 多模态描述文本区 */}
@@ -875,10 +897,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     <img
                       src={staticFrameUrl}
                       alt={fileName}
-                      className={cn(
-                        'shadow-lg rounded object-contain transition-all duration-150',
-                        isMediaFitContain ? 'max-w-full max-h-[65vh]' : 'w-full max-w-full h-auto'
-                      )}
+                      className={getMediaFitClass(mediaFitMode, '65vh')}
                       onError={() => {
                         // WebP 头合法不代表整帧完整；渲染失败时回退占位图标且不立即重试同一坏帧
                         logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
@@ -940,10 +959,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     onPause={() => setStreamPlaying(false)}
                     onError={handleStreamError}
                     onEnded={handleStreamEnded}
-                    className={cn(
-                      'shadow-lg rounded transition-all duration-150',
-                      isMediaFitContain ? 'max-w-full max-h-[65vh] object-contain' : 'w-full max-w-full h-auto object-contain'
-                    )}
+                    className={getMediaFitClass(mediaFitMode, '65vh', true)}
                   >
                     {t('您的浏览器不支持视频播放')}
                   </video>
@@ -1007,10 +1023,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     )
                     void startStreamPlayback(startSec)
                   }}
-                  className={cn(
-                    'shadow-lg rounded transition-all duration-150',
-                    isMediaFitContain ? 'max-w-full max-h-[70vh] object-contain' : 'w-full max-w-full h-auto object-contain'
-                  )}
+                  className={getMediaFitClass(mediaFitMode, '70vh', true)}
                 >
                   {t('您的浏览器不支持视频播放')}
                 </video>

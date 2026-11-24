@@ -25,7 +25,7 @@ export const ALL_DETAILS_CARD_IDS: DetailsCardId[] = [
 export const getDetailsCardTitle = (id: DetailsCardId): string => {
   const titles: Record<DetailsCardId, string> = {
     [DETAILS_CARD_IDS.MINI_PREVIEW]: t('迷你预览'),
-    [DETAILS_CARD_IDS.SUMMARY]: t('摘要语义'),
+    [DETAILS_CARD_IDS.SUMMARY]: t('文件名与描述'),
     [DETAILS_CARD_IDS.TAGS]: t('受控标签'),
     [DETAILS_CARD_IDS.METRICS]: t('分析指标')
   }
@@ -35,7 +35,7 @@ export const getDetailsCardTitle = (id: DetailsCardId): string => {
 export const getDetailsCardIcon = (id: DetailsCardId): string => {
   const icons: Record<DetailsCardId, string> = {
     [DETAILS_CARD_IDS.MINI_PREVIEW]: 'image',
-    [DETAILS_CARD_IDS.SUMMARY]: 'auto_awesome',
+    [DETAILS_CARD_IDS.SUMMARY]: 'article',
     [DETAILS_CARD_IDS.TAGS]: 'label',
     [DETAILS_CARD_IDS.METRICS]: 'analytics'
   }

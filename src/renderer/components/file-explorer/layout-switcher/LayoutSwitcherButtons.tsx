@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { ListOrdered, RotateCcw } from 'lucide-react'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import i18nScope, { t } from '../../../../languages'
 import {
@@ -11,7 +12,10 @@ import {
   getLayoutLabel,
   MAX_COMMON_LAYOUT_COUNT
 } from './index'
+import { LayoutPresetIcon } from './LayoutPresetIcon'
+import { resetCurrentPageLayout } from './reset-layout'
 import { useLayoutSwitcherStore } from '../../../stores/layout-switcher-store'
+import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
 
 export interface LayoutSwitcherButtonsProps {
   activePageId?: string
@@ -42,7 +46,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
     right: 0
   })
 
-  // 常用区确定性规则：严格锁定前 4 项，按固定能力顺序排布（单选按钮组风格，选中后位置恒定，严禁跳位）
+  // 常用区确定性规则：严格锁定前 3 项，按固定能力顺序排布（单选按钮组风格，选中后位置恒定，严禁跳位）
   const commonKeys = useMemo(() => {
     return allowedPresets.slice(0, MAX_COMMON_LAYOUT_COUNT)
   }, [allowedPresets])
@@ -133,7 +137,11 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
               index > 0 ? 'max-[879px]:hidden' : 'max-[599px]:hidden'
             )}
           >
-            <MaterialIcon icon={def.icon} className="text-[18px]" />
+            <LayoutPresetIcon
+              layoutKey={key}
+              icon={def.icon}
+              className="text-[18px] w-[18px] h-[18px]"
+            />
             {/* 自定义子集微小圆点指示 */}
             {isActive && isCustomSubset && (
               <span className="absolute bottom-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />
@@ -175,8 +183,8 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
             role="radiogroup"
             aria-label={t('选择页面布局')}
             className={cn(
-              'fixed z-[60] min-w-[150px] p-1 rounded-lg border border-border/60 bg-popover text-popover-foreground shadow-lg',
-              'animate-in fade-in-0 zoom-in-95 duration-100 no-drag select-none'
+              'fixed z-[60] min-w-[188px] p-1.5 rounded-xl border border-border/70 bg-popover/98 backdrop-blur-md text-popover-foreground shadow-xl ring-1 ring-black/5 dark:ring-white/10',
+              'animate-in fade-in-0 zoom-in-95 duration-150 no-drag select-none'
             )}
             style={
               {
@@ -186,38 +194,90 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
               } as React.CSSProperties
             }
           >
-            <div className="px-2 py-1 text-xs font-semibold text-muted-foreground border-b border-border/30 mb-1">
+            <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground/80 mb-0.5">
               {t('选择页面布局')}
             </div>
-            {allowedPresets.map(key => {
-              const def = LAYOUT_PRESETS[key]
-              if (!def) return null
-              const isActive = currentKey === key
-              const label = getLayoutLabel(key)
+            <div className="space-y-0.5">
+              {allowedPresets.map(key => {
+                const def = LAYOUT_PRESETS[key]
+                if (!def) return null
+                const isActive = currentKey === key
+                const label = getLayoutLabel(key)
 
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="radio"
-                  aria-checked={isActive}
-                  data-testid={`dropdown-item-${key}`}
-                  onClick={() => {
-                    setPageLayout(targetPageId, key)
-                    setIsDropdownOpen(false)
-                  }}
-                  className={cn(
-                    'flex items-center w-full gap-2 px-2.5 py-1.5 text-xs rounded-md transition-colors',
-                    'hover:bg-accent hover:text-accent-foreground cursor-pointer',
-                    isActive && 'bg-accent/60 text-primary font-medium'
-                  )}
-                >
-                  <MaterialIcon icon={def.icon} className="text-[16px]" />
-                  <span className="flex-1 text-left">{label}</span>
-                  {isActive && <MaterialIcon icon="check" className="text-[14px] text-primary" />}
-                </button>
-              )
-            })}
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="radio"
+                    aria-checked={isActive}
+                    data-testid={`dropdown-item-${key}`}
+                    onClick={() => {
+                      setPageLayout(targetPageId, key)
+                      setIsDropdownOpen(false)
+                    }}
+                    className={cn(
+                      'flex items-center w-full gap-2 px-2 py-1.5 text-xs rounded-lg transition-colors cursor-pointer group',
+                      'hover:bg-accent/70 hover:text-accent-foreground',
+                      isActive && 'bg-primary/10 text-primary font-medium'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'w-6 h-6 rounded-md flex items-center justify-center shrink-0 transition-colors',
+                        isActive
+                          ? 'bg-primary/15 text-primary'
+                          : 'bg-muted/60 text-muted-foreground group-hover:text-foreground'
+                      )}
+                    >
+                      <LayoutPresetIcon
+                        layoutKey={key}
+                        icon={def.icon}
+                        className="text-[15px] w-[15px] h-[15px]"
+                      />
+                    </span>
+                    <span className="flex-1 text-left">{label}</span>
+                    {isActive && <MaterialIcon icon="check" className="text-[14px] text-primary" />}
+                  </button>
+                )
+              })}
+            </div>
+
+            <div className="my-1.5 border-t border-border/40 mx-1" />
+
+            <div className="px-2 py-1 text-[11px] font-semibold text-muted-foreground/80 mb-0.5">
+              {t('快捷工具')}
+            </div>
+            <div className="space-y-0.5">
+              <button
+                type="button"
+                data-testid="layout-dropdown-analysis-queue"
+                onClick={() => {
+                  useAnalysisQueueStore.getState().toggleQueue()
+                  setIsDropdownOpen(false)
+                }}
+                className="flex items-center w-full gap-2 px-2 py-1.5 text-xs rounded-lg transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent/70 group"
+              >
+                <span className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
+                  <ListOrdered className="w-3.5 h-3.5 opacity-80 group-hover:opacity-100 text-primary transition-all" />
+                </span>
+                <span className="flex-1 text-left font-medium">{t('分析队列')}</span>
+              </button>
+
+              <button
+                type="button"
+                data-testid="layout-dropdown-reset-layout"
+                onClick={() => {
+                  setIsDropdownOpen(false)
+                  resetCurrentPageLayout(window.location.pathname, targetPageId)
+                }}
+                className="flex items-center w-full gap-2 px-2 py-1.5 text-xs rounded-lg transition-colors cursor-pointer text-muted-foreground hover:text-foreground hover:bg-accent/70 group"
+              >
+                <span className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center shrink-0 group-hover:bg-accent transition-colors">
+                  <RotateCcw className="w-3.5 h-3.5 opacity-80 group-hover:opacity-100 transition-all" />
+                </span>
+                <span className="flex-1 text-left font-medium">{t('重置布局')}</span>
+              </button>
+            </div>
           </div>,
           document.body
         )}

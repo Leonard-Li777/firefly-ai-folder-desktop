@@ -7,7 +7,6 @@ import {
   MessageCircle,
   QrCode,
   RotateCcw,
-  Settings,
   User,
   Bot,
   KeyRound,
@@ -39,6 +38,7 @@ import { useSettingsStore } from '../../stores/settings-store'
 import { useTierStore } from '../../stores/tier-store'
 import { useConfigStore } from '../../stores/config-store'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
+import { resetCurrentPageLayout } from '../file-explorer/layout-switcher/reset-layout'
 import { Button } from '../ui/button'
 
 interface UserAvatarMenuProps {
@@ -500,18 +500,6 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
               <div className="p-2 space-y-0.5">
                 <button
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98] cursor-pointer"
-                  onClick={() => handleMenuClick(() => openSettings())}
-                >
-                  <div className="w-7 h-7 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                    <Settings className="w-4 h-4 opacity-70 group-hover:opacity-100 group-hover:text-primary transition-all" />
-                  </div>
-                  <span className="flex-1 font-medium whitespace-normal break-words min-w-0 text-left leading-snug">
-                    {t('设置')}
-                  </span>
-                </button>
-
-                <button
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98] cursor-pointer"
                   onClick={() =>
                     handleMenuClick(() => useAnalysisQueueStore.getState().toggleQueue())
                   }
@@ -575,24 +563,7 @@ export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) 
 
                 <button
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98] cursor-pointer"
-                  onClick={() =>
-                    handleMenuClick(() => {
-                      // 根据当前页面路径确定 storageKey
-                      const pathname = location.pathname
-                      let storageKey = 'real-directory'
-                      if (pathname === '/analyzed-directory') {
-                        storageKey = 'analyzed-directory'
-                      } else if (pathname.startsWith('/virtual-directory')) {
-                        storageKey = 'virtual-directory'
-                      } else if (pathname === '/organize') {
-                        storageKey = 'organize-main'
-                      }
-                      // 清除 localStorage 中的布局数据
-                      localStorage.removeItem('split-pane:' + storageKey)
-                      // 重新加载页面应用默认布局
-                      window.location.reload()
-                    })
-                  }
+                  onClick={() => handleMenuClick(() => resetCurrentPageLayout(location.pathname))}
                 >
                   <div className="w-7 h-7 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 group-hover:bg-accent transition-colors">
                     <RotateCcw className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-all" />

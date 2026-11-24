@@ -317,8 +317,8 @@ export const SplitPane: React.FC<SplitPaneProps> = ({
     <div
       ref={containerRef}
       className={cn(
-        'flex overflow-hidden relative',
-        isHorizontal ? 'flex-row h-full' : 'flex-col w-full',
+        'flex overflow-hidden relative w-full h-full flex-1 min-w-0 min-h-0',
+        isHorizontal ? 'flex-row' : 'flex-col',
         className
       )}
     >

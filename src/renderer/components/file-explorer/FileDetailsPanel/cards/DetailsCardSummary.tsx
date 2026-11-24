@@ -162,14 +162,14 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
 
   return (
     <div data-testid="details-card-summary" className="w-full flex flex-col min-h-[140px]">
-      <div className="w-full flex items-center justify-between mb-2">
+      <div className="w-full flex items-center justify-between mb-2.5">
         <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
-          <MaterialIcon icon="auto_awesome" className="text-sm text-primary" />
-          {t('摘要语义')}
+          <MaterialIcon icon="article" className="text-sm text-primary" />
+          {t('文件名与描述')}
         </span>
       </div>
 
-      <div className="flex-1 flex flex-col justify-start">
+      <div className="flex-1 flex flex-col justify-start space-y-2.5">
         {/* 单文件模式 */}
         {analysisResult && isFileAnalysis(analysisResult) ? (
           <>
@@ -178,52 +178,113 @@ export const DetailsCardSummary: React.FC<DetailsCardSummaryProps> = ({
               const smartName = analysisResult.smartName || ''
 
               if (smartName) {
-                const primary = swapFileNameDisplay ? realName : smartName
-                const secondary = swapFileNameDisplay ? smartName : realName
+                const primaryLabel = swapFileNameDisplay ? t('原文件名') : t('智能文件名')
+                const primaryIcon = swapFileNameDisplay ? 'insert_drive_file' : 'auto_awesome'
+                const primaryValue = swapFileNameDisplay ? realName : smartName
+
+                const secondaryLabel = swapFileNameDisplay ? t('智能文件名') : t('原文件名')
+                const secondaryIcon = swapFileNameDisplay ? 'auto_awesome' : 'insert_drive_file'
+                const secondaryValue = swapFileNameDisplay ? smartName : realName
 
                 return (
-                  <div className="mb-2">
-                    <h2
-                      className="font-semibold text-sm text-primary break-all cursor-text leading-snug"
-                      title={primary}
-                    >
-                      <HighlightText text={primary} title={primary} />
-                    </h2>
-                    {secondary && (
-                      <p
-                        className="text-xs text-muted-foreground mt-0.5 break-all cursor-text"
-                        title={secondary}
+                  <div className="space-y-2.5">
+                    {/* 主名称字段 */}
+                    <div className="rounded-lg border border-primary/20 bg-primary/[0.04] px-2.5 py-2">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-4 h-4 rounded flex items-center justify-center bg-primary/15 text-primary shrink-0">
+                          <MaterialIcon icon={primaryIcon} className="text-[11px] leading-none" />
+                        </span>
+                        <span className="text-[10px] font-semibold text-primary/80 tracking-wide">
+                          {primaryLabel}
+                        </span>
+                      </div>
+                      <h2
+                        className="font-semibold text-[13px] text-foreground break-all cursor-text leading-snug"
+                        title={primaryValue}
                       >
-                        <HighlightText text={secondary} title={secondary} />
-                      </p>
+                        <HighlightText text={primaryValue} title={primaryValue} />
+                      </h2>
+                    </div>
+
+                    {/* 次名称字段 */}
+                    {secondaryValue && (
+                      <div className="rounded-lg border border-border/40 bg-muted/35 px-2.5 py-1.5">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="w-4 h-4 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
+                            <MaterialIcon
+                              icon={secondaryIcon}
+                              className="text-[11px] leading-none"
+                            />
+                          </span>
+                          <span className="text-[10px] font-medium text-muted-foreground/85">
+                            {secondaryLabel}
+                          </span>
+                        </div>
+                        <p
+                          className="text-xs text-muted-foreground break-all cursor-text leading-snug"
+                          title={secondaryValue}
+                        >
+                          <HighlightText text={secondaryValue} title={secondaryValue} />
+                        </p>
+                      </div>
                     )}
                   </div>
                 )
               }
 
               return (
-                <h2
-                  className="font-semibold text-sm text-foreground break-all cursor-text mb-2 leading-snug"
-                  title={realName}
-                >
-                  <HighlightText text={realName} title={realName} />
-                </h2>
+                <div className="rounded-lg border border-border/50 bg-muted/30 px-2.5 py-2">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="w-4 h-4 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
+                      <MaterialIcon icon="insert_drive_file" className="text-[11px] leading-none" />
+                    </span>
+                    <span className="text-[10px] font-semibold text-muted-foreground">
+                      {t('原文件名')}
+                    </span>
+                  </div>
+                  <h2
+                    className="font-semibold text-[13px] text-foreground break-all cursor-text leading-snug"
+                    title={realName}
+                  >
+                    <HighlightText text={realName} title={realName} />
+                  </h2>
+                </div>
               )
             })()}
 
             {analysisResult.description && (
-              <div className="mt-1 text-left text-xs text-muted-foreground/90 leading-relaxed max-h-[180px] overflow-y-auto no-scrollbar">
-                <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
+              <div className="rounded-lg border border-border/40 bg-muted/25 px-3 py-2">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="w-4 h-4 rounded flex items-center justify-center bg-sky-500/15 text-sky-600 dark:text-sky-400 shrink-0">
+                    <MaterialIcon icon="notes" className="text-[11px] leading-none" />
+                  </span>
+                  <span className="text-[10px] font-semibold text-muted-foreground/90">
+                    {t('内容描述')}
+                  </span>
+                </div>
+                <div className="text-left text-xs text-foreground/85 leading-relaxed max-h-[200px] overflow-y-auto no-scrollbar">
+                  <MarkdownRenderer content={analysisResult.description} maskClass={maskClass} />
+                </div>
               </div>
             )}
           </>
         ) : item && !isDirectory ? (
-          <h2
-            className="font-semibold text-sm text-foreground break-all cursor-text leading-snug"
-            title={item.name}
-          >
-            <HighlightText text={item.name} title={item.name} />
-          </h2>
+          <div className="rounded-lg border border-border/50 bg-muted/30 px-2.5 py-2">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="w-4 h-4 rounded flex items-center justify-center bg-muted text-muted-foreground shrink-0">
+                <MaterialIcon icon="insert_drive_file" className="text-[11px] leading-none" />
+              </span>
+              <span className="text-[10px] font-semibold text-muted-foreground">
+                {t('原文件名')}
+              </span>
+            </div>
+            <h2
+              className="font-semibold text-[13px] text-foreground break-all cursor-text leading-snug"
+              title={item.name}
+            >
+              <HighlightText text={item.name} title={item.name} />
+            </h2>
+          </div>
         ) : null}
 
         {/* 目录模式 */}
