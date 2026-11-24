@@ -950,6 +950,169 @@ describe('SLICE-08: BasicAIEngineTab 视频档位联动与基线恢复 (v1.5 等
       }
     }
   })
+
+  it('视频伴音台词与纯音频听写时长上限：四行同构风格对齐、刻度跳转及快速连续拖动防闪动回退', async () => {
+    const originalPointerEvent = (globalThis as any).PointerEvent
+    if (!originalPointerEvent) {
+      ;(globalThis as any).PointerEvent = class extends MouseEvent {
+        pointerType: string
+        constructor(type: string, params: PointerEventInit = {}) {
+          super(type, params)
+          this.pointerType = params.pointerType ?? 'mouse'
+        }
+      }
+    }
+    vi.useFakeTimers()
+    try {
+      const makeWorkspace = (overrides?: Record<string, unknown>) => ({
+        id: 15,
+        name: 'AsrRaceTest',
+        path: 'D:\\AsrRaceTest',
+        workspace_config: JSON.stringify({
+          schemaVersion: 1,
+          status: 'ready',
+          policyVersion: 1,
+          baseAIConfig: {
+            analysisMode: 'full',
+            videoAnalyzeDurationSec: 300,
+            videoQuotaMax: 60,
+            videoCutSensitivity: 'medium',
+            videoSoftTokenBudget: 48,
+            videoAsrDurationSec: 30,
+            audioAnalysisDurationSec: 60
+          },
+          ...(overrides ? { overrides } : {})
+        })
+      })
+
+      let resolveFirstSave!: (val: any) => void
+      const firstSavePromise = new Promise(resolve => {
+        resolveFirstSave = resolve
+      })
+      mockApplyMutation
+        .mockReturnValueOnce(firstSavePromise)
+        .mockResolvedValue({ success: true, policyVersion: 2 })
+
+      const { container, rerender } = render(
+        <BasicAIEngineTab workspace={makeWorkspace() as any} />
+      )
+
+      // 展开微调面板显示 ASR 双滑块
+      fireEvent.click(screen.getByText('展开微调'))
+
+      const videoAsrTrack = screen.getByTestId('video-asr-cap-track')
+      const videoAsrFill = screen.getByTestId('video-asr-cap-fill')
+      const videoAsrLegend = screen.getByTestId('video-asr-cap-legend')
+
+      const audioAsrTrack = screen.getByTestId('audio-analysis-cap-track')
+      const audioAsrFill = screen.getByTestId('audio-analysis-cap-fill')
+      const audioAsrLegend = screen.getByTestId('audio-analysis-cap-legend')
+
+      // 1. 验证四行同构风格对齐：胶囊、渐变、刻度与无工程黑话 (§2.16)
+      expect(screen.getAllByText('15 秒一档 · 最长 3 分钟')).toHaveLength(2)
+      expect(screen.getAllByText('45 秒')).toHaveLength(2)
+      expect(screen.getAllByText('90 秒')).toHaveLength(2)
+      expect(screen.getAllByText('135 秒')).toHaveLength(2)
+      expect(screen.getAllByText('3 分钟')).toHaveLength(2)
+
+      expect(videoAsrFill.style.backgroundImage).toContain('#38bdf8')
+      expect(audioAsrFill.style.backgroundImage).toContain('#38bdf8')
+      expect(videoAsrFill).toHaveStyle({ width: '16.67%' }) // 30 / 180
+      expect(audioAsrFill).toHaveStyle({ width: '33.33%' }) // 60 / 180
+      expect(within(videoAsrLegend).getByText(/涵盖短视频与片头核心台词/)).toBeInTheDocument()
+      expect(within(audioAsrLegend).getByText(/涵盖语音备忘与短录音/)).toBeInTheDocument()
+      expect(container.textContent ?? '').not.toMatch(FORBIDDEN_JARGON_RE)
+
+      // Mock 轨道几何尺寸 (width: 360 -> 1px = 0.5s, step=15s)
+      const mockRect = {
+        left: 0,
+        right: 360,
+        top: 0,
+        bottom: 12,
+        width: 360,
+        height: 12,
+        x: 0,
+        y: 0,
+        toJSON: () => ({})
+      }
+      vi.spyOn(videoAsrTrack, 'getBoundingClientRect').mockReturnValue(mockRect)
+      vi.spyOn(audioAsrTrack, 'getBoundingClientRect').mockReturnValue(mockRect)
+
+      // 2. 防闪动回退核心复现场景：
+      // (a) 先将「视频伴音台词识别上限」拖至 90s (clientX: 180 -> 50%) 松手，推进 550ms 发出第 1 次 IPC (飞行中)
+      fireEvent.pointerDown(videoAsrTrack, { pointerType: 'mouse', button: 0, clientX: 180 })
+      fireEvent.pointerUp(videoAsrTrack, { pointerType: 'mouse', button: 0, clientX: 180 })
+      expect(videoAsrFill).toHaveStyle({ width: '50%' })
+      act(() => {
+        vi.advanceTimersByTime(550)
+      })
+      expect(mockApplyMutation).toHaveBeenCalledTimes(1)
+      expect(mockApplyMutation).toHaveBeenLastCalledWith(15, {
+        overridePatch: { videoAsrDurationSec: 90 }
+      })
+
+      // (b) 第 1 次 IPC 尚未返回，用户快速连续再次拖动并停在 150s (clientX: 300 -> 83.33%)，松手处于第 2 轮防抖窗口
+      fireEvent.pointerDown(videoAsrTrack, { pointerType: 'mouse', button: 0, clientX: 210 })
+      fireEvent.pointerMove(videoAsrTrack, { pointerType: 'mouse', button: 0, clientX: 300 })
+      expect(videoAsrFill).toHaveStyle({ width: '83.33%' })
+      fireEvent.pointerUp(videoAsrTrack, { pointerType: 'mouse', button: 0, clientX: 300 })
+
+      // (c) 模拟外部异步旧快照回写 (携带上一轮 90s 或最初 30s 的 workspace_config)
+      rerender(<BasicAIEngineTab workspace={makeWorkspace({ videoAsrDurationSec: 90 }) as any} />)
+
+      // 核心断言：即使外部传入旧值 90s，控件绝不可闪动回退！仍稳固保持 150 秒 (83.33%)
+      expect(videoAsrFill).toHaveStyle({ width: '83.33%' })
+      expect(screen.getByText('150 秒')).toBeInTheDocument()
+
+      // (d) 结束第 1 轮飞行，推进 600ms 验证最终落盘仍为最新值 150s
+      await act(async () => {
+        resolveFirstSave({ success: true, policyVersion: 2 })
+        await Promise.resolve()
+      })
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).toHaveBeenLastCalledWith(15, {
+        overridePatch: { videoAsrDurationSec: 150 }
+      })
+
+      // 3. 验证纯音频滑块拖拽中锁定不被外部刷退，以及 pointerCancel 复位、0s/3分钟刻度点击
+      fireEvent.pointerDown(audioAsrTrack, { pointerType: 'mouse', button: 0, clientX: 270 }) // 135s (75%)
+      expect(audioAsrFill).toHaveStyle({ width: '75%' })
+      // 拖动中即使外部 rerender 传回旧值 60s，拖拽态仍牢牢锁住当前位置 135s
+      rerender(
+        <BasicAIEngineTab
+          workspace={
+            makeWorkspace({ videoAsrDurationSec: 150, audioAnalysisDurationSec: 60 }) as any
+          }
+        />
+      )
+      expect(audioAsrFill).toHaveStyle({ width: '75%' })
+      // pointerCancel 中断后复位至 60s (33.33%) 且不误落盘
+      fireEvent.pointerCancel(audioAsrTrack, { pointerType: 'mouse', button: 0, clientX: 0 })
+      expect(audioAsrFill).toHaveStyle({ width: '33.33%' })
+
+      // 点击纯音频第 2 组刻度「0」按钮 -> 立即跳 0s 并显示不听写与暂停态
+      mockApplyMutation.mockClear()
+      const zeroButtons = screen.getAllByRole('button', { name: '0' })
+      fireEvent.click(zeroButtons[1])
+      expect(audioAsrFill).toHaveStyle({ width: '0%' })
+      expect(within(audioAsrLegend).getByText(/已关闭纯音频听写/)).toBeInTheDocument()
+      act(() => {
+        vi.advanceTimersByTime(600)
+      })
+      expect(mockApplyMutation).toHaveBeenLastCalledWith(15, {
+        overridePatch: { audioAnalysisDurationSec: 0 }
+      })
+    } finally {
+      vi.useRealTimers()
+      if (!originalPointerEvent) {
+        delete (globalThis as any).PointerEvent
+      } else {
+        ;(globalThis as any).PointerEvent = originalPointerEvent
+      }
+    }
+  })
 })
 
 describe('SLICE-08: 设置值四态表格（四态表格）', () => {

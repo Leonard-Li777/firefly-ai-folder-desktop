@@ -45,9 +45,14 @@ import { usePluginCenterStore } from '../../../stores/plugin-center-store'
 import { toast } from '../../common/Toast'
 import { t } from '@app/languages'
 import {
-  submitWorkspacePolicyMutation,
-  getMutationErrorText
-} from '../../../lib/workspace-policy/workspace-ai-client'
+  ScaleTickItem,
+  ScaleTicksBar,
+  PolicySliderRow,
+  PolicySliderTick,
+  useSmoothSlider,
+  VIDEO_COVERAGE_GRADIENT
+} from './policy-slider-kit'
+import { useWorkspacePolicyPatchChannel } from './use-workspace-policy-patch-channel'
 import { getIntentDisplayName } from '../WorkspaceConfigPanel'
 import { cn } from '../../../lib/utils'
 
@@ -67,12 +72,6 @@ export interface BasicAIEngineTabProps {
   ) => void
   /** 同弹窗内跳转至其它工作目录设置 Tab（例如直达「待补分析文件」） */
   onNavigateTab?: (tabId: 'pending_backfill') => void
-}
-
-/** 待提交的补丁累积 */
-interface PendingPolicyPatch {
-  patch: Partial<TechnicalEngineParameters>
-  restore: Set<keyof TechnicalEngineParameters>
 }
 
 /**
@@ -231,70 +230,112 @@ function scalePctToDurationSec(pct: number): number {
 const VIDEO_COST_GRADIENT =
   'linear-gradient(90deg, #10b981 0%, #22c55e 25%, #f59e0b 55%, #f97316 78%, #ef4444 100%)'
 
-/** 时长上限正向能量渐变（浅天蓝 → 品牌靛紫，越长代表可检索范围越完整） */
-const VIDEO_COVERAGE_GRADIENT = 'linear-gradient(90deg, #38bdf8 0%, #6366f1 55%, #8b5cf6 100%)'
-
 interface VideoScaleTicksProps {
   /** 可选：点击刻度跳转（仅第 1 项控制源滑块使用） */
-  onSelectSec?: (sec: number) => void
+  onSelect?: (sec: number) => void
   /** 可选：当前选中的时长秒数，用于高亮命中刻度 */
   activeSec?: number
 }
 
 /** 三项共用的 3 小时统一分段刻度标尺（像素级垂直对齐） */
-const VideoScaleTicks: React.FC<VideoScaleTicksProps> = ({ onSelectSec, activeSec }) => {
-  const ticks = [
-    { sec: 0, pct: 0, label: '0', clickable: false },
-    { sec: 300, pct: 25, label: t('5 分钟'), clickable: true },
-    { sec: 1800, pct: 50, label: t('30 分钟'), clickable: true },
-    { sec: 3600, pct: 75, label: t('1 小时'), clickable: true },
-    { sec: 10800, pct: 100, label: t('3 小时'), clickable: true }
+const VideoScaleTicks: React.FC<VideoScaleTicksProps> = ({ onSelect, activeSec }) => {
+  const ticks: ReadonlyArray<ScaleTickItem> = [
+    { value: 0, pct: 0, label: '0', clickable: false },
+    { value: 300, pct: 25, label: t('5 分钟'), clickable: true },
+    { value: 1800, pct: 50, label: t('30 分钟'), clickable: true },
+    { value: 3600, pct: 75, label: t('1 小时'), clickable: true },
+    { value: 10800, pct: 100, label: t('3 小时'), clickable: true }
   ]
-
-  return (
-    <div className="relative h-4 text-[10px] text-muted-foreground/70 font-mono select-none">
-      {ticks.map(tick => {
-        const isFirst = tick.pct === 0
-        const isLast = tick.pct === 100
-        const isActive = activeSec !== undefined && activeSec === tick.sec
-        const posStyle = !isFirst && !isLast ? { left: `${tick.pct}%` } : undefined
-        const alignClass = isFirst ? 'left-0' : isLast ? 'right-0' : '-translate-x-1/2'
-
-        if (onSelectSec && tick.clickable) {
-          return (
-            <button
-              key={tick.pct}
-              type="button"
-              onClick={() => onSelectSec(tick.sec)}
-              style={posStyle}
-              className={cn(
-                'absolute top-0 leading-none transition-colors hover:text-primary cursor-pointer',
-                alignClass,
-                isActive && 'text-primary font-bold'
-              )}
-            >
-              {tick.label}
-            </button>
-          )
-        }
-
-        return (
-          <span
-            key={tick.pct}
-            style={posStyle}
-            className={cn(
-              'absolute top-0 leading-none',
-              alignClass,
-              isActive && 'text-primary font-semibold'
-            )}
-          >
-            {tick.label}
-          </span>
-        )
-      })}
-    </div>
-  )
+  return <ScaleTicksBar ticks={ticks} onSelect={onSelect} activeValue={activeSec} />
 }
+
+/** 语音听写时长停靠点：0..180 秒，每 15 秒一档（共 13 档） */
+const ASR_CAP_STOPS: ReadonlyArray<number> = Array.from({ length: 13 }, (_, i) => i * 15)
+
+interface AsrDurationCapSliderProps {
+  testIdPrefix: 'video-asr-cap' | 'audio-analysis-cap'
+  mode: 'video_asr' | 'audio_asr'
+  title: string
+  value: number
+  zeroHintText: string
+  onChange: (sec: number) => void
+  className?: string
+}
+
+/**
+ * 语音听写与台词提取时长上限平滑滑块（与「每个视频分析时长上限」同构四行视觉 + 无闪回状态机）
+ */
+const AsrDurationCapSlider: React.FC<AsrDurationCapSliderProps> = React.memo(
+  ({ testIdPrefix, mode, title, value, zeroHintText, onChange, className }) => {
+    const ticks: ReadonlyArray<PolicySliderTick> = [
+      { value: 0, label: '0' },
+      { value: 45, label: t('45 秒') },
+      { value: 90, label: t('90 秒') },
+      { value: 135, label: t('135 秒') },
+      { value: 180, label: t('3 分钟') }
+    ]
+
+    const renderValue = (sec: number) => (
+      <>
+        <span className="text-sm font-extrabold font-mono text-primary">
+          {sec} {t('秒')}
+        </span>
+        {sec === 0 ? (
+          <span className="text-[11px] text-muted-foreground font-mono">({zeroHintText})</span>
+        ) : (
+          sec >= 60 && (
+            <span className="text-[11px] text-muted-foreground font-mono">
+              ({t('约 {min} 分钟', { min: (sec / 60).toFixed(1) })})
+            </span>
+          )
+        )}
+      </>
+    )
+
+    const renderLegend = (sec: number) => {
+      if (mode === 'video_asr') {
+        return {
+          left:
+            sec === 0
+              ? t('设为 0 则不提取伴音台词')
+              : t('仅提取视频开头前 {sec} 秒的音轨台词（不影响纯音频），识别越长台词标签越全', {
+                  sec
+                }),
+          badge:
+            sec === 0
+              ? { paused: true, text: t('已关闭伴音台词提取') }
+              : sec <= 60
+                ? { paused: false, text: t('涵盖短视频与片头核心台词') }
+                : { paused: false, text: t('深度覆盖长视频对白与旁白') }
+        }
+      }
+      return {
+        left: t('仅听写音频文件开头前 {sec} 秒的内容，设为 0 则不听写', { sec }),
+        badge:
+          sec === 0
+            ? { paused: true, text: t('已关闭纯音频听写') }
+            : sec <= 60
+              ? { paused: false, text: t('涵盖语音备忘与短录音') }
+              : { paused: false, text: t('深度覆盖播客与会议长录音') }
+      }
+    }
+
+    return (
+      <PolicySliderRow
+        testIdPrefix={testIdPrefix}
+        title={title}
+        capsuleText={t('15 秒一档 · 最长 3 分钟')}
+        renderValue={renderValue}
+        stops={ASR_CAP_STOPS}
+        value={value}
+        onChange={onChange}
+        ticks={ticks}
+        renderLegend={renderLegend}
+        className={className}
+      />
+    )
+  }
+)
 
 interface VideoCostLegendProps {
   testId: string
@@ -365,154 +406,30 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
     onDurationChange,
     onNavigateTab
   }) => {
-    const [localDurationSec, setLocalDurationSec] = useState(videoAnalyzeDurationSec)
-    const [isDragging, setIsDragging] = useState(false)
-    const isDraggingRef = useRef(false)
-    const commitTimerRef = useRef<NodeJS.Timeout | null>(null)
-    const pendingCommitValRef = useRef<number | null>(null)
-    const keyboardDirtyRef = useRef(false)
-    const lastDraggedSecRef = useRef<number | null>(null)
-    const onDurationChangeRef = useRef(onDurationChange)
-    onDurationChangeRef.current = onDurationChange
-    const trackRef = useRef<HTMLDivElement | null>(null)
-    const inputRef = useRef<HTMLInputElement | null>(null)
+    const {
+      safeValue: safeDurationSec,
+      isDragging,
+      trackRef,
+      inputRef,
+      handleSliderChange,
+      applyQuickSelect: applyQuickSelectSec,
+      handleTrackPointerDown,
+      handleTrackPointerMove,
+      handleTrackPointerUp,
+      handleTrackPointerCancel
+    } = useSmoothSlider({
+      value: videoAnalyzeDurationSec,
+      min: 300,
+      max: 10800,
+      fallbackValue: 300,
+      pctToValue: scalePctToDurationSec,
+      onCommit: onDurationChange
+    })
 
-    useEffect(() => {
-      if (!isDraggingRef.current && pendingCommitValRef.current === null) {
-        setLocalDurationSec(videoAnalyzeDurationSec)
-      }
-    }, [videoAnalyzeDurationSec])
-
-    useEffect(() => {
-      return () => {
-        if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-        if (pendingCommitValRef.current !== null) {
-          const pending = pendingCommitValRef.current
-          pendingCommitValRef.current = null
-          onDurationChangeRef.current(pending)
-        }
-      }
-    }, [])
-
-    const handleCommit = useCallback((val: number) => {
-      if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-      pendingCommitValRef.current = null
-      keyboardDirtyRef.current = false
-      lastDraggedSecRef.current = null
-      isDraggingRef.current = false
-      setIsDragging(false)
-      onDurationChangeRef.current(val)
-    }, [])
-
-    const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const parsed = parseInt(e.target.value, 10)
-      if (!Number.isFinite(parsed)) return
-      const nextVal = Math.min(10800, Math.max(300, parsed))
-      setLocalDurationSec(nextVal)
-      pendingCommitValRef.current = nextVal
-      keyboardDirtyRef.current = true
-      // 200ms 防抖兜底：即使鼠标拖出边界也能在松手后稳定提交
-      if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-      commitTimerRef.current = setTimeout(() => {
-        handleCommit(nextVal)
-      }, 200)
-    }
-
-    const handleSliderKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!keyboardDirtyRef.current) return
-      if (e.key === 'Tab' || e.key === 'Shift' || e.key === 'Escape' || e.key === 'Alt') return
-      const parsed = parseInt(e.currentTarget.value, 10)
-      if (!Number.isFinite(parsed)) return
-      handleCommit(Math.min(10800, Math.max(300, parsed)))
-    }
-
-    const safeDurationSec =
-      typeof localDurationSec === 'number' &&
-      Number.isFinite(localDurationSec) &&
-      localDurationSec > 0
-        ? localDurationSec
-        : 300
     const safeQuotaMax =
       typeof videoQuotaMax === 'number' && Number.isFinite(videoQuotaMax) && videoQuotaMax > 0
         ? videoQuotaMax
         : 60
-
-    const calcDurationFromClientX = useCallback((clientX: number): number | null => {
-      if (!Number.isFinite(clientX)) return null
-      const el = trackRef.current
-      if (!el) return null
-      const rect = el.getBoundingClientRect()
-      if (rect.width <= 0) return null
-      const pct = ((clientX - rect.left) / rect.width) * 100
-      return scalePctToDurationSec(pct)
-    }, [])
-
-    const applyQuickSelectSec = useCallback(
-      (sec: number) => {
-        setLocalDurationSec(sec)
-        handleCommit(sec)
-      },
-      [handleCommit]
-    )
-
-    const releaseCaptureQuietly = (target: HTMLDivElement, pointerId: number) => {
-      try {
-        if (target.hasPointerCapture?.(pointerId)) {
-          target.releasePointerCapture?.(pointerId)
-        }
-      } catch {
-        // 某些测试环境可能不支持 pointer capture
-      }
-    }
-
-    const handleTrackPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-      // 拦截非主键点击（右键、中键不修改配置）
-      if (typeof e.button === 'number' && e.button !== 0) return
-      isDraggingRef.current = true
-      setIsDragging(true)
-      pendingCommitValRef.current = null
-      inputRef.current?.focus({ preventScroll: true })
-      try {
-        e.currentTarget.setPointerCapture?.(e.pointerId)
-      } catch {
-        // 某些测试环境可能不支持 pointer capture
-      }
-      const nextSec = calcDurationFromClientX(e.clientX)
-      if (nextSec !== null) {
-        lastDraggedSecRef.current = nextSec
-        setLocalDurationSec(nextSec)
-        if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-      }
-    }
-
-    const handleTrackPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!isDraggingRef.current) return
-      const nextSec = calcDurationFromClientX(e.clientX)
-      if (nextSec !== null) {
-        lastDraggedSecRef.current = nextSec
-        setLocalDurationSec(nextSec)
-      }
-    }
-
-    const handleTrackPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!isDraggingRef.current) return
-      releaseCaptureQuietly(e.currentTarget, e.pointerId)
-      const nextSec = calcDurationFromClientX(e.clientX)
-      const finalSec = nextSec ?? lastDraggedSecRef.current ?? safeDurationSec
-      setLocalDurationSec(finalSec)
-      handleCommit(finalSec)
-    }
-
-    const handleTrackPointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!isDraggingRef.current) return
-      releaseCaptureQuietly(e.currentTarget, e.pointerId)
-      if (commitTimerRef.current) clearTimeout(commitTimerRef.current)
-      isDraggingRef.current = false
-      setIsDragging(false)
-      lastDraggedSecRef.current = null
-      pendingCommitValRef.current = null
-      setLocalDurationSec(videoAnalyzeDurationSec)
-    }
 
     const est = estimateVideoAnalysisDurationSec(
       safeQuotaMax,
@@ -604,12 +521,11 @@ const VideoAnalysisEstimateCard: React.FC<VideoAnalysisEstimateCardProps> = Reac
               step={300}
               value={safeDurationSec}
               onChange={handleSliderChange}
-              onKeyUp={handleSliderKeyUp}
               className="sr-only"
             />
           </div>
 
-          <VideoScaleTicks onSelectSec={applyQuickSelectSec} activeSec={safeDurationSec} />
+          <VideoScaleTicks onSelect={applyQuickSelectSec} activeSec={safeDurationSec} />
 
           <div
             data-testid="duration-cap-legend"
@@ -781,8 +697,6 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     (typeof window !== 'undefined' && window.electronAPI?.isPackaged === false)
   )
 
-  const [isSaving, setIsSaving] = useState(false)
-
   // 解析当前工作区配置
   const parsedConfig = useMemo<WorkspaceConfig>(() => {
     return parseWorkspaceConfig(workspace.workspace_config)
@@ -799,118 +713,41 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
     return mapIntentToParameters(currentIntent, hardwareInfo) as BaseAIConfig
   }, [isReady, parsedConfig, currentIntent, hardwareInfo])
 
-  const [overrides, setOverrides] = useState<Partial<TechnicalEngineParameters>>(() => {
-    if (isReady && parsedConfig.overrides) {
-      return { ...parsedConfig.overrides }
-    }
-    return {}
+  const {
+    overrides,
+    effectiveParams,
+    isSaving,
+    handleParamChange,
+    flushPending,
+    restoreField,
+    resetKeys
+  } = useWorkspacePolicyPatchChannel({
+    workspaceId: workspace.id,
+    workspaceConfig: workspace.workspace_config,
+    baseDerived,
+    isActive: Boolean(isActive),
+    onConfigSaved,
+    logTag: 'BasicAIEngineTab'
   })
 
-  useEffect(() => {
-    const fresh = parseWorkspaceConfig(workspace.workspace_config)
-    if (fresh.status === 'ready' && fresh.overrides) {
-      setOverrides({ ...fresh.overrides })
-    } else {
-      setOverrides({})
-    }
-  }, [workspace.id, workspace.workspace_config])
-
-  const effectiveParams: BaseAIConfig = useMemo(() => {
-    return {
-      ...baseDerived,
-      ...overrides
-    }
-  }, [baseDerived, overrides])
-
-  // 待提交的补丁累积（用户触碰字段 / 待恢复字段）与防抖计时器
-  const pendingPatchRef = useRef<PendingPolicyPatch | null>(null)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
-
-  /** 通过统一补丁通道提交（严禁整份拼装 WorkspaceConfigReady 直写） */
-  const persistMutation = useCallback(
-    async (pending: PendingPolicyPatch) => {
-      if (!workspace.id) return
-      const restoreKeys = Array.from(pending.restore)
-      const hasPatch = Object.keys(pending.patch).length > 0
-      if (!hasPatch && restoreKeys.length === 0) return
-      setIsSaving(true)
-      try {
-        const res = await submitWorkspacePolicyMutation(workspace.id, {
-          ...(hasPatch ? { overridePatch: pending.patch } : {}),
-          ...(restoreKeys.length > 0 ? { restoreOverrideFields: restoreKeys } : {})
-        })
-        if (res.success) {
-          onConfigSaved?.()
-        } else {
-          toast.error(getMutationErrorText(res, t('保存失败')))
-        }
-      } catch (err: any) {
-        console.error('[BasicAIEngineTab] 提交配置补丁异常:', err)
-        toast.error(t('保存失败'))
-      } finally {
-        setIsSaving(false)
-      }
+  const handleVideoDurationChange = useCallback(
+    (val: number) => {
+      handleParamChange('videoAnalyzeDurationSec', val)
     },
-    [workspace.id, onConfigSaved]
+    [handleParamChange]
   )
-
-  const flushPending = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-      debounceTimerRef.current = null
-    }
-    const pending = pendingPatchRef.current
-    if (pending !== null) {
-      pendingPatchRef.current = null
-      void persistMutation(pending)
-    }
-  }, [persistMutation])
-
-  // 切 Tab (isActive 变为 false) 或卸载时立即 flush 未落盘数据，杜绝并发覆盖竞态
-  useEffect(() => {
-    if (!isActive) flushPending()
-  }, [isActive, flushPending])
-
-  useEffect(() => {
-    return () => flushPending()
-  }, [flushPending])
-
-  // 修改单个参数：等值回退——设值与当前基线（工作流默认/系统默认）一致时精确 delete 覆盖键算回默认态，
-  // 仅值 ≠ 基线的显式覆盖写入补丁保留 user_custom，500ms 防抖提交
-  const handleParamChange = <K extends keyof TechnicalEngineParameters>(
-    key: K,
-    val: TechnicalEngineParameters[K]
-  ) => {
-    const baselineVal = (baseDerived as Partial<TechnicalEngineParameters>)[key]
-    if (val === baselineVal) {
-      // 等值回退：本地覆盖字典同步删除该键，effectiveParams 自动回落基线（值相同）
-      setOverrides(prev => {
-        if (prev[key] === undefined) return prev
-        const next = { ...prev }
-        delete next[key]
-        return next
-      })
-    } else {
-      setOverrides(prev => ({ ...prev, [key]: val }))
-    }
-    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
-    if (val === baselineVal) {
-      delete pending.patch[key]
-      pending.restore.add(key)
-    } else {
-      pending.patch = { ...pending.patch, [key]: val }
-      pending.restore.delete(key)
-    }
-    pendingPatchRef.current = pending
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
-    debounceTimerRef.current = setTimeout(flushPending, 500)
-  }
-
-  const handleParamChangeRef = useRef(handleParamChange)
-  handleParamChangeRef.current = handleParamChange
-  const handleVideoDurationChange = useCallback((val: number) => {
-    handleParamChangeRef.current('videoAnalyzeDurationSec', val)
-  }, [])
+  const handleVideoAsrDurationChange = useCallback(
+    (val: number) => {
+      handleParamChange('videoAsrDurationSec', val)
+    },
+    [handleParamChange]
+  )
+  const handleAudioAnalysisDurationChange = useCallback(
+    (val: number) => {
+      handleParamChange('audioAnalysisDurationSec', val)
+    },
+    [handleParamChange]
+  )
 
   // 检查当前 Tab 是否存在个性化覆盖项
   const hasBasicAiOverrides = useMemo(() => {
@@ -919,16 +756,7 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
 
   // 恢复默认：仅对本 Tab 管辖且已覆盖的键发送 restoreOverrideFields（严禁传 null）
   const handleResetToPreset = () => {
-    const pending = pendingPatchRef.current ?? { patch: {}, restore: new Set() }
-    for (const k of BASIC_AI_KEYS.filter(k => overrides[k] !== undefined)) {
-      pending.restore.add(k)
-      delete pending.patch[k]
-    }
-    pendingPatchRef.current = pending
-    const next = { ...overrides }
-    for (const k of BASIC_AI_KEYS) delete next[k]
-    setOverrides(next)
-    flushPending()
+    resetKeys(BASIC_AI_KEYS)
     toast.success(t('已恢复当前场景的基础引擎推荐参数'))
   }
 
@@ -1158,26 +986,10 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
   }, [])
 
   const handleRestoreSingleField = useCallback(
-    async (fieldKey: keyof BaseAIConfig) => {
-      if (workspace.id == null) return
-      // 防抖竞态防护：先冲刷 500ms 防抖队列（窗口内 pending.patch 同键旧值先落盘），
-      // 再发本次 restore（后到 delete 胜出），杜绝 flush 后 patch 静默写回撤销恢复
-      flushPending()
-      const res = await submitWorkspacePolicyMutation(workspace.id, {
-        restoreOverrideFields: [fieldKey]
-      })
-      if (res.success) {
-        setOverrides(prev => {
-          const next = { ...prev }
-          delete next[fieldKey]
-          return next
-        })
-        onConfigSaved?.()
-      } else {
-        toast.error(getMutationErrorText(res, t('恢复默认失败')))
-      }
+    (fieldKey: keyof BaseAIConfig) => {
+      restoreField(fieldKey as keyof TechnicalEngineParameters)
     },
-    [workspace.id, onConfigSaved, flushPending]
+    [restoreField]
   )
 
   return (
@@ -1846,59 +1658,23 @@ export const BasicAIEngineTab: React.FC<BasicAIEngineTabProps> = ({
                       )
                     })()}
                     <div className={cn('space-y-4', isAsrCascadedOff && 'opacity-50')}>
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <Label className="font-semibold text-foreground">
-                            {t('视频伴音台词识别上限')}
-                          </Label>
-                          <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                            {videoAsrCap} {t('秒')}
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={180}
-                          step={15}
-                          value={videoAsrCap}
-                          onChange={e =>
-                            handleParamChange('videoAsrDurationSec', parseInt(e.target.value, 10))
-                          }
-                          className="w-full accent-primary cursor-pointer"
-                        />
-                        <p className="text-[11px] text-muted-foreground">
-                          {t(
-                            '仅提取视频开头前 N 秒的音轨台词（不影响纯音频）。识别越长台词标签越全，分析耗时稍长。'
-                          )}
-                        </p>
-                      </div>
-                      <div className="space-y-1.5 pt-2 border-t border-border/30">
-                        <div className="flex items-center justify-between text-xs">
-                          <Label className="font-semibold text-foreground">
-                            {t('纯音频听写时长上限')}
-                          </Label>
-                          <span className="font-mono font-bold bg-muted px-2 py-0.5 rounded text-primary">
-                            {audioAnalysisCap} {t('秒')}
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min={0}
-                          max={180}
-                          step={15}
-                          value={audioAnalysisCap}
-                          onChange={e =>
-                            handleParamChange(
-                              'audioAnalysisDurationSec',
-                              parseInt(e.target.value, 10)
-                            )
-                          }
-                          className="w-full accent-primary cursor-pointer"
-                        />
-                        <p className="text-[11px] text-muted-foreground">
-                          {t('仅听写音频文件开头前 N 秒的内容，设为 0 则不听写。')}
-                        </p>
-                      </div>
+                      <AsrDurationCapSlider
+                        testIdPrefix="video-asr-cap"
+                        mode="video_asr"
+                        title={t('视频伴音台词识别上限')}
+                        value={videoAsrCap}
+                        zeroHintText={t('不提取台词')}
+                        onChange={handleVideoAsrDurationChange}
+                      />
+                      <AsrDurationCapSlider
+                        testIdPrefix="audio-analysis-cap"
+                        mode="audio_asr"
+                        title={t('纯音频听写时长上限')}
+                        value={audioAnalysisCap}
+                        zeroHintText={t('不听写')}
+                        onChange={handleAudioAnalysisDurationChange}
+                        className="pt-3 border-t border-border/30"
+                      />
                     </div>
                   </div>
                 </div>

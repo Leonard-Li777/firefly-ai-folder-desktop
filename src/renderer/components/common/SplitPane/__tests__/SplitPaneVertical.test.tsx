@@ -30,7 +30,12 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
   it('AC-1: 垂直手柄样式与光标呈现横向分割与 cursor-row-resize', () => {
     const sections: SplitPaneSection[] = [
       { id: 'top', type: 'pixel', defaultSize: 200, content: <div data-testid="top">Top</div> },
-      { id: 'bottom', type: 'flex', defaultSize: 1, content: <div data-testid="bottom">Bottom</div> }
+      {
+        id: 'bottom',
+        type: 'flex',
+        defaultSize: 1,
+        content: <div data-testid="bottom">Bottom</div>
+      }
     ]
 
     render(<SplitPane storageKey="vert-test-1" sections={sections} direction="vertical" />)
@@ -42,8 +47,20 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
 
   it('AC-2: 1:1 像素手势传递 (垂直方向 clientY 拖拽 50px)', () => {
     const sections: SplitPaneSection[] = [
-      { id: 'top', type: 'pixel', defaultSize: 200, minSize: 100, content: <div data-testid="top">Top</div> },
-      { id: 'bottom', type: 'flex', defaultSize: 1, minSize: 100, content: <div data-testid="bottom">Bottom</div> }
+      {
+        id: 'top',
+        type: 'pixel',
+        defaultSize: 200,
+        minSize: 100,
+        content: <div data-testid="top">Top</div>
+      },
+      {
+        id: 'bottom',
+        type: 'flex',
+        defaultSize: 1,
+        minSize: 100,
+        content: <div data-testid="bottom">Bottom</div>
+      }
     ]
 
     render(<SplitPane storageKey="vert-test-2" sections={sections} direction="vertical" />)
@@ -53,7 +70,13 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
 
     const handle = screen.getByRole('separator')
     act(() => {
-      fireEvent.pointerDown(handle, { clientX: 100, clientY: 200, pointerId: 1, buttons: 1, button: 0 })
+      fireEvent.pointerDown(handle, {
+        clientX: 100,
+        clientY: 200,
+        pointerId: 1,
+        buttons: 1,
+        button: 0
+      })
       fireEvent.mouseMove(document, { clientX: 100, clientY: 250, buttons: 1 })
       fireEvent.pointerUp(handle, { clientX: 100, clientY: 250, pointerId: 1, button: 0 })
     })
@@ -68,7 +91,12 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
 
     const sections: SplitPaneSection[] = [
       { id: 'top', type: 'pixel', defaultSize: 200, content: <div data-testid="top">Top</div> },
-      { id: 'bottom', type: 'flex', defaultSize: 1, content: <div data-testid="bottom">Bottom</div> }
+      {
+        id: 'bottom',
+        type: 'flex',
+        defaultSize: 1,
+        content: <div data-testid="bottom">Bottom</div>
+      }
     ]
 
     render(<SplitPane storageKey="vert-test-3" sections={sections} direction="vertical" />)
@@ -79,7 +107,13 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
     handle.hasPointerCapture = hasPointerCapture
 
     act(() => {
-      fireEvent.pointerDown(handle, { clientX: 100, clientY: 200, pointerId: 42, buttons: 1, button: 0 })
+      fireEvent.pointerDown(handle, {
+        clientX: 100,
+        clientY: 200,
+        pointerId: 42,
+        buttons: 1,
+        button: 0
+      })
     })
 
     expect(setPointerCapture).toHaveBeenCalledWith(42)
@@ -148,7 +182,12 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
   it('AC-8: 把手双击重置默认比例', () => {
     const sections: SplitPaneSection[] = [
       { id: 'top', type: 'pixel', defaultSize: 200, content: <div data-testid="top">Top</div> },
-      { id: 'bottom', type: 'flex', defaultSize: 1, content: <div data-testid="bottom">Bottom</div> }
+      {
+        id: 'bottom',
+        type: 'flex',
+        defaultSize: 1,
+        content: <div data-testid="bottom">Bottom</div>
+      }
     ]
 
     render(<SplitPane storageKey="vert-test-8" sections={sections} direction="vertical" />)
@@ -158,7 +197,13 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
 
     // 先拖拽增加到 260px
     act(() => {
-      fireEvent.pointerDown(handle, { clientX: 100, clientY: 200, pointerId: 1, buttons: 1, button: 0 })
+      fireEvent.pointerDown(handle, {
+        clientX: 100,
+        clientY: 200,
+        pointerId: 1,
+        buttons: 1,
+        button: 0
+      })
       fireEvent.mouseMove(document, { clientX: 100, clientY: 260, buttons: 1 })
       fireEvent.pointerUp(handle, { clientX: 100, clientY: 260, pointerId: 1, button: 0 })
     })
@@ -169,5 +214,68 @@ describe('SplitPane Vertical Mode & Gesture Protocol (Ticket 01)', () => {
       fireEvent.doubleClick(handle)
     })
     expect(topPanel.style.height).toBe('200px')
+  })
+
+  it('AC-9: 水平手柄 hover 到相邻面板滚动条时热区对指针透明（不抢滚动条 hover/拖动）', () => {
+    const sections: SplitPaneSection[] = [
+      {
+        id: 'dim-tree',
+        type: 'pixel',
+        defaultSize: 230,
+        content: <div data-testid="dim-tree">Dimension Tree</div>
+      },
+      {
+        id: 'file-list',
+        type: 'flex',
+        defaultSize: 2,
+        content: <div data-testid="file-list">File List</div>
+      }
+    ]
+
+    render(
+      <SplitPane storageKey="scrollbar-penetration" sections={sections} direction="horizontal" />
+    )
+
+    const handle = screen.getByRole('separator')
+    // 拖拽热区是 handle 内的第一个子 div（带 cursor-col-resize）
+    const hitArea = handle.querySelector('div.cursor-col-resize') as HTMLElement
+    expect(hitArea).not.toBeNull()
+
+    // JSDOM 未实现 elementsFromPoint，注入垫片返回我们构造的「可滚动容器」
+    const scrollEl = document.createElement('div')
+    Object.defineProperty(scrollEl, 'offsetWidth', { value: 230 })
+    Object.defineProperty(scrollEl, 'clientWidth', { value: 222 })
+    Object.defineProperty(scrollEl, 'scrollHeight', { value: 1000 })
+    Object.defineProperty(scrollEl, 'clientHeight', { value: 300 })
+    scrollEl.getBoundingClientRect = () => ({ left: 0, right: 230, top: 0, bottom: 300 }) as DOMRect
+
+    // JSDOM 缺少 elementsFromPoint / 自定义滚动条样式，注入垫片模拟「可滚动容器 + auto 滚动条」
+    const originalElementsFromPoint = (document as any).elementsFromPoint
+    ;(document as any).elementsFromPoint = () => [scrollEl]
+    const originalGetComputedStyle = window.getComputedStyle
+    window.getComputedStyle = (() =>
+      ({
+        overflowY: 'auto',
+        borderLeftWidth: '0px',
+        borderRightWidth: '0px'
+      }) as CSSStyleDeclaration) as any
+
+    // 未 hover 滚动条前，热区保持可响应（未设 pointer-events:none）
+    expect(hitArea.style.pointerEvents).not.toBe('none')
+
+    // hover 落在滚动条条带上（x = 226，落在 right=230 左侧的 8px 滚动条宽度内）
+    act(() => {
+      fireEvent.pointerMove(handle, { clientX: 226, clientY: 150, buttons: 0 })
+    })
+    // 热区必须对指针透明，把 hover/拖动交还给原生滚动条
+    expect(hitArea.style.pointerEvents).toBe('none')
+
+    // 还原垫片
+    if (originalElementsFromPoint === undefined) {
+      delete (document as any).elementsFromPoint
+    } else {
+      ;(document as any).elementsFromPoint = originalElementsFromPoint
+    }
+    window.getComputedStyle = originalGetComputedStyle
   })
 })

@@ -66,6 +66,11 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
   const blurHandlerRef = useRef<(() => void) | null>(null)
   const pointerIdRef = useRef<number | null>(null)
 
+  /** 拖拽热区 DOM 引用：hover 到滚动条条带上时动态设为 pointer-events:none，避免抢走原生滚动条的 hover/拖动 */
+  const hitAreaRef = useRef<HTMLDivElement>(null)
+  /** 滚动条穿透恢复监听：当热区 pointer-events:none 后，靠 document 级 pointermove 检测离开滚动条再恢复 */
+  const scrollbarRestoreRef = useRef<((ev: PointerEvent) => void) | null>(null)
+
   const lastScrollAtRef = useRef(0)
 
   const disableIframes = useCallback(() => {
@@ -82,6 +87,42 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       iframe.style.pointerEvents = ''
     })
   }, [])
+
+  /**
+   * 恢复拖拽热区的指针响应（滚动条穿透态复位）。
+   * 当热区因 hover 到滚动条被设为 pointer-events:none 后，
+   * 移开滚动条时需要还原，让分隔线重新可拖拽。
+   */
+  const releaseScrollbarPenetration = useCallback(() => {
+    if (scrollbarRestoreRef.current) {
+      document.removeEventListener('pointermove', scrollbarRestoreRef.current, true)
+      scrollbarRestoreRef.current = null
+    }
+    if (hitAreaRef.current) {
+      hitAreaRef.current.style.pointerEvents = ''
+    }
+  }, [])
+
+  /**
+   * 让拖拽热区对指针透明，把 hover/拖动完全交还给原生滚动条。
+   * 期间靠 document 级 pointermove 检测何时离开滚动条条带再恢复。
+   */
+  const applyScrollbarPenetration = useCallback(() => {
+    if (!hitAreaRef.current) return
+    hitAreaRef.current.style.pointerEvents = 'none'
+
+    if (!scrollbarRestoreRef.current) {
+      const onDocPointerMove = (ev: PointerEvent) => {
+        // 拖拽进行中不做任何恢复，避免干扰 resize
+        if (isResizingRef.current) return
+        if (!isOnVerticalScrollbar(ev.clientX, ev.clientY, rootRef.current)) {
+          releaseScrollbarPenetration()
+        }
+      }
+      scrollbarRestoreRef.current = onDocPointerMove
+      document.addEventListener('pointermove', onDocPointerMove, true)
+    }
+  }, [releaseScrollbarPenetration])
 
   const cleanup = useCallback(() => {
     if (pointerIdRef.current !== null && rootRef.current) {
@@ -108,6 +149,9 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       blurHandlerRef.current = null
     }
 
+    // 退出时确保滚动条穿透态复位
+    releaseScrollbarPenetration()
+
     if (isResizingRef.current) {
       isResizingRef.current = false
       setIsResizing(false)
@@ -120,7 +164,7 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       enableIframes()
       onResizeEndRef.current?.()
     }
-  }, [enableIframes])
+  }, [enableIframes, releaseScrollbarPenetration])
 
   // 滚动锁：scroll 不冒泡，必须 capture 阶段挂在 document 上才能捕获所有后代滚动
   useEffect(() => {
@@ -136,6 +180,8 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       startCoordRef.current = isHorizontal ? clientX : clientY
       isResizingRef.current = true
       setIsResizing(true)
+      // 拖拽开始：确保热区恢复指针响应，避免穿透态残留影响 resize 命中
+      releaseScrollbarPenetration()
       document.body.style.cursor = isHorizontal ? 'col-resize' : 'row-resize'
       document.body.style.userSelect = 'none'
       document.body.classList.add('split-pane-resizing')
@@ -176,7 +222,7 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       document.addEventListener('mouseup', onEnd, true)
       window.addEventListener('blur', onEnd)
     },
-    [isHorizontal, disableIframes, cleanup]
+    [isHorizontal, disableIframes, cleanup, releaseScrollbarPenetration]
   )
 
   const handlePointerDown = useCallback(
@@ -216,7 +262,16 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!isResizingRef.current || pointerIdRef.current === null) return
+      if (!isResizingRef.current || pointerIdRef.current === null) {
+        // 非拖拽态：hover 落在滚动条条带上时，让拖拽热区对指针透明，
+        // 把滚动条的 hover/拖动完全交还给原生滚动条，杜绝分隔线抢夺指针
+        if (isHorizontal && !isResizingRef.current) {
+          if (isOnVerticalScrollbar(e.clientX, e.clientY, rootRef.current)) {
+            applyScrollbarPenetration()
+          }
+        }
+        return
+      }
       const currentCoord = isHorizontal ? e.clientX : e.clientY
       const delta = currentCoord - startCoordRef.current
       if (delta !== 0) {
@@ -224,7 +279,7 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       }
       startCoordRef.current = currentCoord
     },
-    [isHorizontal]
+    [isHorizontal, applyScrollbarPenetration]
   )
 
   const handleDoubleClickFn = useCallback(
@@ -285,7 +340,11 @@ export const SplitPaneHandle: React.FC<SplitPaneHandleProps> = ({
       />
       {/* 拖拽热区 */}
       <div
-        className={cn('absolute z-10', isHorizontal ? 'top-0 bottom-0 cursor-col-resize' : 'left-0 right-0 cursor-row-resize')}
+        ref={hitAreaRef}
+        className={cn(
+          'absolute z-10',
+          isHorizontal ? 'top-0 bottom-0 cursor-col-resize' : 'left-0 right-0 cursor-row-resize'
+        )}
         style={
           isHorizontal
             ? {
