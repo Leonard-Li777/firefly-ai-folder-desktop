@@ -13,9 +13,10 @@ export interface DragSelectState {
   isDragging: boolean
   dragStart: { x: number; y: number } | null
   dragEnd: { x: number; y: number } | null
+  currentScroll: number
   dragSelectionPaths: Set<string>
-  beginDrag: (start: { x: number; y: number }) => void
-  updateDrag: (end: { x: number; y: number }, paths: Set<string>) => void
+  beginDrag: (start: { x: number; y: number }, currentScroll?: number) => void
+  updateDrag: (end: { x: number; y: number }, paths: Set<string>, currentScroll?: number) => void
   endDrag: () => void
 }
 
@@ -23,10 +24,28 @@ export const useDragSelectStore = create<DragSelectState>(set => ({
   isDragging: false,
   dragStart: null,
   dragEnd: null,
+  currentScroll: 0,
   dragSelectionPaths: new Set(),
-  beginDrag: start =>
-    set({ isDragging: true, dragStart: start, dragEnd: start, dragSelectionPaths: new Set() }),
-  updateDrag: (end, paths) => set({ dragEnd: end, dragSelectionPaths: paths }),
+  beginDrag: (start, currentScroll = 0) =>
+    set({
+      isDragging: true,
+      dragStart: start,
+      dragEnd: start,
+      currentScroll,
+      dragSelectionPaths: new Set()
+    }),
+  updateDrag: (end, paths, currentScroll) =>
+    set(state => ({
+      dragEnd: end,
+      dragSelectionPaths: paths,
+      currentScroll: currentScroll !== undefined ? currentScroll : state.currentScroll
+    })),
   endDrag: () =>
-    set({ isDragging: false, dragStart: null, dragEnd: null, dragSelectionPaths: new Set() })
+    set({
+      isDragging: false,
+      dragStart: null,
+      dragEnd: null,
+      currentScroll: 0,
+      dragSelectionPaths: new Set()
+    })
 }))

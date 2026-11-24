@@ -279,6 +279,12 @@ html:lang(fr) :where(.btn) {
   -webkit-app-region: no-drag !important;
 }
 
+/* 框选拖拽期间禁用子级卡片命中与悬浮动画，杜绝高频鼠标移动触发深层 DOM 树 Hover 样式重排重绘 */
+.is-drag-selecting * {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
 /* ==========================================================================
    5. 通用文本容器多语言兼容方案 (特异性为 0，全局安全降级)
    ========================================================================== */

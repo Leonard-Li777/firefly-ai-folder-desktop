@@ -7,9 +7,19 @@ import {
   GRID_ROW_HEIGHT,
   SCROLLER_SELECTOR
 } from '../constants'
+import { SEARCH_LIST_ROW_HEIGHT } from '../components/SearchListCard'
 import { DirectoryItem } from '@firefly/types'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { useDragSelectStore } from '../../../../stores/drag-select-store'
+
+/** 比对两个路径 Set 是否相等，避免无变化时生成新引用触发不必要的 store 订阅重算 */
+function areSetsEqual(a: Set<string>, b: Set<string>): boolean {
+  if (a.size !== b.size) return false
+  for (const item of a) {
+    if (!b.has(item)) return false
+  }
+  return true
+}
 
 // 在分栏模式下，用所选文件触发预览
 function tryTriggerSplitPreview(item: FileType | DirectoryItem, pageId?: string): void {
@@ -177,6 +187,18 @@ export const useFileListSelection = ({
           const item = currentItems[i]
           if (item?.path) newlySelectedPaths.add(item.path)
         }
+      } else if (currentViewMode === 'search-list') {
+        // 搜索列表模式：专属三行式卡片定高渲染 (88~220px，缺省 SEARCH_LIST_ROW_HEIGHT 104px)，无表头偏移
+        const searchRowHeight = Math.round(
+          Math.max(88, Math.min(220, currentCardWidth || SEARCH_LIST_ROW_HEIGHT))
+        )
+        const startIdx = Math.max(0, Math.floor(y1 / searchRowHeight))
+        const endIdx = Math.min(currentItems.length - 1, Math.floor(y2 / searchRowHeight))
+
+        for (let i = startIdx; i <= endIdx; i++) {
+          const item = currentItems[i]
+          if (item?.path) newlySelectedPaths.add(item.path)
+        }
       } else if (currentViewMode === 'grid') {
         const gridWidth = Math.max(0, containerSize.width - 24)
         const availableWidth = Math.max(0, containerSize.width - 48)
@@ -279,59 +301,85 @@ export const useFileListSelection = ({
         return
       }
 
-      // Add a ref to store initial screen coordinates for drag detection without DOM reads
+      // 记录初始屏幕坐标，不在此处读取 getBoundingClientRect() 以避免普通单击产生微弱卡顿
       const startClientX = e.clientX
       const startClientY = e.clientY
 
-      // We don't read getBoundingClientRect() or querySelector() here anymore to avoid layout thrashing on simple clicks.
       isDraggingRef.current = false
 
       let originalUserSelect: string | null = null
+      // 预缓存容器几何边界与滚动容器，在本次拖拽全周期复用，彻底避免每帧 mousemove 触发 getBoundingClientRect() 与强制排版
+      let initialRect: DOMRect | null = null
+      let cachedScroller: HTMLElement | null = null
+
+      const getDragContext = () => {
+        if (!initialRect && containerRef.current) {
+          initialRect = containerRef.current.getBoundingClientRect()
+        }
+        if (!cachedScroller && containerRef.current) {
+          const scrollers = containerRef.current.querySelectorAll(SCROLLER_SELECTOR)
+          cachedScroller =
+            (Array.from(scrollers).find(s => s.scrollHeight > s.clientHeight) as HTMLElement) ||
+            null
+        }
+        return {
+          rect: initialRect,
+          scroller: cachedScroller
+        }
+      }
+
+      let latestMoveEvent: MouseEvent | null = null
 
       const handleMouseMove = (moveEvent: MouseEvent) => {
-        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+        latestMoveEvent = moveEvent
+        // 满帧节流：若当前帧 rAF 调度已在队列中，仅更新最新坐标直接返回，绝不 cancelAnimationFrame 造成防抖断续饿死
+        if (rafRef.current !== null) return
 
         rafRef.current = requestAnimationFrame(() => {
-          if (!containerRef.current) return
+          rafRef.current = null
+          const ev = latestMoveEvent
+          if (!ev || !containerRef.current) return
 
-          const dx = Math.abs(moveEvent.clientX - startClientX)
-          const dy = Math.abs(moveEvent.clientY - startClientY)
+          const dx = Math.abs(ev.clientX - startClientX)
+          const dy = Math.abs(ev.clientY - startClientY)
 
           if (dx > 5 || dy > 5) {
-            const mRect = containerRef.current.getBoundingClientRect()
-            const mx = moveEvent.clientX - mRect.left
-            const my = moveEvent.clientY - mRect.top
+            const { rect, scroller } = getDragContext()
+            if (!rect) return
+
+            const mx = ev.clientX - rect.left
+            const my = ev.clientY - rect.top
 
             currentMousePosRef.current = { x: mx, y: my }
 
             const mAbsoluteX = mx
             let mCurrentScroll = propsRef.current.scrollOffset
-            const scrollers = containerRef.current.querySelectorAll(SCROLLER_SELECTOR)
-            const scroller = Array.from(scrollers).find(
-              s => s.scrollHeight > s.clientHeight
-            ) as HTMLElement
             if (scroller && typeof scroller.scrollTop === 'number') {
               mCurrentScroll = scroller.scrollTop
             }
             const mAbsoluteY = my + mCurrentScroll
 
             if (!isDraggingRef.current) {
-              // First time we cross the threshold, calculate the dragStart absolute position
-              const startAbsoluteX = startClientX - mRect.left
-              const startAbsoluteY = startClientY - mRect.top + mCurrentScroll
+              const startAbsoluteX = startClientX - rect.left
+              const startAbsoluteY = startClientY - rect.top + mCurrentScroll
               const dragStartAbs = { x: startAbsoluteX, y: startAbsoluteY }
 
               isDraggingRef.current = true
-              useDragSelectStore.getState().beginDrag(dragStartAbs)
+              useDragSelectStore.getState().beginDrag(dragStartAbs, mCurrentScroll)
 
-              // Defer userSelect modification until drag actually starts to prevent lag
+              // 拖选正式触发时应用 userSelect 与 is-drag-selecting，阻断子卡片在移动过程中的深层 DOM 命中测试与 hover 重绘
               originalUserSelect = document.body.style.userSelect
               document.body.style.userSelect = 'none'
+              containerRef.current?.classList.add('is-drag-selecting')
             }
 
             const newDragEnd = { x: mAbsoluteX, y: mAbsoluteY }
-            // 直接写入 store，避免触发 FileList 组件重渲染；消费方按需订阅
-            useDragSelectStore.getState().updateDrag(newDragEnd, calculateDragSelection(newDragEnd))
+            const newlySelected = calculateDragSelection(newDragEnd)
+            // 集合比对：若选中内容无变化则复用旧引用，防止 Zustand 每帧唤醒全量订阅函数
+            const prevPaths = useDragSelectStore.getState().dragSelectionPaths
+            const finalPaths = areSetsEqual(prevPaths, newlySelected) ? prevPaths : newlySelected
+
+            useDragSelectStore.getState().updateDrag(newDragEnd, finalPaths, mCurrentScroll)
           }
         })
       }
@@ -343,47 +391,39 @@ export const useFileListSelection = ({
         if (originalUserSelect !== null) {
           document.body.style.userSelect = originalUserSelect
         }
+        containerRef.current?.classList.remove('is-drag-selecting')
 
-        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+        if (rafRef.current !== null) {
+          cancelAnimationFrame(rafRef.current)
+          rafRef.current = null
+        }
 
         let finalSelectionPaths = new Set<string>()
         const upDx = Math.abs(upEvent.clientX - startClientX)
         const upDy = Math.abs(upEvent.clientY - startClientY)
 
-        // 若用户快速划动框选并在首帧 rAF 执行前就释放鼠标，cancelAnimationFrame 会导致 isDraggingRef 仍为 false；
-        // 这里按实际位移补齐 dragStart 与框选计算，彻底杜绝快速框选静默失效
-        if (!isDraggingRef.current && (upDx > 5 || upDy > 5) && containerRef.current) {
-          const mRect = containerRef.current.getBoundingClientRect()
-          const scrollers = containerRef.current.querySelectorAll(SCROLLER_SELECTOR)
-          const scroller = Array.from(scrollers).find(
-            s => s.scrollHeight > s.clientHeight
-          ) as HTMLElement
+        const { rect, scroller } = getDragContext()
+
+        // 快速划动手势保护：若用户位移已超过 5px 但在首帧 rAF 执行前就已松开鼠标，在此精准补齐框选终态
+        if (!isDraggingRef.current && (upDx > 5 || upDy > 5) && rect) {
           const mCurrentScroll = scroller ? scroller.scrollTop : propsRef.current.scrollOffset
           const dragStartAbs = {
-            x: startClientX - mRect.left,
-            y: startClientY - mRect.top + mCurrentScroll
+            x: startClientX - rect.left,
+            y: startClientY - rect.top + mCurrentScroll
           }
           isDraggingRef.current = true
-          useDragSelectStore.getState().beginDrag(dragStartAbs)
+          useDragSelectStore.getState().beginDrag(dragStartAbs, mCurrentScroll)
         }
 
-        if (isDraggingRef.current) {
-          const mRect = containerRef.current!.getBoundingClientRect()
-          const mx = upEvent.clientX - mRect.left
-          const my = upEvent.clientY - mRect.top
-
-          const scrollers = containerRef.current!.querySelectorAll(SCROLLER_SELECTOR)
-          const scroller = Array.from(scrollers).find(
-            s => s.scrollHeight > s.clientHeight
-          ) as HTMLElement
+        if (isDraggingRef.current && rect) {
+          const mx = upEvent.clientX - rect.left
+          const my = upEvent.clientY - rect.top
           const mCurrentScroll = scroller ? scroller.scrollTop : propsRef.current.scrollOffset
 
           finalSelectionPaths = calculateDragSelection({ x: mx, y: my + mCurrentScroll })
           useDragSelectStore.getState().endDrag()
 
-          // 拖拽释放时的 click 事件会冒泡到卡片（原先由 [&_*]:pointer-events-none 抑制），
-          // 这里在捕获阶段吞掉紧随 mouseup 的一次 click，并加 0ms 定时器兜底移除，
-          // 避免跨元素/空白处松开不触发 click 时监听器永久泄漏并吞掉下一次任意点击
+          // 拖拽释放时的 click 事件会冒泡到卡片，在捕获阶段吞掉紧随 mouseup 的一次 click
           const suppressClick = (clickEvent: MouseEvent) => {
             clickEvent.preventDefault()
             clickEvent.stopPropagation()
@@ -425,7 +465,7 @@ export const useFileListSelection = ({
       window.addEventListener('mousemove', handleMouseMove)
       window.addEventListener('mouseup', handleMouseUp)
     },
-    [calculateDragSelection, containerSize.width, containerRef, isPathEqual]
+    [calculateDragSelection, containerSize.width, containerRef, isPathEqual, emitSelection]
   )
 
   const handleItemClick = useCallback(
@@ -723,10 +763,10 @@ export const useFileListSelection = ({
       const dy = Math.abs(absoluteY - dragState.dragStart.y)
       if (dx > 5 || dy > 5) {
         isDraggingRef.current = true
-        useDragSelectStore.setState({
-          dragEnd: newDragEnd,
-          dragSelectionPaths: calculateDragSelection(newDragEnd)
-        })
+        const newlySelected = calculateDragSelection(newDragEnd)
+        const prevPaths = dragState.dragSelectionPaths
+        const finalPaths = areSetsEqual(prevPaths, newlySelected) ? prevPaths : newlySelected
+        useDragSelectStore.getState().updateDrag(newDragEnd, finalPaths, currentScroll)
       }
     }
   }, [scrollOffset, calculateDragSelection, containerRef])
