@@ -28,6 +28,8 @@ import {
   useLayoutSwitcherStore,
   getDirectionalStorageKey
 } from '../../../stores/layout-switcher-store'
+import { useShallow } from 'zustand/react/shallow'
+import { useVirtualDirectoryStore } from '../../../stores/virtual-directory-store'
 
 /**
  * 通用文件浏览器布局容器组件 (FileExplorerLayout)
@@ -135,11 +137,18 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   const activeItem = externalActiveItem !== undefined ? externalActiveItem : internalActiveItem
 
   // 布局切换引擎核心状态 (SSOT)
+  const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
+  const currentWorkspaceId =
+    currentWorkspaceDirectory?.workspace_id ?? currentWorkspaceDirectory?.id
+  const currentWorkspaceConfig = currentWorkspaceDirectory?.workspace_config
+
   const targetPageId = pageId || PAGE_IDS.REAL_DIRECTORY
-  const layoutKey = useLayoutSwitcherStore(
-    s => s.pageLayouts[targetPageId] ?? getPageDefaultLayout(targetPageId)
+  const layoutKey = useLayoutSwitcherStore(s =>
+    s.getEffectiveLayout(targetPageId, currentWorkspaceId, currentWorkspaceConfig)
   )
-  const customPanels = useLayoutSwitcherStore(s => s.visiblePanels[targetPageId])
+  const customPanels = useLayoutSwitcherStore(
+    useShallow(s => s.getVisiblePanels(targetPageId, currentWorkspaceId, currentWorkspaceConfig))
+  )
   const layoutDef = useMemo(() => getLayoutDefinition(layoutKey), [layoutKey])
   const closePanel = useLayoutSwitcherStore(s => s.closePanel)
 
@@ -586,7 +595,9 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                       >
                         <SplitPreviewPanel
                           pageId={targetPageId}
-                          onClose={() => closePanel(targetPageId, PANEL_IDS.PREVIEW)}
+                          onClose={() =>
+                            closePanel(targetPageId, PANEL_IDS.PREVIEW, currentWorkspaceId)
+                          }
                         />
                       </div>
                     )
@@ -614,7 +625,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                             isRealDirectory ? currentPath : workspaceDirectoryPath
                           }
                           onClose={() => {
-                            closePanel(targetPageId, PANEL_IDS.DETAILS)
+                            closePanel(targetPageId, PANEL_IDS.DETAILS, currentWorkspaceId)
                             onCloseDetailsPanel?.()
                           }}
                           onFileDeleted={onFileDeleted}

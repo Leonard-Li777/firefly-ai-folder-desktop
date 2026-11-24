@@ -10,11 +10,13 @@ import {
   getPageDefaultLayout,
   isLayoutSwitcherEnabled,
   getLayoutLabel,
-  MAX_COMMON_LAYOUT_COUNT
+  MAX_COMMON_LAYOUT_COUNT,
+  PAGE_IDS
 } from './index'
 import { LayoutPresetIcon } from './LayoutPresetIcon'
 import { resetCurrentPageLayout } from './reset-layout'
 import { useLayoutSwitcherStore } from '../../../stores/layout-switcher-store'
+import { useVirtualDirectoryStore } from '../../../stores/virtual-directory-store'
 import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
 
 export interface LayoutSwitcherButtonsProps {
@@ -32,10 +34,25 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
   const isEnabled = isLayoutSwitcherEnabled(targetPageId)
   const allowedPresets = useMemo(() => getPageLayouts(targetPageId), [targetPageId])
 
-  const currentKey = useLayoutSwitcherStore(
-    s => s.pageLayouts[targetPageId] ?? getPageDefaultLayout(targetPageId)
+  const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
+  const isSearchOverlay = targetPageId === PAGE_IDS.SEARCH_OVERLAY
+  const currentWorkspaceId = isSearchOverlay
+    ? null
+    : (currentWorkspaceDirectory?.workspace_id ?? currentWorkspaceDirectory?.id)
+  const currentWorkspaceConfig = isSearchOverlay
+    ? null
+    : currentWorkspaceDirectory?.workspace_config
+
+  const currentKey = useLayoutSwitcherStore(s =>
+    s.getEffectiveLayout(targetPageId, currentWorkspaceId, currentWorkspaceConfig)
   )
-  const customPanels = useLayoutSwitcherStore(s => s.visiblePanels[targetPageId])
+  const isCustomSubset = useLayoutSwitcherStore(s => {
+    const key = s.getEffectiveLayout(targetPageId, currentWorkspaceId, currentWorkspaceConfig)
+    const preset = LAYOUT_PRESETS[key]
+    if (!preset) return false
+    const panels = s.getVisiblePanels(targetPageId, currentWorkspaceId, currentWorkspaceConfig)
+    return Boolean(panels && panels.length < preset.panels.length)
+  })
   const setPageLayout = useLayoutSwitcherStore(s => s.setPageLayout)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -55,14 +72,6 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
   const isMoreActive = useMemo(() => {
     return !commonKeys.includes(currentKey)
   }, [commonKeys, currentKey])
-
-  // 是否处于自定义子集（某伴随面板被单独关闭）
-  const isCustomSubset = useMemo(() => {
-    const preset = LAYOUT_PRESETS[currentKey]
-    if (!preset) return false
-    if (!customPanels || customPanels.length === 0) return false
-    return customPanels.length < preset.panels.length
-  }, [currentKey, customPanels])
 
   // 打开下拉时计算定位
   const toggleDropdown = () => {
@@ -128,7 +137,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
             aria-checked={isActive}
             aria-pressed={isActive}
             title={label}
-            onClick={() => setPageLayout(targetPageId, key)}
+            onClick={() => setPageLayout(targetPageId, key, currentWorkspaceId)}
             className={cn(
               'relative flex items-center justify-center w-7 h-7 rounded-full transition-colors',
               'text-muted-foreground hover:text-foreground hover:bg-background/80',
@@ -210,7 +219,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
                     aria-checked={isActive}
                     data-testid={`dropdown-item-${key}`}
                     onClick={() => {
-                      setPageLayout(targetPageId, key)
+                      setPageLayout(targetPageId, key, currentWorkspaceId)
                       setIsDropdownOpen(false)
                     }}
                     className={cn(
