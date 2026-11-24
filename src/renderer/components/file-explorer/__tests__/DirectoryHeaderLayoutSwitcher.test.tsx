@@ -197,4 +197,31 @@ describe('DirectoryHeader (LayoutSwitcherButtons & LayoutActionSlot 恒定槽位
       LAYOUT_KEYS.TRI
     )
   })
+
+  it('AC-5: 第二排具备响应式弹性契约，Hub 区域支持等比压缩且布局槽位防挤出 (shrink-0)', () => {
+    render(
+      <MemoryRouter>
+        <DirectoryHeader {...mockProps} layoutPageId={PAGE_IDS.REAL_DIRECTORY} />
+      </MemoryRouter>
+    )
+
+    // 1. Hub 区域允许等比压缩 (包含 shrink 与 min-w-0)
+    const hub = screen.getByTestId('directory-header-hub')
+    expect(hub).toBeDefined()
+    expect(hub.className).toContain('shrink')
+    expect(hub.className).toContain('min-w-0')
+
+    // 2. 布局按钮槽位具备 shrink-0，避免宽度不足时被挤压或溢出
+    const slot = screen.getByTestId('layout-action-slot')
+    expect(slot).toBeDefined()
+    expect(slot.className).toContain('shrink-0')
+
+    // 3. 布局按钮组常用区外部 3 个按钮保持常驻可见，不被响应式断点隐藏
+    const group = screen.getByTestId('layout-switcher-group')
+    const buttons = group.querySelectorAll('button[data-testid^="layout-btn-"]')
+    expect(buttons.length).toBe(3)
+    buttons.forEach(btn => {
+      expect(btn.className).not.toContain('max-[879px]:hidden')
+    })
+  })
 })

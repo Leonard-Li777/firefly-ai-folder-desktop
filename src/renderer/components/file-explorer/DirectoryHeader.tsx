@@ -714,10 +714,11 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
         {/* 第二排：拉通背景、无圆角的统一 Hub 与弹性宽度自适应搜索框 */}
         {/* 拖拽：本排不整体设 no-drag，条带空白处继承 header 的 drag；仅 Hub 与搜索框各自 no-drag */}
-        <div className="flex items-center w-full gap-6 px-4 py-1.5 border-t border-[var(--surface-band-border)] bg-[var(--surface-hub)] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.55)] dark:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95]">
-          {/* Hub 区域：工作目录选择器 + 步骤指示器（移除独立外层胶囊与圆角，与第二排背景融为一体） */}
+        <div className="flex items-center w-full min-w-0 gap-3 sm:gap-4 md:gap-6 px-3 sm:px-4 py-1.5 border-t border-[var(--surface-band-border)] bg-[var(--surface-hub)] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.55)] dark:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95] overflow-hidden">
+          {/* Hub 区域：工作目录选择器 + 步骤指示器（移除独立外层胶囊与圆角，与第二排背景融为一体；空间不足时允许等比压缩） */}
           <div
-            className="flex items-center flex-shrink-0 gap-1"
+            data-testid="directory-header-hub"
+            className="flex items-center shrink min-w-0 gap-1"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
             onClickCapture={() => {
               if (usePluginCenterStore.getState().isOverlayOpen) {
@@ -727,7 +728,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           >
             {/* Directory Selector */}
             <div
-              className="relative flex-shrink-0"
+              className="relative shrink-0"
               ref={dropdownRef}
               style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
               onPointerDown={e => e.stopPropagation()}
@@ -1198,10 +1199,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             </div>
           </div>
 
-          {/* Elevated Search Bar: 右对齐（ml-auto 吸收剩余空间），弹性自适应宽度，与 Hub 保持 gap-6 最小间距 */}
+          {/* Elevated Search Bar: 右对齐（ml-auto 吸收剩余空间），弹性自适应宽度，与 Hub 保持弹性间距 */}
           <div
             ref={searchContainerRef}
-            className="relative flex items-center flex-1 min-w-[200px] max-w-2xl ml-auto z-[95]"
+            className="relative flex items-center flex-1 min-w-[120px] sm:min-w-[160px] md:min-w-[200px] max-w-2xl ml-auto z-[95]"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
           >
             <div className="relative flex items-center group w-full">
@@ -1430,7 +1431,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           </div>
 
           {/* 恒定布局操作槽位与切换按钮组 (ISS-01/AC-1) */}
-          <LayoutActionSlot className="ml-2">
+          <LayoutActionSlot className="shrink-0 ml-1 sm:ml-2">
             <LayoutSwitcherButtons
               layoutPageId={isSearchOverlayOpen ? PAGE_IDS.SEARCH_OVERLAY : layoutPageId || ''}
             />

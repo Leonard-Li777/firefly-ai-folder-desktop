@@ -132,9 +132,7 @@ export const LayoutSwitcherButtons: React.FC<LayoutSwitcherButtonsProps> = ({
             className={cn(
               'relative flex items-center justify-center w-7 h-7 rounded-full transition-colors',
               'text-muted-foreground hover:text-foreground hover:bg-background/80',
-              isActive && 'bg-background text-primary shadow-sm font-medium',
-              // 响应式折叠：非首项在 <880px 时隐藏；首项在 <600px 时隐藏
-              index > 0 ? 'max-[879px]:hidden' : 'max-[599px]:hidden'
+              isActive && 'bg-background text-primary shadow-sm font-medium'
             )}
           >
             <LayoutPresetIcon
