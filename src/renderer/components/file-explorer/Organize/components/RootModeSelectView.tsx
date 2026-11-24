@@ -68,7 +68,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
           </h2>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto">
             {t(
-              '推荐直接进入【批量整理】由 AI 为您构建目录体系；亦可在整理前选用卫星工具进行规范更名、补充打标或安全查重清理。'
+              '可在整理前选用卫星工具进行规范更名、补充打标或安全查重清理。'
             )}
           </p>
         </div>
