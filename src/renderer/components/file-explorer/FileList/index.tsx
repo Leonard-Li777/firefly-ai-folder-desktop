@@ -801,6 +801,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   // 搜索列表模式：专属搜索卡片视图，挂载于 VirtualRowRenderer 之下，支持万级结果虚拟滚动与触底翻页
   if (viewMode === 'search-list') {
     const listHeight = containerSize.height > 0 ? containerSize.height : 0
+    // 搜索列表宽度：预留 6px (mr-1.5) 安全呼吸边距，彻底杜绝右侧滚动条与 SplitPaneHandle 拖拽边线重叠抢占 hover
+    const effectiveSearchListWidth =
+      containerSize.width > 6 ? containerSize.width - 6 : containerSize.width
     // 搜索列表动态行高：由 gridCardWidth 控制（88~220px），缺省 104px
     const effectiveSearchListRowHeight = Math.round(
       Math.max(88, Math.min(220, gridCardWidth || SEARCH_LIST_ROW_HEIGHT))
@@ -834,7 +837,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
           />
         )}
 
-        <div className="flex-1 overflow-hidden" ref={listWrapperRef}>
+        <div className="flex-1 overflow-hidden mr-1.5" ref={listWrapperRef}>
           {reactWindowAvailable && ListComponent && listHeight > 0 && searchListItems.length > 0 ? (
             isReactWindowV2 ? (
               // 注意：react-window v2 的 List 没有 rowKey（v1 的 itemKey 在 v2 也无等价物），
@@ -845,7 +848,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 height={listHeight}
                 rowCount={searchListItems.length}
                 rowHeight={effectiveSearchListRowHeight}
-                width={containerSize.width || '100%'}
+                width={effectiveSearchListWidth || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 listRef={listRef}
                 rowProps={{
@@ -853,7 +856,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                     ...itemData,
                     items: searchListItems,
                     viewMode: 'search-list',
-                    containerWidth: containerSize.width,
+                    containerWidth: effectiveSearchListWidth,
                     searchListRowHeight: effectiveSearchListRowHeight
                   }
                 }}
@@ -865,7 +868,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 height={listHeight}
                 itemCount={searchListItems.length}
                 itemSize={effectiveSearchListRowHeight}
-                width={containerSize.width || '100%'}
+                width={effectiveSearchListWidth || '100%'}
                 className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
                 outerRef={activeOuterRef}
@@ -878,7 +881,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                   ...itemData,
                   items: searchListItems,
                   viewMode: 'search-list',
-                  containerWidth: containerSize.width,
+                  containerWidth: effectiveSearchListWidth,
                   searchListRowHeight: effectiveSearchListRowHeight
                 }}
                 onScroll={onListScroll}
