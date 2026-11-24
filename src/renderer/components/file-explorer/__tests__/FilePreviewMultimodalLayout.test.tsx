@@ -2,7 +2,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { FilePreview, computeMediaMultimodalSideBySide } from '../FilePreview'
 import { PreviewSection } from '../FileDetailsPanel/components/PreviewSection'
 
@@ -124,6 +124,95 @@ describe('FilePreview & PreviewSection 响应式弹性与多模态布局契约',
     // 2. 正文包裹层具备 shrink 且不强制在竖排下撑满，使多模态描述紧挨预览图下方
     expect(body?.className).toContain('shrink')
     expect(body?.className).toContain('max-h-full')
+  })
+
+  it('多模态描述在竖排时杜绝百分比高度循环依赖，使用绝对像素动态高度防狭缝压缩，媒体容器移除 overflow-hidden 防边缘裁切', () => {
+    let resizeCallback: (
+      entries: Array<{ contentRect: { width: number; height: number } }>
+    ) => void = () => {}
+    const originalRO = window.ResizeObserver
+    window.ResizeObserver = class {
+      constructor(cb: any) {
+        resizeCallback = cb
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as any
+
+    try {
+      render(
+        <FilePreview
+          filePath="D:/photos/taskmgr.png"
+          fileName="taskmgr.png"
+          extension="png"
+          multimodalContent="这是一张特宽任务管理器截图，上下有任务栏和状态列表。"
+        />
+      )
+
+      const multimodalBox = screen.getByTestId('preview-multimodal-box')
+      const img = screen.getByRole('img', { name: 'taskmgr.png' })
+      const body = img.parentElement
+
+      // 1. 类名验证：绝对禁止出现锁死卡片高度在图片 43% 以下的百分比类名
+      expect(multimodalBox.className).not.toContain('max-h-[30%]')
+      expect(multimodalBox.className).not.toContain('max-h-[28%]')
+
+      // 2. 媒体外层 flex 容器移除 overflow-hidden，防止特宽/超高图片顶端或底端像素被裁切
+      expect(body?.className).not.toContain('overflow-hidden')
+
+      // 3. 模拟容器尺寸通知（高 800px，宽 500px 竖排模式）
+      act(() => {
+        resizeCallback([{ contentRect: { width: 500, height: 800 } }])
+      })
+
+      // 4. 验证动态绝对像素上限已挂载：
+      // verticalMultimodalMaxHeight = Math.min(360, Math.max(160, Math.round(800 * 0.48))) = 360px
+      // maxVerticalMediaHeight = Math.max(80, 800 - 260 - 36) = 504px
+      expect(multimodalBox.style.maxHeight).toBe('360px')
+      expect(img.style.maxHeight).toBe('504px')
+    } finally {
+      window.ResizeObserver = originalRO
+    }
+  })
+
+  it('视频预览在竖排模式下同样具备多模态动态绝对像素高度与媒体防挤压样式', () => {
+    let resizeCallback: (
+      entries: Array<{ contentRect: { width: number; height: number } }>
+    ) => void = () => {}
+    const originalRO = window.ResizeObserver
+    window.ResizeObserver = class {
+      constructor(cb: any) {
+        resizeCallback = cb
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    } as any
+
+    try {
+      render(
+        <FilePreview
+          filePath="D:/videos/presentation.mp4"
+          fileName="presentation.mp4"
+          extension="mp4"
+          multimodalContent="这是一个演示视频，介绍了产品架构与技术细节。"
+        />
+      )
+
+      const multimodalBox = screen.getByTestId('preview-multimodal-box')
+      expect(multimodalBox.className).not.toContain('max-h-[30%]')
+      expect(multimodalBox.className).not.toContain('max-h-[28%]')
+
+      act(() => {
+        resizeCallback([{ contentRect: { width: 480, height: 600 } }])
+      })
+
+      // verticalMultimodalMaxHeight = Math.min(360, Math.max(160, Math.round(600 * 0.48))) = 288px
+      expect(multimodalBox.style.maxHeight).toBe('288px')
+    } finally {
+      window.ResizeObserver = originalRO
+    }
   })
 
   it('PreviewSection 中分析耗时超长模型名具备 w-full min-w-0 防撑破与完整 title', () => {

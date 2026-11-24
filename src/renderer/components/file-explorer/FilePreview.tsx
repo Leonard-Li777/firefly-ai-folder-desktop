@@ -1,5 +1,5 @@
 import { FileCategory, getFileCategory, logger, LogCategory } from '@firefly/shared'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button } from '../ui/button'
 import { StreamVideoControls } from './StreamVideoControls'
@@ -128,15 +128,15 @@ const MEDIA_LAYOUT_BY_MODE: Record<MediaFitMode, MediaLayoutClasses> = {
       'h-full w-full overflow-hidden p-3 flex flex-col items-center justify-center gap-3 preview-scrollbar min-w-0 min-h-0 @container/preview',
     inner:
       'my-auto max-h-full min-h-0 min-w-0 w-full flex flex-col @[600px]/preview:flex-1 @[600px]/preview:flex-row items-center justify-center @[600px]/preview:items-stretch gap-3 @[600px]/preview:gap-4',
-    body: 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden gap-2 shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
+    body: 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-2 shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
     streamWrapper:
       'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-2 shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
     decodeFailedWrapper:
-      'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-3 overflow-hidden shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
+      'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-3 shrink @[600px]/preview:flex-1 @[600px]/preview:h-full',
     mediaElement:
       'min-h-0 max-w-full max-h-full w-auto h-auto object-contain shadow-lg rounded transition-all duration-150',
     multimodalBox:
-      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[28%] @[600px]/preview:max-h-full @[600px]/preview:w-80 @[600px]/preview:max-w-[40%] @[600px]/preview:h-full flex flex-col overflow-hidden'
+      'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 @[600px]/preview:max-h-full @[600px]/preview:w-80 @[600px]/preview:max-w-[40%] @[600px]/preview:h-full flex flex-col overflow-hidden'
   },
   original: {
     outer:
@@ -979,6 +979,20 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     </EmptyState>
   )
 
+  // 竖排模式下，多模态卡片最大高度动态感知容器尺寸（占用 ~48%，上限 360px，下限 160px），
+  // 杜绝使用内部高度百分比循环导致卡片被挤压成狭缝或过早触发滚动条
+  const verticalMultimodalMaxHeight = useMemo(() => {
+    if (containerSize.height <= 0) return 300
+    return Math.min(360, Math.max(160, Math.round(containerSize.height * 0.48)))
+  }, [containerSize.height])
+
+  // 竖排模式下，为媒体展示预留安全最大高度，避免超高图片挤压多模态描述卡片导致溢出
+  const maxVerticalMediaHeight = useMemo(() => {
+    if (containerSize.height <= 0 || !multimodalContent) return undefined
+    const reservedForCard = Math.min(260, Math.max(140, Math.round(containerSize.height * 0.35)))
+    return Math.max(80, containerSize.height - reservedForCard - 36)
+  }, [containerSize.height, multimodalContent])
+
   switch (category) {
     case FileCategory.IMAGE: {
       const mediaLayout = MEDIA_LAYOUT_BY_MODE[mediaFitMode]
@@ -1002,14 +1016,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         isSideBySide === true
           ? 'flex-1 min-h-0 min-w-0 w-full h-full flex flex-col items-center justify-center overflow-hidden gap-2'
           : isSideBySide === false
-            ? 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden gap-2 shrink'
+            ? 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-2 shrink'
             : mediaLayout.body
 
       const multimodalBoxClasses =
         isSideBySide === true
           ? 'w-72 sm:w-80 max-w-[42%] h-full flex flex-col overflow-hidden px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0'
           : isSideBySide === false
-            ? 'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[30%] flex flex-col overflow-hidden'
+            ? 'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 flex flex-col overflow-hidden'
             : mediaLayout.multimodalBox
 
       return (
@@ -1027,6 +1041,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 src={fileUrl}
                 alt={fileName}
                 className={mediaLayout.mediaElement}
+                style={
+                  !isSideBySide && maxVerticalMediaHeight
+                    ? { maxHeight: `${maxVerticalMediaHeight}px` }
+                    : undefined
+                }
                 onLoad={e => {
                   const { naturalWidth, naturalHeight } = e.currentTarget
                   if (naturalWidth && naturalHeight) {
@@ -1040,6 +1059,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               <div
                 data-testid="preview-multimodal-box"
                 className={cn(multimodalBoxClasses, isPrivate && 'ph-mask')}
+                style={
+                  !isSideBySide ? { maxHeight: `${verticalMultimodalMaxHeight}px` } : undefined
+                }
               >
                 <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
@@ -1091,14 +1113,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         isSideBySide === true
           ? 'flex-1 min-h-0 min-w-0 w-full h-full flex flex-col items-center justify-center overflow-hidden gap-2'
           : isSideBySide === false
-            ? 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center overflow-hidden gap-2 shrink'
+            ? 'min-h-0 max-h-full max-w-full flex flex-col items-center justify-center gap-2 shrink'
             : mediaLayout.body
 
       const multimodalBoxClasses =
         isSideBySide === true
           ? 'w-72 sm:w-80 max-w-[42%] h-full flex flex-col overflow-hidden px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0'
           : isSideBySide === false
-            ? 'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[30%] flex flex-col overflow-hidden'
+            ? 'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 flex flex-col overflow-hidden'
             : mediaLayout.multimodalBox
 
       return (
@@ -1120,6 +1142,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       src={staticFrameUrl}
                       alt={fileName}
                       className={mediaLayout.mediaElement}
+                      style={
+                        !isSideBySide && maxVerticalMediaHeight
+                          ? { maxHeight: `${maxVerticalMediaHeight}px` }
+                          : undefined
+                      }
                       onError={() => {
                         // WebP 头合法不代表整帧完整；渲染失败时回退占位图标且不立即重试同一坏帧
                         logger.warn(LogCategory.RENDERER, '[视频预览] 静态帧渲染失败，回退占位图标')
@@ -1155,6 +1182,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     controls={false}
                     autoPlay
                     muted={isVideoMuted}
+                    style={
+                      !isSideBySide && maxVerticalMediaHeight
+                        ? { maxHeight: `${maxVerticalMediaHeight}px` }
+                        : undefined
+                    }
                     onLoadedMetadata={handleVideoLoadedMetadata}
                     onCanPlay={handleCanPlay}
                     onTimeUpdate={handleTimeUpdate}
@@ -1207,6 +1239,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   controls
                   autoPlay
                   muted={isVideoMuted}
+                  style={
+                    !isSideBySide && maxVerticalMediaHeight
+                      ? { maxHeight: `${maxVerticalMediaHeight}px` }
+                      : undefined
+                  }
                   onLoadedMetadata={handleVideoLoadedMetadata}
                   onCanPlay={handleCanPlay}
                   onTimeUpdate={handleTimeUpdate}
@@ -1306,6 +1343,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               <div
                 data-testid="preview-multimodal-box"
                 className={cn(multimodalBoxClasses, isPrivate && 'ph-mask')}
+                style={
+                  !isSideBySide ? { maxHeight: `${verticalMultimodalMaxHeight}px` } : undefined
+                }
               >
                 <div className="flex items-center justify-between flex-wrap gap-1.5 mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
