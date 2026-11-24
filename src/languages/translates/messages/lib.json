@@ -61,7 +61,7 @@
     "de-DE": "Aus Sicherheitsgründen werden nur http/https-Links unterstützt.",
     "fr-FR": "Pour des raisons de sécurité, seuls les liens http/https sont pris en charge.",
     "ko-KR": "보안상의 이유로 http/https 링크만 지원됩니다.",
-    "$files": ["src/renderer/lib/external-link.ts(1160-1190)"],
+    "$files": ["src/renderer/lib/external-link.ts(1115-1145)"],
     "$id": 4438
   },
   "无效的链接地址": {
@@ -74,7 +74,7 @@
     "de-DE": "Ungültige Linkadresse",
     "fr-FR": "Adresse de lien invalide",
     "ko-KR": "잘못된 링크 주소",
-    "$files": ["src/renderer/lib/external-link.ts(1353-1364)"],
+    "$files": ["src/renderer/lib/external-link.ts(1301-1312)"],
     "$id": 4439
   },
   "未知错误": {
@@ -87,7 +87,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": ["src/renderer/lib/external-link.ts(2633-2641)"],
+    "$files": ["src/renderer/lib/external-link.ts(2542-2550)"],
     "$id": 4463
   },
   "无法打开链接: {message}": {
@@ -100,7 +100,7 @@
     "de-DE": "Link kann nicht geöffnet werden: {message}",
     "fr-FR": "Impossible d'ouvrir le lien : {message}",
     "ko-KR": "링크를 열 수 없습니다: {message}",
-    "$files": ["src/renderer/lib/external-link.ts(2741-2762)"],
+    "$files": ["src/renderer/lib/external-link.ts(2647-2668)"],
     "$id": 4464
   },
   "复制链接": {
@@ -113,7 +113,7 @@
     "de-DE": "Link kopieren",
     "fr-FR": "Copier le lien",
     "ko-KR": "링크 복사",
-    "$files": ["src/renderer/lib/external-link.ts(2857-2865)"],
+    "$files": ["src/renderer/lib/external-link.ts(2760-2768)"],
     "$id": 4465
   },
   "链接已复制到剪贴板": {
@@ -126,7 +126,7 @@
     "de-DE": "Link in die Zwischenablage kopiert",
     "fr-FR": "Lien copié dans le presse-papier",
     "ko-KR": "링크가 클립보드에 복사되었습니다.",
-    "$files": ["src/renderer/lib/external-link.ts(2966-2979)"],
+    "$files": ["src/renderer/lib/external-link.ts(2866-2879)"],
     "$id": 4466
   },
   "系统图标与元数据": {
@@ -178,7 +178,7 @@
     "de-DE": "Ozeanblau",
     "fr-FR": "Bleu océan",
     "ko-KR": "오션 블루",
-    "$files": ["src/renderer/lib/theme-config.ts(843-850)"],
+    "$files": ["src/renderer/lib/theme-config.ts(810-817)"],
     "$id": 4620
   },
   "极光紫": {
@@ -191,7 +191,7 @@
     "de-DE": "Aurora lila",
     "fr-FR": "Aurore violette",
     "ko-KR": "오로라 보라색",
-    "$files": ["src/renderer/lib/theme-config.ts(2539-2546)"],
+    "$files": ["src/renderer/lib/theme-config.ts(2457-2464)"],
     "$id": 4621
   },
   "薄荷绿": {
@@ -204,7 +204,7 @@
     "de-DE": "Mintgrün",
     "fr-FR": "Vert menthe",
     "ko-KR": "민트 그린",
-    "$files": ["src/renderer/lib/theme-config.ts(4222-4229)"],
+    "$files": ["src/renderer/lib/theme-config.ts(4091-4098)"],
     "$id": 4622
   },
   "琥珀金": {
@@ -217,7 +217,7 @@
     "de-DE": "Bernsteingold",
     "fr-FR": "Ambre or",
     "ko-KR": "앰버 골드",
-    "$files": ["src/renderer/lib/theme-config.ts(5901-5908)"],
+    "$files": ["src/renderer/lib/theme-config.ts(5721-5728)"],
     "$id": 4623
   },
   "珊瑚红": {
@@ -230,7 +230,7 @@
     "de-DE": "Korallenrot",
     "fr-FR": "Rouge corail",
     "ko-KR": "산호 레드",
-    "$files": ["src/renderer/lib/theme-config.ts(7546-7553)"],
+    "$files": ["src/renderer/lib/theme-config.ts(7317-7324)"],
     "$id": 4624
   },
   "极客灰": {
@@ -243,7 +243,7 @@
     "de-DE": "Geek grau",
     "fr-FR": "Gris geek",
     "ko-KR": "괴짜 회색",
-    "$files": ["src/renderer/lib/theme-config.ts(9238-9245)"],
+    "$files": ["src/renderer/lib/theme-config.ts(8960-8967)"],
     "$id": 4625
   }
 }

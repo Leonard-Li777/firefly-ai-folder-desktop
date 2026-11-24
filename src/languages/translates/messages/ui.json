@@ -22,7 +22,7 @@
     "de-DE": "Klicken Sie hier, um den Kundendienst per E-Mail zu kontaktieren",
     "fr-FR": "Cliquez pour contacter l'e-mail du service client",
     "ko-KR": "고객 서비스 이메일에 문의하려면 클릭하세요.",
-    "$files": ["src/renderer/components/ui/EmailSvg.tsx(1423-1435)"],
+    "$files": ["src/renderer/components/ui/EmailSvg.tsx(1381-1393)"],
     "$id": 32193
   },
   "关闭提示": {
@@ -36,8 +36,8 @@
     "fr-FR": "Fermer l'invite",
     "ko-KR": "프롬프트 닫기",
     "$files": [
-      "src/renderer/components/ui/hint-banner.tsx(1939-1947)",
-      "src/renderer/components/ui/hint-banner.tsx(1987-1995)"
+      "src/renderer/components/ui/hint-banner.tsx(1869-1877)",
+      "src/renderer/components/ui/hint-banner.tsx(1916-1924)"
     ],
     "$id": 22315
   },

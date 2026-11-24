@@ -37,7 +37,7 @@
     "ko-KR": "재설정",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(3791-3797)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13618-13624)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13290-13296)"
     ],
     "$id": 7974
   },
@@ -53,7 +53,7 @@
     "ko-KR": "축소",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(4222-4228)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(14354-14360)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(14012-14018)"
     ],
     "$id": 7975
   },
@@ -69,7 +69,7 @@
     "ko-KR": "확대",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(5111-5117)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15934-15940)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15565-15571)"
     ],
     "$id": 7976
   },
@@ -83,7 +83,7 @@
     "de-DE": "Tipp: Es wurde festgestellt, dass Sie die internationale Version installiert haben. Historische Daten werden im Originalverzeichnis gespeichert und die Daten in den beiden Regionen sind unabhängig voneinander.",
     "fr-FR": "Astuce : Il a été détecté que vous avez installé la version internationale. Les données historiques sont enregistrées dans le répertoire d'origine et les données des deux régions sont indépendantes l'une de l'autre.",
     "ko-KR": "팁: 국제 버전을 설치한 것으로 감지되었습니다. 과거 데이터는 원래 디렉터리에 저장되며 두 지역의 데이터는 서로 독립적입니다.",
-    "$files": ["src/renderer/components/common/CrossRegionNoticeBanner.tsx(1101-1144)"],
+    "$files": ["src/renderer/components/common/CrossRegionNoticeBanner.tsx(1057-1100)"],
     "$id": 22934
   },
   "提示：检测到您曾安装过国内版，历史数据保存在原目录中，两个区域的数据相互独立。": {
@@ -96,7 +96,7 @@
     "de-DE": "Tipp: Es wurde festgestellt, dass Sie die Inlandsversion bereits installiert haben. Die historischen Daten werden im Originalverzeichnis gespeichert. Die Daten in den beiden Bereichen sind unabhängig voneinander.",
     "fr-FR": "Astuce : Il a été détecté que vous avez déjà installé la version nationale. Les données historiques sont enregistrées dans le répertoire d'origine. Les données des deux domaines sont indépendantes l’une de l’autre.",
     "ko-KR": "팁: 이전에 국내 버전을 설치한 것으로 감지되었습니다. 기록 데이터는 원래 디렉터리에 저장됩니다. 두 영역의 데이터는 서로 독립적입니다.",
-    "$files": ["src/renderer/components/common/CrossRegionNoticeBanner.tsx(1155-1198)"],
+    "$files": ["src/renderer/components/common/CrossRegionNoticeBanner.tsx(1110-1153)"],
     "$id": 22935
   },
   "关闭提示": {
@@ -110,8 +110,8 @@
     "fr-FR": "Fermer l'invite",
     "ko-KR": "프롬프트 닫기",
     "$files": [
-      "src/renderer/components/common/CrossRegionNoticeBanner.tsx(1849-1857)",
-      "src/renderer/components/common/CrossRegionNoticeBanner.tsx(1876-1884)"
+      "src/renderer/components/common/CrossRegionNoticeBanner.tsx(1792-1800)",
+      "src/renderer/components/common/CrossRegionNoticeBanner.tsx(1818-1826)"
     ],
     "$id": 32065
   },
@@ -691,7 +691,7 @@
     "ko-KR": "알고 있었다",
     "$files": [
       "src/renderer/components/common/EnvRecoveryBanner.tsx(4527-4534)",
-      "src/renderer/components/common/PersistentTooltip.tsx(6512-6519)"
+      "src/renderer/components/common/PersistentTooltip.tsx(6305-6312)"
     ],
     "$id": 4631
   },
@@ -1717,7 +1717,7 @@
     "de-DE": "Fenster minimieren",
     "fr-FR": "Réduire la fenêtre",
     "ko-KR": "창 최소화",
-    "$files": ["src/renderer/components/common/Header.tsx(2218-2227)"],
+    "$files": ["src/renderer/components/common/Header.tsx(2145-2154)"],
     "$id": 2929
   },
   "还原窗口": {
@@ -1730,7 +1730,7 @@
     "de-DE": "Fenster wiederherstellen",
     "fr-FR": "Restaurer la fenêtre",
     "ko-KR": "복원 창",
-    "$files": ["src/renderer/components/common/Header.tsx(2563-2571)"],
+    "$files": ["src/renderer/components/common/Header.tsx(2483-2491)"],
     "$id": 3915
   },
   "最大化窗口": {
@@ -1743,7 +1743,7 @@
     "de-DE": "Fenster maximieren",
     "fr-FR": "Agrandir la fenêtre",
     "ko-KR": "창 최대화",
-    "$files": ["src/renderer/components/common/Header.tsx(2575-2584)"],
+    "$files": ["src/renderer/components/common/Header.tsx(2495-2504)"],
     "$id": 3916
   },
   "关闭窗口": {
@@ -1756,7 +1756,7 @@
     "de-DE": "Fenster schließen",
     "fr-FR": "Fermer la fenêtre",
     "ko-KR": "창 닫기",
-    "$files": ["src/renderer/components/common/Header.tsx(3000-3008)"],
+    "$files": ["src/renderer/components/common/Header.tsx(2910-2918)"],
     "$id": 3917
   },
   "正在搜索...": {
@@ -1769,7 +1769,7 @@
     "de-DE": "Suche...",
     "fr-FR": "Chercher...",
     "ko-KR": "검색...",
-    "$files": ["src/renderer/components/common/Loading.tsx(1870-1881)"],
+    "$files": ["src/renderer/components/common/Loading.tsx(1809-1820)"],
     "$id": 22193
   },
   "正在检索文件名、标签与深度多模态语义内容...": {
@@ -1782,7 +1782,7 @@
     "de-DE": "Abrufen von Dateinamen, Tags und umfassenden multimodalen semantischen Inhalten ...",
     "fr-FR": "Récupération de noms de fichiers, de balises et de contenu sémantique multimodal approfondi...",
     "ko-KR": "파일 이름, 태그 및 깊은 다중 모드 의미 콘텐츠 검색 중...",
-    "$files": ["src/renderer/components/common/Loading.tsx(1908-1935)"],
+    "$files": ["src/renderer/components/common/Loading.tsx(1846-1873)"],
     "$id": 22194
   },
   "正在加载文件...": {
@@ -1795,7 +1795,7 @@
     "de-DE": "Dateien werden geladen...",
     "fr-FR": "Chargement des fichiers...",
     "ko-KR": "파일 로드 중...",
-    "$files": ["src/renderer/components/common/Loading.tsx(5318-5331)"],
+    "$files": ["src/renderer/components/common/Loading.tsx(5181-5194)"],
     "$id": 22195
   },
   "正在读取目录内容与文件元数据...": {
@@ -1808,7 +1808,7 @@
     "de-DE": "Verzeichnisinhalte und Dateimetadaten werden gelesen...",
     "fr-FR": "Lecture du contenu du répertoire et des métadonnées des fichiers...",
     "ko-KR": "디렉터리 내용 및 파일 메타데이터를 읽는 중...",
-    "$files": ["src/renderer/components/common/Loading.tsx(5358-5379)"],
+    "$files": ["src/renderer/components/common/Loading.tsx(5220-5241)"],
     "$id": 22196
   },
   "萤核智能文件夹": {
@@ -1822,7 +1822,7 @@
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
     "$files": [
-      "src/renderer/components/common/Logo.tsx(397-408)",
+      "src/renderer/components/common/Logo.tsx(388-399)",
       "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4573-4584)"
     ],
     "$id": 3918
@@ -1837,7 +1837,7 @@
     "de-DE": "Listenansicht",
     "fr-FR": "Vue en liste",
     "ko-KR": "목록 보기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3360-3368)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3256-3264)"],
     "$id": 11405
   },
   "网格视图": {
@@ -1850,7 +1850,7 @@
     "de-DE": "Rasteransicht",
     "fr-FR": "Vue en grille",
     "ko-KR": "그리드 보기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(5648-5656)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(5491-5499)"],
     "$id": 11406
   },
   "瀑布流视图": {
@@ -1863,7 +1863,7 @@
     "de-DE": "Blick auf den Wasserfall",
     "fr-FR": "Vue sur la cascade",
     "ko-KR": "폭포 전망",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6950-6959)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6761-6770)"],
     "$id": 11407
   },
   "列表行高大小": {
@@ -1876,7 +1876,7 @@
     "de-DE": "Listenzeilenhöhe und -größe",
     "fr-FR": "Hauteur et taille des lignes de liste",
     "ko-KR": "행 높이 및 크기 나열",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9281-9291)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9040-9050)"],
     "$id": 11408
   },
   "卡片缩放大小": {
@@ -1889,7 +1889,7 @@
     "de-DE": "Karten-Zoom-Größe",
     "fr-FR": "Taille du zoom de la carte",
     "ko-KR": "카드 줌 크기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9295-9305)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9054-9064)"],
     "$id": 11409
   },
   "视图与显示设置": {
@@ -1902,7 +1902,7 @@
     "de-DE": "Ansichts- und Anzeigeeinstellungen",
     "fr-FR": "Paramètres d'affichage et de vue",
     "ko-KR": "뷰 및 표시 설정",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9753-9764)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9500-9511)"],
     "$id": 7999
   },
   "视图模式": {
@@ -1915,7 +1915,7 @@
     "de-DE": "Ansichtsmodus",
     "fr-FR": "Mode d'affichage",
     "ko-KR": "뷰 모드",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10982-10990)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10699-10707)"],
     "$id": 8000
   },
   "更小": {
@@ -1928,7 +1928,7 @@
     "de-DE": "Smaller",
     "fr-FR": "Plus petit",
     "ko-KR": "더 작은",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16310-16316)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15933-15939)"],
     "$id": 11410
   },
   "默认": {
@@ -1941,7 +1941,7 @@
     "de-DE": "Standard",
     "fr-FR": "Défaut",
     "ko-KR": "기본",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16744-16750)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16359-16365)"],
     "$id": 11411
   },
   "更大": {
@@ -1954,7 +1954,7 @@
     "de-DE": "Zweitgrößte",
     "fr-FR": "Plus grand",
     "ko-KR": "더 큰",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16814-16820)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16427-16433)"],
     "$id": 11412
   },
   "主副文件名显示": {
@@ -1967,7 +1967,7 @@
     "de-DE": "Anzeige des primären und sekundären Dateinamens",
     "fr-FR": "Affichage du nom de fichier principal et secondaire",
     "ko-KR": "기본 및 보조 파일 이름 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17261-17272)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16865-16876)"],
     "$id": 11413
   },
   "互换主次位置": {
@@ -1980,7 +1980,7 @@
     "de-DE": "Tauschen Sie primäre und sekundäre Positionen",
     "fr-FR": "Permuter les positions primaires et secondaires",
     "ko-KR": "기본 및 보조 위치 교환",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17405-17415)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17006-17016)"],
     "$id": 11414
   },
   "智能名为主": {
@@ -1993,7 +1993,7 @@
     "de-DE": "Intelligenter Name Meister",
     "fr-FR": "Maître de nom intelligent",
     "ko-KR": "스마트 이름 마스터",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17655-17664)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17249-17258)"],
     "$id": 11415
   },
   "真实名为辅": {
@@ -2006,7 +2006,7 @@
     "de-DE": "Echter Name: Hilfskraft",
     "fr-FR": "Vrai nom: auxiliaire",
     "ko-KR": "실제 이름:보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17739-17748)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17331-17340)"],
     "$id": 11416
   },
   "真实名为主": {
@@ -2019,7 +2019,7 @@
     "de-DE": "Der wahre Name ist der Herr",
     "fr-FR": "Le vrai nom est le seigneur",
     "ko-KR": "진짜 이름은 주님",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17871-17880)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17459-17468)"],
     "$id": 11417
   },
   "智能名为辅": {
@@ -2032,7 +2032,7 @@
     "de-DE": "Intelligenter Name Hilfs",
     "fr-FR": "Auxiliaire de nom intelligent",
     "ko-KR": "스마트 이름 보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17955-17964)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17541-17550)"],
     "$id": 11418
   },
   "显示完整文件名": {
@@ -2045,7 +2045,7 @@
     "de-DE": "Vollen Dateinamen anzeigen",
     "fr-FR": "Afficher le nom de fichier complet",
     "ko-KR": "전체 파일명 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20388-20399)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19928-19939)"],
     "$id": 8005
   },
   "显示丢失文件": {
@@ -2058,7 +2058,7 @@
     "de-DE": "Fehlende Dateien anzeigen",
     "fr-FR": "Afficher les fichiers manquants",
     "ko-KR": "누락된 파일 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20910-20920)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20438-20448)"],
     "$id": 8006
   },
   "请选择您要整理的文件夹（工作目录）": {
@@ -2451,7 +2451,7 @@
     "de-DE": "Stornieren",
     "fr-FR": "Annuler",
     "ko-KR": "취소",
-    "$files": ["src/renderer/components/common/PromptDialog.tsx(1519-1525)"],
+    "$files": ["src/renderer/components/common/PromptDialog.tsx(1466-1472)"],
     "$id": 10201
   },
   "确定": {
@@ -2464,7 +2464,7 @@
     "de-DE": "Sicher",
     "fr-FR": "Bien sûr",
     "ko-KR": "확신하는",
-    "$files": ["src/renderer/components/common/PromptDialog.tsx(1628-1634)"],
+    "$files": ["src/renderer/components/common/PromptDialog.tsx(1572-1578)"],
     "$id": 10202
   },
   "开通当前虚拟目录访问权限": {
@@ -2477,7 +2477,7 @@
     "de-DE": "Gewähren Sie Zugriff auf das aktuelle virtuelle Verzeichnis",
     "fr-FR": "Accorder l'accès au répertoire virtuel actuel",
     "ko-KR": "현재 가상 디렉터리에 대한 액세스 권한 부여",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(1659-1675)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(1612-1628)"],
     "$id": 10203
   },
   "增加一个极速目录槽位": {
@@ -2491,8 +2491,8 @@
     "fr-FR": "Ajouter un emplacement de répertoire rapide",
     "ko-KR": "빠른 디렉터리 슬롯 추가",
     "$files": [
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1715-1729)",
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2578-2592)"
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1666-1680)",
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2500-2514)"
     ],
     "$id": 10204
   },
@@ -2507,8 +2507,8 @@
     "fr-FR": "Ajouter un emplacement de répertoire privé",
     "ko-KR": "개인 디렉터리 슬롯 추가",
     "$files": [
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1742-1756)",
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2605-2619)"
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1692-1706)",
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2526-2540)"
     ],
     "$id": 10205
   },
@@ -2522,7 +2522,7 @@
     "de-DE": "Einmaliger Verbrauch zur Aktivierung des aktuellen virtuellen Verzeichnisses. Nach dem Löschen dieses Verzeichnisses kann es nicht kostenlos neu erstellt werden.",
     "fr-FR": "Consommation unique pour activer le répertoire virtuel actuel. Après avoir supprimé ce répertoire, il ne peut pas être recréé gratuitement.",
     "ko-KR": "현재 가상 디렉터리를 활성화하기 위한 일회성 소비입니다. 이 디렉터리를 삭제한 후에는 무료로 다시 만들 수 없습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(1810-1842)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(1756-1788)"],
     "$id": 10206
   },
   "永久性，为您增加一个极速目录槽位，槽位空缺就可以再免费建目录。": {
@@ -2536,8 +2536,8 @@
     "fr-FR": "En permanence, un emplacement d'annuaire haut débit sera ajouté pour vous. Si l'emplacement est vacant, vous pouvez créer un autre répertoire gratuitement.",
     "ko-KR": "영구적으로 고속 디렉터리 슬롯이 추가됩니다. 슬롯이 비어 있으면 무료로 다른 디렉토리를 생성할 수 있습니다.",
     "$files": [
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1882-1917)",
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2755-2790)"
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1826-1861)",
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2670-2705)"
     ],
     "$id": 10207
   },
@@ -2552,8 +2552,8 @@
     "fr-FR": "En permanence, un emplacement de répertoire privé est ajouté pour vous. Si l'emplacement est vacant, vous pouvez créer un autre répertoire gratuitement.",
     "ko-KR": "영구적으로 개인 디렉터리 슬롯이 추가됩니다. 슬롯이 비어 있으면 무료로 다른 디렉토리를 생성할 수 있습니다.",
     "$files": [
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1930-1965)",
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2803-2838)"
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1873-1908)",
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2717-2752)"
     ],
     "$id": 10208
   },
@@ -2567,7 +2567,7 @@
     "de-DE": "Fügen Sie einen virtuellen Verzeichnissteckplatz hinzu",
     "fr-FR": "Ajouter un emplacement de répertoire virtuel",
     "ko-KR": "가상 디렉터리 슬롯 추가",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(2524-2538)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(2448-2462)"],
     "$id": 10209
   },
   "永久性，为当前工作目录增加一个虚拟目录槽位，槽位空缺就可以再免费建虚拟目录。": {
@@ -2580,7 +2580,7 @@
     "de-DE": "Permanent, fügen Sie dem aktuellen Arbeitsverzeichnis einen virtuellen Verzeichnisslot hinzu. Sollte der Steckplatz frei sein, können Sie kostenlos ein weiteres virtuelles Verzeichnis erstellen.",
     "fr-FR": "Permanent, ajoutez un emplacement de répertoire virtuel au répertoire de travail actuel. Si l'emplacement est vacant, vous pouvez créer gratuitement un autre répertoire virtuel.",
     "ko-KR": "영구적으로 현재 작업 디렉터리에 가상 디렉터리 슬롯을 추가합니다. 슬롯이 비어 있으면 무료로 다른 가상 디렉터리를 만들 수 있습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(2673-2715)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(2590-2632)"],
     "$id": 10210
   },
   "需要激活虚拟目录「{name}」的访问权限": {
@@ -2593,7 +2593,7 @@
     "de-DE": "Erfordert die Aktivierung der Zugriffsrechte auf das virtuelle Verzeichnis „{name}“",
     "fr-FR": "Nécessite l'activation des droits d'accès au répertoire virtuel \"{name}\"",
     "ko-KR": "가상 디렉터리 \"{name}\"에 대한 액세스 권한 활성화가 필요합니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3582-3607)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3478-3503)"],
     "$id": 10211
   },
   "需要激活当前工作空间「{name}」": {
@@ -2606,7 +2606,7 @@
     "de-DE": "Der aktuelle Arbeitsbereich „{name}“ muss aktiviert werden.",
     "fr-FR": "Besoin d'activer l'espace de travail actuel \"{name}\"",
     "ko-KR": "현재 작업공간 \"{name}\"을(를) 활성화해야 합니다",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3644-3666)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3539-3561)"],
     "$id": 10212
   },
   "您当前的工作目录已无可用虚拟目录槽位，需要单独开通「{name}」的访问权限或购买新的槽位。": {
@@ -2619,7 +2619,7 @@
     "de-DE": "In Ihrem aktuellen Arbeitsverzeichnis ist kein virtueller Verzeichnisplatz verfügbar. Sie müssen die Zugriffsrechte für „{name}“ separat aktivieren oder einen neuen Slot erwerben.",
     "fr-FR": "Il n'y a aucun emplacement de répertoire virtuel disponible dans votre répertoire de travail actuel. Vous devez activer séparément les droits d'accès pour \"{name}\" ou acheter un nouvel emplacement.",
     "ko-KR": "현재 작업 디렉터리에 사용 가능한 가상 디렉터리 슬롯이 없습니다. \"{name}\"에 대한 액세스 권한을 별도로 활성화하거나 새 슬롯을 구매해야 합니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3826-3892)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3717-3782)"],
     "$id": 10213
   },
   "您已超出免费等级 {typeLabel} 目录个数限制。您可以选择开通一个新的目录槽位。": {
@@ -2632,7 +2632,7 @@
     "de-DE": "Sie haben das Verzeichnislimit für das kostenlose Kontingent {typeLabel} überschritten. Sie können einen neuen Verzeichnisplatz öffnen.",
     "fr-FR": "Vous avez dépassé la limite de répertoire pour le niveau gratuit {typeLabel}. Vous pouvez choisir d'ouvrir un nouvel emplacement de répertoire.",
     "ko-KR": "무료 등급 {typeLabel}에 대한 디렉터리 제한을 초과했습니다. 새 디렉터리 슬롯을 열도록 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3958-4006)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3845-3893)"],
     "$id": 10214
   },
   "极速": {
@@ -2645,7 +2645,7 @@
     "de-DE": "Extreme Geschwindigkeit",
     "fr-FR": "Vitesse extrême",
     "ko-KR": "극한의 속도",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(4056-4062)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3942-3948)"],
     "$id": 10215
   },
   "私有": {
@@ -2658,7 +2658,7 @@
     "de-DE": "Privat",
     "fr-FR": "Privé",
     "ko-KR": "사적인",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(4066-4072)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3952-3958)"],
     "$id": 10216
   },
   "萤火": {
@@ -2672,8 +2672,8 @@
     "fr-FR": "Firecores",
     "ko-KR": "Firecores",
     "$files": [
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5013-5019)",
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5939-5945)"
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(4883-4889)",
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5793-5799)"
     ],
     "$id": 10217
   },
@@ -2687,7 +2687,7 @@
     "de-DE": "Arbeitsverzeichnis verwalten",
     "fr-FR": "Gérer le répertoire de travail",
     "ko-KR": "작업 디렉토리 관리",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6677-6687)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6514-6524)"],
     "$id": 10218
   },
   "你可以删除不需要的工作目录，以腾出槽位": {
@@ -2700,7 +2700,7 @@
     "de-DE": "Sie können nicht benötigte Arbeitsverzeichnisse löschen, um Slots freizugeben.",
     "fr-FR": "Vous pouvez supprimer les répertoires de travail inutiles pour libérer des emplacements",
     "ko-KR": "필요 없는 작업 디렉토리를 삭제하여 슬롯을 확보할 수 있습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6812-6835)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6646-6669)"],
     "$id": 10219
   },
   "打开设置": {
@@ -2713,7 +2713,7 @@
     "de-DE": "Einstellungen öffnen",
     "fr-FR": "Ouvrir les paramètres",
     "ko-KR": "설정 열기",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(7091-7099)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6921-6929)"],
     "$id": 10220
   },
   "搜索...": {
@@ -3041,7 +3041,7 @@
     "de-DE": "Die Sprachwiedergabe muss installiert oder aktiviert sein, bitte aktivieren Sie sie im Plug-in-Center",
     "fr-FR": "La lecture vocale doit être installée ou activée, veuillez l'activer dans le centre de plug-in",
     "ko-KR": "음성 재생을 설치하거나 활성화해야 합니다. 플러그인 센터에서 활성화하세요.",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6363-6386)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6152-6175)"],
     "$id": 31569
   },
   "语音播放待安装/启动": {
@@ -3054,7 +3054,7 @@
     "de-DE": "Sprachwiedergabe muss installiert/gestartet werden",
     "fr-FR": "Lecture vocale à installer/démarrer",
     "ko-KR": "음성 재생 설치/시작 예정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6781-6795)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6561-6575)"],
     "$id": 31570
   },
   "已在文件夹中定位音频文件": {
@@ -3067,7 +3067,7 @@
     "de-DE": "Audiodateien wurden im Ordner gefunden",
     "fr-FR": "Les fichiers audio ont été localisés dans le dossier",
     "ko-KR": "오디오 파일이 폴더에 있습니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7877-7893)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7609-7625)"],
     "$id": 21215
   },
   "音频文件尚未生成，播放后将自动缓存": {
@@ -3080,7 +3080,7 @@
     "de-DE": "Die Audiodatei wurde noch nicht generiert und wird nach der Wiedergabe automatisch zwischengespeichert",
     "fr-FR": "Le fichier audio n'a pas encore été généré et sera automatiquement mis en cache après la lecture",
     "ko-KR": "오디오 파일은 아직 생성되지 않았으며 재생 후 자동으로 캐시됩니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7933-7954)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7663-7684)"],
     "$id": 21216
   },
   "正在缓冲语音，已就绪 {current}s / {target}s...": {
@@ -3093,7 +3093,7 @@
     "de-DE": "Puffernde Stimme, bereit {current}s / {target}s...",
     "fr-FR": "Voix tampon, prêt {current}s / {target}s...",
     "ko-KR": "음성 버퍼링 중, {current}s/{target}s 준비됨...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8761-8801)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8468-8508)"],
     "$id": 22280
   },
   "正在准备语音，请稍候...": {
@@ -3106,7 +3106,7 @@
     "de-DE": "Stimme wird vorbereitet, bitte warten...",
     "fr-FR": "Préparation de la voix, veuillez patienter...",
     "ko-KR": "음성 준비 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9081-9098)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8781-8798)"],
     "$id": 22281
   },
   "暂停朗读": {
@@ -3119,7 +3119,7 @@
     "de-DE": "Leseunterbrechung",
     "fr-FR": "Pause lecture",
     "ko-KR": "읽기 일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9146-9154)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8844-8852)"],
     "$id": 21217
   },
   "继续朗读": {
@@ -3132,7 +3132,7 @@
     "de-DE": "Lesen Sie weiter laut",
     "fr-FR": "Continuez à lire à haute voix",
     "ko-KR": "소리내어 계속 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9205-9213)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8901-8909)"],
     "$id": 21218
   },
   "语音朗读": {
@@ -3145,7 +3145,7 @@
     "de-DE": "Stimmenlesen",
     "fr-FR": "Lecture vocale",
     "ko-KR": "음성 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9236-9244)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(8931-8939)"],
     "$id": 21219
   },
   "准备中...": {
@@ -3158,7 +3158,7 @@
     "de-DE": "Vorbereitung läuft...",
     "fr-FR": "En préparation...",
     "ko-KR": "준비 중...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10178-10188)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9853-9863)"],
     "$id": 22282
   },
   "播放中": {
@@ -3171,7 +3171,7 @@
     "de-DE": "Spielend",
     "fr-FR": "Jouer",
     "ko-KR": "재생",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10378-10385)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10049-10056)"],
     "$id": 21220
   },
   "暂停": {
@@ -3184,7 +3184,7 @@
     "de-DE": "Pausieren",
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10444-10450)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10113-10119)"],
     "$id": 21221
   },
   "朗读": {
@@ -3197,7 +3197,7 @@
     "de-DE": "Vorlesen",
     "fr-FR": "Lire à haute voix",
     "ko-KR": "소리내어 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10477-10483)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10145-10151)"],
     "$id": 21222
   },
   "切换朗读发音人": {
@@ -3210,7 +3210,7 @@
     "de-DE": "Wechseln Sie zum Vorlesesprecher",
     "fr-FR": "Basculer pour lire le prononciateur à haute voix",
     "ko-KR": "소리내어 발음기로 전환",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10993-11004)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10643-10654)"],
     "$id": 21223
   },
   "收藏音色": {
@@ -3223,7 +3223,7 @@
     "de-DE": "Kollektion tone",
     "fr-FR": "Ton de collection",
     "ko-KR": "컬렉션 톤",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11696-11704)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11336-11344)"],
     "$id": 21224
   },
   "自定义": {
@@ -3236,7 +3236,7 @@
     "de-DE": "Benutzerdefiniert",
     "fr-FR": "Personnalisé",
     "ko-KR": "사용자 지정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12717-12724)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12337-12344)"],
     "$id": 21651
   },
   "中文": {
@@ -3249,7 +3249,7 @@
     "de-DE": "Chinesisch",
     "fr-FR": "Chinois",
     "ko-KR": "중국어",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12802-12808)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12420-12426)"],
     "$id": 32076
   },
   "日文": {
@@ -3262,7 +3262,7 @@
     "de-DE": "Japanisch",
     "fr-FR": "Japonais",
     "ko-KR": "일본어",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12890-12896)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12506-12512)"],
     "$id": 32077
   },
   "管理音色与设置...": {
@@ -3275,7 +3275,7 @@
     "de-DE": "Verwalten Sie Klangfarbe und Einstellungen...",
     "fr-FR": "Gérer le timbre et les paramètres...",
     "ko-KR": "음색 및 설정을 관리합니다...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13512-13526)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13115-13129)"],
     "$id": 21225
   },
   "调节朗读语速": {
@@ -3288,7 +3288,7 @@
     "de-DE": "Passen Sie die Geschwindigkeit des Vorlesens an",
     "fr-FR": "Ajustez la vitesse de lecture à haute voix",
     "ko-KR": "소리내어 읽는 속도 조정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13950-13960)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13537-13547)"],
     "$id": 21226
   },
   "在文件夹中定位音频文件": {
@@ -3301,7 +3301,7 @@
     "de-DE": "Audiodateien in Ordnern suchen",
     "fr-FR": "Localiser les fichiers audio dans des dossiers",
     "ko-KR": "폴더에서 오디오 파일 찾기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(15383-15398)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(14935-14950)"],
     "$id": 21227
   },
   "无法加载文件预览，请检查文件权限或格式。": {
@@ -3314,7 +3314,7 @@
     "de-DE": "Die Dateivorschau kann nicht geladen werden. Bitte überprüfen Sie die Dateiberechtigungen oder das Format.",
     "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier les autorisations ou le format du fichier.",
     "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 권한이나 형식을 확인하세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11430-11454)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11177-11201)"],
     "$id": 10223
   },
   "无法加载预览，请检查文件格式或重试。": {
@@ -3327,7 +3327,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden. Bitte überprüfen Sie das Dateiformat oder versuchen Sie es erneut.",
     "fr-FR": "Impossible de charger l'aperçu, veuillez vérifier le format du fichier ou réessayer.",
     "ko-KR": "미리보기를 로드할 수 없습니다. 파일 형식을 확인하거나 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(12254-12276)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11977-11999)"],
     "$id": 10225
   },
   "预览加载失败": {
@@ -3340,7 +3340,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden",
     "fr-FR": "L'aperçu n'a pas pu être chargé",
     "ko-KR": "미리보기를 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15041-15051)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(14697-14707)"],
     "$id": 10226
   },
   "加载预览中...": {
@@ -3353,7 +3353,7 @@
     "de-DE": "Vorschau wird geladen...",
     "fr-FR": "Chargement de l'aperçu...",
     "ko-KR": "미리보기 로드 중...",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15844-15856)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15482-15494)"],
     "$id": 10227
   }
 }

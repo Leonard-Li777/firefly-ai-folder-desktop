@@ -9,7 +9,7 @@
     "de-DE": "ElectronAPI.aiService.initialize nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.initialize n'est pas disponible",
     "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
-    "$files": ["src/renderer/stores/ai-service-store.ts(4272-4312)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(4112-4152)"],
     "$id": 5455
   },
   "AI服务初始化失败": {
@@ -22,7 +22,7 @@
     "de-DE": "Initialisierung des KI-Dienstes fehlgeschlagen",
     "fr-FR": "Échec de l'initialisation du service IA",
     "ko-KR": "AI 서비스 초기화 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(5727-5740)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(5524-5537)"],
     "$id": 5458
   },
   "未知错误": {
@@ -36,8 +36,8 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/stores/ai-service-store.ts(6533-6541)",
-      "src/renderer/stores/ai-service-store.ts(10217-10225)",
+      "src/renderer/stores/ai-service-store.ts(6304-6312)",
+      "src/renderer/stores/ai-service-store.ts(9873-9881)",
       "src/renderer/stores/tier-store.ts(6770-6778)"
     ],
     "$id": 8872
@@ -52,7 +52,7 @@
     "de-DE": "ElectronAPI.aiService.onModelChanged nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.onModelChanged n'est pas disponible",
     "ko-KR": "electronAPI.aiService.onModelChanged 사용 불가",
-    "$files": ["src/renderer/stores/ai-service-store.ts(7466-7510)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(7207-7251)"],
     "$id": 8128
   },
   "模型切换失败": {
@@ -65,7 +65,7 @@
     "de-DE": "Modellwechsel fehlgeschlagen",
     "fr-FR": "Échec du changement de modèle",
     "ko-KR": "모델 전환 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(9368-9378)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(9052-9062)"],
     "$id": 5462
   },
   "当前工作区尚未配置 AI 策略，分析已暂停。请先完成工作区配置。": {
@@ -104,7 +104,7 @@
     "de-DE": "Aktualisierung der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour de la configuration",
     "ko-KR": "구성 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2018-2028)"],
+    "$files": ["src/renderer/stores/config-store.ts(1937-1947)"],
     "$id": 5465
   },
   "更新配置项失败": {
@@ -117,7 +117,7 @@
     "de-DE": "Aktualisierung der Konfigurationseinstellungen fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour des paramètres de configuration",
     "ko-KR": "구성 항목 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2748-2759)"],
+    "$files": ["src/renderer/stores/config-store.ts(2643-2654)"],
     "$id": 5466
   },
   "获取配置失败": {
@@ -130,7 +130,7 @@
     "de-DE": "Abrufen der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la récupération de la configuration",
     "ko-KR": "구성 가져오기 실패",
-    "$files": ["src/renderer/stores/config-store.ts(3263-3273)"],
+    "$files": ["src/renderer/stores/config-store.ts(3139-3149)"],
     "$id": 5467
   },
   "获取休眠快照失败": {
@@ -1937,7 +1937,7 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(11178-11188)"],
+    "$files": ["src/renderer/stores/settings-store.ts(12255-12265)"],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -1950,7 +1950,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(13871-13885)"],
+    "$files": ["src/renderer/stores/settings-store.ts(14948-14962)"],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -1963,7 +1963,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(14182-14196)"],
+    "$files": ["src/renderer/stores/settings-store.ts(15259-15273)"],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -1976,7 +1976,7 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(14639-14651)"],
+    "$files": ["src/renderer/stores/settings-store.ts(15716-15728)"],
     "$id": 5501
   },
   "已退出登录": {
@@ -2041,7 +2041,7 @@
     "de-DE": "Audio wird synthetisiert und nach der Synthese automatisch umgeschaltet",
     "fr-FR": "L'audio est en cours de synthèse et il sera automatiquement commuté après la synthèse",
     "ko-KR": "오디오가 합성되고 있으며 합성 후 자동으로 전환됩니다",
-    "$files": ["src/renderer/stores/tts-audio/hot-switch.ts(839-858)"],
+    "$files": ["src/renderer/stores/tts-audio/hot-switch.ts(815-834)"],
     "$id": 21557
   },
   "已自动切换播放": {
@@ -2055,8 +2055,8 @@
     "fr-FR": "La lecture a été automatiquement commutée",
     "ko-KR": "재생이 자동으로 전환되었습니다",
     "$files": [
-      "src/renderer/stores/tts-audio/hot-switch.ts(6548-6559)",
-      "src/renderer/stores/tts-audio/hot-switch.ts(11470-11481)"
+      "src/renderer/stores/tts-audio/hot-switch.ts(6384-6395)",
+      "src/renderer/stores/tts-audio/hot-switch.ts(11150-11161)"
     ],
     "$id": 21559
   },
@@ -2071,9 +2071,9 @@
     "fr-FR": "Le clip audio est trop long et a été automatiquement tronqué.",
     "ko-KR": "오디오 클립이 너무 길어서 자동으로 잘렸습니다.",
     "$files": [
-      "src/renderer/stores/tts-audio/hot-switch.ts(8641-8656)",
-      "src/renderer/stores/tts-audio/hot-switch.ts(13990-14005)",
-      "src/renderer/stores/tts-audio/slices/export.ts(1148-1163)",
+      "src/renderer/stores/tts-audio/hot-switch.ts(8416-8431)",
+      "src/renderer/stores/tts-audio/hot-switch.ts(13604-13619)",
+      "src/renderer/stores/tts-audio/slices/export.ts(1120-1135)",
       "src/renderer/stores/tts-audio/slices/playback.ts(19194-19209)",
       "src/renderer/stores/tts-audio/slices/playback.ts(36236-36251)"
     ],
@@ -2090,8 +2090,8 @@
     "fr-FR": "La commutation de tonalité a échoué et le service de synthèse vocale n'est pas disponible",
     "ko-KR": "톤 전환에 실패하고 음성 합성 서비스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/tts-audio/hot-switch.ts(8964-8984)",
-      "src/renderer/stores/tts-audio/hot-switch.ts(16472-16492)"
+      "src/renderer/stores/tts-audio/hot-switch.ts(8726-8746)",
+      "src/renderer/stores/tts-audio/hot-switch.ts(16018-16038)"
     ],
     "$id": 21558
   },
@@ -2105,7 +2105,7 @@
     "de-DE": "Streaming-Unterbrechung",
     "fr-FR": "Interruption du streaming",
     "ko-KR": "스트리밍 중단",
-    "$files": ["src/renderer/stores/tts-audio/streaming.ts(4846-4856)"],
+    "$files": ["src/renderer/stores/tts-audio/streaming.ts(4709-4719)"],
     "$id": 38301
   },
   "导出音频失败": {
@@ -2118,7 +2118,7 @@
     "de-DE": "Audio konnte nicht exportiert werden",
     "fr-FR": "Échec de l'exportation de l'audio",
     "ko-KR": "오디오를 내보내지 못했습니다.",
-    "$files": ["src/renderer/stores/tts-audio/slices/export.ts(1896-1906)"],
+    "$files": ["src/renderer/stores/tts-audio/slices/export.ts(1845-1855)"],
     "$id": 32060
   },
   "没有可朗读的有效文本内容": {
@@ -2251,7 +2251,7 @@
     "de-DE": "Benutzerdefinierter Klontonwert",
     "fr-FR": "Tonalité de clonage définie par l'utilisateur",
     "ko-KR": "사용자 정의 클론 톤",
-    "$files": ["src/renderer/stores/tts-audio/slices/voices.ts(1507-1520)"],
+    "$files": ["src/renderer/stores/tts-audio/slices/voices.ts(1475-1488)"],
     "$id": 21644
   }
 }

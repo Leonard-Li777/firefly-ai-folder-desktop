@@ -9,7 +9,7 @@
     "de-DE": "In der Schnittstelle tritt eine Ausnahme auf",
     "fr-FR": "Une exception se produit dans l'interface",
     "ko-KR": "인터페이스에서 예외가 발생했습니다.",
-    "$files": ["src/electron/main/window.ts(3443-3453)"],
+    "$files": ["src/electron/main/window.ts(3331-3341)"],
     "$id": 22350
   },
   "界面渲染进程已退出，应用未能自动恢复。请重启应用后重试。": {
@@ -22,7 +22,7 @@
     "de-DE": "Der Schnittstellen-Rendering-Prozess wurde beendet und die Anwendung konnte nicht automatisch fortgesetzt werden. Bitte starten Sie die App neu und versuchen Sie es erneut.",
     "fr-FR": "Le processus de rendu de l'interface s'est terminé et l'application n'a pas pu reprendre automatiquement. Veuillez redémarrer l'application et réessayer.",
     "ko-KR": "인터페이스 렌더링 프로세스가 종료되었으며 애플리케이션이 자동으로 재개되지 못했습니다. 앱을 다시 시작한 후 다시 시도해 주세요.",
-    "$files": ["src/electron/main/window.ts(3471-3503)"],
+    "$files": ["src/electron/main/window.ts(3358-3390)"],
     "$id": 22351
   },
   "异常原因": {
@@ -35,7 +35,7 @@
     "de-DE": "Abnormale Ursache",
     "fr-FR": "Cause anormale",
     "ko-KR": "비정상적인 원인",
-    "$files": ["src/electron/main/window.ts(3528-3536)"],
+    "$files": ["src/electron/main/window.ts(3414-3422)"],
     "$id": 22352
   },
   "重新加载": {
@@ -48,7 +48,7 @@
     "de-DE": "Neu laden",
     "fr-FR": "Recharger",
     "ko-KR": "다시 장전하다",
-    "$files": ["src/electron/main/window.ts(3864-3872)"],
+    "$files": ["src/electron/main/window.ts(3743-3751)"],
     "$id": 22353
   },
   "应用界面资源缺失（index.html 未找到），无法加载界面。请重新安装或修复安装本应用。": {
@@ -61,7 +61,7 @@
     "de-DE": "Die Ressourcen der Anwendungsschnittstelle fehlen (index.html wurde nicht gefunden) und die Schnittstelle kann nicht geladen werden. Bitte installieren Sie diese Anwendung neu oder reparieren Sie sie.",
     "fr-FR": "Les ressources de l'interface de l'application sont manquantes (index.html n'a pas été trouvé) et l'interface ne peut pas être chargée. Veuillez réinstaller ou réparer l'installation de cette application.",
     "ko-KR": "애플리케이션 인터페이스 리소스가 누락되어(index.html을 찾을 수 없음) 인터페이스를 로드할 수 없습니다. 이 애플리케이션을 다시 설치하거나 복구하여 설치하세요.",
-    "$files": ["src/electron/main/window.ts(16096-16146)"],
+    "$files": ["src/electron/main/window.ts(15612-15662)"],
     "$id": 22354
   },
   "AI 引擎检查完成": {
@@ -74,7 +74,7 @@
     "de-DE": "AI-Engine-Prüfung abgeschlossen",
     "fr-FR": "Vérification du moteur IA terminée",
     "ko-KR": "AI 엔진 검사 완료",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3612-3625)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3538-3551)"],
     "$id": 19416
   },
   "AI服务初始化失败：无法创建实例": {
@@ -87,7 +87,7 @@
     "de-DE": "Die Initialisierung des AI-Dienstes ist fehlgeschlagen: Instanz kann nicht erstellt werden",
     "fr-FR": "Échec de l'initialisation du service AI : impossible de créer une instance",
     "ko-KR": "AI 서비스 초기화 실패: 인스턴스를 생성할 수 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(4010-4030)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3923-3943)"],
     "$id": 7670
   },
   "LlamaIndex AI服务初始化成功": {
@@ -100,7 +100,7 @@
     "de-DE": "Initialisierung des LlamaIndex AI-Dienstes erfolgreich",
     "fr-FR": "Initialisation réussie du service LlamaIndex AI",
     "ko-KR": "LlamaIndex AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5550-5574)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5420-5444)"],
     "$id": 10173
   },
   "AI服务未创建": {
@@ -113,7 +113,7 @@
     "de-DE": "AI-Dienst nicht erstellt",
     "fr-FR": "Service IA non créé",
     "ko-KR": "AI 서비스가 생성되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8186-8197)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(7976-7987)"],
     "$id": 10175
   },
   "模型切换通知已处理": {
@@ -126,7 +126,7 @@
     "de-DE": "Modellwechselbenachrichtigung verarbeitet",
     "fr-FR": "Notification de changement de modèle traitée",
     "ko-KR": "모델 전환 알림 처리됨",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9213-9226)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8978-8991)"],
     "$id": 10176
   },
   "处理失败": {
@@ -139,7 +139,7 @@
     "de-DE": "Die Verarbeitung ist fehlgeschlagen",
     "fr-FR": "Échec du traitement",
     "ko-KR": "처리 실패",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9358-9366)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(9120-9128)"],
     "$id": 10177
   },
   "AI服务初始化成功": {
@@ -152,7 +152,7 @@
     "de-DE": "Initialisierung des KI-Dienstes erfolgreich",
     "fr-FR": "Initialisation du service IA réussie",
     "ko-KR": "AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(14974-14987)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(14577-14590)"],
     "$id": 10178
   },
   "模型正在切换中，请等待": {
@@ -166,8 +166,8 @@
     "fr-FR": "Le modèle est en cours de commutation, veuillez patienter",
     "ko-KR": "모델이 전환 중입니다. 기다려 주세요",
     "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(15781-15796)",
-      "src/electron/main/ipc-handlers/ai-service.ts(17683-17698)",
+      "src/electron/main/ipc-handlers/ai-service.ts(15356-15371)",
+      "src/electron/main/ipc-handlers/ai-service.ts(17194-17209)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(18208-18223)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(22218-22233)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(52331-52346)"
@@ -184,7 +184,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(18053-18082)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(17554-17583)"],
     "$id": 11303
   },
   "AI 服务正在初始化中，请稍候再试": {
@@ -198,7 +198,7 @@
     "fr-FR": "Le service AI est en cours d'initialisation, veuillez réessayer plus tard.",
     "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
     "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(18429-18450)",
+      "src/electron/main/ipc-handlers/ai-service.ts(17919-17940)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(22635-22656)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(22980-23001)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(52737-52758)"
@@ -215,7 +215,7 @@
     "de-DE": "Unzureichende Berechtigungen, gehen Sie bitte zu macOS \"Systemeinstellungen-> Datenschutz und Sicherheit-> Dateien und Ordner\", um dieser Anwendung Zugriff auf dieses Verzeichnis zu gewähren: {dirPath}",
     "fr-FR": "Autorisations insuffisantes, veuillez vous rendre sur macOS \"Paramètres système - > Confidentialité et sécurité - > Fichiers et dossiers\" pour accorder à cette application l'accès à ce répertoire: {dirPath}",
     "ko-KR": "이 디렉토리에이 응용 프로그램에 액세스 권한을 부여하려면\"시스템 설정->개인 정보 및 보안->파일 및 폴더\"로 이동하십시오.{dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(365-443)"],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(351-428)"],
     "$id": 21855
   },
   "权限不足，无法访问目录: {dirPath}": {
@@ -228,7 +228,7 @@
     "de-DE": "Unzureichende Berechtigungen für den Zugriff auf das Verzeichnis: {dirPath}",
     "fr-FR": "Permissions insuffisantes pour accéder au répertoire : {dirPath}",
     "ko-KR": "권한이 부족하여 디렉터리에 접근할 수 없습니다: {dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(494-520)"],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(475-501)"],
     "$id": 8125
   },
   "目录不存在: {dirPath}": {
@@ -241,7 +241,7 @@
     "de-DE": "Das Verzeichnis existiert nicht: {dirPath}",
     "fr-FR": "Le répertoire n'existe pas : {dirPath}",
     "ko-KR": "디렉터리가 존재하지 않습니다: {dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(585-605)"],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(563-583)"],
     "$id": 8126
   },
   "无法读取目录: {dirPath} ({errorDetail})": {
@@ -254,7 +254,7 @@
     "de-DE": "Verzeichnis kann nicht gelesen werden: {dirPath} ({errorDetail})",
     "fr-FR": "Impossible de lire le répertoire : {dirPath} ({errorDetail})",
     "ko-KR": "디렉터리를 읽을 수 없습니다: {dirPath} ({errorDetail})",
-    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(635-672)"],
+    "$files": ["src/electron/main/ipc-handlers/directory-error.ts(611-648)"],
     "$id": 8127
   },
   "缺少目标后端参数": {
@@ -267,7 +267,7 @@
     "de-DE": "Ziel-Backend-Parameter fehlen",
     "fr-FR": "Paramètres du backend cible manquants",
     "ko-KR": "대상 백엔드 매개변수 누락",
-    "$files": ["src/electron/main/ipc-handlers/engine-bridge.ts(2978-2990)"],
+    "$files": ["src/electron/main/ipc-handlers/engine-bridge.ts(2894-2906)"],
     "$id": 19377
   },
   "未在工作空间找到该文件信息": {

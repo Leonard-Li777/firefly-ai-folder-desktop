@@ -9,7 +9,7 @@
     "de-DE": "FFmpeg ist nicht bereit (System FFmpeg nicht erkannt), Audio kann nicht konvertiert werden",
     "fr-FR": "FFmpeg n'est pas prêt (système FFmpeg non détecté), impossible de convertir l'audio",
     "ko-KR": "FFmpeg가 준비되지 않았으며(시스템 FFmpeg가 감지되지 않음) 오디오를 변환할 수 없습니다.",
-    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(2615-2651)"],
+    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(2534-2570)"],
     "$id": 9445
   },
   "目录路径不能为空": {
@@ -313,8 +313,8 @@
     "fr-FR": "L'entrée de fichier { fileId } n'existe pas",
     "ko-KR": "파일 기록 { fileId }이(가) 존재하지 않습니다",
     "$files": [
-      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(7689-7712)",
-      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(13923-13946)"
+      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(7477-7500)",
+      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(13510-13533)"
     ],
     "$id": 3305
   },
@@ -845,7 +845,7 @@
     "de-DE": "Intelligentes Clustering von endseitigem HAC ist abgeschlossen und {count} Themenkataloge werden im Konsens festgelegt (zeitaufwändige {ms} ms)",
     "fr-FR": "Le clustering intelligent des HAC côté terminal est terminé et les {count} catalogues de sujets sont déterminés par consensus ({ms} ms chronophages)",
     "ko-KR": "엔드사이드 해크의 지능형 클러스터링이 완료되고{count}주제 카탈로그는 합의에 의해 결정됩니다(시간이 많이 걸리는{ms}밀리초).",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(25583-25631)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(24912-24960)"],
     "$id": 19964
   },
   "智能聚类整理": {
@@ -858,7 +858,7 @@
     "de-DE": "Intelligentes Clustering und Sortieren",
     "fr-FR": "Regroupement et tri intelligents",
     "ko-KR": "지능형 클러스터링 및 정렬",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(33842-33852)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(32942-32952)"],
     "$id": 21920
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
@@ -872,8 +872,8 @@
     "fr-FR": "Le moteur principal n'a pas été initialisé, veuillez attendre la fin de l'initialisation et réessayer.",
     "ko-KR": "핵심 엔진이 초기화되지 않았습니다. 초기화가 완료된 후 다시 시도해 주세요.",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(49527-49551)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(50393-50417)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(48203-48227)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(49042-49066)"
     ],
     "$id": 8077
   },

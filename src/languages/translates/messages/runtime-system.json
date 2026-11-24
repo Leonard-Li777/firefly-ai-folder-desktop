@@ -9,7 +9,7 @@
     "de-DE": "Nicht unterstützte Betriebssystemplattform: {platform}",
     "fr-FR": "Plateforme système d'exploitation non prise en charge : {platform}",
     "ko-KR": "지원되지 않는 운영 체제 플랫폼: {platform}",
-    "$files": ["src/electron/runtime-services/system/libreoffice-detector.ts(1956-1982)"],
+    "$files": ["src/electron/runtime-services/system/libreoffice-detector.ts(1892-1918)"],
     "$id": 5980
   },
   "未检测到 LibreOffice，请将其安装到默认路径或确保其在系统 PATH 中": {
@@ -23,9 +23,9 @@
     "fr-FR": "LibreOffice n'a pas été détecté. Veuillez l'installer dans le chemin par défaut ou vous assurer qu'il se trouve dans le PATH système.",
     "ko-KR": "LibreOffice 가 감지되지 않았습니다. 기본 경로에 설치하거나 시스템 PATH 에 포함되어 있는지 확인하십시오.",
     "$files": [
-      "src/electron/runtime-services/system/libreoffice-detector.ts(6183-6228)",
-      "src/electron/runtime-services/system/libreoffice-detector.ts(8827-8872)",
-      "src/electron/runtime-services/system/libreoffice-detector.ts(12914-12959)"
+      "src/electron/runtime-services/system/libreoffice-detector.ts(5988-6033)",
+      "src/electron/runtime-services/system/libreoffice-detector.ts(8540-8585)",
+      "src/electron/runtime-services/system/libreoffice-detector.ts(12490-12535)"
     ],
     "$id": 3261
   },
@@ -39,7 +39,7 @@
     "de-DE": "Das System konfiguriert den öffentlichen Schlüssel nicht",
     "fr-FR": "Le système ne configure pas la clé publique",
     "ko-KR": "시스템이 공개 키를 구성하지 않습니다.",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(16523-16534)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(16013-16024)"],
     "$id": 11064
   },
   "该授权码不适用于当前机器": {
@@ -52,7 +52,7 @@
     "de-DE": "Der Autorisierungscode gilt nicht für die aktuelle Maschine",
     "fr-FR": "Le code d'autorisation ne s'applique pas à la machine actuelle",
     "ko-KR": "인증 코드는 현재 기기에 적용되지 않습니다",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(16933-16949)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(16410-16426)"],
     "$id": 11065
   },
   "该授权码已过期": {
@@ -66,8 +66,8 @@
     "fr-FR": "Le code d'autorisation a expiré",
     "ko-KR": "인증 코드가 만료되었습니다",
     "$files": [
-      "src/electron/runtime-services/system/license-service.ts(17433-17444)",
-      "src/electron/runtime-services/system/license-service.ts(17653-17664)"
+      "src/electron/runtime-services/system/license-service.ts(16898-16909)",
+      "src/electron/runtime-services/system/license-service.ts(17112-17123)"
     ],
     "$id": 11066
   },
@@ -81,7 +81,7 @@
     "de-DE": "Die Schreibberechtigung ist fehlgeschlagen",
     "fr-FR": "L'autorisation d'écriture a échoué",
     "ko-KR": "쓰기 승인 실패",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(20174-20184)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(19568-19578)"],
     "$id": 11067
   },
   "性能优化正在进行中": {
@@ -94,7 +94,7 @@
     "de-DE": "Leistungsoptimierung läuft",
     "fr-FR": "L'optimisation des performances est en cours",
     "ko-KR": "성능 최적화 진행 중",
-    "$files": ["src/electron/runtime-services/system/performance-optimizer.ts(15016-15029)"],
+    "$files": ["src/electron/runtime-services/system/performance-optimizer.ts(14451-14464)"],
     "$id": 8141
   },
   "不支持的资源类型: {type}": {
@@ -107,7 +107,7 @@
     "de-DE": "Nicht unterstützter Ressourcentyp: {type}",
     "fr-FR": "Type de ressource non pris en charge : {type}",
     "ko-KR": "지원하지 않는 리소스 유형: {type}",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(13230-13250)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(12746-12766)"],
     "$id": 8142
   },
   "资源清理正在进行中": {
@@ -120,7 +120,7 @@
     "de-DE": "Ressourcenbereinigung läuft",
     "fr-FR": "Nettoyage des ressources en cours",
     "ko-KR": "리소스 정리 진행 중",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14464-14477)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(13929-13942)"],
     "$id": 8143
   },
   "资源清理过于频繁，请稍后再试": {
@@ -133,7 +133,7 @@
     "de-DE": "Ressourcenbereinigung erfolgt zu häufig, bitte versuchen Sie es später erneut",
     "fr-FR": "Le nettoyage des ressources est trop fréquent, veuillez réessayer plus tard.",
     "ko-KR": "리소스 정리가 너무 빈번합니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14619-14637)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14078-14096)"],
     "$id": 8144
   },
   "资源类型 {type} 的统计信息不存在": {
@@ -146,7 +146,7 @@
     "de-DE": "Keine Statistiken für Ressourcentyp {type} vorhanden",
     "fr-FR": "Les statistiques pour le type de ressource {type} n'existent pas",
     "ko-KR": "리소스 유형 {type}의 통계 정보가 존재하지 않습니다.",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(18300-18324)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(17642-17666)"],
     "$id": 8145
   }
 }

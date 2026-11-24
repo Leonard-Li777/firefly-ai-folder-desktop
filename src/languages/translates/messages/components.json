@@ -10,8 +10,8 @@
     "fr-FR": "Officiel de luciole",
     "ko-KR": "반딧불 공식",
     "$files": [
-      "src/renderer/components/plugin-center/format-plugin-author.ts(289-303)",
-      "src/renderer/components/plugin-center/format-plugin-author.ts(796-810)"
+      "src/renderer/components/plugin-center/format-plugin-author.ts(278-292)",
+      "src/renderer/components/plugin-center/format-plugin-author.ts(773-787)"
     ],
     "$id": 22970
   },
@@ -26,8 +26,8 @@
     "fr-FR": "Contributions de la communauté (non fournies par l'auteur)",
     "ko-KR": "커뮤니티 기여(작성자가 제공하지 않음)",
     "$files": [
-      "src/renderer/components/plugin-center/format-plugin-author.ts(380-395)",
-      "src/renderer/components/plugin-center/format-plugin-author.ts(960-975)"
+      "src/renderer/components/plugin-center/format-plugin-author.ts(368-383)",
+      "src/renderer/components/plugin-center/format-plugin-author.ts(932-947)"
     ],
     "$id": 22971
   },
@@ -42,8 +42,8 @@
     "fr-FR": "Plugins tiers (non fournis par l'auteur)",
     "ko-KR": "타사 플러그인(저작자가 제공하지 않음)",
     "$files": [
-      "src/renderer/components/plugin-center/format-plugin-author.ts(434-450)",
-      "src/renderer/components/plugin-center/format-plugin-author.ts(1083-1099)"
+      "src/renderer/components/plugin-center/format-plugin-author.ts(421-437)",
+      "src/renderer/components/plugin-center/format-plugin-author.ts(1050-1066)"
     ],
     "$id": 22972
   },

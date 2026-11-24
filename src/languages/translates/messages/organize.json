@@ -65,7 +65,7 @@
       "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2695-2701)",
       "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5849-5855)",
       "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28904-28910)",
-      "src/renderer/components/organize/UndoHistoryDialog.tsx(2438-2444)"
+      "src/renderer/components/organize/UndoHistoryDialog.tsx(2356-2362)"
     ],
     "$id": 4150
   },
@@ -657,7 +657,7 @@
     "de-DE": "Keine Verzeichnisstruktur-Vorschau vorhanden",
     "fr-FR": "Aperçu de la structure du répertoire indisponible",
     "ko-KR": "아직 디렉토리 구조 미리보기 없음",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(940-952)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(910-922)"],
     "$id": 4171
   },
   "目录结构为空": {
@@ -670,7 +670,7 @@
     "de-DE": "Verzeichnisstruktur ist leer",
     "fr-FR": "La structure du répertoire est vide",
     "ko-KR": "디렉토리 구조가 비어 있음",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(1117-1127)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(1079-1089)"],
     "$id": 4172
   },
   "快速整理只读预览，不支持微调交互": {
@@ -683,7 +683,7 @@
     "de-DE": "Organisieren Sie schnell schreibgeschützte Vorschauen und unterstützen Sie keine Feinabstimmungsinteraktionen",
     "fr-FR": "Organisez rapidement des aperçus en lecture seule et ne prenez pas en charge les interactions de réglage fin",
     "ko-KR": "읽기 전용 미리보기를 빠르게 구성하고 미세 조정 상호 작용을 지원하지 않습니다.",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(2383-2403)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(2310-2330)"],
     "$id": 10540
   },
   "只读": {
@@ -697,8 +697,8 @@
     "fr-FR": "Lecture seule",
     "ko-KR": "읽기 전용",
     "$files": [
-      "src/renderer/components/organize/DirectoryTreePreview.tsx(4757-4763)",
-      "src/renderer/components/organize/DirectoryTreePreview.tsx(7108-7114)"
+      "src/renderer/components/organize/DirectoryTreePreview.tsx(4615-4621)",
+      "src/renderer/components/organize/DirectoryTreePreview.tsx(6913-6919)"
     ],
     "$id": 10541
   },
@@ -712,7 +712,7 @@
     "de-DE": "({count}) Dateien",
     "fr-FR": "{count} fichiers",
     "ko-KR": "({count})개 파일",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(4867-4884)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(4721-4738)"],
     "$id": 4173
   },
   "删除目录": {
@@ -725,7 +725,7 @@
     "de-DE": "Verzeichnis löschen",
     "fr-FR": "Supprimer le répertoire",
     "ko-KR": "디렉토리 삭제",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(5489-5497)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(5331-5339)"],
     "$id": 7725
   },
   "扫描失败: {message}": {
@@ -738,7 +738,7 @@
     "de-DE": "Scan fehlgeschlagen: {message}",
     "fr-FR": "Échec de l'analyse : {message}",
     "ko-KR": "스캔 실패: {message}",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(2101-2120)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(2036-2055)"],
     "$id": 4174
   },
   "请至少选择一个文件夹": {
@@ -751,7 +751,7 @@
     "de-DE": "Bitte wählen Sie mindestens einen Ordner aus",
     "fr-FR": "Veuillez sélectionner au moins un dossier",
     "ko-KR": "하나 이상의 폴더를 선택하십시오",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(4594-4608)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(4430-4444)"],
     "$id": 4175
   },
   "成功删除 {count} 个空文件夹": {
@@ -764,7 +764,7 @@
     "de-DE": "Erfolgreich {count} leere Ordner gelöscht",
     "fr-FR": "Suppression réussie de {count} dossiers vides",
     "ko-KR": "빈 폴더 {count}개 삭제 성공",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(4916-4938)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(4741-4763)"],
     "$id": 4176
   },
   "删除完成: 成功 {deleted}/{total}，失败 {failed}": {
@@ -777,7 +777,7 @@
     "de-DE": "Löschvorgang abgeschlossen: Erfolgreich {deleted}/{total}, Fehlgeschlagen {failed}",
     "fr-FR": "Suppression terminée : succès {deleted}/{total}, échec {failed}",
     "ko-KR": "삭제 완료: 성공 {deleted}/{total}, 실패 {failed}",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(5026-5068)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(4848-4890)"],
     "$id": 4177
   },
   "所有可删除的空文件夹已处理完成": {
@@ -790,7 +790,7 @@
     "de-DE": "Alle löschbaren leeren Ordner wurden verarbeitet",
     "fr-FR": "Tous les dossiers vides pouvant être supprimés ont été traités",
     "ko-KR": "삭제 가능한 모든 빈 폴더 처리 완료",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(5508-5527)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(5319-5338)"],
     "$id": 4178
   },
   "删除失败: {message}": {
@@ -803,7 +803,7 @@
     "de-DE": "Löschen fehlgeschlagen: {message}",
     "fr-FR": "Échec de la suppression : {message}",
     "ko-KR": "삭제 실패: {message}",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(5759-5778)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(5564-5583)"],
     "$id": 4179
   },
   "(非空)": {
@@ -816,7 +816,7 @@
     "de-DE": "(Nicht leer)",
     "fr-FR": "(Non vide)",
     "ko-KR": "(비어 있지 않음)",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(7958-7966)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(7701-7709)"],
     "$id": 4180
   },
   "清理空文件夹": {
@@ -829,7 +829,7 @@
     "de-DE": "Leere Ordner bereinigen",
     "fr-FR": "Nettoyer les dossiers vides",
     "ko-KR": "빈 폴더 정리",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(8938-8948)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(8653-8663)"],
     "$id": 4181
   },
   "检测并删除工作目录中的空文件夹": {
@@ -842,7 +842,7 @@
     "de-DE": "Erkennen und Löschen leerer Ordner im Arbeitsverzeichnis",
     "fr-FR": "Détecter et supprimer les dossiers vides dans le répertoire de travail",
     "ko-KR": "작업 디렉토리에서 빈 폴더를 감지하고 삭제",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(9077-9096)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(8789-8808)"],
     "$id": 4182
   },
   "扫描空文件夹中...": {
@@ -855,7 +855,7 @@
     "de-DE": "Leere Ordner werden gescannt...",
     "fr-FR": "Analyse des dossiers vides en cours...",
     "ko-KR": "빈 폴더 스캔 중...",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(9835-9849)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(9531-9545)"],
     "$id": 4183
   },
   "未发现空文件夹": {
@@ -868,7 +868,7 @@
     "de-DE": "Keine leeren Ordner gefunden",
     "fr-FR": "Aucun dossier vide trouvé",
     "ko-KR": "빈 폴더가 발견되지 않음",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(10155-10166)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(9846-9857)"],
     "$id": 4184
   },
   "该目录中没有空文件夹需要清理": {
@@ -881,7 +881,7 @@
     "de-DE": "In diesem Verzeichnis gibt es keine leeren Ordner zu bereinigen",
     "fr-FR": "Il n'y a pas de dossiers vides à nettoyer dans ce répertoire",
     "ko-KR": "이 디렉토리에는 정리가 필요한 빈 폴더가 없음",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(10279-10297)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(9968-9986)"],
     "$id": 4185
   },
   "发现 {count} 个空文件夹": {
@@ -894,7 +894,7 @@
     "de-DE": "{count} leere Ordner gefunden",
     "fr-FR": "{count} dossiers vides trouvés",
     "ko-KR": "{count}개의 빈 폴더 발견",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(10657-10677)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(10337-10357)"],
     "$id": 4186
   },
   "已选中 {selected} 个": {
@@ -907,7 +907,7 @@
     "de-DE": "{selected} ausgewählt",
     "fr-FR": "{selected} sélectionnés",
     "ko-KR": "{selected}개가 선택됨",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(10844-10864)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(10521-10541)"],
     "$id": 4187
   },
   "反选": {
@@ -920,7 +920,7 @@
     "de-DE": "Auswahl umkehren",
     "fr-FR": "Inverse la sélection",
     "ko-KR": "선택 취소",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(11856-11862)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(11509-11515)"],
     "$id": 4188
   },
   "关闭": {
@@ -934,11 +934,11 @@
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
     "$files": [
-      "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12168-12174)",
-      "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(13379-13385)",
-      "src/renderer/components/organize/OrganizeErrorDialog.tsx(3065-3071)",
+      "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(11814-11820)",
+      "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12999-13005)",
+      "src/renderer/components/organize/OrganizeErrorDialog.tsx(2982-2988)",
       "src/renderer/components/organize/OrganizeResultDialog.tsx(8625-8631)",
-      "src/renderer/components/organize/UndoHistoryDialog.tsx(9623-9629)"
+      "src/renderer/components/organize/UndoHistoryDialog.tsx(9393-9399)"
     ],
     "$id": 4189
   },
@@ -952,7 +952,7 @@
     "de-DE": "Wird gelöscht...",
     "fr-FR": "Suppression en cours...",
     "ko-KR": "삭제 중...",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12764-12775)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12400-12411)"],
     "$id": 4190
   },
   "删除选中 ({count} 个)": {
@@ -965,7 +965,7 @@
     "de-DE": "Auswahl löschen ({count})",
     "fr-FR": "Supprimer la sélection ({count})",
     "ko-KR": "선택 항목 삭제 ({count}개)",
-    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12947-12967)"],
+    "$files": ["src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12578-12598)"],
     "$id": 4191
   },
   "虚拟目录根": {
@@ -1238,7 +1238,7 @@
     "de-DE": "Während des Organisierens ist ein Fehler aufgetreten",
     "fr-FR": "Une erreur s'est produite pendant le tri",
     "ko-KR": "정리 작업 중 오류 발생",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1008-1021)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(974-987)"],
     "$id": 4210
   },
   "已完成：{count} 个文件": {
@@ -1251,7 +1251,7 @@
     "de-DE": "Abgeschlossen: {count} Dateien",
     "fr-FR": "Terminé : {count} fichiers",
     "ko-KR": "완료됨: {count} 개 파일",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1240-1259)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1200-1219)"],
     "$id": 4211
   },
   "失败：{count} 个文件": {
@@ -1264,7 +1264,7 @@
     "de-DE": "Fehlgeschlagen: {count} Dateien",
     "fr-FR": "Échec : {count} fichiers",
     "ko-KR": "실패: {count} 개 파일",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1446-1464)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1402-1420)"],
     "$id": 4212
   },
   "失败文件列表：": {
@@ -1277,7 +1277,7 @@
     "de-DE": "Liste der fehlgeschlagenen Dateien:",
     "fr-FR": "Liste des fichiers en échec :",
     "ko-KR": "실패 파일 목록:",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1629-1640)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(1580-1591)"],
     "$id": 4213
   },
   "错误：": {
@@ -1290,7 +1290,7 @@
     "de-DE": "Fehler:",
     "fr-FR": "Erreur :",
     "ko-KR": "오류:",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(2118-2125)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(2062-2069)"],
     "$id": 4214
   },
   "查看详细日志": {
@@ -1303,7 +1303,7 @@
     "de-DE": "Detailliertes Protokoll anzeigen",
     "fr-FR": "Voir les journaux détaillés",
     "ko-KR": "자세한 로그 보기",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(2532-2542)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(2464-2474)"],
     "$id": 4215
   },
   "重试失败文件": {
@@ -1316,7 +1316,7 @@
     "de-DE": "Fehlgeschlagene Dateien erneut versuchen",
     "fr-FR": "Réessayer les fichiers en échec",
     "ko-KR": "실패한 파일 다시 시도",
-    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(2796-2806)"],
+    "$files": ["src/renderer/components/organize/OrganizeErrorDialog.tsx(2720-2730)"],
     "$id": 4216
   },
   "约 {seconds} 秒": {
@@ -1667,7 +1667,7 @@
     "de-DE": "Laden des Verlaufs fehlgeschlagen: {error_message}",
     "fr-FR": "Échec du chargement de l'historique : {error_message}",
     "ko-KR": "이력 로드 실패: {error_message}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1505-1534)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1452-1481)"],
     "$id": 4243
   },
   "撤销成功！文件已恢复到整理前的状态": {
@@ -1680,7 +1680,7 @@
     "de-DE": "Rückgängig erfolgreich! Datei wurde auf den Zustand vor der Organisation zurückgesetzt",
     "fr-FR": "Annulation réussie ! Le fichier a été restauré à son état précédent",
     "ko-KR": "되돌리기 성공! 파일이 정리 전 상태로 복원되었습니다",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1813-1834)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1748-1769)"],
     "$id": 4244
   },
   "撤销失败: {error_message}": {
@@ -1693,7 +1693,7 @@
     "de-DE": "Rückgängig fehlgeschlagen: {error_message}",
     "fr-FR": "Échec de l'annulation : {error_message}",
     "ko-KR": "되돌리기 실패: {error_message}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2053-2078)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1983-2008)"],
     "$id": 4245
   },
   "删除会话": {
@@ -1706,7 +1706,7 @@
     "de-DE": "Sitzung löschen",
     "fr-FR": "Supprimer la session",
     "ko-KR": "세션 삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2346-2354)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2266-2274)"],
     "$id": 4246
   },
   "确定要删除这个会话记录吗？删除后将无法撤销此次整理操作。": {
@@ -1719,7 +1719,7 @@
     "de-DE": "Sind Sie sicher, dass Sie diesen Sitzungseintrag löschen möchten? Nach dem Löschen kann dieser Organisationsvorgang nicht rückgängig gemacht werden.",
     "fr-FR": "Voulez-vous vraiment supprimer cet enregistrement de session ? Après la suppression, vous ne pourrez pas annuler cette opération de tri.",
     "ko-KR": "이 세션 기록을 삭제하시겠습니까? 삭제 후에는 이 정리 작업을 되돌릴 수 없습니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2375-2407)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2294-2326)"],
     "$id": 4247
   },
   "删除": {
@@ -1732,7 +1732,7 @@
     "de-DE": "Löschen",
     "fr-FR": "Supprimer",
     "ko-KR": "삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2429-2435)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2347-2353)"],
     "$id": 4248
   },
   "会话记录已删除": {
@@ -1745,7 +1745,7 @@
     "de-DE": "Sitzungseintrag wurde gelöscht",
     "fr-FR": "L'enregistrement de session a été supprimé",
     "ko-KR": "세션 기록이 삭제되었습니다",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2715-2726)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2623-2634)"],
     "$id": 4249
   },
   "删除失败: {error_message}": {
@@ -1758,7 +1758,7 @@
     "de-DE": "Löschen fehlgeschlagen: {error_message}",
     "fr-FR": "Échec de la suppression : {error_message}",
     "ko-KR": "삭제 실패: {error_message}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2964-2989)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2866-2891)"],
     "$id": 4250
   },
   "无文件": {
@@ -1771,7 +1771,7 @@
     "de-DE": "Keine Dateien",
     "fr-FR": "Aucun fichier",
     "ko-KR": "파일 없음",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3219-3226)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3112-3119)"],
     "$id": 4251
   },
   "{count} 个文件": {
@@ -1784,7 +1784,7 @@
     "de-DE": "{count} Dateien",
     "fr-FR": "{count} fichiers",
     "ko-KR": "{count}개 파일",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3240-3255)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3132-3147)"],
     "$id": 4252
   },
   "撤销历史": {
@@ -1797,7 +1797,7 @@
     "de-DE": "Verlauf rückgängig machen",
     "fr-FR": "Historique d'annulation",
     "ko-KR": "되돌리기 이력",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3797-3805)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3680-3688)"],
     "$id": 4253
   },
   "加载历史记录...": {
@@ -1810,7 +1810,7 @@
     "de-DE": "Verlaufsdaten werden geladen...\r",
     "fr-FR": "Chargement de l'historique...",
     "ko-KR": "이력 로드 중...",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4366-4379)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4238-4251)"],
     "$id": 4254
   },
   "暂无历史记录": {
@@ -1823,7 +1823,7 @@
     "de-DE": "Kein Verlauf vorhanden\r",
     "fr-FR": "Aucun historique pour le moment",
     "ko-KR": "이력 없음",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4754-4764)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4619-4629)"],
     "$id": 4255
   },
   "还没有执行过整理操作，或者历史记录已被清理。": {
@@ -1836,7 +1836,7 @@
     "de-DE": "Es wurden noch keine Organisationsvorgänge durchgeführt oder der Verlauf wurde bereinigt.\r",
     "fr-FR": "Aucune opération d'organisation n'a encore été effectuée ou l'historique a été nettoyé.",
     "ko-KR": "정리 작업을 아직 수행하지 않았거나 이력이 삭제되었습니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4843-4869)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4706-4732)"],
     "$id": 4256
   },
   "已备份": {
@@ -1849,7 +1849,7 @@
     "de-DE": "Gesichert\r",
     "fr-FR": "Sauvegardé",
     "ko-KR": "백업 완료",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(5945-5952)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(5787-5794)"],
     "$id": 4257
   },
   "移动了 {count}": {
@@ -1862,7 +1862,7 @@
     "de-DE": "{count} verschoben\r",
     "fr-FR": "{count} éléments déplacés",
     "ko-KR": "{count}개 이동됨",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6349-6364)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6183-6198)"],
     "$id": 4258
   },
   "备份位置: {backup_name}": {
@@ -1875,7 +1875,7 @@
     "de-DE": "Sicherungsort: {backup_name}\r",
     "fr-FR": "Emplacement de sauvegarde : {backup_name}",
     "ko-KR": "백업 위치: {backup_name}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6862-6885)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6687-6710)"],
     "$id": 4259
   },
   "撤销中...": {
@@ -1888,7 +1888,7 @@
     "de-DE": "Wird rückgängig gemacht...\r",
     "fr-FR": "Annulation en cours...",
     "ko-KR": "복원 중...",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8156-8166)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(7960-7970)"],
     "$id": 4260
   },
   "撤销": {
@@ -1901,7 +1901,7 @@
     "de-DE": "Rückgängig machen\r",
     "fr-FR": "Annuler",
     "ko-KR": "복원",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8374-8380)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8173-8179)"],
     "$id": 4261
   },
   "删除记录": {
@@ -1914,7 +1914,7 @@
     "de-DE": "Datensatz löschen\r",
     "fr-FR": "Supprimer l'enregistrement",
     "ko-KR": "기록 삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8870-8878)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8661-8669)"],
     "$id": 4262
   },
   "撤销操作将恢复文件到整理前的位置": {
@@ -1927,7 +1927,7 @@
     "de-DE": "Der Rückgängig-Vorgang stellt die Dateien an die ursprünglichen Positionen vor der Organisation wieder her",
     "fr-FR": "L'opération d'annulation restaurera les fichiers à leur emplacement d'origine avant l'organisation",
     "ko-KR": "복원 작업을 통해 파일이 정리 전 위치로 복구됩니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(9405-9425)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(9181-9201)"],
     "$id": 4263
   }
 }

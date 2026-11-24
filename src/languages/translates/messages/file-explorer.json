@@ -57,7 +57,7 @@
     "fr-FR": "Afficher les fichiers redondants maintenant",
     "ko-KR": "지금 중복 파일 보기",
     "$files": [
-      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2144-2156)"
+      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2083-2095)"
     ],
     "$id": 11445
   },
@@ -72,7 +72,7 @@
     "fr-FR": "Compris",
     "ko-KR": "알겠습니다",
     "$files": [
-      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2499-2506)"
+      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2431-2438)"
     ],
     "$id": 11393
   },
@@ -87,7 +87,7 @@
     "fr-FR": "Fermer l'invite",
     "ko-KR": "프롬프트 닫기",
     "$files": [
-      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2610-2618)"
+      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2537-2545)"
     ],
     "$id": 11446
   },
@@ -102,7 +102,7 @@
     "fr-FR": "Il est recommandé d’exécuter [RÉDUCION DE DOSSIER] avant l’analyse approfondie par IA : le nettoyage des fichiers temporaires et des doublons permet de gagner du temps et de la puissance de calcul.",
     "ko-KR": "AI 심층 분석 전 [디렉터리 슬림화] 및 임시 파일, 중복 항목 삭제를 통해 분석 시간과 컴퓨팅 리소스를 절약할 수 있습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2636-2684)"
+      "src/renderer/components/file-explorer/CleanRecommendationBanner.tsx(2561-2609)"
     ],
     "$id": 11391
   },
@@ -148,7 +148,7 @@
     "ko-KR": "전체 선택",
     "$files": [
       "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(23584-23590)",
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(48257-48263)",
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(50408-50414)",
       "src/renderer/components/file-explorer/RealDirectory.tsx(44612-44618)"
     ],
     "$id": 3290
@@ -256,7 +256,7 @@
     "fr-FR": "Profondeur de la hiérarchie",
     "ko-KR": "계층 구조 깊이",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(46820-46828)"
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(48971-48979)"
     ],
     "$id": 20147
   },
@@ -271,7 +271,7 @@
     "fr-FR": "Faites glisser pour ajuster la profondeur d'affichage de l'arborescence des étiquettes (niveau 2~10)",
     "ko-KR": "드래그하여 레이블 트리의 표시 깊이를 조정합니다(레벨 2~10).",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(47528-47552)"
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(49679-49703)"
     ],
     "$id": 21228
   },
@@ -286,7 +286,7 @@
     "fr-FR": "Contre-élection",
     "ko-KR": "역선거",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(48789-48795)"
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(50940-50946)"
     ],
     "$id": 7517
   },
@@ -301,7 +301,7 @@
     "fr-FR": "Union",
     "ko-KR": "노동 조합",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(49352-49358)"
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(51503-51509)"
     ],
     "$id": 7808
   },
@@ -316,7 +316,7 @@
     "fr-FR": "Intersection",
     "ko-KR": "교차로",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(49815-49821)"
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(51966-51972)"
     ],
     "$id": 7809
   },
@@ -773,7 +773,7 @@
     "fr-FR": "ReadTextLimit renvoie un échec",
     "ko-KR": "readTextLimit이 실패를 반환합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(22173-22195)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(29054-29076)"
     ],
     "$id": 8149
   },
@@ -788,9 +788,9 @@
     "fr-FR": "Impossible de lire le contenu du fichier",
     "ko-KR": "파일 내용을 읽을 수 없습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(22394-22406)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(29275-29287)",
       "src/renderer/components/file-explorer/PreviewContent.tsx(2741-2753)",
-      "src/renderer/components/file-explorer/PreviewContent.tsx(9380-9392)"
+      "src/renderer/components/file-explorer/PreviewContent.tsx(9416-9428)"
     ],
     "$id": 10247
   },
@@ -805,8 +805,8 @@
     "fr-FR": "Aucune application externe prenant en charge un positionnement précis n'a été détectée et elle a été ouverte de la manière par défaut",
     "ko-KR": "정확한 위치를 지원하는 외부 응용 프로그램이 검색되지 않았으며 기본 방식으로 열렸습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(23115-23143)",
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(2948-2976)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(29996-30024)",
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(3216-3244)"
     ],
     "$id": 21924
   },
@@ -821,8 +821,8 @@
     "fr-FR": "Échec de l'ouverture du fichier",
     "ko-KR": "파일을 열지 못했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(23261-23271)",
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(3197-3207)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(30142-30152)",
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(3465-3475)"
     ],
     "$id": 21925
   },
@@ -837,7 +837,7 @@
     "fr-FR": "Le type de fichier actuel (.{ext}) ne prend actuellement pas en charge l'aperçu",
     "ko-KR": "현재 파일 형식(.{ext})은 현재 미리보기를 지원하지 않습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(26885-26909)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(33766-33790)"
     ],
     "$id": 10248
   },
@@ -852,7 +852,7 @@
     "fr-FR": "Il n'existe actuellement aucun plug-in de prévisualisation intégré pour ce format et nous continuerons à étendre les types pris en charge. Il est recommandé d'utiliser un programme externe associé par défaut pour ouvrir et afficher.",
     "ko-KR": "현재 이 형식에 대한 미리 보기 플러그인이 내장되어 있지 않으며 지원되는 유형을 계속 확장할 예정입니다. 외부 기본 관련 프로그램을 이용하여 열어서 보실 것을 권장합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(26949-27005)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(33830-33886)"
     ],
     "$id": 10249
   },
@@ -867,7 +867,7 @@
     "fr-FR": "Ouvrir avec le programme par défaut du système",
     "ko-KR": "시스템 기본 프로그램으로 열기",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(27299-27312)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(34180-34193)"
     ],
     "$id": 10250
   },
@@ -882,7 +882,7 @@
     "fr-FR": "Localiser dans le dossier",
     "ko-KR": "폴더에서 찾기",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(27514-27525)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(34395-34406)"
     ],
     "$id": 10251
   },
@@ -897,11 +897,11 @@
     "fr-FR": "Description multimodale",
     "ko-KR": "다중 모드 설명",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(28712-28721)",
-      "src/renderer/components/file-explorer/FilePreview.tsx(39321-39330)",
-      "src/renderer/components/file-explorer/FilePreview.tsx(41195-41204)",
-      "src/renderer/components/file-explorer/PreviewContent.tsx(5090-5099)",
-      "src/renderer/components/file-explorer/PreviewContent.tsx(7876-7885)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(37316-37325)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(49352-49361)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(51280-51289)",
+      "src/renderer/components/file-explorer/PreviewContent.tsx(5108-5117)",
+      "src/renderer/components/file-explorer/PreviewContent.tsx(7912-7921)"
     ],
     "$id": 11420
   },
@@ -916,7 +916,7 @@
     "fr-FR": "Impossible de lire ce fichier dans l'application. Essayez de l'ouvrir dans un lecteur externe pour le visionner.",
     "ko-KR": "이 파일을 앱 내에서 재생할 수 없습니다. 외부 플레이어에서 열어 확인해 보세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(31341-31372)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(41467-41498)"
     ],
     "$id": 38916
   },
@@ -931,7 +931,7 @@
     "fr-FR": "Lire ce clip dans un lecteur externe",
     "ko-KR": "외부 플레이어에서 이 클립 재생",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(31703-31718)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(41829-41844)"
     ],
     "$id": 38917
   },
@@ -946,8 +946,8 @@
     "fr-FR": "Votre navigateur ne prend pas en charge la lecture vidéo",
     "ko-KR": "귀하의 브라우저는 비디오 재생을 지원하지 않습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(33602-33618)",
-      "src/renderer/components/file-explorer/FilePreview.tsx(36426-36442)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(43686-43702)",
+      "src/renderer/components/file-explorer/FilePreview.tsx(46493-46509)"
     ],
     "$id": 10252
   },
@@ -962,7 +962,7 @@
     "fr-FR": "Segment correspondante détectée",
     "ko-KR": "일치하는 필드로 이동",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(37005-37017)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(47081-47093)"
     ],
     "$id": 20513
   },
@@ -977,7 +977,7 @@
     "fr-FR": "Rejouer le fragment",
     "ko-KR": "필드 재재생",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(37835-37845)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(47911-47921)"
     ],
     "$id": 20514
   },
@@ -992,7 +992,7 @@
     "fr-FR": "Votre navigateur ne prend pas en charge la lecture audio",
     "ko-KR": "귀하의 브라우저는 오디오 재생을 지원하지 않습니다",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(40730-40746)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(50815-50831)"
     ],
     "$id": 10253
   },
@@ -1007,7 +1007,7 @@
     "fr-FR": "Le fichier texte actuel est volumineux ({size}) et le système a tronqué les 100 000 premiers mots pour assurer la fluidité de l'affichage.",
     "ko-KR": "현재 텍스트 파일은 크기가 크며({size}) 시스템은 원활한 표시를 위해 처음 100,000단어를 잘랐습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(42300-42371)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(52385-52456)"
     ],
     "$id": 10306
   },
@@ -1022,7 +1022,7 @@
     "fr-FR": "Ouvrir le dossier complet",
     "ko-KR": "전체 파일 열기",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreview.tsx(42798-42808)"
+      "src/renderer/components/file-explorer/FilePreview.tsx(52883-52893)"
     ],
     "$id": 10307
   },
@@ -1037,7 +1037,7 @@
     "fr-FR": "ESC fermer",
     "ko-KR": "ESC 닫기",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreviewPanel.tsx(5691-5701)"
+      "src/renderer/components/file-explorer/FilePreviewPanel.tsx(5537-5547)"
     ],
     "$id": 10254
   },
@@ -1052,7 +1052,7 @@
     "fr-FR": "Veuillez sélectionner un fichier à prévisualiser",
     "ko-KR": "미리 볼 파일을 선택하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreviewPanel.tsx(6724-6737)"
+      "src/renderer/components/file-explorer/FilePreviewPanel.tsx(6540-6553)"
     ],
     "$id": 10255
   },
@@ -1067,7 +1067,7 @@
     "fr-FR": "Double-cliquez sur le fichier pour prévisualiser",
     "ko-KR": "미리 보려면 파일을 두 번 클릭하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FilePreviewPanel.tsx(6764-6776)"
+      "src/renderer/components/file-explorer/FilePreviewPanel.tsx(6579-6591)"
     ],
     "$id": 10256
   },
@@ -1082,7 +1082,7 @@
     "fr-FR": "Texte lu à haute voix",
     "ko-KR": "소리내어 읽은 텍스트",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(1553-1561)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(1509-1517)"
     ],
     "$id": 22301
   },
@@ -1097,7 +1097,7 @@
     "fr-FR": "Lire à haute voix",
     "ko-KR": "큰 소리로 읽기",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(3070-3078)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(2975-2983)"
     ],
     "$id": 22302
   },
@@ -1112,7 +1112,7 @@
     "fr-FR": "Lecture à voix haute en pause",
     "ko-KR": "소리내어 읽기가 일시중지되었습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(3093-3102)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(2998-3007)"
     ],
     "$id": 22303
   },
@@ -1127,7 +1127,7 @@
     "fr-FR": "Chargement des voix",
     "ko-KR": "음성 로드 중",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(3106-3116)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(3011-3021)"
     ],
     "$id": 22304
   },
@@ -1142,7 +1142,7 @@
     "fr-FR": "Nom du fichier",
     "ko-KR": "파일명",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(4456-4463)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(4335-4342)"
     ],
     "$id": 22305
   },
@@ -1157,7 +1157,7 @@
     "fr-FR": "Chemin",
     "ko-KR": "길",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(4721-4727)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(4594-4600)"
     ],
     "$id": 22306
   },
@@ -1172,7 +1172,7 @@
     "fr-FR": "Faites glisser pour changer le clip de lecture",
     "ko-KR": "드래그하여 읽기 클립 전환",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(6674-6686)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(6492-6504)"
     ],
     "$id": 22307
   },
@@ -1187,7 +1187,7 @@
     "fr-FR": "Fragment",
     "ko-KR": "조각",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7384-7390)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7194-7200)"
     ],
     "$id": 22308
   },
@@ -1202,7 +1202,7 @@
     "fr-FR": "Glisser et jouer",
     "ko-KR": "드래그 앤 플레이",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7520-7528)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7329-7337)"
     ],
     "$id": 22309
   },
@@ -1217,7 +1217,7 @@
     "fr-FR": "Préparer une clause...",
     "ko-KR": "절 준비...",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7715-7728)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(7521-7534)"
     ],
     "$id": 22310
   },
@@ -1232,7 +1232,7 @@
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(8656-8662)",
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(8433-8439)",
       "src/renderer/components/file-explorer/StreamVideoControls.tsx(2323-2329)"
     ],
     "$id": 22311
@@ -1248,7 +1248,7 @@
     "fr-FR": "Continuer à jouer",
     "ko-KR": "계속 플레이하다",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(8666-8674)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(8443-8451)"
     ],
     "$id": 22312
   },
@@ -1263,7 +1263,7 @@
     "fr-FR": "Désactiver la lecture à haute voix",
     "ko-KR": "소리내어 읽기 끄기",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(9396-9404)"
+      "src/renderer/components/file-explorer/GlobalTTSPlaybackBar.tsx(9152-9160)"
     ],
     "$id": 22313
   },
@@ -1323,8 +1323,8 @@
     "fr-FR": "L'aperçu actuel s'affiche anormalement et tente de rétrograder...",
     "ko-KR": "현재 프리뷰어가 비정상적으로 렌더링되어 다운그레이드를 시도하고 있습니다...",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewContent.tsx(6139-6162)",
-      "src/renderer/components/file-explorer/PreviewContent.tsx(7131-7154)"
+      "src/renderer/components/file-explorer/PreviewContent.tsx(6157-6180)",
+      "src/renderer/components/file-explorer/PreviewContent.tsx(7149-7172)"
     ],
     "$id": 22941
   },
@@ -1339,7 +1339,7 @@
     "fr-FR": "Le type de fichier actuel ne prend pas encore en charge l'aperçu",
     "ko-KR": "현재 파일 형식은 아직 미리보기를 지원하지 않습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewContent.tsx(9805-9821)"
+      "src/renderer/components/file-explorer/PreviewContent.tsx(9841-9857)"
     ],
     "$id": 10257
   },
@@ -1354,7 +1354,7 @@
     "fr-FR": "Extension de fichier",
     "ko-KR": "파일 확장자",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewContent.tsx(9910-9919)"
+      "src/renderer/components/file-explorer/PreviewContent.tsx(9946-9955)"
     ],
     "$id": 10258
   },
@@ -1369,7 +1369,7 @@
     "fr-FR": "Aucun",
     "ko-KR": "없음",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewContent.tsx(9952-9957)"
+      "src/renderer/components/file-explorer/PreviewContent.tsx(9988-9993)"
     ],
     "$id": 10259
   },
@@ -1384,7 +1384,7 @@
     "fr-FR": "ESC pour fermer l'aperçu",
     "ko-KR": "미리보기를 닫으려면 ESC를 누르세요.",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewContent.tsx(10044-10055)",
+      "src/renderer/components/file-explorer/PreviewContent.tsx(10080-10091)",
       "src/renderer/components/file-explorer/SplitPreviewPanel.tsx(4099-4110)"
     ],
     "$id": 10260
@@ -1400,7 +1400,7 @@
     "fr-FR": "Retour ESC",
     "ko-KR": "ESC 리턴",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewOverlay.tsx(4650-4660)"
+      "src/renderer/components/file-explorer/PreviewOverlay.tsx(4529-4539)"
     ],
     "$id": 10261
   },
@@ -1415,7 +1415,7 @@
     "fr-FR": "Original",
     "ko-KR": "원래의",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(4410-4416)"
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(4762-4768)"
     ],
     "$id": 10262
   },
@@ -1430,9 +1430,99 @@
     "fr-FR": "Aperçu",
     "ko-KR": "시사",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(4845-4851)"
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(5201-5207)"
     ],
     "$id": 10263
+  },
+  "等比全显": {
+    "en-US": "Equal ratio full display",
+    "es-ES": "Pantalla completa de proporción igual",
+    "ar-EG": "نسبة متساوية عرض كامل",
+    "pt-PT": "Exposição completa da relação igual",
+    "ru-RU": "Полный дисплей с равным соотношением сторон",
+    "ja-JP": "等しい比率の完全な表示",
+    "de-DE": "Gleiches Verhältnis Vollanzeige",
+    "fr-FR": "Affichage intégral à rapport égal",
+    "ko-KR": "동등한 비율 가득 차있는 전시",
+    "$files": [
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6039-6047)"
+    ],
+    "$id": 40999
+  },
+  "当前：等比全显（自适应窗口无滚动条，点击切换为原始尺寸）": {
+    "en-US": "Current: Full proportional display (no scroll bar in the adaptive window, click to switch to the original size)",
+    "es-ES": "Actual: Pantalla proporcional completa (sin barra de desplazamiento en la ventana adaptable, haga clic para cambiar al tamaño original) ",
+    "ar-EG": "الحالي: العرض النسبي الكامل (لا يوجد شريط تمرير في النافذة التكيفية ، انقر للتبديل إلى الحجم الأصلي)",
+    "pt-PT": "Atual: exibição proporcional total (sem barra de rolagem na janela adaptável, clique para alternar para o tamanho original)",
+    "ru-RU": "Текущее: полностью пропорциональное отображение (в адаптивном окне нет полосы прокрутки, нажмите, чтобы вернуться к исходному размеру)",
+    "ja-JP": "現在：フル比例表示（適応ウィンドウにスクロールバーはありません、クリックして元のサイズに切り替えます）",
+    "de-DE": "Aktuell: Vollproportionale Anzeige (keine Bildlaufleiste im adaptiven Fenster, klicken Sie, um zur Originalgröße zu wechseln)",
+    "fr-FR": "Actuel: Affichage proportionnel intégral (pas de barre de défilement dans la fenêtre adaptative, cliquez pour revenir à la taille d'origine)",
+    "ko-KR": "현재:가득 차있는 비례적인 전시(적응 창에 있는 일폭 막대 없음,원래 크기로 전환하기 위하여 누르십시오)",
+    "$files": [
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6073-6105)"
+    ],
+    "$id": 41000
+  },
+  "原始尺寸": {
+    "en-US": "Original size",
+    "es-ES": "Tamaño original",
+    "ar-EG": "الحجم الأصلي",
+    "pt-PT": "Tamanho Original",
+    "ru-RU": "Оригинальный размер",
+    "ja-JP": "元のサイズ",
+    "de-DE": "Originalgröße",
+    "fr-FR": "Taille originale",
+    "ko-KR": "원래 크기",
+    "$files": [
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6292-6300)"
+    ],
+    "$id": 41001
+  },
+  "当前：原始尺寸（按原分辨率居中显示，超出可滚动，点击切换为适应宽度）": {
+    "en-US": "Current: original size (displayed in the center according to the original resolution, scrollable beyond, click to switch to adapt to the width)",
+    "es-ES": "Actual: tamaño original (se muestra en el centro de acuerdo con la resolución original, se puede desplazar más allá, haga clic para cambiar para adaptarse al ancho)",
+    "ar-EG": "الحالي: الحجم الأصلي (معروض في الوسط وفقا للدقة الأصلية ، قابل للتمرير بعد ذلك ، انقر للتبديل للتكيف مع العرض)",
+    "pt-PT": "Atual: tamanho original (exibido no centro de acordo com a resolução original, rolável além, clique para alternar para se adaptar à largura)",
+    "ru-RU": "Текущий: исходный размер (отображается в центре в соответствии с исходным разрешением, можно прокручивать дальше, нажмите, чтобы переключиться на адаптацию к ширине)",
+    "ja-JP": "現在：元のサイズ（元の解像度に応じて中央に表示され、スクロール可能な範囲を超えて、クリックして幅に適応するように切り替えます）",
+    "de-DE": "Aktuell: Originalgröße (wird in der Mitte entsprechend der Originalauflösung angezeigt, darüber hinaus scrollbar, zum Wechseln klicken, um die Breite anzupassen)",
+    "fr-FR": "Actuel: taille d'origine (affichée au centre selon la résolution d'origine, défilable au-delà, cliquez pour basculer pour s'adapter à la largeur)",
+    "ko-KR": "현재:원래 크기(표시 센터 따라 원래 해상도,스크롤 넘어,클릭 스위치 적응 폭)",
+    "$files": [
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6326-6364)"
+    ],
+    "$id": 41002
+  },
+  "适应宽度": {
+    "en-US": "Adapt to width",
+    "es-ES": "Adaptarse al ancho",
+    "ar-EG": "التكيف مع العرض",
+    "pt-PT": "Adaptar à largura",
+    "ru-RU": "Адаптироваться к ширине",
+    "ja-JP": "幅に合わせる",
+    "de-DE": "An Breite anpassen",
+    "fr-FR": "S'adapter à la largeur",
+    "ko-KR": "폭에 적응",
+    "$files": [
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6541-6549)"
+    ],
+    "$id": 41003
+  },
+  "当前：适应宽度（宽度铺满，点击切换为等比全显）": {
+    "en-US": "Current: Adapt to the width (the width is full, click to switch to full display in equal proportions)",
+    "es-ES": "Actual: Adaptarse al ancho (el ancho está lleno, haga clic para cambiar a la visualización completa en proporciones iguales) ",
+    "ar-EG": "التيار: التكيف مع العرض (العرض ممتلئ ، انقر للتبديل إلى العرض الكامل بنسب متساوية)",
+    "pt-PT": "Corrente: adaptar-se à largura (a largura está cheia, clique para mudar para a exibição completa em proporções iguais)",
+    "ru-RU": "Текущий: Адаптация к ширине (ширина заполнена, нажмите, чтобы переключиться на полное отображение в равных пропорциях)",
+    "ja-JP": "現在：幅に適応します（幅がいっぱいです、クリックして同じ比率で完全な表示に切り替えます）",
+    "de-DE": "Aktuell: An die Breite anpassen (die Breite ist voll, klicken Sie, um in gleichen Anteilen zur vollständigen Anzeige zu wechseln)",
+    "fr-FR": "Actuel: Adaptez-vous à la largeur (la largeur est pleine, cliquez pour passer en plein écran dans des proportions égales)",
+    "ko-KR": "현재:폭에 적응(폭이 가득,같은 비율로 전체 디스플레이로 전환하려면 클릭)",
+    "$files": [
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6575-6602)"
+    ],
+    "$id": 41004
   },
   "在新窗口打开": {
     "en-US": "Open in new window",
@@ -1445,7 +1535,7 @@
     "fr-FR": "Ouvrir dans une nouvelle fenêtre",
     "ko-KR": "새 창에서 열기",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(5653-5663)"
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(7913-7923)"
     ],
     "$id": 10264
   },
@@ -1460,7 +1550,7 @@
     "fr-FR": "Le programme par défaut s'ouvre",
     "ko-KR": "기본 프로그램이 열립니다",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(5982-5992)"
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(8287-8297)"
     ],
     "$id": 10265
   },
@@ -1475,7 +1565,7 @@
     "fr-FR": "Mode plein écran",
     "ko-KR": "전체 화면 모드",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6474-6482)"
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(8824-8832)"
     ],
     "$id": 10266
   },
@@ -1490,7 +1580,7 @@
     "fr-FR": "Mode colonne",
     "ko-KR": "열 모드",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6486-6494)"
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(8836-8844)"
     ],
     "$id": 10267
   },
@@ -1505,7 +1595,7 @@
     "fr-FR": "Fermer l'aperçu",
     "ko-KR": "미리보기 닫기",
     "$files": [
-      "src/renderer/components/file-explorer/PreviewToolbar.tsx(6711-6719)",
+      "src/renderer/components/file-explorer/PreviewToolbar.tsx(9061-9069)",
       "src/renderer/components/file-explorer/SplitPreviewPanel.tsx(3414-3422)",
       "src/renderer/components/file-explorer/SplitPreviewPanel.tsx(3444-3452)"
     ],
@@ -1794,7 +1884,7 @@
     "$files": [
       "src/renderer/components/file-explorer/RealDirectory.tsx(44750-44766)",
       "src/renderer/components/file-explorer/RealDirectory.tsx(53661-53677)",
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(35273-35289)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(34971-34987)"
     ],
     "$id": 11233
   },
@@ -1974,7 +2064,7 @@
     "fr-FR": "...",
     "ko-KR": "...",
     "$files": [
-      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(511-518)"
+      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(501-508)"
     ],
     "$id": 32275
   },
@@ -1989,8 +2079,8 @@
     "fr-FR": "L'interface est bloquée. La file d’attente d’analyse des fichiers peut consommer plus de puissance de calcul. Le mettre en pause peut rendre l’opération en cours plus fluide.",
     "ko-KR": "인터페이스가 멈췄습니다. 파일 분석 대기열이 더 많은 컴퓨팅 성능을 차지할 수 있습니다. 일시 중지하면 현재 작업이 더 원활하게 수행될 수 있습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(2359-2399)",
-      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(3046-3086)"
+      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(2295-2335)",
+      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(2966-3006)"
     ],
     "$id": 32276
   },
@@ -2005,7 +2095,7 @@
     "fr-FR": "Mettre en pause l'analyse de fichiers",
     "ko-KR": "파일 분석 일시정지",
     "$files": [
-      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(2948-2958)"
+      "src/renderer/components/file-explorer/ResourceContentionBanner.tsx(2873-2883)"
     ],
     "$id": 22314
   },
@@ -2185,7 +2275,7 @@
     "fr-FR": "Chercher...",
     "ko-KR": "검색...",
     "$files": [
-      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(16478-16489)"
+      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(17630-17641)"
     ],
     "$id": 21776
   },
@@ -2200,7 +2290,7 @@
     "fr-FR": "Chargement des fichiers...",
     "ko-KR": "파일 로드 중...",
     "$files": [
-      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(16519-16532)"
+      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(17671-17684)"
     ],
     "$id": 22197
   },
@@ -2215,7 +2305,7 @@
     "fr-FR": "Récupération de noms de fichiers, de balises et de contenu sémantique multimodal approfondi...",
     "ko-KR": "파일 이름, 태그 및 깊은 다중 모드 의미 콘텐츠 검색 중...",
     "$files": [
-      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(16718-16745)"
+      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(17870-17897)"
     ],
     "$id": 22198
   },
@@ -2230,7 +2320,7 @@
     "fr-FR": "Lecture du contenu du répertoire et des métadonnées des fichiers...",
     "ko-KR": "디렉터리 내용 및 파일 메타데이터를 읽는 중...",
     "$files": [
-      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(16775-16796)"
+      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(17927-17948)"
     ],
     "$id": 22199
   },
@@ -2245,7 +2335,7 @@
     "fr-FR": "Fichier introuvable dans cette dimension",
     "ko-KR": "이 차원에서 파일을 찾을 수 없습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(17176-17190)"
+      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(18480-18494)"
     ],
     "$id": 7514
   },
@@ -2260,9 +2350,24 @@
     "fr-FR": "Il n'existe aucun fichier correspondant sous l'étiquette de dimension actuelle. Veuillez sélectionner une autre catégorie de dimension.",
     "ko-KR": "현재 측정기준 라벨 아래에 일치하는 파일이 없습니다. 다른 측정기준 카테고리를 선택하세요.",
     "$files": [
-      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(17228-17256)"
+      "src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(18532-18560)"
     ],
     "$id": 7515
+  },
+  "系统图标与元数据": {
+    "en-US": "System icons and metadata",
+    "es-ES": "Iconos y metadatos del sistema",
+    "ar-EG": "أيقونات النظام وبيانات التعريف",
+    "pt-PT": "Ícones e metadados do sistema",
+    "ru-RU": "Системные значки и метаданные",
+    "ja-JP": "システムアイコンとメタデータ",
+    "de-DE": "Systemsymbole und Metadaten",
+    "fr-FR": "Icônes système et métadonnées",
+    "ko-KR": "시스템 아이콘 및 메타데이터",
+    "$files": [
+      "src/renderer/components/file-explorer/hooks/usePreviewSession.ts(1334-1346)"
+    ],
+    "$id": 38323
   },
   "正在加载视觉搜索模型，相关图片稍后追加…": {
     "en-US": "Loading visual search model, related pictures will be appended later...",
@@ -2335,39 +2440,9 @@
     "fr-FR": "Recherche globale:",
     "ko-KR": "글로벌 검색:",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(30436-30445)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(30437-30446)"
     ],
     "$id": 21229
-  },
-  "（共 {count} 项，包含未分析与已分析文件）": {
-    "en-US": "(A total of {count} items, including unanalyzed and analyzed files)",
-    "es-ES": "(Un total de {count} elementos, incluidos los archivos no analizados y analizados)",
-    "ar-EG": "(ما مجموعه {count} البنود ، بما في ذلك الملفات غير تحليلها وتحليلها)",
-    "pt-PT": "(Um total de {count} itens, incluindo ficheiros não analisados e analisados)",
-    "ru-RU": "(Всего {count} элементов, включая непроанализированные и проанализированные файлы)",
-    "ja-JP": "（未分析ファイルと分析ファイルを含む{count}項目の合計）",
-    "de-DE": "(Insgesamt {count} Elemente, einschließlich nicht analysierter und analysierter Dateien)",
-    "fr-FR": "(Un total de {count} éléments, y compris les fichiers non analysés et analysés)",
-    "ko-KR": "(분석되지 않은 파일 및 분석된 파일을 포함하여 총{count}항목)",
-    "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(30786-30815)"
-    ],
-    "$id": 21032
-  },
-  "（{count} 项）": {
-    "en-US": "({count} item)",
-    "es-ES": "({count} elemento)",
-    "ar-EG": "({count} بند)",
-    "pt-PT": "({count} ponto)",
-    "ru-RU": "（{count} пункт）",
-    "ja-JP": "({count}アイテム)",
-    "de-DE": "({count} Element)",
-    "fr-FR": "({count} élément)",
-    "ko-KR": "({count}항목)",
-    "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31042-31057)"
-    ],
-    "$id": 21230
   },
   "字面检索中...": {
     "en-US": "Searching literally...",
@@ -2380,7 +2455,7 @@
     "fr-FR": "En cherchant littéralement...",
     "ko-KR": "말 그대로 검색 중...",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31623-31635)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31161-31173)"
     ],
     "$id": 31636
   },
@@ -2395,7 +2470,7 @@
     "fr-FR": "Alignement sémantique profond...",
     "ko-KR": "깊은 의미 정렬...",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31663-31677)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31201-31215)"
     ],
     "$id": 21856
   },
@@ -2410,7 +2485,7 @@
     "fr-FR": "Top 500 des articles",
     "ko-KR": "상위 500 개 항목",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31982-31993)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31520-31531)"
     ],
     "$id": 21231
   },
@@ -2425,7 +2500,7 @@
     "fr-FR": "En réduisant ce paramètre, vous obtiendrez davantage d'images et de documents pertinents ; en l'augmentant, les résultats seront plus précis.",
     "ko-KR": "낮추면 더 많은 관련 이미지와 파일을 검색할 수 있고, 높이면 더 정확한 결과를 얻을 수 있습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(32395-32422)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(31933-31960)"
     ],
     "$id": 39473
   },
@@ -2440,8 +2515,8 @@
     "fr-FR": "Degré de correspondance",
     "ko-KR": "매칭도",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(32559-32566)",
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(32932-32939)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(32097-32104)",
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(32470-32477)"
     ],
     "$id": 39474
   },
@@ -2456,8 +2531,8 @@
     "fr-FR": "Restaurer les valeurs par défaut",
     "ko-KR": "기본값 복원",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(33741-33749)",
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(33903-33911)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(33279-33287)",
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(33441-33449)"
     ],
     "$id": 39475
   },
@@ -2472,9 +2547,24 @@
     "fr-FR": "Fichiers correspondants: {count} pcs",
     "ko-KR": "일치하는 파일:{count}개",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(34986-35005)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(34524-34543)"
     ],
     "$id": 21038
+  },
+  "（包含未分析与已分析文件）": {
+    "en-US": "(Including unanalyzed and analyzed files)",
+    "es-ES": "(Incluidos los archivos no analizados y analizados)",
+    "ar-EG": "(بما في ذلك الملفات غير المحللة والمحللة)",
+    "pt-PT": "(Incluindo ficheiros não analisados e analisados)",
+    "ru-RU": "(Включая неанализированные и проанализированные файлы)",
+    "ja-JP": "（未分析および分析されたファイルを含む）",
+    "de-DE": "(Einschließlich nicht analysierter und analysierter Dateien)",
+    "fr-FR": "(Y compris les fichiers non analysés et analysés)",
+    "ko-KR": "(분석되지 않은 파일 및 분석 된 파일 포함)",
+    "$files": [
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(34708-34725)"
+    ],
+    "$id": 41005
   },
   "提示: 结果已达到最大单次展示上限（500项）": {
     "en-US": "Reminder: The result has reached the maximum single display limit (500 items)",
@@ -2487,24 +2577,39 @@
     "fr-FR": "Rappel: Le résultat a atteint la limite maximale d'affichage unique (500 éléments)",
     "ko-KR": "알림:결과가 최대 단일 디스플레이 제한(500 개 항목)에 도달했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(35634-35661)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(35332-35359)"
     ],
     "$id": 21039
   },
-  "系统图标与元数据": {
-    "en-US": "System icons and metadata",
-    "es-ES": "Iconos y metadatos del sistema",
-    "ar-EG": "أيقونات النظام وبيانات التعريف",
-    "pt-PT": "Ícones e metadados do sistema",
-    "ru-RU": "Системные значки и метаданные",
-    "ja-JP": "システムアイコンとメタデータ",
-    "de-DE": "Systemsymbole und Metadaten",
-    "fr-FR": "Icônes système et métadonnées",
-    "ko-KR": "시스템 아이콘 및 메타데이터",
+  "没有找到匹配的文件": {
+    "en-US": "No matching file found",
+    "es-ES": "No se encontró ningún archivo coincidente",
+    "ar-EG": "لم يتم العثور على ملف مطابق",
+    "pt-PT": "Nenhum ficheiro correspondente encontrado",
+    "ru-RU": "Соответствующий файл не найден",
+    "ja-JP": "一致するファイルが見つかりません",
+    "de-DE": "Keine passende Datei gefunden",
+    "fr-FR": "Aucun fichier correspondant trouvé",
+    "ko-KR": "일치하는 파일을 찾을 수 없습니다",
     "$files": [
-      "src/renderer/components/file-explorer/hooks/usePreviewSession.ts(1334-1346)"
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(35603-35616)"
     ],
-    "$id": 38323
+    "$id": 41006
+  },
+  "试试调低右上角的匹配度滑块，或换一个更简短的关键词。": {
+    "en-US": "Try lowering the matching slider in the upper right corner, or changing to a shorter keyword.",
+    "es-ES": "Intente bajar el control deslizante correspondiente en la esquina superior derecha o cambie a una palabra clave más corta.",
+    "ar-EG": "حاول خفض شريط التمرير المطابق في الزاوية اليمنى العليا ، أو التغيير إلى كلمة رئيسية أقصر.",
+    "pt-PT": "Tente baixar o controle deslizante correspondente no canto superior direito ou mudar para uma palavra-chave mais Curta.",
+    "ru-RU": "Попробуйте опустить соответствующий ползунок в правом верхнем углу или выбрать более короткое ключевое слово.",
+    "ja-JP": "右上隅にある一致するスライダーを下げるか、短いキーワードに変更してみてください。",
+    "de-DE": "Versuchen Sie, den passenden Schieberegler in der oberen rechten Ecke zu senken oder zu einem kürzeren Schlüsselwort zu wechseln.",
+    "fr-FR": "Essayez d'abaisser le curseur correspondant dans le coin supérieur droit ou de passer à un mot clé plus court.",
+    "ko-KR": "오른쪽 상단 모서리에 있는 일치하는 슬라이더를 낮추거나 더 짧은 키워드로 변경해 보십시오.",
+    "$files": [
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(35648-35678)"
+    ],
+    "$id": 41007
   },
   "仅列表": {
     "en-US": "List only",
@@ -2517,7 +2622,7 @@
     "fr-FR": "Liste uniquement",
     "ko-KR": "목록 만",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4266-4273)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4278-4285)"
     ],
     "$id": 40886
   },
@@ -2532,7 +2637,7 @@
     "fr-FR": "Liste + aperçu",
     "ko-KR": "목록+미리보기",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4323-4332)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4335-4344)"
     ],
     "$id": 40887
   },
@@ -2547,7 +2652,7 @@
     "fr-FR": "Liste + attributs",
     "ko-KR": "목록+속성",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4382-4391)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4394-4403)"
     ],
     "$id": 40888
   },
@@ -2562,7 +2667,7 @@
     "fr-FR": "Disposition des personnages",
     "ko-KR": "문자 레이아웃",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4441-4449)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4453-4461)"
     ],
     "$id": 40889
   },
@@ -2577,7 +2682,7 @@
     "fr-FR": "Rangée horizontale complète",
     "ko-KR": "전체 수평 행",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4494-4501)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4506-4513)"
     ],
     "$id": 40890
   },
@@ -2592,7 +2697,7 @@
     "fr-FR": "Grille de Sannomiya",
     "ko-KR": "산노미야 그리드",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4542-4549)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4554-4561)"
     ],
     "$id": 40891
   },
@@ -2607,7 +2712,7 @@
     "fr-FR": "Rangée verticale complète",
     "ko-KR": "전체 수직 행",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4597-4604)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4609-4616)"
     ],
     "$id": 40892
   },
@@ -2622,7 +2727,7 @@
     "fr-FR": "Disposition par défaut",
     "ko-KR": "기본 레이아웃",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4632-4640)"
+      "src/renderer/components/file-explorer/layout-switcher/layout-presets.ts(4644-4652)"
     ],
     "$id": 40893
   },
@@ -2637,7 +2742,7 @@
     "fr-FR": "Commutation de mise en page",
     "ko-KR": "레이아웃 전환",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(3035-3043)"
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(3890-3898)"
     ],
     "$id": 40894
   },
@@ -2652,8 +2757,8 @@
     "fr-FR": "Plus de mise en page",
     "ko-KR": "더 많은 레이아웃",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(4773-4781)",
-      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(4842-4850)"
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(5707-5715)",
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(5776-5784)"
     ],
     "$id": 40895
   },
@@ -2668,8 +2773,54 @@
     "fr-FR": "Sélectionner la mise en page",
     "ko-KR": "페이지 레이아웃 선택",
     "$files": [
-      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(6051-6061)"
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(6690-6700)",
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(7366-7376)"
     ],
     "$id": 40896
+  },
+  "快捷工具": {
+    "en-US": "Quick tools",
+    "es-ES": "Herramientas rápidas",
+    "ar-EG": "أدوات سريعة",
+    "pt-PT": "Ferramentas rápidas",
+    "ru-RU": "Быстрые инструменты",
+    "ja-JP": "クイックツール",
+    "de-DE": "Schnelle Werkzeuge",
+    "fr-FR": "Outils rapides",
+    "ko-KR": "빠른 도구",
+    "$files": [
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(9531-9539)"
+    ],
+    "$id": 41008
+  },
+  "分析队列": {
+    "en-US": "Analysis queue",
+    "es-ES": "Cola de análisis",
+    "ar-EG": "صف التحليل",
+    "pt-PT": "Fila de análise",
+    "ru-RU": "Очередь анализа",
+    "ja-JP": "キューの分析",
+    "de-DE": "Analysewarteschlange",
+    "fr-FR": "File d'attente d'analyse",
+    "ko-KR": "분석 대기열",
+    "$files": [
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(10445-10453)"
+    ],
+    "$id": 41009
+  },
+  "重置布局": {
+    "en-US": "Reset layout",
+    "es-ES": "Restablecer diseño",
+    "ar-EG": "إعادة تعيين التخطيط",
+    "pt-PT": "Redefinir layout",
+    "ru-RU": "сбросить макет",
+    "ja-JP": "レイアウトをリセットする",
+    "de-DE": "Layout zurücksetzen",
+    "fr-FR": "Réinitialiser la mise en page",
+    "ko-KR": "레이아웃 재설정",
+    "$files": [
+      "src/renderer/components/file-explorer/layout-switcher/LayoutSwitcherButtons.tsx(11325-11333)"
+    ],
+    "$id": 41010
   }
 }

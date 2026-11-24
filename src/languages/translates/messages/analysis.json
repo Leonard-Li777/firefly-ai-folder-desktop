@@ -284,7 +284,7 @@
     "ko-KR": "취소",
     "$files": [
       "src/renderer/components/analysis/AnalysisConfirmModal.tsx(11861-11867)",
-      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7258-7264)"
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7077-7083)"
     ],
     "$id": 10239
   },
@@ -1103,7 +1103,7 @@
     "de-DE": "Intelligente Dateinamenerweiterungsbestätigung",
     "fr-FR": "Confirmation intelligente de l'extension du nom de fichier",
     "ko-KR": "스마트 파일명 확장자 확인",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2143-2157)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2077-2091)"],
     "$id": 10231
   },
   "此操作仅会更新智能文件名，不会影响磁盘中的原始文件。": {
@@ -1116,7 +1116,7 @@
     "de-DE": "Dieser Vorgang aktualisiert nur den intelligenten Dateinamen und hat keinen Einfluss auf die ursprüngliche Datei auf der Festplatte.",
     "fr-FR": "Cette opération ne mettra à jour que le nom de fichier intelligent, sans affecter le fichier original sur le disque.",
     "ko-KR": "이 작업은 스마트 파일명만 업데이트하며, 디스크의 원본 파일에는 영향을 주지 않습니다.",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2219-2249)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2151-2181)"],
     "$id": 10232
   },
   "智能文件名": {
@@ -1129,7 +1129,7 @@
     "de-DE": "Intelligente Dateinamen",
     "fr-FR": "Noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2550-2559)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2476-2485)"],
     "$id": 7682
   },
   "定位": {
@@ -1142,7 +1142,7 @@
     "de-DE": "Standort",
     "fr-FR": "Positionner",
     "ko-KR": "위치",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2611-2617)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2536-2542)"],
     "$id": 10235
   },
   "扩展名确认": {
@@ -1155,7 +1155,7 @@
     "de-DE": "Erweiterungsbestätigung",
     "fr-FR": "Confirmation de l'extension",
     "ko-KR": "확장자 확인",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2645-2654)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2569-2578)"],
     "$id": 10236
   },
   "在文件夹中打开": {
@@ -1168,7 +1168,7 @@
     "de-DE": "Im Ordner öffnen",
     "fr-FR": "Ouvrir dans le dossier",
     "ko-KR": "폴더에서 열기",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(4682-4693)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(4558-4569)"],
     "$id": 10237
   },
   "不更名": {
@@ -1181,7 +1181,7 @@
     "de-DE": "Umbenennen unterlassen",
     "fr-FR": "Ne pas renommer",
     "ko-KR": "이름 변경 안 함",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(5597-5604)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(5454-5461)"],
     "$id": 10238
   },
   "确认": {
@@ -1194,7 +1194,7 @@
     "de-DE": "Bestätigen",
     "fr-FR": "Confirmer",
     "ko-KR": "확인하다",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7332-7338)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7149-7155)"],
     "$id": 10240
   },
   "拖拽改变分栏高度": {
