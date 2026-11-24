@@ -81,10 +81,14 @@ export function computeMediaMultimodalSideBySide({
     return containerWidth >= 600
   }
 
-  const aspectRatio = naturalWidth / naturalHeight
+  const effectiveWidth = Math.max(80, containerWidth - 32)
   const effectiveHeight = Math.max(80, containerHeight - 32)
-  const fittedImageWidth = Math.min(containerWidth - 32, Math.round(effectiveHeight * aspectRatio))
+  // CSS: max-w-full max-h-full w-auto h-auto object-contain
+  // 遵循只缩小不拉伸放大的渲染物理规律，真实还原图片在视口中所占宽度
+  const scale = Math.min(1, effectiveWidth / naturalWidth, effectiveHeight / naturalHeight)
+  const fittedImageWidth = Math.round(naturalWidth * scale)
   const remainingWidth = containerWidth - fittedImageWidth
+  const aspectRatio = naturalWidth / naturalHeight
 
   // 1. 容器总宽度极窄 (< 440px)，左右并排会导致两边都极度拥挤，保持上下
   if (containerWidth < 440) {
@@ -250,12 +254,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     width: 0,
     height: 0
   })
-  const [imageNaturalSize, setImageNaturalSize] = useState<{ width: number; height: number } | null>(
-    null
-  )
-  const [videoNaturalSize, setVideoNaturalSize] = useState<{ width: number; height: number } | null>(
-    null
-  )
+  const [imageNaturalSize, setImageNaturalSize] = useState<{
+    width: number
+    height: number
+  } | null>(null)
+  const [videoNaturalSize, setVideoNaturalSize] = useState<{
+    width: number
+    height: number
+  } | null>(null)
 
   // 观测多媒体容器尺寸变化
   useEffect(() => {
@@ -1065,10 +1071,38 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       const endSec = highlightRange?.[1]
       const hasHighlight = startSec !== undefined && endSec !== undefined && endSec > startSec
       const mediaLayout = MEDIA_LAYOUT_BY_MODE[mediaFitMode]
+      const isSideBySide = computeMediaMultimodalSideBySide({
+        containerWidth: containerSize.width,
+        containerHeight: containerSize.height,
+        naturalWidth: videoNaturalSize?.width,
+        naturalHeight: videoNaturalSize?.height,
+        mediaFitMode,
+        hasMultimodalContent: Boolean(multimodalContent)
+      })
+
+      const innerClasses =
+        isSideBySide === true
+          ? 'flex-1 min-h-0 min-w-0 w-full flex flex-row items-stretch justify-center gap-4'
+          : isSideBySide === false
+            ? 'flex-1 min-h-0 min-w-0 w-full flex flex-col items-center justify-center gap-3'
+            : mediaLayout.inner
+
+      const multimodalBoxClasses =
+        isSideBySide === true
+          ? 'w-72 sm:w-80 max-w-[42%] h-full flex flex-col overflow-hidden px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0'
+          : isSideBySide === false
+            ? 'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 max-h-[30%] flex flex-col overflow-hidden'
+            : mediaLayout.multimodalBox
 
       return (
-        <div className={mediaLayout.outer}>
-          <div className={mediaLayout.inner}>
+        <div ref={containerRef} className={mediaLayout.outer}>
+          <div
+            data-testid="preview-media-inner"
+            data-layout-direction={
+              isSideBySide === true ? 'row' : isSideBySide === false ? 'col' : 'auto'
+            }
+            className={innerClasses}
+          >
             {/* 预览内容的正文区 */}
             <div className={cn(mediaLayout.body, isPrivate && 'ph-no-capture')}>
               {videoDecodeFailed ? (
@@ -1264,7 +1298,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             {multimodalContent && (
               <div
                 data-testid="preview-multimodal-box"
-                className={cn(mediaLayout.multimodalBox, isPrivate && 'ph-mask')}
+                className={cn(multimodalBoxClasses, isPrivate && 'ph-mask')}
               >
                 <div className="flex items-center justify-between mb-1.5 shrink-0">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
