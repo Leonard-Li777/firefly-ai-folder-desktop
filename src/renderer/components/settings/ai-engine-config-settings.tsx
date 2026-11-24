@@ -213,6 +213,20 @@ export const AIEngineConfigSettings: React.FC = () => {
     !!(cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
   )
 
+  /**
+   * 云端配置是否「基本可用」：已选服务商 且 已填写 Key（ollama 本地服务免 Key）。
+   * 未配置时切到云端并不存在任何真实的启动动作可等待，必须直接引导用户完成配置，
+   * 而不是抛出「引擎切换正在进行中」的伪等待提示（否则用户只能干等或被迫取消）。
+   */
+  const cloudConfigBasicallyValid = React.useMemo(() => {
+    const provider = (cloudProviderCfg ?? getConfigValue<string>('AI_CLOUD_PROVIDER'))?.trim()
+    const apiKey = (cloudApiKeyCfg ?? getConfigValue<string>('AI_CLOUD_API_KEY'))?.trim()
+    return !!provider && (provider === 'ollama' || !!apiKey)
+  }, [cloudProviderCfg, cloudApiKeyCfg, getConfigValue])
+
+  /** 正在切往云端、但云端尚未完成配置：逃生横条改为配置引导态 */
+  const awaitingCloudSetup = switchingTarget === 'cloud' && !cloudConfigBasicallyValid
+
   /** 切换高级AI引擎总控开关 */
   const handleToggleEnabled = (checked: boolean) => {
     if (checked) {
@@ -249,13 +263,18 @@ export const AIEngineConfigSettings: React.FC = () => {
     previousModeRef.current = activeMode
     setLastActiveMode(mode)
     setSwitchingTarget(mode)
-    setShowEscapeHatch(false)
 
-    // 启动 3000ms 逃生计时器 (AC-03)
+    // 云端未完成配置：不存在可等待的启动动作，立即给出配置引导而非等满 3 秒抛伪等待文案
+    const needsCloudSetup = mode === 'cloud' && !cloudConfigBasicallyValid
+    setShowEscapeHatch(needsCloudSetup)
+
+    // 启动 3000ms 逃生计时器 (AC-03)：仅真实切换（有启动动作可等待）时才需要
     if (switchTimerRef.current) clearTimeout(switchTimerRef.current)
-    switchTimerRef.current = setTimeout(() => {
-      setShowEscapeHatch(true)
-    }, 3000)
+    if (!needsCloudSetup) {
+      switchTimerRef.current = setTimeout(() => {
+        setShowEscapeHatch(true)
+      }, 3000)
+    }
 
     updateConfigValue('AI_SERVICE_MODE', mode)
     if (mode === 'cpu' || mode === 'cloud') {
@@ -909,19 +928,35 @@ export const AIEngineConfigSettings: React.FC = () => {
             )}
           </div>
 
-          {/* 3秒平滑过渡逃生横条 (Spec §5.2 / AC-03) */}
+          {/* 3秒平滑过渡逃生横条 (Spec §5.2 / AC-03)；云端未配置时升级为配置引导横条 */}
           {showEscapeHatch && switchingTarget && (
-            <div className="flex items-center justify-between p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs shadow-xs animate-in fade-in slide-in-from-top-1">
+            <div
+              className={`flex items-center justify-between p-3.5 rounded-2xl border text-xs shadow-xs animate-in fade-in slide-in-from-top-1 ${
+                awaitingCloudSetup
+                  ? 'border-primary/30 bg-primary/[0.06] text-primary'
+                  : 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400'
+              }`}
+            >
               <div className="flex items-center gap-2">
-                <RotateCw className="h-4 w-4 animate-spin shrink-0" />
+                {awaitingCloudSetup ? (
+                  <CircleAlert className="h-4 w-4 shrink-0" />
+                ) : (
+                  <RotateCw className="h-4 w-4 animate-spin shrink-0" />
+                )}
                 <span>
-                  {t('引擎切换正在进行中（已等待超过 3 秒），您可以继续等待或立即取消。')}
+                  {awaitingCloudSetup
+                    ? t('请选择云服务并完成配置，引擎将自动切换...')
+                    : t('引擎切换正在进行中（已等待超过 3 秒），您可以继续等待或立即取消。')}
                 </span>
               </div>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 text-xs border-amber-500/40 bg-background/80 hover:bg-amber-500/20 text-foreground shrink-0 ml-3"
+                className={`h-7 text-xs bg-background/80 text-foreground shrink-0 ml-3 ${
+                  awaitingCloudSetup
+                    ? 'border-primary/40 hover:bg-primary/10'
+                    : 'border-amber-500/40 hover:bg-amber-500/20'
+                }`}
                 onClick={cancelSwitchingAndRevert}
               >
                 {t('取消切换并恢复原引擎')}
