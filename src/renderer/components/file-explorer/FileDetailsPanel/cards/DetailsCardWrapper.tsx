@@ -47,7 +47,7 @@ export const DetailsCardWrapper: React.FC<DetailsCardWrapperProps> = ({
           'absolute top-2 right-2 h-6 w-6 p-0 z-10 rounded-md text-muted-foreground/60 transition-all duration-150',
           isOnlyOneVisible
             ? 'opacity-30 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/60'
-            : 'opacity-0 group-hover:opacity-100 hover:text-foreground hover:bg-muted/50 cursor-pointer'
+            : 'opacity-0 group-hover:opacity-100 hover:bg-destructive/15 hover:text-destructive cursor-pointer'
         )}
       >
         <MaterialIcon icon="close" className="text-xs" />
