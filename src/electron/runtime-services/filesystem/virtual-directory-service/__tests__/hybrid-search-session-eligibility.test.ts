@@ -16,10 +16,13 @@ vi.mock('../../../../config/config-orchestrator', () => ({
   }
 }))
 
-import {
-  HybridSearchSession,
-  HybridSearchCollaborators
-} from '../hybrid-search-session'
+vi.mock('../../../../services/omni-client', () => ({
+  omniClient: {
+    tokenizeText: vi.fn().mockResolvedValue([])
+  }
+}))
+
+import { HybridSearchSession, HybridSearchCollaborators } from '../hybrid-search-session'
 import type { HybridRankPool } from '../HybridSearchArbiter'
 import type { FilterFilesParams } from '../TagTreeQuery'
 
@@ -36,9 +39,11 @@ describe('HybridSearchSession 候选层物理资格过滤与分页恒等式 (TC-
         analyzed: [],
         unanalyzed: []
       }),
-      fetchRowsByFingerprints: vi.fn().mockImplementation((fps: string[]) =>
-        fps.map(fp => ({ file_fingerprint: fp, name: `${fp}.txt` }))
-      ),
+      fetchRowsByFingerprints: vi
+        .fn()
+        .mockImplementation((fps: string[]) =>
+          fps.map(fp => ({ file_fingerprint: fp, name: `${fp}.txt` }))
+        ),
       mapFilesToItems: vi.fn().mockImplementation((rows: any[]) =>
         rows.map(r => ({
           id: 1,
@@ -100,7 +105,7 @@ describe('HybridSearchSession 候选层物理资格过滤与分页恒等式 (TC-
           fileFingerprint: 'fp-clip-fail',
           hasLiteral: false,
           clipScore: 0.45,
-          score: 0.30,
+          score: 0.3,
           nameBoost: 0
         }
       ]
