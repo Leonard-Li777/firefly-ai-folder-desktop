@@ -1003,7 +1003,9 @@ export class FileProcessor {
             : undefined,
           metadata: baseMetadata,
           omniPerception: restoredOmniPerception,
-          stats: currentStats
+          stats: currentStats,
+          // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
+          nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
         })
 
         if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
@@ -2422,15 +2424,25 @@ export class FileProcessor {
         const p = anydocResult.perception
         if (p.binary_info) contentResult.metadata.binary_info = p.binary_info
         if (p.author) contentResult.metadata.author = p.author
-        if (p.content_rating) contentResult.metadata.content_rating = p.content_rating
-        if (Array.isArray(p.nsfw_tags)) contentResult.metadata.nsfw_tags = p.nsfw_tags
-        if (Array.isArray(p.nsfw_text_tags))
-          contentResult.metadata.nsfw_text_tags = p.nsfw_text_tags
-        if (p.nsfw_perception) contentResult.metadata.nsfw_perception = p.nsfw_perception
+        // 敏感内容字段仅在 perception_nsfw 启用时落库：插件关闭时下游既不检测也不沿用旧结论，
+        // 否则「关插件」会退化成「继续沿用历史误标结论」。
+        if (capabilities.nsfwEffectivelyEnabled) {
+          if (p.content_rating) contentResult.metadata.content_rating = p.content_rating
+          if (Array.isArray(p.nsfw_tags)) contentResult.metadata.nsfw_tags = p.nsfw_tags
+          if (Array.isArray(p.nsfw_text_tags))
+            contentResult.metadata.nsfw_text_tags = p.nsfw_text_tags
+          if (p.nsfw_perception) contentResult.metadata.nsfw_perception = p.nsfw_perception
+          if (Array.isArray(p.sensitive_types))
+            contentResult.metadata.sensitive_types = p.sensitive_types
+          if (p.security_level) contentResult.metadata.security_level = p.security_level
+        } else {
+          delete contentResult.metadata.content_rating
+          delete contentResult.metadata.nsfw_tags
+          delete contentResult.metadata.nsfw_text_tags
+          delete contentResult.metadata.nsfw_perception
+          delete contentResult.metadata.sensitive_types
+        }
         if (p.face_perception) contentResult.metadata.face_perception = p.face_perception
-        if (Array.isArray(p.sensitive_types))
-          contentResult.metadata.sensitive_types = p.sensitive_types
-        if (p.security_level) contentResult.metadata.security_level = p.security_level
         if (p.winning_hypothesis) contentResult.metadata.winning_hypothesis = p.winning_hypothesis
         if (p.smart_name) contentResult.metadata.smart_name = p.smart_name
         if (p.video_analysis_duration_sec !== undefined) {
@@ -2523,7 +2535,9 @@ export class FileProcessor {
         contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
         metadata: contentResult.metadata,
         stats,
-        omniPerception: anydocResult?.perception
+        omniPerception: anydocResult?.perception,
+        // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
+        nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
       })
 
       // 优先采用 Omni 原生多模态感知 / 级联仲裁给出的建议智能命名与内容描述 (Issue #631)

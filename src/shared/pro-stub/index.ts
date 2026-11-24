@@ -40,6 +40,8 @@ export interface ProPreflightParams {
   omniPerception?: any
   visualTags?: string[]
   textTags?: Array<string | any>
+  /** perception_nsfw 插件有效开关（社区版存根签名与专业版保持一致） */
+  nsfwPerceptionEnabled?: boolean
 }
 
 
