@@ -26,6 +26,7 @@ import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
 import { FileProcessor } from './file-processor'
+import { resolveWorkspaceVideoDurationLimits } from './file-processor/db-analysis-state'
 import {
   canonicalMaintenanceService,
   installCanonicalMaintenanceListener
@@ -230,20 +231,10 @@ export class AnalysisQueueService {
       resolveWorkspaceContext: async workspaceId => {
         const effectiveConfig = await resolveWorkspaceEffectiveConfig(workspaceId)
         const cachedTierData = userTierService.getCachedData?.()
-        const computedLimits = cachedTierData?.computed_limits
-        const isFreeTier = Boolean((effectiveConfig.capabilities as any)?.isFreeTier)
-        const entitlementLimit =
-          typeof computedLimits?.video_max_duration_seconds === 'number'
-            ? computedLimits.video_max_duration_seconds
-            : isFreeTier
-              ? 300
-              : 999999999
-        const configuredRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? 300
-        const configuredLimit = Math.min(
-          10800,
-          Math.max(300, Math.round(configuredRaw / 300) * 300)
+        const { configuredLimitSec, effectiveLimitSec } = resolveWorkspaceVideoDurationLimits(
+          effectiveConfig,
+          cachedTierData?.computed_limits
         )
-        const effectiveLimitSec = Math.min(entitlementLimit, configuredLimit)
         const videoFrameQuotaMax = effectiveConfig.effectiveParams.videoFrameQuotaMax ?? 60
         const videoSoftTokenBudget = effectiveConfig.effectiveParams.videoSoftTokenBudget ?? 140
         const videoCutSensitivity =
@@ -257,7 +248,7 @@ export class AnalysisQueueService {
         const ws = allWs.find((w: any) => Number(w.id) === Number(workspaceId))
         return {
           effectiveLimitSec,
-          configuredLimitSec: configuredLimit,
+          configuredLimitSec,
           videoVisualAnalysisEnabled: effectiveConfig.capabilities.videoVisualAnalysisEnabled,
           workspaceName: ws?.name,
           paramsHash,

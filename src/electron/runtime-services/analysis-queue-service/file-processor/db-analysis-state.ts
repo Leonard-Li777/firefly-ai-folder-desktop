@@ -5,13 +5,98 @@ import {
   FileCategory,
   getFileCategory,
   computeVideoVisualParamsHash,
-  isVideoSegmentReusable
+  isVideoSegmentReusable,
+  INFINITY
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { omniClient } from '../../../services/omni-client'
 import { decompressText } from '../../../utils/text-compressor'
-import { userTierService } from '../../user-tier/user-tier-service'
 import type { EffectiveWorkspaceAIConfigResult } from '../../system/workspace-analysis-context'
+
+export interface WorkspaceVideoDurationLimits {
+  /** 是否处于免费版或权益未就绪受限态（以 videoMaxAnalyzeSec 是否定义为准，与 shared 同源） */
+  isFreeTier: boolean
+  /** 权益允许的最大时长上限（秒），无上限时为 INFINITY (999999999) */
+  entitlementLimitSec: number
+  /** 工作区设定的目标分析上限（秒，范围 300~10800，按 300 秒对齐） */
+  configuredLimitSec: number
+  /** 实际允许后台执行器运行的生效上限（秒；尊重纯 CPU 1800s 硬件降级与引擎冻结态 0s） */
+  effectiveLimitSec: number
+}
+
+function normalizeSnappedDurationSec(raw: unknown, fallbackSec: number): number {
+  const safe = typeof raw === 'number' && Number.isFinite(raw) ? raw : fallbackSec
+  if (safe <= 0) return 0
+  return Math.min(10800, Math.max(300, Math.round(safe / 300) * 300))
+}
+
+/**
+ * 解析工作区长视频分析的「配置目标上限」与「实际生效上限」：
+ * - configuredLimitSec 优先读取未被免费钳位覆盖的 desiredValue，保证待补列表展示与升级漏斗始终反映工作区配置；
+ * - entitlementLimitSec 取 videoMaxAnalyzeSec 与合法 computedLimits 的更严上限，杜绝冷启动 tierReady=false 窗口期被缓存 Pro 权益击穿；
+ * - effectiveLimitSec 受限于 entitlementLimitSec 与 effectiveParams.videoAnalyzeDurationSec，严守纯 CPU 降级与引擎冻结边界。
+ */
+export function resolveWorkspaceVideoDurationLimits(
+  effectiveConfig: {
+    capabilities: Pick<EffectiveWorkspaceAIConfigResult['capabilities'], 'videoMaxAnalyzeSec'> &
+      Partial<Pick<EffectiveWorkspaceAIConfigResult['capabilities'], 'videoVisualAnalysisEnabled'>>
+    effectiveParams: Pick<
+      EffectiveWorkspaceAIConfigResult['effectiveParams'],
+      'videoAnalyzeDurationSec'
+    >
+    fields?: {
+      videoAnalyzeDurationSec?: Pick<
+        EffectiveWorkspaceAIConfigResult['fields']['videoAnalyzeDurationSec'],
+        'desiredValue'
+      >
+    }
+  },
+  computedLimits?: { video_max_duration_seconds?: number | null } | null
+): WorkspaceVideoDurationLimits {
+  const rawCapMax = effectiveConfig.capabilities.videoMaxAnalyzeSec
+  const safeCapMax =
+    typeof rawCapMax === 'number' && Number.isFinite(rawCapMax) ? Math.max(0, rawCapMax) : undefined
+  const isFreeTier = safeCapMax !== undefined
+
+  const rawEntitlement = computedLimits?.video_max_duration_seconds
+  const safeRawEntitlement =
+    typeof rawEntitlement === 'number' && Number.isFinite(rawEntitlement) && rawEntitlement >= 0
+      ? rawEntitlement
+      : undefined
+
+  // 两者同时存在时取较严者，防止 tierReady=false (safeCapMax=300) 被本地缓存 Pro 权益覆盖越权
+  const entitlementLimitSec =
+    safeCapMax !== undefined && safeRawEntitlement !== undefined
+      ? Math.min(safeCapMax, safeRawEntitlement)
+      : (safeRawEntitlement ?? safeCapMax ?? INFINITY)
+
+  const desiredRaw =
+    effectiveConfig.fields?.videoAnalyzeDurationSec?.desiredValue ??
+    effectiveConfig.effectiveParams.videoAnalyzeDurationSec
+  const desiredLimitSec = normalizeSnappedDurationSec(desiredRaw, 300)
+  const configuredLimitSec = desiredLimitSec === 0 ? 300 : desiredLimitSec
+
+  if (effectiveConfig.capabilities.videoVisualAnalysisEnabled === false) {
+    return {
+      isFreeTier,
+      entitlementLimitSec,
+      configuredLimitSec,
+      effectiveLimitSec: 0
+    }
+  }
+
+  const effectiveRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? configuredLimitSec
+  const effectiveConfiguredLimitSec =
+    effectiveRaw === 0 ? 0 : normalizeSnappedDurationSec(effectiveRaw, configuredLimitSec)
+  const effectiveLimitSec = Math.min(entitlementLimitSec, effectiveConfiguredLimitSec)
+
+  return {
+    isFreeTier,
+    entitlementLimitSec,
+    configuredLimitSec,
+    effectiveLimitSec
+  }
+}
 
 export function getFileStageFromDB(db: any, workspaceId: number, filePath: string): number {
   try {
@@ -180,21 +265,6 @@ export async function checkBasicDataCompleteness(
             params_hash?: string
           }>
           if (segRows && segRows.length > 0) {
-            const cachedTierData = userTierService.getCachedData?.()
-            const computedLimits = cachedTierData?.computed_limits
-            const isFreeTier = Boolean((effectiveConfig.capabilities as any)?.isFreeTier)
-            const entitlementLimit =
-              typeof computedLimits?.video_max_duration_seconds === 'number'
-                ? computedLimits.video_max_duration_seconds
-                : isFreeTier
-                  ? 300
-                  : 999999999
-            const configuredRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? 300
-            const configuredLimit = Math.min(
-              10800,
-              Math.max(300, Math.round(configuredRaw / 300) * 300)
-            )
-            const effectiveVideoLimitSec = Math.min(entitlementLimit, configuredLimit)
             const expectedParamsHash = computeVideoVisualParamsHash(
               effectiveConfig.effectiveParams.videoFrameQuotaMax,
               effectiveConfig.effectiveParams.videoSoftTokenBudget ?? 140,

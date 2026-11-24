@@ -1,7 +1,11 @@
 import { LogCategory, logger, getFileCategory, FileCategory } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
+import { userTierService } from '../user-tier/user-tier-service'
 import { resolveWorkspaceEffectiveConfig } from './workspace-analysis-context'
-import { checkBasicDataCompleteness } from '../analysis-queue-service/file-processor/db-analysis-state'
+import {
+  checkBasicDataCompleteness,
+  resolveWorkspaceVideoDurationLimits
+} from '../analysis-queue-service/file-processor/db-analysis-state'
 
 /**
  * 待补全文件恢复服务 (Recovery Queue Service)
@@ -250,6 +254,10 @@ export async function listRecoverableFilesPrecise(
   }
   try {
     const effectiveConfig = await resolveWorkspaceEffectiveConfig(workspaceId)
+    const { effectiveLimitSec } = resolveWorkspaceVideoDurationLimits(
+      effectiveConfig,
+      userTierService.getCachedData?.()?.computed_limits
+    )
     const rows = db
       .prepare(
         `SELECT id, file_fingerprint, path, name, file_size, meta
@@ -269,15 +277,8 @@ export async function listRecoverableFilesPrecise(
       if (isCleared(row.meta)) continue
       const missingReasons: string[] = []
 
-      // 待续跑长视频（严格限定 k >= 1、在有效上限内且 seg_0 已完成，Spec §2.2）
-      if (row.file_fingerprint != null) {
-        const configuredRaw = effectiveConfig.effectiveParams.videoAnalyzeDurationSec ?? 300
-        const configuredLimit = Math.min(
-          10800,
-          Math.max(300, Math.round(configuredRaw / 300) * 300)
-        )
-        const isFreeTier = Boolean((effectiveConfig.capabilities as any)?.isFreeTier)
-        const effectiveLimitSec = isFreeTier ? 300 : configuredLimit
+      // 待续跑长视频（严格限定视觉引擎启用、k >= 1、在有效上限内且 seg_0 已完成，Spec §2.2）
+      if (row.file_fingerprint != null && effectiveConfig.capabilities.videoVisualAnalysisEnabled) {
         const pendingSeg = db
           .prepare(
             `SELECT 1 FROM file_video_segments s
