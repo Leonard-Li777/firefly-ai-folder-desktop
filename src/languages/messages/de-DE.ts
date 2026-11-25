@@ -4050,7 +4050,6 @@ export default  {
     "22346": "[Externes, von der KI generiertes Verzeichnis] ​​Kopieren Sie Eingabeaufforderungswörter mit einem Klick nach Doubao, Kimi, ChatGPT und zeigen Sie die Ergebnisse in Echtzeit in der Vorschau an und organisieren Sie sie",
     "22347": "[Verzeichnisbäume aus Dateien ableiten] Die fortschrittliche KI-Engine gibt jeweils drei Sätze von Verzeichniskandidaten aus und wählt die automatische Klassifizierung aus",
     "22348": "[Angepasster Verzeichnisbaum] Markdown-Verzeichnis einfügen, zweispaltige Echtzeitvorschau erstellen und exklusive Organisationsregeln erstellen",
-    "22349": "[Umfassende Optimierung der Benutzeroberfläche] Rekonstruieren Sie die Struktur der Einstellungsseite, fügen Sie eine neue Anleitung und einen neuen Hilfeeinstieg hinzu und gestalten Sie die Bedienung intuitiver.",
     "22350": "In der Schnittstelle tritt eine Ausnahme auf",
     "22351": "Der Schnittstellen-Rendering-Prozess wurde beendet und die Anwendung konnte nicht automatisch fortgesetzt werden. Bitte starten Sie die App neu und versuchen Sie es erneut.",
     "22352": "Abnormale Ursache",
@@ -12714,5 +12713,11 @@ export default  {
     "41096": "Klicken Sie, um die Karte wiederherzustellen",
     "41097": "Katalog Indikatoren",
     "41098": "Schalten Sie das Display aus",
-    "41099": "Satellitenwerkzeuge können für standardmäßige Umbenennungen, ergänzende Markierungen oder Sicherheitsprüfungen und -reinigungen vor der Fertigstellung verwendet werden."
+    "41099": "Satellitenwerkzeuge können für standardmäßige Umbenennungen, ergänzende Markierungen oder Sicherheitsprüfungen und -reinigungen vor der Fertigstellung verwendet werden.",
+    "41136": "[Analyseliste der zu ergänzenden Dateien] Unterstützung von Daten zur nachträglichen Dateianalyse, langen Videografiken und anderen ersten Analysen blockiert die Analysewarteschlange nicht mehr",
+    "41137": "【Mehr Videoformat-Wiedergabe】 Erweitert, um die direkte Wiedergabe aller gängigen Videoformate zu unterstützen",
+    "41138": "[Tiefgreifende UI-Optimierung] Die Architektur der Einstellungsseite wurde überarbeitet, Anleitungen und Hilfeerfassungs- und Layoutwechselfunktionen hinzugefügt und die Bedienung ist intuitiver",
+    "41139": "Die kostenlose Version hat die ersten 5 Minuten der Bildschirmanalyse und des Abrufs der zweiten Ebene für Sie abgeschlossen",
+    "41140": "Durch das Upgrade von Pro kann die Vollbildanalyse der verbleibenden {minutes} Minuten des langen Videos automatisch entsperrt und bis zu 3 Stunden auf jedem Bildschirm des gesamten Videos unterstützt werden, um Bilder zu finden.",
+    "41141": "Upgrade Pro jetzt zum Entsperren →"
 }

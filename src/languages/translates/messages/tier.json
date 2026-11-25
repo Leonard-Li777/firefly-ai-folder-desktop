@@ -12,7 +12,7 @@
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(5771-5778)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(39007-39014)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3223-3230)",
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3270-3277)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(2955-2962)",
       "src/renderer/components/tier/UserTierBadge.tsx(918-925)"
     ],
@@ -30,7 +30,7 @@
     "ko-KR": "최고 수준의 개인 정보 보호가 필요합니다.",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(5800-5813)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3377-3390)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3424-3437)"
     ],
     "$id": 11032
   },
@@ -47,7 +47,7 @@
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(6354-6366)",
       "src/renderer/components/tier/AccountManagementDialog.tsx(7149-7161)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3419-3431)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3466-3478)"
     ],
     "$id": 11033
   },
@@ -63,7 +63,7 @@
     "ko-KR": "완전히 오프라인이나 인트라넷에서 사용할 수 있습니다.",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(6381-6395)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3442-3456)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3489-3503)"
     ],
     "$id": 11034
   },
@@ -79,7 +79,7 @@
     "ko-KR": "오프라인 새로운 기능 업그레이드 지원",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(6410-6425)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3467-3482)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3514-3529)"
     ],
     "$id": 11035
   },
@@ -95,7 +95,7 @@
     "ko-KR": "7*24 독점 기술 지원 채널",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(6440-6456)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3493-3509)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3540-3556)"
     ],
     "$id": 11036
   },
@@ -154,7 +154,7 @@
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(7202-7214)",
       "src/renderer/components/tier/AccountManagementDialog.tsx(7940-7952)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2798-2810)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2845-2857)"
     ],
     "$id": 11025
   },
@@ -214,7 +214,10 @@
     "de-DE": "Umfassende Analyse langer Videos (unterstützt lange Videos von mehr als 2 Stunden, kostenlose Version auf die ersten 5 Minuten beschränkt)",
     "fr-FR": "Analyse complète et approfondie des vidéos longues (prend en charge les vidéos longues de plus de 2 heures, version gratuite limitée aux 5 premières minutes)",
     "ko-KR": "장편 영상에 대한 심층 분석 (2시간 이상의 장편 영상 지원, 무료 버전은 처음 5분만 지원)",
-    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(7889-7925)"],
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(7889-7925)",
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2798-2834)"
+    ],
     "$id": 23451
   },
   "无限极速目录槽位": {
@@ -229,7 +232,7 @@
     "ko-KR": "무제한 빠른 디렉터리 슬롯",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(7967-7979)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2821-2833)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2868-2880)"
     ],
     "$id": 11026
   },
@@ -245,7 +248,7 @@
     "ko-KR": "무제한 개인 디렉토리 슬롯",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(7994-8006)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2844-2856)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2891-2903)"
     ],
     "$id": 11027
   },
@@ -261,7 +264,7 @@
     "ko-KR": "무제한 가상 디렉터리 슬롯",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(8021-8033)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2867-2879)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2914-2926)"
     ],
     "$id": 11028
   },
@@ -277,7 +280,7 @@
     "ko-KR": "무제한 내보내기",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(8048-8056)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2890-2898)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2937-2945)"
     ],
     "$id": 11029
   },
@@ -295,7 +298,7 @@
       "src/renderer/components/tier/AccountManagementDialog.tsx(8071-8081)",
       "src/renderer/components/tier/AccountManagementDialog.tsx(8802-8812)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2408-2418)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2909-2919)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2956-2966)"
     ],
     "$id": 11020
   },
@@ -4767,8 +4770,8 @@
     "ko-KR": "현재 계획",
     "$files": [
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(2486-2494)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3010-3018)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3614-3622)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3057-3065)",
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3661-3669)"
     ],
     "$id": 11021
   },
@@ -4796,8 +4799,8 @@
     "fr-FR": "Mettre à niveau maintenant",
     "ko-KR": "지금 업그레이드",
     "$files": [
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3022-3030)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3626-3634)"
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3069-3077)",
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3673-3681)"
     ],
     "$id": 11030
   },
@@ -4811,7 +4814,7 @@
     "de-DE": "Nur {price}/Jahr, höchste Datenschutzstandards erforderlich",
     "fr-FR": "Seulement {price}/an, normes de confidentialité les plus élevées requises",
     "ko-KR": "연간 {price}만, 최고 수준의 개인 정보 보호가 필요합니다.",
-    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(3306-3332)"],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(3353-3379)"],
     "$id": 11031
   },
   "升级您的帐户": {
@@ -4824,7 +4827,7 @@
     "de-DE": "Aktualisieren Sie Ihr Konto",
     "fr-FR": "Mettez à niveau votre compte",
     "ko-KR": "계정을 업그레이드하세요",
-    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4536-4546)"],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4583-4593)"],
     "$id": 11038
   },
   "选择最适合您的版本，释放 AI 文件管理的全部潜力": {
@@ -4837,7 +4840,7 @@
     "de-DE": "Wählen Sie die Version, die für Sie am besten geeignet ist, und nutzen Sie das volle Potenzial der KI-Dateiverwaltung",
     "fr-FR": "Choisissez la version qui vous convient le mieux et libérez tout le potentiel de la gestion de fichiers AI",
     "ko-KR": "귀하에게 가장 적합한 버전을 선택하고 AI 파일 관리의 잠재력을 최대한 활용하세요",
-    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4658-4687)"],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4705-4734)"],
     "$id": 11039
   },
   "最受欢迎": {
@@ -4850,7 +4853,7 @@
     "de-DE": "Am beliebtesten",
     "fr-FR": "Le plus populaire",
     "ko-KR": "가장 인기있는",
-    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(5518-5526)"],
+    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(5565-5573)"],
     "$id": 10901
   },
   "充值萤火": {

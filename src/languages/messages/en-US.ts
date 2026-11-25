@@ -4050,7 +4050,6 @@ export default  {
     "22346": "[External AI generated directory] Copy prompt words to Doubao, Kimi, ChatGPT with one click, and preview and organize the results in real time",
     "22347": "[Deriving directory trees from files] The advanced AI engine outputs 3 sets of directory candidates at a time, and automatic classification is selected",
     "22348": "[Customized directory tree] Paste Markdown directory, double-column real-time preview, and build exclusive organizing rules",
-    "22349": "[In-depth UI optimization] Reconstruct the setting page structure, add a new guide and help entrance, and make the operation more intuitive.",
     "22350": "An exception occurs in the interface",
     "22351": "The interface rendering process has exited and the application failed to automatically resume. Please restart the app and try again.",
     "22352": "Abnormal cause",
@@ -12714,5 +12713,11 @@ export default  {
     "41096": "Click to restore the card",
     "41097": "Catalog indicators",
     "41098": "Turn off the display",
-    "41099": "Satellite tools can be used for standard renaming, supplementary marking or safety inspection and cleaning before finishing."
+    "41099": "Satellite tools can be used for standard renaming, supplementary marking or safety inspection and cleaning before finishing.",
+    "41136": "[Analysis list of files to be supplemented] Support post-supplementary file analysis data, long video graphics and other first analysis will no longer block the analysis queue",
+    "41137": "【More video format playback】 Expanded to support direct playback of all common video formats",
+    "41138": "[Deep UI optimization] Refactored the setting page architecture, added guidance and help entry and layout switching functions, and the operation is more intuitive",
+    "41139": "The free version has completed the first 5 minutes of screen analysis and second-level retrieval for you",
+    "41140": "Upgrading Pro can automatically unlock the full screen analysis of the remaining {minutes} minutes of the long video, and support up to 3 hours of any screen of the entire video to find pictures.",
+    "41141": "Upgrade Pro now to unlock →"
 }

@@ -100,7 +100,7 @@
     "de-DE": "Firefly Core Smart Folder muss auf Ihren Ordner \"Downloads\" zugreifen, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Firefly Core Smart Folder doit accéder à votre dossier \"Téléchargements\" pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는\"다운로드\"폴더에 액세스하여 파일을 구성하고 검색해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(433-466)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(434-467)"],
     "$id": 21849
   },
   "萤核智能文件夹需要访问您的“桌面”文件夹以整理和检索文件。": {
@@ -113,7 +113,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf Ihren \"Desktop\" -Ordner, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Firefly Core Smart Folders nécessite l'accès à votre dossier \"Bureau\" pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색 할\"바탕 화면\"폴더에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(506-539)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(507-540)"],
     "$id": 21850
   },
   "萤核智能文件夹需要访问您的“文稿”文件夹以整理和检索文件。": {
@@ -126,7 +126,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf Ihren Ordner \"Dokumente\", um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Firefly Core Smart Folders nécessite l'accès à votre dossier \"Documents\" pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색하기 위해\"문서\"폴더에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(581-614)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(582-615)"],
     "$id": 21851
   },
   "萤核智能文件夹需要访问外接存储设备以整理和检索文件。": {
@@ -139,7 +139,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf externe Speichergeräte, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Les dossiers intelligents Firefly Core nécessitent l'accès à des périphériques de stockage externes pour organiser et récupérer des fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색 할 외부 저장 장치에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(657-687)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(658-688)"],
     "$id": 21852
   },
   "萤核智能文件夹需要访问网络共享卷以整理和检索文件。": {
@@ -152,7 +152,7 @@
     "de-DE": "Firefly Core Smart Folders benötigt Zugriff auf freigegebene Netzwerkvolumes, um Dateien zu organisieren und abzurufen.",
     "fr-FR": "Les dossiers intelligents Firefly Core nécessitent un accès aux volumes partagés du réseau pour organiser et récupérer les fichiers.",
     "ko-KR": "반딧불 코어 스마트 폴더는 파일을 구성하고 검색하기 위해 네트워크 공유 볼륨에 액세스해야합니다.",
-    "$files": ["src/electron/constants/mac-permissions.ts(728-757)"],
+    "$files": ["src/electron/constants/mac-permissions.ts(729-758)"],
     "$id": 21853
   },
   "接口不存在": {

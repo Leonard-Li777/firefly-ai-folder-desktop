@@ -4050,7 +4050,6 @@ export default  {
     "22346": "[Répertoire externe généré par l'IA] Copiez les mots d'invite sur Doubao, Kimi, ChatGPT en un seul clic, puis prévisualisez et organisez les résultats en temps réel",
     "22347": "[Dérivation d'arborescences de répertoires à partir de fichiers] Le moteur d'IA avancé génère 3 ensembles de répertoires candidats à la fois et la classification automatique est sélectionnée",
     "22348": "[Arborescence de répertoires personnalisée] Collez le répertoire Markdown, aperçu en temps réel sur deux colonnes et créez des règles d'organisation exclusives",
-    "22349": "[Optimisation approfondie de l'interface utilisateur] Reconstruisez la structure de la page de configuration, ajoutez un nouveau guide et une nouvelle entrée d'aide, et rendez l'opération plus intuitive.",
     "22350": "Une exception se produit dans l'interface",
     "22351": "Le processus de rendu de l'interface s'est terminé et l'application n'a pas pu reprendre automatiquement. Veuillez redémarrer l'application et réessayer.",
     "22352": "Cause anormale",
@@ -12714,5 +12713,11 @@ export default  {
     "41096": "Cliquez pour restaurer la carte",
     "41097": "Indicateurs de catalogue",
     "41098": "Éteignez l'écran",
-    "41099": "Les outils satellites peuvent être utilisés pour un changement de nom standard, un marquage supplémentaire ou une inspection de sécurité et un nettoyage avant la finition."
+    "41099": "Les outils satellites peuvent être utilisés pour un changement de nom standard, un marquage supplémentaire ou une inspection de sécurité et un nettoyage avant la finition.",
+    "41136": "[Liste d'analyse des fichiers à compléter] Prise en charge des données d'analyse de fichiers post-supplémentaires, des graphiques vidéo longs et d'autres premières analyses ne bloqueront plus la file d'attente d'analyse",
+    "41137": "【Plus de lecture de format vidéo】 Étendu pour prendre en charge la lecture directe de tous les formats vidéo courants",
+    "41138": "[Optimisation approfondie de l'interface utilisateur] Refactorisation de l'architecture de la page de configuration, ajout de fonctions de guidage et d'aide à la saisie et à la commutation de la mise en page, et l'opération est plus intuitive",
+    "41139": "La version gratuite a terminé les 5 premières minutes d'analyse d'écran et de récupération de deuxième niveau pour vous",
+    "41140": "La mise à niveau Pro peut déverrouiller automatiquement l'analyse en plein écran des {minutes} minutes restantes de la longue vidéo et prendre en charge jusqu'à 3 heures de n'importe quel écran de la vidéo entière pour trouver des images.",
+    "41141": "Mise à niveau Pro maintenant pour déverrouiller →"
 }
