@@ -26,7 +26,8 @@ if (process.platform !== 'win32') {
 
 /**
  * FFmpeg 服务
- * 优先使用自带 pnpm 包 (@ffmpeg-installer/ffmpeg) 提供的 FFmpeg 可执行文件路径
+ * 统一使用 @firefly/shared 的 ResourceLocator 定位安装包内置的 extraResources/bin/ffmpeg，
+ * 未命中时降级检索系统 PATH；不再依赖 @ffmpeg-installer/ffmpeg npm 包（已移除，避免装包体积翻倍）
  */
 export class FfmpegService extends EventEmitter {
   private static instance: FfmpegService | null = null
@@ -110,6 +111,9 @@ export class FfmpegService extends EventEmitter {
 
   /**
    * 获取 FFprobe 可执行文件路径
+   *
+   * 2026-11-25 起 ffprobe 随包内置（lock.resources.ffprobe → extraResources/bin/ffprobe），
+   * 与 ffmpeg 同源发布；此处的 userData 回退仅覆盖「精简/裁剪包」等非标准装配形态。
    */
   getFfprobePath(): string | null {
     // 1. 优先使用 @firefly/shared 导出的统一路径解析
@@ -140,8 +144,9 @@ export class FfmpegService extends EventEmitter {
   }
 
   /**
-   * 异步检测外部 ffprobe 是否可用 (Issue #738 深度清理中心显式门禁)
-   * 返回可执行文件路径；未找到返回 null
+   * 异步检测 FFprobe 是否可用
+   * 内置资产随包提供（lock.resources.ffprobe），返回可执行文件路径；被裁剪的环境返回 null，
+   * 调用方（深度清理中心 ffprobe 门禁）据此置灰依赖 ffprobe 的能力，杜绝静默 0 结果。
    */
   public async detectFfprobe(): Promise<string | null> {
     return this.getFfprobePath()

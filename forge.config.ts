@@ -1351,6 +1351,16 @@ const config: ForgeConfig = {
         )
         if (isDevDep) return true
 
+        // 剔除 Electron 运行时本体（devDependency）：应用运行依赖外层 Electron 宿主，
+        // node_modules/electron 只是开发期句柄（require('electron') 命中的是内置模块）。
+        // 上面的 devDependencies 判定只覆盖 `node_modules/electron/...` 顶层形态，
+        // pnpm 的 `.pnpm/electron@x/...` 以及 peer 依赖（如 electron-conf）内部物化出来的
+        // electron/dist 副本（各含 ~360MB 的 electron.exe + 全套 dll）会漏网，
+        // 合计约 720MB 白进 ASAR，并直接顶爆 NSIS 2GB 单文件 mmap 上限。
+        if (/(^|\/)electron\/dist(\/|$)/.test(relativePath)) {
+          return true
+        }
+
         // 剔除原生模块编译过程中的巨型垃圾副产物 (如 better-sqlite3 产生的)
         if (
           relativePath.endsWith('.pdb') ||

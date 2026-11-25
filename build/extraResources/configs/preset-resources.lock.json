@@ -10,6 +10,9 @@
     "ffmpeg": {
       "version": "master-20260827"
     },
+    "ffprobe": {
+      "version": "master-20260827"
+    },
     "geo": {
       "version": "20260825"
     },

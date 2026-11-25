@@ -10,7 +10,7 @@ import {
   DuplicateFixAction,
   DuplicateFixResult
 } from '@firefly/types'
-import { LogCategory, logger, normalizeFileExtension } from '@firefly/shared'
+import { LogCategory, logger, normalizeFileExtension, getExifToolPath } from '@firefly/shared'
 import { databaseService } from '../database'
 import { omniService } from '../system/omni-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
@@ -1148,66 +1148,10 @@ export class DuplicateDetectionService {
             const cp = require('child_process')
             const ext = path.extname(filePath).toLowerCase()
 
-            // 探测内置/系统 ExifTool 二进制
-            const findExifTool = () => {
-              const isWin = process.platform === 'win32'
-              const exeName = isWin ? 'exiftool.exe' : 'exiftool'
-              const possiblePaths = [
-                path.join(process.resourcesPath || '', 'bin', 'exiftool', exeName),
-                path.join(process.resourcesPath || '', 'bin', 'exiftool', 'win32', exeName),
-                path.join(process.cwd(), 'build', 'extraResources', 'bin', 'exiftool', exeName),
-                path.join(
-                  process.cwd(),
-                  'build',
-                  'extraResources',
-                  'bin',
-                  'exiftool',
-                  'win32',
-                  exeName
-                ),
-                path.join(
-                  process.cwd(),
-                  'apps',
-                  'desktop',
-                  'build',
-                  'extraResources',
-                  'bin',
-                  'exiftool',
-                  exeName
-                ),
-                path.join(
-                  process.cwd(),
-                  'apps',
-                  'omni',
-                  'build',
-                  'extraResources',
-                  'bin',
-                  'exiftool',
-                  exeName
-                ),
-                path.join(
-                  process.cwd(),
-                  'node_modules',
-                  'exiftool-vendored.exe',
-                  'bin',
-                  'exiftool.exe'
-                ),
-                path.join(
-                  process.cwd(),
-                  'apps',
-                  'desktop',
-                  'node_modules',
-                  'exiftool-vendored.exe',
-                  'bin',
-                  'exiftool.exe'
-                ),
-                exeName
-              ]
-              for (const p of possiblePaths) {
-                if (fs.existsSync(p)) return p
-              }
-              return null
-            }
+            // 探测内置 ExifTool 二进制：统一走 @firefly/shared 的 ResourceLocator，
+            // 唯一权威来源是 extraResources/bin/exiftool（安装包内置），
+            // 严禁回锚 node_modules/exiftool-vendored.exe 副本（打包体积黑洞，运行时不保证存在）
+            const findExifTool = () => getExifToolPath()
 
             const meta = await sharpModule(filePath)
               .metadata()
