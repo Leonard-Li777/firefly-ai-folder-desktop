@@ -105,12 +105,7 @@ export async function saveLocalAnalysisResult(
   const aiServiceMode =
     ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') ?? 'local'
   const hasInstalledAiEngine =
-    aiServiceMode === 'local'
-      ? engineBridgeService.hasInstalledEngines !== false &&
-        Boolean(
-          engineBridgeService.getSnapshot().backend || engineBridgeService.getSnapshot().model
-        )
-      : true
+    aiServiceMode === 'local' ? engineBridgeService.hasInstalledEngines !== false : true
   const prAny = processResult as any
   const effectiveMode =
     prAny?.effectiveAnalysisMode || resolveEffectiveAnalysisMode(hasInstalledAiEngine)

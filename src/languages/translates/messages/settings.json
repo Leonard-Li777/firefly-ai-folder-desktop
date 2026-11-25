@@ -14148,7 +14148,7 @@
     ],
     "$id": 38487
   },
-  "已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。": {
+  "如果解除绑定，目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。": {
     "en-US": "Exclusive business workflow has been bound. After unbinding, the directory will return to universal mode, and snapshots containing rules will be automatically retained to prevent the influx of non-target files.",
     "es-ES": "Se ha vinculado el flujo de trabajo empresarial exclusivo. Después de desvincularlo, el directorio volverá al modo universal y las instantáneas que contengan reglas se conservarán automáticamente para evitar la entrada de archivos que no sean de destino.",
     "ar-EG": "تم ربط سير العمل الحصري للأعمال. بعد إلغاء الربط، سيعود الدليل إلى الوضع العام، وسيتم الاحتفاظ تلقائيًا باللقطات التي تحتوي على القواعد لمنع تدفق الملفات غير المستهدفة.",
@@ -14163,7 +14163,7 @@
     ],
     "$id": 27065
   },
-  "当前目录未绑定专属工作流。若存在包含规则快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。": {
+  "当前目录未绑定专属工作流。若存在包含规则快照，将继续生效，亦可随时清空恢复全量模式。": {
     "en-US": "The current directory does not have a dedicated workflow bound to it. If there is a snapshot containing rules, it will continue to be effective as security protection, and can be cleared and restored to full mode at any time.",
     "es-ES": "El directorio actual no tiene ningún flujo de trabajo dedicado vinculado a él. Si hay una instantánea que contiene reglas, seguirá siendo eficaz como protección de seguridad y podrá borrarse y restaurarse al modo completo en cualquier momento.",
     "ar-EG": "لا يحتوي الدليل الحالي على سير عمل مخصص مرتبط به. إذا كانت هناك لقطة تحتوي على قواعد، فستظل فعالة كحماية أمنية، ويمكن مسحها واستعادتها إلى الوضع الكامل في أي وقت.",
@@ -14224,7 +14224,7 @@
     ],
     "$id": 23368
   },
-  "生效中扩展名快照:": {
+  "生效的包含扩展名:": {
     "en-US": "Snapshot of the extension in effect:",
     "es-ES": "Instantánea de la extensión vigente:",
     "ar-EG": "لقطة من التمديد ساري المفعول:",

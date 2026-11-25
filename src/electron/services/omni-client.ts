@@ -11,6 +11,7 @@
 
 import http from 'node:http'
 import { LogCategory, logger } from '@firefly/shared'
+import type { RetagOutcomeStatus, TextTagChainItem, TextTagRequestPayload } from '@firefly/types'
 import { omniService, type OmniFetchOptions } from '../runtime-services/system/omni-service'
 import { isTransientStatusFetchError } from '../runtime-services/system/omni-service/mount-verify-classify'
 import {
@@ -275,7 +276,8 @@ export class OmniClient {
   private static readonly TAXONOMY_CACHE_TTL = 10_000 // 10秒TTL（防组件多重挂载并发重复请求，同时保证文件分析入库后敏捷刷新）
   private _taxonomyTreeCache = new Map<string, { data: OmniTaxonomyTreeResponse; time: number }>()
   private _inFlightTaxonomyTree = new Map<string, Promise<OmniTaxonomyTreeResponse | null>>()
-  private _lastTaxonomyAliasesError: { status: number; errorCode?: string; at: number } | null = null
+  private _lastTaxonomyAliasesError: { status: number; errorCode?: string; at: number } | null =
+    null
 
   /** 获取最近一次 getTaxonomyAliases 的 HTTP 错误元信息（用于识别 503 MODULE_NOT_INSTALLED） */
   getLastTaxonomyAliasesError(): { status: number; errorCode?: string; at: number } | null {
@@ -289,7 +291,8 @@ export class OmniClient {
     }
     const { kind: _k, timeoutMs, internal: _i, signal, ...rest } = init ?? {}
     const effectiveSignal =
-      signal ?? (typeof timeoutMs === 'number' && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined)
+      signal ??
+      (typeof timeoutMs === 'number' && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined)
     return fetch(url, {
       ...rest,
       ...(effectiveSignal ? { signal: effectiveSignal } : {})
@@ -608,6 +611,9 @@ export class OmniClient {
 
   /**
    * 批量按指纹与维度读取反量化向量：POST /api/v1/vector/get
+   *
+   * Spec §2.2 硬约束：直接委托 `this.fetchOmni`（kind: 'call', timeoutMs, retries: 0），
+   * 避免默认 `this.request()` 8s 假超时触发引擎重启误杀。
    */
   async getVectors(
     fileFingerprints: string[],
@@ -615,14 +621,91 @@ export class OmniClient {
     timeoutMs = 10000
   ): Promise<OmniVectorGetResponse | null> {
     if (!fileFingerprints.length) return { vectors: [], count: 0 }
-    return this.request<OmniVectorGetResponse>(
-      '/api/v1/vector/get',
-      {
+    try {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/v1/vector/get`, {
         method: 'POST',
+        kind: 'call',
+        timeoutMs,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileFingerprints, dim })
-      },
-      timeoutMs
-    )
+      })
+      if (!res.ok) {
+        logger.warn(
+          LogCategory.DIMENSION_SERVICE,
+          `[OmniClient] HTTP ${res.status} /api/v1/vector/get`
+        )
+        return null
+      }
+      return (await res.json()) as OmniVectorGetResponse
+    } catch (err) {
+      logger.warn(
+        LogCategory.DIMENSION_SERVICE,
+        `[OmniClient] /api/v1/vector/get 请求异常: ${err instanceof Error ? err.message : String(err)}`
+      )
+      return null
+    }
+  }
+
+  /**
+   * 批前主动预热底座与感知塔：POST /api/v1/engine/warmup（Spec §2.1 / §3.1）
+   *
+   * - 走 `fetchOmni` `kind: 'long'` + 60s 预算 + `retries: 0`；
+   * - 若信号主动 Abort，则原样上抛供队列栅栏识别抢占/暂停/排空；
+   * - 非 Abort 异常 / 非 2xx 均 Fail-Open 记录 warn 返回 null。
+   */
+  async warmupEngine(
+    plan: {
+      textAndLexicon: boolean
+      visionTower: boolean
+      nsfwDetector: boolean
+      imageOcr: boolean
+      ocrModelSize?: 'tiny' | 'small'
+    },
+    options?: { signal?: AbortSignal; timeoutMs?: number }
+  ): Promise<{
+    ready: boolean
+    textReady: boolean
+    trieReady: boolean
+    vectorTableReady: boolean
+    semanticGraphReady: boolean
+    visionReady: boolean
+    nsfwReady: boolean
+    ocrReady: boolean
+    warmupMs: number
+    warnings: string[]
+  } | null> {
+    if (options?.signal?.aborted) {
+      throw options.signal.reason instanceof Error
+        ? options.signal.reason
+        : Object.assign(new Error('Aborted'), { name: 'AbortError' })
+    }
+    try {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/v1/engine/warmup`, {
+        method: 'POST',
+        kind: 'long',
+        timeoutMs: options?.timeoutMs ?? 60_000,
+        signal: options?.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(plan)
+      })
+      if (!res.ok) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[OmniClient] HTTP ${res.status} /api/v1/engine/warmup 失败，Fail-Open 放行`
+        )
+        return null
+      }
+      return await res.json()
+    } catch (err) {
+      if (options?.signal?.aborted || (err instanceof Error && err.name === 'AbortError')) {
+        throw err
+      }
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[OmniClient] /api/v1/engine/warmup 请求异常，Fail-Open 放行: ${err instanceof Error ? err.message : String(err)}`
+      )
+      return null
+    }
   }
 
   /** 批量删除向量：DELETE /api/v1/vector/delete */
@@ -1321,10 +1404,7 @@ export class OmniClient {
               `[OmniClient] TTS 流式连接结束: sessionId=${sessionId}, hasTerminalFrame=${hasTerminalFrame}`
             )
             if (!hasTerminalFrame && !abortedByCaller && !terminalNotified) {
-              emitTerminalError(
-                'PREMATURE_EOF',
-                'TTS 流式连接在收到 END/ERROR 终态帧前意外断开'
-              )
+              emitTerminalError('PREMATURE_EOF', 'TTS 流式连接在收到 END/ERROR 终态帧前意外断开')
             }
           })
 
@@ -1384,6 +1464,95 @@ export class OmniClient {
       req.write(requestBody)
       req.end()
     })
+  }
+
+  /**
+   * 统一文本返送打标接口：POST /api/text/tag（Spec §2.3 / §3.3）
+   *
+   * 硬约束：直接走 `this.fetchOmni`（kind: 'call', timeoutMs, retries: 0），
+   * 绕开 `this.request()` 的默认重试，避免瞬态/重负载误触发引擎重启；
+   * 返回严格 6 态权威映射（ok === (status === 'success_with_tags' || status === 'authoritative_empty')）。
+   */
+  async tagText(
+    payload: TextTagRequestPayload,
+    timeoutMs = 5000,
+    signal?: AbortSignal
+  ): Promise<{ ok: boolean; status: RetagOutcomeStatus; items: TextTagChainItem[] }> {
+    if (signal?.aborted) {
+      return { ok: false, status: 'aborted', items: [] }
+    }
+
+    try {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/text/tag`, {
+        method: 'POST',
+        kind: 'call',
+        timeoutMs,
+        signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (signal?.aborted) {
+        return { ok: false, status: 'aborted', items: [] }
+      }
+
+      if (!res.ok) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[返送打标] omni 返回 HTTP ${res.status}，保留存量 AI 标签: fp=${payload.fileFingerprint}`
+        )
+        return { ok: false, status: 'failed', items: [] }
+      }
+
+      let data: unknown
+      try {
+        data = await res.json()
+      } catch (parseErr) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[返送打标] omni 响应体解析失败，保留存量 AI 标签: fp=${payload.fileFingerprint}, error=${
+            parseErr instanceof Error ? parseErr.message : String(parseErr)
+          }`
+        )
+        return { ok: false, status: 'failed', items: [] }
+      }
+
+      if (!Array.isArray(data)) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[返送打标] omni 响应体非数组，保留存量 AI 标签: fp=${payload.fileFingerprint}`
+        )
+        return { ok: false, status: 'failed', items: [] }
+      }
+
+      const items = data as TextTagChainItem[]
+      const degradedHeader = res.headers?.get?.('x-omni-tag-degraded')?.toLowerCase()
+      const gateEvaluatedHeader = res.headers?.get?.('x-omni-tag-gate-evaluated')?.toLowerCase()
+
+      if (degradedHeader !== 'false') {
+        return { ok: false, status: 'degraded', items }
+      }
+
+      if (payload.allowNewTags !== true || gateEvaluatedHeader !== 'true') {
+        return { ok: false, status: 'no_replacement', items }
+      }
+
+      if (items.length > 0) {
+        return { ok: true, status: 'success_with_tags', items }
+      }
+      return { ok: true, status: 'authoritative_empty', items: [] }
+    } catch (err) {
+      if (signal?.aborted) {
+        return { ok: false, status: 'aborted', items: [] }
+      }
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[返送打标] omni 请求失败/超时，保留存量 AI 标签: fp=${payload.fileFingerprint}, error=${
+          err instanceof Error ? err.message : String(err)
+        }`
+      )
+      return { ok: false, status: 'failed', items: [] }
+    }
   }
 }
 

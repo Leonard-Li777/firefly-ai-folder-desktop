@@ -189,7 +189,10 @@ export class AnalysisOrchestratorWorker {
         // 严禁先置 pending(0) 防止与调度主循环竞态双跑：保持 analyzing 原地重仲裁
         let retryLease: Stage3CapabilityLease
         try {
-          retryLease = await this.aiServiceManager.acquireStage3Capability(ctx.effectiveMode, signal)
+          retryLease = await this.aiServiceManager.acquireStage3Capability(
+            ctx.effectiveMode,
+            signal
+          )
         } catch (abortErr) {
           if (isAbortErrorLike(abortErr, signal)) {
             this.updateItemStatus(item.id, 'pending', 0)
@@ -304,7 +307,8 @@ export class AnalysisOrchestratorWorker {
   async runParallel(
     pendingItems: AnalysisQueueItem[],
     signal: AbortSignal,
-    stage2WaitTimeoutMs: number
+    stage2WaitTimeoutMs: number,
+    precomputedDecisions?: ReadonlyMap<number, import('@firefly/types').StageReuseDecision>
   ) {
     const notifier = new StageNotifier()
     const cpuSkippedOutcomes = new Map<number, CpuPhaseOutcome>()
@@ -341,7 +345,10 @@ export class AnalysisOrchestratorWorker {
     const runCPUProducer = async () => {
       for (const item of pendingItems) {
         if (signal.aborted) break
-        if (!this.getQueueManager()?.hasItem(item.id)) {
+        const qm = this.getQueueManager()
+        const liveStatus =
+          qm?.getSnapshot?.()?.items?.find(i => i.id === item.id)?.status ?? item.status
+        if (!qm?.hasItem(item.id) || liveStatus !== 'pending') {
           notifier.notify(item.id, { outcome: 'terminal', terminalKind: 'skipped' })
           continue
         }
@@ -353,34 +360,42 @@ export class AnalysisOrchestratorWorker {
 
         let shouldSkipCpu = false
         let skippedFingerprint = ''
+        const preplanned = precomputedDecisions?.get(item.id)
         try {
-          // [OBS-02] 基于队列项所属工作区解析有效配置（批次内缓存），完整性判定与 file-processor 同源
-          const workspaceEffectiveConfig = await getCachedWorkspaceConfig(item.workspaceId ?? null)
-          const reuseBasicAnalysisData =
-            workspaceEffectiveConfig.effectiveParams.reuseBasicAnalysisData
+          if (preplanned) {
+            shouldSkipCpu = preplanned.skipCpu
+            skippedFingerprint = preplanned.fingerprint ?? ''
+          } else {
+            // [OBS-02] 基于队列项所属工作区解析有效配置（批次内缓存），完整性判定与 file-processor 同源
+            const workspaceEffectiveConfig = await getCachedWorkspaceConfig(
+              item.workspaceId ?? null
+            )
+            const reuseBasicAnalysisData =
+              workspaceEffectiveConfig.effectiveParams.reuseBasicAnalysisData
 
-          if (isAlreadyStage2(item)) {
-            if (!reuseBasicAnalysisData) {
-              shouldSkipCpu =
-                item.forceReanalyze !== true &&
-                !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path)
-                  .isAnalyzed
-              if (shouldSkipCpu) {
-                skippedFingerprint = databaseService.getFileFingerprintByPath(item.path) ?? ''
-              }
-            } else {
-              const fileFingerprint =
-                databaseService.getFileFingerprintByPath(item.path) ?? undefined
-              const completeness = await checkBasicDataCompleteness(
-                databaseService.db!,
-                item.workspaceId!,
-                item.path,
-                workspaceEffectiveConfig,
-                fileFingerprint
-              )
-              if (completeness.isComplete) {
-                shouldSkipCpu = true
-                skippedFingerprint = fileFingerprint ?? ''
+            if (isAlreadyStage2(item)) {
+              if (!reuseBasicAnalysisData) {
+                shouldSkipCpu =
+                  item.forceReanalyze !== true &&
+                  !getFileAnalysisStateFromDB(databaseService.db!, item.workspaceId!, item.path)
+                    .isAnalyzed
+                if (shouldSkipCpu) {
+                  skippedFingerprint = databaseService.getFileFingerprintByPath(item.path) ?? ''
+                }
+              } else {
+                const fileFingerprint =
+                  databaseService.getFileFingerprintByPath(item.path) ?? undefined
+                const completeness = await checkBasicDataCompleteness(
+                  databaseService.db!,
+                  item.workspaceId!,
+                  item.path,
+                  workspaceEffectiveConfig,
+                  fileFingerprint
+                )
+                if (completeness.isComplete) {
+                  shouldSkipCpu = true
+                  skippedFingerprint = fileFingerprint ?? ''
+                }
               }
             }
           }

@@ -1,4 +1,11 @@
-import type { AnalysisQueueItem, AnalysisQueueSnapshot, IIgnoreRule } from '@firefly/types'
+import type {
+  AnalysisQueueItem,
+  AnalysisQueueSnapshot,
+  IIgnoreRule,
+  QueueLifecyclePhase,
+  WarmupAbortReason,
+  WarmupHintCode
+} from '@firefly/types'
 import { t } from '@app/languages'
 import {
   DimensionAnalyzer,
@@ -27,6 +34,16 @@ import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
 import { FileProcessor } from './file-processor'
 import { resolveWorkspaceVideoDurationLimits } from './file-processor/db-analysis-state'
+import {
+  bumpRetagEpochIfNoActiveTask,
+  resolveTargetProfileAndDim
+} from './file-processor/stage-reuse-planner'
+import {
+  AnalysisWarmupBarrier,
+  BatchPlanSession,
+  deriveWindowWarmupPlan,
+  isWarmupAbortError
+} from './analysis-warmup-barrier'
 import {
   canonicalMaintenanceService,
   installCanonicalMaintenanceListener
@@ -119,9 +136,26 @@ export class AnalysisQueueService {
   private workerBridge: WorkerOrchestratorBridge
   private videoSegmentBackfillWorker: VideoSegmentBackfillWorker
   private currentAbortController: AbortController | null = null
+  private abortGeneration = 0
+  private currentAbortReason: WarmupAbortReason | null = null
+  private warmingUpWorkspaceId: number | null = null
+  private lifecyclePhase: QueueLifecyclePhase = 'idle'
+  private warmupHintCode: WarmupHintCode | undefined = undefined
+  private backoffMs = 50
+  private readonly batchPlanSession = new BatchPlanSession()
+  private readonly warmupBarrier = new AnalysisWarmupBarrier()
 
   /** 工单 06：canonical 档位切换维护监听的取消订阅句柄 */
   private canonicalMaintenanceUnsubscribe?: () => void
+
+  private triggerAbort(reason: WarmupAbortReason): void {
+    this.currentAbortReason = reason
+    this.abortGeneration += 1
+    if (this.currentAbortController) {
+      this.currentAbortController.abort(reason)
+      this.currentAbortController = null
+    }
+  }
 
   constructor() {
     // 初始化委托组件
@@ -602,9 +636,13 @@ export class AnalysisQueueService {
   async start(workspaceId?: number): Promise<void> {
     if (workspaceId) {
       if (!(await this.ensureWorkspaceConfigReadyOrBrake(workspaceId, false))) return
-      // 指定了工作空间：抢占最高优先级，移至栈顶
+      // 步骤 1：指定了工作空间，先置顶运行栈
       this.runningWorkspaceStack = this.runningWorkspaceStack.filter(id => id !== workspaceId)
       this.runningWorkspaceStack.push(workspaceId)
+      // 步骤 2（必须在 isProcessingLoopActive 早退之前）：跨工作区预热抢占立即中止当前等待
+      if (this.warmingUpWorkspaceId !== null && this.warmingUpWorkspaceId !== workspaceId) {
+        this.triggerAbort('preempt')
+      }
     } else {
       // 未指定工作空间：将所有活跃工作空间推入处理栈（确保不重复）
       const allWorkspaces = await databaseService.getAllWorkspaceDirectories()
@@ -620,12 +658,14 @@ export class AnalysisQueueService {
     // 启动/预热独立 Stage 2 worker_threads 编排线程（幂等）
     this.workerBridge.start()
 
+    // 步骤 3：若主循环已在跑则直接刷新状态并返回（抢占信号已在步骤 2 送达）
     if (this.isProcessingLoopActive) {
       this.writeDispatcher.emitUpdate()
       return
     }
 
     this.isProcessingLoopActive = true
+    let loopAbortGen = this.abortGeneration
 
     systemHealthService.updateMonitoringInterval(30000)
     cloudSyncWorker.updateInterval(30000)
@@ -634,6 +674,10 @@ export class AnalysisQueueService {
     this.writeDispatcher.emitUpdate()
 
     while (this.running && this.runningWorkspaceStack.length > 0) {
+      const localController = new AbortController()
+      this.currentAbortController = localController
+      let windowAsrLease: { release: () => void } | null = null
+
       try {
         const activeWorkspaceId = this.runningWorkspaceStack[this.runningWorkspaceStack.length - 1]
 
@@ -658,52 +702,116 @@ export class AnalysisQueueService {
         // 统一按当前活跃工作区解析有效分析模式（SLICE-04 旁路收口；仅信 hasInstalledEngines，移除 backend/model 启发式防止冷启 stopped 被误降 simple）
         const hasInstalledAiEngine =
           aiServiceMode === 'local' ? this.omniAdapter.hasInstalledEngines() : true
-        let analysisMode = resolveEffectiveAnalysisMode(hasInstalledAiEngine)
-        if (activeWorkspaceId != null) {
-          try {
-            const { resolveWorkspaceEffectiveConfig } =
-              await import('../system/workspace-analysis-context')
-            const wsEff = await resolveWorkspaceEffectiveConfig(
-              activeWorkspaceId,
-              hasInstalledAiEngine
-            )
-            analysisMode = wsEff.effectiveParams.analysisMode
-          } catch (wsModeErr) {
-            logger.warn(
-              LogCategory.ANALYSIS_QUEUE,
-              `[分析队列] 解析工作区 ${activeWorkspaceId} 有效模式失败，回退全局:`,
-              wsModeErr
-            )
-          }
-        }
+        const effectiveConfig = await resolveWorkspaceEffectiveConfig(
+          activeWorkspaceId ?? null,
+          hasInstalledAiEngine
+        )
+        const analysisMode = effectiveConfig.effectiveParams.analysisMode
 
         const decisionSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-        const hasAnalysisPending = decisionSnapshot.items.some(i => i.status === 'pending')
-        const useParallel = !isCpuEngine && isAiStageEnabled(analysisMode) && hasAnalysisPending
+        const pendingItems = decisionSnapshot.items.filter(i => i.status === 'pending')
 
-        if (useParallel) {
-          const pendingItems = decisionSnapshot.items.filter(i => i.status === 'pending')
-
-          if (pendingItems.length === 0) {
-            if ((await this.advanceOrStopWorkspaceQueue(activeWorkspaceId)) === 'continue') {
-              continue
-            }
-            break
+        if (pendingItems.length === 0) {
+          if ((await this.advanceOrStopWorkspaceQueue(activeWorkspaceId)) === 'continue') {
+            continue
           }
+          break
+        }
 
-          // 批启动前非阻塞预热：高阶 local 模式且引擎 stopped 时后台 Single-Flight 拉起，与 Tier 1 CPU 阶段并行
+        // 256 切片规划 + 同源 K<=64 执行窗口（Spec §2.1 / §3.1）
+        if (activeWorkspaceId != null) {
+          await this.batchPlanSession.planChunkForWindow(
+            databaseService.db,
+            activeWorkspaceId,
+            pendingItems,
+            effectiveConfig
+          )
+        }
+        const windowItems = this.batchPlanSession.takeWindow(pendingItems)
+        const isParallel = !isCpuEngine && isAiStageEnabled(analysisMode)
+
+        // 基于同一 windowItems 推导本窗口精准预热计划
+        const warmupPlan = deriveWindowWarmupPlan(
+          windowItems,
+          this.batchPlanSession.decisions,
+          effectiveConfig,
+          { aiServiceMode, isCpuEngine, isParallelDispatch: isParallel }
+        )
+
+        // OD-2 正交兼容：local 并行模式下不阻塞 Stage 1/2 栅栏，后台与冷启/CPU 预热并发推进
+        if (isParallel && aiServiceMode === 'local') {
           this.aiServiceManager.preheatLocalEngineNonBlocking(analysisMode)
+        }
 
-          this.currentAbortController = new AbortController()
-          const signal = this.currentAbortController.signal
+        // 批前统一预热栅栏（300ms 延迟切换 warming_up；非 Abort 失败一律 Fail-Open）
+        this.warmingUpWorkspaceId = activeWorkspaceId ?? null
+        const barrierResult = await this.warmupBarrier.run(
+          warmupPlan,
+          localController.signal,
+          {
+            warmupOmniEngine: async (plan, sig) =>
+              omniClient.warmupEngine(
+                {
+                  textAndLexicon: plan.textAndLexicon,
+                  visionTower: plan.visionTower,
+                  nsfwDetector: plan.nsfwDetector,
+                  imageOcr: plan.imageOcr,
+                  ocrModelSize: plan.ocrModelSize
+                },
+                { signal: sig }
+              ),
+            warmupAsrModule: async sig => {
+              if (sig.aborted) {
+                throw Object.assign(new Error('Aborted'), { name: 'AbortError' })
+              }
+              try {
+                await moduleHibernationCoordinator.withHibernationGate(
+                  { targetId: 'asr-sensevoice-onnx', clusterId: 'analysis_suite' },
+                  async () => true
+                )
+                return true
+              } catch (asrErr: any) {
+                if (isWarmupAbortError(asrErr, sig)) throw asrErr
+                logger.warn(
+                  LogCategory.ANALYSIS_QUEUE,
+                  '[WarmupBarrier] ASR 按需预加载异常（Fail-Open 放行）:',
+                  asrErr
+                )
+                return false
+              }
+            },
+            acquireAsrLease: () => moduleHibernationCoordinator.acquireAsrActiveLease(),
+            acquireStage3Capability: async (mode, sig) => {
+              const lease = await this.aiServiceManager.acquireStage3Capability(mode, sig, {
+                silentToast: true
+              })
+              return lease.granted
+            },
+            getCurrentEmbeddingProfile: () => resolveTargetProfileAndDim().profile
+          },
+          (phase, hintCode) => {
+            this.lifecyclePhase = phase
+            this.warmupHintCode = hintCode
+            this.writeDispatcher.emitUpdate()
+          }
+        )
+        windowAsrLease = barrierResult.asrLease
+        this.warmingUpWorkspaceId = null
+        this.lifecyclePhase = 'analyzing'
+        this.warmupHintCode = undefined
+        this.writeDispatcher.emitUpdate()
 
-          await this.orchestratorWorker.runParallel(pendingItems, signal, this.stage2WaitTimeoutMs)
+        if (isParallel) {
+          await this.orchestratorWorker.runParallel(
+            windowItems,
+            localController.signal,
+            this.stage2WaitTimeoutMs,
+            this.batchPlanSession.decisions
+          )
           this.aiServiceManager.flushDegradeLogSummary()
         } else {
-          // SERIAL LOOP
-          const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-          const next = pickNextPending(snapshot.items)
-
+          // SERIAL LOOP（同样仅派发与 warmupPlan 同源的 windowItems[0]）
+          const next = pickNextPending(windowItems)
           if (!next) {
             if ((await this.advanceOrStopWorkspaceQueue(activeWorkspaceId)) === 'continue') {
               continue
@@ -711,36 +819,74 @@ export class AnalysisQueueService {
             break
           }
 
-          if (next.taskType === 'analysis') {
-            this.aiServiceManager.preheatLocalEngineNonBlocking(analysisMode)
-          }
-
-          this.currentAbortController = new AbortController()
-          const currentSignal = this.currentAbortController.signal
           this.current = next
           await this.orchestratorWorker.runSerialItem(
             next,
-            currentSignal,
+            localController.signal,
             isAiStageEnabled(),
             this.omniAdapter,
             (msg, err) => logger.warn(LogCategory.ANALYSIS_QUEUE, msg, err)
           )
         }
 
+        this.backoffMs = 50
+
         const updatedSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
         if (updatedSnapshot.items.filter(item => item.status === 'pending').length === 0) {
           await updateVirtualDirectoriesAfterQueueCompletion()
         }
       } catch (error) {
-        logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 调度主循环异常，2秒后重试:', error)
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        const isCurrentCycleAborted =
+          localController.signal.aborted && loopAbortGen !== this.abortGeneration
+        if (isCurrentCycleAborted) {
+          const signalReason = (localController.signal as { reason?: unknown }).reason
+          const reason = typeof signalReason === 'string' ? signalReason : this.currentAbortReason
+          loopAbortGen = this.abortGeneration
+          this.currentAbortReason = null
+          if (reason === 'preempt') {
+            this.backoffMs = 50
+            continue
+          }
+          if (reason === 'pause') {
+            if (!this.running || this.runningWorkspaceStack.length === 0) {
+              break
+            }
+            continue
+          }
+          if (reason === 'drain') {
+            this.backoffMs = 50
+            continue
+          }
+        }
+        if (isWarmupAbortError(error, localController.signal)) {
+          continue
+        }
+        const waitMs = this.backoffMs
+        this.backoffMs = Math.min(2000, this.backoffMs * 2)
+        logger.error(
+          LogCategory.ANALYSIS_QUEUE,
+          `[分析队列] 调度主循环异常，${waitMs}ms 后重试:`,
+          error
+        )
+        await new Promise(resolve => setTimeout(resolve, waitMs))
       } finally {
-        this.currentAbortController = null
+        windowAsrLease?.release()
+        windowAsrLease = null
+        this.warmingUpWorkspaceId = null
+        if (this.currentAbortController === localController) {
+          this.currentAbortController = null
+        }
         this.current = undefined
+        if (!this.running || this.runningWorkspaceStack.length === 0) {
+          this.lifecyclePhase = 'idle'
+          this.warmupHintCode = undefined
+        }
         this.writeDispatcher.emitUpdate()
       }
     }
     this.isProcessingLoopActive = false
+    this.lifecyclePhase = 'idle'
+    this.warmupHintCode = undefined
     if (!this.videoSegmentBackfillWorker.getSnapshot().running) {
       this.syncHibernationState(false)
     }
@@ -822,16 +968,17 @@ export class AnalysisQueueService {
     // 导致「界面显示已暂停，任务却在后台继续跑」。
     const shouldAbortCurrent =
       (this.current && (!workspaceId || this.current.workspaceId === workspaceId)) ||
-      this.orchestratorWorker.hasActiveItems(workspaceId)
+      this.orchestratorWorker.hasActiveItems(workspaceId) ||
+      (this.warmingUpWorkspaceId !== null &&
+        (!workspaceId || this.warmingUpWorkspaceId === workspaceId))
     if (shouldAbortCurrent) {
-      if (this.currentAbortController) {
-        this.currentAbortController.abort()
-        this.currentAbortController = null
-      }
+      this.triggerAbort('pause')
     }
 
     if (this.runningWorkspaceStack.length === 0) {
       this.running = false
+      this.lifecyclePhase = 'idle'
+      this.warmupHintCode = undefined
       flushFtsSync()
     }
 
@@ -845,6 +992,7 @@ export class AnalysisQueueService {
     await this.ensureInitialized()
     const result = await this.queueManager.addItems(inputs, forceReanalyze)
     if (result.addedCount > 0 || result.updatedCount > 0) {
+      this.batchPlanSession.clear()
       this.videoSegmentBackfillWorker.requestYield()
     }
     if (!this.isProcessingLoopActive && this.isInitialized) {
@@ -857,6 +1005,7 @@ export class AnalysisQueueService {
     await this.ensureInitialized()
     const result = await this.queueManager.addItemsResolved(inputs, forceReanalyze)
     if (result.addedCount > 0 || result.updatedCount > 0) {
+      this.batchPlanSession.clear()
       this.videoSegmentBackfillWorker.requestYield()
     }
     if (!this.isProcessingLoopActive && this.isInitialized) {
@@ -865,36 +1014,131 @@ export class AnalysisQueueService {
     return result
   }
 
+  private collectQueuedFingerprintsByItemId(id: number): string[] {
+    const db = databaseService.db
+    if (!db) return []
+    try {
+      const rows = db
+        .prepare(
+          `SELECT DISTINCT wf.file_fingerprint AS fp
+           FROM analysis_queue aq
+           JOIN workspace_files wf ON wf.id = aq.item_id
+           WHERE aq.id = ? AND aq.item_type = 'file' AND wf.file_fingerprint IS NOT NULL`
+        )
+        .all(id) as Array<{ fp?: string }>
+      return rows.map(r => r.fp).filter((fp): fp is string => Boolean(fp))
+    } catch {
+      return []
+    }
+  }
+
+  private collectQueuedFingerprintsByPath(filePath: string): string[] {
+    const db = databaseService.db
+    if (!db) return []
+    try {
+      const rows = db
+        .prepare(
+          `SELECT DISTINCT file_fingerprint AS fp FROM workspace_files WHERE path = ? AND file_fingerprint IS NOT NULL`
+        )
+        .all(filePath) as Array<{ fp?: string }>
+      return rows.map(r => r.fp).filter((fp): fp is string => Boolean(fp))
+    } catch {
+      return []
+    }
+  }
+
+  private collectQueuedFingerprintsByDirectory(directoryPath: string): string[] {
+    const db = databaseService.db
+    if (!db) return []
+    try {
+      const prefixForward = directoryPath.replace(/[\\/]+$/, '')
+      const rows = db
+        .prepare(
+          `SELECT DISTINCT wf.file_fingerprint AS fp
+           FROM analysis_queue aq
+           JOIN workspace_files wf ON wf.id = aq.item_id
+           WHERE aq.item_type = 'file'
+             AND wf.file_fingerprint IS NOT NULL
+             AND (wf.path = ? OR wf.path LIKE ? OR wf.path LIKE ?)`
+        )
+        .all(directoryPath, `${prefixForward}/%`, `${prefixForward}\\%`) as Array<{ fp?: string }>
+      return rows.map(r => r.fp).filter((fp): fp is string => Boolean(fp))
+    } catch {
+      return []
+    }
+  }
+
+  private bumpRetagEpochsIfIdle(fingerprints: ReadonlyArray<string>): void {
+    const db = databaseService.db
+    if (!db || fingerprints.length === 0) return
+    for (const fp of new Set(fingerprints)) {
+      bumpRetagEpochIfNoActiveTask(db, fp)
+    }
+  }
+
   async deleteItem(id: number): Promise<void> {
     await this.ensureInitialized()
-    if (this.current?.id === id && this.currentAbortController) {
-      this.currentAbortController.abort()
-      this.currentAbortController = null
+    const affectedFps = this.collectQueuedFingerprintsByItemId(id)
+    const targetItem = this.queueManager.getSnapshot().items.find(i => i.id === id)
+    const targetWsId = targetItem?.workspaceId
+    this.batchPlanSession.invalidateItem(id)
+    const isWarmupHit =
+      this.warmingUpWorkspaceId !== null &&
+      targetWsId != null &&
+      this.warmingUpWorkspaceId === targetWsId
+    if (this.current?.id === id || isWarmupHit) {
+      this.triggerAbort('drain')
     }
     this.workerBridge.cancelItem(id, false)
     this.queueManager.deleteItem(id)
+    this.bumpRetagEpochsIfIdle(affectedFps)
   }
 
   async deleteItemByPath(filePath: string): Promise<void> {
     await this.ensureInitialized()
-    if (
-      this.current?.path &&
-      isPathEqual(this.current.path, filePath) &&
-      this.currentAbortController
-    ) {
-      this.currentAbortController.abort()
-      this.currentAbortController = null
+    const affectedFps = this.collectQueuedFingerprintsByPath(filePath)
+    const matchedItems = this.queueManager
+      .getSnapshot()
+      .items.filter(i => i.path && isPathEqual(i.path, filePath))
+    for (const m of matchedItems) {
+      this.batchPlanSession.invalidateItem(m.id)
+    }
+    const isWarmupHit =
+      this.warmingUpWorkspaceId !== null &&
+      matchedItems.some(m => m.workspaceId === this.warmingUpWorkspaceId)
+    if ((this.current?.path && isPathEqual(this.current.path, filePath)) || isWarmupHit) {
+      this.triggerAbort('drain')
     }
     await this.videoSegmentBackfillWorker.abortAndWaitCurrent(filePath)
     this.queueManager.deleteItemByPath(filePath)
+    this.bumpRetagEpochsIfIdle(affectedFps)
   }
 
   async deleteItemsByDirectory(directoryPath: string): Promise<void> {
     await this.ensureInitialized()
+    const affectedFps = this.collectQueuedFingerprintsByDirectory(directoryPath)
+    const matchedItems = this.queueManager
+      .getSnapshot()
+      .items.filter(
+        i => i.path && (isPathEqual(i.path, directoryPath) || isSubPath(directoryPath, i.path))
+      )
+    this.batchPlanSession.invalidateItems(matchedItems.map(m => m.id))
+    const isWarmupHit =
+      this.warmingUpWorkspaceId !== null &&
+      matchedItems.some(m => m.workspaceId === this.warmingUpWorkspaceId)
+    if (
+      (this.current?.path &&
+        (isPathEqual(this.current.path, directoryPath) ||
+          isSubPath(directoryPath, this.current.path))) ||
+      isWarmupHit
+    ) {
+      this.triggerAbort('drain')
+    }
     // Spec §2.3：删除工作目录前中止并等待在途视频补全切片释放文件句柄，防 Windows EBUSY
     await this.videoSegmentBackfillWorker.abortAndWaitCurrent(directoryPath)
 
     this.queueManager.deleteItemsByDirectory(directoryPath)
+    this.bumpRetagEpochsIfIdle(affectedFps)
   }
 
   /**
@@ -907,40 +1151,66 @@ export class AnalysisQueueService {
    */
   async abortAndDeleteItemsByDirectory(directoryPath: string): Promise<void> {
     await this.ensureInitialized()
+    const affectedFps = this.collectQueuedFingerprintsByDirectory(directoryPath)
 
     const belongsToDirectory = (filePath?: string): boolean => {
       if (!filePath) return false
       return isPathEqual(filePath, directoryPath) || isSubPath(directoryPath, filePath)
     }
 
+    const matchedItems = this.queueManager
+      .getSnapshot()
+      .items.filter(i => belongsToDirectory(i.path))
+    this.batchPlanSession.invalidateItems(matchedItems.map(m => m.id))
+    const isWarmupHit =
+      this.warmingUpWorkspaceId !== null &&
+      matchedItems.some(m => m.workspaceId === this.warmingUpWorkspaceId)
+
     const shouldAbortDirectoryTask =
       (this.current && belongsToDirectory(this.current.path)) ||
-      this.orchestratorWorker.hasActiveItemMatching(belongsToDirectory)
+      this.orchestratorWorker.hasActiveItemMatching(belongsToDirectory) ||
+      isWarmupHit
     if (shouldAbortDirectoryTask) {
       logger.debug(
         LogCategory.ANALYSIS_QUEUE,
         '[分析队列] 删除工作目录前中止在途任务，释放 .VirtualDirectory 句柄:',
         this.current?.path || directoryPath
       )
-      if (this.currentAbortController) {
-        this.currentAbortController.abort()
-        this.currentAbortController = null
-      }
+      this.triggerAbort('drain')
     }
 
     // Spec §2.3：删除工作目录前中止并等待在途视频补全切片释放文件句柄，防 Windows EBUSY
     await this.videoSegmentBackfillWorker.abortAndWaitCurrent(directoryPath)
 
     this.queueManager.deleteItemsByDirectory(directoryPath)
+    this.bumpRetagEpochsIfIdle(affectedFps)
   }
 
   async clearPending(): Promise<void> {
     await this.ensureInitialized()
-    if (this.currentAbortController) {
-      this.currentAbortController.abort()
-      this.currentAbortController = null
+    const db = databaseService.db
+    let pendingFps: string[] = []
+    if (db) {
+      try {
+        const rows = db
+          .prepare(
+            `SELECT DISTINCT wf.file_fingerprint AS fp
+             FROM analysis_queue aq
+             JOIN workspace_files wf ON wf.id = aq.item_id
+             WHERE aq.item_type = 'file'
+               AND aq.status = 'pending'
+               AND wf.file_fingerprint IS NOT NULL`
+          )
+          .all() as Array<{ fp?: string }>
+        pendingFps = rows.map(r => r.fp).filter((fp): fp is string => Boolean(fp))
+      } catch {}
+    }
+    this.batchPlanSession.clear()
+    if (this.currentAbortController || this.warmingUpWorkspaceId !== null) {
+      this.triggerAbort('drain')
     }
     this.queueManager.clearPending()
+    this.bumpRetagEpochsIfIdle(pendingFps)
     if (!this.running && this.isInitialized) {
       void this.start()
     }
@@ -952,16 +1222,64 @@ export class AnalysisQueueService {
     directoryPrefix?: string
   ): Promise<{ cancelledCount: number }> {
     await this.ensureInitialized()
-    return this.queueManager.cancelUnmatchedTasks(workspaceId, allowedExtensions, directoryPrefix)
+    const beforeItems = this.queueManager.getSnapshot(undefined, workspaceId).items
+    const result = this.queueManager.cancelUnmatchedTasks(
+      workspaceId,
+      allowedExtensions,
+      directoryPrefix
+    )
+    if (result.cancelledCount > 0) {
+      const afterIds = new Set(
+        this.queueManager.getSnapshot(undefined, workspaceId).items.map(i => i.id)
+      )
+      const removedIds: number[] = []
+      const removedFps: string[] = []
+      const db = databaseService.db
+      for (const item of beforeItems) {
+        if (!afterIds.has(item.id)) {
+          removedIds.push(item.id)
+          if (db && item.path) {
+            const fp = databaseService.getFileFingerprintByPath(item.path)
+            if (fp) removedFps.push(fp)
+          }
+        }
+      }
+      this.batchPlanSession.invalidateItems(removedIds)
+      const activeHit =
+        (this.current && removedIds.includes(this.current.id)) ||
+        this.warmingUpWorkspaceId === workspaceId
+      if (activeHit) {
+        this.triggerAbort('drain')
+      }
+      this.bumpRetagEpochsIfIdle(removedFps)
+    }
+    return result
   }
 
   async clearAll(): Promise<void> {
     await this.ensureInitialized()
-    if (this.currentAbortController) {
-      this.currentAbortController.abort()
-      this.currentAbortController = null
+    const db = databaseService.db
+    let allFps: string[] = []
+    if (db) {
+      try {
+        const rows = db
+          .prepare(
+            `SELECT DISTINCT wf.file_fingerprint AS fp
+             FROM analysis_queue aq
+             JOIN workspace_files wf ON wf.id = aq.item_id
+             WHERE aq.item_type = 'file'
+               AND wf.file_fingerprint IS NOT NULL`
+          )
+          .all() as Array<{ fp?: string }>
+        allFps = rows.map(r => r.fp).filter((fp): fp is string => Boolean(fp))
+      } catch {}
+    }
+    this.batchPlanSession.clear()
+    if (this.currentAbortController || this.warmingUpWorkspaceId !== null) {
+      this.triggerAbort('drain')
     }
     this.queueManager.clearAll()
+    this.bumpRetagEpochsIfIdle(allFps)
     if (!this.running && this.isInitialized) {
       void this.start()
     }
@@ -969,6 +1287,7 @@ export class AnalysisQueueService {
 
   async retryFailed(): Promise<void> {
     await this.ensureInitialized()
+    this.batchPlanSession.clear()
     this.queueManager.retryFailed()
     if (!this.running && this.isInitialized) {
       void this.start()
@@ -988,12 +1307,19 @@ export class AnalysisQueueService {
   /** Spec §10.2 (N-1) / B6：用户主动取消任务，状态落库 failed + error='canceled_by_user' */
   public async cancelItemByUser(id: number): Promise<void> {
     await this.ensureInitialized()
-    if (this.current?.id === id && this.currentAbortController) {
-      this.currentAbortController.abort()
-      this.currentAbortController = null
+    const affectedFps = this.collectQueuedFingerprintsByItemId(id)
+    const targetWsId = this.queueManager.getSnapshot().items.find(i => i.id === id)?.workspaceId
+    this.batchPlanSession.invalidateItem(id)
+    const isWarmupHit =
+      this.warmingUpWorkspaceId !== null &&
+      targetWsId != null &&
+      this.warmingUpWorkspaceId === targetWsId
+    if (this.current?.id === id || isWarmupHit) {
+      this.triggerAbort('drain')
     }
     this.workerBridge.cancelItem(id, true)
     this.writeDispatcher.updateItemStatus(id, 'failed', 0, 'canceled_by_user')
+    this.bumpRetagEpochsIfIdle(affectedFps)
   }
 
   /** 获取 Stage 2 独立 Worker 托管桥（供调度与可观测性检查） */
@@ -1174,6 +1500,10 @@ export class AnalysisQueueService {
       runningWorkspaceStack: this.runningWorkspaceStack.slice(),
       currentAnalyzingItem,
       status: queueStatus,
+      lifecyclePhase: this.lifecyclePhase,
+      ...(this.lifecyclePhase === 'warming_up' && this.warmupHintCode
+        ? { warmupHintCode: this.warmupHintCode }
+        : {}),
       videoBackfill: this.videoSegmentBackfillWorker.getSnapshot()
     }
   }

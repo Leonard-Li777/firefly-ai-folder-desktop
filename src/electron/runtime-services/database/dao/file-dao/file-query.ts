@@ -777,8 +777,21 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         let stats: any = {}
         if (row?.analysis_stats) {
           try {
-            stats = JSON.parse(row.analysis_stats) || {}
+            const parsed = JSON.parse(row.analysis_stats)
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              stats = parsed
+            } else {
+              logger.warn(
+                LogCategory.DATABASE_SERVICE,
+                `[updateAnalysisStage] 检测到非对象 analysis_stats，重置但保留阶段写入: fp=${fileFingerprint}`
+              )
+            }
           } catch (e) {
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              `[updateAnalysisStage] 解析 analysis_stats 失败: fp=${fileFingerprint}`,
+              e
+            )
             stats = {}
           }
         }
@@ -826,8 +839,21 @@ export class FileQueryMixin extends FilePinyinFtsSyncMixin {
         let stats: any = {}
         if (row?.analysis_stats) {
           try {
-            stats = JSON.parse(row.analysis_stats) || {}
+            const parsed = JSON.parse(row.analysis_stats)
+            if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+              stats = parsed
+            } else {
+              logger.warn(
+                LogCategory.DATABASE_SERVICE,
+                `[updateAnalysisStage] 检测到非对象 analysis_stats，重置但保留阶段写入: fp=${fileFingerprint}`
+              )
+            }
           } catch (e) {
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              `[updateAnalysisStage] 解析 analysis_stats 失败: fp=${fileFingerprint}`,
+              e
+            )
             stats = {}
           }
         }

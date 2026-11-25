@@ -114,6 +114,7 @@ import {
   getFileAnalysisStateFromDB,
   checkBasicDataCompleteness
 } from './db-analysis-state'
+import { bumpRetagEpoch, validateRetagEpochStrict } from './stage-reuse-planner'
 import { persistOmniVectors, cleanupOrphanedVideoChunks } from './omni-vector-persistence'
 import { getFallbackLyrics } from './fallback-lyrics'
 
@@ -182,6 +183,33 @@ const ANYDOC_SUPPORTED_EXTS = new Set([
 ])
 
 /**
+ * 归一化 Magika 分类值为 `/api/text/tag` 契约认可的 mediaKind
+ */
+function resolveRetagMediaKind(
+  fileGroup: unknown
+): 'image' | 'video' | 'audio' | 'document' | 'text' | 'code' | undefined {
+  const raw =
+    typeof fileGroup === 'string'
+      ? fileGroup
+      : fileGroup && typeof fileGroup === 'object'
+        ? (fileGroup as { group?: string; label?: string }).group ||
+          (fileGroup as { label?: string }).label
+        : undefined
+  const g = typeof raw === 'string' ? raw.trim().toLowerCase() : ''
+  if (
+    g === 'image' ||
+    g === 'video' ||
+    g === 'audio' ||
+    g === 'document' ||
+    g === 'text' ||
+    g === 'code'
+  ) {
+    return g
+  }
+  return undefined
+}
+
+/**
  * 文件处理类
  * 处理单个文件的分析、缓存匹配和落库
  */
@@ -243,12 +271,35 @@ function getEffectiveAnalysisMode(): AnalysisMode {
   return resolveEffectiveAnalysisMode(getHasInstalledAiEngine())
 }
 
+function buildAppliedCapabilities(params: {
+  ocrModelSize: 'tiny' | 'small'
+  asrEffectivelyEnabled: boolean
+  enableOfficeCover: boolean
+  analysisStage: number
+  isImage: boolean
+  isVideo: boolean
+  videoVisualAnalysisEnabled: boolean
+  nsfwEffectivelyEnabled: boolean
+}) {
+  const embeddingProfile =
+    ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE') || 'gemma_unified'
+  const visualTagsApplied = params.isImage || (params.isVideo && params.videoVisualAnalysisEnabled)
+  return {
+    ocrSize: params.ocrModelSize,
+    asrApplied: params.asrEffectivelyEnabled,
+    officeCoverApplied: params.enableOfficeCover,
+    analysisStage: params.analysisStage,
+    visualTagsApplied,
+    nsfwApplied: params.nsfwEffectivelyEnabled && visualTagsApplied,
+    embeddingProfile
+  }
+}
+
 export class FileProcessor {
   private mockData: any = null
   private selectWorkspaceFileStmt: any = null
   private insertFileStmt: any = null
   private insertWorkspaceFileStmt: any = null
-  private deleteTagRelationsStmt: any = null
   /** 已缓存语句所绑定的数据库连接；语言切换会重建数据库，连接变化时必须重新 prepare */
   private currentDb: any = null
 
@@ -290,9 +341,6 @@ export class FileProcessor {
         status = 1,
         accessed_at = ?
     `)
-    this.deleteTagRelationsStmt = db.prepare(
-      'DELETE FROM file_tag_relations WHERE file_fingerprint = ?'
-    )
   }
 
   constructor(
@@ -517,6 +565,7 @@ export class FileProcessor {
     let filePath: string | null = null
     let currentWorkspaceId: number | null | undefined = null
     let analysisMode = getEffectiveAnalysisMode()
+    let fileAsrLease: { release(): void } | null = null
     try {
       // 入口中止检查：用户点击暂停时，队列服务的 pause() 会 abort 当前 signal。
       // 必须在真正开始分析前检查一次，否则已排队的下一个文件仍会照常执行，
@@ -526,8 +575,6 @@ export class FileProcessor {
       try {
         moduleHibernationCoordinator.notifyModuleResident('firefly-ai-engine')
         moduleHibernationCoordinator.cancelIdleHibernation('analysis_suite')
-        // 每个文件默认不期望 ASR 常驻，仅当本文件 effectiveConfig 确实需要 ASR 时才置真
-        moduleHibernationCoordinator.setAsrExpectedActive(false)
       } catch (hibErr) {
         logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 通知休眠协调器置位失败:', hibErr)
       }
@@ -949,9 +996,11 @@ export class FileProcessor {
         const effectiveMimeType =
           existingBasicData.category?.mime_type || getMimeType(enhancedInfo.fileType)
 
-        // 补捞 Stage 2 已持久化的标签，确保 GPU 阶段裁决时 Stage 2 标签不被冲掉，实现无损合并去重
+        // 回捞 Stage 2 存量标签（解除 !forceReanalyze 屏蔽）：
+        // 1. 全量标签用于计算 fallbackRating（严防缺失指标冲掉 R-18）；
+        // 2. 仅将 tag_group IN ('fact', 'fused', 'visual') 注入 groundTruthTags（绝不注入 'user' / 'ai'）。
         let existingTagRows: Array<any> = []
-        if (!item.forceReanalyze && fileFingerprint) {
+        if (fileFingerprint) {
           try {
             existingTagRows = db
               .prepare(
@@ -1017,6 +1066,13 @@ export class FileProcessor {
         if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
           const currentTags = preflightContext.groundTruthTags || []
           for (const row of existingTagRows) {
+            if (
+              row.tag_group !== 'fact' &&
+              row.tag_group !== 'fused' &&
+              row.tag_group !== 'visual'
+            ) {
+              continue
+            }
             let tagName = row.tag_name
             if (!tagName && row.tag_code) {
               tagName = getCanonicalConceptName(row.tag_code) || ''
@@ -1333,6 +1389,10 @@ export class FileProcessor {
           getAiTargetStage(analysisMode),
           initialStage
         )
+        ;(processResult as any).effectiveAnalysisMode = analysisMode
+        ;(processResult as any).appliedCapabilities = {
+          analysisStage: gpuCompletionStage
+        }
 
         // 保存本地分析结果
         const { workspaceFile } = await saveLocalAnalysisResult(
@@ -1362,35 +1422,9 @@ export class FileProcessor {
             ? existingBasicData.category
             : existingBasicData.category?.group || null
 
-        // 若本次分析跳过了 CPU 阶段（复用已有基础数据），Omni 进程内存中的 anchor_cache 可能未曾填充或已过期。
-        // 在触发找补裁决器（返送打标）之前，轻量唤醒一次 Omni perceive，确保同源 Bekko 全局锚点就绪
-        if (cpuSkipped) {
-          try {
-            await omniService.perceive(filePath, {
-              fileFingerprint,
-              enableVisualTags: false,
-              enableGeoReverse: false,
-              enableTextAnalysis: true,
-              generateThumbnail: false,
-              skip5wSynthesis: true,
-              // [High-03] cpuSkipped 热锚点只唤醒 Bekko 全局锚点，严禁重跑任何昂贵感知分支：
-              // 否则 Rust enable_asr 默认开启会让复用的音视频/图片重新 ASR/OCR/抽帧。
-              enableAudioTranscript: false,
-              enableImageOcr: false,
-              enableVideoVisualAnalysis: false,
-              enableNsfwPerception: false,
-              enableFacePerception: false,
-              videoAsrDurationSec: 0,
-              audioAnalysisDuration: 0
-            })
-          } catch (anchorWarmupErr) {
-            logger.warn(
-              LogCategory.ANALYSIS_QUEUE,
-              `[GPU阶段:复用] 预热 Omni 全局锚点失败（返送打标将安全降级）: ${filePath}`,
-              anchorWarmupErr
-            )
-          }
-        }
+        const gpuRetagEpoch = bumpRetagEpoch(db, fileFingerprint)
+        const validateGpuRetagEpoch = () =>
+          validateRetagEpochStrict(db, fileFingerprint, gpuRetagEpoch)
 
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
@@ -1399,6 +1433,14 @@ export class FileProcessor {
           fileFingerprint,
           filePath,
           onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
+          retagTransport: (payload, timeoutMs, signal) =>
+            omniClient.tagText(payload, timeoutMs, signal),
+          mediaKind: resolveRetagMediaKind(existingMagikaGroup),
+          clearTagGroups: ['ai'],
+          retagEpoch: gpuRetagEpoch,
+          validateRetagEpoch: validateGpuRetagEpoch,
+          abortSignal: signal,
+          forceReanalyze: item.forceReanalyze === true,
           preflightContext,
           dimResult,
           multimodalContent: processResult?.multimodalContent,
@@ -1907,14 +1949,16 @@ export class FileProcessor {
           shouldRunAsr =
             capabilities.asrEffectivelyEnabled && enableAudioTranscript === true && targetAsrSec > 0
           enableAudioTranscript = shouldRunAsr
-          try {
-            moduleHibernationCoordinator.setAsrExpectedActive(shouldRunAsr)
-          } catch (asrExpectErr) {
-            logger.warn(
-              LogCategory.ANALYSIS_QUEUE,
-              '[分析队列] 声明 ASR 常驻期望失败:',
-              asrExpectErr
-            )
+          if (shouldRunAsr) {
+            try {
+              fileAsrLease = moduleHibernationCoordinator.acquireAsrActiveLease()
+            } catch (asrExpectErr) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                '[分析队列] 申请 ASR 活跃租约失败:',
+                asrExpectErr
+              )
+            }
           }
 
           if (shouldRunAsr) {
@@ -1964,6 +2008,7 @@ export class FileProcessor {
           extractPages: effectiveParams.extractPages,
           maxContentSizeKb: effectiveParams.maxContentSizeKb,
           enableOfficeCover: effectiveParams.enableOfficeCover,
+          enableVisualTags: true,
           enableVideoVisualAnalysis: capabilities.videoVisualAnalysisEnabled,
           enableNsfwPerception: capabilities.nsfwEffectivelyEnabled,
           enableFacePerception: capabilities.faceEffectivelyEnabled,
@@ -2813,23 +2858,17 @@ export class FileProcessor {
       // GPU 阶段的裁决器会以「补捞已存在关联 + 无损合并」方式叠加 AI 标签，不会覆盖本批事实。
       if ((analysisMode === 'full' || analysisMode === 'quick_name') && preflightContext) {
         try {
-          // 强制重新分析时清空该文件的旧标签关联：一次性动作，必须落在 CPU 阶段「落库之前」。
-          // 绝不可放在 AI（GPU）阶段 —— 并行流水线的 CPU 与 GPU 是两次独立 processFile 调用且
-          // 共享同一 item，forceReanalyze 在 GPU 阶段仍为 true，若在 GPU 阶段清空，会把 CPU 阶段
-          // 刚落库的新标签全部删除；随后 AI 阶段一旦超时失败并被 Tier 1 静默降级（不再重新落库），
-          // 标签将永久丢失，表现为「日志里标签齐全、属性面板一个标签都不显示」。
-          if (item.forceReanalyze === true) {
-            try {
-              this.deleteTagRelationsStmt.run(fileFingerprint)
-            } catch {
-              // 容错：清空失败不阻断后续落库（INSERT OR REPLACE 会覆盖同主键行）
-            }
-          }
           executeProTagReconciliation({
             db,
             fileFingerprint,
             filePath,
             onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
+            retagTransport: (payload, timeoutMs, signal) =>
+              omniClient.tagText(payload, timeoutMs, signal),
+            mediaKind: resolveRetagMediaKind(magikaCategory),
+            clearTagGroups: ['fact', 'fused', 'visual'],
+            abortSignal: signal,
+            forceReanalyze: item.forceReanalyze === true,
             preflightContext,
             dimResult: null,
             authors: resolvedAuthor ? [resolvedAuthor] : undefined,
@@ -2868,16 +2907,19 @@ export class FileProcessor {
           if (cpuStatsWithBenchmark.performance?.fresh && stage1Benchmark) {
             cpuStatsWithBenchmark.performance.fresh.stage1Breakdown = stage1Benchmark
           }
-          // [SLICE-06] 落库能力履历与空尝试记录，配合 file-crud 白名单实现增量完整性闭环
           const hadOcrText = Boolean((anydocResult as any)?.ocrText)
           const hadAsrText = Boolean((anydocResult as any)?.audioTranscript)
           ;(cpuStatsWithBenchmark as any).analysisMode = effectiveParams.analysisMode
-          ;(cpuStatsWithBenchmark as any).appliedCapabilities = {
-            ocrSize: effectiveParams.ocrModelSize,
-            asrApplied: capabilities.asrEffectivelyEnabled,
-            officeCoverApplied: effectiveParams.enableOfficeCover,
-            analysisStage: cpuCompletionStage
-          }
+          ;(cpuStatsWithBenchmark as any).appliedCapabilities = buildAppliedCapabilities({
+            ocrModelSize: effectiveParams.ocrModelSize,
+            asrEffectivelyEnabled: capabilities.asrEffectivelyEnabled,
+            enableOfficeCover: effectiveParams.enableOfficeCover,
+            analysisStage: cpuCompletionStage,
+            isImage,
+            isVideo,
+            videoVisualAnalysisEnabled: capabilities.videoVisualAnalysisEnabled,
+            nsfwEffectivelyEnabled: capabilities.nsfwEffectivelyEnabled
+          })
           ;(cpuStatsWithBenchmark as any).attempted_empty = {
             fileFingerprint,
             ocrModelSize: effectiveParams.ocrModelSize,
@@ -3028,6 +3070,12 @@ export class FileProcessor {
           fileFingerprint,
           filePath,
           onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
+          retagTransport: (payload, timeoutMs, signal) =>
+            omniClient.tagText(payload, timeoutMs, signal),
+          mediaKind: resolveRetagMediaKind(magikaGroup),
+          clearTagGroups: ['fact', 'fused', 'visual'],
+          abortSignal: signal,
+          forceReanalyze: item.forceReanalyze === true,
           preflightContext,
           dimResult: null,
           authors:
@@ -3055,12 +3103,16 @@ export class FileProcessor {
         const hadOcrTextSimple = Boolean((anydocResult as any)?.ocrText)
         const hadAsrTextSimple = Boolean((anydocResult as any)?.audioTranscript)
         ;(analysisStatsWithBenchmark as any).analysisMode = effectiveParams.analysisMode
-        ;(analysisStatsWithBenchmark as any).appliedCapabilities = {
-          ocrSize: effectiveParams.ocrModelSize,
-          asrApplied: capabilities.asrEffectivelyEnabled,
-          officeCoverApplied: effectiveParams.enableOfficeCover,
-          analysisStage: cpuCompletionStage
-        }
+        ;(analysisStatsWithBenchmark as any).appliedCapabilities = buildAppliedCapabilities({
+          ocrModelSize: effectiveParams.ocrModelSize,
+          asrEffectivelyEnabled: capabilities.asrEffectivelyEnabled,
+          enableOfficeCover: effectiveParams.enableOfficeCover,
+          analysisStage: cpuCompletionStage,
+          isImage,
+          isVideo,
+          videoVisualAnalysisEnabled: capabilities.videoVisualAnalysisEnabled,
+          nsfwEffectivelyEnabled: capabilities.nsfwEffectivelyEnabled
+        })
         ;(analysisStatsWithBenchmark as any).attempted_empty = {
           fileFingerprint,
           ocrModelSize: effectiveParams.ocrModelSize,
@@ -3240,6 +3292,19 @@ export class FileProcessor {
       }
 
       // ========== 保存本地分析结果 ==========
+      const serialCompletionStage = analysisMode === 'quick_name' ? 3 : 4
+      ;(processResult as any).effectiveAnalysisMode = analysisMode
+      ;(processResult as any).appliedCapabilities = buildAppliedCapabilities({
+        ocrModelSize: effectiveParams.ocrModelSize,
+        asrEffectivelyEnabled: capabilities.asrEffectivelyEnabled,
+        enableOfficeCover: effectiveParams.enableOfficeCover,
+        analysisStage: serialCompletionStage,
+        isImage,
+        isVideo,
+        videoVisualAnalysisEnabled: capabilities.videoVisualAnalysisEnabled,
+        nsfwEffectivelyEnabled: capabilities.nsfwEffectivelyEnabled
+      })
+
       const { workspaceFile } = await saveLocalAnalysisResult(
         item,
         fileFingerprint,
@@ -3255,12 +3320,16 @@ export class FileProcessor {
         dimResult?.groupingReason,
         dimResult?.groupingConfidence,
         markitdownBenchmark,
-        analysisMode === 'quick_name' ? 3 : 4,
+        serialCompletionStage,
         cpuSkipped,
         stage1Benchmark,
         finalTargetSmartNameSource,
         null
       )
+
+      const serialRetagEpoch = bumpRetagEpoch(db, fileFingerprint)
+      const validateSerialRetagEpoch = () =>
+        validateRetagEpochStrict(db, fileFingerprint, serialRetagEpoch)
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
       executeProTagReconciliation({
@@ -3268,6 +3337,14 @@ export class FileProcessor {
         fileFingerprint,
         filePath,
         onRetagCompleted: createRetagCompletedHandler(filePath, fileFingerprint),
+        retagTransport: (payload, timeoutMs, signal) =>
+          omniClient.tagText(payload, timeoutMs, signal),
+        mediaKind: resolveRetagMediaKind(magikaGroup),
+        clearTagGroups: ['fact', 'fused', 'visual', 'ai'],
+        retagEpoch: serialRetagEpoch,
+        validateRetagEpoch: validateSerialRetagEpoch,
+        abortSignal: signal,
+        forceReanalyze: item.forceReanalyze === true,
         preflightContext,
         dimResult,
         multimodalContent: processResult?.multimodalContent,
@@ -3395,6 +3472,9 @@ export class FileProcessor {
         this.updateItemStatus(item.id, 'failed', 100, errorMsg, { isTimeout })
         return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
       }
+    } finally {
+      fileAsrLease?.release()
+      fileAsrLease = null
     }
   }
 
@@ -3440,7 +3520,9 @@ export class FileProcessor {
     }
 
     const fingerprint =
-      knownFingerprint || (filePath ? databaseService.getFileFingerprintByPath(filePath) : null) || ''
+      knownFingerprint ||
+      (filePath ? databaseService.getFileFingerprintByPath(filePath) : null) ||
+      ''
 
     // 3. markFileAnalyzed 前再次检查 Abort 与终态
     if (signal?.aborted) {

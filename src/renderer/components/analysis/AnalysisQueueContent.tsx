@@ -970,6 +970,20 @@ export function AnalysisQueueContent({
               )}
             </HintBanner>
           )}
+          {/* 批前预热准备状态条（Spec §2.1 / §3.1：静默超时 >300ms 时切入，零工程术语） */}
+          {snapshot?.lifecyclePhase === 'warming_up' && (
+            <div
+              data-testid="queue-warmup-banner"
+              className="shrink-0 px-3 py-1.5 border-b border-blue-500/20 bg-blue-500/5 flex items-center gap-2 text-xs text-blue-600 dark:text-sky-400 font-medium"
+            >
+              <span className="inline-block w-2 h-2 rounded-full bg-current animate-pulse shrink-0" />
+              <span>
+                {snapshot.warmupHintCode === 'loading_models'
+                  ? t('正在加载识别模型，首次准备稍慢…')
+                  : t('正在准备分析引擎，完成后自动开始')}
+              </span>
+            </div>
+          )}
           {/* 后台视频补全顶部固定状态条（Spec §3.2：不写 analysis_queue 伪行，复刻 StatusBadge 青色胶囊进度条） */}
           {snapshot?.videoBackfill &&
             (snapshot.videoBackfill.running || snapshot.videoBackfill.pendingVideoCount > 0) && (

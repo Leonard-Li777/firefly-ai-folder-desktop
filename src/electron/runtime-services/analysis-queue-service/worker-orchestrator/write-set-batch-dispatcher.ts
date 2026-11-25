@@ -416,7 +416,44 @@ export class WriteSetBatchDispatcher {
                  lrc = COALESCE(excluded.lrc, file_contents.lrc),
                  asr = COALESCE(excluded.asr, file_contents.asr),
                  exif = COALESCE(excluded.exif, file_contents.exif),
-                 analysis_stats = COALESCE(excluded.analysis_stats, file_contents.analysis_stats),
+                 analysis_stats = CASE
+                   WHEN excluded.analysis_stats IS NULL THEN file_contents.analysis_stats
+                   WHEN json_valid(excluded.analysis_stats) AND json_type(excluded.analysis_stats) = 'object'
+                        AND json_valid(file_contents.analysis_stats) AND json_type(file_contents.analysis_stats) = 'object'
+                     THEN json_set(
+                       excluded.analysis_stats,
+                       '$.retag_epoch',
+                       CASE
+                         WHEN COALESCE(CAST(json_extract(file_contents.analysis_stats, '$.retag_epoch') AS INTEGER), 0)
+                              > COALESCE(CAST(json_extract(excluded.analysis_stats, '$.retag_epoch') AS INTEGER), 0)
+                           THEN CAST(json_extract(file_contents.analysis_stats, '$.retag_epoch') AS INTEGER)
+                         ELSE json_extract(excluded.analysis_stats, '$.retag_epoch')
+                       END,
+                       '$.appliedCapabilities',
+                       CASE
+                         WHEN json_type(file_contents.analysis_stats, '$.appliedCapabilities') = 'object'
+                              AND json_type(excluded.analysis_stats, '$.appliedCapabilities') = 'object'
+                           THEN json_patch(
+                             json(json_extract(file_contents.analysis_stats, '$.appliedCapabilities')),
+                             json(json_extract(excluded.analysis_stats, '$.appliedCapabilities'))
+                           )
+                         WHEN json_type(excluded.analysis_stats, '$.appliedCapabilities') = 'object'
+                           THEN json(json_extract(excluded.analysis_stats, '$.appliedCapabilities'))
+                         WHEN json_type(file_contents.analysis_stats, '$.appliedCapabilities') = 'object'
+                           THEN json(json_extract(file_contents.analysis_stats, '$.appliedCapabilities'))
+                         ELSE NULL
+                       END,
+                       '$.attempted_empty',
+                       CASE
+                         WHEN json_type(excluded.analysis_stats, '$.attempted_empty') = 'object'
+                           THEN json(json_extract(excluded.analysis_stats, '$.attempted_empty'))
+                         WHEN json_type(file_contents.analysis_stats, '$.attempted_empty') = 'object'
+                           THEN json(json_extract(file_contents.analysis_stats, '$.attempted_empty'))
+                         ELSE NULL
+                       END
+                     )
+                   ELSE excluded.analysis_stats
+                 END,
                  quality_score = COALESCE(excluded.quality_score, file_contents.quality_score),
                  quality_confidence = COALESCE(excluded.quality_confidence, file_contents.quality_confidence),
                  quality_criteria = COALESCE(excluded.quality_criteria, file_contents.quality_criteria),

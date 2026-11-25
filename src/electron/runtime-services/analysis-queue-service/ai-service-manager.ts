@@ -48,6 +48,8 @@ export interface CooldownLatch {
 export interface AcquireStage3CapabilityOptions {
   bypassCooldown?: boolean
   timeoutMs?: number
+  /** 队列统一预热栅栏下抑制零散 Toast，由队列相位状态统一反馈 */
+  silentToast?: boolean
 }
 
 /** 永久类失败码集合（需等待配置/模型安装/事件清除，不靠 60s 自动过期） */
@@ -362,25 +364,29 @@ export class AIServiceManager {
           LogCategory.ANALYSIS_QUEUE,
           '[分析队列] 检测到轻量CPU引擎底座服务未运行，正在自动拉起...'
         )
-        this.notifyFrontend(
-          'info',
-          t('正在启动轻量CPU引擎，即将开始分析...'),
-          true,
-          'waiting-for-ai',
-          0
-        )
+        if (!options?.silentToast) {
+          this.notifyFrontend(
+            'info',
+            t('正在启动轻量CPU引擎，即将开始分析...'),
+            true,
+            'waiting-for-ai',
+            0
+          )
+        }
       } else {
         logger.debug(
           LogCategory.ANALYSIS_QUEUE,
           '[分析队列] 检测到轻量CPU引擎尚未预热，正在主动预热模型...'
         )
-        this.notifyFrontend(
-          'info',
-          t('正在预热轻量CPU模型，即将开始分析...'),
-          true,
-          'waiting-for-ai',
-          0
-        )
+        if (!options?.silentToast) {
+          this.notifyFrontend(
+            'info',
+            t('正在预热轻量CPU模型，即将开始分析...'),
+            true,
+            'waiting-for-ai',
+            0
+          )
+        }
       }
 
       await raceWithAbort(llmGatewayService.preheat({ wait: true }), signal)
@@ -391,13 +397,15 @@ export class AIServiceManager {
       const afterSnap = llmGatewayService.getSnapshot()
       if (afterSnap.runtime.cpu === 'ready') {
         logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] 轻量CPU引擎主动预热成功，开始分析')
-        this.notifyFrontend(
-          'success',
-          t('轻量CPU引擎已就绪，开始分析'),
-          false,
-          'waiting-for-ai',
-          3000
-        )
+        if (!options?.silentToast) {
+          this.notifyFrontend(
+            'success',
+            t('轻量CPU引擎已就绪，开始分析'),
+            false,
+            'waiting-for-ai',
+            3000
+          )
+        }
         this.resetStartupCooldown('cpu')
         this.lastHealthCheckOkTime = Date.now()
         return { granted: true }
@@ -413,13 +421,7 @@ export class AIServiceManager {
               'cpu_preheat_failed'
           )
       logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 轻量CPU引擎主动预热失败:', reason)
-      this.notifyFrontend(
-        'error',
-        t('轻量CPU引擎预热失败，请重试'),
-        false,
-        'waiting-for-ai',
-        5000
-      )
+      this.notifyFrontend('error', t('轻量CPU引擎预热失败，请重试'), false, 'waiting-for-ai', 5000)
       this.markStartupFailure('cpu', reason, { permanent: isCrashLoop })
       return { granted: false, reason, terminalKind: 'tier1_fallback' }
     } catch (err) {
@@ -517,10 +519,7 @@ export class AIServiceManager {
 
     // ⑥ 主动拉起与零轮询 SSE 反应式等待
     if (currStatus === 'stopped' || currStatus === 'stopping') {
-      logger.info(
-        LogCategory.ANALYSIS_QUEUE,
-        '[分析队列] 检测到引擎未运行，因高阶分析意图自动拉起'
-      )
+      logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 检测到引擎未运行，因高阶分析意图自动拉起')
     }
 
     const res = await engineBridgeService.ensureReady({

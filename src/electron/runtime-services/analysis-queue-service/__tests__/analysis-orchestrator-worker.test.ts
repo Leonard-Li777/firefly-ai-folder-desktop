@@ -78,7 +78,8 @@ vi.mock('../../hibernation/module-hibernation-coordinator', () => ({
   moduleHibernationCoordinator: {
     notifyModuleResident: vi.fn(),
     cancelIdleHibernation: vi.fn(),
-    setAsrExpectedActive: vi.fn()
+    setAsrExpectedActive: vi.fn(),
+    acquireAsrActiveLease: vi.fn(() => ({ release: vi.fn() }))
   }
 }))
 
@@ -152,14 +153,16 @@ describe('AnalysisOrchestratorWorker 全通道统一门控与 FileProcessor 收�
       }
     })
 
-    updateItemStatus = vi.fn((itemId: number, status: any, progress: number, error?: string, extra?: any) => {
-      statusHistory.push({ itemId, status, progress, error, extra })
-      const target = itemMap.get(itemId)
-      if (target) {
-        target.status = status
-        target.progress = progress
+    updateItemStatus = vi.fn(
+      (itemId: number, status: any, progress: number, error?: string, extra?: any) => {
+        statusHistory.push({ itemId, status, progress, error, extra })
+        const target = itemMap.get(itemId)
+        if (target) {
+          target.status = status
+          target.progress = progress
+        }
       }
-    })
+    )
 
     queueManagerMock = {
       hasItem: vi.fn((id: number) => itemMap.has(id))
@@ -379,7 +382,13 @@ describe('AnalysisOrchestratorWorker 全通道统一门控与 FileProcessor 收�
       itemMap.set(item1.id, item1)
       const c1 = new AbortController()
       c1.abort()
-      const res1 = await realFp.completeAsCpuOnly(item1, 'test', 'tier1_fallback', c1.signal, 'fp-201')
+      const res1 = await realFp.completeAsCpuOnly(
+        item1,
+        'test',
+        'tier1_fallback',
+        c1.signal,
+        'fp-201'
+      )
       expect(res1).toBe('aborted')
       expect(item1.status).toBe('pending')
       expect(mockDatabaseService.markFileAnalyzed).not.toHaveBeenCalled()
@@ -387,7 +396,13 @@ describe('AnalysisOrchestratorWorker 全通道统一门控与 FileProcessor 收�
       // 2. CAS 非终态守卫：已 completed / failed 幂等返回 already_terminal
       const itemDone = createItem(202, { status: 'completed' })
       itemMap.set(itemDone.id, itemDone)
-      const res2 = await realFp.completeAsCpuOnly(itemDone, 'test', 'tier1_fallback', undefined, 'fp-202')
+      const res2 = await realFp.completeAsCpuOnly(
+        itemDone,
+        'test',
+        'tier1_fallback',
+        undefined,
+        'fp-202'
+      )
       expect(res2).toBe('already_terminal')
       expect(mockSolidifyCanonicalForTerminal).not.toHaveBeenCalled()
 
@@ -398,7 +413,13 @@ describe('AnalysisOrchestratorWorker 全通道统一门控与 FileProcessor 收�
       mockDatabaseService.markFileAnalyzed.mockImplementationOnce(async () => {
         c3.abort()
       })
-      const res3 = await realFp.completeAsCpuOnly(item3, 'test', 'tier1_fallback', c3.signal, 'fp-203')
+      const res3 = await realFp.completeAsCpuOnly(
+        item3,
+        'test',
+        'tier1_fallback',
+        c3.signal,
+        'fp-203'
+      )
       expect(res3).toBe('aborted')
       expect(item3.status).toBe('pending')
       expect(mockSolidifyCanonicalForTerminal).not.toHaveBeenCalled()
@@ -406,7 +427,13 @@ describe('AnalysisOrchestratorWorker 全通道统一门控与 FileProcessor 收�
       // 4. 正常路径：严格按 terminalKind 固化 + queueFtsSync + completed(100, stage: 2) + cloudSync
       const item4 = createItem(204, { status: 'analyzing' })
       itemMap.set(item4.id, item4)
-      const res4 = await realFp.completeAsCpuOnly(item4, 'engine_unavailable', 'tier1_fallback', undefined, 'fp-204')
+      const res4 = await realFp.completeAsCpuOnly(
+        item4,
+        'engine_unavailable',
+        'tier1_fallback',
+        undefined,
+        'fp-204'
+      )
       expect(res4).toBe('completed')
       expect(mockSolidifyCanonicalForTerminal).toHaveBeenCalledWith('tier1_fallback', 'fp-204')
       expect(mockQueueFtsSync).toHaveBeenCalledWith('fp-204')

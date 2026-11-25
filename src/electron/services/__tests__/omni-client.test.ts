@@ -198,4 +198,116 @@ describe('OmniClient searchFastFs API 契约测试', () => {
     expect(parsedUrl.searchParams.get('q')).toBe('test')
     expect(parsedUrl.searchParams.get('limit')).toBe('50')
   })
+
+  describe('tagText 6 态权威映射契约测试', () => {
+    const basePayload = {
+      fileFingerprint: 'fp-retag-1',
+      text: '科技论文报告摘要',
+      allowNewTags: true,
+      excludeNames: [],
+      sourceKind: 'document' as const,
+      mediaKind: 'document' as const
+    }
+
+    it('支持 6 态权威优先级映射（success_with_tags / authoritative_empty / no_replacement / degraded / failed / aborted）', async () => {
+      const client = OmniClient.getInstance()
+
+      // 1. aborted (signal 预先中止)
+      const ac = new AbortController()
+      ac.abort('user-cancel')
+      expect(await client.tagText(basePayload, 5000, ac.signal)).toEqual({
+        ok: false,
+        status: 'aborted',
+        items: []
+      })
+
+      // 2. failed (HTTP 500)
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        headers: new Headers()
+      })
+      expect(await client.tagText(basePayload, 5000)).toEqual({
+        ok: false,
+        status: 'failed',
+        items: []
+      })
+
+      // 3. degraded (x-omni-tag-degraded 缺失或为 true)
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'x-omni-tag-degraded': 'true',
+          'x-omni-tag-gate-evaluated': 'false'
+        }),
+        json: async () => [{ code: 'omw.1', name: '科技' }]
+      })
+      expect(await client.tagText(basePayload, 5000)).toEqual({
+        ok: false,
+        status: 'degraded',
+        items: [{ code: 'omw.1', name: '科技' }]
+      })
+
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: async () => []
+      })
+      expect(await client.tagText(basePayload, 5000)).toEqual({
+        ok: false,
+        status: 'degraded',
+        items: []
+      })
+
+      // 4. no_replacement (Gate-Evaluated=false 或 allowNewTags=false)
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'x-omni-tag-degraded': 'false',
+          'x-omni-tag-gate-evaluated': 'false'
+        }),
+        json: async () => [{ code: 'omw.1', name: '科技' }]
+      })
+      expect(await client.tagText(basePayload, 5000)).toEqual({
+        ok: false,
+        status: 'no_replacement',
+        items: [{ code: 'omw.1', name: '科技' }]
+      })
+
+      // 5. success_with_tags
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'x-omni-tag-degraded': 'false',
+          'x-omni-tag-gate-evaluated': 'true'
+        }),
+        json: async () => [{ code: '_ext.1', name: '深度学习' }]
+      })
+      expect(await client.tagText(basePayload, 5000)).toEqual({
+        ok: true,
+        status: 'success_with_tags',
+        items: [{ code: '_ext.1', name: '深度学习' }]
+      })
+
+      // 6. authoritative_empty
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        headers: new Headers({
+          'x-omni-tag-degraded': 'false',
+          'x-omni-tag-gate-evaluated': 'true'
+        }),
+        json: async () => []
+      })
+      expect(await client.tagText(basePayload, 5000)).toEqual({
+        ok: true,
+        status: 'authoritative_empty',
+        items: []
+      })
+    })
+  })
 })

@@ -928,16 +928,40 @@ export class FileCrudMixin extends FileDaoSharedBase {
         if (completedMode) {
           finalStatsObj.completed_mode = completedMode
         }
-        // [SLICE-06] 白名单必须保留增量完整性能力履历与空尝试记录，否则会被静默丢弃导致无限重跑。
-        // 优先采用本次写入值，缺省回退历史值，实现多次写入的增量合并保留。
+        // [SLICE-06] 白名单必须保留增量完整性能力履历、retag_epoch 与空尝试记录，否则会被静默丢弃导致无限重跑与 ABA 失效。
         const attemptedEmpty = incomingStats.attempted_empty ?? existingStats.attempted_empty
         if (attemptedEmpty !== undefined) {
           finalStatsObj.attempted_empty = attemptedEmpty
         }
-        const appliedCapabilities =
-          incomingStats.appliedCapabilities ?? existingStats.appliedCapabilities
-        if (appliedCapabilities !== undefined) {
-          finalStatsObj.appliedCapabilities = appliedCapabilities
+        const incomingEpoch =
+          typeof incomingStats.retag_epoch === 'number' &&
+          Number.isFinite(incomingStats.retag_epoch)
+            ? incomingStats.retag_epoch
+            : 0
+        const existingEpoch =
+          typeof existingStats.retag_epoch === 'number' &&
+          Number.isFinite(existingStats.retag_epoch)
+            ? existingStats.retag_epoch
+            : 0
+        const maxRetagEpoch = Math.max(incomingEpoch, existingEpoch)
+        if (maxRetagEpoch > 0) {
+          finalStatsObj.retag_epoch = maxRetagEpoch
+        }
+        const mergedAppliedCapabilities =
+          incomingStats.appliedCapabilities || existingStats.appliedCapabilities
+            ? {
+                ...(existingStats.appliedCapabilities &&
+                typeof existingStats.appliedCapabilities === 'object'
+                  ? existingStats.appliedCapabilities
+                  : {}),
+                ...(incomingStats.appliedCapabilities &&
+                typeof incomingStats.appliedCapabilities === 'object'
+                  ? incomingStats.appliedCapabilities
+                  : {})
+              }
+            : undefined
+        if (mergedAppliedCapabilities && Object.keys(mergedAppliedCapabilities).length > 0) {
+          finalStatsObj.appliedCapabilities = mergedAppliedCapabilities
         }
 
         newStatsJson = JSON.stringify(finalStatsObj)

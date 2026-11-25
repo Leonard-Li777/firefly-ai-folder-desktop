@@ -109,6 +109,8 @@ export function Footer() {
   const { error, openErrorDialog } = useAIServiceError()
   const toggleQueue = useAnalysisQueueStore(s => s.toggleQueue)
   const isPaused = useAnalysisQueueStore(s => s.snapshot?.status === 'paused')
+  const lifecyclePhase = useAnalysisQueueStore(s => s.snapshot?.lifecyclePhase)
+  const warmupHintCode = useAnalysisQueueStore(s => s.snapshot?.warmupHintCode)
   const analyzing = useAnalysisQueueStore(
     useShallow(s => {
       const currentItem = s.snapshot?.currentAnalyzingItem
@@ -780,7 +782,11 @@ export function Footer() {
     }
 
     // 非 CPU 模式 (本地萤核 / 云端引擎)：原逻辑已完成
-    if (isQueueAnalyzing || serviceStatus === AIServiceStatus.PROCESSING) {
+    if (
+      isQueueAnalyzing ||
+      lifecyclePhase === 'warming_up' ||
+      serviceStatus === AIServiceStatus.PROCESSING
+    ) {
       return AIServiceStatus.PROCESSING
     }
     if (modelMode === 'local' && isAdvancedAiEnabled) {
@@ -886,7 +892,10 @@ export function Footer() {
   // 例外：队列正在分析时不得被「Omni 服务就绪」覆盖——Omni 的 running 只表示进程存活，
   // 不表示当前没有在分析，覆盖后同样会出现「分析中却显示就绪」的矛盾。
   const finalAiServiceInfo =
-    !isAdvancedAiEnabled && omniStatus !== null && !isQueueAnalyzing
+    !isAdvancedAiEnabled &&
+    omniStatus !== null &&
+    !isQueueAnalyzing &&
+    lifecyclePhase !== 'warming_up'
       ? omniAiServiceInfo
       : effectiveAiServiceInfo
 
@@ -1171,6 +1180,18 @@ export function Footer() {
                   <span className="max-w-[220px] truncate text-foreground/90 font-medium">
                     {displayItem.workspaceName ? `【${displayItem.workspaceName}】` : ''}
                     {displayItem.name}
+                  </span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground font-normal">
+                    {t('等待: {count}', { count: waiting })}
+                  </span>
+                </>
+              ) : !isQueueAnalyzing && lifecyclePhase === 'warming_up' ? (
+                <>
+                  <span className="text-blue-600 dark:text-sky-400 font-semibold tracking-tight animate-pulse">
+                    {warmupHintCode === 'loading_models'
+                      ? t('正在加载识别模型，首次准备稍慢…')
+                      : t('正在准备分析引擎，完成后自动开始')}
                   </span>
                   <span className="text-muted-foreground/40">·</span>
                   <span className="text-muted-foreground font-normal">

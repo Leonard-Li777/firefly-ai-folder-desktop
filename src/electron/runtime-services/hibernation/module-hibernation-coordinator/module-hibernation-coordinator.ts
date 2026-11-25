@@ -51,10 +51,7 @@ import {
   TTS_IDLE_TIMEOUT_MS
 } from '../types'
 import type { ModuleHibernationCoordinatorOptions, OmniLifecycleProvider } from './types'
-import {
-  AdapterLoadOutcome,
-  resolveHibernationTargetAdapter
-} from '../target-adapter'
+import { AdapterLoadOutcome, resolveHibernationTargetAdapter } from '../target-adapter'
 
 export class ModuleHibernationCoordinator {
   private readonly runtimeStore: IModuleRuntimeStore
@@ -82,10 +79,13 @@ export class ModuleHibernationCoordinator {
   private readonly blockedUnloadCache = new Map<string, boolean>()
 
   /**
-   * 当前活跃分析任务是否真正需要 ASR 常驻（由 file-processor 依据工作区 effectiveConfig 写入）。
+   * 当前活跃分析任务是否真正需要 ASR 常驻（由 acquireAsrActiveLease() 引用计数与 5s 宽限期驱动）。
    * 关闭 ASR 的工作区即便在跑音视频，对账器也严禁据此把 asr-sensevoice-onnx 标为 resident。
    */
   private asrExpectedActive = false
+  private asrLeaseCount = 0
+  private asrGraceTimer: ReturnType<typeof setTimeout> | null = null
+  private static readonly ASR_LEASE_GRACE_MS = 5_000
 
   /** 崩溃滑动窗口与稳定驻留计时字典 */
   private readonly lastCrashAtMap = new Map<string, number>()
@@ -226,11 +226,44 @@ export class ModuleHibernationCoordinator {
    * @param residentBytes  已知内存占用字节数（可选，0 或未传则不更新）
    */
   /**
-   * 声明当前活跃分析任务是否需要 ASR 常驻（只由 file-processor 依 effectiveConfig 调用）。
-   * reconcileLiveStates 对 ASR 的常驻裁决必须依赖此声明，杜绝后台对账偷标。
+   * 声明当前活跃分析任务是否需要 ASR 常驻（保留向后兼容；新代码统一使用 `acquireAsrActiveLease()`）。
    */
   setAsrExpectedActive(active: boolean): void {
     this.asrExpectedActive = active
+  }
+
+  /**
+   * 获取有所有权的 ASR 活跃期望租约（Spec §2.1 / §3.1）。
+   * - 支持批次预热窗口与单文件处理并行叠加引用计数；
+   * - `release()` 幂等；计数归零时内置 5s 释放宽限期，期间若新窗口/文件续租则自动续期取消卸载。
+   */
+  acquireAsrActiveLease(): { release: () => void } {
+    if (this.asrGraceTimer) {
+      clearTimeout(this.asrGraceTimer)
+      this.asrGraceTimer = null
+    }
+    this.asrLeaseCount += 1
+    this.asrExpectedActive = true
+    let released = false
+    return {
+      release: () => {
+        if (released) return
+        released = true
+        this.asrLeaseCount = Math.max(0, this.asrLeaseCount - 1)
+        if (this.asrLeaseCount === 0) {
+          if (this.asrGraceTimer) {
+            clearTimeout(this.asrGraceTimer)
+          }
+          this.asrGraceTimer = setTimeout(() => {
+            this.asrGraceTimer = null
+            if (this.asrLeaseCount === 0) {
+              this.asrExpectedActive = false
+            }
+          }, ModuleHibernationCoordinator.ASR_LEASE_GRACE_MS)
+          this.asrGraceTimer.unref?.()
+        }
+      }
+    }
   }
 
   notifyModuleResident(targetId: string, residentBytes?: number): void {
@@ -2031,9 +2064,7 @@ export class ModuleHibernationCoordinator {
           `[Coordinator] 单飞加载未完成或被抢占，回收孤儿进程树: targetId=${targetId}, pid=${spawnedIdentity.pid}`
         )
         if (this.engineBridgeServiceInstance) {
-          await this.engineBridgeServiceInstance
-            .stopProcessTree(spawnedIdentity)
-            .catch(() => {})
+          await this.engineBridgeServiceInstance.stopProcessTree(spawnedIdentity).catch(() => {})
           const exitStatus = await this.engineBridgeServiceInstance
             .awaitProcessTreeExit(spawnedIdentity, 5_000)
             .catch(() => 'unknown' as const)
@@ -3010,10 +3041,7 @@ export class ModuleHibernationCoordinator {
       await this.omniLifecycleProvider.ensureRunning()
       const currentGen = this.omniLifecycleProvider.getGeneration()
       const currentRt = this.runtimeStore.get(targetId)
-      if (
-        currentRt?.state === 'resident' &&
-        currentRt.loadedGeneration !== currentGen
-      ) {
+      if (currentRt?.state === 'resident' && currentRt.loadedGeneration !== currentGen) {
         logger.info(
           LogCategory.SYSTEM,
           `[Coordinator] 检测到 Omni 代际漂移，即时复位陈旧 resident 并触发按需加载: targetId=${targetId}, loadedGen=${currentRt.loadedGeneration}, currentGen=${currentGen}`
@@ -3610,7 +3638,10 @@ export class ModuleHibernationCoordinator {
         diagLog.reconciledEngine || diagLog.reconciledAsr || diagLog.reconciledTts
       )
       if (hasReconcileChange) {
-        logger.info(LogCategory.SYSTEM, `[HibernationDiag] 对账纠偏完成: ${JSON.stringify(diagLog)}`)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[HibernationDiag] 对账纠偏完成: ${JSON.stringify(diagLog)}`
+        )
       } else {
         logger.debug(LogCategory.SYSTEM, `[HibernationDiag] 对账完成: ${JSON.stringify(diagLog)}`)
       }
@@ -3668,7 +3699,9 @@ export class ModuleHibernationCoordinator {
   /**
    * 异步探测并对齐 Omni 端侧模型状态：遇探测超时（'unknown'）保持原态并 warn，绝不误置 hibernated
    */
-  async reconcileOmniModuleLiveState(targetId: string): Promise<'resident' | 'hibernated' | 'unknown'> {
+  async reconcileOmniModuleLiveState(
+    targetId: string
+  ): Promise<'resident' | 'hibernated' | 'unknown'> {
     const adapter = resolveHibernationTargetAdapter(targetId)
     if (adapter.targetType !== 'omni_module') {
       return 'unknown'
