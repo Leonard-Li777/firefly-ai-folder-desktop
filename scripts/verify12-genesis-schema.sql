@@ -419,10 +419,10 @@
     UNIQUE(file_fingerprint, chunk_index)
   );
 
-  -- [Issue 04 Step 3 / Spec §3.1.C.3] 检索时序命中后按 (file_fingerprint, start_sec) 区间点查，
-  -- 配合 HybridSearchArbiter SQL 层下推 WHERE start_sec < videoLimitSec，避免全量加载 7,200 行 chunks。
+  -- [Issue 04 Step 3 / Spec §3.3] 检索时序命中后按 (file_fingerprint, start_sec) 区间点查并覆盖返回所需列，
+  -- 配合 HybridSearchArbiter SQL 层下推 WHERE start_sec < videoLimitSec，零回表（USING COVERING INDEX）加载 chunks。
   CREATE INDEX IF NOT EXISTS idx_fvc_fp_start
-  ON file_video_chunks(file_fingerprint, start_sec);
+  ON file_video_chunks(file_fingerprint, start_sec, chunk_index, end_sec, rep_pts_sec);
 
   -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 - 读时派生升维版)
   CREATE TABLE IF NOT EXISTS file_video_segments (
@@ -459,7 +459,7 @@
     version           TEXT NOT NULL,                 -- 当前激活的版本号 (SemVer)
     catalog_version   INTEGER NOT NULL DEFAULT 1,    -- 市场元数据版本号 (单调递增，防云端旧版本回退覆盖)
     category          TEXT NOT NULL                  -- 模块分类
-                      CHECK (category IN ('ai-engine', 'perception', 'media', 'tool', 'parser', 'vfs-archive')),
+                      CHECK (category IN ('ai-engine', 'perception', 'media', 'media_enhance', 'tool', 'parser', 'vfs-archive')),
     author_code       TEXT NOT NULL DEFAULT 'official'
                       CHECK (author_code IN ('official', 'community', 'third_party')),
     author_name       TEXT,                          -- 第三方/社区开发者名称 (官方插件保持为 NULL，由前端 t('Firefly 官方') 动态国际化)
@@ -748,7 +748,7 @@
   CREATE INDEX IF NOT EXISTS idx_ftc_user_time
     ON firecore_transactions_cache(user_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  -- 注：file_video_chunks(file_fingerprint) 单列索引已由 L475 idx_fvc_fp_start(file_fingerprint, start_sec) 左前缀覆盖，不再建冗余索引。
+  -- 注：file_video_chunks(file_fingerprint) 单列索引已由 idx_fvc_fp_start(file_fingerprint, start_sec, chunk_index, end_sec, rep_pts_sec) 5 列覆盖索引左前缀覆盖，不再建冗余索引。
 
   -- 19. FTS 同步触发器：废除 6 个内联 decompress_text 写触发器，
   -- 仅保留按不可变 files.id（rowid）删除三张虚表的唯一删除触发器。

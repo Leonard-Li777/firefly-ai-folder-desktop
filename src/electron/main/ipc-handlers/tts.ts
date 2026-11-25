@@ -26,29 +26,184 @@ import {
 import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-service'
 import { modularResourceService } from '../../runtime-services/system/modular-resource-service'
 import { moduleHibernationCoordinator } from '../../runtime-services/hibernation/module-hibernation-coordinator'
+import type { HibernationLeaseHandle } from '../../runtime-services/hibernation/types'
+import { omniService } from '../../runtime-services/system/omni-service'
 
-/** M5-TTS 纯流式会话运行态记录 */
-interface ActiveStreamSession {
-  sessionId: string
-  sender: Electron.WebContents
-  pause: () => void
-  resume: () => void
-  abort: () => void
-  lastHeartbeatTime: number
-  pendingFramesCount: number
-  watchdogTimer: NodeJS.Timeout
+/** 将插件注册表 ID 映射为休眠目录目标 ID */
+export function resolveTtsHibernationTargetId(moduleId?: string): 'tts-m5-onnx' | 'tts-moss-onnx' {
+  return moduleId === 'tts_m5_onnx' ? 'tts-m5-onnx' : 'tts-moss-onnx'
+}
+
+/** 单播 M5-TTS 纯流式会话唯一资源句柄（收敛全出口至幂等 terminate()） */
+export class TtsStreamSession {
+  readonly abortController = new AbortController()
+  readonly sender: Electron.WebContents
+  sessionId = ''
+  lease?: HibernationLeaseHandle
   recorder?: StreamWavRecorder
+  streamCtrl?: {
+    sessionId: string
+    pause: () => void
+    resume: () => void
+    abort: () => void
+  }
+  watchdogTimer?: NodeJS.Timeout
+  lastHeartbeatTime = Date.now()
+  residentEnteredAt = 0
+  receivedFirstChunk = false
+  pendingFramesCount = 0
+  playbackState: 'playing' | 'paused' = 'playing'
+  terminated = false
+
+  private onDestroyedListener?: () => void
+  private onRenderGoneListener?: () => void
+  private readonly onTerminateCleanup: (session: TtsStreamSession) => void
+
+  constructor(
+    sender: Electron.WebContents,
+    onTerminateCleanup: (session: TtsStreamSession) => void
+  ) {
+    this.sender = sender
+    this.onTerminateCleanup = onTerminateCleanup
+    this.onDestroyedListener = () => this.terminate('RENDERER_DESTROYED')
+    this.onRenderGoneListener = () =>
+      this.terminate('RENDERER_GONE', { endedReason: 'error', errorCode: 'RENDERER_GONE' })
+    this.sender.once?.('destroyed', this.onDestroyedListener)
+    this.sender.once?.('render-process-gone', this.onRenderGoneListener)
+  }
+
+  /** 仅在闸门通过、模块进入 resident 后启动看门狗（避免冷启动解码期间误超时） */
+  startWatchdogAfterResident(firstChunkTimeoutMs = 60_000): void {
+    if (this.terminated || this.watchdogTimer) return
+    this.residentEnteredAt = Date.now()
+    this.lastHeartbeatTime = Date.now()
+    this.watchdogTimer = setInterval(() => {
+      if (this.terminated) {
+        this.clearWatchdog()
+        return
+      }
+      const now = Date.now()
+      if (!this.receivedFirstChunk && now - this.residentEnteredAt > firstChunkTimeoutMs) {
+        logger.error(
+          LogCategory.MAIN,
+          `[TTS Stream IPC] 首块超时熔断: sessionId=${this.sessionId}, elapsed=${now - this.residentEnteredAt}ms`
+        )
+        this.terminate('FIRST_CHUNK_TIMEOUT', {
+          endedReason: 'error',
+          errorCode: 'FIRST_CHUNK_TIMEOUT'
+        })
+        return
+      }
+      if (this.pendingFramesCount >= 16 && now - this.lastHeartbeatTime > 5000) {
+        logger.error(
+          LogCategory.MAIN,
+          `[TTS Stream IPC] 渲染层假死熔断: sessionId=${this.sessionId}, 积压帧=${this.pendingFramesCount}`
+        )
+        this.terminate('RENDERER_FROZEN_TIMEOUT', {
+          endedReason: 'renderer_frozen',
+          errorCode: 'RENDERER_FROZEN_TIMEOUT'
+        })
+      }
+    }, 1000)
+    this.watchdogTimer.unref?.()
+  }
+
+  /** 刷新播放态活性信号与租约续期 */
+  touchPlayback(state?: 'playing' | 'paused'): void {
+    if (this.terminated) return
+    const now = Date.now()
+    this.lastHeartbeatTime = now
+    if (state) {
+      this.playbackState = state
+    }
+    if (this.lease) {
+      const registry = moduleHibernationCoordinator.getLeaseRegistry()
+      registry?.livenessSourceRegistry.recordPlayback(
+        this.lease.leaseId,
+        state ?? this.playbackState,
+        now
+      )
+      registry?.renew(this.lease.leaseId)
+    }
+  }
+
+  private clearWatchdog(): void {
+    if (this.watchdogTimer) {
+      clearInterval(this.watchdogTimer)
+      this.watchdogTimer = undefined
+    }
+  }
+
+  /** 全终态唯一幂等出口 */
+  terminate(
+    reason: string,
+    notify?: { endedReason: string; errorCode?: string; summary?: StreamEndMeta }
+  ): void {
+    if (this.terminated) return
+    this.terminated = true
+
+    this.clearWatchdog()
+    if (this.onDestroyedListener) {
+      this.sender.off?.('destroyed', this.onDestroyedListener)
+      this.onDestroyedListener = undefined
+    }
+    if (this.onRenderGoneListener) {
+      this.sender.off?.('render-process-gone', this.onRenderGoneListener)
+      this.onRenderGoneListener = undefined
+    }
+
+    if (!this.abortController.signal.aborted) {
+      this.abortController.abort(reason)
+    }
+    try {
+      this.streamCtrl?.abort()
+    } catch {}
+
+    if (this.recorder) {
+      this.recorder.finalize(reason === 'COMPLETED').catch(() => {})
+    }
+
+    const leaseToRelease = this.lease
+    this.lease = undefined
+    if (leaseToRelease) {
+      leaseToRelease.release()
+    }
+
+    this.onTerminateCleanup(this)
+
+    if (notify && this.sessionId && !this.sender.isDestroyed?.()) {
+      this.sender.send('tts:stream-ended', {
+        sessionId: this.sessionId,
+        reason: notify.endedReason,
+        ...(notify.errorCode ? { errorCode: notify.errorCode } : {}),
+        ...(notify.summary ? { summary: notify.summary } : {})
+      })
+    }
+  }
 }
 
 /** 管理会话级活跃请求的 AbortController，键为 sessionId */
 const activeSessionControllers = new Map<number, Set<AbortController>>()
 
-/** 管理纯流式 TTS 活跃会话，键为 sessionId（置于模块顶层以供 isTTSActive 查询） */
-const activeStreamSessions = new Map<string, ActiveStreamSession>()
+/** 单播纯流式 TTS 全局唯一活跃会话句柄 */
+let activeStreamSession: TtsStreamSession | null = null
+
+/** 获取当前活跃流式会话（主要供测试观测） */
+export function getActiveTtsStreamSession(): TtsStreamSession | null {
+  return activeStreamSession
+}
 
 /** 检测当前是否有活跃的 TTS 合成或流式朗读任务 */
 export function isTTSActive(): boolean {
-  return activeSessionControllers.size > 0 || activeStreamSessions.size > 0
+  return activeSessionControllers.size > 0 || activeStreamSession !== null
+}
+
+/** 将两个 AbortSignal 合成为受控联合信号 */
+function combineAbortSignals(a?: AbortSignal, b?: AbortSignal): AbortSignal | undefined {
+  if (a && b) {
+    return typeof AbortSignal.any === 'function' ? AbortSignal.any([a, b]) : a
+  }
+  return a ?? b
 }
 
 export function registerTTSIPCHandlers(): void {
@@ -82,19 +237,45 @@ export function registerTTSIPCHandlers(): void {
         set.add(controller)
       }
 
-      // 同步 TTS 模块常驻状态至休眠协调器并取消媒体组空闲休眠
-      moduleHibernationCoordinator.notifyModuleResident('tts-m5-onnx')
-      moduleHibernationCoordinator.cancelIdleHibernation('tts_media')
+      const targetId = resolveTtsHibernationTargetId(activeTTS.id)
+
+      const runWithGateRetry = async (attempt = 0): Promise<TTSChunkResult | null> => {
+        const entryGen = omniService.getGeneration()
+        try {
+          return await moduleHibernationCoordinator.withHibernationGate(
+            {
+              targetId,
+              clusterId: 'tts_media',
+              livenessSourceKey: 'task_progress'
+            },
+            async (_lease, gateSignal) => {
+              const combined = combineAbortSignals(controller?.signal, gateSignal)
+              return await omniClient.synthesizeTTSChunk(text, voiceId, speed, sid, combined)
+            }
+          )
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          if (
+            attempt === 0 &&
+            msg === 'ENGINE_UNAVAILABLE' &&
+            omniService.getGeneration() !== entryGen
+          ) {
+            logger.warn(
+              LogCategory.MAIN,
+              `[TTS IPC] 检测到 Omni 代际切换引发 /chunk 503，复位并在闸门内自动重试一次: targetId=${targetId}`
+            )
+            moduleHibernationCoordinator.forceResetExternalHibernated(
+              targetId,
+              omniService.getGeneration()
+            )
+            return await runWithGateRetry(1)
+          }
+          throw err
+        }
+      }
 
       try {
-        const result = await omniClient.synthesizeTTSChunk(
-          text,
-          voiceId,
-          speed,
-          sid,
-          controller?.signal
-        )
-        return result
+        return await runWithGateRetry()
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
         if (msg === 'ABORTED') {
@@ -126,7 +307,7 @@ export function registerTTSIPCHandlers(): void {
             }
           }
         }
-        if (activeSessionControllers.size === 0 && activeStreamSessions.size === 0) {
+        if (activeSessionControllers.size === 0 && !activeStreamSession) {
           moduleHibernationCoordinator.scheduleIdleHibernation('tts_media')
         }
       }
@@ -513,7 +694,7 @@ export function registerTTSIPCHandlers(): void {
   // M5-TTS 纯流式会话 IPC 管道 (v1.7.2 规格书 §4.0 / §4.2 / §4.3)
   // ============================================================================
 
-  // 18. 启动纯流式 TTS 会话
+  // 18. 启动纯流式 TTS 会话（单播 TtsStreamSession 唯一句柄闭环）
   ipcMain.handle(
     'tts:stream-start',
     async (
@@ -535,15 +716,26 @@ export function registerTTSIPCHandlers(): void {
       sampleRate?: number
       errorCode?: string
     }> => {
-      // 若存在旧流式会话，先主动优雅中止（单机单活抢占）
-      for (const [oldId, oldSession] of activeStreamSessions.entries()) {
-        logger.info(LogCategory.MAIN, `[TTS Stream IPC] 抢占中止旧流式会话: ${oldId}`)
-        oldSession.abort()
-        clearInterval(oldSession.watchdogTimer)
-        if (oldSession.recorder) {
-          oldSession.recorder.finalize(false).catch(() => {})
+      // 入口槽位校核：流式纯协议当前仅支持 tts_m5_onnx (tts-m5-onnx)
+      const activeTTS = modularResourceService.getActiveModuleBySlot('voice_tts')
+      if (!activeTTS || activeTTS.id !== 'tts_m5_onnx') {
+        logger.debug(
+          LogCategory.MAIN,
+          `[TTS Stream IPC] 未激活 tts_m5_onnx 插件 (active=${activeTTS?.id ?? 'none'})，拒绝流式请求`
+        )
+        return {
+          ok: false,
+          errorCode: activeTTS ? 'UNSUPPORTED_BACKEND' : 'NO_ACTIVE_PLUGIN'
         }
-        activeStreamSessions.delete(oldId)
+      }
+
+      // 同步抢占：立即中止旧流式会话并在底层 abort 切断 HTTP/Rust 生成
+      if (activeStreamSession) {
+        logger.info(
+          LogCategory.MAIN,
+          `[TTS Stream IPC] 抢占中止旧流式会话: ${activeStreamSession.sessionId || 'pending'}`
+        )
+        activeStreamSession.terminate('PREEMPTED', { endedReason: 'aborted' })
       }
 
       // 同时主动中止在途的传统分块合成请求，杜绝非流式分块在后台空跑掠夺 CPU 算力与触发 409 冲突
@@ -559,174 +751,199 @@ export function registerTTSIPCHandlers(): void {
         `[TTS Stream IPC] 收到流式会话请求: voiceId=${req.voiceId}, speed=${req.speed}, 文本长度=${req.text.length}, 起始字符=${req.resumeCharStart || 0}`
       )
 
-      // 启动并初始化流式 WAV 落盘记录器
-      let recorder: StreamWavRecorder | undefined
-      try {
-        let cachePath = req.targetCachePath
-        if (!cachePath) {
-          cachePath =
-            (await ttsWavCacheService.getCacheWavPath({
-              filePath: req.filePath,
-              fieldName: req.fieldName,
-              fileFingerprint: req.fileFingerprint,
-              displayName: req.displayName,
-              text: req.text,
-              voiceId: req.voiceId,
-              speed: req.speed
-            })) || undefined
+      const session = new TtsStreamSession(event.sender, closed => {
+        if (activeStreamSession === closed) {
+          activeStreamSession = null
         }
-
-        if (cachePath) {
-          recorder = new StreamWavRecorder({
-            wavPath: cachePath,
-            voiceId: req.voiceId,
-            displayName: req.displayName,
-            speed: req.speed,
-            fileFingerprint: req.fileFingerprint,
-            fieldName: req.fieldName,
-            textLength: req.text.length,
-            resumeCharStart: req.resumeCharStart
-          })
-          await recorder.init()
-        }
-      } catch (recErr) {
-        logger.warn(LogCategory.MAIN, '[TTS Stream IPC] 初始化 StreamWavRecorder 异常:', recErr)
-      }
-
-      // 同步 TTS 模块常驻状态至休眠协调器并取消媒体组空闲休眠
-      moduleHibernationCoordinator.notifyModuleResident('tts-m5-onnx')
-      moduleHibernationCoordinator.cancelIdleHibernation('tts_media')
-
-      const checkAndScheduleTTSIdle = () => {
-        if (activeStreamSessions.size === 0 && activeSessionControllers.size === 0) {
+        if (activeSessionControllers.size === 0 && !activeStreamSession) {
           moduleHibernationCoordinator.scheduleIdleHibernation('tts_media')
         }
-      }
+      })
+      activeStreamSession = session
+
+      let leaseAbortUnbind: (() => void) | undefined
 
       try {
-        const streamCtrl = await omniClient.startTTSStream(
-          {
-            text: req.text,
-            voiceId: req.voiceId,
-            speed: req.speed,
-            resumeCharStart: req.resumeCharStart
-          },
-          {
-            onChunk: (payload: StreamChunkPayload) => {
-              const session = activeStreamSessions.get(payload.sessionId)
-              if (session && !session.sender.isDestroyed()) {
-                session.pendingFramesCount++
-                if (
-                  payload.isFirst ||
-                  payload.isLast ||
-                  session.pendingFramesCount <= 3 ||
-                  session.pendingFramesCount % 4 === 0
-                ) {
-                  const chunkSec = (payload.sampleCount / 24000).toFixed(2)
-                  const totalSec = ((payload.startSample + payload.sampleCount) / 24000).toFixed(2)
+        let lease!: HibernationLeaseHandle
+        let leaseSignal!: AbortSignal
+        let streamCtrl!: {
+          sessionId: string
+          pause: () => void
+          resume: () => void
+          abort: () => void
+        }
+
+        // 1. 闸门与长会话租约申领（冷加载期不计首块看门狗耗时）；若遇 503 且 Omni 已换代则单次自动重试
+        for (let attempt = 0; attempt < 2; attempt++) {
+          const entryGen = omniService.getGeneration?.() ?? 0
+          const acquired = await moduleHibernationCoordinator.acquireStreamLease({
+            targetId: 'tts-m5-onnx',
+            clusterId: 'tts_media',
+            livenessSourceKey: 'player_state'
+          })
+          lease = acquired.lease
+          leaseSignal = acquired.signal
+
+          if (session.terminated || session.abortController.signal.aborted) {
+            lease.release()
+            return { ok: false, errorCode: 'ABORTED' }
+          }
+
+          session.lease = lease
+          const onLeaseAbort = () => {
+            session.terminate('LEASE_ABORTED', { endedReason: 'aborted' })
+          }
+          if (leaseSignal.aborted) {
+            onLeaseAbort()
+            return { ok: false, errorCode: 'ABORTED' }
+          }
+          leaseSignal.addEventListener('abort', onLeaseAbort, { once: true })
+          leaseAbortUnbind = () => leaseSignal.removeEventListener('abort', onLeaseAbort)
+
+          // 2. 初始化流式 WAV 落盘记录器（仅首轮初始化一次）
+          if (!session.recorder) {
+            try {
+              let cachePath = req.targetCachePath
+              if (!cachePath) {
+                cachePath =
+                  (await ttsWavCacheService.getCacheWavPath({
+                    filePath: req.filePath,
+                    fieldName: req.fieldName,
+                    fileFingerprint: req.fileFingerprint,
+                    displayName: req.displayName,
+                    text: req.text,
+                    voiceId: req.voiceId,
+                    speed: req.speed
+                  })) || undefined
+              }
+
+              if (cachePath && !session.terminated) {
+                const recorder = new StreamWavRecorder({
+                  wavPath: cachePath,
+                  voiceId: req.voiceId,
+                  displayName: req.displayName,
+                  speed: req.speed,
+                  fileFingerprint: req.fileFingerprint,
+                  fieldName: req.fieldName,
+                  textLength: req.text.length,
+                  resumeCharStart: req.resumeCharStart
+                })
+                await recorder.init()
+                if (session.terminated) {
+                  recorder.finalize(false).catch(() => {})
+                } else {
+                  session.recorder = recorder
+                }
+              }
+            } catch (recErr) {
+              logger.warn(LogCategory.MAIN, '[TTS Stream IPC] 初始化 StreamWavRecorder 异常:', recErr)
+            }
+          }
+
+          if (session.terminated) {
+            return { ok: false, errorCode: 'ABORTED' }
+          }
+
+          // 3. 模块已进入 resident：正式激活首块 + 假死看门狗并建立 HTTP 流连接
+          session.startWatchdogAfterResident()
+          const combinedSignal = combineAbortSignals(session.abortController.signal, leaseSignal)
+
+          try {
+            streamCtrl = await omniClient.startTTSStream(
+              {
+                text: req.text,
+                voiceId: req.voiceId,
+                speed: req.speed,
+                resumeCharStart: req.resumeCharStart
+              },
+              {
+                onChunk: (payload: StreamChunkPayload) => {
+                  if (session.terminated || session.sender.isDestroyed()) return
+                  session.receivedFirstChunk = true
+                  session.pendingFramesCount++
+                  session.touchPlayback('playing')
+                  if (
+                    payload.isFirst ||
+                    payload.isLast ||
+                    session.pendingFramesCount <= 3 ||
+                    session.pendingFramesCount % 4 === 0
+                  ) {
+                    const chunkSec = (payload.sampleCount / 24000).toFixed(2)
+                    const totalSec = ((payload.startSample + payload.sampleCount) / 24000).toFixed(2)
+                    logger.info(
+                      LogCategory.MAIN,
+                      `[TTS Stream IPC] 收到音频块 seq=${payload.startSample}: 采样=${payload.sampleCount} (${chunkSec}s, 累计=${totalSec}s), 字符=[${payload.charStart}..${payload.charEnd}]`
+                    )
+                  }
+
+                  if (session.recorder) {
+                    session.recorder
+                      .appendChunk(payload.pcm, payload.charEnd, {
+                        charStart: payload.charStart,
+                        sampleCount: payload.sampleCount
+                      })
+                      .catch(() => {})
+                  }
+
+                  session.sender.send('tts:stream-chunk-data', payload)
+                },
+                onEnd: (meta: StreamEndMeta) => {
+                  if (session.terminated) return
                   logger.info(
                     LogCategory.MAIN,
-                    `[TTS Stream IPC] 收到音频块 seq=${payload.startSample}: 采样=${payload.sampleCount} (${chunkSec}s, 累计=${totalSec}s), 字符=[${payload.charStart}..${payload.charEnd}]`
+                    `[TTS Stream IPC] 流式会话完成: sessionId=${session.sessionId || streamCtrl.sessionId}, 总帧数=${meta.totalFrames}, 总采样=${meta.totalSamples} (${(meta.totalSamples / 24000).toFixed(2)}s), 耗时=${meta.elapsedMs}ms`
                   )
-                }
-
-                // 实时流式写入目标 WAV 文件并记录分句 Cue
-                if (session.recorder) {
-                  session.recorder
-                    .appendChunk(payload.pcm, payload.charEnd, {
-                      charStart: payload.charStart,
-                      sampleCount: payload.sampleCount
-                    })
-                    .catch(() => {})
-                }
-
-                session.sender.send('tts:stream-chunk-data', payload)
-              }
-            },
-            onEnd: (meta: StreamEndMeta) => {
-              const session = activeStreamSessions.get(streamCtrl.sessionId)
-              if (session) {
-                logger.info(
-                  LogCategory.MAIN,
-                  `[TTS Stream IPC] 流式会话完成: sessionId=${streamCtrl.sessionId}, 总帧数=${meta.totalFrames}, 总采样=${meta.totalSamples} (${(meta.totalSamples / 24000).toFixed(2)}s), 耗时=${meta.elapsedMs}ms`
-                )
-                clearInterval(session.watchdogTimer)
-                if (session.recorder) {
-                  session.recorder.finalize(true).catch(() => {})
-                }
-                activeStreamSessions.delete(streamCtrl.sessionId)
-                checkAndScheduleTTSIdle()
-                if (!session.sender.isDestroyed()) {
-                  session.sender.send('tts:stream-ended', {
-                    sessionId: streamCtrl.sessionId,
-                    reason: 'completed',
+                  session.terminate('COMPLETED', {
+                    endedReason: 'completed',
                     summary: meta
                   })
-                }
-              }
-            },
-            onError: (meta: StreamErrorMeta) => {
-              const session = activeStreamSessions.get(streamCtrl.sessionId)
-              if (session) {
-                clearInterval(session.watchdogTimer)
-                if (session.recorder) {
-                  session.recorder.finalize(false).catch(() => {})
-                }
-                activeStreamSessions.delete(streamCtrl.sessionId)
-                checkAndScheduleTTSIdle()
-                if (!session.sender.isDestroyed()) {
-                  session.sender.send('tts:stream-ended', {
-                    sessionId: streamCtrl.sessionId,
-                    reason: 'error',
+                },
+                onError: (meta: StreamErrorMeta) => {
+                  session.terminate(`ERROR:${meta.code}`, {
+                    endedReason: 'error',
                     errorCode: meta.code
                   })
                 }
-              }
-            }
-          }
-        )
-
-        // 设置 1000ms 心跳假死看门狗（积压 >= 16 帧且 5s 无心跳熔断）
-        const watchdogTimer = setInterval(() => {
-          const session = activeStreamSessions.get(streamCtrl.sessionId)
-          if (!session) {
-            clearInterval(watchdogTimer)
-            return
-          }
-          const now = Date.now()
-          if (session.pendingFramesCount >= 16 && now - session.lastHeartbeatTime > 5000) {
-            logger.error(
-              LogCategory.MAIN,
-              `[TTS Stream IPC] 渲染层假死熔断: sessionId=${streamCtrl.sessionId}, 积压帧=${session.pendingFramesCount}`
+              },
+              combinedSignal
             )
-            session.abort()
-            clearInterval(watchdogTimer)
-            if (session.recorder) {
-              session.recorder.finalize(false).catch(() => {})
+            break
+          } catch (streamErr: unknown) {
+            const streamMsg = streamErr instanceof Error ? streamErr.message : String(streamErr)
+            const currentGen = omniService.getGeneration?.() ?? 0
+            if (
+              attempt === 0 &&
+              streamMsg === 'TTS_STREAM_HTTP_503' &&
+              currentGen !== entryGen &&
+              !session.terminated &&
+              !session.abortController.signal.aborted
+            ) {
+              logger.warn(
+                LogCategory.MAIN,
+                `[TTS Stream IPC] 检测到 Omni 代际切换引发 /stream 503 (${entryGen} -> ${currentGen})，复位并在闸门内自动重试一次`
+              )
+              leaseAbortUnbind?.()
+              leaseAbortUnbind = undefined
+              if (session.lease === lease) {
+                session.lease = undefined
+              }
+              lease.release()
+              moduleHibernationCoordinator.forceResetExternalHibernated('tts-m5-onnx', currentGen)
+              continue
             }
-            activeStreamSessions.delete(streamCtrl.sessionId)
-            checkAndScheduleTTSIdle()
-            if (!session.sender.isDestroyed()) {
-              session.sender.send('tts:stream-ended', {
-                sessionId: streamCtrl.sessionId,
-                reason: 'renderer_frozen',
-                errorCode: 'RENDERER_FROZEN_TIMEOUT'
-              })
-            }
+            throw streamErr
           }
-        }, 1000)
+        }
 
-        activeStreamSessions.set(streamCtrl.sessionId, {
-          sessionId: streamCtrl.sessionId,
-          sender: event.sender,
-          pause: streamCtrl.pause,
-          resume: streamCtrl.resume,
-          abort: streamCtrl.abort,
-          lastHeartbeatTime: Date.now(),
-          pendingFramesCount: 0,
-          watchdogTimer,
-          recorder
-        })
+        session.streamCtrl = streamCtrl
+        session.sessionId = streamCtrl.sessionId
+
+        if (session.terminated) {
+          try {
+            streamCtrl.abort()
+          } catch {}
+          return { ok: false, errorCode: 'ABORTED' }
+        }
 
         return {
           ok: true,
@@ -734,23 +951,25 @@ export function registerTTSIPCHandlers(): void {
           sampleRate: 24000
         }
       } catch (err: unknown) {
-        if (recorder) {
-          recorder.finalize(false).catch(() => {})
-        }
+        session.terminate('START_FAILED')
         const msg = err instanceof Error ? err.message : String(err)
-        if (msg === 'ABORTED') {
+        if (msg === 'ABORTED' || (err as any)?.code === 'LOAD_ABORTED') {
           logger.debug(LogCategory.MAIN, '[TTS Stream IPC] 流式会话已中止 (ABORTED)')
           return { ok: false, errorCode: 'ABORTED' }
         }
         if (msg === 'ENGINE_BUSY_STREAMING') {
-          event.sender.send('tts:busy-rejected', {
-            code: 'ENGINE_BUSY_STREAMING',
-            message: 'TTS 引擎正处于沉浸式流式朗读中，分块通道暂不可用'
-          })
+          if (!event.sender.isDestroyed()) {
+            event.sender.send('tts:busy-rejected', {
+              code: 'ENGINE_BUSY_STREAMING',
+              message: 'TTS 引擎正处于沉浸式流式朗读中，分块通道暂不可用'
+            })
+          }
           return { ok: false, errorCode: 'ENGINE_BUSY_STREAMING' }
         }
         logger.warn(LogCategory.MAIN, '[TTS Stream IPC] 启动流式会话失败:', err)
-        return { ok: false, errorCode: msg }
+        return { ok: false, errorCode: (err as any)?.code || msg }
+      } finally {
+        leaseAbortUnbind?.()
       }
     }
   )
@@ -759,33 +978,34 @@ export function registerTTSIPCHandlers(): void {
   ipcMain.on(
     'tts:stream-flow',
     (_event, cmd: { sessionId: string; command: 'pause' | 'resume' }) => {
-      const session = activeStreamSessions.get(cmd.sessionId)
-      if (session) {
+      const session = activeStreamSession
+      if (session && !session.terminated && session.sessionId === cmd.sessionId) {
         if (cmd.command === 'pause') {
           logger.info(
             LogCategory.MAIN,
             `[TTS Stream IPC] 收到反压暂停指令: sessionId=${cmd.sessionId}`
           )
-          session.pause()
+          session.touchPlayback('paused')
+          session.streamCtrl?.pause()
         } else if (cmd.command === 'resume') {
           logger.info(
             LogCategory.MAIN,
             `[TTS Stream IPC] 收到反压恢复指令: sessionId=${cmd.sessionId}`
           )
-          session.resume()
+          session.touchPlayback('playing')
+          session.streamCtrl?.resume()
         }
       }
     }
   )
 
-  // 20. 接收渲染层心跳脉冲
+  // 20. 接收渲染层心跳脉冲（刷新 180s+ 长流租约活性与积压计数）
   ipcMain.on(
     'tts:stream-heartbeat',
     (_event, hb: { sessionId: string; bufferedSeconds: number }) => {
-      const session = activeStreamSessions.get(hb.sessionId)
-      if (session) {
-        session.lastHeartbeatTime = Date.now()
-        // 渲染层消费后重置积压计数
+      const session = activeStreamSession
+      if (session && !session.terminated && session.sessionId === hb.sessionId) {
+        session.touchPlayback()
         session.pendingFramesCount = Math.max(0, session.pendingFramesCount - 4)
       }
     }
@@ -793,23 +1013,9 @@ export function registerTTSIPCHandlers(): void {
 
   // 21. 显式中止流式会话
   ipcMain.on('tts:stream-abort', (_event, req: { sessionId: string }) => {
-    const session = activeStreamSessions.get(req.sessionId)
-    if (session) {
-      if (session.recorder) {
-        session.recorder.finalize(false).catch(() => {})
-      }
-      session.abort()
-      clearInterval(session.watchdogTimer)
-      activeStreamSessions.delete(req.sessionId)
-      if (activeStreamSessions.size === 0 && activeSessionControllers.size === 0) {
-        moduleHibernationCoordinator.scheduleIdleHibernation('tts_media')
-      }
-      if (!session.sender.isDestroyed()) {
-        session.sender.send('tts:stream-ended', {
-          sessionId: req.sessionId,
-          reason: 'aborted'
-        })
-      }
+    const session = activeStreamSession
+    if (session && (!req.sessionId || session.sessionId === req.sessionId)) {
+      session.terminate('USER_ABORTED', { endedReason: 'aborted' })
     }
   })
 }

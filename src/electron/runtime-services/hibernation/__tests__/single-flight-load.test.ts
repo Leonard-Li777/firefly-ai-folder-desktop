@@ -131,7 +131,7 @@ describe('Ticket 07: 单飞冷启动加载协程与四态屏障', () => {
 
   describe('四态屏障 (spawnState) 与加载进度更新', () => {
     it('正常流程流转：not_started -> spawning -> spawned 并持续更新 lastProgressAt', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       let capturedOnProgress: (() => void) | undefined
       let resolveLoad!: (res: any) => void
 
@@ -171,7 +171,7 @@ describe('Ticket 07: 单飞冷启动加载协程与四态屏障', () => {
     })
 
     it('底层直接抛错未生成进程时，spawnState 同步置为 failed', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       vi.mocked(mockEngineBridge.loadModel!).mockRejectedValue(new Error('CUDA out of memory'))
 
       await expect(coordinator.startSingleFlightLoad(targetId)).rejects.toThrow(
@@ -230,7 +230,7 @@ describe('Ticket 07: 单飞冷启动加载协程与四态屏障', () => {
     })
 
     it('底层发生 SERVICE_UNAVAILABLE 抖动时，严禁计入 crashStreak (P1-1)', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       const state = storeMap.get(targetId)!
       state.crashStreak = 0
 

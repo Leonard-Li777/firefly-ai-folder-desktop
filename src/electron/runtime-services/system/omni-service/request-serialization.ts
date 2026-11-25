@@ -1,6 +1,10 @@
+import { LogCategory, logger } from '@firefly/shared'
 import type { OmniExtractOptions, OmniPerceptionOptions } from './types'
 
 type ConfigGetter = <T>(key: string) => T | undefined
+
+/** 极小感知超时告警阈值（秒）：低于此值时视频视觉预算极易不足，主动 warn 暴露源头配置问题 */
+export const MIN_RECOMMENDED_PERCEIVE_TIMEOUT_SEC = 30
 
 /**
  * 构造 POST /api/perceive 请求体。纯函数、零副作用，供运行时与契约单测共用，
@@ -11,6 +15,22 @@ export function buildPerceiveRequestBody(
   options: OmniPerceptionOptions | undefined,
   getConfigValue: ConfigGetter
 ): Record<string, unknown> {
+  const perceiveTimeoutSec =
+    typeof options?.perceiveTimeoutSec === 'number' &&
+    Number.isFinite(options.perceiveTimeoutSec) &&
+    options.perceiveTimeoutSec > 0
+      ? options.perceiveTimeoutSec
+      : undefined
+  if (
+    perceiveTimeoutSec !== undefined &&
+    perceiveTimeoutSec < MIN_RECOMMENDED_PERCEIVE_TIMEOUT_SEC
+  ) {
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[OmniService] 透传的 perceive_timeout_sec=${perceiveTimeoutSec.toFixed(1)}s 偏小（< ${MIN_RECOMMENDED_PERCEIVE_TIMEOUT_SEC}s），视频分析可能因预算不足触发降级 (${filePath})`
+    )
+  }
+
   return {
     file_path: filePath,
     file_fingerprint: options?.fileFingerprint,
@@ -39,7 +59,8 @@ export function buildPerceiveRequestBody(
       options?.videoCutSensitivity ?? getConfigValue<string>('VIDEO_CUT_SENSITIVITY'),
     video_max_analyze_sec: options?.videoMaxAnalyzeSec,
     video_analyze_start_sec: options?.videoAnalyzeStartSec,
-    skip_5w_synthesis: options?.skip5wSynthesis
+    skip_5w_synthesis: options?.skip5wSynthesis,
+    ...(perceiveTimeoutSec !== undefined ? { perceive_timeout_sec: perceiveTimeoutSec } : {})
   }
 }
 

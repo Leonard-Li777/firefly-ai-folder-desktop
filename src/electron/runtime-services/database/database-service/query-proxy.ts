@@ -2506,6 +2506,10 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     this.fileDao?.markVideoSegmentFailedOrPending(fileId, segmentIndex, errorMsg)
   }
 
+  markVideoSegmentTerminalFailed(fileId: string, segmentIndex: number, errorMsg: string): void {
+    this.fileDao?.markVideoSegmentTerminalFailed(fileId, segmentIndex, errorMsg)
+  }
+
   rollbackVideoSegmentProcessing(fileId: string, segmentIndex: number): void {
     this.fileDao?.rollbackVideoSegmentProcessing(fileId, segmentIndex)
   }

@@ -77,3 +77,90 @@ export function isTransientStatusFetchError(err: unknown): boolean {
 export function isTransientStatusHttpCode(status: number): boolean {
   return status >= 500
 }
+
+/**
+ * 递归解包 `err.cause` 判定异常是否为连接被拒绝（ECONNREFUSED）。
+ * 用于区分「端口未监听/进程已退」与「进程存活但处理慢超时/连接重置」。
+ */
+export function isConnectionRefusedError(err: unknown, visited = new Set<unknown>()): boolean {
+  if (!err || typeof err !== 'object') {
+    return false
+  }
+  if (visited.has(err)) {
+    return false
+  }
+  visited.add(err)
+
+  const e = err as { code?: unknown; message?: unknown; cause?: unknown }
+  const code = typeof e.code === 'string' ? e.code.toLowerCase() : ''
+  if (code === 'econnrefused') {
+    return true
+  }
+  const message = typeof e.message === 'string' ? e.message.toLowerCase() : ''
+  if (message.includes('econnrefused')) {
+    return true
+  }
+  if (e.cause) {
+    return isConnectionRefusedError(e.cause, visited)
+  }
+  return false
+}
+
+export interface FetchErrorRestartContext {
+  error: unknown
+  signalAborted?: boolean
+  httpStatus?: number | null
+  processAlive: boolean
+  withinStartupGrace?: boolean
+}
+
+/**
+ * 侧通道/业务请求 catch 块是否应触发 Omni 重拉（防瞬态超时误杀健康子进程）：
+ * - 主动中止或已收到 HTTP 状态码 → false（服务在线，仅业务/取消异常）
+ * - 进程已失活 → true
+ * - 进程存活且 ECONNREFUSED：仅宽限期外允许重启（宽限期内端口尚未绑定完成，禁止误杀）
+ * - 其余（超时/ECONNRESET 且进程存活）→ false
+ */
+export function shouldTriggerRestartOnFetchError(ctx: FetchErrorRestartContext): boolean {
+  if (ctx.signalAborted === true) {
+    return false
+  }
+  if (typeof ctx.httpStatus === 'number' && Number.isFinite(ctx.httpStatus)) {
+    return false
+  }
+  if (!ctx.processAlive) {
+    return true
+  }
+  if (isConnectionRefusedError(ctx.error)) {
+    return !ctx.withinStartupGrace
+  }
+  return false
+}
+
+export interface ForceKillRespawnContext {
+  hasLiveChild: boolean
+  pidAlive: boolean
+  verifyTimedOut: boolean
+  portRefused: boolean
+  withinStartupGrace: boolean
+}
+
+/**
+ * `doStart()` 反自杀决策严格优先级真值表：
+ * ① 处于启动宽限期 → false（严禁强杀正在热身的实例）
+ * ② 托管子进程存活且探活仅超时 → false（引擎正忙，严禁误杀）
+ * ③ 目标 PID 已死 → true（允许清理死句柄并重生）
+ * ④ 仅当存在托管句柄、端口明确拒绝连接且非超时时 → true（绝不强杀无托管句柄的外部未知 PID）
+ */
+export function shouldForceKillBeforeRespawn(ctx: ForceKillRespawnContext): boolean {
+  if (ctx.withinStartupGrace) {
+    return false
+  }
+  if (ctx.hasLiveChild && ctx.pidAlive && ctx.verifyTimedOut) {
+    return false
+  }
+  if (!ctx.pidAlive) {
+    return true
+  }
+  return ctx.hasLiveChild && ctx.portRefused && !ctx.verifyTimedOut
+}

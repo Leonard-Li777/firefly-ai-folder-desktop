@@ -274,7 +274,7 @@ describe('Ticket 06: 有界停机原语与全局停机抑制映射', () => {
 
   describe('cancelSlowLoading 取消加载缓慢操作', () => {
     it('确证消亡分支：底层杀树成功，状态安全归位 hibernated 并 settled', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       const state = storeMap.get(targetId)!
       state.state = 'loading'
 
@@ -301,7 +301,7 @@ describe('Ticket 06: 有界停机原语与全局停机抑制映射', () => {
     })
 
     it('未确证消亡但持有 identity 分支：登记全局抑制并提交 error(unload)，交由后台对账重试', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       const state = storeMap.get(targetId)!
       state.state = 'loading'
 
@@ -337,7 +337,7 @@ describe('Ticket 06: 有界停机原语与全局停机抑制映射', () => {
     })
 
     it('句柄缺失分支 (no_handle)：立即升级落盘 SQLite 持久门闩并锁定', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       const state = storeMap.get(targetId)!
       state.state = 'loading'
 
@@ -364,7 +364,7 @@ describe('Ticket 06: 有界停机原语与全局停机抑制映射', () => {
     })
 
     it('持有 identity 且 forceKill 返回 no_handle 时：坚决立即升级持久门闩并透传 identity (P2-3/P3-7)', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       const state = storeMap.get(targetId)!
       state.state = 'loading'
 

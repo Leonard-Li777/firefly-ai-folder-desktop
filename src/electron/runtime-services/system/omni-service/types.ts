@@ -123,6 +123,8 @@ export interface OmniPerceptionOptions {
   fileFingerprint?: string
   /** 是否跳过 CPU 阶段 5W 造句（当后续由生成式 AI 接管时置为 true） */
   skip5wSynthesis?: boolean
+  /** 透传给 Omni Rust 端的感知总超时预算（秒），与 Desktop AbortSignal 单源闭合对齐 */
+  perceiveTimeoutSec?: number
   /** 可选外部中止信号，与内部超时信号合并以支持删除目录/暂停时立即中断在途请求 */
   signal?: AbortSignal
 }
@@ -351,6 +353,10 @@ export interface OmniPerceptionResponse {
   nsfw_perception?: PerceptionSlotResult
   /** 原生感知插槽: 人脸特征分析 (perception_face, Ticket 03) */
   face_perception?: PerceptionSlotResult
+  /** 显式降级标记（例如视频预算不足跳过视觉抽帧时写入 "visual_skipped_budget"） */
+  degraded?: 'visual_skipped_budget' | string
+  /** 显式降级细分原因（例如 "pre_elapsed" | "budget_structural"） */
+  degraded_reason?: 'pre_elapsed' | 'budget_structural' | string
 }
 
 export interface OmniVideoChunkItem {

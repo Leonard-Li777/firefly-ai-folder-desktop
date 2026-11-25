@@ -23,6 +23,7 @@ import {
   ServiceDiscoveryFile,
   ServiceDiscoveryFileV1,
   isPidAlive,
+  killProcessTree,
   SSE_CONNECT_TIMEOUT_MS,
   SSE_READ_WATCHDOG_MS,
   DORMANT_MAX_ATTEMPTS,
@@ -34,8 +35,11 @@ import {
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from '../analysis-timeout-policy'
 import {
+  isConnectionRefusedError,
   isTransientStatusFetchError,
   isTransientStatusHttpCode,
+  shouldForceKillBeforeRespawn,
+  shouldTriggerRestartOnFetchError,
   STATUS_VERIFY_BACKOFF_MS,
   STATUS_VERIFY_MAX_ATTEMPTS,
   STATUS_VERIFY_TIMEOUT_MS
@@ -98,10 +102,47 @@ import {
   buildPerceiveRequestBody
 } from './request-serialization'
 import {
-  isFatalNativeExitCode,
+  classifyOmniCrash,
+  computeNextDmlCrashMarker,
   serializeDmlCrashMarker,
   shouldForceCpuFromMarker
 } from './ort-dml-crash-guard'
+
+/** Omni 本地 HTTP 四级通道类型 */
+export type OmniFetchKind = 'probe' | 'call' | 'long' | 'stream'
+
+export interface OmniFetchOptions extends RequestInit {
+  /** 请求分级：probe(默认3s) / call(默认15s) / long(调用方限时) / stream(长连接不计 inflight) */
+  kind?: OmniFetchKind
+  /** 覆盖默认超时毫秒数（仅在未传外部 signal 或与外部 signal 合并时生效） */
+  timeoutMs?: number
+  /** 内部探活/重启流程标记：豁免 unhealthySince 记账与重启触发，仍执行目标同源 ECONNREFUSED/头不匹配自失效 */
+  internal?: boolean
+}
+
+/** 每次 spawn 冻结的独立代际上下文（彻底取代易受 PID 复用污染的全局 Set） */
+interface LaunchContext {
+  readonly generation: number
+  readonly child: ChildProcess
+  readonly pid: number | undefined
+  readonly spawnedWithDml: boolean
+  readonly stderrLines: string[]
+  stderrPartial: string
+  stderrBytes: number
+  intentionalKill: boolean
+  closed: boolean
+  readonly closeDeferred: Promise<void>
+  resolveClose: () => void
+}
+
+interface VerifyInstanceResult {
+  ok: boolean
+  data?: Record<string, any>
+  headerInstanceId?: string | null
+  timedOut?: boolean
+  portRefused?: boolean
+  explicitNonTimeoutFailure?: boolean
+}
 
 export class OmniService {
   private static instance: OmniService
@@ -139,6 +180,28 @@ export class OmniService {
   /** 是否已判定需强制纯 CPU（进程内即时生效，供自愈重试；跨进程由标记文件承载） */
   private forceCpuForNextStarts = false
 
+  // —— 严格递增代际、复用态 TTL、Per-launch 上下文与 60s 自愈状态 (Spec v1.7.3) ——
+  private static readonly REUSE_READY_TTL_MS = 30_000
+  private static readonly STARTUP_GRACE_MS = 15_000
+  private static readonly UNHEALTHY_FAILURE_GAP_RESET_MS = 30_000
+  private static readonly UNHEALTHY_RESTART_THRESHOLD_MS = 60_000
+  private static readonly PROBE_DEFAULT_TIMEOUT_MS = 3_000
+  private static readonly CALL_DEFAULT_TIMEOUT_MS = 15_000
+  private static readonly STDERR_MAX_LINES = 32
+  private static readonly STDERR_MAX_BYTES = 8 * 1024
+
+  private currentGeneration = 0
+  private instanceChangedCallbacks = new Set<(nextGeneration: number) => void>()
+  private lifecycleInactiveCallbacks = new Set<(nextGeneration: number) => void>()
+  private lastVerifiedAtMs = 0
+  private verifyPromise: Promise<boolean> | null = null
+  private currentLaunchCtx: LaunchContext | null = null
+  private inflightCount = 0
+  private unhealthySince: number | null = null
+  private lastFailureAt: number | null = null
+  private restartUnhealthyPromise: Promise<boolean> | null = null
+  private missingInstanceIdHeaderWarned = false
+
   /**
    * Omni 本地微服务专用 HTTP Dispatcher
    * 将 headersTimeout 与 bodyTimeout 设为 0（禁用 undici 内部默认 300s 超时），
@@ -153,14 +216,278 @@ export class OmniService {
     keepAliveMaxTimeout: 60_000
   })
 
+  /** 获取当前严格递增的 Omni 实例代际号 */
+  public getGeneration(): number {
+    return this.currentGeneration
+  }
+
+  /** 订阅 Omni 新实例就绪/采纳切换事件（传递严格递增的转移后新代际） */
+  public onInstanceChanged(callback: (nextGeneration: number) => void): () => void {
+    this.instanceChangedCallbacks.add(callback)
+    return () => {
+      this.instanceChangedCallbacks.delete(callback)
+    }
+  }
+
+  /** 订阅 Omni 生命周期失活事件（停机或崩溃时先递增代际再发出转移后新代际） */
+  public onLifecycleInactive(callback: (nextGeneration: number) => void): () => void {
+    this.lifecycleInactiveCallbacks.add(callback)
+    return () => {
+      this.lifecycleInactiveCallbacks.delete(callback)
+    }
+  }
+
+  private emitInstanceChanged(nextGeneration: number): void {
+    for (const cb of this.instanceChangedCallbacks) {
+      try {
+        cb(nextGeneration)
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[OmniService] onInstanceChanged 回调执行异常:', err)
+      }
+    }
+  }
+
+  private emitLifecycleInactive(nextGeneration: number): void {
+    for (const cb of this.lifecycleInactiveCallbacks) {
+      try {
+        cb(nextGeneration)
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[OmniService] onLifecycleInactive 回调执行异常:', err)
+      }
+    }
+  }
+
+  /** 判断当前是否存在存活的托管子进程 */
+  private hasLiveManagedProcess(): boolean {
+    return Boolean(
+      this.process &&
+        this.process.exitCode === null &&
+        this.process.signalCode === null &&
+        !this.process.killed
+    )
+  }
+
+  /** 判断当前复用态记录的外部 PID 是否仍存活 */
+  private isAdoptedPidAlive(): boolean {
+    if (this.process !== null) return false
+    const pid = this.expectedIdentity?.pid
+    return typeof pid === 'number' && pid > 0 && isPidAlive(pid)
+  }
+
+  /** 判断是否仍处于最近一次拉起后的启动宽限期内 */
+  private isWithinStartupGrace(): boolean {
+    return (
+      this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < OmniService.STARTUP_GRACE_MS
+    )
+  }
+
+  /** 判断请求 URL 的 origin 是否严格等于当前已采纳的 baseUrl */
+  private isRequestTargetCurrentBaseUrl(url: string | URL): boolean {
+    try {
+      const targetOrigin = new URL(typeof url === 'string' ? url : url.toString()).origin
+      const currentOrigin = new URL(this.baseUrl).origin
+      return targetOrigin === currentOrigin
+    } catch {
+      return false
+    }
+  }
+
+  /** 复用态/已采纳身份立即自失效（ECONNREFUSED 或 X-Omni-Instance-Id 不匹配触发） */
+  private invalidateAdoptedIdentity(reason: string): void {
+    logger.warn(LogCategory.SYSTEM, `[OmniService] 检测到当前实例身份失效 (${reason})，立即清零采纳状态`)
+    this.expectedIdentity = null
+    this.cachedVersion = null
+    this.connectedTarget = null
+    this.lastVerifiedAtMs = 0
+  }
+
+  /** 统一记录托管进程不健康失败并在满足 60s 且无其他在途请求时触发单飞有序重启 */
+  private recordManagedUnhealthyFailure(countSelfInflight: boolean): void {
+    if (!this.hasLiveManagedProcess() || this.isIntentionalStopping || this.isStarting) {
+      return
+    }
+    const now = Date.now()
+    if (
+      this.lastFailureAt !== null &&
+      now - this.lastFailureAt > OmniService.UNHEALTHY_FAILURE_GAP_RESET_MS
+    ) {
+      this.unhealthySince = now
+    } else if (this.unhealthySince === null) {
+      this.unhealthySince = now
+    }
+    this.lastFailureAt = now
+
+    const otherInflight = Math.max(0, this.inflightCount - (countSelfInflight ? 1 : 0))
+    if (
+      now - this.unhealthySince >= OmniService.UNHEALTHY_RESTART_THRESHOLD_MS &&
+      otherInflight === 0
+    ) {
+      void this.restartUnhealthyManaged()
+    }
+  }
+
   /**
-   * 针对 Omni 本地进程的 fetch 请求封装，统一注入 omniDispatcher
+   * 托管进程持续不健康满 60s 后的单飞自愈恢复终态：
+   * 强杀前必经一次新鲜的 `verifyOmniInstance(internal: true)` 失败确证，
+   * 确证失败才经 `ctx.intentionalKill = true` 有序重启一次，防误杀与递归风暴。
    */
-  private omniFetch(url: string | URL, init?: RequestInit): Promise<Response> {
-    return fetch(url, {
-      ...init,
-      dispatcher: this.omniDispatcher
-    } as RequestInit)
+  public async restartUnhealthyManaged(): Promise<boolean> {
+    if (this.restartUnhealthyPromise) {
+      return this.restartUnhealthyPromise
+    }
+    const task = (async () => {
+      if (this.isIntentionalStopping || !this.hasLiveManagedProcess()) {
+        return false
+      }
+      const verified = await this.verifyOmniInstance(this.actualPort, this.process?.pid, {
+        timeoutMs: OmniService.PROBE_DEFAULT_TIMEOUT_MS,
+        internal: true
+      })
+      if (verified.ok) {
+        this.unhealthySince = null
+        this.lastFailureAt = null
+        this.lastVerifiedAtMs = Date.now()
+        logger.info(
+          LogCategory.SYSTEM,
+          '[OmniService] 自愈重启前二次核验通过，托管进程已恢复响应，取消强杀'
+        )
+        return false
+      }
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[OmniService] 托管进程持续不健康满 60s 且二次核验失败，触发单飞有序重启'
+      )
+      if (this.isIntentionalStopping || !this.hasLiveManagedProcess()) {
+        return false
+      }
+      this.unhealthySince = null
+      this.lastFailureAt = null
+      if (this.currentLaunchCtx && this.currentLaunchCtx.child === this.process) {
+        this.currentLaunchCtx.intentionalKill = true
+      }
+      return await this.restart()
+    })()
+
+    this.restartUnhealthyPromise = task
+    try {
+      return await task
+    } finally {
+      if (this.restartUnhealthyPromise === task) {
+        this.restartUnhealthyPromise = null
+      }
+    }
+  }
+
+  /**
+   * 针对 Omni 本地进程的统一四级 HTTP 通道封装（注入 omniDispatcher）：
+   * ① `probe`(默认3s) / `call`(默认15s) / `long`(调用方控制) / `stream`(不计 inflightCount)
+   * ② 仅当请求目标等于当前已采纳 `baseUrl` 时，对 2xx 核验 `X-Omni-Instance-Id` 响应头（匹配刷新 TTL 并清零不健康计数；不匹配立即自失效）
+   * ③ 仅对目标等于当前 `baseUrl` 的复用态 `ECONNREFUSED` 执行自失效
+   * ④ 非 `internal` 的 `probe`/`call` 遇超时、`ECONNRESET` 或 5xx 且托管进程存活时累计不健康窗口，满 60s 且 `otherInflight === 0` 触发 `restartUnhealthyManaged()`
+   */
+  public async omniFetch(url: string | URL, init?: OmniFetchOptions): Promise<Response> {
+    const kind: OmniFetchKind = init?.kind ?? 'call'
+    const internal = init?.internal === true
+    const isRequestResponse = kind === 'call' || kind === 'long'
+    const isCurrentBase = this.isRequestTargetCurrentBaseUrl(url)
+
+    const { kind: _k, timeoutMs: explicitTimeoutMs, internal: _i, signal: callerSignal, ...restInit } =
+      init ?? {}
+
+    let effectiveSignal: AbortSignal | undefined = callerSignal ?? undefined
+    const defaultTimeoutMs =
+      kind === 'probe'
+        ? OmniService.PROBE_DEFAULT_TIMEOUT_MS
+        : kind === 'call'
+          ? OmniService.CALL_DEFAULT_TIMEOUT_MS
+          : undefined
+    const resolvedTimeoutMs =
+      typeof explicitTimeoutMs === 'number' && explicitTimeoutMs > 0
+        ? explicitTimeoutMs
+        : defaultTimeoutMs
+
+    if (resolvedTimeoutMs !== undefined) {
+      const timeoutSig = AbortSignal.timeout(resolvedTimeoutMs)
+      if (effectiveSignal) {
+        effectiveSignal =
+          typeof (AbortSignal as any).any === 'function'
+            ? (AbortSignal as any).any([effectiveSignal, timeoutSig])
+            : effectiveSignal
+      } else {
+        effectiveSignal = timeoutSig
+      }
+    }
+
+    if (isRequestResponse) {
+      this.inflightCount++
+    }
+
+    try {
+      const res = await fetch(url, {
+        ...restInit,
+        ...(effectiveSignal ? { signal: effectiveSignal } : {}),
+        dispatcher: this.omniDispatcher
+      } as RequestInit)
+
+      if (isCurrentBase) {
+        if (res.ok) {
+          const headerInstanceId =
+            res.headers?.get?.('x-omni-instance-id') ??
+            res.headers?.get?.('X-Omni-Instance-Id') ??
+            null
+          if (headerInstanceId) {
+            if (
+              this.expectedIdentity?.instanceId &&
+              this.expectedIdentity.instanceId !== headerInstanceId
+            ) {
+              this.invalidateAdoptedIdentity(
+                `X-Omni-Instance-Id 不匹配: expected=${this.expectedIdentity.instanceId}, actual=${headerInstanceId}`
+              )
+            } else {
+              this.lastVerifiedAtMs = Date.now()
+              this.unhealthySince = null
+              this.lastFailureAt = null
+            }
+          } else {
+            // 旧版 Omni 缺失响应头时维持既有 30s TTL，仅首次告警
+            if (this.expectedIdentity?.instanceId && !this.missingInstanceIdHeaderWarned) {
+              this.missingInstanceIdHeaderWarned = true
+              logger.warn(
+                LogCategory.SYSTEM,
+                '[OmniService] 收到缺少 X-Omni-Instance-Id 响应头的 2xx 响应（疑似旧版 Omni），维持 30s TTL 校验'
+              )
+            }
+            this.unhealthySince = null
+            this.lastFailureAt = null
+          }
+        } else if (res.status >= 500 && !internal && (kind === 'probe' || kind === 'call')) {
+          this.recordManagedUnhealthyFailure(isRequestResponse)
+        }
+      }
+
+      return res
+    } catch (err: unknown) {
+      if (isCurrentBase) {
+        if (this.process === null && isConnectionRefusedError(err)) {
+          this.invalidateAdoptedIdentity('ECONNREFUSED')
+        }
+        if (!internal && (kind === 'probe' || kind === 'call') && !callerSignal?.aborted) {
+          const errName = (err as any)?.name
+          const isTimeoutOrReset =
+            errName === 'TimeoutError' ||
+            errName === 'AbortError' ||
+            isTransientStatusFetchError(err)
+          if (isTimeoutOrReset) {
+            this.recordManagedUnhealthyFailure(isRequestResponse)
+          }
+        }
+      }
+      throw err
+    } finally {
+      if (isRequestResponse) {
+        this.inflightCount = Math.max(0, this.inflightCount - 1)
+      }
+    }
   }
 
   /** 开发态二进制热更新检测周期 (毫秒) */
@@ -216,14 +543,16 @@ export class OmniService {
   }
 
   /**
-   * 持久化 DirectML 原生崩溃标记，并在本进程内立即生效（后续 `start()` 直接走纯 CPU）。
+   * 持久化 DirectML 原生崩溃标记（滑动窗口两击计数），并在本进程内立即生效（后续 `start()` 直接走纯 CPU）。
    * 写入失败不阻断（仅告警）：跨进程兜底失效时，本次进程内重试仍会强制 CPU。
    */
-  private persistDmlCrash(marker: string | null): void {
+  private persistDmlCrash(marker: string | null, exitCode = 0): void {
     this.forceCpuForNextStarts = true
     if (!marker) return
     try {
-      fs.writeFileSync(marker, serializeDmlCrashMarker(Date.now()), 'utf8')
+      const prevRaw = this.readTextFileSafe(marker)
+      const nextMarker = computeNextDmlCrashMarker(prevRaw, Date.now(), exitCode)
+      fs.writeFileSync(marker, serializeDmlCrashMarker(nextMarker), 'utf8')
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[OmniService] 写入 DirectML 崩溃标记失败:', err)
     }
@@ -721,7 +1050,9 @@ export class OmniService {
     let receivedValidFrame = false
 
     try {
-      const res = await fetch(`${targetBaseUrl}/api/v1/omni/events`, {
+      const res = await this.omniFetch(`${targetBaseUrl}/api/v1/omni/events`, {
+        kind: 'stream',
+        internal: true,
         headers: { Accept: 'text/event-stream' },
         signal: myAc.signal
       })
@@ -912,8 +1243,9 @@ export class OmniService {
     }
     try {
       await this.ensureRunning()
-      const res = await fetch(`${this.baseUrl}/api/version`, {
-        signal: AbortSignal.timeout(2000)
+      const res = await this.omniFetch(`${this.baseUrl}/api/version`, {
+        kind: 'probe',
+        timeoutMs: 2000
       })
       if (res.ok) {
         const data = await res.json()
@@ -927,11 +1259,30 @@ export class OmniService {
   }
 
   /**
-   * 同步判定 Omni 服务是否已处于就绪运行态（无异步阻塞开销，供实时交互/快速检索 fast-fail 判定）
+   * 同步判定 Omni 服务是否已处于就绪运行态（纯同步布尔谓词，无异步阻塞开销）：
+   * ① 托管活体（含 signalCode === null）
+   * ② 采纳复用活体（instanceId 有效且 30s TTL 未过期；过期同步返回 false，由 ensureRunning 慢路径单飞刷新）
    */
   public isReady(): boolean {
-    return Boolean(
-      this.process && !this.process.killed && !this.isStarting && this.cachedVersion !== null
+    if (this.isStarting || this.isIntentionalStopping) {
+      return false
+    }
+    const hasIdentityMark = this.cachedVersion !== null || this.connectedTarget !== null
+    if (!hasIdentityMark) {
+      return false
+    }
+    if (this.process !== null) {
+      return (
+        this.process.exitCode === null &&
+        this.process.signalCode === null &&
+        !this.process.killed
+      )
+    }
+    return (
+      typeof this.expectedIdentity?.instanceId === 'string' &&
+      this.expectedIdentity.instanceId.length > 0 &&
+      this.lastVerifiedAtMs > 0 &&
+      Date.now() - this.lastVerifiedAtMs < OmniService.REUSE_READY_TTL_MS
     )
   }
 
@@ -943,11 +1294,232 @@ export class OmniService {
   }
 
   /**
-   * 确保 Omni 服务处于运行与就绪状态（若未运行则自动按需拉起）
+   * 同源校验指定端口上的 Omni 实例（显式单发、0 重试、默认 3000ms 超时）。
+   * 注意：默认 `internal: true`，且仅当请求目标等于当前 `baseUrl` 时才受 `omniFetch` 同源校验；
+   * 探测其他端口绝不污染当前已采纳的 `expectedIdentity`。
+   */
+  private async verifyOmniInstance(
+    port: number,
+    expectedPid?: number,
+    options?: {
+      timeoutMs?: number
+      internal?: boolean
+      userDataDir?: string | null
+      masterDbPath?: string | null
+      targetVectorsDir?: string | null
+    }
+  ): Promise<VerifyInstanceResult> {
+    const timeoutMs = options?.timeoutMs ?? OmniService.PROBE_DEFAULT_TIMEOUT_MS
+    const userDataDir =
+      options?.userDataDir !== undefined ? options.userDataDir : this.resolveUserDataDir()
+    const masterDbPath =
+      options?.masterDbPath !== undefined ? options.masterDbPath : this.expectedMasterDbPath
+    const targetVectorsDir =
+      options?.targetVectorsDir !== undefined ? options.targetVectorsDir : this.expectedVectorsDir
+
+    try {
+      const res = await this.omniFetch(`http://127.0.0.1:${port}/api/v1/engine/status`, {
+        kind: 'probe',
+        timeoutMs,
+        internal: options?.internal ?? true
+      })
+      if (!res.ok) {
+        return { ok: false, explicitNonTimeoutFailure: true }
+      }
+      const headerInstanceId =
+        res.headers?.get?.('x-omni-instance-id') ??
+        res.headers?.get?.('X-Omni-Instance-Id') ??
+        null
+      const data = (await res.json()) as Record<string, any>
+      if (!data || data.status !== 'ok') {
+        return { ok: false, explicitNonTimeoutFailure: true }
+      }
+
+      const originCheck = verifyOmniSameOrigin(
+        {
+          port: typeof data.port === 'number' ? data.port : port,
+          pid: typeof data.pid === 'number' ? data.pid : undefined,
+          userDataDir: typeof data.userDataDir === 'string' ? data.userDataDir : null,
+          masterDbPath: typeof data.masterDbPath === 'string' ? data.masterDbPath : null,
+          targetVectorsDir:
+            typeof data.targetVectorsDir === 'string' ? data.targetVectorsDir : null
+        },
+        {
+          expectedPort: port,
+          expectedPid,
+          userDataDir,
+          masterDbPath: masterDbPath || null,
+          targetVectorsDir
+        }
+      )
+      if (!originCheck.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] 端口 ${port} 上的 Omni 实例同源校验未通过，拒绝盲目复用: ${originCheck.reason}`
+        )
+        return { ok: false, explicitNonTimeoutFailure: true }
+      }
+      if (originCheck.warning) {
+        logger.warn(LogCategory.SYSTEM, `[OmniService] ${originCheck.warning}`)
+      }
+      return { ok: true, data, headerInstanceId }
+    } catch (err: any) {
+      const errName = typeof err?.name === 'string' ? err.name : ''
+      const timedOut =
+        errName === 'TimeoutError' ||
+        errName === 'AbortError' ||
+        /timeout|timed out|aborted/i.test(String(err?.message || ''))
+      const portRefused = isConnectionRefusedError(err)
+      return {
+        ok: false,
+        timedOut,
+        portRefused,
+        explicitNonTimeoutFailure: !timedOut
+      }
+    }
+  }
+
+  /**
+   * 复用态单飞同源刷新（30s TTL 过期时由 ensureRunning 慢路径调用，杜绝并发探活风暴与裸 /health 跨仓误采纳）
+   */
+  private async verifyAdoptedReuseOnce(): Promise<boolean> {
+    if (this.verifyPromise) {
+      return this.verifyPromise
+    }
+    const targetPort = this.expectedIdentity?.port ?? this.actualPort
+    const expectedPid = this.expectedIdentity?.pid
+    const task = (async () => {
+      const verified = await this.verifyOmniInstance(targetPort, expectedPid, {
+        timeoutMs: OmniService.PROBE_DEFAULT_TIMEOUT_MS,
+        internal: true
+      })
+      if (!verified.ok || this.isIntentionalStopping) {
+        return false
+      }
+      const resolvedInstanceId = this.resolveAdoptedInstanceId(
+        verified.data,
+        verified.headerInstanceId,
+        targetPort
+      )
+      if (
+        this.expectedIdentity?.instanceId &&
+        resolvedInstanceId !== this.expectedIdentity.instanceId
+      ) {
+        this.invalidateAdoptedIdentity(
+          `复用刷新 instanceId 变更: expected=${this.expectedIdentity.instanceId}, actual=${resolvedInstanceId}`
+        )
+        return false
+      }
+      this.actualPort = targetPort
+      this.baseUrl = `http://127.0.0.1:${targetPort}`
+      this.expectedIdentity = {
+        pid: typeof verified.data?.pid === 'number' ? verified.data.pid : expectedPid,
+        instanceId: resolvedInstanceId,
+        port: targetPort
+      }
+      if (typeof verified.data?.version === 'string' && verified.data.version) {
+        this.cachedVersion = verified.data.version
+      }
+      this.connectedTarget = {
+        baseUrl: this.baseUrl,
+        pid: this.expectedIdentity.pid,
+        instanceId: resolvedInstanceId
+      }
+      this.lastVerifiedAtMs = Date.now()
+      this.unhealthySince = null
+      this.lastFailureAt = null
+      return true
+    })()
+
+    this.verifyPromise = task
+    try {
+      return await task
+    } finally {
+      if (this.verifyPromise === task) {
+        this.verifyPromise = null
+      }
+    }
+  }
+
+  /** 原子写入已验证通过的 Omni 实例身份与健康基线（供首次采纳、复用刷新、spawn 落定及 close 外部接管共享） */
+  private applyAdoptedInstanceIdentity(params: {
+    port: number
+    pid?: number
+    instanceId: string
+    version?: string | null
+  }): void {
+    this.actualPort = params.port
+    this.baseUrl = `http://127.0.0.1:${params.port}`
+    this.expectedIdentity = {
+      pid: params.pid,
+      instanceId: params.instanceId,
+      port: params.port
+    }
+    if (params.version) {
+      this.cachedVersion = params.version
+    }
+    this.connectedTarget = {
+      baseUrl: this.baseUrl,
+      pid: params.pid,
+      instanceId: params.instanceId
+    }
+    this.lastVerifiedAtMs = Date.now()
+    this.unhealthySince = null
+    this.lastFailureAt = null
+  }
+
+  /** 解析采纳实例的 instanceId：优先响应体 instanceId/instance_id，其次响应头，仅均缺失时退化 port:startTimeMs */
+  private resolveAdoptedInstanceId(
+    data: Record<string, any> | undefined,
+    headerInstanceId: string | null | undefined,
+    targetPort: number,
+    fallbackInstanceId?: string
+  ): string {
+    if (typeof data?.instanceId === 'string' && data.instanceId.length > 0) {
+      return data.instanceId
+    }
+    if (typeof data?.instance_id === 'string' && data.instance_id.length > 0) {
+      return data.instance_id
+    }
+    if (typeof headerInstanceId === 'string' && headerInstanceId.length > 0) {
+      return headerInstanceId
+    }
+    if (typeof fallbackInstanceId === 'string' && fallbackInstanceId.length > 0) {
+      return fallbackInstanceId
+    }
+    const startTimeMs =
+      typeof data?.startTimeMs === 'number'
+        ? data.startTimeMs
+        : typeof data?.start_time_ms === 'number'
+          ? data.start_time_ms
+          : Date.now()
+    return `${targetPort}:${startTimeMs}`
+  }
+
+  /**
+   * 确保 Omni 服务处于运行与就绪状态（停机早退 + O(1) 存活快路径 + 单飞同源刷新 + 按需拉起）
    */
   public async ensureRunning(): Promise<boolean> {
-    if (await this.checkHealth()) {
+    if (this.isIntentionalStopping) {
+      return false
+    }
+    if (this.isReady()) {
       return true
+    }
+    if (this.startPromise) {
+      return this.startPromise
+    }
+    if (this.hasLiveManagedProcess()) {
+      if (await this.checkHealth()) {
+        return true
+      }
+    } else if (this.expectedIdentity) {
+      if (await this.verifyAdoptedReuseOnce()) {
+        return true
+      }
+    }
+    if (this.isIntentionalStopping) {
+      return false
     }
     return this.start()
   }
@@ -1251,13 +1823,18 @@ export class OmniService {
   }
 
   public async start(): Promise<boolean> {
-    if (this.process && !this.process.killed) {
+    if (this.isIntentionalStopping) {
+      return false
+    }
+    if (this.hasLiveManagedProcess()) {
       if (await this.checkHealth()) {
         return true
       }
       if (this.isStarting && this.startPromise) {
         return this.startPromise
       }
+    } else if (this.isReady() && (await this.checkHealth())) {
+      return true
     }
 
     if (this.startPromise) {
@@ -1272,10 +1849,106 @@ export class OmniService {
     }
   }
 
+  /** 创建 per-launch 不可变代际上下文 */
+  private createLaunchContext(
+    generation: number,
+    child: ChildProcess,
+    spawnedWithDml: boolean
+  ): LaunchContext {
+    let resolveClose!: () => void
+    const closeDeferred = new Promise<void>(resolve => {
+      resolveClose = resolve
+    })
+    return {
+      generation,
+      child,
+      pid: child.pid,
+      spawnedWithDml,
+      stderrLines: [],
+      stderrPartial: '',
+      stderrBytes: 0,
+      intentionalKill: false,
+      closed: false,
+      closeDeferred,
+      resolveClose
+    }
+  }
+
+  /** 向 LaunchContext 缓冲追加 stderr 文本（保留无换行尾段 stderrPartial，限 32 行 / 8KB） */
+  private appendLaunchStderr(ctx: LaunchContext, rawChunk: string): void {
+    if (!rawChunk) return
+    const combined = ctx.stderrPartial + rawChunk
+    const parts = combined.split(/\r?\n/)
+    ctx.stderrPartial = parts.pop() ?? ''
+    for (const line of parts) {
+      ctx.stderrLines.push(line)
+      ctx.stderrBytes += Buffer.byteLength(line, 'utf8') + 1
+    }
+    while (
+      ctx.stderrLines.length > OmniService.STDERR_MAX_LINES ||
+      ctx.stderrBytes > OmniService.STDERR_MAX_BYTES
+    ) {
+      const removed = ctx.stderrLines.shift()
+      if (removed === undefined) break
+      ctx.stderrBytes = Math.max(0, ctx.stderrBytes - (Buffer.byteLength(removed, 'utf8') + 1))
+    }
+    // 防止单行无换行超长残段撑爆内存
+    if (Buffer.byteLength(ctx.stderrPartial, 'utf8') > OmniService.STDERR_MAX_BYTES) {
+      ctx.stderrPartial = ctx.stderrPartial.slice(-2048)
+    }
+  }
+
+  /** 读取 LaunchContext 合并后的 stderr 尾段（包含无换行尾段 stderrPartial） */
+  private getLaunchStderrTail(ctx: LaunchContext): string {
+    const lines = ctx.stderrPartial
+      ? [...ctx.stderrLines, ctx.stderrPartial]
+      : [...ctx.stderrLines]
+    return lines.join('\n')
+  }
+
+  /** 等待上一代托管 LaunchContext 管道排空关闭（有界 2000ms，超时促发 stderr 排空） */
+  private async awaitLaunchContextClose(ctx: LaunchContext | null): Promise<void> {
+    if (!ctx || ctx.closed) return
+    let timedOut = false
+    await Promise.race([
+      ctx.closeDeferred,
+      new Promise<void>(resolve => {
+        setTimeout(() => {
+          timedOut = true
+          resolve()
+        }, 2000)
+      })
+    ])
+    if (timedOut && !ctx.closed) {
+      try {
+        ctx.child.stderr?.destroy()
+      } catch {}
+    }
+  }
+
   private async doStart(): Promise<boolean> {
+    if (this.isIntentionalStopping) {
+      return false
+    }
     if (this.stopPromise) {
       await this.stopPromise.catch(() => {})
     }
+    if (this.isIntentionalStopping) {
+      return false
+    }
+    // 若存在上一代已退出或被强杀但 stderr 尚未排空的托管 LaunchContext，先等待其 closeDeferred（最多 2000ms）
+    // 确保崩溃归因与 .omni-dml-crash.json 落盘完成后再决定本次是否需要 OMNI_DISABLE_DML=1
+    const prevCtx = this.currentLaunchCtx
+    if (
+      prevCtx &&
+      !prevCtx.closed &&
+      (prevCtx.child.exitCode !== null ||
+        prevCtx.child.signalCode !== null ||
+        prevCtx.intentionalKill)
+    ) {
+      await this.awaitLaunchContextClose(prevCtx)
+    }
+
     if (this.stopController.signal.aborted) {
       this.stopController = new AbortController()
     }
@@ -1284,42 +1957,40 @@ export class OmniService {
     this.lastAppliedRevision = 0
     this.lastAppliedInstanceId = null
     this.managedLifecycleActive = true
-    this.isIntentionalStopping = false
     this.isStarting = true
     this.lastMountValidationError = null
-    // 缺失冷却检查：避免每个文件都触发一次 resolveOmniExecutable 的遍历
-    if (this.missingBinaryRetryAt > Date.now()) {
-      logger.debug(
-        LogCategory.SYSTEM,
-        '[OmniService] firefly-omni 二进制仍处于缺失冷却期，跳过本次拉起'
-      )
-      this.isStarting = false
-      return false
-    }
-
-    const exePath = this.resolveOmniExecutable()
-    if (!exePath) {
-      this.missingBinaryRetryAt = Date.now() + 60_000
-      if (!this.missingBinaryReported) {
-        this.missingBinaryReported = true
-        logger.error(
-          LogCategory.SYSTEM,
-          `[OmniService] ❌ 未找到 firefly-omni 可执行二进制文件，基础AI引擎无法启动，分析能力将降级。${this.describeBinarySearch()}`
-        )
-      } else {
-        logger.debug(LogCategory.SYSTEM, '[OmniService] firefly-omni 二进制仍缺失，跳过本次拉起')
-      }
-      this.notifyBinaryMissing()
-      this.isStarting = false
-      return false
-    }
-    // 二进制重新出现（如用户修复安装 / 从杀软隔离区恢复）后复位上报与冷却状态
-    this.missingBinaryReported = false
-    this.missingBinaryRetryAt = 0
-    this.binaryMissingNotified = false
-    this.binaryMissingNotifyDeferred = false
 
     try {
+      // 缺失冷却检查：避免每个文件都触发一次 resolveOmniExecutable 的遍历
+      if (this.missingBinaryRetryAt > Date.now()) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          '[OmniService] firefly-omni 二进制仍处于缺失冷却期，跳过本次拉起'
+        )
+        return false
+      }
+
+      const exePath = this.resolveOmniExecutable()
+      if (!exePath) {
+        this.missingBinaryRetryAt = Date.now() + 60_000
+        if (!this.missingBinaryReported) {
+          this.missingBinaryReported = true
+          logger.error(
+            LogCategory.SYSTEM,
+            `[OmniService] ❌ 未找到 firefly-omni 可执行二进制文件，基础AI引擎无法启动，分析能力将降级。${this.describeBinarySearch()}`
+          )
+        } else {
+          logger.debug(LogCategory.SYSTEM, '[OmniService] firefly-omni 二进制仍缺失，跳过本次拉起')
+        }
+        this.notifyBinaryMissing()
+        return false
+      }
+      // 二进制重新出现（如用户修复安装 / 从杀软隔离区恢复）后复位上报与冷却状态
+      this.missingBinaryReported = false
+      this.missingBinaryRetryAt = 0
+      this.binaryMissingNotified = false
+      this.binaryMissingNotifyDeferred = false
+
       // 获取业务主库 SQLite 绝对路径，用于 Worktree 隔离校验 (ADR-0035 & ADR-0038)
       const { databaseService } = await import('../../database/database-service')
       const dbPath = databaseService.getDbPath()
@@ -1328,54 +1999,108 @@ export class OmniService {
       this.expectedMasterDbPath = dbPath || null
       this.expectedVectorsDir = expectedVectorsDir
 
-      const verifyOmniInstance = async (
-        port: number,
-        expectedPid?: number
-      ): Promise<{ ok: boolean; data?: Record<string, any> }> => {
-        try {
-          const res = await fetch(`http://127.0.0.1:${port}/api/v1/engine/status`, {
-            signal: AbortSignal.timeout(1000)
-          })
-          if (!res.ok) return { ok: false }
-          const data = await res.json()
-          if (!data || data.status !== 'ok') return { ok: false }
+      const verifyOpts = {
+        timeoutMs: OmniService.PROBE_DEFAULT_TIMEOUT_MS,
+        internal: true,
+        userDataDir,
+        masterDbPath: dbPath || null,
+        targetVectorsDir: expectedVectorsDir
+      }
 
-          const originCheck = verifyOmniSameOrigin(
-            {
-              port: typeof data.port === 'number' ? data.port : port,
-              pid: typeof data.pid === 'number' ? data.pid : undefined,
-              userDataDir: typeof data.userDataDir === 'string' ? data.userDataDir : null,
-              masterDbPath: typeof data.masterDbPath === 'string' ? data.masterDbPath : null,
-              targetVectorsDir:
-                typeof data.targetVectorsDir === 'string' ? data.targetVectorsDir : null
-            },
-            {
-              expectedPort: port,
-              expectedPid,
-              userDataDir,
-              masterDbPath: dbPath || null,
-              targetVectorsDir: expectedVectorsDir
-            }
-          )
-          if (!originCheck.ok) {
-            logger.warn(
-              LogCategory.SYSTEM,
-              `[OmniService] 端口 ${port} 上的 Omni 实例同源校验未通过，拒绝盲目复用: ${originCheck.reason}`
-            )
-            return { ok: false }
-          }
-          if (originCheck.warning) {
-            logger.warn(LogCategory.SYSTEM, `[OmniService] ${originCheck.warning}`)
-          }
-          return { ok: true, data }
-        } catch {
-          return { ok: false }
+      const completeAdoption = (
+        targetPort: number,
+        verifiedData: Record<string, any> | undefined,
+        headerInstanceId: string | null | undefined,
+        opts: {
+          isReuseAdoption: boolean
+          matchedFromDiscovery: boolean
+          discovered: ServiceDiscoveryFileV1 | null
+          df: ServiceDiscoveryFile | null
         }
+      ): boolean => {
+        const prevInstanceId =
+          this.expectedIdentity?.instanceId ?? this.connectedTarget?.instanceId ?? null
+        const adoptedPid =
+          typeof verifiedData?.pid === 'number'
+            ? verifiedData.pid
+            : opts.isReuseAdoption
+              ? opts.discovered?.pid
+              : this.process?.pid
+        const adoptedInstanceId = this.resolveAdoptedInstanceId(
+          verifiedData,
+          headerInstanceId,
+          targetPort,
+          opts.discovered?.instanceId
+        )
+        const isSameExternalInstance =
+          opts.isReuseAdoption && Boolean(prevInstanceId && prevInstanceId === adoptedInstanceId)
+        const version =
+          typeof verifiedData?.version === 'string' && verifiedData.version
+            ? verifiedData.version
+            : null
+        this.applyAdoptedInstanceIdentity({
+          port: targetPort,
+          pid: adoptedPid,
+          instanceId: adoptedInstanceId,
+          version
+        })
+
+        // 仅当发现文件缺失且通过验证采纳外部未写盘实例时回填发现文件
+        if (
+          !opts.matchedFromDiscovery &&
+          opts.df &&
+          !opts.discovered &&
+          adoptedPid &&
+          adoptedInstanceId
+        ) {
+          void opts.df
+            .publish({
+              instanceId: adoptedInstanceId,
+              revision: typeof verifiedData?.revision === 'number' ? verifiedData.revision : 1,
+              host: '127.0.0.1',
+              port: targetPort,
+              pid: adoptedPid,
+              startedAt: new Date().toISOString(),
+              userDataDir: userDataDir || undefined,
+              capabilities: [],
+              masterDbPath: dbPath || undefined,
+              targetVectorsDir: expectedVectorsDir || undefined
+            })
+            .catch(() => {})
+        }
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 成功匹配并复用当前 Worktree 专属 Omni 服务 (Port: ${targetPort}, ${this.baseUrl})，接入 SSE 状态流`
+        )
+        this.restartAttempts = 0
+        this.spawnedBinarySignature = this.binarySignature(exePath)
+        if (!isSameExternalInstance) {
+          this.lastSpawnedAt = Date.now()
+        }
+        this.pendingUpdateSignature = null
+        this.pendingUpdateSince = 0
+        this.startDevBinaryWatch()
+        this.syncConfigFromDesktop().catch(() => {})
+        this.kickEventStreamReconnect({
+          expectedTarget: {
+            baseUrl: this.baseUrl,
+            pid: adoptedPid,
+            instanceId: adoptedInstanceId
+          },
+          resetFailures: true
+        })
+        if (opts.isReuseAdoption && !isSameExternalInstance) {
+          const nextGen = ++this.currentGeneration
+          this.emitInstanceChanged(nextGen)
+        }
+        this.notifyReady()
+        return true
       }
 
       // 优先读取 userData/run/omni-config.json 零扫描复用（通过 PID 存活 + 同源校验）
       let matchedPort: number | null = null
       let matchedData: Record<string, any> | undefined
+      let matchedHeaderInstanceId: string | null | undefined
       let matchedFromDiscovery = false
       const df = this.getDiscoveryFile()
       const discovered = df?.read({ verifyPid: true }) ?? null
@@ -1395,10 +2120,11 @@ export class OmniService {
           }
         )
         if (dfOrigin.ok) {
-          const verified = await verifyOmniInstance(discovered.port, discovered.pid)
+          const verified = await this.verifyOmniInstance(discovered.port, discovered.pid, verifyOpts)
           if (verified.ok) {
             matchedPort = discovered.port
             matchedData = verified.data
+            matchedHeaderInstanceId = verified.headerInstanceId
             matchedFromDiscovery = true
           }
         } else {
@@ -1409,83 +2135,134 @@ export class OmniService {
         }
       }
 
-      // 仅当发现文件未命中时，做 1 次单轮降级扫描 38200~38219 寻找属于当前 Worktree 的运行中 Omni 实例
+      // 仅当发现文件未命中时，对 38200..=38219 执行并发单发 3000ms（0 重试）探测（彻底弃用同步端口快照）
+      const scanResultByPort = new Map<number, VerifyInstanceResult>()
       if (matchedPort === null) {
-        for (let p = this.basePort; p < this.basePort + APP_PORTS.MAX_ATTEMPTS; p++) {
-          const verified = await verifyOmniInstance(p)
-          if (verified.ok) {
-            matchedPort = p
-            matchedData = verified.data
-            break
+        const ports = Array.from({ length: APP_PORTS.MAX_ATTEMPTS }, (_, idx) => this.basePort + idx)
+        const settled = await Promise.allSettled(
+          ports.map(async p => ({
+            port: p,
+            result: await this.verifyOmniInstance(p, undefined, verifyOpts)
+          }))
+        )
+        for (const item of settled) {
+          if (item.status === 'fulfilled') {
+            scanResultByPort.set(item.value.port, item.value.result)
+            if (matchedPort === null && item.value.result.ok) {
+              matchedPort = item.value.port
+              matchedData = item.value.result.data
+              matchedHeaderInstanceId = item.value.result.headerInstanceId
+            }
           }
         }
       }
 
       if (matchedPort !== null) {
-        this.actualPort = matchedPort
-        this.baseUrl = `http://127.0.0.1:${matchedPort}`
-        const adoptedPid = typeof matchedData?.pid === 'number' ? matchedData.pid : discovered?.pid
-        const adoptedInstanceId =
-          typeof matchedData?.instanceId === 'string'
-            ? matchedData.instanceId
-            : discovered?.instanceId
-        this.expectedIdentity = {
-          pid: adoptedPid,
-          instanceId: adoptedInstanceId,
-          port: matchedPort
-        }
-        // 仅当发现文件缺失且通过验证采纳外部未写盘实例时回填发现文件
-        if (!matchedFromDiscovery && df && !discovered && adoptedPid && adoptedInstanceId) {
-          void df
-            .publish({
-              instanceId: adoptedInstanceId,
-              revision: typeof matchedData?.revision === 'number' ? matchedData.revision : 1,
-              host: '127.0.0.1',
-              port: matchedPort,
-              pid: adoptedPid,
-              startedAt: new Date().toISOString(),
-              userDataDir: userDataDir || undefined,
-              capabilities: [],
-              masterDbPath: dbPath || undefined,
-              targetVectorsDir: expectedVectorsDir || undefined
-            })
-            .catch(() => {})
-        }
-        logger.info(
-          LogCategory.SYSTEM,
-          `[OmniService] 成功匹配并复用当前 Worktree 专属 Omni 服务 (Port: ${matchedPort}, ${this.baseUrl})，接入 SSE 状态流`
-        )
-        this.restartAttempts = 0
-        this.isStarting = false
-        this.spawnedBinarySignature = this.binarySignature(exePath)
-        this.lastSpawnedAt = Date.now()
-        this.pendingUpdateSignature = null
-        this.pendingUpdateSince = 0
-        this.startDevBinaryWatch()
-        this.syncConfigFromDesktop().catch(() => {})
-        this.kickEventStreamReconnect({
-          expectedTarget: {
-            baseUrl: this.baseUrl,
-            pid: adoptedPid,
-            instanceId: adoptedInstanceId
-          },
-          resetFailures: true
+        return completeAdoption(matchedPort, matchedData, matchedHeaderInstanceId, {
+          isReuseAdoption: !this.hasLiveManagedProcess(),
+          matchedFromDiscovery,
+          discovered,
+          df
         })
-        this.notifyReady()
-        return true
       }
 
-      // 若未找到属于当前 Worktree 的运行中实例，且存在旧的未退出子进程，先执行安全清理（仅终止物理进程，不重置 isStarting 标记）
-      if (this.process && !this.process.killed) {
-        this.forceKillProcessTree(this.process)
-        await new Promise(r => setTimeout(r, 300))
+      // —— Anti-Fratricide / PreserveAlive 严格决策闸 ——
+      // 严禁 `??` 混选 PID：托管态仅取 this.process.pid，复用态仅取 this.expectedIdentity.pid
+      const hasLiveChild = this.hasLiveManagedProcess()
+      const probePid = hasLiveChild ? this.process?.pid : this.expectedIdentity?.pid
+      const pidAlive = typeof probePid === 'number' && probePid > 0 ? isPidAlive(probePid) : false
+      const withinStartupGrace = this.isWithinStartupGrace()
+      const targetPort = hasLiveChild
+        ? this.actualPort
+        : (this.expectedIdentity?.port ?? this.actualPort)
+      const prevScan = scanResultByPort.get(targetPort)
+      const verifyTimedOut = prevScan?.timedOut === true
+      const portRefused = prevScan?.portRefused === true
+      const explicitNonTimeoutFailure = prevScan?.explicitNonTimeoutFailure === true
+
+      if (hasLiveChild || pidAlive) {
+        const allowForceKill = shouldForceKillBeforeRespawn({
+          hasLiveChild,
+          pidAlive,
+          verifyTimedOut,
+          portRefused,
+          withinStartupGrace
+        })
+
+        if (!allowForceKill) {
+          // 1) 启动宽限期内：改为有界轮询等待至宽限期结束
+          let reprobed: VerifyInstanceResult | null = null
+          if (withinStartupGrace) {
+            const graceDeadline = this.lastSpawnedAt + OmniService.STARTUP_GRACE_MS
+            while (Date.now() < graceDeadline && !this.isIntentionalStopping) {
+              if (hasLiveChild && !this.hasLiveManagedProcess()) {
+                break
+              }
+              const attempt = await this.verifyOmniInstance(targetPort, probePid, verifyOpts)
+              if (attempt.ok) {
+                reprobed = attempt
+                break
+              }
+              await new Promise(r => setTimeout(r, 300))
+            }
+          } else if (!explicitNonTimeoutFailure) {
+            // 2) 非宽限期且未明确非超时失败：单发复探一次
+            reprobed = await this.verifyOmniInstance(targetPort, probePid, verifyOpts)
+          }
+
+          if (reprobed?.ok) {
+            return completeAdoption(targetPort, reprobed.data, reprobed.headerInstanceId, {
+              isReuseAdoption: !hasLiveChild,
+              matchedFromDiscovery: false,
+              discovered,
+              df
+            })
+          }
+
+          // 3) 核验仍失败：严格区分存活托管子进程（PreserveFailClosed + 60s 恢复终态）与外部陈旧 PID
+          if (hasLiveChild && pidAlive) {
+            this.recordManagedUnhealthyFailure(false)
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[OmniService] PreserveFailClosed: 托管子进程仍存活 (PID=${probePid}, port=${targetPort}) 但状态核验未通，禁止双开 spawn`
+            )
+            return false
+          }
+
+          // 外部陈旧 PID 无法同源核验：视为陈旧缓存跳过并走新端口 spawn（绝不 taskkill，亦绝不永久拒服）
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 外部复用缓存 PID=${probePid} 无法通过同源核验，清除陈旧身份并在新端口拉起托管实例`
+          )
+          this.expectedIdentity = null
+          this.connectedTarget = null
+          this.cachedVersion = null
+          this.lastVerifiedAtMs = 0
+        } else if (this.process && !this.process.killed) {
+          // GuardedKill：若子进程物理上已失活或已退出（如原生崩溃尚未投递 close），
+          // 严禁调用 forceKillProcessTree 误置 intentionalKill = true 掩盖真实 OOM/DML 崩溃；
+          // 仅对确认存活且无退出码的子进程执行强杀，已死子进程仅等待 close 管道排空归因。
+          const killCtx = this.currentLaunchCtx
+          const processAlreadyDead =
+            !pidAlive || this.process.exitCode !== null || this.process.signalCode !== null
+          if (!processAlreadyDead) {
+            this.forceKillProcessTree(this.process, 'doStart_guarded_kill')
+          }
+          await this.awaitLaunchContextClose(killCtx)
+        }
       }
-      this.isStarting = true
+
+      if (this.isIntentionalStopping) {
+        return false
+      }
 
       // 寻找可用端口作为建议基准（Rust 侧 bind-first 仍支持 38200..=38219 原子滑动）
       const port = await findAvailablePort(this.basePort, APP_PORTS.MAX_ATTEMPTS)
       this.actualPort = port
       this.baseUrl = `http://127.0.0.1:${port}`
+      this.cachedVersion = null
+      this.connectedTarget = null
+      this.lastVerifiedAtMs = 0
 
       logger.info(
         LogCategory.SYSTEM,
@@ -1909,12 +2686,18 @@ export class OmniService {
         )
       }
 
+      // 托管 spawn 前预留严格递增代际号并冻结独立 LaunchContext（启动期崩溃仍精准归因当前代）
+      const launchGeneration = ++this.currentGeneration
+      const spawnedWithDml = env.OMNI_DISABLE_DML !== '1'
+
       const child = spawn(exePath, spawnArgs, {
         cwd: binDir,
         env,
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true
       })
+      const launchCtx = this.createLaunchContext(launchGeneration, child, spawnedWithDml)
+      this.currentLaunchCtx = launchCtx
 
       // 立即记录当前拉起的二进制签名与拉起时间戳（启动 15s 冷静期保护，防启动中途被 checkBinaryUpdated 误杀）
       this.lastSpawnedAt = Date.now()
@@ -2008,7 +2791,9 @@ export class OmniService {
       })
 
       child.stderr?.on('data', data => {
-        const str = stripAnsi(data).trim()
+        const rawText = stripAnsi(data)
+        this.appendLaunchStderr(launchCtx, rawText)
+        const str = rawText.trim()
         if (str && !isCzkawkaDump(str)) {
           logger.warn(LogCategory.SYSTEM, `[Omni:err] ${str}`)
           if (str.includes('KeyEpochMismatch')) {
@@ -2031,25 +2816,55 @@ export class OmniService {
         logger.error(LogCategory.SYSTEM, '[OmniService] 子进程启动失败:', err)
       })
 
-      child.on('exit', async (code, signal) => {
-        const wasCurrentChild = this.process === child
-        logger.warn(LogCategory.SYSTEM, `[OmniService] 子进程退出 (code=${code}, signal=${signal})`)
-        // 原生崩溃（abort / 访问越界等）无法被 Rust catch；持久化「禁用 DirectML」结论，
-        // 让随后的自愈重试与未来的进程重启都以纯 CPU 兜底，避免视频切片再次全毁。
-        if (!this.isIntentionalStopping && isFatalNativeExitCode(code)) {
-          this.persistDmlCrash(this.dmlCrashMarkerPath)
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[OmniService] 检测到 Omni 原生崩溃 (code=0x${(code >>> 0).toString(16)})，后续拉起将禁用 DirectML（纯 CPU 兜底）`
-          )
-        }
+      child.on('exit', (code, signal) => {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] 子进程退出 (gen=${launchCtx.generation}, pid=${launchCtx.pid}, code=${code}, signal=${signal})`
+        )
         try {
           const { processReaper } = require('../../../main/process-reaper')
           processReaper.unregisterChild(child.pid)
         } catch {}
-        if (wasCurrentChild) {
-          this.process = null
+      })
+
+      // 统一延后到 child.on('close')（stderr 管道彻底排空后）做最终四分类崩溃归因与生命周期回调
+      child.on('close', async (code, signal) => {
+        const stderrTail = this.getLaunchStderrTail(launchCtx)
+        const category = classifyOmniCrash({
+          managedChild: true,
+          dmlEnabled: launchCtx.spawnedWithDml,
+          wasIntentionalKill: launchCtx.intentionalKill || this.isIntentionalStopping,
+          exitCode: code,
+          signal,
+          stderrTail
+        })
+
+        if (category === 'dml_native_crash') {
+          this.persistDmlCrash(this.dmlCrashMarkerPath, typeof code === 'number' ? code : 0)
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 检测到 DirectML 原生崩溃 (gen=${launchCtx.generation}, code=${typeof code === 'number' ? `0x${(code >>> 0).toString(16)}` : code}, signal=${signal})，已按滑动窗口写入保护标记`
+          )
+        } else if (category === 'rust_oom') {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[OmniService] ❌ 检测到 Omni 内存耗尽崩溃 (rust_oom, gen=${launchCtx.generation}, code=${code})，绝不误封 DirectML 硬件加速`
+          )
+        } else if (category === 'intentional_kill') {
+          logger.debug(
+            LogCategory.SYSTEM,
+            `[OmniService] 受控终止子进程已关闭 (gen=${launchCtx.generation}, code=${code}, signal=${signal})`
+          )
+        } else {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 子进程关闭 (category=${category}, gen=${launchCtx.generation}, dml=${launchCtx.spawnedWithDml}, code=${code}, signal=${signal})，不写入 DirectML 封禁标记`
+          )
         }
+
+        launchCtx.closed = true
+        launchCtx.resolveClose()
+
         this.unlinkManifestSafe(expectedMountsSnapshot.manifestPath)
         if (
           expectedMountsSnapshot.manifestPath &&
@@ -2057,21 +2872,82 @@ export class OmniService {
         ) {
           this.currentMountManifestPath = null
         }
-        // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
-        this.pushStatus().catch(() => {})
-        // 若正在主动停机（卸载/切换/退出）或已被新一轮子进程接替，绝不允许触发自愈重启或端口接管
-        if (this.isIntentionalStopping || !wasCurrentChild) {
+
+        // 单调代际归属守卫：过期代延迟 close 仅落归因日志，绝不污染新实例、绝不发回调
+        const isCurrentGen =
+          launchCtx.generation === this.currentGeneration && this.process === child
+        if (!isCurrentGen) {
           return
         }
-        // 子进程异常退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
-        const aliveAfterExit = await this.checkHealth()
-        if (aliveAfterExit) {
+
+        this.process = null
+        this.expectedIdentity = null
+        this.cachedVersion = null
+        this.connectedTarget = null
+        this.lastVerifiedAtMs = 0
+        this.unhealthySince = null
+        this.lastFailureAt = null
+        if (this.currentLaunchCtx === launchCtx) {
+          this.currentLaunchCtx = null
+        }
+
+        const nextGen = ++this.currentGeneration
+        this.emitLifecycleInactive(nextGen)
+
+        // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
+        this.pushStatus().catch(() => {})
+        if (this.isIntentionalStopping || launchCtx.intentionalKill) {
+          return
+        }
+        // 子进程异常退出后，仅当同源验证通过才允许外部服务接管，并完整采纳新实例身份与重建 SSE
+        const verifiedExternal = await this.verifyOmniInstance(
+          this.actualPort,
+          undefined,
+          verifyOpts
+        )
+        if (
+          this.currentGeneration !== nextGen ||
+          this.isIntentionalStopping ||
+          this.process !== null ||
+          this.isStarting
+        ) {
+          return
+        }
+        if (verifiedExternal.ok) {
+          const adoptedPid =
+            typeof verifiedExternal.data?.pid === 'number' ? verifiedExternal.data.pid : undefined
+          const adoptedInstanceId = this.resolveAdoptedInstanceId(
+            verifiedExternal.data,
+            verifiedExternal.headerInstanceId,
+            this.actualPort
+          )
+          const version =
+            typeof verifiedExternal.data?.version === 'string' && verifiedExternal.data.version
+              ? verifiedExternal.data.version
+              : null
+          this.applyAdoptedInstanceIdentity({
+            port: this.actualPort,
+            pid: adoptedPid,
+            instanceId: adoptedInstanceId,
+            version
+          })
           logger.debug(
             LogCategory.SYSTEM,
-            `[OmniService] ${this.actualPort} 端口已有外部服务接管，直接连接`
+            `[OmniService] ${this.actualPort} 端口已有同源外部服务接管，已完成身份采纳与 SSE 重建`
           )
           this.restartAttempts = 0
-          // 外部服务接管成功，推送"运行中"状态
+          this.syncConfigFromDesktop().catch(() => {})
+          this.kickEventStreamReconnect({
+            expectedTarget: {
+              baseUrl: this.baseUrl,
+              pid: adoptedPid,
+              instanceId: adoptedInstanceId
+            },
+            resetFailures: true
+          })
+          const externalGen = ++this.currentGeneration
+          this.emitInstanceChanged(externalGen)
+          this.notifyReady()
           this.pushStatus().catch(() => {})
           return
         }
@@ -2093,7 +2969,6 @@ export class OmniService {
             LogCategory.SYSTEM,
             `[OmniService] firefly-omni 子进程在就绪前退出或中止 (exitCode=${child.exitCode}, killed=${child.killed}, stopping=${this.isIntentionalStopping})`
           )
-          this.isStarting = false
           return false
         }
 
@@ -2120,16 +2995,38 @@ export class OmniService {
                 `[OmniService] 挂载清单双向核验失败 (Fail-Closed)，停机阻断激活: ${this.lastMountValidationError}`
               )
               await this.stop()
-              this.isStarting = false
               return false
             }
           }
+          const statusData = verifyRes.statusData
+          const resolvedId = this.resolveAdoptedInstanceId(
+            statusData,
+            undefined,
+            this.actualPort,
+            this.expectedIdentity?.instanceId
+          )
+          this.expectedIdentity = {
+            pid: typeof statusData?.pid === 'number' ? statusData.pid : child.pid,
+            instanceId: resolvedId,
+            port: this.actualPort
+          }
+          if (typeof statusData?.version === 'string' && statusData.version) {
+            this.cachedVersion = statusData.version
+          }
+          this.connectedTarget = {
+            baseUrl: this.baseUrl,
+            pid: this.expectedIdentity.pid,
+            instanceId: resolvedId
+          }
+          this.lastVerifiedAtMs = Date.now()
+          this.unhealthySince = null
+          this.lastFailureAt = null
+
           logger.info(
             LogCategory.SYSTEM,
-            `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`
+            `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听 (gen=${launchGeneration})`
           )
           this.restartAttempts = 0
-          this.isStarting = false
           // 探活就绪后，记录二进制签名，并开启开发态热更新监听
           this.spawnedBinarySignature = this.binarySignature(exePath)
           this.lastSpawnedAt = Date.now()
@@ -2140,6 +3037,7 @@ export class OmniService {
           this.syncConfigFromDesktop().catch(() => {})
           // 确保单循环 SSE 状态流已建立，实时推送状态至渲染进程
           this.ensureEventStream()
+          this.emitInstanceChanged(launchGeneration)
           this.notifyReady()
           return true
         }
@@ -2150,14 +3048,14 @@ export class OmniService {
         `[OmniService] firefly-omni 启动探活超时 (80s)，终止当前未就绪子进程`
       )
       await this.stop()
-      this.isStarting = false
       // 启动失败（探活超时），推送"未运行"状态
       this.pushStatus().catch(() => {})
       return false
     } catch (err) {
       logger.error(LogCategory.SYSTEM, '[OmniService] 启动服务发生异常:', err)
-      this.isStarting = false
       return false
+    } finally {
+      this.isStarting = false
     }
   }
 
@@ -2168,27 +3066,45 @@ export class OmniService {
    * 物理终止当前持有的 firefly-omni 子进程树（纯净终止，不污染 isStarting 状态机）
    */
   /**
-   * 强制终结子进程树辅助方法
+   * 强制终结子进程树辅助方法：
+   * 先标记对应 LaunchContext 的 intentionalKill = true，再委托 @firefly/shared::killProcessTree，
+   * 仅终止成功后注销 processReaper（失败保留追踪并 warn）。
    */
-  private forceKillProcessTree(child: ChildProcess | null): void {
+  private forceKillProcessTree(child: ChildProcess | null, reason = 'force_kill'): void {
     if (!child) return
     const pid = child.pid
+    if (this.currentLaunchCtx && this.currentLaunchCtx.child === child) {
+      this.currentLaunchCtx.intentionalKill = true
+    }
+    if (typeof pid !== 'number' || pid <= 0) {
+      return
+    }
+    let killSucceeded = false
     try {
-      const { processReaper } = require('../../../main/process-reaper')
-      processReaper.unregisterChild(pid)
-    } catch {}
-    try {
-      if (process.platform === 'win32' && pid) {
+      killProcessTree(pid)
+      if (child.exitCode === null && child.signalCode === null) {
         try {
-          const { execSync } = require('node:child_process')
-          execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' })
+          child.kill('SIGKILL')
         } catch {}
       }
-      if (child.exitCode === null && child.signalCode === null) {
-        child.kill('SIGKILL')
-      }
-      logger.info(LogCategory.SYSTEM, `[OmniService] 已彻底终止 firefly-omni 进程树 (PID=${pid})`)
-    } catch {}
+      killSucceeded = true
+      logger.info(
+        LogCategory.SYSTEM,
+        `[OmniService] 已彻底终止 firefly-omni 进程树 (PID=${pid}, reason=${reason})`
+      )
+    } catch (err) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 终止 firefly-omni 进程树失败，保留 processReaper 追踪 (PID=${pid}, reason=${reason}):`,
+        err
+      )
+    }
+    if (killSucceeded) {
+      try {
+        const { processReaper } = require('../../../main/process-reaper')
+        processReaper.unregisterChild(pid)
+      } catch {}
+    }
   }
 
   /**
@@ -2229,6 +3145,9 @@ export class OmniService {
 
     this.isIntentionalStopping = true
     this.isStarting = false
+    if (this.currentLaunchCtx && this.currentLaunchCtx.child === child) {
+      this.currentLaunchCtx.intentionalKill = true
+    }
     ++this.stopEpoch
     ++this.connectionEpoch
     this.stopController.abort()
@@ -2236,16 +3155,23 @@ export class OmniService {
     this.eventStreamAbortController?.abort()
     this.reconnectAbortController?.abort()
     this.activeLoopEpoch = null
+    this.cachedVersion = null
     this.connectedTarget = null
     this.expectedIdentity = null
+    this.lastVerifiedAtMs = 0
+    this.unhealthySince = null
+    this.lastFailureAt = null
     this.lastStatusEvent = null
+
+    const nextGen = ++this.currentGeneration
+    this.emitLifecycleInactive(nextGen)
 
     if (this.restartTimeout) {
       clearTimeout(this.restartTimeout)
       this.restartTimeout = null
     }
     this.process = null
-    this.forceKillProcessTree(child)
+    this.forceKillProcessTree(child, 'stop_immediately_sync')
 
     if (childPid) {
       this.getDiscoveryFile()?.revokeSync({ pid: childPid, instanceId: lastInstanceId })
@@ -2282,8 +3208,10 @@ export class OmniService {
     while (Date.now() < deadline) {
       try {
         // 用较短的单次超时探测端口是否监听；可达即返回，不等完整 2.5s
-        const res = await fetch(`${this.baseUrl}/api/v1/engine/status`, {
-          signal: AbortSignal.timeout(1500)
+        const res = await this.omniFetch(`${this.baseUrl}/api/v1/engine/status`, {
+          kind: 'probe',
+          timeoutMs: 1500,
+          internal: true
         })
         // 端口已监听并返回（无论业务状态码），说明 HTTP 层已就绪
         if (res) {
@@ -2345,8 +3273,10 @@ export class OmniService {
   }> {
     const target = expected ?? this.lastExpectedMounts
     try {
-      const res = await fetch(`${this.baseUrl}/api/v1/engine/status`, {
-        signal: AbortSignal.timeout(STATUS_VERIFY_TIMEOUT_MS)
+      const res = await this.omniFetch(`${this.baseUrl}/api/v1/engine/status`, {
+        kind: 'probe',
+        timeoutMs: STATUS_VERIFY_TIMEOUT_MS,
+        internal: true
       })
       if (!res.ok) {
         const transient = isTransientStatusHttpCode(res.status)
@@ -2487,39 +3417,96 @@ export class OmniService {
     } else if (opts.moduleId === 'tts_moss_onnx' || opts.moduleId === 'tts_m5_onnx') {
       const expectedEngine =
         opts.moduleId === 'tts_m5_onnx' ? 'express-voice-24k' : 'clone-voice-48k'
-      // 引擎重启后模型加载需要时间，执行有界轮询（最长 15s，每 500ms 重试），杜绝单次 4s 超时误杀降级
-      const deadline = Date.now() + 15_000
-      let lastError = ''
-      let isReady = false
+      const hibernationTargetId =
+        opts.moduleId === 'tts_m5_onnx' ? 'tts-m5-onnx' : 'tts-moss-onnx'
 
-      while (Date.now() < deadline) {
+      // 1. 先探活 /api/audio/tts/status 确认挂载路由激活且模型包已安装 (installed)
+      const statusDeadline = Date.now() + 5_000
+      let lastError = ''
+      let installedOrReady = false
+
+      while (Date.now() < statusDeadline) {
         try {
-          const statusRes = await fetch(`${this.baseUrl}/api/audio/tts/status`, {
-            signal: AbortSignal.timeout(2000)
+          const statusRes = await this.omniFetch(`${this.baseUrl}/api/audio/tts/status`, {
+            kind: 'probe',
+            timeoutMs: 2000,
+            internal: true
           })
           if (statusRes.ok) {
             const ttsStatus = (await statusRes.json()) as {
               ready?: boolean
+              installed?: boolean
               total_voices?: number
               engine?: string
             }
-            if (ttsStatus?.ready && ttsStatus.engine === expectedEngine) {
-              isReady = true
+            const engineMatched = ttsStatus.engine === expectedEngine
+            const hasCapability =
+              ttsStatus.installed === true ||
+              ttsStatus.ready === true ||
+              (ttsStatus.installed === undefined && (ttsStatus.total_voices ?? 0) > 0)
+            if (engineMatched && hasCapability) {
+              installedOrReady = true
               break
             }
-            lastError = `ready=${Boolean(ttsStatus?.ready)}, engine=${ttsStatus?.engine || 'none'}`
+            lastError = `ready=${Boolean(ttsStatus?.ready)}, installed=${String(ttsStatus?.installed)}, engine=${ttsStatus?.engine || 'none'}`
           } else {
             lastError = `HTTP ${statusRes.status}`
           }
         } catch (err: any) {
           lastError = err?.message || String(err)
         }
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise(resolve => setTimeout(resolve, 250))
       }
 
-      if (!isReady) {
+      if (!installedOrReady) {
         throw new Error(
           `TTS 引擎挂载验证未通过 (expected=${expectedEngine}, details: ${lastError})`
+        )
+      }
+
+      // 2. 冒烟正式接入统一休眠协调器（懒加载模式下经 withHibernationGate 按需激活会话并确认 ready）
+      try {
+        const [{ moduleHibernationCoordinator }, { engineBridgeService }] = await Promise.all([
+          import('../../hibernation/module-hibernation-coordinator'),
+          import('../../engine-bridge')
+        ])
+        moduleHibernationCoordinator.setOmniLifecycleProvider(this)
+        if (!moduleHibernationCoordinator.getEngineBridgeService()) {
+          moduleHibernationCoordinator.setEngineBridgeService(engineBridgeService)
+        }
+        moduleHibernationCoordinator.forceResetExternalHibernated(
+          hibernationTargetId,
+          this.getGeneration()
+        )
+        await moduleHibernationCoordinator.withHibernationGate(
+          {
+            targetId: hibernationTargetId,
+            clusterId: 'tts_media',
+            livenessSourceKey: 'task_progress'
+          },
+          async () => {
+            const statusRes = await this.omniFetch(`${this.baseUrl}/api/audio/tts/status`, {
+              kind: 'probe',
+              timeoutMs: 3000,
+              internal: true
+            })
+            if (!statusRes.ok) {
+              throw new Error(`HTTP ${statusRes.status}`)
+            }
+            const ttsStatus = (await statusRes.json()) as {
+              ready?: boolean
+              engine?: string
+            }
+            if (!ttsStatus?.ready || ttsStatus.engine !== expectedEngine) {
+              throw new Error(
+                `ready=${Boolean(ttsStatus?.ready)}, engine=${ttsStatus?.engine || 'none'}`
+              )
+            }
+          }
+        )
+      } catch (smokeErr: any) {
+        throw new Error(
+          `TTS 引擎协调器冒烟未通过 (expected=${expectedEngine}, details: ${smokeErr?.message || String(smokeErr)})`
         )
       }
     }
@@ -2549,6 +3536,9 @@ export class OmniService {
 
     this.isIntentionalStopping = true
     this.isStarting = false
+    if (this.currentLaunchCtx && this.currentLaunchCtx.child === child) {
+      this.currentLaunchCtx.intentionalKill = true
+    }
     ++this.stopEpoch
     ++this.connectionEpoch
     this.stopController.abort()
@@ -2556,9 +3546,16 @@ export class OmniService {
     this.eventStreamAbortController?.abort()
     this.reconnectAbortController?.abort()
     this.activeLoopEpoch = null
+    this.cachedVersion = null
     this.connectedTarget = null
     this.expectedIdentity = null
+    this.lastVerifiedAtMs = 0
+    this.unhealthySince = null
+    this.lastFailureAt = null
     this.lastStatusEvent = null
+
+    const nextGen = ++this.currentGeneration
+    this.emitLifecycleInactive(nextGen)
 
     if (this.restartTimeout) {
       clearTimeout(this.restartTimeout)
@@ -2599,7 +3596,7 @@ export class OmniService {
           ])
 
           if (child.exitCode === null && child.signalCode === null) {
-            this.forceKillProcessTree(child)
+            this.forceKillProcessTree(child, 'stop_graceful_timeout')
             await Promise.race([
               waitChildClose,
               new Promise<void>(resolve => setTimeout(resolve, 2000))
@@ -2714,13 +3711,12 @@ export class OmniService {
   }): Promise<boolean> {
     try {
       const timeoutMs = options?.timeoutMs ?? 1000
-      let fetchSignal: AbortSignal = AbortSignal.timeout(timeoutMs)
-      if (options?.signal) {
-        fetchSignal = (AbortSignal as any).any
-          ? (AbortSignal as any).any([fetchSignal, options.signal])
-          : options.signal
-      }
-      const res = await fetch(`${this.baseUrl}/health`, { signal: fetchSignal })
+      const res = await this.omniFetch(`${this.baseUrl}/health`, {
+        kind: 'probe',
+        timeoutMs,
+        signal: options?.signal,
+        internal: true
+      })
       if (res.ok) {
         try {
           const data = await res.json()
@@ -2805,11 +3801,13 @@ export class OmniService {
         enable_face_perception: enableFacePerception
       })
 
-      const res = await fetch(`${this.baseUrl}/api/config`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/config`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: payload,
-        signal: AbortSignal.timeout(3000)
+        timeoutMs: 3000,
+        internal: true
       })
 
       if (res.ok) {
@@ -2845,11 +3843,12 @@ export class OmniService {
   public async reconnect(dbPath: string): Promise<boolean> {
     await this.ensureRunning()
     try {
-      const res = await fetch(`${this.baseUrl}/api/reconnect`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/reconnect`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dbPath }),
-        signal: AbortSignal.timeout(5000)
+        timeoutMs: 5000
       })
       if (!res.ok) {
         logger.warn(
@@ -2865,6 +3864,26 @@ export class OmniService {
       logger.warn(LogCategory.SYSTEM, `[OmniService] POST /api/reconnect 异常:`, err.message)
       return false
     }
+  }
+
+  /**
+   * 侧通道业务请求异常后的统一自愈判定入口（委托 mount-verify-classify::shouldTriggerRestartOnFetchError）
+   */
+  private shouldRestartAfterFetchError(
+    error: unknown,
+    signalAborted = false,
+    httpStatus?: number | null
+  ): boolean {
+    if (this.isIntentionalStopping) {
+      return false
+    }
+    return shouldTriggerRestartOnFetchError({
+      error,
+      signalAborted,
+      httpStatus,
+      processAlive: this.hasLiveManagedProcess() || this.isAdoptedPidAlive(),
+      withinStartupGrace: this.isWithinStartupGrace()
+    })
   }
 
   /**
@@ -2886,6 +3905,7 @@ export class OmniService {
 
     const doFetch = async () => {
       const res = await this.omniFetch(`${this.baseUrl}/api/extract`, {
+        kind: 'long',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -2915,11 +3935,18 @@ export class OmniService {
       const causeMsg =
         err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
       const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
+      if (!this.shouldRestartAfterFetchError(err)) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] <<< POST /api/extract 异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}（进程仍存活，不触发误杀重启）`
+        )
+        return null
+      }
       logger.warn(
         LogCategory.SYSTEM,
         `[OmniService] <<< POST /api/extract 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}，尝试自愈拉起并重试...`
       )
-      // 若出现网络错误（如进程被外部杀死重构中），触发自愈并重试一次
+      // 若进程已失活或端口明确拒绝连接（宽限期外），触发自愈并重试一次
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3041,11 +4068,12 @@ export class OmniService {
       )
 
       const doFetch = async () => {
-        const res = await fetch(`${this.baseUrl}/api/geo/reverse`, {
+        const res = await this.omniFetch(`${this.baseUrl}/api/geo/reverse`, {
+          kind: 'call',
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(reqBody),
-          signal: AbortSignal.timeout(3000)
+          timeoutMs: 3000
         })
 
         if (!res.ok) {
@@ -3068,11 +4096,13 @@ export class OmniService {
       try {
         return await doFetch()
       } catch (fetchErr: any) {
-        const restarted = await this.start()
-        if (restarted) {
-          try {
-            return await doFetch()
-          } catch {}
+        if (this.shouldRestartAfterFetchError(fetchErr)) {
+          const restarted = await this.start()
+          if (restarted) {
+            try {
+              return await doFetch()
+            } catch {}
+          }
         }
         throw fetchErr
       }
@@ -3153,7 +4183,8 @@ export class OmniService {
 
     const doFetch = async () => {
       // Office 转换 (LibreOffice) 或复杂视频截帧可能需要一定冷启动时间，提供充足的 60 秒等待时间
-      const res = await fetch(url, {
+      const res = await this.omniFetch(url, {
+        kind: 'long',
         signal: AbortSignal.timeout(60000)
       })
 
@@ -3182,6 +4213,13 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
+      if (!this.shouldRestartAfterFetchError(err)) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[OmniService] <<< GET /api/cover 异常 (${filePath}, 耗时: ${Date.now() - tStart}ms): ${err.message}（进程存活不触发重启）`
+        )
+        return null
+      }
       logger.debug(
         LogCategory.SYSTEM,
         `[OmniService] <<< GET /api/cover 首次调用异常 (${filePath}, 耗时: ${Date.now() - tStart}ms): ${err.message}，尝试自愈重试...`
@@ -3237,14 +4275,6 @@ export class OmniService {
   ): Promise<OmniPerceptionResponse | null> {
     await this.ensureRunning()
     const tStart = Date.now()
-    const reqBody = buildPerceiveRequestBody(filePath, options, <T>(key: string) =>
-      this.getConfigValue<T>(key)
-    )
-    logger.debug(
-      LogCategory.SYSTEM,
-      `[OmniService] >>> POST /api/perceive 请求发起:`,
-      JSON.stringify(reqBody)
-    )
 
     // perceive 超时 = CPU 阶段上限（总预算 − 按类型分配的 AI 保底），见 analysis-timeout-policy。
     // 音视频不再放宽到 10 分钟：那会让单文件真实上限变成「10 分钟 + AI 分析」。
@@ -3276,6 +4306,18 @@ export class OmniService {
     const effectiveCpuCapMs =
       budget.kind === 'video' ? Math.max(budget.cpuCapMs, budget.totalMs - 20000) : budget.cpuCapMs
     const timeoutMs = options?.timeoutMs || effectiveCpuCapMs
+    // 单源闭合透传 perceive_timeout_sec（与 Desktop AbortSignal 同源，防止 Rust 看门狗倒挂抢杀）
+    const perceiveTimeoutSec = options?.perceiveTimeoutSec ?? timeoutMs / 1000
+    const reqBody = buildPerceiveRequestBody(
+      filePath,
+      { ...options, perceiveTimeoutSec },
+      <T>(key: string) => this.getConfigValue<T>(key)
+    )
+    logger.debug(
+      LogCategory.SYSTEM,
+      `[OmniService] >>> POST /api/perceive 请求发起:`,
+      JSON.stringify(reqBody)
+    )
 
     const doFetch = async () => {
       const timeoutSignal = AbortSignal.timeout(timeoutMs)
@@ -3283,6 +4325,7 @@ export class OmniService {
         ? AbortSignal.any([timeoutSignal, options.signal])
         : timeoutSignal
       const res = await this.omniFetch(`${this.baseUrl}/api/perceive`, {
+        kind: 'long',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -3408,19 +4451,18 @@ export class OmniService {
       const causeMsg =
         err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
       const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
+      // 严禁在 perceive catch 中盲调 persistDmlCrash：崩溃归因唯一事实源为 child.on('close') + LaunchContext
+      if (!this.shouldRestartAfterFetchError(err, options?.signal?.aborted === true)) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] <<< POST /api/perceive 异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}（进程仍存活或主动中止，不触发误杀重启）`
+        )
+        return null
+      }
       logger.warn(
         LogCategory.SYSTEM,
         `[OmniService] <<< POST /api/perceive 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${fullError}，尝试自愈拉起并重试...`
       )
-      // 连接被重置/挂断通常意味着本地 Omni 进程已原生崩溃（如 DirectML abort）。
-      // 在拉起前先持久化「纯 CPU 兜底」结论，确保紧随其后的自愈重试不再复用坏 GPU 路径。
-      if (/ECONNRESET|ECONNREFUSED|socket hang up/i.test(fullError)) {
-        this.persistDmlCrash(this.dmlCrashMarkerPath)
-        logger.warn(
-          LogCategory.SYSTEM,
-          '[OmniService] perceive 传输中断，判定引擎异常退出；自愈重试将以纯 CPU 兜底拉起'
-        )
-      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3469,6 +4511,7 @@ export class OmniService {
         }
       }
       const res = await this.omniFetch(`${this.baseUrl}/api/audio/transcribe`, {
+        kind: 'long',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -3489,6 +4532,9 @@ export class OmniService {
         `[OmniService] transcribeAudio 异常 (${filePath}):`,
         err.message
       )
+      if (!this.shouldRestartAfterFetchError(err, options?.signal?.aborted === true)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3517,6 +4563,7 @@ export class OmniService {
 
     const doFetch = async () => {
       const res = await this.omniFetch(`${this.baseUrl}/api/audio/convert`, {
+        kind: 'long',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
@@ -3534,6 +4581,9 @@ export class OmniService {
         `[OmniService] convertToStandardAudio 异常 (${filePath}, 耗时: ${Date.now() - tStart}ms):`,
         err.message
       )
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3562,10 +4612,11 @@ export class OmniService {
 
     const doFetch = async () => {
       const res = await this.omniFetch(`${this.baseUrl}/api/vision/tags`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       const json = (await res.json()) as OmniVisionTagsResponse
@@ -3580,6 +4631,9 @@ export class OmniService {
         `[OmniService] extractVisualTags 异常 (${filePath}):`,
         err.message
       )
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3602,11 +4656,12 @@ export class OmniService {
     const reqBody = { file_path: filePath }
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/vision/inspect`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/vision/inspect`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniVisionInspectResponse
@@ -3620,6 +4675,9 @@ export class OmniService {
         `[OmniService] inspectVision 异常 (${filePath}):`,
         err.message
       )
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3642,11 +4700,12 @@ export class OmniService {
     const reqBody = { file_path: filePath }
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/fs/ads`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/fs/ads`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniFsAdsResponse
@@ -3656,6 +4715,9 @@ export class OmniService {
       return await doFetch()
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, `[OmniService] inspectAds 异常 (${filePath}):`, err.message)
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3676,11 +4738,12 @@ export class OmniService {
   ): Promise<OmniIndexResponse | null> {
     await this.ensureRunning()
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/search/index`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/search/index`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ documents }),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniIndexResponse
@@ -3689,6 +4752,9 @@ export class OmniService {
       return await doFetch()
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, `[OmniService] indexDocuments 异常:`, err.message)
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3714,10 +4780,11 @@ export class OmniService {
     await this.ensureRunning()
     const doFetch = async () => {
       const res = await this.omniFetch(`${this.baseUrl}/api/search/hybrid`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(options),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniHybridSearchResponse
@@ -3726,6 +4793,9 @@ export class OmniService {
       return await doFetch()
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, `[OmniService] searchHybrid 异常:`, err.message)
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3769,7 +4839,8 @@ export class OmniService {
       await this.ensureRunning()
     }
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/search/cluster`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/search/cluster`, {
+        kind: 'long',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(options),
@@ -3805,11 +4876,12 @@ export class OmniService {
     const reqBody = { word }
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/hownet/describe`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/hownet/describe`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniHowNetDescribeResult
@@ -3819,6 +4891,9 @@ export class OmniService {
       return await doFetch()
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, `[OmniService] describeHowNet 异常 (${word}):`, err.message)
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3862,11 +4937,12 @@ export class OmniService {
     }
 
     const doFetch = async () => {
-      const res = await fetch(`${this.baseUrl}/api/text/analyze`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/text/analyze`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniTextAnalysisResult
@@ -3876,6 +4952,9 @@ export class OmniService {
       return await doFetch()
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, `[OmniService] analyzeText 异常:`, err.message)
+      if (!this.shouldRestartAfterFetchError(err)) {
+        return null
+      }
       const restarted = await this.start()
       if (restarted) {
         try {
@@ -3911,7 +4990,8 @@ export class OmniService {
   } | null> {
     await this.ensureRunning()
     try {
-      const res = await fetch(`${this.baseUrl}/api/text/nsfw`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/text/nsfw`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3920,7 +5000,7 @@ export class OmniService {
           image_base64: params.imageBase64,
           language: params.language
         }),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) {
         logger.warn(
@@ -3955,11 +5035,12 @@ export class OmniService {
     }
 
     try {
-      const res = await fetch(`${this.baseUrl}/api/taxonomy/resolve-parent`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/taxonomy/resolve-parent`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(timeoutMs)
+        timeoutMs
       })
       if (!res.ok) return null
       return (await res.json()) as OmniResolveParentResponse
@@ -3992,11 +5073,13 @@ export class OmniService {
     const timer = setTimeout(() => controller.abort(), timeoutMs)
 
     try {
-      const res = await fetch(`${this.baseUrl}/api/v1/taxonomy/inspect-tag`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/v1/taxonomy/inspect-tag`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: controller.signal
+        signal: controller.signal,
+        timeoutMs
       })
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`)
@@ -4089,11 +5172,13 @@ export class OmniService {
     }
 
     try {
-      const res = await fetch(`${this.baseUrl}/api/v1/vector/batch-embed-text`, {
+      const res = await this.omniFetch(`${this.baseUrl}/api/v1/vector/batch-embed-text`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: controller.signal
+        signal: controller.signal,
+        timeoutMs
       })
       if (!res.ok) {
         let detail = ''
@@ -4220,13 +5305,32 @@ export class OmniService {
 }
 
 export const omniService: OmniService = new Proxy({} as OmniService, {
-  get(_target, prop, receiver) {
+  get(_target, prop) {
     const inst = OmniService.getInstance()
-    const val = Reflect.get(inst as any, prop, receiver)
+    const val = Reflect.get(inst as any, prop, inst)
     return typeof val === 'function' ? val.bind(inst) : val
   },
-  set(_target, prop, value, receiver) {
+  set(_target, prop, value) {
     const inst = OmniService.getInstance()
-    return Reflect.set(inst as any, prop, value, receiver)
+    return Reflect.set(inst as any, prop, value, inst)
+  },
+  has(_target, prop) {
+    return prop in OmniService.getInstance()
+  },
+  getPrototypeOf() {
+    return Reflect.getPrototypeOf(OmniService.getInstance())
+  },
+  ownKeys() {
+    return Reflect.ownKeys(OmniService.getInstance())
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    const desc = Reflect.getOwnPropertyDescriptor(OmniService.getInstance(), prop)
+    return desc ? { ...desc, configurable: true } : undefined
+  },
+  defineProperty(_target, prop, descriptor) {
+    return Reflect.defineProperty(OmniService.getInstance(), prop, descriptor)
+  },
+  deleteProperty(_target, prop) {
+    return Reflect.deleteProperty(OmniService.getInstance(), prop)
   }
 })

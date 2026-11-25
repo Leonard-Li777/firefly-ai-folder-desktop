@@ -110,6 +110,7 @@ export interface ModuleRuntimeState {
   id: string
   clusterId: 'analysis_suite' | 'tts_media'
   modelGeneration: number
+  loadedGeneration?: number
   defaultMemoryKind: 'ram' | 'vram'
   effectiveMemoryKind: 'ram' | 'vram'
   i18nNameKey: string
@@ -423,6 +424,21 @@ export class AsyncMutex {
   }
 }
 
+export type OmniModuleLoadOutcome =
+  | 'ok'
+  | 'not_installed'
+  | 'aborted'
+  | 'drain_timeout'
+  | 'unreachable'
+  | 'failed'
+
+export interface OmniModuleLoadResult {
+  readonly outcome: OmniModuleLoadOutcome
+  readonly residentBytes: number
+  readonly httpStatus?: number
+  readonly error?: string
+}
+
 export interface OmniModuleDrainResult {
   readonly success: boolean
   readonly status: string
@@ -434,6 +450,7 @@ export interface OmniModuleStatusResult {
   readonly loaded: boolean
   readonly residentBytes: number
   readonly serviceReachable: boolean
+  readonly probeStatus?: 'ok' | 'timeout' | 'unreachable'
 }
 
 /** EngineBridgeService 最小能力抽象（供休眠调度器解耦与单测） */
@@ -460,6 +477,10 @@ export interface IEngineBridgeService {
       onProgress?: (progress?: any) => void
     }
   ): Promise<{ identity: ProcessTreeIdentity; jobHandle?: string }>
+  loadOmniModule?(
+    targetId: string,
+    options?: { signal?: AbortSignal }
+  ): Promise<OmniModuleLoadResult>
   drainOmniModule?(
     targetId: string,
     options?: { waitDrainMs?: number; signal?: AbortSignal }

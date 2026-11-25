@@ -285,6 +285,22 @@ export class FileVideoMixin extends FileQueryMixin {
   }
 
   /**
+   * 终态失败直落 failed（Spec v1.7.3 §2.4.2）：用于 budget_structural 或耗尽降级，绝不回滚 pending
+   */
+  markVideoSegmentTerminalFailed(fileId: string, segmentIndex: number, errorMsg: string): void {
+    const now = Date.now()
+    this.db
+      .prepare(
+        `UPDATE file_video_segments
+         SET status = 'failed',
+             error_message = ?,
+             updated_at = ?
+         WHERE file_id = ? AND segment_index = ? AND status = 'processing'`
+      )
+      .run(errorMsg, now, fileId, segmentIndex)
+  }
+
+  /**
    * 修复历史中毒切片：`completed` 但零帧/零向量产出时重置为 `pending` 以便重新提取。
    * 仅命中空完成态，不影响正常已完成切片，也不消耗毒药重试配额。
    */
@@ -478,7 +494,8 @@ export class FileVideoMixin extends FileQueryMixin {
       .prepare(
         `UPDATE file_video_segments
          SET status = 'pending', updated_at = ?
-         WHERE status = 'processing'`
+         WHERE status = 'processing'
+           AND (error_message IS NULL OR error_message NOT LIKE '%"budget_structural"%')`
       )
       .run(now)
   }

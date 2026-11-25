@@ -378,6 +378,9 @@ describe('LeaseRegistry', () => {
       }
       expect(isFresh(entry, stoppedSnap, now)).toBe(false)
 
+      // 获取 player_state 租约瞬间即视为处于 playing 态（消除首帧到达前误判）
+      expect(hasFreshPlayingLease(registry, 'tts_media', now)).toBe(true)
+
       // hasFreshPlayingLease 辅助函数验证
       registry.livenessSourceRegistry.recordPlayback(handle.leaseId, 'playing', now)
       expect(hasFreshPlayingLease(registry, 'tts_media', now)).toBe(true)

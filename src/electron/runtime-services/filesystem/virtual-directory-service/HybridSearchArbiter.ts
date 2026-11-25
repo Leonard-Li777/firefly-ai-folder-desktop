@@ -177,7 +177,6 @@ export interface VideoChunkCandidateInterval {
   endSec: number
   similarity: number
   repPtsSec?: number
-  meta?: Record<string, any>
 }
 
 export interface MergedShotInterval {
@@ -2012,16 +2011,16 @@ export class HybridSearchArbiter {
       )
       const chunkTimingMap = new Map<
         string,
-        { startSec: number; endSec: number; repPtsSec: number; meta: Record<string, any> }
+        { startSec: number; endSec: number; repPtsSec: number }
       >()
       const maxChunkIndexMap = new Map<string, number>()
 
       if (parentsWithAnyChunks.length > 0) {
         try {
           const placeholders = parentsWithAnyChunks.map(() => '?').join(',')
-          // [Issue 04 Step 3 / Spec §3.1.C.3] 视频权益时限额下推到 SQL 层：
+          // [Issue 04 Step 3 / Spec §3.3] 视频权益时限额下推到 SQL 层并去除冗余 meta 列：
           // WHERE file_fingerprint IN (...) AND start_sec < videoLimitSec，
-          // 命中 idx_fvc_fp_start 前缀 + start_sec 区间，消除单视频 7,200 行全量加载与逐行 JS 过滤。
+          // 100% 命中 5 列覆盖索引 idx_fvc_fp_start，实现零回表与零 JSON.parse。
           const userLimits = userTierService.getCachedData()?.computed_limits
           const videoLimitSec =
             typeof userLimits?.video_max_duration_seconds === 'number'
@@ -2029,7 +2028,7 @@ export class HybridSearchArbiter {
               : 300
           const rows = this.db
             .prepare(
-              `SELECT file_fingerprint, chunk_index, start_sec, end_sec, COALESCE(rep_pts_sec, start_sec) AS rep_pts_sec, meta
+              `SELECT file_fingerprint, chunk_index, start_sec, end_sec, COALESCE(rep_pts_sec, start_sec) AS rep_pts_sec
                FROM file_video_chunks
                WHERE file_fingerprint IN (${placeholders}) AND start_sec < ?`
             )
@@ -2039,7 +2038,6 @@ export class HybridSearchArbiter {
             start_sec: number
             end_sec: number
             rep_pts_sec: number
-            meta: string | Record<string, any>
           }>
 
           for (const r of rows) {
@@ -2047,19 +2045,10 @@ export class HybridSearchArbiter {
             if (r.chunk_index > curMax) {
               maxChunkIndexMap.set(r.file_fingerprint, r.chunk_index)
             }
-            let parsedMeta: Record<string, any> = {}
-            if (r.meta) {
-              try {
-                parsedMeta = typeof r.meta === 'string' ? JSON.parse(r.meta) : r.meta
-              } catch {
-                parsedMeta = {}
-              }
-            }
             chunkTimingMap.set(`${r.file_fingerprint}:c${r.chunk_index}`, {
               startSec: r.start_sec,
               endSec: r.end_sec,
-              repPtsSec: Number(r.rep_pts_sec ?? r.start_sec),
-              meta: parsedMeta
+              repPtsSec: Number(r.rep_pts_sec ?? r.start_sec)
             })
           }
         } catch (err: unknown) {
@@ -2140,8 +2129,7 @@ export class HybridSearchArbiter {
               startSec: timing.startSec,
               endSec: timing.endSec,
               similarity: vc.score,
-              repPtsSec: timing.repPtsSec,
-              meta: timing.meta
+              repPtsSec: timing.repPtsSec
             })
           }
         }

@@ -11,7 +11,7 @@
 
 import http from 'node:http'
 import { LogCategory, logger } from '@firefly/shared'
-import { omniService } from '../runtime-services/system/omni-service'
+import { omniService, type OmniFetchOptions } from '../runtime-services/system/omni-service'
 import { isTransientStatusFetchError } from '../runtime-services/system/omni-service/mount-verify-classify'
 import {
   M5FrameParser,
@@ -275,32 +275,67 @@ export class OmniClient {
   private static readonly TAXONOMY_CACHE_TTL = 10_000 // 10秒TTL（防组件多重挂载并发重复请求，同时保证文件分析入库后敏捷刷新）
   private _taxonomyTreeCache = new Map<string, { data: OmniTaxonomyTreeResponse; time: number }>()
   private _inFlightTaxonomyTree = new Map<string, Promise<OmniTaxonomyTreeResponse | null>>()
+  private _lastTaxonomyAliasesError: { status: number; errorCode?: string; at: number } | null = null
+
+  /** 获取最近一次 getTaxonomyAliases 的 HTTP 错误元信息（用于识别 503 MODULE_NOT_INSTALLED） */
+  getLastTaxonomyAliasesError(): { status: number; errorCode?: string; at: number } | null {
+    return this._lastTaxonomyAliasesError
+  }
+
+  /** 统一走 OmniService.omniFetch（兼容仅 mock 基础方法的既有单测） */
+  private fetchOmni(url: string, init?: OmniFetchOptions): Promise<Response> {
+    if (typeof omniService.omniFetch === 'function') {
+      return omniService.omniFetch(url, init)
+    }
+    const { kind: _k, timeoutMs, internal: _i, signal, ...rest } = init ?? {}
+    const effectiveSignal =
+      signal ?? (typeof timeoutMs === 'number' && timeoutMs > 0 ? AbortSignal.timeout(timeoutMs) : undefined)
+    return fetch(url, {
+      ...rest,
+      ...(effectiveSignal ? { signal: effectiveSignal } : {})
+    })
+  }
 
   private async request<T>(
     path: string,
     init?: RequestInit,
     timeoutMs: number = DEFAULT_TIMEOUT_MS,
     retries: number = 2,
-    options?: { bypassEnsureRunning?: boolean }
+    options?: {
+      bypassEnsureRunning?: boolean
+      onErrorResponse?: (status: number, errorCode?: string) => void
+    }
   ): Promise<T | null> {
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         if (!options?.bypassEnsureRunning) {
           await omniService.ensureRunning()
         }
-        const res = await fetch(`${this.getBaseUrl()}${path}`, {
+        const res = await this.fetchOmni(`${this.getBaseUrl()}${path}`, {
           ...init,
+          kind: 'call',
+          timeoutMs,
           headers: {
             'Content-Type': 'application/json',
             ...(init?.headers ?? {})
-          },
-          signal: AbortSignal.timeout(timeoutMs)
+          }
         })
         if (!res.ok) {
+          let errorCode: string | undefined
+          if (res.status === 503 || options?.onErrorResponse) {
+            const errBody = (await res.json().catch(() => null)) as Record<string, unknown> | null
+            if (typeof errBody?.error === 'string') errorCode = errBody.error
+            else if (typeof errBody?.code === 'string') errorCode = errBody.code
+            options?.onErrorResponse?.(res.status, errorCode)
+          }
           logger.warn(
             LogCategory.DIMENSION_SERVICE,
             `[OmniClient] HTTP ${res.status} ${path} (第 ${attempt + 1}/${retries + 1} 次尝试)`
           )
+          // 503 MODULE_NOT_INSTALLED 属确定性缺模错误，立即停试不再无谓退避
+          if (res.status === 503 && errorCode === 'MODULE_NOT_INSTALLED') {
+            return null
+          }
           if (attempt < retries) {
             await new Promise(r => setTimeout(r, 400 * (attempt + 1)))
             continue
@@ -441,13 +476,32 @@ export class OmniClient {
    */
   async getTaxonomyAliases(
     locale = 'zh-CN',
-    options?: { source?: string; codes?: string[]; prefix?: string }
+    options?: {
+      source?: string
+      codes?: string[]
+      prefix?: string
+      timeoutMs?: number
+      retries?: number
+      bypassEnsureRunning?: boolean
+    }
   ): Promise<OmniTagAliasRow[] | null> {
     const params = new URLSearchParams({ locale })
     if (options?.source) params.set('source', options.source)
     if (options?.codes?.length) params.set('codes', options.codes.join(','))
     if (options?.prefix) params.set('prefix', options.prefix)
-    return this.request<OmniTagAliasRow[]>(`/api/v1/taxonomy/aliases?${params.toString()}`)
+    this._lastTaxonomyAliasesError = null
+    return this.request<OmniTagAliasRow[]>(
+      `/api/v1/taxonomy/aliases?${params.toString()}`,
+      undefined,
+      options?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      options?.retries ?? 2,
+      {
+        bypassEnsureRunning: options?.bypassEnsureRunning,
+        onErrorResponse: (status, errorCode) => {
+          this._lastTaxonomyAliasesError = { status, errorCode, at: Date.now() }
+        }
+      }
+    )
   }
 
   /**
@@ -608,8 +662,9 @@ export class OmniClient {
       try {
         await omniService.ensureRunning()
         const query = options?.lang ? `?lang=${encodeURIComponent(options.lang)}` : ''
-        const res = await fetch(`${this.getBaseUrl()}/health${query}`, {
-          signal: AbortSignal.timeout(2000)
+        const res = await this.fetchOmni(`${this.getBaseUrl()}/health${query}`, {
+          kind: 'probe',
+          timeoutMs: 2000
         })
         if (!res.ok) {
           logger.warn(
@@ -691,11 +746,12 @@ export class OmniClient {
       if (options?.lang) {
         reqBody.lang = options.lang
       }
-      const res = await fetch(`${this.getBaseUrl()}/api/v1/vector/embed-clip-text`, {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/v1/vector/embed-clip-text`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(options.timeoutMs)
+        timeoutMs: options.timeoutMs
       })
       let body: any = null
       try {
@@ -818,7 +874,8 @@ export class OmniClient {
       if (typeof sid === 'number') {
         payload.sid = sid
       }
-      const res = await fetch(`${this.getBaseUrl()}/api/audio/tts/chunk`, {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/audio/tts/chunk`, {
+        kind: 'long',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -908,7 +965,8 @@ export class OmniClient {
   } | null> {
     try {
       await omniService.ensureRunning()
-      const res = await fetch(`${this.getBaseUrl()}/api/audio/analyze-voice`, {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/audio/analyze-voice`, {
+        kind: 'long',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: filePath }),
@@ -936,7 +994,8 @@ export class OmniClient {
   ): Promise<{ success: boolean; error?: string } | null> {
     try {
       await omniService.ensureRunning()
-      const res = await fetch(`${this.getBaseUrl()}/api/audio/tts/register-voice`, {
+      const res = await this.fetchOmni(`${this.getBaseUrl()}/api/audio/tts/register-voice`, {
+        kind: 'call',
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -944,7 +1003,8 @@ export class OmniClient {
           frames,
           codes
         }),
-        signal: signal ?? AbortSignal.timeout(5000)
+        signal: signal ?? AbortSignal.timeout(5000),
+        timeoutMs: 5000
       })
 
       if (res.status === 501) {
@@ -1000,7 +1060,8 @@ export class OmniClient {
       await omniService.ensureRunning()
       const url = `${this.getBaseUrl()}/api/audio/tts/scale?speed=${encodeURIComponent(speed)}`
       const rawBuffer = Buffer.isBuffer(wavBuffer) ? wavBuffer : Buffer.from(wavBuffer)
-      const res = await fetch(url, {
+      const res = await this.fetchOmni(url, {
+        kind: 'call',
         method: 'POST',
         headers: {
           'Content-Type': 'audio/wav'
@@ -1129,7 +1190,17 @@ export class OmniClient {
       let isSettled = false
       let sessionId = ''
       let incomingRes: http.IncomingMessage | null = null
+      let hasTerminalFrame = false
+      let terminalNotified = false
+      let abortedByCaller = Boolean(signal?.aborted)
       const parser = new M5FrameParser()
+
+      const emitTerminalError = (code: string, message: string) => {
+        if (terminalNotified) return
+        terminalNotified = true
+        hasTerminalFrame = true
+        callbacks.onError({ code, message })
+      }
 
       // 独立 3000ms 建连超时定时器（严禁依赖 socket 空闲超时）
       const connectTimeout = setTimeout(() => {
@@ -1208,6 +1279,7 @@ export class OmniClient {
                 }
               },
               abort: () => {
+                abortedByCaller = true
                 if (!req.destroyed) {
                   req.destroy()
                 }
@@ -1222,10 +1294,7 @@ export class OmniClient {
                 LogCategory.MAIN,
                 `[OmniClient] M5SF 帧解析致命脱节 FATAL_DESYNC: sessionId=${sessionId}`
               )
-              callbacks.onError({
-                code: 'FATAL_DESYNC',
-                message: 'Stream frame protocol desync detected'
-              })
+              emitTerminalError('FATAL_DESYNC', 'Stream frame protocol desync detected')
               req.destroy()
               return
             }
@@ -1235,9 +1304,13 @@ export class OmniClient {
                 frame.payload.sessionId = sessionId
                 callbacks.onChunk(frame.payload)
               } else if (frame.type === 'END') {
-                callbacks.onEnd(frame.meta)
+                if (!terminalNotified) {
+                  terminalNotified = true
+                  hasTerminalFrame = true
+                  callbacks.onEnd(frame.meta)
+                }
               } else if (frame.type === 'ERROR') {
-                callbacks.onError(frame.meta)
+                emitTerminalError(frame.meta.code, frame.meta.message)
               }
             }
           })
@@ -1245,8 +1318,23 @@ export class OmniClient {
           res.on('end', () => {
             logger.debug(
               LogCategory.MAIN,
-              `[OmniClient] TTS 流式连接正常结束: sessionId=${sessionId}`
+              `[OmniClient] TTS 流式连接结束: sessionId=${sessionId}, hasTerminalFrame=${hasTerminalFrame}`
             )
+            if (!hasTerminalFrame && !abortedByCaller && !terminalNotified) {
+              emitTerminalError(
+                'PREMATURE_EOF',
+                'TTS 流式连接在收到 END/ERROR 终态帧前意外断开'
+              )
+            }
+          })
+
+          res.on('close', () => {
+            if (!hasTerminalFrame && !abortedByCaller && !terminalNotified) {
+              emitTerminalError(
+                'PREMATURE_EOF',
+                'TTS 流式底层连接在收到 END/ERROR 终态帧前提前关闭'
+              )
+            }
           })
 
           res.on('error', (err: Error) => {
@@ -1255,10 +1343,7 @@ export class OmniClient {
               `[OmniClient] TTS 流式响应流异常: sessionId=${sessionId}`,
               err
             )
-            callbacks.onError({
-              code: 'RESPONSE_STREAM_ERROR',
-              message: err.message
-            })
+            emitTerminalError('RESPONSE_STREAM_ERROR', err.message)
           })
         }
       )
@@ -1271,17 +1356,15 @@ export class OmniClient {
         if (!isSettled) {
           isSettled = true
           reject(err)
-        } else {
-          callbacks.onError({
-            code: 'REQUEST_ERROR',
-            message: err.message
-          })
+        } else if (!abortedByCaller) {
+          emitTerminalError('REQUEST_ERROR', err.message)
         }
       })
 
       // 接入外部 AbortSignal
       if (signal) {
         if (signal.aborted) {
+          abortedByCaller = true
           clearTimeout(connectTimeout)
           req.destroy()
           reject(new Error('ABORTED'))
@@ -1290,6 +1373,7 @@ export class OmniClient {
         signal.addEventListener(
           'abort',
           () => {
+            abortedByCaller = true
             clearTimeout(connectTimeout)
             req.destroy()
           },

@@ -38,8 +38,20 @@ import {
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
 // 受控别名初值统一走下方 seedTagAliasesLangTable 的分表补录。
 
+interface TaxonomySeedAttemptOutcome {
+  succeeded: boolean
+  stopRetry: boolean
+}
+
+export interface TaxonomyAliasHydrateOptions {
+  timeoutMs?: number
+  retries?: number
+  bypassEnsureRunning?: boolean
+}
+
 export class ConfigDbManager {
   private static instance: ConfigDbManager | null = null
+  private static readonly TAXONOMY_RETRY_DELAYS_MS = [1000, 4000, 16000] as const
 
   private appConfigMap = new Map<string, any>()
   private systemConfigMap = new Map<string, any>()
@@ -48,8 +60,54 @@ export class ConfigDbManager {
   private initialized = false
   private currentLanguage = 'zh-CN'
   private localWorkflows: LocalWorkflowRecord[] = []
+  private taxonomySeedEpoch = 0
+  private inFlightSeedPromises = new Map<string, Promise<TaxonomySeedAttemptOutcome>>()
+  private unresolvableCodeCache = new Map<string, Set<string>>()
+  private taxonomyRetryTimer: NodeJS.Timeout | null = null
 
   private constructor() {}
+
+  /** 清空无法解析的受控码负缓存（Omni 实例切换/重启后调用） */
+  clearUnresolvableCodeCache(): void {
+    this.unresolvableCodeCache.clear()
+  }
+
+  /** 取消挂起的别名表后台退避重试定时器 */
+  clearTaxonomyRetryTimer(): void {
+    if (this.taxonomyRetryTimer) {
+      clearTimeout(this.taxonomyRetryTimer)
+      this.taxonomyRetryTimer = null
+    }
+  }
+
+  private bumpTaxonomySeedEpochOnLocaleChange(nextLanguage: string): void {
+    if (this.currentLanguage !== nextLanguage) {
+      this.fileDimensionsCache = []
+      this.taxonomySeedEpoch++
+      this.inFlightSeedPromises.clear()
+      this.clearTaxonomyRetryTimer()
+    }
+  }
+
+  private isModuleNotInstalledFailure(err?: unknown): boolean {
+    const lastErr = omniClient.getLastTaxonomyAliasesError?.()
+    if (lastErr?.status === 503 && lastErr?.errorCode === 'MODULE_NOT_INSTALLED') {
+      return true
+    }
+    if (err && typeof err === 'object') {
+      const anyErr = err as { status?: unknown; code?: unknown; error?: unknown; message?: unknown }
+      if (
+        anyErr.status === 503 &&
+        (anyErr.code === 'MODULE_NOT_INSTALLED' || anyErr.error === 'MODULE_NOT_INSTALLED')
+      ) {
+        return true
+      }
+      if (typeof anyErr.message === 'string' && anyErr.message.includes('MODULE_NOT_INSTALLED')) {
+        return true
+      }
+    }
+    return false
+  }
 
   /**
    * 获取当前生效的配置语言 (SSOT)
@@ -74,9 +132,7 @@ export class ConfigDbManager {
       return
     }
 
-    if (this.currentLanguage !== language) {
-      this.fileDimensionsCache = []
-    }
+    this.bumpTaxonomySeedEpochOnLocaleChange(language)
     this.currentLanguage = language
     const db = databaseService.db
     if (!db) {
@@ -84,10 +140,10 @@ export class ConfigDbManager {
       return
     }
 
-    // Issue 02：别名镜像已收敛为创世单表 tag_aliases(locale, ...)，无需按语言动态建表。
-    // 初始化期异步补录该 locale 的受控分类树初值（首次拉全集 / 切语言差集补漏）。
+    // Issue 02 / Ticket 04：别名镜像已收敛为创世单表 tag_aliases(locale, ...)，无需按语言动态建表。
+    // 初始化期异步补录该 locale 的受控分类树初值并启用有界后台退避重试（≤ 3 次：1s/4s/16s；503 缺模停试）。
     // 不阻塞启动；失败仅告警——分析同事务「首见回源」仍是兜底写路径。
-    void this.seedTagAliasesLangTable(db, language).catch(err => {
+    void this.seedTagAliasesWithBoundedRetry(db, language).catch(err => {
       logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 别名初值补录异常:', err)
     })
 
@@ -116,8 +172,133 @@ export class ConfigDbManager {
    * @param db 主库连接
    * @param language 目标 locale，如 zh-CN
    */
-  async seedTagAliasesLangTable(db: Database.Database, language: string): Promise<void> {
+  async seedTagAliasesLangTable(
+    db: Database.Database,
+    language: string,
+    options?: TaxonomyAliasHydrateOptions
+  ): Promise<void> {
+    await this.seedTagAliasesLangTableInternal(db, language, options)
+  }
+
+  /**
+   * 仅当当前语言在 tag_aliases 中尚无记录时触发有界补灌（供 initialization.ts 推/拉双出口调用）
+   */
+  async triggerEmptyTableSelfHeal(): Promise<void> {
+    const db = databaseService.db
+    if (!db) return
+    const safeLocale = normalizeSupportedLocale(this.currentLanguage)
+    const existingCnt =
+      (
+        db.prepare(`SELECT COUNT(*) AS cnt FROM tag_aliases WHERE locale = ?`).get(safeLocale) as
+          | { cnt: number }
+          | undefined
+      )?.cnt ?? 0
+    if (existingCnt > 0) return
+    await this.seedTagAliasesWithBoundedRetry(db, this.currentLanguage)
+  }
+
+  /**
+   * 执行一次初值灌表；若请求返回 null 且未遇到 503 MODULE_NOT_INSTALLED，则启用有界后台退避重试（≤ 3 次：1s/4s/16s）
+   */
+  async seedTagAliasesWithBoundedRetry(db: Database.Database, language: string): Promise<void> {
+    this.clearTaxonomyRetryTimer()
+    const startEpoch = this.taxonomySeedEpoch
     const safeLocale = normalizeSupportedLocale(language)
+    const outcome = await this.seedTagAliasesLangTableInternal(db, safeLocale, {
+      timeoutMs: 3000,
+      retries: 0,
+      bypassEnsureRunning: true
+    })
+    if (startEpoch !== this.taxonomySeedEpoch || outcome.succeeded) return
+    if (outcome.stopRetry) {
+      logger.warn(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 遇到 503 MODULE_NOT_INSTALLED，停止 ${safeLocale} 别名表后台退避重试`
+      )
+      return
+    }
+    this.scheduleNextTaxonomyRetry(db, safeLocale, startEpoch, 0)
+  }
+
+  private scheduleNextTaxonomyRetry(
+    db: Database.Database,
+    safeLocale: string,
+    startEpoch: number,
+    retryIndex: number
+  ): void {
+    if (retryIndex >= ConfigDbManager.TAXONOMY_RETRY_DELAYS_MS.length) {
+      logger.warn(
+        LogCategory.CONFIG,
+        `ConfigDbManager: ${safeLocale} 别名表后台退避重试已达上限 (${ConfigDbManager.TAXONOMY_RETRY_DELAYS_MS.length} 次)，停止重试`
+      )
+      return
+    }
+    if (startEpoch !== this.taxonomySeedEpoch) return
+
+    const delayMs = ConfigDbManager.TAXONOMY_RETRY_DELAYS_MS[retryIndex]
+    this.taxonomyRetryTimer = setTimeout(() => {
+      this.taxonomyRetryTimer = null
+      void (async () => {
+        if (startEpoch !== this.taxonomySeedEpoch) return
+        const liveDb = databaseService.db ?? db
+        if (!liveDb) return
+        const cnt =
+          (
+            liveDb
+              .prepare(`SELECT COUNT(*) AS cnt FROM tag_aliases WHERE locale = ?`)
+              .get(safeLocale) as { cnt: number } | undefined
+          )?.cnt ?? 0
+        if (cnt > 0) return
+
+        const outcome = await this.seedTagAliasesLangTableInternal(liveDb, safeLocale, {
+          timeoutMs: 3000,
+          retries: 0,
+          bypassEnsureRunning: true
+        })
+        if (startEpoch !== this.taxonomySeedEpoch || outcome.succeeded) return
+        if (outcome.stopRetry) {
+          logger.warn(
+            LogCategory.CONFIG,
+            `ConfigDbManager: 退避重试期间遇 503 MODULE_NOT_INSTALLED，立即停止 ${safeLocale} 别名补录`
+          )
+          return
+        }
+        this.scheduleNextTaxonomyRetry(liveDb, safeLocale, startEpoch, retryIndex + 1)
+      })()
+    }, delayMs)
+    this.taxonomyRetryTimer.unref?.()
+  }
+
+  private async seedTagAliasesLangTableInternal(
+    db: Database.Database,
+    language: string,
+    options?: TaxonomyAliasHydrateOptions
+  ): Promise<TaxonomySeedAttemptOutcome> {
+    const safeLocale = normalizeSupportedLocale(language)
+    const startEpoch = this.taxonomySeedEpoch
+    const singleFlightKey = `${startEpoch}:${safeLocale}`
+    const existingPromise = this.inFlightSeedPromises.get(singleFlightKey)
+    if (existingPromise) {
+      return existingPromise
+    }
+
+    const task = this.runSeedTagAliasesLangTable(db, safeLocale, startEpoch, options).finally(
+      () => {
+        if (this.inFlightSeedPromises.get(singleFlightKey) === task) {
+          this.inFlightSeedPromises.delete(singleFlightKey)
+        }
+      }
+    )
+    this.inFlightSeedPromises.set(singleFlightKey, task)
+    return task
+  }
+
+  private async runSeedTagAliasesLangTable(
+    db: Database.Database,
+    safeLocale: string,
+    startEpoch: number,
+    options?: TaxonomyAliasHydrateOptions
+  ): Promise<TaxonomySeedAttemptOutcome> {
     const existingCnt =
       (
         db.prepare(`SELECT COUNT(*) AS cnt FROM tag_aliases WHERE locale = ?`).get(safeLocale) as
@@ -134,21 +315,56 @@ export class ConfigDbManager {
         `ConfigDbManager: tag_aliases[${safeLocale}] 已有 ${existingCnt} 行，跳过初值灌表`
       )
       // 已有基础种子时仍需补译本库活跃但缺该 locale 规范名的受控码（切语言 <1ms 差集）
-      await this.ensureActiveControlledCodesHydrated(db, safeLocale)
-      return
+      await this.ensureActiveControlledCodesHydrated(db, safeLocale, options)
+      return { succeeded: true, stopRetry: false }
     }
 
     // 防膨胀铁律：只镜像「受控分类树」(source=dimension,tag)，绝不全量拉 13 万词库。
     const SEED_SOURCES = 'dimension,tag'
-    const rows: OmniTagAliasRow[] =
-      (await omniClient.getTaxonomyAliases(safeLocale, { source: SEED_SOURCES })) ?? []
+    let rows: OmniTagAliasRow[] | null = null
+    try {
+      rows = await omniClient.getTaxonomyAliases(safeLocale, {
+        source: SEED_SOURCES,
+        timeoutMs: options?.timeoutMs ?? 3000,
+        retries: options?.retries ?? 0,
+        bypassEnsureRunning: options?.bypassEnsureRunning ?? true
+      })
+    } catch (err) {
+      if (startEpoch !== this.taxonomySeedEpoch) {
+        return { succeeded: false, stopRetry: true }
+      }
+      const stopRetry = this.isModuleNotInstalledFailure(err)
+      logger.warn(
+        LogCategory.CONFIG,
+        `ConfigDbManager: Omni 未返回 ${safeLocale} 别名（请求异常，不入负缓存）:`,
+        err
+      )
+      return { succeeded: false, stopRetry }
+    }
+
+    if (startEpoch !== this.taxonomySeedEpoch) {
+      logger.debug(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 语种代际已切换 (${startEpoch} -> ${this.taxonomySeedEpoch})，丢弃过期 ${safeLocale} 初值补录结果`
+      )
+      return { succeeded: false, stopRetry: true }
+    }
+
+    if (rows === null) {
+      const stopRetry = this.isModuleNotInstalledFailure()
+      logger.warn(
+        LogCategory.CONFIG,
+        `ConfigDbManager: Omni 未返回 ${safeLocale} 别名（服务未就绪或请求失败，保持待自愈、不入负缓存）`
+      )
+      return { succeeded: false, stopRetry }
+    }
 
     if (rows.length === 0) {
       logger.warn(
         LogCategory.CONFIG,
-        `ConfigDbManager: Omni 未返回 ${safeLocale} 别名（服务未就绪或语义包缺失），展示走 code slug 兜底、后续分析首见补录`
+        `ConfigDbManager: Omni 未返回 ${safeLocale} 别名（返回空集合或语义包缺失），展示走 code slug 兜底、后续分析首见补录`
       )
-      return
+      return { succeeded: true, stopRetry: false }
     }
 
     const t0 = Date.now()
@@ -157,8 +373,12 @@ export class ConfigDbManager {
       LogCategory.CONFIG,
       `ConfigDbManager: tag_aliases[${safeLocale}] 初值灌表完成 rows=${rows.length}, 来源=受控分类树(source=dimension,tag), 耗时=${Date.now() - t0}ms`
     )
+    if (startEpoch !== this.taxonomySeedEpoch) {
+      return { succeeded: false, stopRetry: true }
+    }
     // 基础种子后补译本库已挂载活跃码（切语言场景）
-    await this.ensureActiveControlledCodesHydrated(db, safeLocale)
+    await this.ensureActiveControlledCodesHydrated(db, safeLocale, options)
+    return { succeeded: true, stopRetry: false }
   }
 
   /**
@@ -191,7 +411,8 @@ export class ConfigDbManager {
    */
   async ensureActiveControlledCodesHydrated(
     db: Database.Database,
-    safeLocale: string
+    safeLocale: string,
+    options?: TaxonomyAliasHydrateOptions
   ): Promise<void> {
     const missing = db
       .prepare(
@@ -207,7 +428,8 @@ export class ConfigDbManager {
     await this.ensureCodesHydrated(
       db,
       missing.map(r => r.code),
-      safeLocale
+      safeLocale,
+      options
     )
   }
 
@@ -218,7 +440,8 @@ export class ConfigDbManager {
   async ensureCodesHydrated(
     db: Database.Database,
     codes: Array<string | undefined | null>,
-    locale: string
+    locale: string,
+    options?: TaxonomyAliasHydrateOptions
   ): Promise<void> {
     const safeLocale = normalizeSupportedLocale(locale)
     const controlled = Array.from(
@@ -243,23 +466,77 @@ export class ConfigDbManager {
           .all(safeLocale, ...controlled) as Array<{ tag_code: string }>
       ).map(r => r.tag_code)
     )
-    const missing = controlled.filter(code => !present.has(code))
+    const unresolvable = this.unresolvableCodeCache.get(safeLocale)
+    const missing = controlled.filter(code => !present.has(code) && !unresolvable?.has(code))
     if (missing.length === 0) return
+
+    const startEpoch = this.taxonomySeedEpoch
     const t0 = Date.now()
     try {
-      const rows: OmniTagAliasRow[] =
-        (await omniClient.getTaxonomyAliases(safeLocale, { codes: missing })) ?? []
+      const reqOptions: {
+        codes: string[]
+        timeoutMs?: number
+        retries?: number
+        bypassEnsureRunning?: boolean
+      } = { codes: missing }
+      if (options?.timeoutMs !== undefined) reqOptions.timeoutMs = options.timeoutMs
+      if (options?.retries !== undefined) reqOptions.retries = options.retries
+      if (options?.bypassEnsureRunning !== undefined) {
+        reqOptions.bypassEnsureRunning = options.bypassEnsureRunning
+      }
+
+      const rows = await omniClient.getTaxonomyAliases(safeLocale, reqOptions)
+      if (startEpoch !== this.taxonomySeedEpoch) {
+        logger.debug(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 语种代际已切换 (${startEpoch} -> ${this.taxonomySeedEpoch})，丢弃过期受控码补译结果 (${safeLocale})`
+        )
+        return
+      }
+      if (rows === null) {
+        // 请求失败/服务未就绪：仅记 warn，绝不入 unresolvableCodeCache 负缓存，等待后续自愈重试
+        logger.warn(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 显式受控码补译未返回数据 (${safeLocale}, count=${missing.length})，保留待重试状态、绝不入负缓存`
+        )
+        return
+      }
+
       if (rows.length > 0) {
         this.seedAliasRowsToSingleTable(db, safeLocale, rows)
         // 视图规范名子查询依赖单表 canonical 行，补译后立即重建（语言白名单由视图内部负责）
         databaseService.rebuildDebugTagViewsForLanguage(safeLocale)
       }
+
+      const returnedCodes = new Set(rows.map(r => r.tag_code))
+      const unresolved = missing.filter(code => !returnedCodes.has(code))
+      if (unresolved.length > 0) {
+        let localeUnresolvable = this.unresolvableCodeCache.get(safeLocale)
+        if (!localeUnresolvable) {
+          localeUnresolvable = new Set<string>()
+          this.unresolvableCodeCache.set(safeLocale, localeUnresolvable)
+        }
+        const newlyAdded: string[] = []
+        for (const code of unresolved) {
+          if (!localeUnresolvable.has(code)) {
+            localeUnresolvable.add(code)
+            newlyAdded.push(code)
+          }
+        }
+        if (newlyAdded.length > 0) {
+          logger.warn(
+            LogCategory.CONFIG,
+            `ConfigDbManager: Omni 未收录受控码 (${safeLocale})，已写入会话负缓存: ${newlyAdded.join(', ')}`
+          )
+        }
+      }
+
       logger.debug(
         LogCategory.CONFIG,
         `ConfigDbManager: 显式受控码补译 ${missing.length}→${rows.length} 行 (${safeLocale}), 耗时=${Date.now() - t0}ms`
       )
     } catch (err) {
-      // 补译失败不阻塞切语言/回灌（离线可降级到 code slug），显式告警不静默吞
+      // 补译失败不阻塞切语言/回灌（离线可降级到 code slug），显式告警不静默吞且不入负缓存
       logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 显式受控码补译失败:', err)
     }
   }
@@ -273,6 +550,7 @@ export class ConfigDbManager {
   loadFromJson = (db: Database.Database, language?: string): void => {
     try {
       const resolvedLanguage = language || this.currentLanguage || 'zh-CN'
+      this.bumpTaxonomySeedEpochOnLocaleChange(resolvedLanguage)
       this.currentLanguage = resolvedLanguage
 
       // 1. app_config：云端 SSOT（TIER_CONSTANTS/OPERATION_PRICES/PAYMENT_INFO 等），

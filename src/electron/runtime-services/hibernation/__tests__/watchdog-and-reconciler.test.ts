@@ -93,7 +93,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
       const now = Date.now()
       const opNotStalled: InFlightPhysicalOp = {
         opId: 'op_active',
-        targetId: 'pocket-cpu-int8-onnx',
+        targetId: 'firefly-ai-engine',
         generation: 1,
         createdAt: now - 30_000,
         lastProgressAt: now - 10_000,
@@ -102,7 +102,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
       }
       const opStalled: InFlightPhysicalOp = {
         opId: 'op_stalled',
-        targetId: 'pocket-cpu-int8-onnx',
+        targetId: 'firefly-ai-engine',
         generation: 1,
         createdAt: now - 80_000,
         lastProgressAt: now - (IN_FLIGHT_OP_STALL_TIMEOUT_MS + 5_000),
@@ -122,7 +122,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
       expect(coordinator.getInFlightOp('op_stalled')).toBeUndefined()
       expect(opStalled.abortController?.signal.aborted).toBe(true)
       expect(mockEngineBridge.forceKillOldGeneration).toHaveBeenCalledWith(
-        'pocket-cpu-int8-onnx',
+        'firefly-ai-engine',
         1,
         undefined
       )
@@ -132,7 +132,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
       const now = Date.now()
       const op120s: InFlightPhysicalOp = {
         opId: 'op_slow',
-        targetId: 'pocket-cpu-int8-onnx',
+        targetId: 'firefly-ai-engine',
         generation: 1,
         createdAt: now - IN_FLIGHT_OP_NO_PROGRESS_HARD_TIMEOUT_MS - 100,
         status: 'running',
@@ -155,7 +155,7 @@ describe('Ticket 05: 看门狗、对账器与崩溃熔断器', () => {
     })
 
     it('180s 双轨分流 - 确证退出分支：forceKill 返回 killed，成功归位 hibernated 并 settled', async () => {
-      const targetId = 'pocket-cpu-int8-onnx'
+      const targetId = 'firefly-ai-engine'
       const state = storeMap.get(targetId)!
       state.state = 'loading'
       state.residentBytes = 1024

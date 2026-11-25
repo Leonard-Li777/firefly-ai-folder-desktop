@@ -84,6 +84,7 @@ export class AnydocService {
       if (perception) {
         const rawContent = perception.markdown_content || ''
         const isBinaryNulSkip = rawContent.includes('[Binary File] NUL byte detected')
+        const isVisualBudgetDegraded = perception.degraded === 'visual_skipped_budget'
         return {
           content: isBinaryNulSkip ? '' : rawContent,
           assets: [],
@@ -97,7 +98,13 @@ export class AnydocService {
           metadata: perception.metadata,
           phash: perception.phash,
           benchmark: perception.benchmark ? { ...perception.benchmark } : undefined,
-          perception
+          perception,
+          ...(isVisualBudgetDegraded
+            ? {
+                degraded: true,
+                degradedReason: perception.degraded_reason || 'budget_structural'
+              }
+            : {})
         }
       }
       // 返回 null 同样是失败（如引擎在视频推理中原生崩溃、自愈后仍不可用）。

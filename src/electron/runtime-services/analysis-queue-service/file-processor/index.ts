@@ -58,6 +58,12 @@ import { engineBridgeService } from '../../engine-bridge'
 import { databaseService } from '../../database/database-service'
 import { FtsProjectionService } from '../../database/fts-projection'
 import { ConfigDbManager } from '../../config/config-db-manager'
+import { resolveAnalysisTimeoutBudget } from '../../system/analysis-timeout-policy'
+import {
+  runVideoPerceiveWithDegradedRetry,
+  serializeVideoDegradedMetadata,
+  type VideoDegradedRecord
+} from './video-degraded-state-machine'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
 import { userTierService } from '../../user-tier/user-tier-service'
 import { magikaService } from '../../system/magika-service'
@@ -1944,40 +1950,108 @@ export class FileProcessor {
           }, 3000)
         }
 
-        anydocResult = await anydocService
-          .perceive(filePath, {
-            language,
-            // 音视频文件在 0 号切片根据 ASR 插件激活状态启用语音转录，并传递配置的截取时长
-            enableAudioTranscript,
-            // [OBS-05] 非音视频 / 关闭 ASR / 时长 0 时同步显式传双时长 0，形成双保险
-            videoAsrDurationSec: shouldRunAsr && isVideo ? targetAsrSec : 0,
-            audioAnalysisDuration: shouldRunAsr && !isVideo ? targetAsrSec : 0,
-            // 全参数直传：杜绝下游回退通道丢失工作区 effectiveConfig
-            enableImageOcr: effectiveParams.enableImageOcr,
-            ocrModelSize: effectiveParams.ocrModelSize,
-            maxDocumentOcrItems: effectiveParams.maxDocumentOcrItems,
-            extractPages: effectiveParams.extractPages,
-            maxContentSizeKb: effectiveParams.maxContentSizeKb,
-            enableOfficeCover: effectiveParams.enableOfficeCover,
-            enableVideoVisualAnalysis: capabilities.videoVisualAnalysisEnabled,
-            enableNsfwPerception: capabilities.nsfwEffectivelyEnabled,
-            enableFacePerception: capabilities.faceEffectivelyEnabled,
-            videoFrameQuotaMax,
-            videoCutSensitivity,
-            videoFrameIntervalSeconds: videoFrameIntervalSeconds,
-            videoSoftTokenBudget: videoSoftTokenBudget,
-            videoAnalyzeStartSec: 0,
-            videoMaxAnalyzeSec: 300, // 物理严格封顶 300s，彻底杜绝 2h 大请求穿透击穿 Omni/CPU (FIN-04)
-            enableTextAnalysis: true,
-            generateThumbnail: !existingThumbCheck.exists,
-            fileFingerprint,
-            // [V11-01] 必须传 effective 模式的 isAiStageEnabled，simple 下为 false 保留 CPU 5W 机械名
-            skip5wSynthesis: isAiStageEnabled(effectiveParams.analysisMode)
-          })
-          .catch(err => {
+        const perceiveOptions = {
+          language,
+          // 音视频文件在 0 号切片根据 ASR 插件激活状态启用语音转录，并传递配置的截取时长
+          enableAudioTranscript,
+          // [OBS-05] 非音视频 / 关闭 ASR / 时长 0 时同步显式传双时长 0，形成双保险
+          videoAsrDurationSec: shouldRunAsr && isVideo ? targetAsrSec : 0,
+          audioAnalysisDuration: shouldRunAsr && !isVideo ? targetAsrSec : 0,
+          // 全参数直传：杜绝下游回退通道丢失工作区 effectiveConfig
+          enableImageOcr: effectiveParams.enableImageOcr,
+          ocrModelSize: effectiveParams.ocrModelSize,
+          maxDocumentOcrItems: effectiveParams.maxDocumentOcrItems,
+          extractPages: effectiveParams.extractPages,
+          maxContentSizeKb: effectiveParams.maxContentSizeKb,
+          enableOfficeCover: effectiveParams.enableOfficeCover,
+          enableVideoVisualAnalysis: capabilities.videoVisualAnalysisEnabled,
+          enableNsfwPerception: capabilities.nsfwEffectivelyEnabled,
+          enableFacePerception: capabilities.faceEffectivelyEnabled,
+          videoFrameQuotaMax,
+          videoCutSensitivity,
+          videoFrameIntervalSeconds: videoFrameIntervalSeconds,
+          videoSoftTokenBudget: videoSoftTokenBudget,
+          videoAnalyzeStartSec: 0,
+          videoMaxAnalyzeSec: 300, // 物理严格封顶 300s，彻底杜绝 2h 大请求穿透击穿 Omni/CPU (FIN-04)
+          enableTextAnalysis: true,
+          generateThumbnail: !existingThumbCheck.exists,
+          fileFingerprint,
+          // [V11-01] 必须传 effective 模式的 isAiStageEnabled，simple 下为 false 保留 CPU 5W 机械名
+          skip5wSynthesis: isAiStageEnabled(effectiveParams.analysisMode),
+          signal
+        }
+
+        let seg0DegradedRecord: VideoDegradedRecord | null = null
+        if (isVideo && capabilities.videoVisualAnalysisEnabled) {
+          const targetFilePath: string = filePath
+          const videoBudget = resolveAnalysisTimeoutBudget(
+            targetFilePath,
+            undefined,
+            true,
+            undefined,
+            {
+              videoFrameQuotaMax,
+              videoSoftTokenBudget,
+              videoAsrDurationSec: shouldRunAsr ? targetAsrSec : 0
+            }
+          )
+          const effectiveCpuCapMs = Math.max(videoBudget.cpuCapMs, videoBudget.totalMs - 20000)
+          const perceiveOutcome = await runVideoPerceiveWithDegradedRetry<AnydocResult>(
+            () =>
+              anydocService
+                .perceive(targetFilePath, {
+                  ...perceiveOptions,
+                  perceiveTimeoutSec: effectiveCpuCapMs / 1000
+                })
+                .catch((err): AnydocResult => {
+                  logger.warn(
+                    LogCategory.ANALYSIS_QUEUE,
+                    `[Omni/anydoc] 0号切片提取失败: ${err.message}`
+                  )
+                  return { content: '', assets: [], metadata: undefined, benchmark: undefined }
+                }),
+            {
+              filePath: targetFilePath,
+              perceiveTimeoutSec: effectiveCpuCapMs / 1000,
+              asrEstSec: shouldRunAsr ? targetAsrSec : 0,
+              signal
+            }
+          )
+          anydocResult = perceiveOutcome.result
+          seg0DegradedRecord = perceiveOutcome.degradedRecord
+        } else {
+          anydocResult = await anydocService.perceive(filePath, perceiveOptions).catch(err => {
             logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 0号切片提取失败: ${err.message}`)
             return { content: '', assets: [], metadata: undefined, benchmark: undefined }
           })
+        }
+
+        if (isVideo && seg0DegradedRecord) {
+          // Spec v1.7.3 §2.4.2：收到 visual_skipped_budget（budget_structural 或 pre_elapsed 重试超限）
+          // 严禁写入 completed 或回退 pending，直落 failed 并记录 analysis_degraded 诊断元数据
+          try {
+            databaseService.markVideoSegmentTerminalFailed(
+              fileFingerprint,
+              0,
+              serializeVideoDegradedMetadata(seg0DegradedRecord)
+            )
+          } catch (e) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 0号视频片段降级落库失败:', e)
+          }
+          if (videoCreepTimer) {
+            clearInterval(videoCreepTimer)
+            videoCreepTimer = null
+          }
+          this.updateItemStatus(item.id, 'failed', 100, seg0DegradedRecord.userMessage, {
+            analysisStatus: 'analysis_degraded',
+            degradedMetadata: {
+              perceive_timeout_sec: seg0DegradedRecord.perceive_timeout_sec,
+              asr_est_sec: seg0DegradedRecord.asr_est_sec,
+              degraded_reason: seg0DegradedRecord.degraded_reason
+            }
+          })
+          return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
+        }
 
         if (isVideo) {
           try {

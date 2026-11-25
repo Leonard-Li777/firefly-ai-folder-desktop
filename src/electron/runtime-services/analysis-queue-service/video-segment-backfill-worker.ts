@@ -542,6 +542,13 @@ export class VideoSegmentBackfillWorker {
           this.deps.emitSnapshotUpdate()
         } else if (result.outcome === 'aborted') {
           break
+        } else if (result.outcome === 'degraded') {
+          // 终态降级切片已由执行器直落 failed（不回滚 pending），此处仅记日志并推进 UI 快照
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[视频补全] 切片 ${segment.segmentIndex} 触发预算降级终态: file=${segment.fileFingerprint}, reason=${result.reason || 'degraded'}`
+          )
+          this.deps.emitSnapshotUpdate()
         } else if (result.outcome === 'missing_file') {
           // 跨设备原文件缺失不改 DB 状态，本轮加入跳过集避免 50ms 无限热循环饿死后续视频
           this.sessionMissingFiles.add(segment.fileFingerprint)

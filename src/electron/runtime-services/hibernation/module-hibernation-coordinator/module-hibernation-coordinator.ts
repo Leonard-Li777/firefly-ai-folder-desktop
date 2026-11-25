@@ -50,7 +50,11 @@ import {
   TargetCancelIntentEntry,
   TTS_IDLE_TIMEOUT_MS
 } from '../types'
-import type { ModuleHibernationCoordinatorOptions } from './types'
+import type { ModuleHibernationCoordinatorOptions, OmniLifecycleProvider } from './types'
+import {
+  AdapterLoadOutcome,
+  resolveHibernationTargetAdapter
+} from '../target-adapter'
 
 export class ModuleHibernationCoordinator {
   private readonly runtimeStore: IModuleRuntimeStore
@@ -108,7 +112,10 @@ export class ModuleHibernationCoordinator {
 
   /** 单飞加载在途屏障索引 (Ticket 07): targetId -> InflightLoad */
   private readonly inflightLoads = new Map<string, InflightLoad>()
+  private readonly inflightCapturedGenerations = new Map<string, number>()
   private nextAttemptId = 0
+  private observedGeneration = 0
+  private omniLifecycleProvider?: OmniLifecycleProvider
 
   /** Gate 阶段 2 分桶等待者队列 (Ticket 09): targetId -> GateQueueWaiter[] */
   private readonly gateWaiters = new Map<string, GateQueueWaiter[]>()
@@ -133,9 +140,19 @@ export class ModuleHibernationCoordinator {
 
   constructor(options?: ModuleHibernationCoordinatorOptions) {
     this.runtimeStore = options?.runtimeStore ?? moduleRuntimeStore
-    this.leaseRegistryInstance = options?.leaseRegistry
+    this.leaseRegistryInstance =
+      options?.leaseRegistry ??
+      new LeaseRegistry({
+        onClusterActivityChanged: clusterId => {
+          this.onClusterActivityChanged(clusterId)
+        },
+        onLeaseExpired: lease => {
+          this.leaseRegistryInstance?.forceRelease(lease.leaseId, { notifyActivity: true })
+        }
+      })
     this.memoryProbe = options?.memoryProbe ?? memoryProbe
     this.engineBridgeServiceInstance = options?.engineBridgeService
+    this.omniLifecycleProvider = options?.omniLifecycle
     this.onClusterActivityChangedCb = options?.onClusterActivityChanged
     this.coldStartTimeoutMsProvider = options?.coldStartTimeoutMsProvider
     this.powerMonitorServiceInstance = options?.powerMonitorService
@@ -146,6 +163,11 @@ export class ModuleHibernationCoordinator {
     if (options?.powerMonitorService) {
       this.setupPowerMonitorIntegration(options.powerMonitorService)
     }
+  }
+
+  /** 注入 Omni 生命周期提供者（ensureRunning / getGeneration） */
+  setOmniLifecycleProvider(provider: OmniLifecycleProvider): void {
+    this.omniLifecycleProvider = provider
   }
 
   /** 注入或绑定租约中心引用 */
@@ -304,6 +326,84 @@ export class ModuleHibernationCoordinator {
       LogCategory.SYSTEM,
       `[Coordinator] 外部通知：模块已休眠/释放 targetId=${targetId}, lastReleasedBytes=${lastReleasedBytes ?? 'unknown'}`
     )
+    this.triggerSnapshotBroadcast()
+  }
+
+  /**
+   * 外部实例失活/换代时的单调代际围栏复位（带防新代自伤守卫）：
+   * - 忽略 nextGeneration <= observedGeneration 的过时事件；
+   * - 若快照 loadedGeneration 或在途 capturedGeneration >= nextGeneration，
+   *   说明状态/在途加载属于新代，仅推进 observedGeneration 绝不复位或中止新代加载；
+   * - 否则同步首行推进 epoch、作废在途加载、释放残留租约并原子复位为 hibernated。
+   */
+  forceResetExternalHibernated(targetId: string, nextGeneration?: number): void {
+    const rt = this.runtimeStore.get(targetId)
+    if (!rt) return
+
+    if (typeof nextGeneration === 'number') {
+      if (nextGeneration <= this.observedGeneration) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[Coordinator] 忽略过期代际复位事件: targetId=${targetId}, nextGen=${nextGeneration}, observed=${this.observedGeneration}`
+        )
+        return
+      }
+      this.observedGeneration = nextGeneration
+
+      const inflightCapturedGen = this.inflightCapturedGenerations.get(targetId)
+      if (
+        (typeof rt.loadedGeneration === 'number' && rt.loadedGeneration >= nextGeneration) ||
+        (typeof inflightCapturedGen === 'number' && inflightCapturedGen >= nextGeneration)
+      ) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[Coordinator] 新代加载已领先到达，仅推进 observedGeneration=${nextGeneration} 不执行旧代复位: targetId=${targetId}, loadedGen=${rt.loadedGeneration}, inflightGen=${inflightCapturedGen}`
+        )
+        return
+      }
+    }
+
+    // 同步首行：递增 epoch、中止在途单飞、释放属主与残余租约、清零驻留与错误态
+    this.bumpEpoch(targetId)
+
+    const inflight = this.inflightLoads.get(targetId)
+    if (inflight) {
+      if (inflight.watchdogTimer) {
+        clearTimeout(inflight.watchdogTimer)
+        inflight.watchdogTimer = undefined
+      }
+      this.inflightLoads.delete(targetId)
+      this.inflightCapturedGenerations.delete(targetId)
+      inflight.abort.abort('LOAD_ABORTED')
+      inflight.rejectWaiters(
+        new HibernationGateAbortedError(targetId, 'LOAD_ABORTED', 'Omni 实例代际失活已中断旧代加载')
+      )
+    } else {
+      this.inflightCapturedGenerations.delete(targetId)
+    }
+
+    this.activeLifecycleOwner.delete(targetId)
+    this.clearDrain(targetId)
+    this.leaseRegistryInstance?.forceReleaseByTarget?.(targetId, { notifyActivity: false })
+
+    this.runtimeStore.update(targetId, d => {
+      d.state = 'hibernated'
+      d.residentBytes = 0
+      d.residentSample = undefined
+      d.loadedGeneration = undefined
+      d.crashStreak = 0
+      d.unloadFailStreak = 0
+      d.lastCrashGeneration = undefined
+      d.lastFailureKind = undefined
+      d.errorPhase = undefined
+      d.errorMessage = undefined
+      d.lastErrorI18nKey = undefined
+    })
+
+    const clusterId = HIBERNATABLE_TARGET_CATALOG[targetId]?.clusterId
+    if (clusterId) {
+      this.onClusterActivityChanged(clusterId)
+    }
     this.triggerSnapshotBroadcast()
   }
 
@@ -937,8 +1037,12 @@ export class ModuleHibernationCoordinator {
           op.status = 'failed_unknown'
           const convergenceTask = (async () => {
             let isConfirmedExited = false
+            const adapter = resolveHibernationTargetAdapter(op.targetId)
             try {
-              if (this.engineBridgeServiceInstance) {
+              if (adapter.targetType === 'omni_module') {
+                // omni_module 为进程内 HTTP 会话：严禁调 forceKillOldGeneration / stopProcessTree / blockedUnloadNoHandle
+                isConfirmedExited = true
+              } else if (this.engineBridgeServiceInstance) {
                 const killRes = await this.engineBridgeServiceInstance.forceKillOldGeneration(
                   op.targetId,
                   op.generation,
@@ -976,10 +1080,14 @@ export class ModuleHibernationCoordinator {
                 isConfirmedExited = true
               }
             } catch {
-              try {
-                await this.persistBlockedUnloadGate(op.targetId, 1, op.identity ?? null)
-                this.updateBlockedUnloadCache(op.targetId, true)
-              } catch {}
+              if (adapter.targetType !== 'omni_module') {
+                try {
+                  await this.persistBlockedUnloadGate(op.targetId, 1, op.identity ?? null)
+                  this.updateBlockedUnloadCache(op.targetId, true)
+                } catch {}
+              } else {
+                isConfirmedExited = true
+              }
             } finally {
               if (isConfirmedExited) {
                 const token = this.beginLifecycleOperation(op.targetId, 'crash_recovery')
@@ -1495,9 +1603,30 @@ export class ModuleHibernationCoordinator {
 
     this.registerCancelIntent(targetId)
 
+    const adapter = resolveHibernationTargetAdapter(targetId)
     for (const op of ops) {
       op.abortController?.abort()
       op.status = 'failed_unknown'
+
+      if (adapter.targetType === 'omni_module') {
+        const token = this.beginLifecycleOperation(targetId, 'crash_recovery')
+        if (token) {
+          try {
+            this.commitRuntimeSnapshot(token, draft => {
+              draft.state = 'hibernated'
+              draft.residentBytes = 0
+              draft.residentSample = undefined
+              draft.loadedGeneration = undefined
+              draft.errorPhase = undefined
+              draft.errorMessage = undefined
+            })
+          } finally {
+            this.endLifecycleOperation(token)
+          }
+        }
+        this.finalizeOpAsSettled(op)
+        continue
+      }
 
       let isConfirmedExited = false
       let killRes: 'killed' | 'no_handle' | 'unknown' = 'unknown'
@@ -1657,7 +1786,8 @@ export class ModuleHibernationCoordinator {
       resolveCompletionFn = resolve
     })
 
-    let spawnedProcessIdentity: ProcessTreeIdentity | undefined
+    let adapterOutcome: AdapterLoadOutcome | undefined
+    const adapter = resolveHibernationTargetAdapter(targetId)
 
     // 注册物理在途加载操作（初始化 spawnState: 'not_started'）
     const now = Date.now()
@@ -1702,12 +1832,13 @@ export class ModuleHibernationCoordinator {
     this.inflightLoads.set(targetId, inflightLoad)
 
     try {
-      // 步骤 1：进入实际进程拉起前显式置为 spawning，并同步刷新活性时基
+      // 步骤 1：进入实际加载前显式置为 spawning，并同步刷新活性时基
       inFlightOp.spawnState = 'spawning'
       inFlightOp.lastProgressAt = Date.now()
 
-      if (!this.engineBridgeServiceInstance?.loadModel) {
-        throw new Error(`EngineBridgeService 不支持 loadModel: targetId=${targetId}`)
+      const bridge = this.engineBridgeServiceInstance
+      if (!bridge) {
+        throw new Error(`EngineBridgeService 未初始化: targetId=${targetId}`)
       }
 
       const createAbortError = () => {
@@ -1735,18 +1866,28 @@ export class ModuleHibernationCoordinator {
         )
       })
 
-      // P2-8: 对原始 loadModel 挂载后置保护，若超时或抢占后迟到返回，立即拔除游离孤儿
-      const rawLoadPromise = this.engineBridgeServiceInstance.loadModel(targetId, modelId, {
+      // 策略适配器分发：engine_service 走 OS 进程树，omni_module 走 HTTP 会话（零 identity/pid 解引用）
+      const rawLoadPromise = adapter.load({
+        targetId,
+        modelId,
         signal: abortCtrl.signal,
         onProgress: () => {
           inFlightOp.lastProgressAt = Date.now()
-        }
+        },
+        bridge,
+        onCapturedGeneration: gen => {
+          if (this.inflightLoads.get(targetId)?.attemptId === attemptId) {
+            this.inflightCapturedGenerations.set(targetId, gen)
+          }
+        },
+        getOmniGeneration: () => this.omniLifecycleProvider?.getGeneration?.()
       })
+
       rawLoadPromise
         .then(res => {
           if (
-            abortCtrl.signal.aborted ||
-            this.inflightLoads.get(targetId)?.attemptId !== attemptId
+            res.kind === 'process' &&
+            (abortCtrl.signal.aborted || this.inflightLoads.get(targetId)?.attemptId !== attemptId)
           ) {
             logger.warn(
               LogCategory.SYSTEM,
@@ -1757,13 +1898,15 @@ export class ModuleHibernationCoordinator {
         })
         .catch(() => {})
 
-      // 步骤 2：挂载 onProgress 进度回调，持续刷新活性时基，与 abort 信号安全竞速
+      // 步骤 2：与 abort 信号安全竞速
       const loadRes = await Promise.race([rawLoadPromise, abortPromise])
 
-      // 步骤 3：spawn 返回瞬间同一微任务首帧同步记录 identity 并置 spawned
-      spawnedProcessIdentity = loadRes.identity
-      inFlightOp.identity = loadRes.identity
-      inFlightOp.jobHandle = loadRes.jobHandle
+      // 步骤 3：记录负载成果与生命周期状态
+      adapterOutcome = loadRes
+      if (loadRes.kind === 'process') {
+        inFlightOp.identity = loadRes.identity
+        inFlightOp.jobHandle = loadRes.jobHandle
+      }
       inFlightOp.spawnState = 'spawned'
       inFlightOp.lastProgressAt = Date.now()
 
@@ -1782,10 +1925,20 @@ export class ModuleHibernationCoordinator {
         )
       }
 
-      // 加载成功彻底消费快照，residentSince 与 crashStreak 跨代原子重置
+      // 加载成功彻底消费快照，residentSince、loadedGeneration 与 crashStreak 跨代原子重置
+      const resolvedBytes =
+        loadRes.kind === 'http_module' && loadRes.residentBytes > 0
+          ? loadRes.residentBytes
+          : (HIBERNATABLE_TARGET_CATALOG[targetId]?.estimatedMemoryBytes ?? 0)
+      const resolvedLoadedGen =
+        loadRes.kind === 'http_module' ? loadRes.capturedGeneration : undefined
+
       const committed = this.commitRuntimeSnapshot(loadToken, d => {
         d.state = 'resident'
         d.modelGeneration = loadToken.modelGeneration
+        if (loadRes.kind === 'http_module') {
+          d.loadedGeneration = resolvedLoadedGen
+        }
         d.residentSince = Date.now()
         d.crashStreak = 0
         d.unloadFailStreak = 0
@@ -1795,8 +1948,7 @@ export class ModuleHibernationCoordinator {
         d.errorMessage = undefined
         d.lastErrorI18nKey = undefined
         d.lastReleased = undefined
-        // P1-3: 实测采样出来前，初始化为元数据字典预估值，避免透视为 0
-        d.residentBytes = HIBERNATABLE_TARGET_CATALOG[targetId]?.estimatedMemoryBytes ?? 0
+        d.residentBytes = resolvedBytes
         d.residentSample = undefined
       })
 
@@ -1814,28 +1966,42 @@ export class ModuleHibernationCoordinator {
 
       resolveWaitersFn()
     } catch (err: any) {
-      // 若抛错且未生成物理进程，同步置 spawnState = 'failed'
-      if (!spawnedProcessIdentity) {
+      // 若抛错且未生成负载结果，同步置 spawnState = 'failed'
+      if (!adapterOutcome) {
         inFlightOp.spawnState = 'failed'
       }
 
-      // 异常时恢复快照为 available，原子提交 error(load)，严格按代次累加 crashStreak
+      const isAbortedState = err?.code === 'LOAD_ABORTED'
+      const isExemptFromCrashStreak =
+        err?.code === 'SERVICE_UNAVAILABLE' ||
+        err?.code === 'MODULE_NOT_INSTALLED' ||
+        err?.code === 'LOAD_ABORTED' ||
+        err?.code === 'LOAD_PREEMPTED' ||
+        err?.code === 'MODEL_SWAPPED'
+
+      // 异常时原子提交终态（LOAD_ABORTED 回归 hibernated 防误锁 error；可恢复故障豁免 crashStreak）
       this.commitRuntimeSnapshot(loadToken, d => {
-        d.state = 'error'
-        d.lastFailureKind = 'load'
-        d.errorPhase = 'load'
-        d.lastErrorI18nKey = err?.code ?? 'LOAD_FAILED'
-        d.errorMessage = err?.message ?? '加载失败'
-        // P1-1: 若错误码为 SERVICE_UNAVAILABLE，严禁计入 crashStreak，杜绝基础设施抖动误熔断
-        if (
-          err?.code !== 'SERVICE_UNAVAILABLE' &&
-          d.modelGeneration === loadToken.modelGeneration
-        ) {
-          d.crashStreak += 1
-          d.lastCrashGeneration = loadToken.modelGeneration
-        }
-        if (d.lastReleased) {
-          d.lastReleased = { ...d.lastReleased, state: 'available' }
+        if (isAbortedState) {
+          d.state = 'hibernated'
+          d.residentBytes = 0
+          d.loadedGeneration = undefined
+          d.lastFailureKind = undefined
+          d.errorPhase = undefined
+          d.errorMessage = undefined
+          d.lastErrorI18nKey = undefined
+        } else {
+          d.state = 'error'
+          d.lastFailureKind = 'load'
+          d.errorPhase = 'load'
+          d.lastErrorI18nKey = err?.code ?? 'LOAD_FAILED'
+          d.errorMessage = err?.message ?? '加载失败'
+          if (!isExemptFromCrashStreak && d.modelGeneration === loadToken.modelGeneration) {
+            d.crashStreak += 1
+            d.lastCrashGeneration = loadToken.modelGeneration
+          }
+          if (d.lastReleased) {
+            d.lastReleased = { ...d.lastReleased, state: 'available' }
+          }
         }
       })
 
@@ -1849,37 +2015,37 @@ export class ModuleHibernationCoordinator {
           inflightLoad.watchdogTimer = undefined
         }
         this.inflightLoads.delete(targetId)
+        this.inflightCapturedGenerations.delete(targetId)
       }
 
-      // 零间隙双重屏障兜底强回收：
-      // 若进程已拉起但加载未能成功提交（abort / 换型抢占 / 加载抛错），必须 await 有界整树退出物理确认 (5s)
+      // 零间隙双重屏障兜底强回收（仅限 engine_service OS 进程树；omni_module 绝不误杀进程树）
       const currentOwner = this.activeLifecycleOwner.get(targetId)
       const ownerMismatched = !currentOwner || currentOwner.tokenId !== loadToken.tokenId
       if (
-        spawnedProcessIdentity &&
+        adapterOutcome?.kind === 'process' &&
         (ownerMismatched || abortCtrl.signal.aborted || inFlightOp.spawnState !== 'spawned')
       ) {
+        const spawnedIdentity = adapterOutcome.identity
         logger.warn(
           LogCategory.SYSTEM,
-          `[Coordinator] 单飞加载未完成或被抢占，回收孤儿进程树: targetId=${targetId}, pid=${spawnedProcessIdentity.pid}`
+          `[Coordinator] 单飞加载未完成或被抢占，回收孤儿进程树: targetId=${targetId}, pid=${spawnedIdentity.pid}`
         )
         if (this.engineBridgeServiceInstance) {
           await this.engineBridgeServiceInstance
-            .stopProcessTree(spawnedProcessIdentity)
+            .stopProcessTree(spawnedIdentity)
             .catch(() => {})
           const exitStatus = await this.engineBridgeServiceInstance
-            .awaitProcessTreeExit(spawnedProcessIdentity, 5_000)
+            .awaitProcessTreeExit(spawnedIdentity, 5_000)
             .catch(() => 'unknown' as const)
           if (exitStatus !== 'exited') {
             logger.error(
               LogCategory.SYSTEM,
-              `[Coordinator] 孤儿进程树 5s 未能确证退出，沉淀至全局抑制条目移交对账器: targetId=${targetId}, pid=${spawnedProcessIdentity.pid}`
+              `[Coordinator] 孤儿进程树 5s 未能确证退出，沉淀至全局抑制条目移交对账器: targetId=${targetId}, pid=${spawnedIdentity.pid}`
             )
             inFlightOp.status = 'failed_unknown'
-            // P2-5: 沉淀至全局抑制条目，交由后台对账器持续强杀与对账
             this.suppressStoppingIdentity({
               targetId,
-              identity: spawnedProcessIdentity,
+              identity: spawnedIdentity,
               suppressedAt: Date.now(),
               unknownRetryCount: 1
             })
@@ -2742,8 +2908,10 @@ export class ModuleHibernationCoordinator {
         return false
       }
 
-      // 执行不可逆卸载
-      if (meta?.type === 'engine_service') {
+      // 执行不可逆卸载（通过适配器隔离 OS 进程树与 Omni HTTP 会话）
+      const drainAdapter = resolveHibernationTargetAdapter(targetId)
+      let actualReleasedBytes = residentBytesAtEntry
+      if (drainAdapter.targetType === 'engine_service') {
         const oldId = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
         if (oldId) {
           const stopRes = await this.stopServiceBounded(targetId, oldId)
@@ -2764,31 +2932,21 @@ export class ModuleHibernationCoordinator {
             return false
           }
         }
+      } else if (drainAdapter.drainHttp) {
+        const httpDrain = await drainAdapter.drainHttp({
+          targetId,
+          residentBytesAtEntry,
+          bridge: this.engineBridgeServiceInstance
+        })
+        actualReleasedBytes = httpDrain.releasedBytes
       }
 
-      let actualReleasedBytes = residentBytesAtEntry
-      if (meta?.type === 'omni_module') {
-        try {
-          const drainRes = await this.engineBridgeServiceInstance?.drainOmniModule?.(targetId, {
-            waitDrainMs: 3000
-          })
-          if (drainRes && drainRes.releasedBytes > 0) {
-            actualReleasedBytes = drainRes.releasedBytes
-          }
-        } catch (err) {
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[Coordinator] omni_module 卸载调用失败，回落目录估值: targetId=${targetId}`,
-            err
-          )
-        }
-      }
-
-      // 卸载成功，原子归位 hibernated
+      // 卸载成功，原子归位 hibernated（同步清零 loadedGeneration）
       this.commitRuntimeSnapshot(drainToken, d => {
         d.state = 'hibernated'
         d.residentBytes = 0
         d.residentSample = undefined
+        d.loadedGeneration = undefined
         d.unloadFailStreak = 0
         if (actualReleasedBytes > 0) {
           d.lastReleasedBytes = actualReleasedBytes
@@ -2825,20 +2983,21 @@ export class ModuleHibernationCoordinator {
   // ==========================================
 
   /**
-   * 业务调用层入场防护门闩 (withHibernationGate)
-   * 1. 权威持久门闩拦截
-   * 2. 状态机分派与单飞冷启动/排队
-   * 3. 租约自动生命周期与 release 兜底
+   * 门闩前置校验、Omni 代际强一致对齐与租约签发（供 withHibernationGate 与 acquireStreamLease 共用）
    */
-  async withHibernationGate<T>(
-    req: GateRequest,
-    fn: (lease: HibernationLeaseHandle, signal: AbortSignal) => Promise<T>
-  ): Promise<T> {
+  private async ensureOmniGenerationAlignedAndGrant(
+    req: GateRequest
+  ): Promise<HibernationLeaseHandle> {
     const targetId = req.targetId
+    const meta = HIBERNATABLE_TARGET_CATALOG[targetId]
 
-    // 1. 持久门闩阻断前置检查
+    // 1. 持久门闩阻断前置检查（仅 engine_service；omni_module 绝不受 OS 句柄门闩锁定）
     const rt = this.runtimeStore.get(targetId)
-    if (rt && (rt.blockedUnloadNoHandle === 1 || rt.blockedUnloadIdentity !== null)) {
+    if (
+      meta?.type !== 'omni_module' &&
+      rt &&
+      (rt.blockedUnloadNoHandle === 1 || rt.blockedUnloadIdentity !== null)
+    ) {
       throw new HibernationGateAbortedError(
         targetId,
         'UNLOAD_ESCALATED',
@@ -2846,10 +3005,51 @@ export class ModuleHibernationCoordinator {
       )
     }
 
-    // 2. 状态分派与租约申领
-    const lease = await this.enqueueOrGrant(req)
+    // 2. omni_module 闸门前强制确认 Omni 在线并按代际强一致对齐，防止陈旧 resident 击穿 503
+    if (meta?.type === 'omni_module' && this.omniLifecycleProvider) {
+      await this.omniLifecycleProvider.ensureRunning()
+      const currentGen = this.omniLifecycleProvider.getGeneration()
+      const currentRt = this.runtimeStore.get(targetId)
+      if (
+        currentRt?.state === 'resident' &&
+        currentRt.loadedGeneration !== currentGen
+      ) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[Coordinator] 检测到 Omni 代际漂移，即时复位陈旧 resident 并触发按需加载: targetId=${targetId}, loadedGen=${currentRt.loadedGeneration}, currentGen=${currentGen}`
+        )
+        this.forceResetExternalHibernated(targetId, currentGen)
+      }
+    }
 
-    // 3. 执行任务并在 finally 保证 release
+    return await this.enqueueOrGrant(req)
+  }
+
+  /**
+   * 流式长会话租约申领入口（专供 TtsStreamSession 使用，调用方持有并经由 lease.release() 释放）
+   */
+  async acquireStreamLease(
+    req: GateRequest
+  ): Promise<{ lease: HibernationLeaseHandle; signal: AbortSignal }> {
+    const lease = await this.ensureOmniGenerationAlignedAndGrant(req)
+    return {
+      lease,
+      signal: lease.abortController?.signal as AbortSignal
+    }
+  }
+
+  /**
+   * 业务调用层入场防护门闩 (withHibernationGate)
+   * 1. 权威持久门闩拦截
+   * 2. Omni 代际强一致对齐与状态机分派单飞冷启动/排队
+   * 3. 租约自动生命周期与 release 兜底
+   */
+  async withHibernationGate<T>(
+    req: GateRequest,
+    fn: (lease: HibernationLeaseHandle, signal: AbortSignal) => Promise<T>
+  ): Promise<T> {
+    const lease = await this.ensureOmniGenerationAlignedAndGrant(req)
+
     try {
       return await fn(lease, lease.abortController?.signal as AbortSignal)
     } finally {
@@ -3137,6 +3337,7 @@ export class ModuleHibernationCoordinator {
     powerMonitor.on('resume', () => {
       logger.info(LogCategory.SYSTEM, '[Coordinator] 收到系统恢复事件 (resume)，执行对账')
       void this.reconcileSuppressedIdentities()
+      void this.triggerOmniModuleLiveReconcile(true)
     })
   }
 
@@ -3371,40 +3572,37 @@ export class ModuleHibernationCoordinator {
         }
       }
 
-      // 4. 极速语音朗读 (tts-m5-onnx) 活跃态联动对账
+      // 4. 语音合成 (tts-m5-onnx / tts-moss-onnx) 基于 LeaseRegistry 按真实 targetId 分别对账（彻底废除 isTTSActive 盲标）
       try {
-        if (!this.ttsActiveChecker && !this.lazyLoadAttempted.tts) {
-          this.lazyLoadAttempted.tts = true
-          void import('../../../main/ipc-handlers/tts')
-            .then(({ isTTSActive }) => {
-              if (typeof isTTSActive === 'function' && !this.ttsActiveChecker) {
-                this.ttsActiveChecker = isTTSActive
-              }
-            })
-            .catch(() => {
-              // 测试或无主进程 IPC 环境下静默跳过
-            })
-        }
-        const isTTSActive = this.ttsActiveChecker
-        if (typeof isTTSActive === 'function' && isTTSActive()) {
-          const rt = this.runtimeStore.get('tts-m5-onnx')
-          if (rt && rt.state !== 'resident') {
-            this.runtimeStore.update('tts-m5-onnx', d => {
-              d.state = 'resident'
-              d.lastActiveTimestamp = Date.now()
-              d.residentBytes =
-                d.residentBytes && d.residentBytes > 0 ? d.residentBytes : 315 * 1024 * 1024
-              // 补充驻留采样，消除“确认中”误报
-              d.residentSample = {
-                bytes: d.residentBytes,
-                sampleSeq: (d.residentSample?.sampleSeq ?? 0) + 1,
-                sampledAt: Date.now(),
-                modelGeneration: d.modelGeneration,
-                kind: d.effectiveMemoryKind ?? d.defaultMemoryKind
-              }
-            })
-            diagLog.reconciledTts = 'to_resident'
+        const reconciledTtsTargets: string[] = []
+        for (const ttsTargetId of ['tts-m5-onnx', 'tts-moss-onnx'] as const) {
+          const activeCount = this.leaseRegistryInstance?.countActiveByTarget(ttsTargetId) ?? 0
+          if (activeCount > 0) {
+            const rt = this.runtimeStore.get(ttsTargetId)
+            const meta = HIBERNATABLE_TARGET_CATALOG[ttsTargetId]
+            if (rt && rt.state !== 'resident' && rt.state !== 'loading') {
+              this.runtimeStore.update(ttsTargetId, d => {
+                d.state = 'resident'
+                d.lastActiveTimestamp = Date.now()
+                d.residentBytes =
+                  d.residentBytes && d.residentBytes > 0
+                    ? d.residentBytes
+                    : (meta?.estimatedMemoryBytes ?? 315 * 1024 * 1024)
+                d.residentSample = {
+                  bytes: d.residentBytes,
+                  sampleSeq: (d.residentSample?.sampleSeq ?? 0) + 1,
+                  sampledAt: Date.now(),
+                  modelGeneration: d.modelGeneration,
+                  kind: d.effectiveMemoryKind ?? d.defaultMemoryKind
+                }
+              })
+              reconciledTtsTargets.push(ttsTargetId)
+            }
           }
+        }
+        if (reconciledTtsTargets.length > 0) {
+          diagLog.reconciledTts = reconciledTtsTargets.join(',')
+          this.triggerSnapshotBroadcast()
         }
       } catch {}
 
@@ -3416,9 +3614,101 @@ export class ModuleHibernationCoordinator {
       } else {
         logger.debug(LogCategory.SYSTEM, `[HibernationDiag] 对账完成: ${JSON.stringify(diagLog)}`)
       }
+
+      // 5. 当 Omni 生命周期已就绪时，异步触发节流版 Omni 端侧模型实时态对账（不阻塞同步快照读取）
+      void this.triggerOmniModuleLiveReconcile(false)
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[HibernationDiag] 对账异常:', err)
     }
+  }
+
+  private lastOmniLiveReconcileAt = 0
+  private omniLiveReconcilePromise: Promise<void> | null = null
+
+  /**
+   * 异步调度的 Omni 模块实时状态对账入口：由 reconcileLiveStates (10s 节流) 与 powerMonitor.resume 调用
+   */
+  private triggerOmniModuleLiveReconcile(force: boolean): Promise<void> {
+    if (typeof this.engineBridgeServiceInstance?.getOmniModuleStatus !== 'function') {
+      return Promise.resolve()
+    }
+    if (!force && this.omniLifecycleProvider?.isReady?.() === false) {
+      return Promise.resolve()
+    }
+    if (this.omniLiveReconcilePromise) {
+      return this.omniLiveReconcilePromise
+    }
+    const now = Date.now()
+    if (!force && now - this.lastOmniLiveReconcileAt < 10_000) {
+      return Promise.resolve()
+    }
+    this.lastOmniLiveReconcileAt = now
+    const task = (async () => {
+      const omniTargets = Object.keys(HIBERNATABLE_TARGET_CATALOG).filter(
+        id => resolveHibernationTargetAdapter(id).targetType === 'omni_module'
+      )
+      for (const targetId of omniTargets) {
+        await this.reconcileOmniModuleLiveState(targetId).catch(err => {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[Coordinator] 异步对账 Omni 模块失败: targetId=${targetId}`,
+            err
+          )
+        })
+      }
+    })()
+    this.omniLiveReconcilePromise = task
+    return task.finally(() => {
+      if (this.omniLiveReconcilePromise === task) {
+        this.omniLiveReconcilePromise = null
+      }
+    })
+  }
+
+  /**
+   * 异步探测并对齐 Omni 端侧模型状态：遇探测超时（'unknown'）保持原态并 warn，绝不误置 hibernated
+   */
+  async reconcileOmniModuleLiveState(targetId: string): Promise<'resident' | 'hibernated' | 'unknown'> {
+    const adapter = resolveHibernationTargetAdapter(targetId)
+    if (adapter.targetType !== 'omni_module') {
+      return 'unknown'
+    }
+    const probe = await adapter.probeStatus(targetId, this.engineBridgeServiceInstance)
+    if (probe === 'unknown') {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[Coordinator] Omni 模块状态探测未知或超时，保持原状态不变: targetId=${targetId}`
+      )
+      return 'unknown'
+    }
+    const rt = this.runtimeStore.get(targetId)
+    const meta = HIBERNATABLE_TARGET_CATALOG[targetId]
+    if (!rt) return probe
+
+    if (probe === 'resident' && rt.state !== 'resident' && rt.state !== 'loading') {
+      this.runtimeStore.update(targetId, d => {
+        d.state = 'resident'
+        d.lastActiveTimestamp = Date.now()
+        d.residentBytes =
+          d.residentBytes && d.residentBytes > 0
+            ? d.residentBytes
+            : (meta?.estimatedMemoryBytes ?? 315 * 1024 * 1024)
+      })
+      this.triggerSnapshotBroadcast()
+    } else if (
+      probe === 'hibernated' &&
+      rt.state === 'resident' &&
+      (this.leaseRegistryInstance?.countActiveByTarget(targetId) ?? 0) === 0
+    ) {
+      this.runtimeStore.update(targetId, d => {
+        d.state = 'hibernated'
+        d.residentBytes = 0
+        d.residentSample = undefined
+        d.loadedGeneration = undefined
+      })
+      this.triggerSnapshotBroadcast()
+    }
+    return probe
   }
 
   /**
@@ -3561,23 +3851,25 @@ export class ModuleHibernationCoordinator {
     const meta = HIBERNATABLE_TARGET_CATALOG[targetId]
     if (!meta) return false
 
-    const identity = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
-    if (identity && !this.engineBridgeServiceInstance?.isProcessTreeExited?.(identity)) {
-      await this.engineBridgeServiceInstance?.forceKillOldGeneration?.(
-        targetId,
-        identity.generation,
-        identity.treeHandle
-      )
+    if (meta.type === 'engine_service') {
+      const identity = this.engineBridgeServiceInstance?.currentIdentity?.(targetId)
+      if (identity && !this.engineBridgeServiceInstance?.isProcessTreeExited?.(identity)) {
+        await this.engineBridgeServiceInstance?.forceKillOldGeneration?.(
+          targetId,
+          identity.generation,
+          identity.treeHandle
+        )
+      }
+      await this.runtimeStore.persistBlockedUnloadGate(targetId, 0, null)
+      this.blockedUnloadCache.set(targetId, false)
     }
-
-    await this.runtimeStore.persistBlockedUnloadGate(targetId, 0, null)
-    this.blockedUnloadCache.set(targetId, false)
 
     const current = this.runtimeStore.get(targetId)
     if (current && current.state === 'error') {
       const epoch = this.currentEpoch(targetId)
       this.commitIfEpoch(targetId, epoch, d => {
         d.state = 'hibernated'
+        d.loadedGeneration = undefined
         d.crashStreak = 0
         d.unloadFailStreak = 0
         d.lastFailureKind = undefined
@@ -3663,6 +3955,8 @@ export class ModuleHibernationCoordinator {
       }
     }
     this.inflightLoads.clear()
+    this.inflightCapturedGenerations.clear()
+    this.observedGeneration = 0
   }
 }
 

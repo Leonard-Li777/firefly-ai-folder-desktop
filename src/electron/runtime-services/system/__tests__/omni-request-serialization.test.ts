@@ -81,4 +81,16 @@ describe('Omni 逐请求字段映射契约 (SLICE-05)', () => {
     // 未传时不得写 query，保持与全局 cfg 兜底语义一致
     expect(buildCoverUrl('http://omni:1234', '/tmp/c.docx', {})).not.toContain('enable_office_cover')
   })
+
+  it('perceive 透传 perceive_timeout_sec 且未传时不写入该字段', () => {
+    const withTimeout = buildPerceiveRequestBody(
+      '/tmp/v.mp4',
+      { perceiveTimeoutSec: 240.5 },
+      noopConfig
+    )
+    expect(withTimeout.perceive_timeout_sec).toBe(240.5)
+
+    const withoutTimeout = buildPerceiveRequestBody('/tmp/v.mp4', {}, noopConfig)
+    expect('perceive_timeout_sec' in withoutTimeout).toBe(false)
+  })
 })

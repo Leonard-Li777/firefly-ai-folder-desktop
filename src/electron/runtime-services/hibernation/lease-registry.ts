@@ -161,8 +161,12 @@ export class LeaseRegistry {
     }
 
     this.leases.set(leaseId, entry)
-    // 授予时同步 recordSignal 初始化时基锚点，杜绝 lastSignalAt=0 空窗
-    this.livenessSourceRegistry.recordSignal(leaseId, now)
+    // 授予时同步初始化活跃信号与播放初始态，消除首块音频到达前 hasFreshPlayingLease 假阴性空窗
+    if (livenessSourceKey === 'player_state') {
+      this.livenessSourceRegistry.recordPlayback(leaseId, 'playing', now)
+    } else {
+      this.livenessSourceRegistry.recordSignal(leaseId, now)
+    }
     this.armExpiry(leaseId)
 
     if (prevCount === 0) {

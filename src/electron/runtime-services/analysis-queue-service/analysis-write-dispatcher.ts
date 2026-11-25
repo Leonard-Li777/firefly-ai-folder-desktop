@@ -13,6 +13,13 @@ export interface AnalysisItemStatusExtra {
   analysisStage?: number
   /** 结构化超时标记（由 classifyAnalysisError / isTimeoutError 产生，严禁中文文案匹配） */
   isTimeout?: boolean
+  /** 视频视觉分析预算降级标记与诊断元数据（Spec v1.7.3 §2.4.2，严禁写入 completed） */
+  analysisStatus?: 'analysis_degraded'
+  degradedMetadata?: {
+    perceive_timeout_sec: number | null
+    asr_est_sec: number
+    degraded_reason: 'pre_elapsed' | 'budget_structural'
+  }
 }
 
 export type FrontendNotifyFn = (
@@ -49,7 +56,16 @@ export class AnalysisWriteDispatcher {
     const item = queueManager.getQueue().find(i => i.id === itemId)
     if (!item) return
 
-    if (status === 'failed' && extra?.isTimeout === true) {
+    if (status === 'failed' && extra?.analysisStatus === 'analysis_degraded' && error) {
+      void this.notifyFrontend(
+        'warning',
+        `${item.name}：${error}`,
+        false,
+        `degraded-${itemId}`,
+        6000,
+        { label: t('前往设置'), category: 'AI_ENGINE_CONFIG' }
+      )
+    } else if (status === 'failed' && extra?.isTimeout === true) {
       void this.notifyFrontend(
         'warning',
         `${t('分析时间太长')}: ${item.name}。${t('建议在设置里换一个更轻巧的识别方案')}`,
@@ -67,6 +83,8 @@ export class AnalysisWriteDispatcher {
     if (error !== undefined) item.error = error
     if (extra?.analysisStats) item.analysisStats = extra.analysisStats
     if (extra?.fromCache !== undefined) item.fromCache = extra.fromCache
+    if (extra?.analysisStatus) (item as any).analysisStatus = extra.analysisStatus
+    if (extra?.degradedMetadata) (item as any).degradedMetadata = extra.degradedMetadata
 
     const currentStage =
       extra?.analysisStage ??
@@ -99,6 +117,8 @@ export class AnalysisWriteDispatcher {
                 filePath: item.path,
                 fileFingerprint: (item as any).fileFingerprint,
                 status,
+                ...(extra?.analysisStatus ? { analysisStatus: extra.analysisStatus } : {}),
+                ...(extra?.degradedMetadata ? { degradedMetadata: extra.degradedMetadata } : {}),
                 source: 'queue'
               })
             }

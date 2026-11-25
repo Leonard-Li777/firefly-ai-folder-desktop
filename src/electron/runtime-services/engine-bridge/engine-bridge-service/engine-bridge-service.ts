@@ -51,9 +51,11 @@ import { isLocalDevRuntime } from '../../../main/worktree-env'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
   OmniModuleDrainResult,
+  OmniModuleLoadResult,
   OmniModuleStatusResult,
   ProcessTreeIdentity
 } from '../../hibernation/types'
+import { classifyOmniModuleLoadHttpResponse } from '../../hibernation/target-adapter'
 import { moduleHibernationCoordinator } from '../../hibernation/module-hibernation-coordinator'
 import { omniService } from '../../system/omni-service'
 import { processTreeManager, ProcessTreeManager } from '../process-tree-manager'
@@ -3644,6 +3646,58 @@ export class EngineBridgeService {
   }
 
   /**
+   * 按需加载并激活 Omni 端侧模型 Session (POST /v1/modules/:module_id/session)
+   * 走 omniService.omniFetch(kind: 'long') 并按契约映射 HTTP 状态码：
+   * - 200 -> ok
+   * - 503 MODULE_NOT_INSTALLED -> not_installed
+   * - 409 LOAD_SUPERSEDED -> aborted
+   * - 404 / 405 / 连接错 / 超时 -> unreachable（记 warn）
+   * - 其余可达 5xx -> failed（供上层计入 crashStreak）
+   */
+  public async loadOmniModule(
+    targetId: string,
+    options?: { signal?: AbortSignal; timeoutMs?: number }
+  ): Promise<OmniModuleLoadResult> {
+    const baseUrl = omniService.getBaseUrl()
+    const url = `${baseUrl}/v1/modules/${encodeURIComponent(targetId)}/session`
+    const timeoutMs = options?.timeoutMs ?? 90_000
+    try {
+      const res = await omniService.omniFetch(url, {
+        kind: 'long',
+        timeoutMs,
+        method: 'POST',
+        signal: options?.signal
+      })
+      const body = (await res.json().catch(() => null)) as Record<string, unknown> | null
+      if (res.status === 404 || res.status === 405) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[EngineBridge] loadOmniModule 端点不可达 HTTP ${res.status}: targetId=${targetId}`
+        )
+      }
+      return classifyOmniModuleLoadHttpResponse(targetId, res.status, body)
+    } catch (err: any) {
+      if (options?.signal?.aborted || err?.name === 'AbortError') {
+        return {
+          outcome: 'aborted',
+          residentBytes: 0,
+          error: typeof options?.signal?.reason === 'string' ? options.signal.reason : 'ABORTED'
+        }
+      }
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[EngineBridge] loadOmniModule 请求异常 (unreachable): targetId=${targetId}`,
+        err
+      )
+      return {
+        outcome: 'unreachable',
+        residentBytes: 0,
+        error: err?.message || String(err)
+      }
+    }
+  }
+
+  /**
    * 触发 Omni 端侧模型 Session 动态排空与内存释放 (spec §3.4.2)
    */
   public async drainOmniModule(
@@ -3653,16 +3707,12 @@ export class EngineBridgeService {
     const baseUrl = omniService.getBaseUrl()
     const waitMs = options?.waitDrainMs ?? 3000
     const url = `${baseUrl}/v1/modules/${encodeURIComponent(targetId)}/session?wait_drain_ms=${waitMs}`
-    const timeoutSignal = AbortSignal.timeout(waitMs + 3000)
-    const signal = options?.signal
-      ? typeof AbortSignal.any === 'function'
-        ? AbortSignal.any([options.signal, timeoutSignal])
-        : options.signal
-      : timeoutSignal
 
-    const res = await fetch(url, {
+    const res = await omniService.omniFetch(url, {
+      kind: 'long',
+      timeoutMs: waitMs + 3000,
       method: 'DELETE',
-      signal
+      signal: options?.signal
     })
     if (!res.ok) {
       const errJson = (await res.json().catch(() => ({}))) as any
@@ -3683,23 +3733,35 @@ export class EngineBridgeService {
     try {
       const baseUrl = omniService.getBaseUrl()
       const url = `${baseUrl}/v1/modules/${encodeURIComponent(targetId)}/session/status`
-      const timeoutSignal = AbortSignal.timeout(3000)
-      const signal = options?.signal
-        ? typeof AbortSignal.any === 'function'
-          ? AbortSignal.any([options.signal, timeoutSignal])
-          : options.signal
-        : timeoutSignal
 
-      const res = await fetch(url, {
+      const res = await omniService.omniFetch(url, {
+        kind: 'probe',
+        timeoutMs: 3000,
+        internal: true,
         method: 'GET',
-        signal
+        signal: options?.signal
       })
       if (!res.ok) {
-        return { loaded: false, residentBytes: 0, serviceReachable: false }
+        return {
+          loaded: false,
+          residentBytes: 0,
+          serviceReachable: false,
+          probeStatus: 'unreachable'
+        }
       }
-      return (await res.json()) as OmniModuleStatusResult
-    } catch {
-      return { loaded: false, residentBytes: 0, serviceReachable: false }
+      const data = (await res.json()) as OmniModuleStatusResult
+      return {
+        ...data,
+        probeStatus: 'ok'
+      }
+    } catch (err: any) {
+      const isTimeout = err?.name === 'TimeoutError' || err?.name === 'AbortError'
+      return {
+        loaded: false,
+        residentBytes: 0,
+        serviceReachable: false,
+        probeStatus: isTimeout ? 'timeout' : 'unreachable'
+      }
     }
   }
 }

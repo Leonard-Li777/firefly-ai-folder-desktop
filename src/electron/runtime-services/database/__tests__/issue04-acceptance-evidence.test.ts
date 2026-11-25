@@ -219,10 +219,10 @@ describe('Ticket 14 · C8：video 分段检索 idx_fvc_fp_start 与 file_unit_re
     }
   })
 
-  it('C8-1. HybridSearchArbiter 视频分段检索 SQL EXPLAIN 命中 idx_fvc_fp_start Index Scan 且权益截断生效', () => {
-    // 复刻 HybridSearchArbiter.ts:1903-1905 生产 SQL
+  it('C8-1. HybridSearchArbiter 视频分段检索 SQL EXPLAIN 命中 idx_fvc_fp_start Covering Index 且权益截断生效', () => {
+    // 复刻 HybridSearchArbiter.ts 生产 SQL（去 meta 零回表）
     const sql = `
-      SELECT file_fingerprint, chunk_index, start_sec, end_sec, COALESCE(rep_pts_sec, start_sec) AS rep_pts_sec, meta
+      SELECT file_fingerprint, chunk_index, start_sec, end_sec, COALESCE(rep_pts_sec, start_sec) AS rep_pts_sec
       FROM file_video_chunks
       WHERE file_fingerprint IN (?, ?) AND start_sec < ?
     `
@@ -232,9 +232,9 @@ describe('Ticket 14 · C8：video 分段检索 idx_fvc_fp_start 与 file_unit_re
     }>
     const detail = plan.map(p => p.detail).join(' | ')
 
-    // 关键断言：命中 idx_fvc_fp_start 索引扫描，严禁全表 SCAN
+    // 关键断言：命中 idx_fvc_fp_start 5 列覆盖索引，严禁回表或全表 SCAN
     expect(detail).toContain('idx_fvc_fp_start')
-    expect(detail).toMatch(/SEARCH\s+file_video_chunks\s+USING\s+INDEX\s+idx_fvc_fp_start/)
+    expect(detail).toMatch(/SEARCH\s+file_video_chunks\s+USING\s+COVERING\s+INDEX\s+idx_fvc_fp_start/)
     expect(detail).not.toMatch(/SCAN\s+file_video_chunks/)
 
     // 行为断言：仅返回 start_sec < 300 的切片（共 3 条，剔除 360s 与 400s）

@@ -22,6 +22,7 @@ import { app } from 'electron'
 import { logger, LogCategory, ResourceLocator, PluginPathResolver } from '@firefly/shared'
 import { omniClient } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
+import { moduleHibernationCoordinator } from '../hibernation/module-hibernation-coordinator'
 import { PRESET_VOICES, type VoiceMeta } from '../../../renderer/constants/tts-voices'
 
 /**
@@ -432,8 +433,15 @@ export class VoiceArchiveService {
       throw new Error('音频文件不存在')
     }
 
-    // 调用 Omni 进行特征分析与提取
-    const result = await omniClient.analyzeVoice(filePath)
+    // 声音克隆固定经统一休眠门闩激活并保护 'tts-moss-onnx'
+    const result = await moduleHibernationCoordinator.withHibernationGate(
+      {
+        targetId: 'tts-moss-onnx',
+        clusterId: 'tts_media',
+        livenessSourceKey: 'task_progress'
+      },
+      async (_lease, signal) => await omniClient.analyzeVoice(filePath, signal)
+    )
     if (!result || !result.success || !result.codes || result.codes.length === 0) {
       throw new Error(result?.error || '提取音频声学特征失败')
     }

@@ -10,9 +10,30 @@ vi.mock('../../system/modular-resource-service', () => ({
 
 // Mock omniService
 const mockTranscribeAudio = vi.fn()
+const mockGetGeneration = vi.fn(() => 1)
 vi.mock('../../system/omni-service', () => ({
   omniService: {
-    transcribeAudio: (...args: any[]) => mockTranscribeAudio(...args)
+    transcribeAudio: (...args: any[]) => mockTranscribeAudio(...args),
+    getGeneration: () => mockGetGeneration()
+  }
+}))
+
+// Mock module-hibernation-coordinator
+const mockAcquireStreamLease = vi.fn(async (req: any) => ({
+  lease: {
+    leaseId: 'lease_test_1',
+    targetId: req.targetId,
+    clusterId: req.clusterId ?? 'tts_media',
+    abortController: new AbortController(),
+    release: vi.fn()
+  },
+  signal: new AbortController().signal
+}))
+vi.mock('../../hibernation/module-hibernation-coordinator', () => ({
+  moduleHibernationCoordinator: {
+    acquireStreamLease: (req: any) => mockAcquireStreamLease(req),
+    forceResetExternalHibernated: vi.fn(),
+    getLeaseRegistry: vi.fn(() => undefined)
   }
 }))
 

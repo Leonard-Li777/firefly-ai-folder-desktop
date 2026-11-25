@@ -19,6 +19,7 @@ import { logger, LogCategory } from '@firefly/shared'
 import { modularResourceService } from '../system/modular-resource-service'
 import { omniClient } from '../../services/omni-client'
 import { omniService } from '../system/omni-service'
+import { moduleHibernationCoordinator } from '../hibernation/module-hibernation-coordinator'
 
 /** 统一语音转录输出模型 */
 export interface TranscriptionResult {
@@ -450,7 +451,9 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
         activeModule.id === 'tts_moss_onnx' ||
         activeModule.backend_type === 'omni_onnx'
       ) {
-        yield* this.dispatchOmniTTS(trimmed, options)
+        const hibernationTargetId =
+          activeModule.id === 'tts_m5_onnx' ? 'tts-m5-onnx' : 'tts-moss-onnx'
+        yield* this.dispatchOmniTTS(trimmed, hibernationTargetId, options)
       } else if (activeModule.backend_type === 'ai_engine') {
         throw new VoiceSeamError('INFERENCE_FAILED', 'ai_engine TTS 后端网关尚未接入')
       } else {
@@ -466,6 +469,7 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
 
   private async *dispatchOmniTTS(
     text: string,
+    targetId: 'tts-m5-onnx' | 'tts-moss-onnx' = 'tts-m5-onnx',
     options?: SynthesizeOptions
   ): AsyncIterable<AudioChunk> {
     const maxChunkChars = options?.maxChunkChars ?? 60
@@ -504,59 +508,109 @@ export class VoiceSeamDispatcher implements IVoiceSeamService {
     const startTimeMs = Date.now()
     const totalBudgetMs = options?.totalBudgetMs
 
-    for (let i = 0; i < chunks.length; i++) {
-      throwIfSignalAborted(options?.signal)
+    // 经统一休眠门闩保护单句分片合成（按真实 targetId 激活并持有 tts_media 租约）
+    let currentLease = await moduleHibernationCoordinator.acquireStreamLease({
+      targetId,
+      clusterId: 'tts_media',
+      livenessSourceKey: 'task_progress'
+    })
 
-      const chunkText = chunks[i]
-      let effectiveTimeoutMs: number | undefined =
-        i === 0 ? (options?.firstChunkTimeoutMs ?? options?.chunkTimeoutMs) : options?.chunkTimeoutMs
+    try {
+      for (let i = 0; i < chunks.length; i++) {
+        throwIfSignalAborted(options?.signal)
 
-      if (typeof totalBudgetMs === 'number' && Number.isFinite(totalBudgetMs) && totalBudgetMs > 0) {
-        const remainingMs = totalBudgetMs - (Date.now() - startTimeMs)
-        // 进入下一分句前若剩余总预算低于注定超时下界（codePoints * 240ms + 2000ms），立即早停不空烧 CPU
-        const minRequiredMs = countCodePoints(chunkText) * 240 + 2000
-        if (remainingMs <= 0 || (i > 0 && remainingMs < minRequiredMs)) {
-          throw new VoiceSeamError('TIMEOUT', '语音合成超出总预算时间限制')
+        const chunkText = chunks[i]
+        let effectiveTimeoutMs: number | undefined =
+          i === 0 ? (options?.firstChunkTimeoutMs ?? options?.chunkTimeoutMs) : options?.chunkTimeoutMs
+
+        if (typeof totalBudgetMs === 'number' && Number.isFinite(totalBudgetMs) && totalBudgetMs > 0) {
+          const remainingMs = totalBudgetMs - (Date.now() - startTimeMs)
+          // 进入下一分句前若剩余总预算低于注定超时下界（codePoints * 240ms + 2000ms），立即早停不空烧 CPU
+          const minRequiredMs = countCodePoints(chunkText) * 240 + 2000
+          if (remainingMs <= 0 || (i > 0 && remainingMs < minRequiredMs)) {
+            throw new VoiceSeamError('TIMEOUT', '语音合成超出总预算时间限制')
+          }
+          effectiveTimeoutMs =
+            typeof effectiveTimeoutMs === 'number'
+              ? Math.min(effectiveTimeoutMs, remainingMs)
+              : remainingMs
         }
-        effectiveTimeoutMs =
-          typeof effectiveTimeoutMs === 'number'
-            ? Math.min(effectiveTimeoutMs, remainingMs)
-            : remainingMs
+
+        const synthesizeOneChunk = async (attempt = 0): Promise<Awaited<ReturnType<typeof omniClient.synthesizeTTSChunk>>> => {
+          const entryGen =
+            typeof omniService.getGeneration === 'function' ? omniService.getGeneration() : undefined
+          const registry = moduleHibernationCoordinator.getLeaseRegistry?.()
+          registry?.livenessSourceRegistry.recordSignal(currentLease.lease.leaseId, Date.now())
+          registry?.renew(currentLease.lease.leaseId)
+
+          const combinedSignal =
+            options?.signal && currentLease.signal
+              ? typeof AbortSignal.any === 'function'
+                ? AbortSignal.any([options.signal, currentLease.signal])
+                : options.signal
+              : options?.signal ?? currentLease.signal
+
+          try {
+            return await omniClient.synthesizeTTSChunk(
+              chunkText,
+              voiceId,
+              speed,
+              undefined,
+              combinedSignal,
+              effectiveTimeoutMs
+            )
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err)
+            const curGen =
+              typeof omniService.getGeneration === 'function' ? omniService.getGeneration() : undefined
+            if (
+              attempt === 0 &&
+              msg === 'ENGINE_UNAVAILABLE' &&
+              entryGen !== undefined &&
+              curGen !== undefined &&
+              curGen !== entryGen
+            ) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[VoiceSeamDispatcher] 检测到 Omni 代际切换引发 /chunk 503，在闸门内复位并自动重试一次: targetId=${targetId}`
+              )
+              currentLease.lease.release()
+              moduleHibernationCoordinator.forceResetExternalHibernated(targetId, curGen)
+              currentLease = await moduleHibernationCoordinator.acquireStreamLease({
+                targetId,
+                clusterId: 'tts_media',
+                livenessSourceKey: 'task_progress'
+              })
+              return await synthesizeOneChunk(1)
+            }
+            throw translateOmniTtsError(err, options?.signal)
+          }
+        }
+
+        const chunkRes = await synthesizeOneChunk()
+
+        throwIfSignalAborted(options?.signal)
+
+        if (!chunkRes || !chunkRes.buffer) {
+          throw new VoiceSeamError(
+            'INFERENCE_FAILED',
+            `TTS 分句合成失败: "${chunkText.slice(0, 20)}"`
+          )
+        }
+
+        // 剥离 WAV 容器头并统一归一化为保真 48kHz PCM（M5 原生 24kHz 自适应升采样至 48kHz）
+        const pcmData = extractPcmNormalized48k(chunkRes.buffer)
+
+        yield {
+          format: 'pcm_s16le',
+          sampleRate: 48000,
+          channels: 1,
+          data: pcmData,
+          isLastChunk: i === chunks.length - 1
+        }
       }
-
-      let chunkRes: Awaited<ReturnType<typeof omniClient.synthesizeTTSChunk>>
-      try {
-        chunkRes = await omniClient.synthesizeTTSChunk(
-          chunkText,
-          voiceId,
-          speed,
-          undefined,
-          options?.signal,
-          effectiveTimeoutMs
-        )
-      } catch (err) {
-        throw translateOmniTtsError(err, options?.signal)
-      }
-
-      throwIfSignalAborted(options?.signal)
-
-      if (!chunkRes || !chunkRes.buffer) {
-        throw new VoiceSeamError(
-          'INFERENCE_FAILED',
-          `TTS 分句合成失败: "${chunkText.slice(0, 20)}"`
-        )
-      }
-
-      // 剥离 WAV 容器头并统一归一化为保真 48kHz PCM（M5 原生 24kHz 自适应升采样至 48kHz）
-      const pcmData = extractPcmNormalized48k(chunkRes.buffer)
-
-      yield {
-        format: 'pcm_s16le',
-        sampleRate: 48000,
-        channels: 1,
-        data: pcmData,
-        isLastChunk: i === chunks.length - 1
-      }
+    } finally {
+      currentLease.lease.release()
     }
   }
 

@@ -7,6 +7,11 @@ import {
   persistOmniVectors,
   type OmniVectorPersistenceParams
 } from './omni-vector-persistence'
+import {
+  runVideoPerceiveWithDegradedRetry,
+  serializeVideoDegradedMetadata,
+  type VideoDegradedMetadata
+} from './video-degraded-state-machine'
 
 export interface VideoSegmentDescriptor {
   fileFingerprint: string
@@ -31,6 +36,7 @@ export interface VideoSegmentExecutorDeps {
       }
     ) => void
     markVideoSegmentFailedOrPending: (fileId: string, segmentIndex: number, reason: string) => void
+    markVideoSegmentTerminalFailed?: (fileId: string, segmentIndex: number, reason: string) => void
     rollbackVideoSegmentProcessing: (fileId: string, segmentIndex: number) => void
     replaceVideoChunksInRange: (
       fileFingerprint: string,
@@ -54,6 +60,8 @@ export interface VideoSegmentExecutorDeps {
     deleteVectors: (fps: string[]) => Promise<any>
   }
   existsSync?: (p: string) => boolean
+  /** 仅用于单测注入降级退避等待函数 */
+  degradedRetrySleep?: (ms: number, signal?: AbortSignal) => Promise<void>
 }
 
 export interface ExecuteSingleVideoSegmentInput {
@@ -81,9 +89,10 @@ export interface ExecuteSingleVideoSegmentInput {
 }
 
 export interface ExecuteSingleVideoSegmentResult {
-  outcome: 'completed' | 'skipped' | 'missing_file' | 'aborted' | 'failed'
+  outcome: 'completed' | 'skipped' | 'missing_file' | 'aborted' | 'failed' | 'degraded'
   frameCount: number
   reason?: string
+  degradedMetadata?: VideoDegradedMetadata
 }
 
 /**
@@ -129,25 +138,69 @@ export async function executeSingleVideoSegment(
   }
 
   try {
-    // 4. 纯 Stage 2 视觉感知（强制禁 ASR、禁文本分析、禁缩略图、禁 5W）
-    const chunkResult = await deps.anydocService.perceive(filePath, {
-      ...perceptionParams,
-      enableAudioTranscript: false,
-      videoAsrDurationSec: 0,
-      audioAnalysisDuration: 0,
-      enableTextAnalysis: false,
-      generateThumbnail: false,
-      skip5wSynthesis: true,
-      videoAnalyzeStartSec: startPtsSec,
-      videoMaxAnalyzeSec: effectiveChunkEnd,
-      fileFingerprint,
-      signal
-    })
+    // 4. 纯 Stage 2 视觉感知（强制禁 ASR、禁文本分析、禁缩略图、禁 5W），并接入预算降级状态机
+    const perceiveOutcome = await runVideoPerceiveWithDegradedRetry(
+      () =>
+        deps.anydocService.perceive(filePath, {
+          ...perceptionParams,
+          enableAudioTranscript: false,
+          videoAsrDurationSec: 0,
+          audioAnalysisDuration: 0,
+          enableTextAnalysis: false,
+          generateThumbnail: false,
+          skip5wSynthesis: true,
+          videoAnalyzeStartSec: startPtsSec,
+          videoMaxAnalyzeSec: effectiveChunkEnd,
+          fileFingerprint,
+          signal
+        }),
+      {
+        filePath,
+        perceiveTimeoutSec:
+          perceptionParams.perceiveTimeoutSec ??
+          (perceptionParams.timeoutMs ? perceptionParams.timeoutMs / 1000 : null),
+        asrEstSec: 0,
+        signal,
+        sleep: deps.degradedRetrySleep
+      }
+    )
 
-    if (signal?.aborted) {
+    if (perceiveOutcome.aborted || signal?.aborted) {
       deps.databaseService.rollbackVideoSegmentProcessing(fileFingerprint, segmentIndex)
       return { outcome: 'aborted', frameCount: 0, reason: 'aborted after perceive' }
     }
+
+    if (perceiveOutcome.degradedRecord) {
+      const degradedMeta: VideoDegradedMetadata = {
+        status: 'analysis_degraded',
+        degraded: perceiveOutcome.degradedRecord.degraded,
+        perceive_timeout_sec: perceiveOutcome.degradedRecord.perceive_timeout_sec,
+        asr_est_sec: perceiveOutcome.degradedRecord.asr_est_sec,
+        degraded_reason: perceiveOutcome.degradedRecord.degraded_reason
+      }
+      const serializedMeta = serializeVideoDegradedMetadata(degradedMeta)
+      if (typeof deps.databaseService.markVideoSegmentTerminalFailed === 'function') {
+        deps.databaseService.markVideoSegmentTerminalFailed(
+          fileFingerprint,
+          segmentIndex,
+          serializedMeta
+        )
+      } else {
+        deps.databaseService.markVideoSegmentFailedOrPending(
+          fileFingerprint,
+          segmentIndex,
+          serializedMeta
+        )
+      }
+      return {
+        outcome: 'degraded',
+        frameCount: 0,
+        reason: perceiveOutcome.degradedRecord.userMessage,
+        degradedMetadata: degradedMeta
+      }
+    }
+
+    const chunkResult = perceiveOutcome.result
 
     const chunkFrames: any[] = chunkResult?.perception?.video_chunks || []
     if (chunkFrames.length === 0) {

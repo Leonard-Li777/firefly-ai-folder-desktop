@@ -49,6 +49,37 @@ import { invalidateClipTextWarmState } from '../runtime-services/filesystem/virt
 /** CLIP 文本陈旧状态复位监听是否已注册（幂等保护：重复初始化/热重载都不得重复注册） */
 let clipTextRuntimeResetRegistered = false
 
+/** ConfigDbManager 词表自愈监听是否已延迟绑定（幂等保护） */
+let configDbTaxonomySelfHealRegistered = false
+
+/**
+ * 延迟绑定 ConfigDbManager 词表空表自愈（Spec §3.3 / Ticket 04）：
+ * - Push：订阅 `omniService.onInstanceChanged`（不受 Coordinator 的 `observedGeneration` 过滤影响），
+ *   实例就绪或重启切换时清空负缓存并触发空表补灌与有界退避重试；
+ * - Pull：订阅后立即 `await omniService.ensureRunning()` 确认当前是否已就绪，消除错失早期事件导致的空表死锁。
+ */
+export async function registerConfigDbTaxonomySelfHeal(): Promise<void> {
+  if (!configDbTaxonomySelfHealRegistered) {
+    configDbTaxonomySelfHealRegistered = true
+    omniService.onInstanceChanged(() => {
+      const manager = ConfigDbManager.getInstance()
+      manager.clearUnresolvableCodeCache()
+      void manager.triggerEmptyTableSelfHeal().catch(err => {
+        logger.warn(LogCategory.CONFIG, '[ConfigDbManager] onInstanceChanged 触发词表自愈异常:', err)
+      })
+    })
+  }
+
+  const ready = await omniService.ensureRunning().catch(() => false)
+  if (ready) {
+    await ConfigDbManager.getInstance()
+      .triggerEmptyTableSelfHeal()
+      .catch(err => {
+        logger.warn(LogCategory.CONFIG, '[ConfigDbManager] ensureRunning pull 触发词表自愈异常:', err)
+      })
+  }
+}
+
 /**
  * 注册「Omni 就绪 ⇒ CLIP 文本第 5 路陈旧状态复位」。
  *
@@ -587,6 +618,23 @@ export async function initializeMinimalServices(options?: {
     //     PRD-0044：生效引擎为「云端」或「禁用」时不拉起引擎（禁用 = 只跑基础AI引擎通道）。
     moduleHibernationCoordinator.setAnalysisQueueService(analysisQueueService)
     moduleHibernationCoordinator.setTtsActiveChecker(isTTSActive)
+    moduleHibernationCoordinator.setOmniLifecycleProvider(omniService)
+    const managedOmniModuleIds = [
+      'tts-m5-onnx',
+      'tts-moss-onnx',
+      'asr-sensevoice-onnx',
+      'pocket-cpu-int8-onnx'
+    ] as const
+    omniService.onLifecycleInactive(nextGeneration => {
+      for (const moduleId of managedOmniModuleIds) {
+        moduleHibernationCoordinator.forceResetExternalHibernated(moduleId, nextGeneration)
+      }
+    })
+    omniService.onInstanceChanged(nextGeneration => {
+      for (const moduleId of managedOmniModuleIds) {
+        moduleHibernationCoordinator.forceResetExternalHibernated(moduleId, nextGeneration)
+      }
+    })
     try {
       const { engineBridgeService } = await import('../runtime-services/engine-bridge')
       moduleHibernationCoordinator.setEngineBridgeService(engineBridgeService)
@@ -1100,6 +1148,8 @@ export async function initializeFullServices(): Promise<void> {
     await omniService.start().catch(err => {
       logger.error(LogCategory.MAIN, '[OmniService] 原生微服务启动失败:', err)
     })
+    // 延迟绑定 ConfigDbManager Push/Pull 双通道自愈（不阻塞启动关键路径）
+    void registerConfigDbTaxonomySelfHeal()
 
     logger.debug(LogCategory.MAIN, '正在初始化核心引擎...')
     try {
