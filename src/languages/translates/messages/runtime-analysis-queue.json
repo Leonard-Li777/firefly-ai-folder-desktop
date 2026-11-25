@@ -74,7 +74,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(47075-47104)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(46636-46665)"],
     "$id": 11304
   },
   "分析时间太长": {

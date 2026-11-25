@@ -6174,7 +6174,7 @@
     "ko-KR": "파일",
     "$files": [
       "src/renderer/components/settings/storage-energy-settings.tsx(11247-11254)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12559-12566)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12938-12945)"
     ],
     "$id": 38359
   },
@@ -8453,7 +8453,7 @@
     "ko-KR": "그림 텍스트 인식",
     "$files": [
       "src/renderer/components/settings/WorkspaceConfigPanel.tsx(19771-19781)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1462-1472)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1588-1598)"
     ],
     "$id": 38390
   },
@@ -14715,7 +14715,7 @@
     "fr-FR": "Couverture de la page d'accueil du document",
     "ko-KR": "문서 홈페이지 커버",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1520-1530)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1646-1656)"
     ],
     "$id": 39833
   },
@@ -14730,7 +14730,7 @@
     "fr-FR": "Miniature",
     "ko-KR": "썸네일",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1575-1582)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1701-1708)"
     ],
     "$id": 39834
   },
@@ -14745,7 +14745,7 @@
     "fr-FR": "Parole au texte",
     "ko-KR": "텍스트 음성 변환",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1634-1643)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1760-1769)"
     ],
     "$id": 39835
   },
@@ -14760,7 +14760,7 @@
     "fr-FR": "Extraction du corps du document",
     "ko-KR": "문서 본문 추출",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1695-1705)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1821-1831)"
     ],
     "$id": 39836
   },
@@ -14775,7 +14775,7 @@
     "fr-FR": "Achèvement du contenu",
     "ko-KR": "콘텐츠 완성",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1733-1741)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1859-1867)"
     ],
     "$id": 39837
   },
@@ -14790,7 +14790,7 @@
     "fr-FR": "La complétion inactive en arrière-plan a été restaurée",
     "ko-KR": "백그라운드 유휴 완료가 복원되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5226-5239)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5399-5412)"
     ],
     "$id": 39838
   },
@@ -14805,7 +14805,7 @@
     "fr-FR": "L'achèvement de la vidéo en arrière-plan a été suspendu",
     "ko-KR": "배경 비디오 완성이 일시 중지되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5311-5324)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5484-5497)"
     ],
     "$id": 39839
   },
@@ -14820,7 +14820,7 @@
     "fr-FR": "{count} Les fragments ayant échoué ont été réinitialisés et la complétion a commencé",
     "ko-KR": "{count}실패한 조각이 재설정되고 다시 완료가 시작되었습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5646-5674)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5819-5847)"
     ],
     "$id": 39840
   },
@@ -14835,7 +14835,7 @@
     "fr-FR": "A été défini sur achèvement prioritaire",
     "ko-KR": "우선 순위 완료로 설정되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5979-5990)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(6152-6163)"
     ],
     "$id": 39841
   },
@@ -14850,7 +14850,7 @@
     "fr-FR": "Les fichiers {count} ont été ajoutés à la file d'attente d'analyse pour compléter le contenu",
     "ko-KR": "{count}파일을 분석 큐에 추가하여 콘텐츠를 완성했습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(6366-6394)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(6539-6567)"
     ],
     "$id": 39842
   },
@@ -14865,7 +14865,7 @@
     "fr-FR": "La liste à remplir a été effacée",
     "ko-KR": "채워질 목록이 지워졌습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7189-7200)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7362-7373)"
     ],
     "$id": 40897
   },
@@ -14880,7 +14880,7 @@
     "fr-FR": "Impossible d'effacer la liste en attente",
     "ko-KR": "보류 중인 목록을 지우지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7408-7420)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7581-7593)"
     ],
     "$id": 40898
   },
@@ -14895,7 +14895,7 @@
     "fr-FR": "Atelier de complétion automatique inactif",
     "ko-KR": "유휴 자동 완성 작업대",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8247-8260)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8506-8519)"
     ],
     "$id": 39844
   },
@@ -14910,7 +14910,7 @@
     "fr-FR": "La file d'attente principale est occupée et cède automatiquement",
     "ko-KR": "메인 큐가 사용 중이며 자동으로 방법을 제공합니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8454-8469)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8713-8728)"
     ],
     "$id": 39845
   },
@@ -14925,7 +14925,7 @@
     "fr-FR": "L'achèvement de l'arrière-plan a été suspendu",
     "ko-KR": "배경 완료가 일시 중지되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8589-8600)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8848-8859)"
     ],
     "$id": 39846
   },
@@ -14940,7 +14940,7 @@
     "fr-FR": "Compléter en arrière-plan",
     "ko-KR": "백그라운드에서 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8756-8766)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9015-9025)"
     ],
     "$id": 39847
   },
@@ -14955,8 +14955,8 @@
     "fr-FR": "En attente d'achèvement inactif",
     "ko-KR": "유휴 완료 대기 중",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8885-8895)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(18796-18806)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9144-9154)",
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21136-21146)"
     ],
     "$id": 39848
   },
@@ -14971,7 +14971,7 @@
     "fr-FR": "Aucune vidéo à inventer",
     "ko-KR": "만들 비디오 없음",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8899-8909)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9158-9168)"
     ],
     "$id": 39849
   },
@@ -14986,7 +14986,7 @@
     "fr-FR": "Compléter automatiquement segment par segment lorsqu'il est inactif; pause automatique pour faire place lors de l'importation de nouveaux fichiers",
     "ko-KR": "유휴 상태 일 때 세그먼트별로 자동으로 세그먼트 완료;새 파일을 가져올 때 자동으로 일시 중지됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9031-9057)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9290-9316)"
     ],
     "$id": 41065
   },
@@ -15001,7 +15001,7 @@
     "fr-FR": "Longue analyse vidéo approfondie",
     "ko-KR": "긴 비디오 심층 분석",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(10173-10184)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(10432-10443)"
     ],
     "$id": 41066
   },
@@ -15016,7 +15016,7 @@
     "fr-FR": "Une partie de la vidéo",
     "ko-KR": "비디오의 일부",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(10727-10734)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11026-11033)"
     ],
     "$id": 41067
   },
@@ -15031,7 +15031,7 @@
     "fr-FR": "Minutes à reconstituer",
     "ko-KR": "보충 할 분",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(10970-10978)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11309-11317)"
     ],
     "$id": 41068
   },
@@ -15046,7 +15046,7 @@
     "fr-FR": "Découpez automatiquement paragraphe par paragraphe pour établir une ligne de texte intégral et un index d'image",
     "ko-KR": "단락별로 단락을 자동으로 슬라이스하여 전체 텍스트 줄 및 그림 인덱스를 설정합니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11115-11136)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11454-11475)"
     ],
     "$id": 41069
   },
@@ -15061,7 +15061,7 @@
     "fr-FR": "Autres documents à compléter",
     "ko-KR": "기타 완료해야 할 서류",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12014-12025)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12353-12364)"
     ],
     "$id": 41070
   },
@@ -15076,7 +15076,7 @@
     "fr-FR": "Capacité à récupérer",
     "ko-KR": "회복 능력",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12229-12237)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12568-12576)"
     ],
     "$id": 41071
   },
@@ -15091,7 +15091,7 @@
     "fr-FR": "Écart de capacité d'article",
     "ko-KR": "품목 수용량 간격",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12810-12819)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13229-13238)"
     ],
     "$id": 41072
   },
@@ -15106,7 +15106,7 @@
     "fr-FR": "Lacunes dans le corps du document, le texte OCR ou la transcription vocale",
     "ko-KR": "문서 본문,원문 텍스트 또는 음성 전사의 간격",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12956-12977)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13375-13396)"
     ],
     "$id": 41073
   },
@@ -15121,7 +15121,7 @@
     "fr-FR": "Liste des vidéos intégrales à réaliser",
     "ko-KR": "구성될 전체 길이의 비디오 목록",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13773-13785)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14192-14204)"
     ],
     "$id": 41074
   },
@@ -15136,7 +15136,7 @@
     "fr-FR": "A été découpé et segmenté selon 5 minutes; prend en charge l'achèvement prioritaire d'une seule vidéo ou réessaye les clips ayant échoué",
     "ko-KR": "5 분에 따라 슬라이스 및 분할되었습니다;단일 비디오 또는 재시도 실패 클립의 우선 순위 완료를 지원합니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13915-13948)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14334-14367)"
     ],
     "$id": 41075
   },
@@ -15151,7 +15151,7 @@
     "fr-FR": "Upgrade Mise à niveau Pro pour terminer immédiatement",
     "ko-KR": "업그레이드 프로는 즉시 완료 할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14468-14486)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14887-14905)"
     ],
     "$id": 41076
   },
@@ -15166,7 +15166,7 @@
     "fr-FR": "Terminez toutes les longues vidéos immédiatement",
     "ko-KR": "모든 긴 비디오를 즉시 완료하십시오",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14906-14919)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15325-15338)"
     ],
     "$id": 41077
   },
@@ -15181,7 +15181,7 @@
     "fr-FR": "Suspendre l'achèvement de l'arrière-plan",
     "ko-KR": "배경 완료 일시 중지",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14923-14933)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15342-15352)"
     ],
     "$id": 39852
   },
@@ -15196,7 +15196,7 @@
     "fr-FR": "Réessayez tous les fragments ayant échoué",
     "ko-KR": "실패한 모든 조각을 다시 시도하십시오",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15346-15358)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15774-15786)"
     ],
     "$id": 39853
   },
@@ -15211,10 +15211,55 @@
     "fr-FR": "Effacer la liste à remplir",
     "ko-KR": "채울 목록 지우기",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15726-15736)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(24631-24641)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(16154-16164)",
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26971-26981)"
     ],
     "$id": 40899
+  },
+  "免费版已为您完成前 5 分钟画面分析与秒级检索": {
+    "en-US": "The free version has completed the first 5 minutes of screen analysis and second-level retrieval for you",
+    "es-ES": "La versión gratuita ha completado los primeros 5 minutos de análisis de pantalla y recuperación de segundo nivel por usted",
+    "ar-EG": "أكملت النسخة المجانية أول 5 دقائق من تحليل الشاشة واسترجاع المستوى الثاني لك",
+    "pt-PT": "A versão gratuita completou os primeiros 5 minutos de análise de tela e recuperação de segundo nível para você",
+    "ru-RU": "В бесплатной версии для вас завершены первые 5 минут анализа экрана и поиска информации второго уровня",
+    "ja-JP": "無料版は、あなたのための画面分析と第二レベルの検索の最初の5分を完了しました",
+    "de-DE": "Die kostenlose Version hat die ersten 5 Minuten der Bildschirmanalyse und des Abrufs der zweiten Ebene für Sie abgeschlossen",
+    "fr-FR": "La version gratuite a terminé les 5 premières minutes d'analyse d'écran et de récupération de deuxième niveau pour vous",
+    "ko-KR": "무료 버전은 당신을 위해 화면 분석 및 두 번째 수준의 검색의 처음 5 분을 완료했습니다",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17162-17189)"
+    ],
+    "$id": 41139
+  },
+  "升级 Pro 可自动解锁长视频剩余 {minutes} 分钟全量画面分析，支持最长 3 小时整部视频任意画面找图。": {
+    "en-US": "Upgrading Pro can automatically unlock the full screen analysis of the remaining {minutes} minutes of the long video, and support up to 3 hours of any screen of the entire video to find pictures.",
+    "es-ES": "La actualización de Pro puede desbloquear automáticamente el análisis de pantalla completa de los {minutes} minutos restantes del video largo y admitir hasta 3 horas de cualquier pantalla de todo el video para encontrar imágenes.",
+    "ar-EG": "ترقية برو يمكن فتح تلقائيا تحليل كامل الشاشة المتبقية {minutes} دقائق من الفيديو الطويل ، ودعم ما يصل إلى 3 ساعات من أي شاشة من الفيديو بأكمله للعثور على الصور.",
+    "pt-PT": "A atualização Pro pode desbloquear automaticamente a análise em tela cheia dos {minutes} minutos restantes do vídeo longo e suportar até 3 horas de qualquer tela de todo o vídeo para encontrar fotos.",
+    "ru-RU": "Обновление Pro может автоматически разблокировать полноэкранный анализ оставшихся {minutes} минут длинного видео и поддерживать до 3 часов просмотра всего видео на любом экране для поиска изображений.",
+    "ja-JP": "アップグレードProは自動的に長いビデオの残りの{minutes}分の全画面分析のロックを解除し、写真を見つけるためにビデオ全体の任意の画面の3時間までサポー",
+    "de-DE": "Durch das Upgrade von Pro kann die Vollbildanalyse der verbleibenden {minutes} Minuten des langen Videos automatisch entsperrt und bis zu 3 Stunden auf jedem Bildschirm des gesamten Videos unterstützt werden, um Bilder zu finden.",
+    "fr-FR": "La mise à niveau Pro peut déverrouiller automatiquement l'analyse en plein écran des {minutes} minutes restantes de la longue vidéo et prendre en charge jusqu'à 3 heures de n'importe quel écran de la vidéo entière pour trouver des images.",
+    "ko-KR": "업그레이드 프로는 자동으로 긴 비디오의 나머지{minutes}분의 전체 화면 분석의 잠금을 해제하고,사진을 찾기 위해 전체 비디오의 모든 화면의 3 시간까지 지원할 수 있습니다.",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17321-17411)"
+    ],
+    "$id": 41140
+  },
+  "立即升级 Pro 解锁 →": {
+    "en-US": "Upgrade Pro now to unlock →",
+    "es-ES": "Actualice Pro ahora para desbloquear →",
+    "ar-EG": "ترقية برو الآن لفتح unlock",
+    "pt-PT": "Atualize o Pro agora para desbloquear o",
+    "ru-RU": "Обновите Pro прямо сейчас, чтобы разблокировать →",
+    "ja-JP": "プロを今すぐアップグレードしてロックを解除→",
+    "de-DE": "Upgrade Pro jetzt zum Entsperren →",
+    "fr-FR": "Mise à niveau Pro maintenant pour déverrouiller →",
+    "ko-KR": "이제 프로를 업그레이드하여 잠금을 해제하십시오.",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17974-17991)"
+    ],
+    "$id": 41141
   },
   "补全中": {
     "en-US": "In completion",
@@ -15227,7 +15272,7 @@
     "fr-FR": "En cours d'achèvement",
     "ko-KR": "완료 중",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(18216-18223)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20556-20563)"
     ],
     "$id": 39861
   },
@@ -15242,7 +15287,7 @@
     "fr-FR": "Une partie du fragment a échoué",
     "ko-KR": "조각의 일부가 실패했습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(18526-18536)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20866-20876)"
     ],
     "$id": 39862
   },
@@ -15257,7 +15302,7 @@
     "fr-FR": "Minutes analysées {done} / cibles {target} (total {total} minutes)",
     "ko-KR": "분석{done}/목표{target}분(총{total}분)",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(19120-19165)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21460-21505)"
     ],
     "$id": 39863
   },
@@ -15272,7 +15317,7 @@
     "fr-FR": "La partie excédentaire n'est pas indexée et ne peut pas être récupérée",
     "ko-KR": "초과 부분은 인덱싱되지 않으며 검색할 수 없습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(19603-19620)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21943-21960)"
     ],
     "$id": 41078
   },
@@ -15287,7 +15332,7 @@
     "fr-FR": "Unlock Déverrouillez l'intégralité de l'analyse",
     "ko-KR": "전체 분석 조각을 잠금 해제하십시오.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20435-20448)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(22775-22788)"
     ],
     "$id": 41079
   },
@@ -15302,7 +15347,7 @@
     "fr-FR": "Complétez d'abord ce fichier",
     "ko-KR": "이 파일을 먼저 완료하십시오",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20938-20949)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23278-23289)"
     ],
     "$id": 39864
   },
@@ -15317,7 +15362,7 @@
     "fr-FR": "N'est plus complet",
     "ko-KR": "더 이상 완료되지 않음",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21587-21595)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23927-23935)"
     ],
     "$id": 40901
   },
@@ -15332,7 +15377,7 @@
     "fr-FR": "Il n'y a pas de longs clips vidéo à poursuivre dans le répertoire actuel.",
     "ko-KR": "현재 디렉토리에 계속 될 긴 비디오 클립이 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(22687-22707)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25027-25047)"
     ],
     "$id": 40902
   },
@@ -15347,7 +15392,7 @@
     "fr-FR": "Lors de l'importation d'une longue vidéo d'une durée supérieure à 5 minutes, les clips restants seront automatiquement mis en file d'attente ici une fois la première analyse terminée.",
     "ko-KR": "5 분 이상 지속되는 긴 비디오를 가져올 때 첫 번째 분석이 완료된 후 나머지 클립이 자동으로 여기에 대기됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(22818-22859)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25158-25199)"
     ],
     "$id": 40903
   },
@@ -15362,7 +15407,7 @@
     "fr-FR": "Autres documents à compléter (récupération de capacité)",
     "ko-KR": "보충해야 할 기타 서류(능력 회복)",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23625-23642)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25965-25982)"
     ],
     "$id": 39865
   },
@@ -15377,7 +15422,7 @@
     "fr-FR": "Après avoir terminé la reconnaissance du texte de l'image, la couverture du document ou la synthèse vocale, les étiquettes et les descriptions seront automatiquement réorganisées.",
     "ko-KR": "그림 텍스트 인식,문서 표지 또는 음성 텍스트 변환을 완료하면 레이블과 설명이 자동으로 재구성됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23772-23810)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26112-26150)"
     ],
     "$id": 39866
   },
@@ -15392,7 +15437,7 @@
     "fr-FR": "Complétez tout immédiatement",
     "ko-KR": "즉시 모두 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(24300-24310)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26640-26650)"
     ],
     "$id": 39867
   },
@@ -15407,7 +15452,7 @@
     "fr-FR": "Terminez immédiatement",
     "ko-KR": "즉시 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26395-26403)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(28735-28743)"
     ],
     "$id": 39869
   },
@@ -15422,7 +15467,7 @@
     "fr-FR": "Il n'y a pas de fichiers à restaurer dans d'autres environnements ou de texte/OCR/transcription manquant dans le répertoire actuel.",
     "ko-KR": "다른 환경에서 복원 할 파일이 없거나 현재 디렉토리에 텍스트/오커/전사가 누락되었습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26877-26911)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29217-29251)"
     ],
     "$id": 40904
   },
@@ -15437,7 +15482,7 @@
     "fr-FR": "Si une lacune est détectée après la restauration de l'environnement (par exemple, terminer le modèle, installer des composants dépendants), elle sera automatiquement répertoriée ici pour une complétion en un clic.",
     "ko-KR": "환경이 복원된 후(모델 완료,종속 구성 요소 설치 등)간격이 발견되면 한 번의 클릭으로 완료하기 위해 여기에 자동으로 나열됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(27022-27065)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29362-29426)"
     ],
     "$id": 40905
   },
@@ -15452,7 +15497,7 @@
     "fr-FR": "Tous les documents du catalogue actuel ont été analysés selon les normes établies, et il n'y a aucun document à compléter.",
     "ko-KR": "현재 카탈로그의 모든 문서는 설정된 표준에 따라 분석되었으며 보충 할 문서가 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(27488-27520)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29868-29900)"
     ],
     "$id": 39870
   },
@@ -15467,7 +15512,7 @@
     "fr-FR": "Lorsqu'une longue vidéo de plus de 5 minutes est importée à l'avenir, l'écran restant apparaîtra automatiquement ici et sera rempli lorsqu'il sera libre.",
     "ko-KR": "나중에 5 분 이상의 긴 비디오를 가져올 때 나머지 화면이 자동으로 여기에 표시되며 무료 일 때 채워집니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(27609-27650)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29989-30030)"
     ],
     "$id": 39871
   },

@@ -91,7 +91,7 @@
     "de-DE": "100% exakt identische Dateien",
     "fr-FR": "Fichier 100 % identique et parfaitement exact",
     "ko-KR": "100% 완전 일치는 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1038-1055)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1055-1072)"],
     "$id": 19946
   },
   "视觉感知相似图像": {
@@ -104,7 +104,7 @@
     "de-DE": "Visuell ähnliche Bilder",
     "fr-FR": "Images visuellement similaires",
     "ko-KR": "시각적 유사 이미지",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1163-1175)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1180-1192)"],
     "$id": 19947
   },
   "同源/声学相似音频文件": {
@@ -117,7 +117,7 @@
     "de-DE": "Audiodateien gleichen Ursprungs / akustisch ähnliche Audiodateien",
     "fr-FR": "Fichiers audio identiques ou similaires sur le plan acoustique",
     "ko-KR": "동음/음성 유사 오디오 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1278-1293)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1295-1310)"],
     "$id": 19948
   },
   "同源/画面相似视频文件": {
@@ -130,7 +130,7 @@
     "de-DE": "Videodateien gleichen Ursprungs / visuell ähnliche Videodateien",
     "fr-FR": "Fichiers vidéo provenant de la même source ou présentant des images similaires",
     "ko-KR": "동원/화면 유사 비디오 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1401-1416)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1418-1433)"],
     "$id": 19949
   },
   "扩展名不匹配文件": {
@@ -143,7 +143,7 @@
     "de-DE": "Dateien mit nicht übereinstimmenden Erweiterungen",
     "fr-FR": "Fichiers dont l'extension ne correspond pas",
     "ko-KR": "확장자 불일치 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1478-1490)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1495-1507)"],
     "$id": 19950
   },
   "空文件夹": {
@@ -156,7 +156,7 @@
     "de-DE": "Leerer Ordner",
     "fr-FR": "Dossier vide",
     "ko-KR": "빈 폴더",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1578-1586)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1595-1603)"],
     "$id": 19951
   },
   "占用空间超大文件": {
@@ -169,7 +169,7 @@
     "de-DE": "Dateien mit übermäßigem Speicherplatzbedarf",
     "fr-FR": "Fichiers très volumineux",
     "ko-KR": "대용량 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1666-1678)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1683-1695)"],
     "$id": 19952
   },
   "0 字节空文件": {
@@ -182,7 +182,7 @@
     "de-DE": "0 Byte leere Datei",
     "fr-FR": "Fichier vide de 0 octet",
     "ko-KR": "0바이트의 빈 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1762-1773)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1779-1790)"],
     "$id": 19953
   },
   "临时与残留缓存文件": {
@@ -195,7 +195,7 @@
     "de-DE": "Temporäre und verwaiste Cache-Dateien",
     "fr-FR": "Fichiers de cache temporaires et résiduels",
     "ko-KR": "임시 및 잔여 캐시 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1860-1873)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1877-1890)"],
     "$id": 19954
   },
   "无效或断裂的软链接": {
@@ -208,7 +208,7 @@
     "de-DE": "Ungültige oder gebrochene symbolische Links",
     "fr-FR": "Liens symboliques invalides ou rompus",
     "ko-KR": "무효하거나 연결이 끊긴 심볼릭 링크",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1967-1980)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(1984-1997)"],
     "$id": 19955
   },
   "损坏或无法解码的文件": {
@@ -221,7 +221,7 @@
     "de-DE": "Beschädigte oder nicht decodierte Dateien",
     "fr-FR": "Fichiers endommagés ou impossibles à décoder",
     "ko-KR": "손상이 있거나 디코딩할 수 없는 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2066-2080)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2083-2097)"],
     "$id": 19956
   },
   "包含异常/不合规字符的文件名": {
@@ -234,7 +234,7 @@
     "de-DE": "Dateinamen mit ungewöhnlichen / nicht konformen Zeichen",
     "fr-FR": "Noms de fichiers contenant des caractères inhabituels ou non conformes",
     "ko-KR": "비정상/비표준 문자가 포함된 파일 이름",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2160-2178)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2177-2195)"],
     "$id": 19957
   },
   "可清除 Exif 隐私信息的文件": {
@@ -247,7 +247,7 @@
     "de-DE": "Dateien mit löschbaren Exif-Privatsphäre-Informationen",
     "fr-FR": "Fichiers permettant de supprimer les informations de confidentialité Exif",
     "ko-KR": "Exif 비공개 정보를 제거할 수 있는 파일",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2238-2258)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2255-2275)"],
     "$id": 19958
   },
   "可转码/优化的高效能视频": {
@@ -260,7 +260,7 @@
     "de-DE": "Hoch effiziente Videos zur Transkodierung / Optimierung",
     "fr-FR": "Vidéos haute performance pouvant être encodées/optimisées",
     "ko-KR": "변환/최적화가 가능한 고효율 비디오",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2321-2337)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2338-2354)"],
     "$id": 19959
   },
   "多模态特征识别组": {
@@ -273,7 +273,7 @@
     "de-DE": "Gruppen mit multimodaler Merkmalserkennung",
     "fr-FR": "Groupe de reconnaissance des caractéristiques multimodales",
     "ko-KR": "다중모달 특징 인식 그룹",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2385-2397)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(2402-2414)"],
     "$id": 19960
   },
   "扫描完成": {
@@ -286,7 +286,7 @@
     "de-DE": "Scan abgeschlossen",
     "fr-FR": "La numérisation est terminée",
     "ko-KR": "스캔 완료",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(10697-10705)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(10714-10722)"],
     "$id": 19961
   },
   "发现重复组": {
@@ -299,7 +299,7 @@
     "de-DE": "Doppelte Gruppen gefunden",
     "fr-FR": "Détection des groupes en double",
     "ko-KR": "중복 그룹 발견",
-    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(11975-11984)"],
+    "$files": ["src/electron/runtime-services/filesystem/duplicate-detection-service.ts(11992-12001)"],
     "$id": 19962
   },
   "文件记录 { fileId } 不存在": {

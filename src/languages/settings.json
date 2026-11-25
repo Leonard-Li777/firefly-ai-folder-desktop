@@ -112,6 +112,7 @@
     "!.md",
     "!out/**",
     "!out_build/**",
+    "!out_build_dev/**",
     "!public/**",
     "!scripts/**",
     "!**/*demo*",

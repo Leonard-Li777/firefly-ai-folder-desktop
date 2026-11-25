@@ -8,6 +8,9 @@ out/
 **/out/
 out_build/
 **/out_build/
+# dev 态构建根（make 与 start:debug 目录隔离）
+/out_build_dev/
+**/out_build_dev/
 dist/
 **/dist/
 .vite/

@@ -120,7 +120,6 @@
   "license": "MIT",
   "dependencies": {
     "@bokuweb/zstd-wasm": "^0.0.27",
-    "@ffmpeg-installer/ffmpeg": "1.1.0",
     "@file-viewer/assets-cad": "^3.2.2",
     "@file-viewer/assets-data": "^3.2.2",
     "@file-viewer/assets-model": "^3.2.2",

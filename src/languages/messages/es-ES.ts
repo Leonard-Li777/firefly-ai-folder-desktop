@@ -4050,7 +4050,6 @@ export default  {
     "22346": "[Directorio externo generado por IA] Copie las palabras clave a Doubao, Kimi, ChatGPT con un solo clic y obtenga una vista previa y organice los resultados en tiempo real",
     "22347": "[Derivar árboles de directorios a partir de archivos] El motor de IA avanzado genera 3 conjuntos de candidatos de directorio a la vez y se selecciona la clasificación automática",
     "22348": "[Árbol de directorios personalizado] Pegue el directorio Markdown, obtenga una vista previa de dos columnas en tiempo real y cree reglas de organización exclusivas",
-    "22349": "[Optimización de la interfaz de usuario en profundidad] Reconstruya la estructura de la página de configuración, agregue una nueva guía y entrada de ayuda y haga que la operación sea más intuitiva.",
     "22350": "Se produce una excepción en la interfaz.",
     "22351": "El proceso de representación de la interfaz finalizó y la aplicación no pudo reanudarse automáticamente. Reinicie la aplicación e inténtelo de nuevo.",
     "22352": "Causa anormal",
@@ -12714,5 +12713,11 @@ export default  {
     "41096": "Haga clic para restaurar la tarjeta",
     "41097": "Indicadores de catálogo",
     "41098": "Apague la pantalla",
-    "41099": "Las herramientas satelitales se pueden utilizar para cambiar el nombre estándar, marcar de forma complementaria o inspeccionar y limpiar la seguridad antes del acabado."
+    "41099": "Las herramientas satelitales se pueden utilizar para cambiar el nombre estándar, marcar de forma complementaria o inspeccionar y limpiar la seguridad antes del acabado.",
+    "41136": "[Lista de análisis de archivos a complementar] El soporte de datos de análisis de archivos posteriores al complemento, gráficos de video largos y otros primeros análisis ya no bloquearán la cola de análisis",
+    "41137": "【Más reproducción de formatos de video】 Ampliado para admitir la reproducción directa de todos los formatos de video comunes",
+    "41138": "[Optimización profunda de la interfaz de usuario] Refactorizó la arquitectura de la página de configuración, agregó funciones de cambio de entrada y diseño de orientación y ayuda, y la operación es más intuitiva",
+    "41139": "La versión gratuita ha completado los primeros 5 minutos de análisis de pantalla y recuperación de segundo nivel por usted",
+    "41140": "La actualización de Pro puede desbloquear automáticamente el análisis de pantalla completa de los {minutes} minutos restantes del video largo y admitir hasta 3 horas de cualquier pantalla de todo el video para encontrar imágenes.",
+    "41141": "Actualice Pro ahora para desbloquear →"
 }

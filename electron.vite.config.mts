@@ -157,6 +157,19 @@ export default defineConfig(({ command, mode }) => {
 
   const isProd = command === 'build' || ['production', 'canary'].includes(mode)
   console.log({ command, mode, isProd })
+
+  // 构建产物目录隔离：make（command=build）与 start:debug（command=serve）绝不共用同一构建根。
+  // - dev 态写入 out_build_dev，正式构建与 electron-forge 打包写入 out_build（发布包内目录名保持不变）
+  // - 可用 FF_OUT_DIR 显式覆盖（CI 不传即沿用默认，行为与改造前一致）
+  const outDirName =
+    process.env.FF_OUT_DIR || (command === 'serve' ? 'out_build_dev' : 'out_build')
+  process.env.FF_OUT_DIR = outDirName
+  // package.json 的 main 字段是静态值（out_build/main/main.js），dev 态必须显式告知 electron-vite
+  // 真正的入口文件，否则它会校验/启动旧的生产构建产物。electron-vite 命中 ELECTRON_ENTRY 时会跳过 main 校验。
+  if (command === 'serve' && !process.env.ELECTRON_ENTRY) {
+    process.env.ELECTRON_ENTRY = `${outDirName}/main/main.js`
+  }
+  console.log(`📦 [electron-vite] 构建产物目录: ${outDirName}`)
   // 是否禁用主进程代码变化后的自动重启和前端热更新（用于调试场景，避免频繁重启）
   const noMainRestart = process.env.NO_MAIN_RESTART === 'true'
 
@@ -365,10 +378,10 @@ export default defineConfig(({ command, mode }) => {
       plugins: [
         {
           name: 'copy-jieba-wasm',
-          // 在 dev 和 build 模式都拷贝 wasm 文件到 out_build/main/
+          // 在 dev 和 build 模式都拷贝 wasm 文件到 <outDirName>/main/
           configResolved() {
             if (!jiebaWasmPath || !fs.existsSync(jiebaWasmPath)) return
-            const destDir = path.resolve(__dirname, 'out_build/main')
+            const destDir = path.resolve(__dirname, outDirName, 'main')
             if (!fs.existsSync(destDir)) {
               fs.mkdirSync(destDir, { recursive: true })
             }
@@ -380,7 +393,7 @@ export default defineConfig(({ command, mode }) => {
         {
           name: 'cleanup-stale-protected',
           buildStart() {
-            const mainDir = path.resolve(__dirname, 'out_build/main')
+            const mainDir = path.resolve(__dirname, outDirName, 'main')
             if (!fs.existsSync(mainDir)) return
             const referenced = new Set<string>()
             const mainJsPath = path.join(mainDir, 'main.js')
@@ -489,7 +502,7 @@ export default defineConfig(({ command, mode }) => {
       },
       build: {
         emptyOutDir: false,
-        outDir: 'out_build/main',
+        outDir: `${outDirName}/main`,
         // 当 NO_MAIN_RESTART=true 时禁用 watch，避免代码变化后自动重启应用
         watch: noMainRestart
           ? null
@@ -498,7 +511,7 @@ export default defineConfig(({ command, mode }) => {
               chokidar: {
                 ignored: [
                   '**/node_modules/**',
-                  '**/out_build/**',
+                  `**/${outDirName}/**`,
                   '**/dist/**',
                   '**/.git/**',
                   '**/languages/messages/idMap.json',
@@ -650,7 +663,7 @@ export default defineConfig(({ command, mode }) => {
       },
       build: {
         emptyOutDir: false,
-        outDir: 'out_build/preload',
+        outDir: `${outDirName}/preload`,
         // 当 NO_MAIN_RESTART=true 时禁用 watch，避免代码变化后自动重启应用
         watch: noMainRestart
           ? null
@@ -658,7 +671,7 @@ export default defineConfig(({ command, mode }) => {
               chokidar: {
                 ignored: [
                   '**/node_modules/**',
-                  '**/out_build/**',
+                  `**/${outDirName}/**`,
                   '**/dist/**',
                   '**/.git/**',
                   '**/languages/messages/idMap.json',
@@ -758,7 +771,7 @@ export default defineConfig(({ command, mode }) => {
         watch: {
           ignored: [
             '**/node_modules/**',
-            '**/out_build/**',
+            `**/${outDirName}/**`,
             '**/dist/**',
             '**/.git/**',
             '**/languages/messages/idMap.json',
@@ -839,7 +852,7 @@ export default defineConfig(({ command, mode }) => {
         ]
       },
       build: {
-        outDir: 'out_build/renderer',
+        outDir: `${outDirName}/renderer`,
         rollupOptions: {
           input: {
             index: 'index.html',

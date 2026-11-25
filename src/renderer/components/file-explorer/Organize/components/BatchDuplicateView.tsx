@@ -124,7 +124,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   const [streamingTotalCount, setStreamingTotalCount] = useState<number>(0)
   const [currentScanStage, setCurrentScanStage] = useState<string>('')
 
-  // Issue #738: 外部 ffprobe 可用性检测 —— 缺失时置灰"相似视频"与"视频优化转换"，杜绝静默 0 结果假阴性
+  // ffprobe 可用性检测：随包内置（lock.resources.ffprobe），仅精简/裁剪包会缺失。
+  // 缺失时置灰"相似视频"与"视频优化转换"，杜绝静默 0 结果假阴性
   const [ffprobeAvailable, setFfprobeAvailable] = useState<boolean>(true)
 
   useEffect(() => {
