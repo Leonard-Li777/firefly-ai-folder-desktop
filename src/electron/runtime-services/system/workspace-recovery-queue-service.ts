@@ -18,6 +18,11 @@ import {
  *   3. 永久清除（写 workspace_files.meta，清除后不再计数、不再被「立即补全」捞回）
  *   4. 横幅 24h 静默（写 virtual_directories.meta，关闭后 24 小时内即使有新文件也不再弹）
  *
+ * 筛选口径（Story: 移除并重新添加同一目录后待补列表原样重现）：
+ * - 待补项必须是「已进入过分析、持有文件指纹、基础数据仍不完整」的文件；
+ * - 首次扫描入库、尚未首次分析（`file_fingerprint` 为空）的文件只是「待分析」，
+ *   归分析队列负责，严禁计入待补清单与横幅计数，否则重新添加目录会立刻复现整张旧列表。
+ *
  * 落库纪律（严格遵循创世基线零兼容原则）：
  * - 清除标记存 workspace_files.meta（弹性 JSON，行级），横幅静默时间戳存
  *   virtual_directories.meta，均零 ALTER TABLE、零新表、零迁移脚本。
@@ -115,6 +120,21 @@ function readAttemptedEmpty(
   return {}
 }
 
+/**
+ * 是否具备「可补全」的分析痕迹：只有已经拿到文件指纹（即至少进入过一次分析阶段）的文件，
+ * 才可能产生「分析阶段被环境能力缺口跳过」的待补项。
+ *
+ * 首次扫描入库、尚未开始首次分析的文件 `file_fingerprint` 为空，其内容/缩略图/转录天然全缺，
+ * 若参与判定会被 `checkBasicDataCompleteness` 判为 `no_fingerprint` 而全部塞进待补清单——
+ * 表现为「移除并重新添加同一目录后，旧待补列表原样重现」，实为新入库文件被误判。
+ * 因此本服务统一以「有指纹」作为待补前提；无指纹文件归分析队列负责，与待补语义无关。
+ */
+function hasAnalysisFootprint(
+  fileFingerprint: string | null | undefined
+): fileFingerprint is string {
+  return typeof fileFingerprint === 'string' && fileFingerprint.length > 0
+}
+
 /** 判断某文件当前是否被标记为「已清除」（不再补全） */
 function isCleared(metaRaw: string | null): boolean {
   if (!metaRaw) return false
@@ -161,11 +181,14 @@ export function scanRecoverableFilesLight(db: any, workspaceId: number): Recover
 
   const items: RecoverableFileItem[] = []
   for (const row of rows) {
+    // 尚未首次分析（无指纹）的新入库文件不属待补，见 hasAnalysisFootprint 注释
+    const fingerprint = row.file_fingerprint
+    if (!hasAnalysisFootprint(fingerprint)) continue
     if (isCleared(row.meta)) continue
 
     const missingReasons: string[] = []
     const category = getFileCategory(row.path)
-    const isPendingVideo = row.file_fingerprint != null && pendingVideoIds.has(row.file_fingerprint)
+    const isPendingVideo = pendingVideoIds.has(fingerprint)
     if (isPendingVideo) {
       missingReasons.push('pending_video')
     }
@@ -274,6 +297,8 @@ export async function listRecoverableFilesPrecise(
 
     const items: RecoverableFileItem[] = []
     for (const row of rows) {
+      // 尚未首次分析（无指纹）的新入库文件不属待补，见 hasAnalysisFootprint 注释
+      if (!hasAnalysisFootprint(row.file_fingerprint)) continue
       if (isCleared(row.meta)) continue
       const missingReasons: string[] = []
 
@@ -485,6 +510,8 @@ export async function enqueueRecovery(
           meta: string
         }>
         for (const row of missingRows) {
+          // 无指纹的新入库文件不属待补，交由分析队列首跑，见 hasAnalysisFootprint 注释
+          if (!hasAnalysisFootprint(row.file_fingerprint)) continue
           if (isCleared(row.meta)) continue
           items.push({
             workspaceFileId: row.id,

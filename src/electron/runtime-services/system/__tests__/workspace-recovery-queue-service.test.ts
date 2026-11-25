@@ -33,8 +33,22 @@ vi.mock('../../analysis-queue-service', () => ({
   }
 }))
 
+// 精确扫描依赖工作区有效配置与会员权益缓存，单测中以固定基线替代，聚焦待补筛选口径
+vi.mock('../workspace-analysis-context', () => ({
+  resolveWorkspaceEffectiveConfig: vi.fn(async () => ({
+    capabilities: { videoMaxAnalyzeSec: 300, videoVisualAnalysisEnabled: true },
+    effectiveParams: { videoAnalyzeDurationSec: 300 },
+    fields: { videoAnalyzeDurationSec: { desiredValue: 300 } }
+  }))
+}))
+
+vi.mock('../../user-tier/user-tier-service', () => ({
+  userTierService: { getCachedData: () => ({ computed_limits: null }) }
+}))
+
 import {
   scanRecoverableFilesLight,
+  listRecoverableFilesPrecise,
   enqueueRecovery,
   clearRecoverableFiles
 } from '../workspace-recovery-queue-service'
@@ -143,5 +157,40 @@ describe('WorkspaceRecoveryQueueService Bug Diagnosis', () => {
     }
     const meta = JSON.parse(row.meta)
     expect(meta.recovery_cleared).toBe(true)
+  })
+
+  it('Bug-04: 无指纹（尚未首次分析）的新入库文件不得进入待补清单', async () => {
+    // 模拟「移除工作目录后重新添加」：文件监听全量同步插入 24 行，
+    // file_fingerprint 为空、is_analyzed = 0，此时任何内容/OCR/转录都尚未产生
+    db.prepare(
+      'INSERT INTO workspace_files (id, file_fingerprint, workspace_id, directory_id, path, name, file_size, is_analyzed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run(601, null, 2, 20, 'G:/person/H/AV/01凯蒂夫人1.avi', '01凯蒂夫人1.avi', 700000000, 0)
+
+    // 横幅轻量计数不得把它算作待补
+    const lightItems = scanRecoverableFilesLight(db, 2)
+    expect(lightItems).toHaveLength(0)
+
+    // 设置页精确清单（此前 no_fingerprint 会被当成「内容补全」缺口）同样不得列出
+    const precise = await listRecoverableFilesPrecise(2)
+    expect(precise.success).toBe(true)
+    expect(precise.items).toHaveLength(0)
+
+    // 全量清除也不应误碰该行
+    const clearRes = clearRecoverableFiles(2)
+    expect(clearRes.success).toBe(true)
+    expect(clearRes.cleared).toBe(0)
+  })
+
+  it('Bug-05: 已有指纹但基础数据不完整的文件仍必须保留在待补清单（防过滤过度）', () => {
+    db.prepare(
+      'INSERT INTO files (file_fingerprint, smart_name, size, extension) VALUES (?, ?, ?, ?)'
+    ).run('fp_video_no_asr', 'movie.mp4', 50000000, '.mp4')
+    db.prepare(
+      'INSERT INTO workspace_files (id, file_fingerprint, workspace_id, directory_id, path, name, file_size, is_analyzed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run(602, 'fp_video_no_asr', 2, 20, 'G:/person/H/AV/movie.mp4', 'movie.mp4', 50000000, 1)
+    db.prepare('INSERT INTO file_contents (file_fingerprint) VALUES (?)').run('fp_video_no_asr')
+
+    const lightItems = scanRecoverableFilesLight(db, 2)
+    expect(lightItems.map(it => it.workspaceFileId)).toContain(602)
   })
 })
