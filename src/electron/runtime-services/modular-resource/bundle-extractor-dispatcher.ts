@@ -49,12 +49,15 @@ export function resolveExtractorWorkerPath(customPath?: string): string {
   const candidate2 = path.join(__dirname, 'workers', 'bundle-extractor-worker.js')
   if (fs.existsSync(candidate2)) return candidate2
 
-  // 3. 源码环境 TS 脚本
+  // 3. 单元测试环境：由 tsx 直接加载源码 TS（仅测试可走此路径）
   const candidate3 = path.join(__dirname, 'workers', 'bundle-extractor-worker.ts')
-  if (fs.existsSync(candidate3)) return candidate3
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+    if (fs.existsSync(candidate3)) return candidate3
+  }
 
-  // 兜底返回源码路径
-  return path.resolve(__dirname, 'workers', 'bundle-extractor-worker.ts')
+  // 未命中任何候选：返回最后候选路径，由 extract() 显式抛出 WORKER_SCRIPT_MISSING，
+  // 严禁在此静默兜底（打包态回落到 .ts 只会导致 mock 式假跑通）
+  return path.join(__dirname, 'workers', 'bundle-extractor-worker.ts')
 }
 
 /**
@@ -75,6 +78,14 @@ export class BundleExtractorDispatcher {
 
     const workerScript = resolveExtractorWorkerPath(customWorkerScriptPath)
     const isTsFile = workerScript.endsWith('.ts')
+
+    // 打包态硬校验：worker 脚本必须真实存在，否则显式失败（该路径此前静默回落到源码 .ts，必然找不到）
+    if (!fs.existsSync(workerScript)) {
+      throw new BundleExtractorError(
+        'WORKER_SCRIPT_MISSING',
+        `解包 Worker 脚本不存在：${workerScript}（请确认 electron.vite 已编译 bundle-extractor-worker 入口）`
+      )
+    }
 
     // 暂存目录清理辅助闭包
     const cleanStagingDir = (): void => {

@@ -170,6 +170,54 @@ export default defineConfig(({ command, mode }) => {
     process.env.ELECTRON_ENTRY = `${outDirName}/main/main.js`
   }
   console.log(`📦 [electron-vite] 构建产物目录: ${outDirName}`)
+
+  // 供 main 构建产物清理插件（prune-stale-main-output）共享的本次构建状态
+  let mainBuildStartedAt = 0
+  const emittedMainOutput = new Set<string>()
+
+  /**
+   * 源码里的相对 `require('./x')` 在 electron-vite 构建中不会被 rollup 解析（TS 源码走 ESM 管线），
+   * 字面量会原样留在产物里，打包后指向 out_build/main/xxx 这种根本不存在的文件，
+   * 调用点又大多被 try/catch 吞掉 → 收尾/降级逻辑静默失效（实测产物中 37 处悬空 require）。
+   *
+   * 这里统一改导入方式：把 `require('相对路径')` 改写为顶层静态 import 的命名空间别名。
+   * 调用点都在函数体内（运行时才执行），静态 import 不会引入 TDZ 问题；仅跳过行内/行首注释。
+   */
+  const rewriteRelativeRequire = {
+    name: 'ff-rewrite-relative-require',
+    enforce: 'pre' as const,
+    transform(code: string, id: string) {
+      if (!/\.(ts|tsx|mts)$/.test(id) || !code.includes('require(')) return null
+      const injects: string[] = []
+      let aliasIndex = 0
+      let rewritten = 0
+
+      const lines = code.split('\n').map(line => {
+        if (!line.includes('require(')) return line
+        const commentIndex = line.indexOf('//')
+        const codePart = commentIndex === -1 ? line : line.slice(0, commentIndex)
+        const commentPart = commentIndex === -1 ? '' : line.slice(commentIndex)
+        if (!codePart.includes('require(')) return line
+        const replaced = codePart.replace(
+          /require\(\s*(['"])(\.{1,2}\/[^'"]+)\1\s*\)/g,
+          (_match, quote: string, spec: string) => {
+            const alias = `__ffReq${aliasIndex++}`
+            injects.push(`import * as ${alias} from ${quote}${spec}${quote}`)
+            rewritten++
+            return alias
+          }
+        )
+        return replaced + commentPart
+      })
+
+      if (rewritten === 0) return null
+      const result = `${lines.join('\n')}\n${injects.join('\n')}\n`
+      console.log(
+        `[vite-config] 🔗 已将 ${rewritten} 处相对 require 改写为静态 import: ${path.relative(__dirname, id)}`
+      )
+      return { code: result, map: null }
+    }
+  }
   // 是否禁用主进程代码变化后的自动重启和前端热更新（用于调试场景，避免频繁重启）
   const noMainRestart = process.env.NO_MAIN_RESTART === 'true'
 
@@ -376,6 +424,7 @@ export default defineConfig(({ command, mode }) => {
     main: {
       publicDir: assetsDir,
       plugins: [
+        rewriteRelativeRequire,
         {
           name: 'copy-jieba-wasm',
           // 在 dev 和 build 模式都拷贝 wasm 文件到 <outDirName>/main/
@@ -425,6 +474,81 @@ export default defineConfig(({ command, mode }) => {
               )
             }
           }
+        },
+        {
+          // out_build/main 的 emptyOutDir 被设成 false（要保住 protected-*.jsc 与 jieba wasm），
+          // 代价是每次构建的哈希 chunk 只增不减：单工作区实测累积 11,101 个历史 chunk / 650MB，
+          // 全部进 app.asar，直接把安装包撑大。
+          // 这里在正式构建收尾时，以「本次 rollup 实际产出的文件名 + 本次构建期间新写入的文件」为白名单，
+          // 删除 out_build/main 下其余 .js / .map / .cjs。
+          // 仅作用于 command === 'build'：dev 写的是 out_build_dev，且热重载期间不允许删产物。
+            name: 'prune-stale-main-output',
+            apply: 'build',
+            buildStart() {
+              mainBuildStartedAt = Date.now()
+              emittedMainOutput.clear()
+            },
+            generateBundle(_options, bundle) {
+              for (const fileName of Object.keys(bundle)) {
+                emittedMainOutput.add(fileName.replace(/\\/g, '/'))
+              }
+              // 构建期硬门禁：main 产物里绝不允许残留相对 require 字面量。
+              // 一旦出现，打包后必然解析到不存在的文件（且多半被 try/catch 静默吞掉）。
+              const dangling: string[] = []
+              for (const [fileName, output] of Object.entries(bundle)) {
+                if (output.type !== 'chunk') continue
+                const matches = output.code.match(/require\(\s*(['"])(\.{1,2}\/[^'"]+)\1\s*\)/g)
+                if (matches?.length) dangling.push(`${fileName} ×${matches.length}`)
+              }
+              if (dangling.length > 0) {
+                const detail = dangling.join('、')
+                if (process.env.FF_STRICT_REQUIRE_GUARD === '1') {
+                  this.error(`main 产物中残留悬空相对 require：${detail}`)
+                } else {
+                  console.warn(
+                    `[vite-config] ⚠️ main 产物中仍有悬空相对 require（设置 FF_STRICT_REQUIRE_GUARD=1 可阻断构建）：${detail}`
+                  )
+                }
+              }
+            },
+            closeBundle() {
+              const mainDir = path.resolve(__dirname, outDirName, 'main')
+              if (!fs.existsSync(mainDir)) return
+              const pruneExtensions = /\.(js|map|cjs)$/
+              let removed = 0
+              let removedBytes = 0
+
+              const walk = (dir: string): void => {
+                for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                  const fullPath = path.join(dir, entry.name)
+                  if (entry.isDirectory()) {
+                    walk(fullPath)
+                    continue
+                  }
+                  const relative = path.relative(mainDir, fullPath).replace(/\\/g, '/')
+                  if (!pruneExtensions.test(relative)) continue
+                  if (emittedMainOutput.has(relative)) continue
+                  // bytecode / 拷贝类插件在 rollup 收尾后才落盘，按时间戳豁免，避免误删本次产物
+                  try {
+                    if (fs.statSync(fullPath).mtimeMs > mainBuildStartedAt - 2000) continue
+                  } catch {
+                    continue
+                  }
+                  try {
+                    removedBytes += fs.statSync(fullPath).size
+                    fs.unlinkSync(fullPath)
+                    removed++
+                  } catch {}
+                }
+              }
+
+              walk(mainDir)
+              if (removed > 0) {
+                console.log(
+                  `[vite-config] 🧹 已清理 ${removed} 个历史构建残留（${(removedBytes / 1024 / 1024).toFixed(1)} MB）`
+                )
+              }
+            }
         },
         {
           name: 'clean-in-source-artifacts',
@@ -564,7 +688,11 @@ export default defineConfig(({ command, mode }) => {
             // Stage2 S-C（工单 06）：验收工具入口，编译为 out_build/main/analysis-db-writer-host.js
             // 供真机验收探针以真实编译产物驱动宿主与写集执行器（混沌注入/量化对照）
             'analysis-db-writer-host':
-              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/writer-process-host-export.ts'
+              'src/electron/runtime-services/analysis-queue-service/worker-orchestrator/writer-process-host-export.ts',
+            // 离线总包解包 worker_threads 入口（此前缺失 → 打包态只能回落到源码 .ts 路径，必然找不到）：
+            // 编译为 out_build/main/bundle-extractor-worker.js，供 BundleExtractorDispatcher 拉起
+            'bundle-extractor-worker':
+              'src/electron/runtime-services/modular-resource/workers/bundle-extractor-worker.ts'
           },
           formats: ['cjs']
         },
@@ -661,6 +789,7 @@ export default defineConfig(({ command, mode }) => {
           'react-dom': resolveNodeModule('react-dom')
         }
       },
+      plugins: [rewriteRelativeRequire],
       build: {
         emptyOutDir: false,
         outDir: `${outDirName}/preload`,
@@ -728,6 +857,7 @@ export default defineConfig(({ command, mode }) => {
       },
       publicDir: path.resolve(__dirname, 'public'),
       plugins: [
+        rewriteRelativeRequire,
         tailwindcss(),
         voerkai18nVitePlugin(),
         react(),

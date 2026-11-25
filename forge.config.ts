@@ -396,6 +396,71 @@ function extractPkgNameFromRelPath(relativePath: string): string | null {
  *       → ["@firefly/shared", "@voerkai18n/runtime"]
  * 示例: "node_modules/react/index.js" → ["react"]
  */
+/**
+ * pnpm 虚拟仓重复副本剔除 (.pnpm Duplicate Copy Dedupe)
+ *
+ * 现象：pnpm 的 node_modules/.pnpm/<pkg>@<ver>/node_modules/<dep> 里塞着每个包自己的依赖副本，
+ * electron-packager 会把顶层符号链接 dereference 成实体目录，于是同一份重包(.pnpm 内嵌套副本 + 顶层实体)
+ * 会双份进 ASAR。实测 react-dom 被复制了 24 份（174MB）、@napi-rs/canvas 73MB、sharp 37MB……
+ * 合计 385MB / 12,818 个文件，占 ASAR 体积的四成，且运行时永远只会命中顶层那一份。
+ *
+ * 安全判据：**版本号完全一致**才剔除（避免把 .pnpm 内 ajv@6 这类异版本副本删掉，导致上层解析到顶层 ajv@8 语义漂移）。
+ * 顶层不存在同名包、或任一版本读取失败时一律保留（宁可多打包，不可删漏）。
+ */
+const topLevelPkgDirCache = new Map<string, string | null>()
+const pkgVersionCache = new Map<string, string | null>()
+
+function resolveTopLevelPkgDir(pkgName: string): string | null {
+  if (topLevelPkgDirCache.has(pkgName)) return topLevelPkgDirCache.get(pkgName) ?? null
+  const candidate = path.join(process.cwd(), 'node_modules', ...pkgName.split('/'))
+  let result: string | null = null
+  try {
+    if (fs.statSync(candidate).isDirectory()) result = candidate
+  } catch {
+    result = null
+  }
+  topLevelPkgDirCache.set(pkgName, result)
+  return result
+}
+
+function readPkgVersion(pkgDir: string): string | null {
+  if (pkgVersionCache.has(pkgDir)) return pkgVersionCache.get(pkgDir) ?? null
+  let version: string | null = null
+  try {
+    const raw = fs.readFileSync(path.join(pkgDir, 'package.json'), 'utf8')
+    const parsed = JSON.parse(raw) as { version?: string }
+    version = parsed.version || null
+  } catch {
+    version = null
+  }
+  pkgVersionCache.set(pkgDir, version)
+  return version
+}
+
+function isDuplicatedPnpmCopy(relativePath: string): boolean {
+  const match = /^node_modules\/\.pnpm\/([^/]+)\/node_modules\/((?:@[^/]+)\/[^/]+|[^/]+)\//.exec(
+    relativePath
+  )
+  if (!match) return false
+  const [, virtualDir, pkgName] = match
+  // 虚拟仓根部的公共 island（.pnpm/node_modules）是 pnpm 的公共提升区，解析链可能命中，不动它
+  if (virtualDir === 'node_modules') return false
+  const topLevelDir = resolveTopLevelPkgDir(pkgName)
+  if (!topLevelDir) return false
+  const nestedDir = path.join(
+    process.cwd(),
+    'node_modules',
+    '.pnpm',
+    virtualDir,
+    'node_modules',
+    ...pkgName.split('/')
+  )
+  const nestedVersion = readPkgVersion(nestedDir)
+  const topLevelVersion = readPkgVersion(topLevelDir)
+  if (!nestedVersion || !topLevelVersion) return false
+  return nestedVersion === topLevelVersion
+}
+
 function extractAllPkgNamesFromRelPath(relativePath: string): string[] {
   const results: string[] = []
   // 匹配路径中每一个 node_modules/ 后跟的包名段（支持 @scope/name 和普通 name 两种格式）
@@ -1342,6 +1407,9 @@ const config: ForgeConfig = {
           return true
         }
 
+        // 剔除 .pnpm 中与顶层 node_modules 版本完全一致的重复副本（dereference 副产物，实测可省 385MB）
+        if (isDuplicatedPnpmCopy(relativePath)) return true
+
         // 剔除 package.json 中声明的 devDependencies
         const devDeps = Object.keys(packageJson.devDependencies || {})
         const isDevDep = devDeps.some(
@@ -1476,6 +1544,13 @@ const config: ForgeConfig = {
     junk: true,
     // 是否修剪不需要的文件
     prune: false,
+    // 打包暂存目录必须与最终产物同卷，且**不得位于仓库目录树内**：
+    // 1) Windows 下跨盘符（C:\Users\...\Temp -> D:\...\out）的目录 rename 直接返回 EPERM；
+    // 2) 若暂存目录落在仓库内（含 .packager-tmp），electron-vite dev 与 engine/omni deploy --watch
+    //    的 chokidar 监听会持有目录句柄，收尾 rename 同样被拒（Access is denied）。
+    // 因此固定到「同卷、仓库外」的独立目录，可用 FF_PACKAGER_TMP 覆盖。
+    tmpdir:
+      process.env.FF_PACKAGER_TMP || path.resolve(__dirname, '../../..', '.ff-packager-tmp'),
     // macOS 通用应用配置：仅在 Universal 构建模式下启用，单架构打包时设为 undefined 防止体积膨胀与重复打包
     osxUniversal:
       getArch() === 'universal'

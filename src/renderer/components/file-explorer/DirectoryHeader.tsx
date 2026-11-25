@@ -1022,11 +1022,17 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                         )}
                       </div>
 
-                      {/* 卡片底部双操作按钮：工作流向导 + 工作目录设置（双主按钮等权醒目展示） */}
+                      {/* 卡片底部双操作按钮：工作流向导 + 工作目录设置（主次分级：未绑定时引导为主按钮，已绑定时「重新绑定」降为轻次要按钮） */}
                       <div className="grid grid-cols-2 gap-2 mt-2.5">
                         <Button
                           size="sm"
-                          className="h-8 px-2.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+                          variant={configStatus.bound ? 'outline' : 'default'}
+                          className={cn(
+                            'h-8 px-2.5 text-xs font-semibold gap-1.5 cursor-pointer',
+                            configStatus.bound
+                              ? 'border-primary/25 bg-primary/8 text-primary hover:bg-primary/15 hover:text-primary hover:border-primary/40 shadow-none dark:border-primary/25 dark:bg-primary/10'
+                              : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+                          )}
                           onClick={() => {
                             onToggleDirectoryDropdown(false)
                             useSettingsStore

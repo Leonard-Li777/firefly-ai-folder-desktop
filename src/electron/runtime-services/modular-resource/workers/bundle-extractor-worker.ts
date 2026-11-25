@@ -28,6 +28,11 @@ export type BundleExtractorErrorCode =
   | 'ASSET_HASH_MISMATCH'
   | 'IO_FAILURE'
   | 'UNSUPPORTED_FORMAT'
+  /**
+   * Worker 执行脚本在打包产物中不存在：严禁静默回落到源码 .ts（打包态必然丢链，且 try/catch 会吞掉）
+   * 由 BundleExtractorDispatcher 在拉起 worker 前显式抛出
+   */
+  | 'WORKER_SCRIPT_MISSING'
 
 /**
  * 待解包资产条目声明
