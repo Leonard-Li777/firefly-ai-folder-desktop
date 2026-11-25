@@ -176,44 +176,83 @@ export default defineConfig(({ command, mode }) => {
   const emittedMainOutput = new Set<string>()
 
   /**
-   * 源码里的相对 `require('./x')` 在 electron-vite 构建中不会被 rollup 解析（TS 源码走 ESM 管线），
-   * 字面量会原样留在产物里，打包后指向 out_build/main/xxx 这种根本不存在的文件，
-   * 调用点又大多被 try/catch 吞掉 → 收尾/降级逻辑静默失效（实测产物中 37 处悬空 require）。
+   * 源码里的 `require('x')` 在 electron-vite 构建中不会被 rollup 解析（TS 源码走 ESM 管线），
+   * 字面量会原样留在产物里：
+   *   - 相对形态 `require('./x')` → 打包后指向 out_build/main/xxx 这种根本不存在的文件；
+   *   - 裸模块形态 `require('jszip')` / `require('@firefly/electron-llamaIndex-service')`
+   *     → 若该包在 external 名单外(ship 依赖)则产物里没有实体，打包态 MODULE_NOT_FOUND。
+   * 实测：相对形态 37 处悬空；裸模块形态误伤过 jszip / electron-updater / llamaIndex 服务。
    *
-   * 这里统一改导入方式：把 `require('相对路径')` 改写为顶层静态 import 的命名空间别名。
+   * 这里统一改导入方式：把 require 改写为顶层静态 import 的命名空间别名。
    * 调用点都在函数体内（运行时才执行），静态 import 不会引入 TDZ 问题；仅跳过行内/行首注释。
+   * 裸模块只有在「构建期能真实解析到」时才改写，解析不到的（可选依赖/条件依赖）保持原样，
+   * 避免把 try/catch 里的可选依赖变成硬构建失败。
    */
   const rewriteRelativeRequire = {
     name: 'ff-rewrite-relative-require',
     enforce: 'pre' as const,
-    transform(code: string, id: string) {
+    async transform(this: any, code: string, id: string) {
       if (!/\.(ts|tsx|mts)$/.test(id) || !code.includes('require(')) return null
       const injects: string[] = []
+      const bareResolutionCache = new Map<string, boolean>()
       let aliasIndex = 0
       let rewritten = 0
 
-      const lines = code.split('\n').map(line => {
-        if (!line.includes('require(')) return line
+      const canResolveBare = async (spec: string): Promise<boolean> => {
+        if (bareResolutionCache.has(spec)) return bareResolutionCache.get(spec)!
+        let resolvable = false
+        try {
+          resolvable = !!(await this.resolve(spec, id, { skipSelf: true }))
+        } catch {
+          resolvable = false
+        }
+        bareResolutionCache.set(spec, resolvable)
+        return resolvable
+      }
+
+      const lines = code.split('\n')
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]
+        if (!line.includes('require(')) continue
         const commentIndex = line.indexOf('//')
         const codePart = commentIndex === -1 ? line : line.slice(0, commentIndex)
         const commentPart = commentIndex === -1 ? '' : line.slice(commentIndex)
-        if (!codePart.includes('require(')) return line
-        const replaced = codePart.replace(
-          /require\(\s*(['"])(\.{1,2}\/[^'"]+)\1\s*\)/g,
-          (_match, quote: string, spec: string) => {
+        if (!codePart.includes('require(')) continue
+
+        let replaced = ''
+        let cursor = 0
+        // 先处理相对路径（无条件改写），再处理可解析的裸模块
+        const requireRegex = /require\(\s*(['"])([^'"]+)\1\s*\)/g
+        let match: RegExpExecArray | null
+        while ((match = requireRegex.exec(codePart)) !== null) {
+          const quote = match[1]
+          const spec = match[2]
+          const isRelative = spec.startsWith('.')
+          const isAbsolute = spec.startsWith('/')
+          const isNodeBuiltin = spec.startsWith('node:')
+          const isElectron = spec === 'electron'
+          let shouldRewrite = isRelative
+          if (!isRelative && !isAbsolute && !isNodeBuiltin && !isElectron) {
+            // 裸模块：只有在构建期能真实解析到时才改写，避免把可选依赖变成硬失败
+            shouldRewrite = await canResolveBare(spec)
+          }
+          if (shouldRewrite) {
             const alias = `__ffReq${aliasIndex++}`
             injects.push(`import * as ${alias} from ${quote}${spec}${quote}`)
             rewritten++
-            return alias
+            replaced += codePart.slice(cursor, match.index) + alias
+            cursor = match.index + match[0].length
           }
-        )
-        return replaced + commentPart
-      })
+        }
+        if (cursor > 0) {
+          lines[i] = replaced + codePart.slice(cursor) + commentPart
+        }
+      }
 
       if (rewritten === 0) return null
       const result = `${lines.join('\n')}\n${injects.join('\n')}\n`
       console.log(
-        `[vite-config] 🔗 已将 ${rewritten} 处相对 require 改写为静态 import: ${path.relative(__dirname, id)}`
+        `[vite-config] 🔗 已将 ${rewritten} 处 require 改写为静态 import: ${path.relative(__dirname, id)}`
       )
       return { code: result, map: null }
     }
@@ -411,7 +450,13 @@ export default defineConfig(({ command, mode }) => {
     'node-machine-id',
     'llamaindex',
     'setimmediate',
-    'jschardet'
+    'jschardet',
+    // 纯 JS 运行时依赖：源码以 require/import 裸模块引用，external 化后打包态在 ASAR 里解析不到实体
+    // （jszip 被 offline-package/archive 链路使用，electron-updater 是自动更新唯一入口，adm-zip 用于
+    //  file-download-service 的重复条目探测）→ 交给 rollup 内联，彻底消除 MODULE_NOT_FOUND
+    'jszip',
+    'adm-zip',
+    'electron-updater'
   ]
 
   const bundledDeps = isProd ? [...baseBundledDeps, ...productionBundledDeps] : baseBundledDeps

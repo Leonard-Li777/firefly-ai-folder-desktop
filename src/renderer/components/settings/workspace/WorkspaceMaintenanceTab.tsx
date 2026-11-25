@@ -488,10 +488,10 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
               <p className="text-xs text-muted-foreground leading-relaxed pl-5">
                 {workspace.bound_workflow_id
                   ? t(
-                      '已绑定专属业务工作流。解除绑定后目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。'
+                      '如果解除绑定，目录将恢复为通用模式，且自动保留包含规则快照防止非目标文件涌入。'
                     )
                   : t(
-                      '当前目录未绑定专属工作流。若存在包含规则快照，将继续作为安全保护生效，亦可随时清空恢复全量模式。'
+                      '当前目录未绑定专属工作流。若存在包含规则快照，将继续生效，亦可随时清空恢复全量模式。'
                     )}
               </p>
             </div>
@@ -537,11 +537,11 @@ export const WorkspaceMaintenanceTab: React.FC<WorkspaceMaintenanceTabProps> = (
             </div>
           </div>
 
-          {/* 生效中扩展名快照 */}
+          {/* 生效的包含扩展名 */}
           {whitelistPatterns.length > 0 && (
             <div className="pt-2 border-t border-border/40 text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-              <span className="font-medium text-foreground">{t('生效中扩展名快照:')}</span>
+              <span className="font-medium text-foreground">{t('生效的包含扩展名:')}</span>
               <div className="flex items-center gap-1 flex-wrap font-mono text-[10px]">
                 {whitelistPatterns.slice(0, 8).map(ext => (
                   <span

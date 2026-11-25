@@ -68,6 +68,42 @@ export interface ProTagReconciliationParams {
   extension?: string
   filePath?: string
   onRetagCompleted?: (outcome: any) => void
+  clearTagGroups?: ReadonlyArray<'fact' | 'fused' | 'visual' | 'ai'>
+  retagTransport?: (
+    payload: {
+      fileFingerprint: string
+      text: string
+      language?: string
+      allowNewTags: boolean
+      excludeNames: string[]
+      sourceKind?: 'multimodal_desc' | 'document' | 'summary'
+      mediaKind?: 'image' | 'video' | 'audio' | 'document' | 'text' | 'code'
+      anchorContextText?: string
+    },
+    timeoutMs: number,
+    signal?: AbortSignal
+  ) => Promise<{
+    ok: boolean
+    status:
+      | 'success_with_tags'
+      | 'authoritative_empty'
+      | 'no_replacement'
+      | 'degraded'
+      | 'failed'
+      | 'aborted'
+    items: Array<{
+      code: string
+      name: string
+      confidence?: number
+      via_parent_code?: string
+      parent_codes?: string[]
+    }>
+  }>
+  mediaKind?: 'image' | 'video' | 'audio' | 'document' | 'text' | 'code'
+  retagEpoch?: number
+  validateRetagEpoch?: () => boolean
+  abortSignal?: AbortSignal
+  forceReanalyze?: boolean
 }
 
 export interface ProTagReconciliationResult {

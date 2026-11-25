@@ -1410,6 +1410,11 @@ const config: ForgeConfig = {
         // 剔除 .pnpm 中与顶层 node_modules 版本完全一致的重复副本（dereference 副产物，实测可省 385MB）
         if (isDuplicatedPnpmCopy(relativePath)) return true
 
+        // 剔除 pnpm 虚拟仓里的纯开发期工具链：Electron 宿主本体（devDependency，运行期用内置 electron 模块）
+        // 与 @electron-internal/extract-zip（仅 electron 安装器使用）。整目录剔除还能消掉 31 个跨平台 .node 噪声。
+        if (/^node_modules\/\.pnpm\/electron@/.test(relativePath)) return true
+        if (/^node_modules\/\.pnpm\/@electron-internal\+/.test(relativePath)) return true
+
         // 剔除 package.json 中声明的 devDependencies
         const devDeps = Object.keys(packageJson.devDependencies || {})
         const isDevDep = devDeps.some(

@@ -936,139 +936,150 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
                   {/* 右侧：醒目的当前工作区策略配置与保持原样的新建按钮 */}
                   <div className="w-full sm:w-[370px] flex-1 flex flex-col p-3.5 space-y-3.5 bg-background dark:bg-zinc-900">
-                    {/* 醒目的工作区配置卡片 */}
-                    <div className="rounded-xl border border-primary/25 dark:border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 shadow-sm hover:border-primary/45 transition-all">
-                      {/* 卡片顶栏：当前工作区标题 */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
-                            {t('当前工作区设置')}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 当前工作区名称与路径 */}
-                      <div className="flex items-start gap-2.5 mb-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0 mt-0.5">
-                          <MaterialIcon
-                            icon={
-                              activeWorkspaceDir?.type === 'SPEEDY'
-                                ? 'rocket_launch'
-                                : activeWorkspaceDir?.type === 'PRIVATE'
-                                  ? 'lock'
-                                  : 'folder'
-                            }
-                            className="text-base"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
+                    {/* 醒目的「当前工作区设置」卡片：列表内一个目录都没有时整块隐藏（仅留「添加新工作目录」），有目录但未选中则展示占位卡片 */}
+                    {workspaceDirectories.length > 0 && (
+                      <div className="rounded-xl border border-primary/25 dark:border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 shadow-sm hover:border-primary/45 transition-all">
+                        {/* 卡片顶栏：当前工作区标题 */}
+                        <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-xs text-foreground truncate">
-                              {activeWorkspaceDir?.name || t('未选择工作目录')}
+                            <span className="flex h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+                              {t('当前工作区设置')}
                             </span>
-                            {activeWorkspaceDir?.type === 'SPEEDY' && (
-                              <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 bg-primary/20 text-primary">
-                                {t('极速')}
-                              </span>
-                            )}
-                            {activeWorkspaceDir?.type === 'PRIVATE' && (
-                              <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 bg-violet-500/20 text-violet-400 dark:text-violet-300">
-                                {t('私有')}
-                              </span>
-                            )}
-                          </div>
-                          <div
-                            className="text-[10px] text-muted-foreground truncate font-mono mt-0.5"
-                            title={activeWorkspaceDir?.path || ''}
-                          >
-                            {activeWorkspaceDir?.path || t('点击左侧列表选择工作目录')}
                           </div>
                         </div>
-                      </div>
 
-                      {/* 配置状态卡：默认参数 | 工作流参数 | 用户自定义配置 三层闭环，全大白话无术语 */}
-                      <div className="rounded-xl bg-background/80 dark:bg-black/30 border border-border/60 dark:border-border/40 p-3 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <div
-                            className={cn(
-                              'mt-0.5 flex items-center justify-center w-6 h-6 rounded-md shrink-0',
-                              configStatus.bound
-                                ? 'bg-primary/15 text-primary'
-                                : 'bg-muted-foreground/10 text-muted-foreground'
-                            )}
-                          >
+                        {/* 当前工作区名称与路径（未选中时只留占位文案，底部不再留多余间距） */}
+                        <div
+                          className={cn(
+                            'flex items-start gap-2.5',
+                            activeWorkspaceDir ? 'mb-2.5' : 'mb-0'
+                          )}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center shrink-0 mt-0.5">
                             <MaterialIcon
-                              icon={configStatus.bound ? 'link' : 'tune'}
-                              className="text-sm"
+                              icon={
+                                activeWorkspaceDir?.type === 'SPEEDY'
+                                  ? 'rocket_launch'
+                                  : activeWorkspaceDir?.type === 'PRIVATE'
+                                    ? 'lock'
+                                    : 'folder'
+                              }
+                              className="text-base"
                             />
                           </div>
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="text-xs font-semibold text-foreground leading-snug break-words">
-                              {configStatus.headline}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-foreground truncate">
+                                {activeWorkspaceDir?.name || t('未选择工作目录')}
+                              </span>
+                              {activeWorkspaceDir?.type === 'SPEEDY' && (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 bg-primary/20 text-primary">
+                                  {t('极速')}
+                                </span>
+                              )}
+                              {activeWorkspaceDir?.type === 'PRIVATE' && (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold shrink-0 bg-violet-500/20 text-violet-400 dark:text-violet-300">
+                                  {t('私有')}
+                                </span>
+                              )}
                             </div>
-                            <div className="text-[11px] text-muted-foreground leading-relaxed">
-                              {configStatus.desc}
+                            <div
+                              className="text-[10px] text-muted-foreground truncate font-mono mt-0.5"
+                              title={activeWorkspaceDir?.path || ''}
+                            >
+                              {activeWorkspaceDir?.path || t('点击左侧列表选择工作目录')}
                             </div>
                           </div>
                         </div>
-                        {configStatus.customCount > 0 && (
-                          <div className="flex items-center gap-1.5 rounded-lg bg-primary/8 dark:bg-primary/10 border border-primary/15 px-2 py-1.5">
-                            <MaterialIcon icon="tune" className="text-xs text-primary shrink-0" />
-                            <span className="text-[11px] font-medium text-primary">
-                              {t('另有 {count} 项自定义配置', { count: configStatus.customCount })}
-                            </span>
+
+                        {/* 配置状态卡：默认参数 | 工作流参数 | 用户自定义配置 三层闭环，全大白话无术语；未选中工作目录时整块不渲染，避免与上方「未选择工作目录」占位重复 */}
+                        {activeWorkspaceDir && (
+                          <div className="rounded-xl bg-background/80 dark:bg-black/30 border border-border/60 dark:border-border/40 p-3 space-y-2">
+                            <div className="flex items-start gap-2">
+                              <div
+                                className={cn(
+                                  'mt-0.5 flex items-center justify-center w-6 h-6 rounded-md shrink-0',
+                                  configStatus.bound
+                                    ? 'bg-primary/15 text-primary'
+                                    : 'bg-muted-foreground/10 text-muted-foreground'
+                                )}
+                              >
+                                <MaterialIcon
+                                  icon={configStatus.bound ? 'link' : 'tune'}
+                                  className="text-sm"
+                                />
+                              </div>
+                              <div className="min-w-0 flex-1 space-y-1">
+                                <div className="text-xs font-semibold text-foreground leading-snug break-words">
+                                  {configStatus.headline}
+                                </div>
+                                <div className="text-[11px] text-muted-foreground leading-relaxed">
+                                  {configStatus.desc}
+                                </div>
+                              </div>
+                            </div>
+                            {configStatus.customCount > 0 && (
+                              <div className="flex items-center gap-1.5 rounded-lg bg-primary/8 dark:bg-primary/10 border border-primary/15 px-2 py-1.5">
+                                <MaterialIcon icon="tune" className="text-xs text-primary shrink-0" />
+                                <span className="text-[11px] font-medium text-primary">
+                                  {t('另有 {count} 项自定义配置', { count: configStatus.customCount })}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 卡片底部双操作按钮：工作流向导 + 工作目录设置（仅在已选中工作目录时展示；未绑定时引导为主按钮，已绑定「重新绑定」为轻次要按钮） */}
+                        {activeWorkspaceDir && (
+                          <div className="grid grid-cols-2 gap-2 mt-2.5">
+                            <Button
+                              size="sm"
+                              variant={configStatus.bound ? 'outline' : 'default'}
+                              className={cn(
+                                'h-8 px-2.5 text-xs font-semibold gap-1.5 cursor-pointer',
+                                configStatus.bound
+                                  ? 'border-primary/25 bg-primary/8 text-primary hover:bg-primary/15 hover:text-primary hover:border-primary/40 shadow-none dark:border-primary/25 dark:bg-primary/10'
+                                  : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
+                              )}
+                              onClick={() => {
+                                onToggleDirectoryDropdown(false)
+                                useSettingsStore
+                                  .getState()
+                                  .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                                    workspaceId: activeWorkspaceDir?.id,
+                                    targetTab: 'wizard'
+                                  })
+                              }}
+                              title={
+                                configStatus.bound
+                                  ? t('重新挑选工作流并替换当前方案')
+                                  : t('打开向导为这个文件夹挑选合适的整理方案')
+                              }
+                            >
+                              <MaterialIcon icon="auto_awesome" className="text-sm" />
+                              <span>{configStatus.bound ? t('重新绑定工作流') : t('工作流向导')}</span>
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="h-8 px-2.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
+                              onClick={() => {
+                                onToggleDirectoryDropdown(false)
+                                useSettingsStore
+                                  .getState()
+                                  .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
+                                    workspaceId: activeWorkspaceDir?.id
+                                  })
+                              }}
+                              title={t('修改当前文件夹的分析选项、过滤规则与目录维护')}
+                            >
+                              <MaterialIcon icon="tune" className="text-sm" />
+                              <span>{t('工作目录设置')}</span>
+                            </Button>
                           </div>
                         )}
                       </div>
-
-                      {/* 卡片底部双操作按钮：工作流向导 + 工作目录设置（主次分级：未绑定时引导为主按钮，已绑定时「重新绑定」降为轻次要按钮） */}
-                      <div className="grid grid-cols-2 gap-2 mt-2.5">
-                        <Button
-                          size="sm"
-                          variant={configStatus.bound ? 'outline' : 'default'}
-                          className={cn(
-                            'h-8 px-2.5 text-xs font-semibold gap-1.5 cursor-pointer',
-                            configStatus.bound
-                              ? 'border-primary/25 bg-primary/8 text-primary hover:bg-primary/15 hover:text-primary hover:border-primary/40 shadow-none dark:border-primary/25 dark:bg-primary/10'
-                              : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
-                          )}
-                          onClick={() => {
-                            onToggleDirectoryDropdown(false)
-                            useSettingsStore
-                              .getState()
-                              .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
-                                workspaceId: activeWorkspaceDir?.id,
-                                targetTab: 'wizard'
-                              })
-                          }}
-                          title={
-                            configStatus.bound
-                              ? t('重新挑选工作流并替换当前方案')
-                              : t('打开向导为这个文件夹挑选合适的整理方案')
-                          }
-                        >
-                          <MaterialIcon icon="auto_awesome" className="text-sm" />
-                          <span>{configStatus.bound ? t('重新绑定工作流') : t('工作流向导')}</span>
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="h-8 px-2.5 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm cursor-pointer"
-                          onClick={() => {
-                            onToggleDirectoryDropdown(false)
-                            useSettingsStore
-                              .getState()
-                              .openSettings(SettingsCategory.WORKSPACE_CONFIG, {
-                                workspaceId: activeWorkspaceDir?.id
-                              })
-                          }}
-                          title={t('修改当前文件夹的分析选项、过滤规则与目录维护')}
-                        >
-                          <MaterialIcon icon="tune" className="text-sm" />
-                          <span>{t('工作目录设置')}</span>
-                        </Button>
-                      </div>
-                    </div>
+                    )}
 
                     {/* 原汁原味的新建目录双卡片（保持样式、动效、角标不变） */}
                     <div className="space-y-1.5">
