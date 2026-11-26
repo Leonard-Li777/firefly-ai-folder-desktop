@@ -1034,8 +1034,18 @@ const ConsumptionDetailTab: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col p-1">
-      {/* 已有数据时保持列表常显（stale-while-revalidate），后台刷新严禁再回退到加载骨架，否则会反复闪动 */}
+    <div className="relative flex-1 flex flex-col p-1">
+      {/* 非空列表的加载态：顶部通栏流光条（不遮挡内容、不改变高度），避免刷新期间再回退到骨架造成闪动 */}
+      {consumptionDetails.length > 0 && isConsumptionLoading && (
+        <div
+          data-testid="consumption-loading-bar"
+          className="absolute top-0 inset-x-0 h-[2px] z-10 overflow-hidden pointer-events-none bg-primary/10"
+        >
+          <div className="h-full w-full bg-gradient-to-r from-transparent via-primary to-transparent animate-indeterminate-bar" />
+        </div>
+      )}
+
+      {/* 已有数据时保持列表常显（stale-while-revalidate），仅首屏完全无数据才展示加载骨架 */}
       {consumptionDetails.length === 0 && isConsumptionLoading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
