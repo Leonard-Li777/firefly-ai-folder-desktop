@@ -64,6 +64,7 @@ import {
   serializeVideoDegradedMetadata,
   type VideoDegradedRecord
 } from './video-degraded-state-machine'
+import { shouldPersistStage2TagsBeforePhaseReturn } from './stage2-tag-persistence-policy'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
 import { userTierService } from '../../user-tier/user-tier-service'
 import { magikaService } from '../../system/magika-service'
@@ -2854,9 +2855,13 @@ export class FileProcessor {
       // 该落库点被整段跳过，导致：
       //   - file_tag_relations 全表为空（标签在内存里算完即丢弃，日志有、面板无）；
       //   - workspace_files.is_analyzed 保持 0，属性面板按 is_analyzed 门控连「无标签」提示都不渲染。
-      // simple 模式本来就在本函数后半段落库，故此处仅补 full / quick_name，避免重复写入。
+      // simple 模式在单阶段（phase === 'all'）下会走到本函数后半段落库，但在双阶段（phase === 'cpu'）
+      // 下会在下方提前返回并直接进入 completeAsCpuOnly，因此 phase === 'cpu' 时也必须在此落库，
+      // 否则 simple 模式产出的标签会在内存算完即丢弃。
       // GPU 阶段的裁决器会以「补捞已存在关联 + 无损合并」方式叠加 AI 标签，不会覆盖本批事实。
-      if ((analysisMode === 'full' || analysisMode === 'quick_name') && preflightContext) {
+      if (
+        shouldPersistStage2TagsBeforePhaseReturn(phase, analysisMode, Boolean(preflightContext))
+      ) {
         try {
           executeProTagReconciliation({
             db,
@@ -2871,7 +2876,10 @@ export class FileProcessor {
             forceReanalyze: item.forceReanalyze === true,
             preflightContext,
             dimResult: null,
-            authors: resolvedAuthor ? [resolvedAuthor] : undefined,
+            authors:
+              (resolvedAuthor ? [resolvedAuthor] : undefined) ||
+              anydocResult?.metadata?.authors ||
+              anydocResult?.metadata?.document?.authors,
             language,
             fileGroup:
               typeof magikaCategory === 'string'
@@ -2884,7 +2892,7 @@ export class FileProcessor {
         } catch (stage2SaveError) {
           logger.warn(
             LogCategory.ANALYSIS_QUEUE,
-            '[分析队列] Stage 2 标签即时落库失败（不阻断 AI 阶段）:',
+            '[分析队列] Stage 2 标签即时落库失败（不阻断后续阶段）:',
             stage2SaveError
           )
         }
