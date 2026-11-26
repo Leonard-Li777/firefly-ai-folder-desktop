@@ -38,7 +38,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M',
+      id: 'alexwkleung/LFM3-1.7B-Ablated-GGUF:Q4_K_M',
       name: `LFM3 1.7B（${t('越狱')}•${t('轻量')}）`,
       company: 'alexwkleung',
       parameterSize: '1.7B',

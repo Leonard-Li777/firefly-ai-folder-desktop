@@ -438,23 +438,34 @@ function readPkgVersion(pkgDir: string): string | null {
 }
 
 function isDuplicatedPnpmCopy(relativePath: string): boolean {
-  const match = /^node_modules\/\.pnpm\/([^/]+)\/node_modules\/((?:@[^/]+)\/[^/]+|[^/]+)\//.exec(
+  // 形态一：公共 island —— node_modules/.pnpm/node_modules/<pkg>/...
+  // （此处的 .pnpm/node_modules 本身就是 .pnpm 的 node_modules，只有一层，需单独匹配）
+  const islandMatch = /^node_modules\/\.pnpm\/node_modules\/((?:@[^/]+)\/[^/]+|[^/]+)\//.exec(
     relativePath
   )
+  // 形态二：虚拟仓副本 —— node_modules/.pnpm/<pkg>@<ver>/node_modules/<dep>/...
+  const virtualMatch =
+    /^node_modules\/\.pnpm\/([^/]+)\/node_modules\/((?:@[^/]+)\/[^/]+|[^/]+)\//.exec(relativePath)
+  const match = islandMatch ?? virtualMatch
   if (!match) return false
-  const [, virtualDir, pkgName] = match
-  // 虚拟仓根部的公共 island（.pnpm/node_modules）是 pnpm 的公共提升区，解析链可能命中，不动它
-  if (virtualDir === 'node_modules') return false
+  const virtualDir = islandMatch ? 'node_modules' : virtualMatch![1]
+  const pkgName = islandMatch ? islandMatch[1] : virtualMatch![2]
+  // 虚拟仓根部的公共 island（.pnpm/node_modules）是 pnpm 的公共提升区：
+  // 默认保留，但若顶层存在**版本完全一致**的同名包，则该 island 副本对解析链无贡献
+  // （从 .pnpm/<vdir>/node_modules 向上回溯永远不会经过 .pnpm/node_modules），
+  // 属纯 dereference 冗余（实测 @napi-rs/canvas 的 skia.node 在此重复 26MB），此情形剔除。
   const topLevelDir = resolveTopLevelPkgDir(pkgName)
   if (!topLevelDir) return false
-  const nestedDir = path.join(
-    process.cwd(),
-    'node_modules',
-    '.pnpm',
-    virtualDir,
-    'node_modules',
-    ...pkgName.split('/')
-  )
+  const nestedDir = islandMatch
+    ? path.join(process.cwd(), 'node_modules', '.pnpm', 'node_modules', ...pkgName.split('/'))
+    : path.join(
+        process.cwd(),
+        'node_modules',
+        '.pnpm',
+        virtualDir,
+        'node_modules',
+        ...pkgName.split('/')
+      )
   const nestedVersion = readPkgVersion(nestedDir)
   const topLevelVersion = readPkgVersion(topLevelDir)
   if (!nestedVersion || !topLevelVersion) return false
@@ -1312,9 +1323,12 @@ const config: ForgeConfig = {
     extendInfo: MAC_EXTEND_INFO,
     // ASAR 打包配置
     asar: {
+      // .node 原生库必须落在 app.asar.unpacked 才能 dlopen。
+      // 注意：实测 electron-packager 只按 unpackDir 生效（unpack 的 **/*.node 不会兜住未列入 unpackDir 的目录），
+      // 因此 @napi-rs/canvas（skia.node）与 out_build/main/chunks（anydoc/addon 原生插件）必须显式列入。
       unpack: '**/*.node',
       unpackDir:
-        '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon,**/node_modules/sharp/**,**/node_modules/@img/**,**/node_modules/better-sqlite3/**,**/node_modules/extract-file-icon/**}'
+        '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon,node_modules/@napi-rs,out_build/main/chunks,**/node_modules/sharp/**,**/node_modules/@img/**,**/node_modules/better-sqlite3/**,**/node_modules/extract-file-icon/**,**/node_modules/@napi-rs/**,**/out_build/main/chunks/**}'
     },
 
     // extraResources 配置 - 包含llama-server二进制文件和配置文件

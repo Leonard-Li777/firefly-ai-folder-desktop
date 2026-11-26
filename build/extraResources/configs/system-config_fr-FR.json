@@ -6,6 +6,7 @@
       "[Convivial pour ordinateur à faible configuration] Reconstruisez une architecture d'IA à haute vitesse basée sur l'inférence du processeur, fonctionnant de manière fluide sur des appareils à faible mémoire sans cartes graphiques indépendantes.",
       "[Independent Firecore AI Engine] Peut être exécuté indépendamment du programme principal pour fournir des capacités d'IA à des applications tierces",
       "[Recherche sémantique multimédia] Les images, les audios et les vidéos prennent en charge la récupération en langage naturel et la recherche de contenu par sémantique, images et voix.",
+      "[Liste d'analyse des fichiers à compléter] Prise en charge des données d'analyse de fichiers post-supplémentaires, des graphiques vidéo longs et d'autres premières analyses ne bloqueront plus la file d'attente d'analyse",
       "[ASR parole en texte] Transcrivez rapidement les conversations audio et vidéo en texte pour une récupération et un archivage faciles",
       "[Synthèse vocale TTS] Synthèse vocale, plus de 50 sons intégrés, prend en charge le clonage sonore de 3 secondes et lit à haute voix les romans documentaires",
       "[Mise à niveau des balises de fichier] Enrichissez les types de balises de faits, les balises sont plus précises et interprétables, et l'arborescence des balises prend en charge 10 niveaux d'expansion",
@@ -20,7 +21,8 @@
       "[Arborescence de répertoires personnalisée] Collez le répertoire Markdown, aperçu en temps réel sur deux colonnes et créez des règles d'organisation exclusives",
       "[Veille intelligente] Perception intelligente du fonctionnement de l'utilisateur, au faible niveau d'eau de la mémoire, l'utilisation de la mémoire est automatiquement libérée lorsque la fonction est inactive.",
       "[Ouverture aux capacités externes] Améliorez complètement les capacités externes, afin que les agents externes puissent appeler directement les différentes capacités d'IA de Firefly core",
-      "[Optimisation approfondie de l'interface utilisateur] Reconstruisez la structure de la page de configuration, ajoutez un nouveau guide et une nouvelle entrée d'aide, et rendez l'opération plus intuitive."
+      "【Plus de lecture de format vidéo】 Étendu pour prendre en charge la lecture directe de tous les formats vidéo courants",
+      "[Optimisation approfondie de l'interface utilisateur] Refactorisation de l'architecture de la page de configuration, ajout de fonctions de guidage et d'aide à la saisie et à la commutation de la mise en page, et l'opération est plus intuitive"
     ],
     "forceUpdate": false
   },

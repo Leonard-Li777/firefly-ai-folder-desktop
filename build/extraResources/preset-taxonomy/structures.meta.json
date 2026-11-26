@@ -372,8 +372,17 @@
         "ar-EG": "سير عمل فريق التصميم الموحد بناءً على فصل المشاريع والأصول الأساسية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.researcher.ux", "id.designer.ui", "id.designer.graphic"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.researcher.ux",
+        "id.designer.ui",
+        "id.designer.graphic"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "10-设计规范与组件库/01-全局设计系统",
         "10-设计规范与组件库/02-原子组件与模板",
@@ -449,7 +458,12 @@
         "id.dev.fullstack",
         "id.dev.mobile"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-工程源码与组件/核心业务模块",
         "01-工程源码与组件/公共组件库",
@@ -536,7 +550,12 @@
         "id.dev.ai_ml",
         "id.dev.embedded"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-系统设计与API文档/接口契约定义",
         "01-系统设计与API文档/API设计文档",
@@ -630,7 +649,12 @@
         "id.eng.architect",
         "id.scene.scratchpad_drafts"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-Projects (进行中项目)/本周重点攻坚",
         "01-Projects (进行中项目)/本月里程碑",
@@ -710,7 +734,12 @@
         "id.student.grad",
         "id.eng.civil_engineer"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "10-19 组织治理与规章/11-公司章程",
         "10-19 组织治理与规章/12-规章制度",
@@ -781,7 +810,12 @@
         "id.life.traveler",
         "id.scene.personal_photos_album"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始拍片RAW/按拍摄日期存储",
         "01-原始拍片RAW/按项目分类存储",
@@ -858,7 +892,12 @@
         "id.media.collector_hoarder",
         "id.scene.video_production_clips"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-拍摄实录Footage/分机位原片",
         "01-拍摄实录Footage/场记与打板",
@@ -941,7 +980,12 @@
         "id.health.doctor",
         "id.scene.study_research_docs"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-核心文献库/文献综述",
         "01-核心文献库/高引论文",
@@ -1024,7 +1068,12 @@
         "id.finance.auditor",
         "id.scene.finance_tax_docs"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始发票报销/按月凭证汇总",
         "01-原始发票报销/原始发票报销",
@@ -1101,7 +1150,12 @@
         "id.life.household_assets",
         "id.scene.personal_photos_album"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-核心身份与证照/家庭成员电子证件",
         "01-核心身份与证照/户口与出生证",
@@ -1191,7 +1245,12 @@
         "id.ops.private_domain",
         "id.scene.video_production_clips"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-选题灵感与策划库/选题灵感库",
         "01-选题灵感与策划库/选题脚本",
@@ -1270,8 +1329,16 @@
         "ar-EG": "اختيار منتجات التجارة الإلكترونية وإثبات صحتها، وتسليم المواد عبر القطار، وصفحة تفاصيل الصورة الرئيسية للمنتج، ومراجعة أنشطة الترويج الرئيسية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.ecommerce", "id.ops.cross_border"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.ecommerce",
+        "id.ops.cross_border"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-选品调研与样品/样品评估表",
         "01-选品调研与样品/供应商档案",
@@ -1345,8 +1412,16 @@
         "ar-EG": "تغطية تخطيط الوحدة/غير الواقعي/Godot، والعفاريت الفنية، والمؤثرات الصوتية، وبناء الحزم التجريبية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.hobby.gamer", "id.designer.3d"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.hobby.gamer",
+        "id.designer.3d"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-游戏设计文档GDD/世界观设定",
         "01-游戏设计文档GDD/数值平衡表",
@@ -1430,7 +1505,12 @@
         "id.ops.sem_seo",
         "id.mgmt.supply_chain"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-产品刊登与多语Listing/主图素材",
         "01-产品刊登与多语Listing/产品视频",
@@ -1497,8 +1577,17 @@
         "ar-EG": "تصنيف صارم بناءً على شكوى الأطراف، وسلسلة أدلة المدعي، ومحاضر المحاكمة، وأقوال المحامي، والأحكام والأحكام"
       },
       "template_type": "workflow",
-      "target_identities": ["id.legal.compliance", "id.legal.attorney", "id.legal.ip_agent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.legal.compliance",
+        "id.legal.attorney",
+        "id.legal.ip_agent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-委托与立案/委托合同与授权书",
         "01-委托与立案/起诉状与答辩状",
@@ -1514,6 +1603,7 @@
         "04-判决与执行/结案归档清单"
       ],
       "concept_codes": [
+        "builtin.bill",
         "builtin.h_165bfe65",
         "builtin.h_395f16c2",
         "builtin.lawyer_s_letter",
@@ -1567,8 +1657,17 @@
         "ar-EG": "توحيد تقارير التصوير المختبري للمرضى، ونماذج المتابعة الخاصة بالمرض، ووثائق الموافقة على مراجعة الأخلاقيات، ومسودات أوراق اصابات النخاع الشوكي"
       },
       "template_type": "workflow",
-      "target_identities": ["id.health.doctor", "id.health.nurse", "id.health.psychologist"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.health.doctor",
+        "id.health.nurse",
+        "id.health.psychologist"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-病历与检查报告/门诊与住院病历",
         "01-病历与检查报告/检验化验单",
@@ -1640,8 +1739,16 @@
         "ar-EG": "يتضمن المنهج الدراسي PPT، وأوراق اختبار الوحدة والتحليلات، ومقاطع فيديو الفصل المفتوح، وسجلات اتصالات التبادل بين المنزل والمدرسة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.edu.k12_teacher", "id.edu.trainer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.edu.k12_teacher",
+        "id.edu.trainer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-教案与课件/教学设计教案",
         "01-教案与课件/上课课件",
@@ -1720,7 +1827,12 @@
         "id.finance.auditor",
         "id.biz.consultant"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-行业与竞品研究/行业报告",
         "01-行业与竞品研究/竞品资料",
@@ -1795,8 +1907,17 @@
         "ar-EG": "تنظيم الخطة الرئيسية DWG/DXF، وعرض ثلاثي الأبعاد لصورة نقطية عالية الدقة، وكتاب حساب الميكانيكا الإنشائية، وقائمة ميزانية المشروع"
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.industrial", "id.eng.architect", "id.eng.civil_engineer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.industrial",
+        "id.eng.architect",
+        "id.eng.civil_engineer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-方案与效果图/概念草图与手绘",
         "01-方案与效果图/效果图与动画",
@@ -1863,8 +1984,17 @@
         "ar-EG": "إعداد مخطط الرؤية العالمية، ومخطط علاقة السيرة الذاتية للشخصية، ومسودة نص المجلد، وبيانات التصوير الفوتوغرافي، وآراء مراجعة المنشورات"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.newmedia", "id.creator.freelance", "id.creator.writer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.newmedia",
+        "id.creator.freelance",
+        "id.creator.writer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-设定与大纲/世界观设定",
         "01-设定与大纲/人物小传与关系",
@@ -1936,7 +2066,12 @@
         "id.health.psychologist",
         "id.health.nutritionist"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-健康档案与评估/基本信息与知情同意",
         "01-健康档案与评估/体检报告",
@@ -2010,8 +2145,16 @@
         "ar-EG": "هيكل إدارة شامل يغطي تخطيط رؤية المنتج، والمواصفات الوظيفية لـ PRD، والتصميم الأولي والتفاعلي، وملاحظات بحث المستخدم، والتسليم التكراري السريع"
       },
       "template_type": "workflow",
-      "target_identities": ["id.pm.product", "id.researcher.ux"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.pm.product",
+        "id.researcher.ux"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-产品规划/产品愿景与路线图",
         "01-产品规划/竞品分析",
@@ -2090,8 +2233,16 @@
         "ar-EG": "الامتثال لمعايير الصناعة CRISP-DM لاستخراج البيانات وبنية ذكاء الأعمال (البيانات الأولية، وتنظيف الميزات، وتجارب الكمبيوتر المحمول، وتساقط النماذج، ولوحة معلومات BI)"
       },
       "template_type": "workflow",
-      "target_identities": ["id.data.analyst", "id.dev.ai_ml"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.data.analyst",
+        "id.dev.ai_ml"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始数据/数据库导出与SQL",
         "01-原始数据/接口与爬虫数据",
@@ -2171,8 +2322,15 @@
         "ar-EG": "يغطي مخطط استراتيجية الاختبار، ومجموعات حالات الاختبار اليدوية والآلية، وتكرار الأخطاء وسجلات استكشاف الأخطاء وإصلاحها، ومؤشرات اختبار ضغط الأداء، وتقارير دقة الإصدار"
       },
       "template_type": "workflow",
-      "target_identities": ["id.qa.tester"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-测试计划/测试范围与计划",
         "01-测试计划/环境与配置清单",
@@ -2251,8 +2409,15 @@
         "ar-EG": "يغطي دورة حياة مسار تحويل المبيعات بأكملها: استخراج العملاء المحتملين، وصور العملاء ومحاضر الزيارة، وعروض أسعار خطة العمل، ووثائق تأهيل العطاءات، وتوقيع العقود، وتسوية دفع الفواتير"
       },
       "template_type": "workflow",
-      "target_identities": ["id.sales.bd"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.sales.bd"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-客户与商机/客户名单与联系方式",
         "01-客户与商机/拜访与沟通记录",
@@ -2327,8 +2492,16 @@
         "ar-EG": "تغطية كاملة للوحدات الكلاسيكية للموارد البشرية: الهيكل التنظيمي والمنصب JD، استئناف التوظيف وتقييم المقابلة، إجراءات الدخول والخروج والامتثال، الراتب وتقييم الأداء، تدريب الموظفين وثقافة الشركة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.hr.admin", "id.hr.recruiter"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.hr.admin",
+        "id.hr.recruiter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-组织与岗位/组织架构图",
         "01-组织与岗位/岗位说明书",
@@ -2400,8 +2573,17 @@
         "ar-EG": "4A والعملية الكاملة لتسويق العلامة التجارية عبر الإنترنت: أبحاث المنتجات التنافسية في الصناعة، وحالة التسويق المتكاملة، وكتابة النصوص الإبداعية والمواد الترويجية، وجدولة وسائط KOL والقناة، وإغلاق عائد استثمار الحدث"
       },
       "template_type": "workflow",
-      "target_identities": ["id.marketing.planner", "id.ops.private_domain", "id.ops.sem_seo"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.marketing.planner",
+        "id.ops.private_domain",
+        "id.ops.sem_seo"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-市场与品牌定位/行业与竞品分析",
         "01-市场与品牌定位/目标人群画像",
@@ -2481,8 +2663,16 @@
         "ar-EG": "إدارة العقود لدورة الحياة الكاملة ومراجعة نظام الامتثال والملكية الفكرية والعلامات التجارية وتخطيط براءات الاختراع ونظام حل النزاعات القانونية المصمم خصيصًا للشؤون القانونية للشركة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.legal.compliance", "id.legal.ip_agent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.legal.compliance",
+        "id.legal.ip_agent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-合同审查/待审合同",
         "01-合同审查/修改留痕与审查意见",
@@ -2566,8 +2756,15 @@
         "ar-EG": "المعايير الصناعية للتطوير التعاوني للبرامج والأجهزة: مخطط PCB وBOM للأجهزة، وبرنامج تشغيل BSP الأساسي وSDK، وكود مصدر البرامج الثابتة RTOS، والتقاط حزم بروتوكول الاتصالات، وحزمة حرق البرامج الثابتة للإنتاج الضخم"
       },
       "template_type": "workflow",
-      "target_identities": ["id.dev.embedded"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.dev.embedded"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-硬件设计/原理图与PCB工程",
         "01-硬件设计/芯片手册与物料清单",
@@ -2638,8 +2835,16 @@
         "ar-EG": "خط أنابيب الإنتاج المرئي الاحترافي CG: مرجع الرسم الأصلي للمفهوم، مشروع النموذج العالي والمنخفض (Blender/C4D/Maya)، ورسم خرائط المواد وملمس PBR، والرسوم المتحركة الهيكلية والعرض النهائي عالي الجودة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.3d", "id.designer.industrial"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.3d",
+        "id.designer.industrial"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-参考与设定/灵感图与情绪板",
         "01-参考与设定/原画三视图与尺寸标注",
@@ -2710,8 +2915,16 @@
         "ar-EG": "هيكل إدارة الأعمال مناسب للمبدعين المستقلين والعاملين لحسابهم الخاص والمستشارين المستقلين: ملخص العميل وجدولة عروض الأسعار وتوقيع العقد وتسليم نسخة العملية وفاتورة التسوية وأرشفة المحفظة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.creator.freelance", "id.edu.trainer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.creator.freelance",
+        "id.edu.trainer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-接单与报价/客户需求与沟通记录",
         "01-接单与报价/工时评估与报价单",
@@ -2786,7 +2999,12 @@
         "id.student.self_learner",
         "id.student.exam"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-随手记收集箱/网页剪藏与摘录",
         "01-随手记收集箱/灵感便签与待整理",
@@ -2852,8 +3070,16 @@
         "ar-EG": "مصمم خصيصًا للاعبين المستقلين/وحدات التحكم، ويغطي تثبيت اللعبة، والنسخ الاحتياطي لحفظ المرور المحلي، وتصحيحات MOD والتعريب، وتسجيلات الشاشة المثيرة، ويكي الإستراتيجية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.hobby.gamer", "id.life.acg_fan"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.hobby.gamer",
+        "id.life.acg_fan"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-游戏安装文件/电脑游戏安装包",
         "01-游戏安装文件/模拟器与怀旧游戏",
@@ -2919,8 +3145,15 @@
         "ar-EG": "تم إنشاؤه خصيصًا لقراء الروايات ومحبي الكتب، وهو يتضمن مسلسلات روايات عبر الإنترنت، وEPUB/TXT مرتبة بعناية، وكلاسيكيات منشورة، وروايات خفيفة وقوائم كتب شخصية موصى بها."
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.novel_reader"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.novel_reader"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-最近在读与追更/连载网文最新更新",
         "02-网络小说/玄幻仙侠与修真",
@@ -2993,7 +3226,12 @@
         "id.scene.movies_tv_collection",
         "id.scene.music_collection_vault"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-电影收藏/4K蓝光原盘",
         "01-电影收藏/高清压制电影",
@@ -3058,8 +3296,15 @@
         "ar-EG": "تم تصميمه خصيصًا لعشاق الرسوم المتحركة وعشاق ACG، وهو يغطي حلقات جديدة ربع سنوية ومجلدات هزلية عالية الدقة وخلفيات توضيحية من Pixiv ودراما درامية إذاعية وملحقات للمعارض."
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.acg_fan"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.acg_fan"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-追番清单/本季新番与待看",
         "02-漫画收藏/单行本与全卷漫画",
@@ -3118,8 +3363,15 @@
         "ar-EG": "تتضمن ورقة تكوين خطة التثبيت، وبرامج BIOS الثابتة لبطاقة رسومات اللوحة الأم، ووحدات الماكرو الرئيسية الطرفية، ولقطات شاشة معيارية، وفواتير رقمية وبطاقات ضمان إلكترونية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.tech_geek"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.tech_geek"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-装机配置单/配置清单与预算",
         "01-装机配置单/比价与选购记录",
@@ -3182,8 +3434,16 @@
         "ar-EG": "إدارة الأطباق الخاصة المطبوخة في المنزل، وقوائم وصفات الخبز على الطريقة الغربية، وقوائم الحساء الصحي، وكوكتيلات مختارة، وسجلات تسجيل الدخول إلى متجر الذواقة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.cooking_foodie", "id.health.nutritionist"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.cooking_foodie",
+        "id.health.nutritionist"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-家常菜与主食/快手小炒步骤图解",
         "01-家常菜与主食/面点与主食配方",
@@ -3245,8 +3505,15 @@
         "ar-EG": "سجلات شاملة لكتب تحصين لقاحات الحيوانات الأليفة، وأوراق اختبار التخلص من الديدان، وصور يومية لطيفة عالية الدقة، وتقييم المكونات الغذائية الأساسية، وحساب نفقات تربية الحيوانات الأليفة شهريًا"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.pet_owner"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.pet_owner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-健康与疫苗档案/疫苗本与驱虫记录",
         "01-健康与疫苗档案/病历与化验报告",
@@ -3307,8 +3574,15 @@
         "ar-EG": "تغطية مسارات السفر ذاتية القيادة، وقسائم تذاكر الطيران وطلبات الفنادق، والصور السلبية الأصلية لكاميرا RAW، وصور المناظر الطبيعية المحسنة، ومسارات المشي لمسافات طويلة GPX، وكعب التذاكر التذكارية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.traveler"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.traveler"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-行程与订单/行程路书与打卡计划",
         "01-行程与订单/机票车票与酒店凭证",
@@ -3374,8 +3648,16 @@
         "ar-EG": "يدعم المشروعات المضيفة لترتيب DAW، وحلقات مكتبة المؤثرات الصوتية، والمسارات الصوتية الجافة الصوتية، والإعدادات المسبقة لنغمات المُركِّب، وخلط الأساتذة وحقوق التأليف والنشر التجارية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.creator.sound_designer", "id.scene.voice_recordings_audio"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.creator.sound_designer",
+        "id.scene.voice_recordings_audio"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-编曲工程/宿主软件工程文件",
         "01-编曲工程/工程备份与版本",
@@ -3449,7 +3731,12 @@
         "id.designer.illustrator",
         "id.scene.design_graphics_assets"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-品牌规范/品牌视觉手册",
         "01-品牌规范/标志源文件与标准色",
@@ -3513,8 +3800,16 @@
         "ar-EG": "بالنسبة للرسامين التجاريين ومصممي اللوحات الأصلية، فهو يغطي مسودات خطوط التركيب وهندسة الطبقات PSD/Procreate والفرش الحصرية وخطابات التفويض التجاري."
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.illustrator", "id.scene.design_graphics_assets"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.illustrator",
+        "id.scene.design_graphics_assets"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-约稿与授权/需求说明与参考图",
         "01-约稿与授权/报价与授权合同",
@@ -3578,8 +3873,15 @@
         "ar-EG": "يدعم أنظمة iOS/Android الأصلية وFlutter/RN عبر الأنظمة الأساسية، بما في ذلك المشاريع المزدوجة وشهادات تغليف المطورين ولقطات شاشة مراجعة المتجر وحزم الإصدار"
       },
       "template_type": "workflow",
-      "target_identities": ["id.dev.mobile"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.dev.mobile"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-iOS 工程源码/项目代码与界面文件",
         "01-iOS 工程源码/依赖库与工程配置",
@@ -3648,8 +3950,15 @@
         "ar-EG": "يغطي مخزون تنسيق مجموعة Kubernetes، والبرامج النصية Terraform/Ansible، ولوحات معلومات إنذار Prometheus، ومراجعة أخطاء فحص الإنتاج"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.sre"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.sre"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-容器与集群部署/K8s 部署清单",
         "01-容器与集群部署/Docker 镜像构建",
@@ -3711,8 +4020,15 @@
         "ar-EG": "بما في ذلك نموذج تقييم قبول المورد، وعقد أمر الشراء، ونموذج فحص جودة المواد الواردة IQC، والمخزون المادي لـ WMS وقسيمة الإقرار الجمركي للشحن الدولي"
       },
       "template_type": "workflow",
-      "target_identities": ["id.mgmt.supply_chain"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.mgmt.supply_chain"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-供应商管理/供应商名录与资质",
         "01-供应商管理/评审与考核记录",
@@ -3772,8 +4088,15 @@
         "ar-EG": "تم تصميمه خصيصًا للطلاب الذين يدرسون في الخارج، وهو يتضمن قائمة بخطط اختيار المدارس، والدرجات الموحدة للغة، والبيان الشخصي PS/خطاب التوصية RL، والنصوص الصينية والإنجليزية ومعلومات مقابلة التأشيرة."
       },
       "template_type": "workflow",
-      "target_identities": ["id.student.study_abroad"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.student.study_abroad"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-选校与申请要求/目标学校清单",
         "01-选校与申请要求/专业与申请要求",
@@ -3840,8 +4163,15 @@
         "ar-EG": "تم تصميمه خصيصًا لأجهزة الكمبيوتر المكتبية، ويمكنه بسرعة تخزين المهام اليومية ومسودات العمل الحالية ولقطات الشاشة المؤقتة وحزم التثبيت والنسخ الاحتياطية القديمة لسطح المكتب."
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.desktop_declutter"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.desktop_declutter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-今日急需处理/今天必做任务与急用文件",
         "01-今日急需处理/临时备忘与待发材料",
@@ -3931,8 +4261,15 @@
         "ar-EG": "تحويل بانورامي يعتمد على الوسائط والاستخدام: برامج تثبيت البرامج والمستندات المكتبية والصور ومقاطع الفيديو وحزم الأرشيف المضغوطة وإعداد فترة تخزين مؤقتة منتهية الصلاحية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.scene.downloads_triage"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.downloads_triage"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-软件安装包/应用程序安装包",
         "01-软件安装包/驱动与系统补丁",
@@ -4011,8 +4348,19 @@
         "id.scene.screenshots_recordings",
         "id.scene.external_media_triage"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
-      "paths": ["01-收件箱", "02-马上要办", "03-等人回复", "04-常用参考", "05-办完归档"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-收件箱",
+        "02-马上要办",
+        "03-等人回复",
+        "04-常用参考",
+        "05-办完归档"
+      ],
       "concept_codes": [
         "builtin.awaiting_action",
         "omw.00002436.r",
@@ -4047,8 +4395,15 @@
         "ar-EG": "قم بتصنيف وظائف الكيان المادي لاختصارات التطبيقات المتراكمة بشكل متكرر ومستندات الأعمال ومواد لقطات الشاشة المؤقتة وحزم التثبيت على أجهزة الكمبيوتر المكتبية"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.desktop_declutter"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.desktop_declutter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-常用软件快捷方式/办公与聊天",
         "01-常用软件快捷方式/上网与下载工具",
@@ -4125,8 +4480,15 @@
         "ar-EG": "أرشفة مشاريع البرامج النصية للاختبار الآلي، وخرائط الدماغ لحالة الاستخدام اليدوي، ولقطات شاشة تكرار الأخطاء، ومعايير اختبار التحمل، وقوائم دقة الإصدارات"
       },
       "template_type": "workflow",
-      "target_identities": ["id.qa.tester"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-测试用例与脚本/功能与界面测试用例",
         "01-测试用例与脚本/接口测试脚本",
@@ -4200,8 +4562,15 @@
         "ar-EG": "ويشمل الوسائل التعليمية للغة الصينية والرياضيات واللغة الإنجليزية والعلوم، والواجبات المنزلية اليومية بعد المدرسة، وملخصًا للأسئلة الرئيسية والصعبة، وملاحظات الدورة التدريبية عبر الإنترنت من المعلمين المشهورين وتقييمات المواهب اللامنهجية."
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.k12_student_parent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.k12_student_parent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-学科教辅资料/语文阅读与作文",
         "01-学科教辅资料/数学练习与思维题",
@@ -4218,6 +4587,7 @@
         "builtin.h_3bd9fba9",
         "builtin.h_50fc9c68",
         "builtin.h_b3f596ae",
+        "builtin.text",
         "builtin.thinking_questions",
         "hownet.000000051752.n",
         "hownet.000000234666.v",
@@ -4265,8 +4635,15 @@
         "ar-EG": "الإدارة المرحلية وفقًا لدورة حياة الفصل الدراسي: تخطيط جدول الفصل الدراسي الجديد، وتسجيل الواجبات المنزلية اليومية، وسباقات السرعة المتوسطة والنهائية، وممارسات العطلات الشتوية والصيفية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.k12_student_parent"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.k12_student_parent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-开学计划/学期计划与作息表",
         "01-开学计划/课表与选课",
@@ -4324,8 +4701,15 @@
         "ar-EG": "رقمنة الصور العائلية القديمة، وسجلات الفحص البدني على مر السنين، وقائمة من الأدوية الموصوفة عادة ومكتبة من الأوبرا الكلاسيكية والموسيقى ومقاطع الفيديو التي تحافظ على الصحة"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.senior_citizen"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.senior_citizen"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-家庭老照片与相册/全家福与亲友合影",
         "01-家庭老照片与相册/老照片扫描件",
@@ -4387,8 +4771,15 @@
         "ar-EG": "إدارة العملية الكاملة بناءً على التسجيل الطبي، وفحص العيادات الخارجية قيد التقدم، وتسوية سداد التأمين الطبي، والمتابعة السنوية للملفات طويلة الأجل"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.senior_citizen"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.senior_citizen"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-看病前准备/病历与症状记录",
         "01-看病前准备/挂号凭证与预约单",
@@ -4447,8 +4838,15 @@
         "ar-EG": "توحيد تخزين المستندات الرسمية الإدارية ذات الرأس الأحمر، وأوراق جرد المواد المكتبية، ودفاتر الإرسال والاستلام، وفواتير السداد اليومية، ومستندات الموافقة على ختم العقد شائعة الاستخدام"
       },
       "template_type": "workflow",
-      "target_identities": ["id.office.general_clerk"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.office.general_clerk"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-公文与函件/通知公告",
         "01-公文与函件/会议纪要",
@@ -4512,8 +4910,16 @@
         "ar-EG": "العملية الكاملة لتلقي المستندات الخارجية، وتعميم وتعيين التعليمات من القادة، والإشراف والإشراف على المعالجة أثناء العملية، واستكمال الحسابات وأرشفتها وإلغائها"
       },
       "template_type": "workflow",
-      "target_identities": ["id.office.general_clerk", "id.scene.personal_office_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.office.general_clerk",
+        "id.scene.personal_office_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-收文登记/外来公文",
         "01-收文登记/登记与流转单",
@@ -4571,8 +4977,16 @@
         "ar-EG": "يتم الاحتفاظ بكتيب تسجيل الأسرة لأفراد الأسرة الأساسيين، وعقود العقارات والأراضي، وبوالص التأمين الطبي الشخصي على السيارات، وفواتير المياه والكهرباء في فئات."
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.household_assets", "id.scene.finance_tax_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.household_assets",
+        "id.scene.finance_tax_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-家人证件/身份证与户口本",
         "01-家人证件/护照与通行证",
@@ -4646,7 +5060,12 @@
         "id.scene.movies_tv_collection",
         "id.scene.music_collection_vault"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-电影/高清电影",
         "01-电影/蓝光原盘",
@@ -4714,7 +5133,12 @@
         "id.dev.mobile",
         "id.student.self_learner"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-项目脚手架/前端起步模板",
         "01-项目脚手架/后端服务模板",
@@ -4779,8 +5203,15 @@
         "ar-EG": "نظام التصنيف والعزل لسجلات تشغيل التطبيقات، ومخلفات تفريغ الأعطال، وذاكرة التخزين المؤقت المؤقتة لإلغاء الضغط، والمخلفات التاريخية غير المحذوفة"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.system_cache_appdata"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.system_cache_appdata"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-软件运行日志",
         "02-崩溃与错误记录",
@@ -4829,9 +5260,22 @@
         "ar-EG": "نظام تقارب منظم لتلقي المستندات والفواتير والصوت والفيديو والحزم المضغوطة من WeChat Files وQQ وDingTalk"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.chat_software_files"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
-      "paths": ["01-文档与表格", "02-图片", "03-视频与语音", "04-压缩包", "05-待处理暂存"],
+      "target_identities": [
+        "id.scene.chat_software_files"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-文档与表格",
+        "02-图片",
+        "03-视频与语音",
+        "04-压缩包",
+        "05-待处理暂存"
+      ],
       "concept_codes": [
         "builtin.compressed_archive",
         "omw.00154433.n",
@@ -4870,8 +5314,15 @@
         "ar-EG": "نظام تصنيف نقل للصور وتسجيل الملاحظات والمستندات المنقولة من الهواتف المحمولة إلى أجهزة الكمبيوتر عبر AirDrop والنقل السريع LAN."
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.cross_device_transfer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.cross_device_transfer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-手机照片与视频",
         "02-手机录音",
@@ -4917,8 +5368,15 @@
         "ar-EG": "نظام أرشفة قائم على الغرض للقطات الشاشة المختصرة ولقطات شاشة WeChat وSnipaste ومواد تسجيل الشاشة"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.screenshots_recordings"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.screenshots_recordings"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-聊天与沟通截图",
         "02-网页与资料截图",
@@ -4966,9 +5424,21 @@
         "ar-EG": "نظام إنقاذ متقارب للمستندات النصية الجديدة المتفرقة والجداول غير المسماة والملفات المكررة ومسودات الملاحظات العشوائية"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.scratchpad_drafts"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
-      "paths": ["01-随手记的便签", "02-写了一半的草稿", "03-摘抄与素材", "04-写完待归档"],
+      "target_identities": [
+        "id.scene.scratchpad_drafts"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-随手记的便签",
+        "02-写了一半的草稿",
+        "03-摘抄与素材",
+        "04-写完待归档"
+      ],
       "concept_codes": [
         "hownet.000000044507.n",
         "hownet.000000053000.v",
@@ -5005,8 +5475,15 @@
         "ar-EG": "نظام توزيع لمجلدات البيانات المتفرقة المؤقتة المنسوخة من محركات أقراص USB المحمولة الخاصة بأشخاص آخرين أو محركات الأقراص الثابتة المحمولة أو بطاقات الكاميرا"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.external_media_triage"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.external_media_triage"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-随身办公文档",
         "02-照片与视频",
@@ -5055,8 +5532,15 @@
         "ar-EG": "نظام أرشفة رقمي لمسح ملفات PDF لجميع الأغراض ونسخ المستندات وأختام العقود وفواتير السداد على الهاتف المحمول"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.scanned_documents"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.scanned_documents"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-证件扫描",
         "02-合同与协议扫描",
@@ -5065,6 +5549,7 @@
         "05-待识别文字的文件"
       ],
       "concept_codes": [
+        "builtin.bill",
         "omw.00618878.v",
         "omw.01002297.v",
         "omw.02152504.v",
@@ -5103,8 +5588,15 @@
         "ar-EG": "نظام تصنيف وتخزين فعال للمستندات المكتبية اليومية المتراكمة في مكتبة المستندات الشخصية"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.personal_office_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.personal_office_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-合同与协议",
         "02-方案与汇报",
@@ -5150,8 +5642,15 @@
         "ar-EG": "نظام تجميع مذكرات الدورة والكتب الإلكترونية والأوراق الأكاديمية وبنوك الأسئلة التدريبية للطلاب والمتعلمين الذاتيين والباحثين"
       },
       "template_type": "classification",
-      "target_identities": ["id.scene.study_research_docs"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.scene.study_research_docs"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-课程与教材",
         "02-学习笔记",
@@ -5201,8 +5700,17 @@
         "ar-EG": "أرشيف عملية الديكور بأكملها بدءًا من قياس الغرفة وتصميمها وعقد الميزانية وحتى قبول البناء وضمان النقل"
       },
       "template_type": "workflow",
-      "target_identities": ["id.eng.architect", "id.life.homemaker", "id.life.household_assets"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.eng.architect",
+        "id.life.homemaker",
+        "id.life.household_assets"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-量房与原始图纸/原始户型图CAD",
         "01-量房与原始图纸/量房手稿与照片",
@@ -5296,8 +5804,16 @@
         "ar-EG": "أرشيف حائط صور موحد للخلفيات والرسوم التوضيحية والصور التي تم إنشاؤها بواسطة الذكاء الاصطناعي وصور المعجبين وغيرها من الصور للتقدير والتجميع الخالص."
       },
       "template_type": "workflow",
-      "target_identities": ["id.media.collector_hoarder", "id.scene.personal_photos_album"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.media.collector_hoarder",
+        "id.scene.personal_photos_album"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-壁纸与桌面/电脑壁纸",
         "01-壁纸与桌面/手机壁纸",
@@ -5373,8 +5889,16 @@
         "ar-EG": "ملفات الانتقال الوظيفي مع إصدارات متعددة من السيرة الذاتية والمحفظة ومراجعة المقابلة ومقارنة العروض"
       },
       "template_type": "workflow",
-      "target_identities": ["id.office.general_clerk", "id.student.grad"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.office.general_clerk",
+        "id.student.grad"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-简历多版本/通用版简历",
         "01-简历多版本/定向投递版",
@@ -5456,8 +5980,16 @@
         "ar-EG": "خط إنتاج الدورة التدريبية عبر الإنترنت بدءًا من منهج الدورة التدريبية وتسجيل الدورة الأصلية والبرامج التعليمية والنشرات وحتى التحرير والتسليم"
       },
       "template_type": "workflow",
-      "target_identities": ["id.edu.trainer", "id.student.self_learner"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.edu.trainer",
+        "id.student.self_learner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-课程大纲与脚本/课程大纲",
         "01-课程大纲与脚本/逐字稿",
@@ -5533,8 +6065,17 @@
         "ar-EG": "تشغيل البث المباشر ، والتقطيع شديد اللمعان ، ومخطوطات التحكم الميداني ، وملفات تشغيل المرساة مع إعادة قرص بيانات الشحن"
       },
       "template_type": "workflow",
-      "target_identities": ["id.ops.newmedia", "id.ops.private_domain", "id.ops.ecommerce"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.ops.newmedia",
+        "id.ops.private_domain",
+        "id.ops.ecommerce"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-直播回放/完整回放",
         "01-直播回放/平台存档",
@@ -5613,8 +6154,16 @@
         "ar-EG": "محفوظات إنشاء الطعام لإطلاق النار على الطعام ، والبحث والتطوير في الوصفات ، وتخزين مواد الاستكشاف إلى المسودات الرسومية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.cooking_foodie", "id.hobby.vlogger"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.cooking_foodie",
+        "id.hobby.vlogger"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-菜品成品图/精修成品",
         "01-菜品成品图/俯拍全家福",
@@ -5696,8 +6245,17 @@
         "ar-EG": "ملفات إنشاء تصوير السفر لمقاعد خط سير الرحلة ، وتحسينات الأفلام الأصلية ، والتصوير الجوي للفيديو للطلبات التجارية الرسومية"
       },
       "template_type": "workflow",
-      "target_identities": ["id.hobby.photographer", "id.hobby.vlogger", "id.life.traveler"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.hobby.photographer",
+        "id.hobby.vlogger",
+        "id.life.traveler"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-行程与机位/行程规划",
         "01-行程与机位/机位地图",
@@ -5770,8 +6328,16 @@
         "ar-EG": "خطة خط سير الرحلة ، خطة السلامة ، إخطار الوالدين بملف المنظمة لمعسكر البحث لاستئناف الحدث"
       },
       "template_type": "workflow",
-      "target_identities": ["id.edu.k12_teacher", "id.edu.trainer"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.edu.k12_teacher",
+        "id.edu.trainer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-行程方案与课表/行程方案",
         "01-行程方案与课表/课程课表",
@@ -5851,8 +6417,15 @@
         "ar-EG": "تستغرق فترة التحضير للزفاف بأكملها من 6 إلى 12 شهرًا، ويتم حفظ الصور الأصلية المعدلة بدقة لصور الزفاف، ومعلومات موردي أماكن إقامة حفل الزفاف، وعقود الميزانية، وتصميم بطاقات الدعوة، ومواد التصوير الفوتوغرافي في يوم الزفاف في مكان واحد."
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.homemaker"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.homemaker"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-婚纱照原片与精修/原片RAW",
         "01-婚纱照原片与精修/精修成片",
@@ -5939,8 +6512,16 @@
         "ar-EG": "من شراء السيارة الخاصة إلى بيعها خلال 5-10 سنوات، يتم الاحتفاظ بسجلات عقد شراء السيارة والتأمين والفحص السنوي والصيانة والإصلاح والمطالبات المتعلقة بالحوادث والتعديلات في مكان واحد، وهي سلسلة الأدلة الكاملة الأكثر قيمة عند بيع السيارة."
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.household_assets", "id.life.homemaker"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.household_assets",
+        "id.life.homemaker"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-购车文件/购车合同",
         "01-购车文件/发票与合格证",
@@ -6019,8 +6600,16 @@
         "ar-EG": "الآباء الجدد الذين لديهم أطفال تتراوح أعمارهم بين 0 و6 سنوات، ومقاطع الفيديو والصور الخاصة بنمو الأطفال، والتطعيمات والفحوصات الطبية، والزيارات الطبية، وسجلات التعليم المبكر، وأرشيف ألبومات الذكريات الخاصة بنمو الأطفال، والتي تتوافق مع الفجوة الخاصة بالأطفال الرضع والأطفال الصغار في تطبيق \"senior-life-archive\" المخصص لكبار السن"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.k12_student_parent", "id.life.homemaker"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.k12_student_parent",
+        "id.life.homemaker"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-成长照片视频/满月百天周岁",
         "01-成长照片视频/日常随手拍",
@@ -6095,7 +6684,12 @@
         "id.life.household_assets",
         "id.scene.finance_tax_docs"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-账户与对账单/银行对账单",
         "01-账户与对账单/信用卡账单",
@@ -6164,8 +6758,16 @@
         "ar-EG": "صانع القرار الذي يجهز التأمين لجميع أفراد الأسرة، إدارة شاملة لبوليصات التأمين الإلكترونية، وشروط المسؤولية، ودفع الأقساط وتجديد التأمين، ومستندات المطالبة، واسترجاع بوليصة التأمين في ثوانٍ عند وقوع حادث"
       },
       "template_type": "workflow",
-      "target_identities": ["id.life.household_assets", "id.life.homemaker"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.life.household_assets",
+        "id.life.homemaker"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-保单电子件/重疾险",
         "01-保单电子件/医疗险",
@@ -6236,7 +6838,12 @@
         "id.creator.sound_designer",
         "id.scene.voice_recordings_audio"
       ],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-原始录音/单集原始音轨",
         "01-原始录音/访谈素材",
@@ -6311,8 +6918,17 @@
         "ar-EG": "يتم تصنيف ملفات النماذج ومعلمات التقسيم وصور مراجعة الإخفاقات والمشاريع الإلكترونية مفتوحة المصدر وقوائم المواد الاستهلاكية الخاصة بعشاق الطباعة ثلاثية الأبعاد وصناع أردوينو وراسبيري باي، مع تحديد واضح للحدود بين التطوير الهندسي وعمليات العرض المتحركة."
       },
       "template_type": "workflow",
-      "target_identities": ["id.dev.embedded", "id.designer.3d", "id.life.tech_geek"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.dev.embedded",
+        "id.designer.3d",
+        "id.life.tech_geek"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-模型文件/STL模型",
         "01-模型文件/3MF项目",
@@ -6383,8 +6999,16 @@
         "ar-EG": "يتم أرشفة صور التقدم في التجميع البسيط، والمنتجات النهائية المطلية، وصور الصناديق، وإيصالات الشراء، وقوائم التقييم للمقتنيات الخاصة بهواة جمع دمى الليغو والدمى العسكرية والأحذية الرياضية، والتي تختلف عن خطوط المقتنيات المادية الخاصة بمعلومات اللاعبين."
       },
       "template_type": "workflow",
-      "target_identities": ["id.media.collector_hoarder", "id.life.digital_hoarder"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.media.collector_hoarder",
+        "id.life.digital_hoarder"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-藏品清单/藏品总表",
         "01-藏品清单/估值记录",
@@ -6451,8 +7075,17 @@
         "ar-EG": "المستخدمين منظمة العفو الدولية الثقيلة مج و سد تنتج الصور والفيديو منظمة العفو الدولية ، ومنتجات الحوار غت ، وتوليد أشرطة الفيديو الصورة ، المعلمات كلمة سريعة ، تكوين سير العمل نسخة النموذج ، وأرشفة الأعمال المختارة ، والأصول الجديدة الأسرع نموا في الوقت الراهن"
       },
       "template_type": "workflow",
-      "target_identities": ["id.designer.graphic", "id.hobby.vlogger", "id.dev.ai_ml"],
-      "lifecycle_stages": ["inbox", "in_progress", "exported", "archived"],
+      "target_identities": [
+        "id.designer.graphic",
+        "id.hobby.vlogger",
+        "id.dev.ai_ml"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
       "paths": [
         "01-生成图像/文生图",
         "01-生成图像/图生图",

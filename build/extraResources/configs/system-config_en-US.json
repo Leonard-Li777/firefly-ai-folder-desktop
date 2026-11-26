@@ -6,6 +6,7 @@
       "[Low-configuration computer friendly] Reconstruct high-speed AI architecture based on CPU inference, running smoothly on low-memory devices without independent graphics cards",
       "[Independent Firecore AI Engine] Can be run independently of the main program to provide AI capabilities to third-party applications",
       "[Multimedia Semantic Search] Pictures, audios, and videos support natural language retrieval, and search content by semantics, pictures, and voices",
+      "[Analysis list of files to be supplemented] Support post-supplementary file analysis data, long video graphics and other first analysis will no longer block the analysis queue",
       "[Speech to text ASR] Quickly transcribe audio and video conversations into text for easy retrieval and archiving",
       "[Speech Synthesis TTS] Text-to-speech, built-in 50+ sounds, supports 3-second sound cloning, and reads document novels aloud",
       "[File tag upgrade] Enrich fact tag types, the tags are more accurate and interpretable, and the tag tree supports 10 levels of expansion",
@@ -20,7 +21,8 @@
       "[Customized directory tree] Paste Markdown directory, double-column real-time preview, and build exclusive organizing rules",
       "[Intelligent sleep] Intelligent perception of user operation, at the low memory water level, the memory usage is automatically released when the function is idle.",
       "[Opening up to external capabilities] Comprehensively upgrade external capabilities, so that external agents can directly call the various AI capabilities of Firefly core",
-      "[In-depth UI optimization] Reconstruct the setting page structure, add a new guide and help entrance, and make the operation more intuitive."
+      "【More video format playback】 Expanded to support direct playback of all common video formats",
+      "[Deep UI optimization] Refactored the setting page architecture, added guidance and help entry and layout switching functions, and the operation is more intuitive"
     ],
     "forceUpdate": false
   },

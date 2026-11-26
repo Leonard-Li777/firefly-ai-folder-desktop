@@ -22,8 +22,14 @@
         "응용 데이터"
       ],
       "description": "파일의 기본 형식 분류",
-      "applicableFileTypes": ["*"],
-      "contextHints": ["확장자", "MIME 유형", "파일 서명"],
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "확장자",
+        "MIME 유형",
+        "파일 서명"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -51,8 +57,14 @@
         "가족 생활"
       ],
       "description": "파일의 주요 사용 시나리오",
-      "applicableFileTypes": ["*"],
-      "contextHints": ["저장 경로", "명명 패턴", "연동 애플리케이션"],
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "저장 경로",
+        "명명 패턴",
+        "연동 애플리케이션"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -76,8 +88,13 @@
         "이메일 첨부 파일"
       ],
       "description": "파일의 원래 수집 경로",
-      "applicableFileTypes": ["*"],
-      "contextHints": ["경로 특징", "전송 로그"],
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "경로 특징",
+        "전송 로그"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -93,8 +110,20 @@
       "level": 1,
       "tags": [],
       "description": "파일의 작성자 또는 기여자",
-      "applicableFileTypes": ["text", "document", "ebook", "image", "code", "video", "audio"],
-      "contextHints": ["메타데이터", "디지털 서명", "워터마크"],
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "code",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "메타데이터",
+        "디지털 서명",
+        "워터마크"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -108,14 +137,26 @@
       "id": 5,
       "name": "애플리케이션 데이터 세분화",
       "level": 2,
-      "tags": ["애플리케이션 데이터 확장", "바로 가기", "재생목록", "기재", "도움말 문서"],
+      "tags": [
+        "애플리케이션 데이터 확장",
+        "바로 가기",
+        "재생목록",
+        "기재",
+        "도움말 문서"
+      ],
       "description": "애플리케이션 데이터 파일 분할",
-      "applicableFileTypes": ["application"],
-      "contextHints": ["형식 특성"],
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["응용 데이터"]
+          "triggerTags": [
+            "응용 데이터"
+          ]
         }
       ],
       "metadata": {
@@ -149,12 +190,19 @@
         "글자가 없는 그림"
       ],
       "description": "이미지 콘텐츠의 전문적인 분류",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["EXIF 데이터", "콘텐츠 식별"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "EXIF 데이터",
+        "콘텐츠 식별"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지"]
+          "triggerTags": [
+            "이미지"
+          ]
         }
       ],
       "tagImplications": [
@@ -216,12 +264,19 @@
         "회의 영상"
       ],
       "description": "영상콘텐츠의 전문적인 분류",
-      "applicableFileTypes": ["video"],
-      "contextHints": ["지속시간 특성", "키프레임 분석"],
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "지속시간 특성",
+        "키프레임 분석"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["동영상"]
+          "triggerTags": [
+            "동영상"
+          ]
         }
       ],
       "tagImplications": [
@@ -252,14 +307,29 @@
       "id": 8,
       "name": "오디오 분할",
       "level": 2,
-      "tags": ["오디오 확장", "음악", "팟캐스트", "오디오북", "음성 메모", "음향 효과", "회의녹화"],
+      "tags": [
+        "오디오 확장",
+        "음악",
+        "팟캐스트",
+        "오디오북",
+        "음성 메모",
+        "음향 효과",
+        "회의녹화"
+      ],
       "description": "오디오 콘텐츠의 전문적인 분류",
-      "applicableFileTypes": ["audio"],
-      "contextHints": ["스펙트럼 특성", "메타데이터"],
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "스펙트럼 특성",
+        "메타데이터"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["오디오"]
+          "triggerTags": [
+            "오디오"
+          ]
         }
       ],
       "tagImplications": [
@@ -290,14 +360,26 @@
       "id": 9,
       "name": "압축된 패키지 분석",
       "level": 2,
-      "tags": ["압축 패키지 확장", "암호화된 압축 패키지", "암호화되지 않은 압축 패키지"],
+      "tags": [
+        "압축 패키지 확장",
+        "암호화된 압축 패키지",
+        "암호화되지 않은 압축 패키지"
+      ],
       "description": "압축된 패키지의 암호화 상태 및 형식 분류",
-      "applicableFileTypes": ["archive"],
-      "contextHints": ["압축 알고리즘", "파일 헤더 서명", "암호화 감지"],
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "압축 알고리즘",
+        "파일 헤더 서명",
+        "암호화 감지"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["압축 파일"]
+          "triggerTags": [
+            "압축 파일"
+          ]
         }
       ],
       "metadata": {
@@ -322,12 +404,19 @@
         "게임 프로그램"
       ],
       "description": "실행 파일 분류",
-      "applicableFileTypes": ["executable"],
-      "contextHints": ["플랫폼 기능", "서명 인증서"],
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "플랫폼 기능",
+        "서명 인증서"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["실행 프로그램"]
+          "triggerTags": [
+            "실행 프로그램"
+          ]
         }
       ],
       "tagImplications": [
@@ -374,14 +463,29 @@
       "id": 163,
       "name": "운영 플랫폼",
       "level": 2,
-      "tags": ["Windows", "macOS", "Linux", "Android", "iOS", "크로스 플랫폼"],
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "크로스 플랫폼"
+      ],
       "description": "프로그램이 실행되는 운영 체제 및 아키텍처 플랫폼",
-      "applicableFileTypes": ["executable"],
-      "contextHints": ["PE 헤더 특징", "ELF 헤더 특징", "Mach-O 헤더 특징"],
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "PE 헤더 특징",
+        "ELF 헤더 특징",
+        "Mach-O 헤더 특징"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["실행 프로그램"]
+          "triggerTags": [
+            "실행 프로그램"
+          ]
         }
       ],
       "metadata": {
@@ -407,12 +511,19 @@
         "JVM"
       ],
       "description": "프로그램 종속성의 런타임 및 프레임 워크 특성",
-      "applicableFileTypes": ["executable"],
-      "contextHints": ["종속성 라이브러리 검색", "포장 특성"],
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "종속성 라이브러리 검색",
+        "포장 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["실행 프로그램"]
+          "triggerTags": [
+            "실행 프로그램"
+          ]
         }
       ],
       "metadata": {
@@ -437,12 +548,19 @@
         "데이터 암호화 & 보안"
       ],
       "description": "프로그램 기능 특성의 다 선택 표하기 차원",
-      "applicableFileTypes": ["executable"],
-      "contextHints": ["심볼 클러스터링", "능력 탐지"],
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "심볼 클러스터링",
+        "능력 탐지"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["실행 프로그램"]
+          "triggerTags": [
+            "실행 프로그램"
+          ]
         }
       ],
       "metadata": {
@@ -474,12 +592,27 @@
         "힌디어"
       ],
       "description": "문서 내용의 자연어 분류",
-      "applicableFileTypes": ["document", "text", "ebook", "audio", "video"],
-      "contextHints": ["문자 인코딩", "문법적 특징"],
+      "applicableFileTypes": [
+        "document",
+        "text",
+        "ebook",
+        "audio",
+        "video"
+      ],
+      "contextHints": [
+        "문자 인코딩",
+        "문법적 특징"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["텍스트", "문서", "전자책", "오디오", "동영상"]
+          "triggerTags": [
+            "텍스트",
+            "문서",
+            "전자책",
+            "오디오",
+            "동영상"
+          ]
         }
       ],
       "metadata": {
@@ -494,14 +627,28 @@
       "id": 12,
       "name": "시스템 파일 분석",
       "level": 2,
-      "tags": ["시스템 파일 확장자", "구성 파일", "로그", "은닉처", "임시 파일", "드라이버"],
+      "tags": [
+        "시스템 파일 확장자",
+        "구성 파일",
+        "로그",
+        "은닉처",
+        "임시 파일",
+        "드라이버"
+      ],
       "description": "주요 시스템 파일의 기능 분류",
-      "applicableFileTypes": ["filesystem"],
-      "contextHints": ["경로 위치", "권한 특성"],
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "경로 위치",
+        "권한 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["시스템 파일"]
+          "triggerTags": [
+            "시스템 파일"
+          ]
         }
       ],
       "metadata": {
@@ -516,30 +663,58 @@
       "id": 13,
       "name": "출판현황",
       "level": 2,
-      "tags": ["단행본", "연재 중", "연재 완료", "무삭제", "추가의", "추천", "요약 버전", "특전"],
+      "tags": [
+        "단행본",
+        "연재 중",
+        "연재 완료",
+        "무삭제",
+        "추가의",
+        "추천",
+        "요약 버전",
+        "특전"
+      ],
       "description": "문서의 발행 및 공개 현황",
-      "applicableFileTypes": ["ebook", "video", "audio"],
-      "contextHints": ["저작권 페이지", "ISBN 번호", "출판 플랫폼"],
+      "applicableFileTypes": [
+        "ebook",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "저작권 페이지",
+        "ISBN 번호",
+        "출판 플랫폼"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "전자책 세분화",
-          "triggerTags": ["소설"]
+          "triggerTags": [
+            "소설"
+          ]
         },
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["오디오북", "음악"]
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
         },
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["전자책"]
+          "triggerTags": [
+            "전자책"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -554,14 +729,28 @@
       "id": 14,
       "name": "데이터베이스 세분화",
       "level": 2,
-      "tags": ["데이터베이스 확장", "SQLite", "MySQL", "MongoDB", "Access", "데이터 백업"],
+      "tags": [
+        "데이터베이스 확장",
+        "SQLite",
+        "MySQL",
+        "MongoDB",
+        "Access",
+        "데이터 백업"
+      ],
       "description": "데이터베이스 파일의 기술적 형식",
-      "applicableFileTypes": ["database"],
-      "contextHints": ["파일 서명", "구조적 특징"],
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "파일 서명",
+        "구조적 특징"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["데이터베이스"]
+          "triggerTags": [
+            "데이터베이스"
+          ]
         }
       ],
       "metadata": {
@@ -576,14 +765,26 @@
       "id": 15,
       "name": "디스크 이미지 분할",
       "level": 2,
-      "tags": ["디스크 이미지 확장", "시스템 이미지", "데이터 미러링", "광학 디스크 이미지"],
+      "tags": [
+        "디스크 이미지 확장",
+        "시스템 이미지",
+        "데이터 미러링",
+        "광학 디스크 이미지"
+      ],
       "description": "디스크 이미지 사용량 분류",
-      "applicableFileTypes": ["diskimage"],
-      "contextHints": ["볼륨 레이블 정보", "파티션 구조"],
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "볼륨 레이블 정보",
+        "파티션 구조"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["디스크 이미지"]
+          "triggerTags": [
+            "디스크 이미지"
+          ]
         }
       ],
       "metadata": {
@@ -600,16 +801,28 @@
       "level": 2,
       "tags": [],
       "description": "콘텐츠와 관련된 위치",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["GPS 좌표", "랜드마크 인식"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "GPS 좌표",
+        "랜드마크 인식"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지", "동영상"]
+          "triggerTags": [
+            "이미지",
+            "동영상"
+          ]
         },
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["여행 기록", "창작 프로젝트"]
+          "triggerTags": [
+            "여행 기록",
+            "창작 프로젝트"
+          ]
         }
       ],
       "metadata": {
@@ -625,14 +838,30 @@
       "id": 17,
       "name": "보안 수준",
       "level": 2,
-      "tags": ["공공의", "내부", "비밀의", "기밀"],
+      "tags": [
+        "공공의",
+        "내부",
+        "비밀의",
+        "기밀"
+      ],
       "description": "문서의 기밀성 수준 분류",
-      "applicableFileTypes": ["document", "code", "archive", "database"],
-      "contextHints": ["암호화 상태", "권한 설정"],
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "archive",
+        "database"
+      ],
+      "contextHints": [
+        "암호화 상태",
+        "권한 설정"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["업무 문서", "금융 파일"]
+          "triggerTags": [
+            "업무 문서",
+            "금융 파일"
+          ]
         }
       ],
       "metadata": {
@@ -647,14 +876,31 @@
       "id": 18,
       "name": "처리상태",
       "level": 2,
-      "tags": ["초안", "검토중", "완료됨", "보관됨", "보관되지 않음", "개정 예정"],
+      "tags": [
+        "초안",
+        "검토중",
+        "완료됨",
+        "보관됨",
+        "보관되지 않음",
+        "개정 예정"
+      ],
       "description": "파일의 워크플로 상태",
-      "applicableFileTypes": ["document", "code", "design"],
-      "contextHints": ["수정 시간", "버전 표시"],
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "design"
+      ],
+      "contextHints": [
+        "수정 시간",
+        "버전 표시"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["업무 문서", "창작 프로젝트"]
+          "triggerTags": [
+            "업무 문서",
+            "창작 프로젝트"
+          ]
         }
       ],
       "metadata": {
@@ -679,12 +925,19 @@
         "현지화 버전"
       ],
       "description": "소프트웨어의 라이센스 및 배포 특성",
-      "applicableFileTypes": ["executable"],
-      "contextHints": ["라이센스 파일", "승인 ID"],
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "라이센스 파일",
+        "승인 ID"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["실행 프로그램"]
+          "triggerTags": [
+            "실행 프로그램"
+          ]
         }
       ],
       "metadata": {
@@ -698,14 +951,30 @@
       "id": 20,
       "name": "여행 콘텐츠",
       "level": 2,
-      "tags": ["자연 경관", "도시 건축", "인문학적 활동", "세계 요리", "유적지", "야외 활동"],
+      "tags": [
+        "자연 경관",
+        "도시 건축",
+        "인문학적 활동",
+        "세계 요리",
+        "유적지",
+        "야외 활동"
+      ],
       "description": "여행기록의 내용분류",
-      "applicableFileTypes": ["image", "video", "document"],
-      "contextHints": ["장면 인식", "시간 특성"],
+      "applicableFileTypes": [
+        "image",
+        "video",
+        "document"
+      ],
+      "contextHints": [
+        "장면 인식",
+        "시간 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["여행 기록"]
+          "triggerTags": [
+            "여행 기록"
+          ]
         }
       ],
       "metadata": {
@@ -719,14 +988,28 @@
       "id": 21,
       "name": "금융 유형",
       "level": 2,
-      "tags": ["소득 바우처", "지출 바우처", "자산 증명", "세금 서류", "계약", "청구서"],
+      "tags": [
+        "소득 바우처",
+        "지출 바우처",
+        "자산 증명",
+        "세금 서류",
+        "계약",
+        "청구서"
+      ],
       "description": "재무 문서의 비즈니스 유형",
-      "applicableFileTypes": ["document"],
-      "contextHints": ["청구서 식별", "금액 모드"],
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "청구서 식별",
+        "금액 모드"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["금융 파일"]
+          "triggerTags": [
+            "금융 파일"
+          ]
         }
       ],
       "tagImplications": [
@@ -792,12 +1075,20 @@
         "오토메 게임"
       ],
       "description": "게임의 종류",
-      "applicableFileTypes": ["video", "ebook", "executable"],
-      "contextHints": ["게임"],
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "게임"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["게임 및 엔터테인먼트"]
+          "triggerTags": [
+            "게임 및 엔터테인먼트"
+          ]
         }
       ],
       "tagImplications": [
@@ -902,12 +1193,23 @@
         "교육"
       ],
       "description": "학습자료의 주제영역 분류",
-      "applicableFileTypes": ["document", "video", "ebook", "code"],
-      "contextHints": ["주제 용어 밀도", "교과서 장 구조", "코스 플랫폼 로고"],
+      "applicableFileTypes": [
+        "document",
+        "video",
+        "ebook",
+        "code"
+      ],
+      "contextHints": [
+        "주제 용어 밀도",
+        "교과서 장 구조",
+        "코스 플랫폼 로고"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["학습 자료"]
+          "triggerTags": [
+            "학습 자료"
+          ]
         }
       ],
       "tagImplications": [
@@ -978,14 +1280,29 @@
       "id": 24,
       "name": "전자책 세분화",
       "level": 2,
-      "tags": ["전자책 확장", "소설", "만화", "기술 서적", "잡지", "교과서", "공개 도서"],
+      "tags": [
+        "전자책 확장",
+        "소설",
+        "만화",
+        "기술 서적",
+        "잡지",
+        "교과서",
+        "공개 도서"
+      ],
       "description": "전자책 콘텐츠 분류",
-      "applicableFileTypes": ["ebook"],
-      "contextHints": ["챕터 구조", "DRM 상태"],
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "챕터 구조",
+        "DRM 상태"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["전자책"]
+          "triggerTags": [
+            "전자책"
+          ]
         }
       ],
       "tagImplications": [
@@ -1051,28 +1368,47 @@
         "윤리학"
       ],
       "description": "주제의 전문 분류",
-      "applicableFileTypes": ["video", "audio", "ebook", "executable"],
-      "contextHints": ["지속시간 특성", "키프레임 분석", "콘텐츠 특성"],
+      "applicableFileTypes": [
+        "video",
+        "audio",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "지속시간 특성",
+        "키프레임 분석",
+        "콘텐츠 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["음악"]
+          "triggerTags": [
+            "음악"
+          ]
         },
         {
           "parentDimension": "전자책 세분화",
-          "triggerTags": ["소설"]
+          "triggerTags": [
+            "소설"
+          ]
         },
         {
           "parentDimension": "프로그램 세분화",
-          "triggerTags": ["게임"]
+          "triggerTags": [
+            "게임"
+          ]
         },
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["게임 및 엔터테인먼트"]
+          "triggerTags": [
+            "게임 및 엔터테인먼트"
+          ]
         }
       ],
       "metadata": {
@@ -1105,12 +1441,19 @@
         "교향곡 / 심포니"
       ],
       "description": "음악 유형",
-      "applicableFileTypes": ["audio"],
-      "contextHints": ["지속시간 특성", "콘텐츠 특성"],
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "지속시간 특성",
+        "콘텐츠 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["음악"]
+          "triggerTags": [
+            "음악"
+          ]
         }
       ],
       "metadata": {
@@ -1124,10 +1467,20 @@
       "id": 27,
       "name": "문서 품질",
       "level": 1,
-      "tags": ["고품질", "중간 품질", "품질이 낮음"],
+      "tags": [
+        "고품질",
+        "중간 품질",
+        "품질이 낮음"
+      ],
       "description": "파일 콘텐츠의 품질 평가",
-      "applicableFileTypes": ["*"],
-      "contextHints": ["콘텐츠 품질", "기술적인 품질", "미적 품질"],
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "콘텐츠 품질",
+        "기술적인 품질",
+        "미적 품질"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1469,8 +1822,14 @@
         "수락 양식"
       ],
       "description": "문서 내용이나 다중모달 설명에서 추출된 핵심 키워드",
-      "applicableFileTypes": ["*"],
-      "contextHints": ["텍스트 내용", "시각적 설명", "음성 전사"],
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "텍스트 내용",
+        "시각적 설명",
+        "음성 전사"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {
@@ -1494,12 +1853,26 @@
         "집에서 만든 식사"
       ],
       "description": "가족 상황에서 구체적인 삶의 문제",
-      "applicableFileTypes": ["text", "document", "ebook", "image", "video", "audio", "design"],
-      "contextHints": ["저장 경로", "명명 패턴", "연동 애플리케이션"],
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "저장 경로",
+        "명명 패턴",
+        "연동 애플리케이션"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["가족 생활"]
+          "triggerTags": [
+            "가족 생활"
+          ]
         }
       ],
       "metadata": {
@@ -1523,12 +1896,18 @@
         "자막"
       ],
       "description": "텍스트 파일의 세분화",
-      "applicableFileTypes": ["text"],
-      "contextHints": ["형식 특성"],
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["텍스트"]
+          "triggerTags": [
+            "텍스트"
+          ]
         }
       ],
       "metadata": {
@@ -1543,14 +1922,27 @@
       "id": 101,
       "name": "문서 세분화",
       "level": 2,
-      "tags": ["문서 확장자", "Office", "워드 문서", "시트", "프레젠테이션", "WPS 문서"],
+      "tags": [
+        "문서 확장자",
+        "Office",
+        "워드 문서",
+        "시트",
+        "프레젠테이션",
+        "WPS 문서"
+      ],
       "description": "문서 파일의 세분화",
-      "applicableFileTypes": ["document"],
-      "contextHints": ["형식 특성"],
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["문서"]
+          "triggerTags": [
+            "문서"
+          ]
         }
       ],
       "metadata": {
@@ -1598,12 +1990,18 @@
         "url"
       ],
       "description": "애플리케이션 데이터 파일 확장자",
-      "applicableFileTypes": ["application"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "애플리케이션 데이터 세분화",
-          "triggerTags": ["애플리케이션 데이터 확장"]
+          "triggerTags": [
+            "애플리케이션 데이터 확장"
+          ]
         }
       ],
       "metadata": {
@@ -1619,14 +2017,28 @@
       "id": 103,
       "name": "데이터베이스 확장",
       "level": 3,
-      "tags": ["db", "db3", "mdb", "accdb", "fdb", "dbf", "sqlitedb"],
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
       "description": "데이터베이스 파일 확장자",
-      "applicableFileTypes": ["database"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "데이터베이스 세분화",
-          "triggerTags": ["데이터베이스 확장"]
+          "triggerTags": [
+            "데이터베이스 확장"
+          ]
         }
       ],
       "metadata": {
@@ -1642,14 +2054,32 @@
       "id": 104,
       "name": "디스크 이미지 확장",
       "level": 3,
-      "tags": ["vhd", "vhdx", "vmdk", "img", "nrg", "mdf", "mds", "raw", "qcow2", "vdi", "ova"],
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
       "description": "디스크 이미지 파일 확장자",
-      "applicableFileTypes": ["diskimage"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "디스크 이미지 분할",
-          "triggerTags": ["디스크 이미지 확장"]
+          "triggerTags": [
+            "디스크 이미지 확장"
+          ]
         }
       ],
       "metadata": {
@@ -1674,12 +2104,19 @@
         "백엔드"
       ],
       "description": "소스 코드 파일 분류",
-      "applicableFileTypes": ["code"],
-      "contextHints": ["문법적 특징", "인터프리터 경로"],
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "문법적 특징",
+        "인터프리터 경로"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["소스 코드"]
+          "triggerTags": [
+            "소스 코드"
+          ]
         }
       ],
       "metadata": {
@@ -1694,14 +2131,26 @@
       "id": 106,
       "name": "글꼴 분할",
       "level": 2,
-      "tags": ["글꼴 확장", "영문폰트", "중국어 글꼴", "아이콘 글꼴"],
+      "tags": [
+        "글꼴 확장",
+        "영문폰트",
+        "중국어 글꼴",
+        "아이콘 글꼴"
+      ],
       "description": "글꼴 파일 분류",
-      "applicableFileTypes": ["font"],
-      "contextHints": ["글꼴 형식", "문자 집합"],
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "글꼴 형식",
+        "문자 집합"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["글꼴"]
+          "triggerTags": [
+            "글꼴"
+          ]
         }
       ],
       "metadata": {
@@ -1716,14 +2165,28 @@
       "id": 107,
       "name": "시스템 파일 확장자",
       "level": 3,
-      "tags": ["sys", "drv", "dll", "service", "socket", "pid", "lock"],
+      "tags": [
+        "sys",
+        "drv",
+        "dll",
+        "service",
+        "socket",
+        "pid",
+        "lock"
+      ],
       "description": "시스템 파일 확장자",
-      "applicableFileTypes": ["filesystem"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "시스템 파일 분석",
-          "triggerTags": ["시스템 파일 확장자"]
+          "triggerTags": [
+            "시스템 파일 확장자"
+          ]
         }
       ],
       "metadata": {
@@ -1767,12 +2230,18 @@
         "xlsx"
       ],
       "description": "문서 클래스 파일 확장자",
-      "applicableFileTypes": ["document"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "문서 세분화",
-          "triggerTags": ["문서 확장자"]
+          "triggerTags": [
+            "문서 확장자"
+          ]
         }
       ],
       "metadata": {
@@ -1805,12 +2274,18 @@
         "webvtt"
       ],
       "description": "텍스트 파일 확장자",
-      "applicableFileTypes": ["text"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "텍스트 세분화",
-          "triggerTags": ["텍스트 확장"]
+          "triggerTags": [
+            "텍스트 확장"
+          ]
         }
       ],
       "metadata": {
@@ -1861,12 +2336,18 @@
         "xcf"
       ],
       "description": "이미지 파일 확장자",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["이미지 확장"]
+          "triggerTags": [
+            "이미지 확장"
+          ]
         }
       ],
       "metadata": {
@@ -1905,12 +2386,18 @@
         "dv"
       ],
       "description": "비디오 파일 확장자",
-      "applicableFileTypes": ["video"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["비디오 확장"]
+          "triggerTags": [
+            "비디오 확장"
+          ]
         }
       ],
       "metadata": {
@@ -1955,12 +2442,18 @@
         "oga"
       ],
       "description": "오디오 파일 확장자",
-      "applicableFileTypes": ["audio"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["오디오 확장"]
+          "triggerTags": [
+            "오디오 확장"
+          ]
         }
       ],
       "metadata": {
@@ -2013,12 +2506,18 @@
         "zip"
       ],
       "description": "압축된 패키지 파일의 확장자",
-      "applicableFileTypes": ["archive"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "압축된 패키지 분석",
-          "triggerTags": ["압축 패키지 확장"]
+          "triggerTags": [
+            "압축 패키지 확장"
+          ]
         }
       ],
       "metadata": {
@@ -2141,12 +2640,18 @@
         "yml"
       ],
       "description": "소스 코드 파일 확장자",
-      "applicableFileTypes": ["code"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "소스 코드 분할",
-          "triggerTags": ["소스 코드 확장"]
+          "triggerTags": [
+            "소스 코드 확장"
+          ]
         }
       ],
       "metadata": {
@@ -2184,12 +2689,18 @@
         "wasm"
       ],
       "description": "실행 파일 확장자",
-      "applicableFileTypes": ["executable"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "프로그램 세분화",
-          "triggerTags": ["프로그램 확장"]
+          "triggerTags": [
+            "프로그램 확장"
+          ]
         }
       ],
       "metadata": {
@@ -2205,14 +2716,32 @@
       "id": 116,
       "name": "전자책 확장",
       "level": 3,
-      "tags": ["epub", "mobi", "azw3", "fb2", "djvu", "umd", "cb7", "cbt", "bz2", "cbr", "cbz"],
+      "tags": [
+        "epub",
+        "mobi",
+        "azw3",
+        "fb2",
+        "djvu",
+        "umd",
+        "cb7",
+        "cbt",
+        "bz2",
+        "cbr",
+        "cbz"
+      ],
       "description": "전자책 파일 확장자",
-      "applicableFileTypes": ["ebook"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "전자책 세분화",
-          "triggerTags": ["전자책 확장"]
+          "triggerTags": [
+            "전자책 확장"
+          ]
         }
       ],
       "metadata": {
@@ -2228,14 +2757,25 @@
       "id": 117,
       "name": "글꼴 확장",
       "level": 3,
-      "tags": ["ttf", "otf", "woff", "woff2"],
+      "tags": [
+        "ttf",
+        "otf",
+        "woff",
+        "woff2"
+      ],
       "description": "글꼴 파일 확장자",
-      "applicableFileTypes": ["font"],
-      "contextHints": ["파일 확장자"],
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "글꼴 분할",
-          "triggerTags": ["글꼴 확장"]
+          "triggerTags": [
+            "글꼴 확장"
+          ]
         }
       ],
       "metadata": {
@@ -2265,20 +2805,34 @@
         "상업지"
       ],
       "description": "만화 콘텐츠의 타겟층 분류",
-      "applicableFileTypes": ["ebook", "image", "archive"],
-      "contextHints": ["콘텐츠 특성", "잠재고객 ID"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "archive"
+      ],
+      "contextHints": [
+        "콘텐츠 특성",
+        "잠재고객 ID"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "압축된 패키지 분석",
-          "triggerTags": ["암호화된 압축 패키지", "암호화되지 않은 압축 패키지"]
+          "triggerTags": [
+            "암호화된 압축 패키지",
+            "암호화되지 않은 압축 패키지"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["전자책"]
+          "triggerTags": [
+            "전자책"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -2309,12 +2863,22 @@
         "독립 플랫폼"
       ],
       "description": "게임이 실행되는 하드웨어 플랫폼",
-      "applicableFileTypes": ["video", "ebook", "archive", "executable"],
-      "contextHints": ["플랫폼 식별", "파일 형식"],
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "archive",
+        "executable"
+      ],
+      "contextHints": [
+        "플랫폼 식별",
+        "파일 형식"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 용도",
-          "triggerTags": ["게임 및 엔터테인먼트"]
+          "triggerTags": [
+            "게임 및 엔터테인먼트"
+          ]
         }
       ],
       "metadata": {
@@ -2328,30 +2892,59 @@
       "id": 120,
       "name": "작품 출처",
       "level": 2,
-      "tags": ["원래의", "동인", "번역", "공식 번역", "번역 팀", "기계 번역"],
+      "tags": [
+        "원래의",
+        "동인",
+        "번역",
+        "공식 번역",
+        "번역 팀",
+        "기계 번역"
+      ],
       "description": "창의적 콘텐츠의 출처와 제작방법",
-      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive"],
-      "contextHints": ["창의적인 진술", "디지털 워터마크", "메타데이터"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive"
+      ],
+      "contextHints": [
+        "창의적인 진술",
+        "디지털 워터마크",
+        "메타데이터"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "전자책 세분화",
-          "triggerTags": ["소설"]
+          "triggerTags": [
+            "소설"
+          ]
         },
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["오디오북", "음악"]
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
         },
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["전자책", "이미지"]
+          "triggerTags": [
+            "전자책",
+            "이미지"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -2383,28 +2976,48 @@
         "지배"
       ],
       "description": "문서 내용이 불러일으키는 정서적 분위기",
-      "applicableFileTypes": ["ebook", "image", "video", "audio"],
-      "contextHints": ["감정 분석", "내용의 어조"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "감정 분석",
+        "내용의 어조"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "전자책 세분화",
-          "triggerTags": ["소설"]
+          "triggerTags": [
+            "소설"
+          ]
         },
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["오디오북", "음악"]
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
         },
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["전자책", "이미지"]
+          "triggerTags": [
+            "전자책",
+            "이미지"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -2418,18 +3031,36 @@
       "id": 122,
       "name": "이미지 품질 수준",
       "level": 2,
-      "tags": ["부드러운 360P", "SD480P", "HD720P", "울트라 HD 1080P", "2K", "4K", "8K"],
+      "tags": [
+        "부드러운 360P",
+        "SD480P",
+        "HD720P",
+        "울트라 HD 1080P",
+        "2K",
+        "4K",
+        "8K"
+      ],
       "description": "이미지 또는 비디오의 품질 및 선명도 수준",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["해상도 감지", "인코딩 매개변수"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "해상도 감지",
+        "인코딩 매개변수"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지"]
+          "triggerTags": [
+            "이미지"
+          ]
         }
       ],
       "metadata": {
@@ -2444,14 +3075,30 @@
       "id": 123,
       "name": "포르노 등급",
       "level": 3,
-      "tags": ["소프트 포르노", "세미 누드", "풀 누드", "특별 XP", "극단적 그로"],
+      "tags": [
+        "소프트 포르노",
+        "세미 누드",
+        "풀 누드",
+        "특별 XP",
+        "극단적 그로"
+      ],
       "description": "포르노 콘텐츠의 노골성 및 표현 방식 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["콘텐츠 조정", "등급 식별"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "콘텐츠 조정",
+        "등급 식별"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "민감한 내용",
-          "triggerTags": ["포르노"]
+          "triggerTags": [
+            "포르노"
+          ]
         }
       ],
       "metadata": {
@@ -2466,22 +3113,38 @@
       "id": 124,
       "name": "모자이크 수준",
       "level": 2,
-      "tags": ["무모자이크", "엷은 모자이크", "모자이크 있음"],
+      "tags": [
+        "무모자이크",
+        "엷은 모자이크",
+        "모자이크 있음"
+      ],
       "description": "파일 콘텐츠의 모자이크 처리 수준",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["콘텐츠 조정", "등급 식별"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "콘텐츠 조정",
+        "등급 식별"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지"]
+          "triggerTags": [
+            "이미지"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -2496,22 +3159,39 @@
       "id": 125,
       "name": "워터마크 수준",
       "level": 2,
-      "tags": ["워터마크 없음", "라이트 워터마크", "워터마크가 있습니다"],
+      "tags": [
+        "워터마크 없음",
+        "라이트 워터마크",
+        "워터마크가 있습니다"
+      ],
       "description": "파일 내용의 워터마크 정도",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["콘텐츠 조정", "등급 식별", "저작권 표시"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "콘텐츠 조정",
+        "등급 식별",
+        "저작권 표시"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지"]
+          "triggerTags": [
+            "이미지"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -2541,12 +3221,20 @@
         "항공 촬영"
       ],
       "description": "사진의 내용과 주제에 따른 전문 분야 분류",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["EXIF 데이터", "주제 식별", "상황 인식"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "EXIF 데이터",
+        "주제 식별",
+        "상황 인식"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술"]
+          "triggerTags": [
+            "사진술"
+          ]
         }
       ],
       "tagImplications": [
@@ -2590,12 +3278,20 @@
         "화면 기울기"
       ],
       "description": "사진 촬영 기술 및 화질 상태 평가",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["화질 검사", "노출 분석", "선명도 평가"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "화질 검사",
+        "노출 분석",
+        "선명도 평가"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술"]
+          "triggerTags": [
+            "사진술"
+          ]
         }
       ],
       "metadata": {
@@ -2623,12 +3319,21 @@
         "입찰서"
       ],
       "description": "상업 어음 및 법률 문서의 서식별 전문 분류",
-      "applicableFileTypes": ["image", "document"],
-      "contextHints": ["레이아웃 인식", "공인 도장", "재무 표"],
+      "applicableFileTypes": [
+        "image",
+        "document"
+      ],
+      "contextHints": [
+        "레이아웃 인식",
+        "공인 도장",
+        "재무 표"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["계약서 및 증서"]
+          "triggerTags": [
+            "계약서 및 증서"
+          ]
         }
       ],
       "tagImplications": [
@@ -2701,12 +3406,21 @@
         "사회보장카드"
       ],
       "description": "시민권 및 공식 신분증·자격증·카드의 분류",
-      "applicableFileTypes": ["image", "document"],
-      "contextHints": ["카드 및 증서 테두리", "위조 방지 배경 무늬", "공식 증명서"],
+      "applicableFileTypes": [
+        "image",
+        "document"
+      ],
+      "contextHints": [
+        "카드 및 증서 테두리",
+        "위조 방지 배경 무늬",
+        "공식 증명서"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["면허 및 허가증"]
+          "triggerTags": [
+            "면허 및 허가증"
+          ]
         }
       ],
       "metadata": {
@@ -2720,30 +3434,58 @@
       "id": 130,
       "name": "민감한 내용",
       "level": 2,
-      "tags": ["폭력과 혐오", "정치 관련", "규정 위반", "포르노", "모욕", "피비린내"],
+      "tags": [
+        "폭력과 혐오",
+        "정치 관련",
+        "규정 위반",
+        "포르노",
+        "모욕",
+        "피비린내"
+      ],
       "description": "문서 내용의 민감도 및 규정 준수 보안 검토 분류",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["민감한 콘텐츠 심사", "규정 준수 및 보안 검사", "규정 위반 필터링"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "민감한 콘텐츠 심사",
+        "규정 준수 및 보안 검사",
+        "규정 위반 필터링"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "전자책 세분화",
-          "triggerTags": ["소설"]
+          "triggerTags": [
+            "소설"
+          ]
         },
         {
           "parentDimension": "오디오 분할",
-          "triggerTags": ["오디오북", "음악"]
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
         },
         {
           "parentDimension": "비디오 분할",
-          "triggerTags": ["영화와 텔레비전"]
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
         },
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["전자책", "이미지"]
+          "triggerTags": [
+            "전자책",
+            "이미지"
+          ]
         },
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["만화"]
+          "triggerTags": [
+            "만화"
+          ]
         }
       ],
       "metadata": {
@@ -2769,12 +3511,23 @@
         "자해로 인한 출혈"
       ],
       "description": "피, 폭력 및 기괴한 소재의 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["폭력적인 검열", "폭력 등급", "기이한 현상 탐지"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "폭력적인 검열",
+        "폭력 등급",
+        "기이한 현상 탐지"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "민감한 내용",
-          "triggerTags": ["피비린내"]
+          "triggerTags": [
+            "피비린내"
+          ]
         }
       ],
       "metadata": {
@@ -2799,12 +3552,23 @@
         "극단적 사조"
       ],
       "description": "정치적 민감성, 국가 안보 및 이념 위반 분류",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["정치적 규정 준수", "민감한 인물", "이데올로기 검열"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "정치적 규정 준수",
+        "민감한 인물",
+        "이데올로기 검열"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "민감한 내용",
-          "triggerTags": ["정치 관련"]
+          "triggerTags": [
+            "정치 관련"
+          ]
         }
       ],
       "metadata": {
@@ -2831,12 +3595,23 @@
         "금지 품목"
       ],
       "description": "법률 및 규정에 의해 유통이 금지된 불법·규정 위반 물품 및 행위의 분류",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["불법 검사", "금지 품목 식별", "불법 활동 차단"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "불법 검사",
+        "금지 품목 식별",
+        "불법 활동 차단"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "민감한 내용",
-          "triggerTags": ["규정 위반"]
+          "triggerTags": [
+            "규정 위반"
+          ]
         }
       ],
       "metadata": {
@@ -2865,12 +3640,23 @@
         "다양한 성적 지향"
       ],
       "description": "성인 포르노 및 수직 테마의 핵심 카테고리 구분",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["성인 등급 심사", "테마 분류", "에로틱 인식"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "성인 등급 심사",
+        "테마 분류",
+        "에로틱 인식"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "민감한 내용",
-          "triggerTags": ["포르노"]
+          "triggerTags": [
+            "포르노"
+          ]
         }
       ],
       "metadata": {
@@ -2901,12 +3687,20 @@
         "데스크톱 전체 화면 캡처"
       ],
       "description": "다양한 화면 캡처 및 스크린샷 유형에 대한 전문적인 분류",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["화면 캡처", "인터페이스 분석", "스크린샷 인식"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "화면 캡처",
+        "인터페이스 분석",
+        "스크린샷 인식"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["스크린샷"]
+          "triggerTags": [
+            "스크린샷"
+          ]
         }
       ],
       "tagImplications": [
@@ -2942,14 +3736,29 @@
       "id": 136,
       "name": "생성 매체",
       "level": 2,
-      "tags": ["실제 샷", "손으로 그린", "CG렌더링", "AI 생성"],
+      "tags": [
+        "실제 샷",
+        "손으로 그린",
+        "CG렌더링",
+        "AI 생성"
+      ],
       "description": "물리적 생성 방법과 이미지 및 시각적 콘텐츠의 전달자",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["생성방식", "렌더링 유형", "매체 식별"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "생성방식",
+        "렌더링 유형",
+        "매체 식별"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지", "동영상"]
+          "triggerTags": [
+            "이미지",
+            "동영상"
+          ]
         }
       ],
       "metadata": {
@@ -2965,14 +3774,30 @@
       "id": 137,
       "name": "샷 크기",
       "level": 3,
-      "tags": ["클로즈업", "반신", "전신", "파노라마 뷰", "매크로"],
+      "tags": [
+        "클로즈업",
+        "반신",
+        "전신",
+        "파노라마 뷰",
+        "매크로"
+      ],
       "description": "사진 및 미술 작품의 프레임 범위와 풍경",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["시야 범위", "프레임 구성", "캐릭터 장면"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "시야 범위",
+        "프레임 구성",
+        "캐릭터 장면"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술", "만화", "회화"]
+          "triggerTags": [
+            "사진술",
+            "만화",
+            "회화"
+          ]
         }
       ],
       "metadata": {
@@ -2988,14 +3813,28 @@
       "id": 138,
       "name": "조명",
       "level": 3,
-      "tags": ["햇빛", "일몰", "야경", "희미한 빛", "실내 조명"],
+      "tags": [
+        "햇빛",
+        "일몰",
+        "야경",
+        "희미한 빛",
+        "실내 조명"
+      ],
       "description": "사진 사진의 주변 조명 및 촬영 시간 분위기",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["빛 분석", "촬영 시간", "분위기 인식"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "빛 분석",
+        "촬영 시간",
+        "분위기 인식"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술"]
+          "triggerTags": [
+            "사진술"
+          ]
         }
       ],
       "metadata": {
@@ -3011,14 +3850,26 @@
       "id": 139,
       "name": "배경",
       "level": 2,
-      "tags": ["투명한 배경", "단색 배경", "라이브 배경"],
+      "tags": [
+        "투명한 배경",
+        "단색 배경",
+        "라이브 배경"
+      ],
       "description": "이미지 디자인 자산 및 자료에 대한 배경 채널 및 환경 유형",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["알파 채널", "배경 컷아웃", "디자인 리소스"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "알파 채널",
+        "배경 컷아웃",
+        "디자인 리소스"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지"]
+          "triggerTags": [
+            "이미지"
+          ]
         }
       ],
       "metadata": {
@@ -3034,14 +3885,29 @@
       "id": 140,
       "name": "관점",
       "level": 3,
-      "tags": ["눈높이", "부감", "찾다", "첫 번째 사람"],
+      "tags": [
+        "눈높이",
+        "부감",
+        "찾다",
+        "첫 번째 사람"
+      ],
       "description": "촬영 및 도면 촬영을 위한 원근 각도 및 시야각",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["촬영 각도", "렌즈 관점", "시야각"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "촬영 각도",
+        "렌즈 관점",
+        "시야각"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술", "스크린샷"]
+          "triggerTags": [
+            "사진술",
+            "스크린샷"
+          ]
         }
       ],
       "metadata": {
@@ -3057,14 +3923,29 @@
       "id": 141,
       "name": "레이아웃",
       "level": 2,
-      "tags": ["일반 텍스트", "차트 기반", "혼합된 그래픽과 텍스트", "손으로 쓴 메모"],
+      "tags": [
+        "일반 텍스트",
+        "차트 기반",
+        "혼합된 그래픽과 텍스트",
+        "손으로 쓴 메모"
+      ],
       "description": "문서 및 페이지 시각적 레이아웃 구성",
-      "applicableFileTypes": ["document", "image"],
-      "contextHints": ["조판 구조", "레이아웃 분석", "그림과 텍스트 비율"],
+      "applicableFileTypes": [
+        "document",
+        "image"
+      ],
+      "contextHints": [
+        "조판 구조",
+        "레이아웃 분석",
+        "그림과 텍스트 비율"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["문서", "이미지"]
+          "triggerTags": [
+            "문서",
+            "이미지"
+          ]
         }
       ],
       "metadata": {
@@ -3088,12 +3969,20 @@
         "리눅스 스크린샷"
       ],
       "description": "운영 체제 인터페이스 및 단말 장치 생태학적 소스 분할",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["운영 체제", "인터페이스 스타일", "장비 소스"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "운영 체제",
+        "인터페이스 스타일",
+        "장비 소스"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["스크린샷"]
+          "triggerTags": [
+            "스크린샷"
+          ]
         }
       ],
       "metadata": {
@@ -3109,14 +3998,29 @@
       "id": 143,
       "name": "프레임",
       "level": 2,
-      "tags": ["가로 화면", "세로 화면", "정사각형", "매우 넓은 스트립"],
+      "tags": [
+        "가로 화면",
+        "세로 화면",
+        "정사각형",
+        "매우 넓은 스트립"
+      ],
       "description": "사진의 화면 비율과 구도의 방향",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["종횡비", "해상도 분석", "프레임 방향"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "종횡비",
+        "해상도 분석",
+        "프레임 방향"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지", "동영상"]
+          "triggerTags": [
+            "이미지",
+            "동영상"
+          ]
         }
       ],
       "metadata": {
@@ -3132,14 +4036,29 @@
       "id": 144,
       "name": "피사체 수",
       "level": 3,
-      "tags": ["하나의", "더블", "단체사진", "빈 장면"],
+      "tags": [
+        "하나의",
+        "더블",
+        "단체사진",
+        "빈 장면"
+      ],
       "description": "사진 속 인물이나 핵심 주제의 수와 구성",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["피사체 수", "인물 감지", "장면 구성"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "피사체 수",
+        "인물 감지",
+        "장면 구성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술", "만화", "회화"]
+          "triggerTags": [
+            "사진술",
+            "만화",
+            "회화"
+          ]
         }
       ],
       "metadata": {
@@ -3155,14 +4074,28 @@
       "id": 145,
       "name": "피사체 유형",
       "level": 2,
-      "tags": ["인물 피사체", "동물 애완동물", "식물과 꽃", "정물 상품", "환경 건축"],
+      "tags": [
+        "인물 피사체",
+        "동물 애완동물",
+        "식물과 꽃",
+        "정물 상품",
+        "환경 건축"
+      ],
       "description": "사진의 전경 시각적 초점의 핵심 유형",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["표적 탐지", "피사체 식별", "시각적 초점"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "표적 탐지",
+        "피사체 식별",
+        "시각적 초점"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지"]
+          "triggerTags": [
+            "이미지"
+          ]
         }
       ],
       "metadata": {
@@ -3178,14 +4111,26 @@
       "id": 146,
       "name": "텍스트 밀도",
       "level": 2,
-      "tags": ["마이크로텍스트", "그림 및 텍스트 제목", "조밀한 타이포그래피"],
+      "tags": [
+        "마이크로텍스트",
+        "그림 및 텍스트 제목",
+        "조밀한 타이포그래피"
+      ],
       "description": "이미지나 페이지에 포함된 텍스트의 양과 레이아웃 밀도",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["OCR 인식", "텍스트 범위", "텍스트 레이아웃"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "OCR 인식",
+        "텍스트 범위",
+        "텍스트 레이아웃"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["글자가 있는 그림"]
+          "triggerTags": [
+            "글자가 있는 그림"
+          ]
         }
       ],
       "metadata": {
@@ -3259,12 +4204,21 @@
         "동적 입자"
       ],
       "description": "시각 작품의 예술적 톤과 그림 질감 스타일",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["색상 스타일", "텍스처 렌더링", "예술적 스타일"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "색상 스타일",
+        "텍스처 렌더링",
+        "예술적 스타일"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술", "회화"]
+          "triggerTags": [
+            "사진술",
+            "회화"
+          ]
         }
       ],
       "metadata": {
@@ -3280,14 +4234,27 @@
       "id": 148,
       "name": "시간 시즌",
       "level": 3,
-      "tags": ["봄 꽃 장면", "여름 그늘", "가을 황금", "겨울 설경"],
+      "tags": [
+        "봄 꽃 장면",
+        "여름 그늘",
+        "가을 황금",
+        "겨울 설경"
+      ],
       "description": "자연풍경과 야외여행사진의 계절적 시기적 특성",
-      "applicableFileTypes": ["image"],
-      "contextHints": ["시계열 색상", "계절 식물", "기후 특성"],
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "시계열 색상",
+        "계절 식물",
+        "기후 특성"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "이미지 분할",
-          "triggerTags": ["사진술"]
+          "triggerTags": [
+            "사진술"
+          ]
         }
       ],
       "metadata": {
@@ -3322,12 +4289,22 @@
         "회색"
       ],
       "description": "사진의 전체적인 지배적인 색온도와 색조 경향",
-      "applicableFileTypes": ["image", "video"],
-      "contextHints": ["색온도 분석", "색상 히스토그램", "색조 경향"],
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "색온도 분석",
+        "색상 히스토그램",
+        "색조 경향"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "파일 유형",
-          "triggerTags": ["이미지", "동영상"]
+          "triggerTags": [
+            "이미지",
+            "동영상"
+          ]
         }
       ],
       "metadata": {
@@ -3362,12 +4339,23 @@
         "조부와 손자(세대 차) 에로"
       ],
       "description": "혈족, 가족 서열 및 금기의 윤리적 주제 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["가까운 친척 테마", "윤리적 금기", "혈액 이야기"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "가까운 친척 테마",
+        "윤리적 금기",
+        "혈액 이야기"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["가족 근친상간"]
+          "triggerTags": [
+            "가족 근친상간"
+          ]
         }
       ],
       "metadata": {
@@ -3392,12 +4380,23 @@
         "연상연하 로맨스 에로"
       ],
       "description": "혼외정서계약, 파트너교류, 아내테마의 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["파트너 교환", "혼외 비밀", "아내 테마"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "파트너 교환",
+        "혼외 비밀",
+        "아내 테마"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["혼외정욕"]
+          "triggerTags": [
+            "혼외정욕"
+          ]
         }
       ],
       "metadata": {
@@ -3424,12 +4423,23 @@
         "가정교사 에로"
       ],
       "description": "교사-학생 정욕, 청소년 캠퍼스 성애 및 급우 에로의 주제 분석",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["교사-학생 정욕", "캠퍼스 섹스", "동급생 에로"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "교사-학생 정욕",
+        "캠퍼스 섹스",
+        "동급생 에로"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["교사와 학생 에로"]
+          "triggerTags": [
+            "교사와 학생 에로"
+          ]
         }
       ],
       "metadata": {
@@ -3457,12 +4467,23 @@
         "인터넷의 정욕"
       ],
       "description": "직장 정욕, 이웃 에로 및 사회적 정욕 서클의 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["직장 정욕", "이웃 에로", "사회적 정욕"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "직장 정욕",
+        "이웃 에로",
+        "사회적 정욕"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["직장 에로"]
+          "triggerTags": [
+            "직장 에로"
+          ]
         }
       ],
       "metadata": {
@@ -3476,14 +4497,31 @@
       "id": 154,
       "name": "다중 사용자 그룹 세분화",
       "level": 4,
-      "tags": ["3P", "집합성교", "다중 파트너 성애 파티", "그룹 에로 상호 작용", "다인 성애 파티"],
+      "tags": [
+        "3P",
+        "집합성교",
+        "다중 파트너 성애 파티",
+        "그룹 에로 상호 작용",
+        "다인 성애 파티"
+      ],
       "description": "다중 상담원 협업, 그룹 상호 작용 및 다자 상호 작용 주제 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["다중 주체 에로 상호 작용", "그룹 에로 상호 작용", "성애 파티 장면"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "다중 주체 에로 상호 작용",
+        "그룹 에로 상호 작용",
+        "성애 파티 장면"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["그룹 섹스"]
+          "triggerTags": [
+            "그룹 섹스"
+          ]
         }
       ],
       "metadata": {
@@ -3509,12 +4547,23 @@
         "페티쉬 성적 기호"
       ],
       "description": "지배와 복종, 하위문화 페티시, 격렬한 대립적 섹스의 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["서브컬쳐 트레이닝", "지배적 복종", "무거운 대결"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "서브컬쳐 트레이닝",
+        "지배적 복종",
+        "무거운 대결"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["섹스 트레이닝"]
+          "triggerTags": [
+            "섹스 트레이닝"
+          ]
         }
       ],
       "metadata": {
@@ -3539,12 +4588,23 @@
         "노출 사고"
       ],
       "description": "공공장소 노출, 옥외 전시, 은밀한 엿보기, 솔직한 사진 촬영 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["공간적 노출", "몰래 촬영", "옥외 전시"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "공간적 노출",
+        "몰래 촬영",
+        "옥외 전시"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["훔쳐보기 노출"]
+          "triggerTags": [
+            "훔쳐보기 노출"
+          ]
         }
       ],
       "metadata": {
@@ -3569,12 +4629,23 @@
         "유료 데이트 및 매춘"
       ],
       "description": "산업별 직업, 특정 통일된 역할 및 성격 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["제복 캐릭터", "산업체 직업", "역할극"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "제복 캐릭터",
+        "산업체 직업",
+        "역할극"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["제복의 유혹"]
+          "triggerTags": [
+            "제복의 유혹"
+          ]
         }
       ],
       "metadata": {
@@ -3602,12 +4673,23 @@
         "에로 기이"
       ],
       "description": "성인문학 배경 설정, 시공간 배경 및 특정 장르 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["에로 문학", "배경 설정", "문학 장르"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "에로 문학",
+        "배경 설정",
+        "문학 장르"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["에로 문학"]
+          "triggerTags": [
+            "에로 문학"
+          ]
         }
       ],
       "metadata": {
@@ -3633,12 +4715,23 @@
         "처녀성 콤플렉스"
       ],
       "description": "생리적·행동적 동작, 장기 클로즈업, 섹시한 사진, 감각적 특성의 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["생리적 작용", "장기 클로즈업", "섹시한 사진"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "생리적 작용",
+        "장기 클로즈업",
+        "섹시한 사진"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["에로틱 생리학"]
+          "triggerTags": [
+            "에로틱 생리학"
+          ]
         }
       ],
       "metadata": {
@@ -3660,12 +4753,23 @@
         "폭력적인 강압"
       ],
       "description": "비자발적 강제,침해,위반 및 극한 위반 내용의 분류",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["의사에 반하여", "침해 및 위반", "강제 위반"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "의사에 반하여",
+        "침해 및 위반",
+        "강제 위반"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["비자발적인 폭행"]
+          "triggerTags": [
+            "비자발적인 폭행"
+          ]
         }
       ],
       "metadata": {
@@ -3679,14 +4783,30 @@
       "id": 161,
       "name": "다양한 성적 지향 세분류",
       "level": 4,
-      "tags": ["동성애", "레즈비언 유리 에로", "게이 야오이 에로", "트랜스젠더 에로티카"],
+      "tags": [
+        "동성애",
+        "레즈비언 유리 에로",
+        "게이 야오이 에로",
+        "트랜스젠더 에로티카"
+      ],
       "description": "다양한 성별 인식, 다양한 지향성, 구체적인 성적 지향성 테마 세분화",
-      "applicableFileTypes": ["ebook", "image", "video", "archive"],
-      "contextHints": ["다양한 성적 지향", "동성애 주제", "성적 취향 분류"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "다양한 성적 지향",
+        "동성애 주제",
+        "성적 취향 분류"
+      ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
-          "triggerTags": ["다양한 성적 지향"]
+          "triggerTags": [
+            "다양한 성적 지향"
+          ]
         }
       ],
       "metadata": {
@@ -3700,10 +4820,27 @@
       "id": 162,
       "name": "콘텐츠 등급",
       "level": 1,
-      "tags": ["모든 연령대", "PG-13", "R-15", "R-18", "R-18G"],
+      "tags": [
+        "모든 연령대",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
       "description": "파일 콘텐츠의 연령 적합성 등급",
-      "applicableFileTypes": ["ebook", "image", "video", "audio", "archive", "document"],
-      "contextHints": ["연령별 적정성 등급", "콘텐츠 등급", "수신 연령 심사"],
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "연령별 적정성 등급",
+        "콘텐츠 등급",
+        "수신 연령 심사"
+      ],
       "triggerConditions": [],
       "metadata": {
         "flag": {

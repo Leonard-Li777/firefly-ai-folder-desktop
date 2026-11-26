@@ -6,6 +6,7 @@
       "[Amigável ao computador de baixa configuração] Reconstrua a arquitetura de IA de alta velocidade com base na inferência da CPU, funcionando perfeitamente em dispositivos com pouca memória sem placas gráficas independentes",
       "[Motor Firecore AI independente] Pode ser executado independentemente do programa principal para fornecer recursos de IA para aplicativos de terceiros",
       "[Pesquisa Semântica Multimídia] Imagens, áudios e vídeos suportam recuperação de linguagem natural e pesquisam conteúdo por semântica, imagens e vozes",
+      "[Lista de análise de arquivos a serem complementados] dados de Análise de arquivos pós-suplementares de suporte, gráficos de vídeo longos e outras primeiras análises não bloquearão mais a fila de análise",
       "[Fala para texto ASR] Transcreva rapidamente conversas de áudio e vídeo em texto para fácil recuperação e arquivamento",
       "[Speech Synthesis TTS] Conversão de texto para fala, mais de 50 sons integrados, suporta clonagem de som de 3 segundos e lê romances de documentos em voz alta",
       "[Atualização de tag de arquivo] Enriqueça os tipos de tags de fatos, as tags são mais precisas e interpretáveis, e a árvore de tags suporta 10 níveis de expansão",
@@ -20,7 +21,8 @@
       "[Árvore de diretórios personalizada] Cole o diretório Markdown, visualize duas colunas em tempo real e crie regras de organização exclusivas",
       "[Sono inteligente] percepção inteligente da operação do usuário, no nível de água com pouca memória, o uso de memória é liberado automaticamente quando a função está ociosa.",
       "[Abertura às capacidades externas] Atualize de forma abrangente as capacidades externas, para que os agentes externos possam chamar diretamente as várias capacidades de IA do Firefly core",
-      "[Otimização detalhada da interface do usuário] Reconstrua a estrutura da página de configuração, adicione um novo guia e entrada de ajuda e torne a operação mais intuitiva."
+      "*Mais reprodução em formato de vídeo * expandido para suportar a reprodução directa de todos os formatos de vídeo comuns",
+      "[Otimização profunda da interface do Usuário] Refatorou a arquitetura da página de configuração, adicionou funções de orientação e ajuda de entrada e comutação de layout, e a operação é mais intuitiva"
     ],
     "forceUpdate": false
   },

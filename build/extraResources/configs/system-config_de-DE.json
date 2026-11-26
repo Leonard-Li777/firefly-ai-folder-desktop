@@ -6,6 +6,7 @@
       "[Computerfreundlich mit geringer Konfiguration] Rekonstruieren Sie eine Hochgeschwindigkeits-KI-Architektur basierend auf CPU-Inferenz und laufen Sie reibungslos auf Geräten mit geringem Speicher und ohne unabhängige Grafikkarten",
       "[Unabhängige Firecore AI Engine] Kann unabhängig vom Hauptprogramm ausgeführt werden, um Anwendungen von Drittanbietern KI-Funktionen bereitzustellen",
       "[Semantische Multimedia-Suche] Bilder, Audios und Videos unterstützen das Abrufen natürlicher Sprache und durchsuchen Inhalte nach Semantik, Bildern und Stimmen",
+      "[Analyseliste der zu ergänzenden Dateien] Unterstützung von Daten zur nachträglichen Dateianalyse, langen Videografiken und anderen ersten Analysen blockiert die Analysewarteschlange nicht mehr",
       "[Sprach-zu-Text-ASR] Transkribieren Sie Audio- und Videogespräche schnell in Text, um sie einfach abzurufen und zu archivieren",
       "[Sprachsynthese TTS] Text-to-Speech, über 50 integrierte Sounds, unterstützt das 3-Sekunden-Sound-Klonen und liest Dokumentromane laut vor",
       "[Datei-Tag-Upgrade] Erweitern Sie die Fakten-Tag-Typen, die Tags sind genauer und interpretierbarer und der Tag-Baum unterstützt 10 Erweiterungsstufen",
@@ -20,7 +21,8 @@
       "[Angepasster Verzeichnisbaum] Markdown-Verzeichnis einfügen, zweispaltige Echtzeitvorschau erstellen und exklusive Organisationsregeln erstellen",
       "[Intelligenter Schlaf] Intelligente Wahrnehmung der Benutzerbedienung, bei niedrigem Speicherwasserstand wird die Speichernutzung automatisch freigegeben, wenn die Funktion inaktiv ist.",
       "[Öffnung für externe Funktionen] Umfassende Aktualisierung externer Funktionen, sodass externe Agenten die verschiedenen KI-Funktionen von Firefly Core direkt aufrufen können",
-      "[Umfassende Optimierung der Benutzeroberfläche] Rekonstruieren Sie die Struktur der Einstellungsseite, fügen Sie eine neue Anleitung und einen neuen Hilfeeinstieg hinzu und gestalten Sie die Bedienung intuitiver."
+      "【Mehr Videoformat-Wiedergabe】 Erweitert, um die direkte Wiedergabe aller gängigen Videoformate zu unterstützen",
+      "[Tiefgreifende UI-Optimierung] Die Architektur der Einstellungsseite wurde überarbeitet, Anleitungen und Hilfeerfassungs- und Layoutwechselfunktionen hinzugefügt und die Bedienung ist intuitiver"
     ],
     "forceUpdate": false
   },

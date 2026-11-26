@@ -6,6 +6,7 @@
       "[Compatible con computadoras de baja configuración] Reconstruya la arquitectura de IA de alta velocidad basada en la inferencia de la CPU, funcionando sin problemas en dispositivos con poca memoria sin tarjetas gráficas independientes",
       "[Motor de IA Firecore independiente] Se puede ejecutar independientemente del programa principal para proporcionar capacidades de IA a aplicaciones de terceros",
       "[Búsqueda semántica multimedia] Las imágenes, audios y videos admiten la recuperación del lenguaje natural y la búsqueda de contenido por semántica, imágenes y voces.",
+      "[Lista de análisis de archivos a complementar] El soporte de datos de análisis de archivos posteriores al complemento, gráficos de video largos y otros primeros análisis ya no bloquearán la cola de análisis",
       "[ASR de voz a texto] Transcribe rápidamente conversaciones de audio y video a texto para recuperarlas y archivarlas fácilmente",
       "[Síntesis de voz TTS] Texto a voz, más de 50 sonidos integrados, admite clonación de sonido de 3 segundos y lee novelas documentales en voz alta",
       "[Actualización de etiquetas de archivos] Enriquezca los tipos de etiquetas de hechos, las etiquetas son más precisas e interpretables y el árbol de etiquetas admite 10 niveles de expansión",
@@ -20,7 +21,8 @@
       "[Árbol de directorios personalizado] Pegue el directorio Markdown, obtenga una vista previa de dos columnas en tiempo real y cree reglas de organización exclusivas",
       "[Suspensión inteligente] Percepción inteligente de la operación del usuario, en el nivel bajo de agua de la memoria, el uso de la memoria se libera automáticamente cuando la función está inactiva.",
       "[Apertura a capacidades externas] Actualice de manera integral las capacidades externas, de modo que los agentes externos puedan llamar directamente a las diversas capacidades de IA de Firefly core",
-      "[Optimización de la interfaz de usuario en profundidad] Reconstruya la estructura de la página de configuración, agregue una nueva guía y entrada de ayuda y haga que la operación sea más intuitiva."
+      "【Más reproducción de formatos de video】 Ampliado para admitir la reproducción directa de todos los formatos de video comunes",
+      "[Optimización profunda de la interfaz de usuario] Refactorizó la arquitectura de la página de configuración, agregó funciones de cambio de entrada y diseño de orientación y ayuda, y la operación es más intuitiva"
     ],
     "forceUpdate": false
   },

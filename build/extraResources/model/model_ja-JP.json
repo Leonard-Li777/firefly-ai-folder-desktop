@@ -38,7 +38,7 @@
       }
     },
     {
-      "id": "alexwkleung/LFM3-1.7B-Heretic-GGUF:Q4_K_M",
+      "id": "alexwkleung/LFM3-1.7B-Ablated-GGUF:Q4_K_M",
       "name": "LFM3 1.7B（脱獄•軽量）",
       "company": "alexwkleung",
       "parameterSize": "1.7B",
