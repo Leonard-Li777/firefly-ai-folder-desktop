@@ -33,6 +33,8 @@ export class UserTierService {
   private verifiedOfflineLicense: LocalOfflineLicenseInfo | null = null
   /** 防重：记录最近消费的 txId，防止重复扣费 */
   private recentSpendTxIds: Set<string> = new Set()
+  /** 云端流水后台拉取飞行中句柄：并发入口复用同一次请求，杜绝同一份流水被推送两次导致列表重绘 */
+  private cloudTransactionsInFlight: Promise<void> | null = null
 
   private constructor() {}
 
@@ -352,15 +354,14 @@ export class UserTierService {
     // 阶段一：立即返回本地数据库的流水记录
     const locals = this.getDataManager().getLocalPendingRecords()
 
-    // 阶段二：后台异步拉取云端数据，完成后通过 IPC 事件通知渲染进程更新
-    this.fetchCloudTransactionsInBackground(machineId, locals.length === 0)
-
-    // 如果本地有记录，直接返回（不等待云端）
     if (locals.length > 0) {
+      // 阶段二：本地有记录则立即返回（零白屏），云端补齐交给后台单次异步拉取
+      this.fetchCloudTransactionsInBackground(machineId, false)
       return locals
     }
 
-    // 本地无记录时，仍尝试获取云端数据（阻塞等待）
+    // 本地无记录：只走一次阻塞拉取（云端为流水 SSOT），
+    // 严禁再并发触发后台第二次请求——否则同一份流水会被推送两次，弹窗列表反复重绘表现为闪动
     return this.fetchAndPushCloudTransactions(machineId)
   }
 
@@ -586,41 +587,57 @@ export class UserTierService {
     machineId: string,
     fallbackToDefault: boolean
   ): Promise<void> {
-    try {
-      // 先触发双向同步（回放本地 pending + 拉取云端流水到本地）
-      try {
-        await this.getDataManager().trySync()
-      } catch (e) {
-        logger.warn(LogCategory.SYSTEM, '[UserTierService] 查流水时后台同步失败:', e)
-      }
+    // 并发去重：「查流水」与「等级云端同步」会同时触发本方法，
+    // 重复拉取会把同一份流水向渲染层推送两次，列表随之反复重绘（用户感知为闪动）
+    if (this.cloudTransactionsInFlight) return this.cloudTransactionsInFlight
 
-      const cloudData = await this.getTierService().getFirecoreTransactions(machineId, 500, 0)
-      let result: any[]
-      if (!cloudData || cloudData.length === 0) {
-        if (fallbackToDefault) {
-          result = [
-            {
-              type: 'welcome_grant',
-              firecores: this.getTierConstants().welcomeGrantFirecores,
-              balance_after: this.getTierConstants().welcomeGrantFirecores,
-              status: 'completed',
-              time: new Date().toISOString(),
-              metadata: null
-            }
-          ]
-        } else {
-          return // 本地已有记录且云端为空，不做更新
+    const task = (async () => {
+      try {
+        // 先触发双向同步（回放本地 pending + 拉取云端流水到本地）
+        try {
+          await this.getDataManager().trySync()
+        } catch (e) {
+          logger.warn(LogCategory.SYSTEM, '[UserTierService] 查流水时后台同步失败:', e)
         }
-      } else {
-        result = this.mergeCloudWithLocals(
-          cloudData.map(tx => this.mapCloudTransactionToDisplayItem(tx)),
-          this.getDataManager().getLocalPendingRecords()
+
+        const cloudData = await this.getTierService().getFirecoreTransactions(machineId, 500, 0)
+        let result: any[]
+        if (!cloudData || cloudData.length === 0) {
+          if (fallbackToDefault) {
+            result = [
+              {
+                type: 'welcome_grant',
+                firecores: this.getTierConstants().welcomeGrantFirecores,
+                balance_after: this.getTierConstants().welcomeGrantFirecores,
+                status: 'completed',
+                time: new Date().toISOString(),
+                metadata: null
+              }
+            ]
+          } else {
+            return // 本地已有记录且云端为空，不做更新
+          }
+        } else {
+          result = this.mergeCloudWithLocals(
+            cloudData.map(tx => this.mapCloudTransactionToDisplayItem(tx)),
+            this.getDataManager().getLocalPendingRecords()
+          )
+        }
+        this.notifyFirecoreTransactionsUpdated(result)
+      } catch (error) {
+        // 后台获取云端数据失败：本地数据已展示，但严禁静默吞掉，须显式上报便于排查
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[UserTierService] 后台拉取云端流水失败，保留本地展示:',
+          error
         )
+      } finally {
+        this.cloudTransactionsInFlight = null
       }
-      this.notifyFirecoreTransactionsUpdated(result)
-    } catch {
-      // 后台获取云端数据失败，静默忽略（本地数据已展示）
-    }
+    })()
+
+    this.cloudTransactionsInFlight = task
+    return task
   }
 
   /**
@@ -662,6 +679,7 @@ export class UserTierService {
     this.dataManager = null
     this.verifiedOfflineLicense = null
     this.recentSpendTxIds.clear()
+    this.cloudTransactionsInFlight = null
     logger.info(LogCategory.SYSTEM, 'UserTierService services reloaded')
   }
 

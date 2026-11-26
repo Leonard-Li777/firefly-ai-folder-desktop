@@ -12,7 +12,10 @@ interface TierState {
   counters: Record<string, any>
   computed_limits: ComputedLimits
   current_counts: Record<string, number>
+  /** Profile（等级/余额/权益）刷新中的全局态 */
   isLoading: boolean
+  /** 收支流水拉取中的独立态：必须与 isLoading 分离，否则云端等级同步会连带把流水页打断重绘 */
+  isConsumptionLoading: boolean
   consumptionDetails: any[]
   subscription?: UserSubscription
   isUpgradeOpen: boolean
@@ -46,6 +49,9 @@ interface TierState {
 
 let isManualLogout = false
 
+/** 流水拉取飞行中句柄：并发的挂载/事件联动复用同一次请求，避免重复 set 造成列表反复重绘 */
+let consumptionDetailsInFlight: Promise<void> | null = null
+
 export const useTierStore = create<TierState>()(
   subscribeWithSelector((set, get) => ({
     tier: UserTier.FREE,
@@ -67,6 +73,7 @@ export const useTierStore = create<TierState>()(
     },
     current_counts: {},
     isLoading: false,
+    isConsumptionLoading: false,
     consumptionDetails: [],
     subscription: undefined,
     isUpgradeOpen: false,
@@ -215,21 +222,35 @@ export const useTierStore = create<TierState>()(
     },
 
     fetchConsumptionDetails: async () => {
-      window.electronAPI.userTier.removeFirecoreTransactionsUpdated?.()
-      set({ isLoading: true })
-      try {
-        const details = await window.electronAPI.userTier.getConsumptionDetails()
-        set({ consumptionDetails: details, isLoading: false })
+      // 并发去重：同一时刻只允许一条流水请求在飞，避免重复 set 触发列表反复重绘
+      if (consumptionDetailsInFlight) return consumptionDetailsInFlight
 
-        window.electronAPI.userTier.onFirecoreTransactionsUpdated?.((cloudData: any[]) => {
-          set({ consumptionDetails: cloudData, isLoading: false })
-          // 云端流水更新后联动刷新 Profile，确保萤火余额与最新流水同步
-          get().fetchProfile()
-        })
-      } catch (error) {
-        console.error('Failed to fetch consumption details:', error)
-        set({ isLoading: false })
-      }
+      window.electronAPI.userTier.removeFirecoreTransactionsUpdated?.()
+      // 先注册监听再发起请求：syncFromCloud 触发的云端流水推送可能早于本次请求返回，
+      // 若先 remove 后注册会丢掉这一拍更新，导致列表停留在旧数据上
+      window.electronAPI.userTier.onFirecoreTransactionsUpdated?.((cloudData: any[]) => {
+        set({ consumptionDetails: cloudData, isConsumptionLoading: false })
+        // 云端流水更新后联动刷新 Profile，确保萤火余额与最新流水同步
+        get().fetchProfile()
+      })
+
+      // 只翻动流水自己的加载态，严禁污染全局 isLoading（等级同步也会翻该旗标，是页面闪动的根源）
+      set({ isConsumptionLoading: true })
+
+      const task = (async () => {
+        try {
+          const details = await window.electronAPI.userTier.getConsumptionDetails()
+          set({ consumptionDetails: details, isConsumptionLoading: false })
+        } catch (error) {
+          console.error('Failed to fetch consumption details:', error)
+          set({ isConsumptionLoading: false })
+        } finally {
+          consumptionDetailsInFlight = null
+        }
+      })()
+
+      consumptionDetailsInFlight = task
+      return task
     },
 
     registerProfileListener: () => {

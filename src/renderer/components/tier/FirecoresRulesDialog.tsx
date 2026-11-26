@@ -877,26 +877,32 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
  * 展示用户的萤火收入与支出记录，切到该 Tab 时自动拉取最新数据
  */
 const ConsumptionDetailTab: React.FC = () => {
-  const { consumptionDetails, fetchConsumptionDetails, isLoading, subscription } = useTierStore()
+  const { consumptionDetails, fetchConsumptionDetails, isConsumptionLoading, subscription } =
+    useTierStore()
 
   useEffect(() => {
     fetchConsumptionDetails()
     // 打开流水页面时从云端同步等级数据并检查授权
+    // 注意：syncFromCloud 内部会广播 profileChanged 事件（App 侧监听后刷新 Profile），
+    // 此处严禁再手动 fetchProfile，否则全局 isLoading 反复翻转会让本页多次闪动
     if (window.electronAPI?.userTier?.syncFromCloud) {
-      window.electronAPI.userTier.syncFromCloud().then(profile => {
-        // 同步后立即刷新全局 Profile 状态，确保萤火余额与会员信息即时更新
-        useTierStore.getState().fetchProfile()
-        if (profile.tier !== 'enterprise' && profile.tier !== 'pro' && profile.tier !== 'agent') {
-          // 等级降级（到期/取消），通知前端刷新
-          if (window.electronAPI?.license?.getStatus) {
-            window.electronAPI.license.getStatus().then(result => {
-              if (result.status !== 'AUTHORIZED') {
-                window.dispatchEvent(new CustomEvent('app:unauthorized', { detail: result }))
-              }
-            })
+      window.electronAPI.userTier
+        .syncFromCloud()
+        .then(profile => {
+          if (profile.tier !== 'enterprise' && profile.tier !== 'pro' && profile.tier !== 'agent') {
+            // 等级降级（到期/取消），通知前端刷新
+            if (window.electronAPI?.license?.getStatus) {
+              window.electronAPI.license.getStatus().then(result => {
+                if (result.status !== 'AUTHORIZED') {
+                  window.dispatchEvent(new CustomEvent('app:unauthorized', { detail: result }))
+                }
+              })
+            }
           }
-        }
-      })
+        })
+        .catch(error => {
+          console.error('Failed to sync user tier from cloud:', error)
+        })
     } else if (window.electronAPI?.license?.getStatus) {
       window.electronAPI.license.getStatus().then(result => {
         if (result.status !== 'AUTHORIZED') {
@@ -1029,7 +1035,8 @@ const ConsumptionDetailTab: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col p-1">
-      {isLoading ? (
+      {/* 已有数据时保持列表常显（stale-while-revalidate），后台刷新严禁再回退到加载骨架，否则会反复闪动 */}
+      {consumptionDetails.length === 0 && isConsumptionLoading ? (
         <div className="flex flex-col items-center justify-center py-20 gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
           <p className="text-sm font-bold text-muted-foreground">{t('正在加载收支流水...')}</p>
