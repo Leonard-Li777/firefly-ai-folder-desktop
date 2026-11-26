@@ -17,6 +17,12 @@ import { NotaryToolPasswordCredentials } from '@electron/notarize/lib/types'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require('./package.json')
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { resolveTopLevelResourceDirs } = require('../firefly-resources/lib/product-assembler')
+
+// extraResources 配置 - 从 apps/firefly-resources/products/desktop.resources.json 自动派生，
+// 确保 semantic/、taxonomy/（含 domain_tag_matrix.json）与所有静态/运行时目录零遗漏同步。
+const DERIVED_EXTRA_RESOURCES: string[] = resolveTopLevelResourceDirs('desktop')
 
 // 规则：首先加载 .env 作为基础，然后加载专属环境文件覆盖
 // Forge 通常用于 production 打包，但也可能在开发中运行
@@ -1331,18 +1337,8 @@ const config: ForgeConfig = {
         '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon,node_modules/@napi-rs,out_build/main/chunks,**/node_modules/sharp/**,**/node_modules/@img/**,**/node_modules/better-sqlite3/**,**/node_modules/extract-file-icon/**,**/node_modules/@napi-rs/**,**/out_build/main/chunks/**}'
     },
 
-    // extraResources 配置 - 包含llama-server二进制文件和配置文件
-    extraResource: [
-      'build/extraResources/models',
-      'build/extraResources/model', // 模型配置文件目录
-      'build/extraResources/configs',
-      'build/extraResources/fileDimension', // 文件维度配置目录
-      'build/extraResources/.VirtualDirectory', // 虚拟目录说明文件模板目录
-      'build/extraResources/bin', // 包含 fastfetch 等二进制文件 (由 7z 安装器处理)
-      'build/extraResources/stubs', // 兼容性存根 (ggml-blas-stub.c)
-      'build/extraResources/geo', // omni-geo 地理数据集（解压即用明文 JSON）
-      'build/extraResources/assets' // 静态图标与启动画面素材
-    ],
+    // extraResources 配置 - 由 products/desktop.resources.json 唯一权威清单自动派生顶层资源目录
+    extraResource: DERIVED_EXTRA_RESOURCES,
     ignore: (file: string) => {
       if (!file) return false
 

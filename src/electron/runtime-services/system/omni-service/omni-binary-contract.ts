@@ -18,8 +18,8 @@
 
 import * as childProcess from 'node:child_process'
 
-/** 宿主拉起 `serve` 时依赖的 CLI 长选项（缺任意一项即判定构件过旧/错版，严禁放行） */
-export const REQUIRED_SERVE_OPTIONS = ['--db-path', '--pack-path', '--vectors-path'] as const
+/** 宿主拉起 `serve` 时依赖的 CLI 引导选项（缺即判定构件过旧/错版，严禁放行） */
+export const REQUIRED_SERVE_OPTIONS = ['--bootstrap'] as const
 
 /** 探针帮助文本保留上限（仅用于诊断与缓存，防止超大输出常驻内存） */
 const HELP_TEXT_MAX_CHARS = 4_000
