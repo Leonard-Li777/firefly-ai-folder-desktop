@@ -72,6 +72,7 @@ import {
   streamVerifySha256,
   renameWithRetry,
   reconcileDirSwitchIntents,
+  recoverSharedVisualVocabTxns,
   checkDiskSpace,
   cleanOldTrashAndOrphanParts,
   DualTrackSourceRouter,
@@ -2047,9 +2048,10 @@ export class ModularResourceService implements IModularResourceService {
       } catch {}
     }
 
-    // B4: 扫描并自愈由于杀软占用或断电未完成的目录切换意图日志
+    // B4: 扫描并自愈由于杀软占用或断电未完成的目录切换意图日志 与 _shared/*/.txn.json 事务日志
     const intentsDir = path.join(baseDir, '.intents')
     await reconcileDirSwitchIntents(intentsDir)
+    recoverSharedVisualVocabTxns(path.join(baseDir, '_shared'))
 
     // 自愈未完成的插件根目录大迁移意图日志 (Issue 03)
     cleanedTombstones += await this.migrationCoordinatorInstance.reconcileOnStartup(

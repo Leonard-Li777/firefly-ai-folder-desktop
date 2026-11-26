@@ -559,6 +559,64 @@ export async function reconcileDirSwitchIntents(intentsDir: string): Promise<num
   return reconciled
 }
 
+/**
+ * 启动期 `_shared/*` 事务日志 (`.txn.json`) 崩溃恢复（Ticket 06 / Spec §3.1.5）：
+ * 必须在启动或重载 Omni 之前串行执行，清理中断写入产生的半成品临时文件，
+ * 并在存在完整备份时自动回滚，最后清除 `.txn.json` 恢复正常态。
+ */
+export function recoverSharedVisualVocabTxns(sharedDir: string): number {
+  if (!sharedDir || !fs.existsSync(sharedDir)) return 0
+  let recovered = 0
+  let entries: fs.Dirent[]
+  try {
+    entries = fs.readdirSync(sharedDir, { withFileTypes: true })
+  } catch {
+    return 0
+  }
+
+  for (const ent of entries) {
+    if (!ent.isDirectory()) continue
+    const subDir = path.join(sharedDir, ent.name)
+    const txnPath = path.join(subDir, '.txn.json')
+    if (!fs.existsSync(txnPath)) continue
+
+    try {
+      const raw = fs.readFileSync(txnPath, 'utf-8')
+      const txn = JSON.parse(raw) as {
+        committed?: boolean
+        tempFiles?: string[]
+        backupFiles?: Array<{ backup: string; target: string }>
+      }
+      if (Array.isArray(txn.tempFiles)) {
+        for (const relTmp of txn.tempFiles) {
+          const absTmp = path.isAbsolute(relTmp) ? relTmp : path.join(subDir, relTmp)
+          if (fs.existsSync(absTmp)) {
+            fs.rmSync(absTmp, { recursive: true, force: true })
+          }
+        }
+      }
+      if (!txn.committed && Array.isArray(txn.backupFiles)) {
+        for (const pair of txn.backupFiles) {
+          const bkp = path.isAbsolute(pair.backup) ? pair.backup : path.join(subDir, pair.backup)
+          const dst = path.isAbsolute(pair.target) ? pair.target : path.join(subDir, pair.target)
+          if (fs.existsSync(bkp)) {
+            fs.renameSync(bkp, dst)
+          }
+        }
+      }
+      fs.unlinkSync(txnPath)
+      recovered++
+      logger.info(LogCategory.SYSTEM, `[TxnRecovery] 已自愈 _shared/${ent.name} 中断事务`)
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, `[TxnRecovery] 恢复事务失败 (${txnPath})，清理残余标记`, err)
+      try {
+        fs.unlinkSync(txnPath)
+      } catch {}
+    }
+  }
+  return recovered
+}
+
 export interface DiskSpaceCheckResult {
   sufficient: boolean
   requiredBytes: number

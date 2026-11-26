@@ -616,4 +616,63 @@ describe('Ticket 02: OmniService 生命周期、四级 omniFetch、20 端口扫�
     expect((svc as any).lastSpawnedAt).toBe(prevLastSpawned)
     expect(spawnTsAfterBoot).toBeGreaterThan(0)
   })
+
+  it('Ticket 06: 仅通过 --bootstrap 启动并原子写入 omni-bootstrap.json，且 verifyMountManifestStatus 降级态不调用 stop()', async () => {
+    const svc = resetOmniSingleton()
+    const fakeExe = path.join(tmpDir, 'firefly-omni.exe')
+    fs.writeFileSync(fakeExe, 'stub')
+    vi.spyOn(svc as any, 'resolveContractCompatibleExecutable').mockResolvedValue({
+      exePath: fakeExe,
+      contractMismatch: null
+    })
+    let scanPhase = true
+    vi.spyOn(svc as any, 'verifyOmniInstance').mockResolvedValue({
+      ok: false,
+      portRefused: true,
+      explicitNonTimeoutFailure: true
+    })
+    vi.spyOn(svc, 'checkHealth').mockImplementation(async () => !scanPhase)
+    vi.spyOn(svc, 'verifyMountManifestStatus').mockResolvedValue({
+      ok: false,
+      transient: false,
+      error: 'visualVocab status=stale',
+      statusData: {
+        status: 'ok',
+        pid: 53001,
+        instanceId: 'boot-53001',
+        version: '0.1.9'
+      }
+    })
+    const stopSpy = vi.spyOn(svc, 'stop')
+
+    const child = createFakeChild(53001)
+    let capturedArgs: string[] = []
+    let capturedEnv: Record<string, string | undefined> = {}
+    mockSpawn.mockImplementationOnce((_exe: string, args: string[], opts: any) => {
+      capturedArgs = args
+      capturedEnv = opts?.env || {}
+      queueMicrotask(() => {
+        scanPhase = false
+        child.stdout.emit(
+          'data',
+          Buffer.from('FIREFLY_READY:{"port":38200,"pid":53001,"instanceId":"boot-53001"}\n')
+        )
+      })
+      return child
+    })
+
+    const started = await svc.start()
+    expect(started).toBe(true)
+    expect(stopSpy).not.toHaveBeenCalled()
+    expect(capturedArgs[0]).toBe('serve')
+    expect(capturedArgs[1]).toBe('--bootstrap')
+    const bootstrapPath = capturedArgs[2]
+    expect(fs.existsSync(bootstrapPath)).toBe(true)
+    const bootstrapJson = JSON.parse(fs.readFileSync(bootstrapPath, 'utf-8'))
+    expect(bootstrapJson.schemaVersion).toBe(1)
+    expect(bootstrapJson.storage.dbPath).toBe(mockDbState.dbPath)
+    expect(capturedEnv.OMNI_PORT).toBeUndefined()
+    expect(capturedEnv.OMNI_DB_PATH).toBeUndefined()
+    expect(capturedEnv.FIREFLY_ONNX_DIR).toBeUndefined()
+  })
 })
