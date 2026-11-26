@@ -392,7 +392,11 @@ describe('Ticket 02: OmniService 生命周期、四级 omniFetch、20 端口扫�
     const svc = resetOmniSingleton()
     const fakeExe = path.join(tmpDir, 'firefly-omni.exe')
     fs.writeFileSync(fakeExe, 'stub')
-    vi.spyOn(svc, 'resolveOmniExecutable').mockReturnValue(fakeExe)
+    // 契约预检后择优：直接固定返回桩路径，避免真实候选遍历与 spawn 探针
+    vi.spyOn(svc as any, 'resolveContractCompatibleExecutable').mockResolvedValue({
+      exePath: fakeExe,
+      contractMismatch: null
+    })
     vi.spyOn(svc as any, 'verifyOmniInstance').mockResolvedValue({
       ok: false,
       portRefused: true,
@@ -448,7 +452,11 @@ describe('Ticket 02: OmniService 生命周期、四级 omniFetch、20 端口扫�
     const svc = resetOmniSingleton()
     const fakeExe = path.join(tmpDir, 'firefly-omni.exe')
     fs.writeFileSync(fakeExe, 'stub')
-    vi.spyOn(svc, 'resolveOmniExecutable').mockReturnValue(fakeExe)
+    // 契约预检后择优：直接固定返回桩路径，避免真实候选遍历与 spawn 探针
+    vi.spyOn(svc as any, 'resolveContractCompatibleExecutable').mockResolvedValue({
+      exePath: fakeExe,
+      contractMismatch: null
+    })
 
     // 第 1 次启动成功：让 child1 挂载真实 close 监听并就绪
     let scanPhase = true
@@ -531,7 +539,11 @@ describe('Ticket 02: OmniService 生命周期、四级 omniFetch、20 端口扫�
     const svc = resetOmniSingleton()
     const fakeExe = path.join(tmpDir, 'firefly-omni.exe')
     fs.writeFileSync(fakeExe, 'stub')
-    vi.spyOn(svc, 'resolveOmniExecutable').mockReturnValue(fakeExe)
+    // 契约预检后择优：直接固定返回桩路径，避免真实候选遍历与 spawn 探针
+    vi.spyOn(svc as any, 'resolveContractCompatibleExecutable').mockResolvedValue({
+      exePath: fakeExe,
+      contractMismatch: null
+    })
 
     const instanceChangedGens: number[] = []
     svc.onInstanceChanged(g => instanceChangedGens.push(g))

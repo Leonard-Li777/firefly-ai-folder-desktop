@@ -107,6 +107,11 @@ import {
   serializeDmlCrashMarker,
   shouldForceCpuFromMarker
 } from './ort-dml-crash-guard'
+import {
+  ServeContractCache,
+  buildServeContractMismatchDetail,
+  probeServeContract
+} from './omni-binary-contract'
 
 /** Omni 本地 HTTP 四级通道类型 */
 export type OmniFetchKind = 'probe' | 'call' | 'long' | 'stream'
@@ -161,6 +166,12 @@ export class OmniService {
   private readyCallbacks: (() => void | Promise<void>)[] = []
   private missingBinaryReported = false
   private missingBinaryRetryAt = 0
+  /** 契约不兼容（旧版/错版二进制）错误已上报标记，避免反复刷同一段诊断 */
+  private incompatibleBinaryReported = false
+  /** 契约不兼容冷却截止时间：冷却期内不再重复探测与拉起 */
+  private incompatibleBinaryRetryAt = 0
+  /** 二进制 CLI 契约结论缓存（键 = 路径 + mtime:size，二进制被覆盖后自动失效） */
+  private readonly serveContractCache = new ServeContractCache()
   private binaryMissingNotified = false
   private binaryMissingNotifyDeferred = false
   private instanceLock: OmniInstanceLock | null = null
@@ -189,6 +200,10 @@ export class OmniService {
   private static readonly CALL_DEFAULT_TIMEOUT_MS = 15_000
   private static readonly STDERR_MAX_LINES = 32
   private static readonly STDERR_MAX_BYTES = 8 * 1024
+  /** 契约不兼容冷却窗口：期间跳过重复探测与拉起（与二进制缺失冷却同量级） */
+  private static readonly BINARY_CONTRACT_RETRY_MS = 60_000
+  /** 单次 `serve --help` 契约探针超时（实测新版 149MB 二进制约 60~120ms，留足冷启动余量） */
+  private static readonly BINARY_CONTRACT_PROBE_TIMEOUT_MS = 5_000
 
   private currentGeneration = 0
   private instanceChangedCallbacks = new Set<(nextGeneration: number) => void>()
@@ -1643,50 +1658,135 @@ export class OmniService {
   }
 
   /**
-   * 定位 firefly-omni 可执行文件
+   * 枚举 firefly-omni 可执行文件候选（按优先级排序，已存在的才返回）。
+   *
+   * 顺序语义：
+   * 1. 生产/已部署环境以 ResourceLocator 解析的集成目录为首选（该目录同时携带 DirectML 等
+   *    推理动态库，是完整运行时）；
+   * 2. 其后是本地 cargo 编译产物，保证开发态即使集成目录被旧构件占位也能落到新构建。
+   * 调用方（`resolveContractCompatibleExecutable`）会逐个做 CLI 契约预检后择优。
    */
-  public resolveOmniExecutable(): string | null {
+  private collectOmniExecutableCandidates(): string[] {
     const isWin = process.platform === 'win32'
     const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
     const isDev = isLocalDevRuntime()
     const root = process.cwd()
+    const candidates: string[] = []
+    const push = (candidate: string | null | undefined): void => {
+      if (!candidate) return
+      if (candidates.includes(candidate)) return
+      candidates.push(candidate)
+    }
 
     // 1. 生产或已部署环境：通过 ResourceLocator 检索
-    const bin =
-      ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni')
-    if (bin && fs.existsSync(bin)) {
-      return bin
-    }
+    push(ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni'))
 
     // 2. 本地开发环境下，优先检索最新由 cargo 编译的 target/debug 或 target/release 原生二进制
     if (isDev) {
-      const devCandidates = [
-        path.join(root, 'apps', 'omni', 'target', 'debug', exeName),
-        path.join(root, 'apps', 'omni', 'target', 'release', exeName)
-      ]
-      for (const cand of devCandidates) {
-        if (fs.existsSync(cand)) {
-          return cand
-        }
-      }
+      push(path.join(root, 'apps', 'omni', 'target', 'debug', exeName))
+      push(path.join(root, 'apps', 'omni', 'target', 'release', exeName))
     }
 
     // 3. 多候选路径兜底检索
-    const candidates = [
-      path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'omni', exeName),
-      path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', exeName),
-      path.join(root, 'apps', 'omni', 'target', 'debug', exeName),
-      path.join(root, 'apps', 'omni', 'target', 'release', exeName),
-      path.join(root, 'build', 'extraResources', 'bin', 'omni', exeName)
-    ]
+    push(path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'omni', exeName))
+    push(path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', exeName))
+    push(path.join(root, 'apps', 'omni', 'target', 'debug', exeName))
+    push(path.join(root, 'apps', 'omni', 'target', 'release', exeName))
+    push(path.join(root, 'build', 'extraResources', 'bin', 'omni', exeName))
 
-    for (const cand of candidates) {
-      if (fs.existsSync(cand)) {
-        return cand
+    return candidates.filter(candidate => fs.existsSync(candidate))
+  }
+
+  /**
+   * 定位 firefly-omni 可执行文件（首个存在的候选，保持既有同步语义供热更新监听使用）。
+   * 启动路径请改用 `resolveContractCompatibleExecutable`，避免被旧版构件占位。
+   */
+  public resolveOmniExecutable(): string | null {
+    const candidates = this.collectOmniExecutableCandidates()
+    return candidates.length > 0 ? candidates[0] : null
+  }
+
+  /**
+   * 契约预检单个候选（按「路径 + mtime:size」缓存结论，二进制被覆盖后自动重探）。
+   * 探针自身无法执行时不缓存，避免把瞬时失败固化。
+   */
+  private async probeCandidateServeContract(
+    exePath: string
+  ): Promise<{ result: Awaited<ReturnType<typeof probeServeContract>>; cached: boolean }> {
+    const signature = this.binarySignature(exePath) ?? 'nostat'
+    const cacheKey = `${exePath}|${signature}`
+    const cached = this.serveContractCache.get(cacheKey)
+    if (cached) {
+      return { result: cached, cached: true }
+    }
+    const result = await probeServeContract(exePath, {
+      timeoutMs: OmniService.BINARY_CONTRACT_PROBE_TIMEOUT_MS
+    })
+    // 探针无法执行（权限/杀软/受限环境）不具备确定性，不写入缓存，下次重新探测
+    if (result.status !== 'probe_failed') {
+      this.serveContractCache.set(cacheKey, result)
+    }
+    return { result, cached: false }
+  }
+
+  /**
+   * 选出第一个满足宿主 CLI 契约的二进制候选。
+   *
+   * 设计要点（2026-11-26 事故）：
+   * - 集成目录被旧版 v0.1.8（仅支持 `-a/--addr`）占位时，旧实现会直接拉起 ⇒ clap 退出码 2
+   *   ⇒ 盲目重启 10 次后静默放弃。这里改为「预检不通过就顺延到下一个候选」，
+   *   既不再拿旧构件试错，也不会让旧构件遮蔽本地新构建；
+   * - 全部候选都确定性不兼容 ⇒ 返回诊断文案，由调用方显式报错并冷却，绝不 spawn；
+   * - 存在探针失败（无法判定）的候选且无兼容候选 ⇒ 放行首个可执行候选，仅显式记录原因，
+   *   避免因杀软/权限导致的探针异常反向废掉本来可用的引擎。
+   */
+  private async resolveContractCompatibleExecutable(): Promise<{
+    exePath: string | null
+    contractMismatch: string | null
+  }> {
+    const candidates = this.collectOmniExecutableCandidates()
+    let firstMismatchDetail: string | null = null
+    let undeterminedCandidate: string | null = null
+
+    for (const candidate of candidates) {
+      const { result, cached } = await this.probeCandidateServeContract(candidate)
+      if (result.status === 'compatible') {
+        this.incompatibleBinaryReported = false
+        this.incompatibleBinaryRetryAt = 0
+        this.lastMountValidationError = null
+        return { exePath: candidate, contractMismatch: null }
+      }
+      if (result.status === 'incompatible') {
+        if (!firstMismatchDetail) {
+          firstMismatchDetail = buildServeContractMismatchDetail({
+            exePath: candidate,
+            missingOptions: result.missingOptions,
+            helpText: result.helpText
+          })
+        }
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] 跳过 CLI 契约不兼容的引擎构件（缺失 ${result.missingOptions.join('、')}）: ${candidate}${cached ? '（缓存结论）' : ''}`
+        )
+        continue
+      }
+      // probe_failed：显式上报原因（严禁静默吞没），保留为首个可执行候选
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 引擎构件 CLI 契约探针无法执行，本次先放行由拉起试错: ${candidate}，原因: ${result.probeError}`
+      )
+      if (!undeterminedCandidate) {
+        undeterminedCandidate = candidate
       }
     }
 
-    return null
+    if (firstMismatchDetail) {
+      return { exePath: null, contractMismatch: firstMismatchDetail }
+    }
+    if (undeterminedCandidate) {
+      return { exePath: undeterminedCandidate, contractMismatch: null }
+    }
+    return { exePath: null, contractMismatch: null }
   }
 
   /**
@@ -1969,8 +2069,36 @@ export class OmniService {
         )
         return false
       }
+      // 契约不兼容冷却检查：旧版/错版构件已被确定性拒绝，冷却期内不再重复探测与拉起
+      if (this.incompatibleBinaryRetryAt > Date.now()) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          '[OmniService] firefly-omni 构件 CLI 契约不兼容冷却中，跳过本次拉起'
+        )
+        return false
+      }
 
-      const exePath = this.resolveOmniExecutable()
+      // 契约预检后再拉起：旧版二进制（仅 `-a/--addr`）在 clap 解析阶段即以退出码 2 自杀，
+      // 盲目 spawn 只会把确定性失败伪装成崩溃并耗尽重试次数（2026-11-26 事故形态）。
+      const resolution = await this.resolveContractCompatibleExecutable()
+      const exePath = resolution.exePath
+      if (!exePath && resolution.contractMismatch) {
+        this.incompatibleBinaryRetryAt = Date.now() + OmniService.BINARY_CONTRACT_RETRY_MS
+        this.lastMountValidationError = resolution.contractMismatch
+        if (!this.incompatibleBinaryReported) {
+          this.incompatibleBinaryReported = true
+          logger.error(
+            LogCategory.SYSTEM,
+            `[OmniService] ❌ 检索式引擎组件版本过旧，已阻止拉起（未做无效重启）。\n${resolution.contractMismatch}`
+          )
+        } else {
+          logger.debug(
+            LogCategory.SYSTEM,
+            '[OmniService] 引擎组件 CLI 契约仍不兼容，冷却期内跳过拉起'
+          )
+        }
+        return false
+      }
       if (!exePath) {
         this.missingBinaryRetryAt = Date.now() + 60_000
         if (!this.missingBinaryReported) {
