@@ -16,6 +16,8 @@ import { DimensionTreeSidebar } from '../../DimensionTreeSidebar'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useKeyboardNavigation } from '../hooks/useKeyboardNavigation'
 import { PAGE_IDS } from '../../../../constants/page-ids'
+import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
+import { normalizeVirtualDirectoryFile } from '../utils/vdir-file-normalize'
 
 export interface VirtualDirectorySidebarProps {
   virtualDirectories: VirtualDirectoryType[]
@@ -305,18 +307,34 @@ export const VirtualDirectorySidebar: React.FC<VirtualDirectorySidebarProps> = R
                       parentNode = searchDir(treeData)
                     }
 
+                    // 树节点是快照原始记录（只有 fileId/originalPath），必须归一化为与右侧 FileList 同源的
+                    // FileItem 形状，否则属性面板缺 path、缩略图与迷你预览失效、列表选中态也无法匹配。
+                    const normalizedFile = normalizeVirtualDirectoryFile(node)
                     if (parentNode === 'ROOT') {
                       setSelectedNode(rootNode)
-                      setSelectedFileListFiles(rootNode?.rootFiles || [])
                     } else if (parentNode) {
                       setSelectedNode(parentNode)
-                      setSelectedFileListFiles(parentNode.files || [])
                     }
+                    setSelectedFileListFiles([normalizedFile])
+                    setActiveItem(normalizedFile)
 
-                    setActiveItem(node)
+                    // 与 FileList / 键盘导航入口保持一致：分栏模式下一次点击直接驱动预览，
+                    // 不再依赖 FileExplorerLayout 的同步效应（该效应受 showPreviewPanel 门控）。
+                    const splitState = usePreviewOverlayStore.getState()
+                    const pageMode = splitState.pageStates[PAGE_IDS.VIRTUAL_DIRECTORY]?.mode ?? 'split'
+                    const targetPath = normalizedFile.path
+                    if (pageMode === 'split' && targetPath) {
+                      splitState.openPreview(
+                        targetPath,
+                        normalizedFile.smartName || normalizedFile.name || '',
+                        normalizedFile.extension?.replace(/^\./, '') || '',
+                        PAGE_IDS.VIRTUAL_DIRECTORY
+                      )
+                    }
                   } else {
                     setSelectedNode(node)
-                    setSelectedFileListFiles(node.files || [])
+                    // 与 FileList 目录切换保持一致：进入目录即清空文件选中集，避免把原始快照记录当成选中文件
+                    setSelectedFileListFiles([])
                     setActiveItem(node)
 
                     // 点击目录节点时，自动展开/折叠
