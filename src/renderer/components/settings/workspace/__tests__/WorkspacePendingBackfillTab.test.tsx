@@ -423,4 +423,42 @@ describe('WorkspacePendingBackfillTab (Spec v2.1 方案 A 英雄卡片与 Pro �
       ;(window as any).electronAPI = prevApi
     }
   })
+
+  it('V-08: 缺口码语义归并——同一文件严禁并列渲染两枚相同「内容补全」徽章', async () => {
+    mockFetchRecovery.mockResolvedValueOnce({
+      success: true,
+      items: [
+        {
+          workspaceFileId: 301,
+          fileFingerprint: 'fp_img_tags',
+          path: 'F:\\Desktop\\DSC01864.jpg',
+          name: 'DSC01864.jpg',
+          fileSize: 4096,
+          missingReasons: ['missing_visual_tags', 'missing_file_vector'],
+          isPendingVideo: false
+        },
+        {
+          workspaceFileId: 302,
+          fileFingerprint: 'fp_img_unknown',
+          path: 'F:\\Desktop\\DSC02307.jpg',
+          name: 'DSC02307.jpg',
+          fileSize: 4096,
+          missingReasons: ['precise_recovery_item', 'no_fingerprint'],
+          isPendingVideo: false
+        }
+      ]
+    })
+
+    render(<WorkspacePendingBackfillTab workspace={workspace} isActive={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('DSC01864.jpg')).toBeTruthy()
+    })
+
+    // 已受控缺口码各自映射为大白话展示名，不再共用兜底文案
+    expect(screen.getAllByText('画面内容识别')).toHaveLength(1)
+    expect(screen.getAllByText('内容索引')).toHaveLength(1)
+    // 未登记缺口码统一合并为一枚「内容补全」，同一行不重复渲染
+    expect(screen.getAllByText('内容补全')).toHaveLength(1)
+  })
 })
