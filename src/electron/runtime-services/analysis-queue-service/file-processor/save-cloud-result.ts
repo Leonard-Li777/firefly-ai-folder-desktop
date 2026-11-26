@@ -27,6 +27,7 @@ import {
   normalizeFileExtension
 } from '@firefly/shared'
 import { t } from '@app/languages'
+import { preResolveControlledCandidates } from '@pro'
 
 const CONTENT_TAGS_NAME = CANONICAL_NAMES.CONTENT_TAGS
 import { DeterministicCodeGenerator, stripXmlWrapperTags } from '@firefly/core-engine'
@@ -68,6 +69,23 @@ export async function saveCloudResult(
       fileCategory,
       filePath,
       extension: fileType
+    }
+
+    // Fix-14：云缓存回放链路不经过 reconcile 闸点，落库前必须先批量回源，
+    // 否则 pack 已受控、本地别名镜像缺失的标签会被 insertTagToDb 直接铸成 `_ext.*`。
+    if (Array.isArray(data?.tags) && data.tags.length > 0) {
+      try {
+        await preResolveControlledCandidates(
+          data.tags.map((tag: any) => (typeof tag?.name === 'string' ? tag.name : undefined)),
+          'zh-CN'
+        )
+      } catch (err) {
+        logger.warn(
+          LogCategory.FILE_ANALYSIS,
+          '[saveCloudResult] 受控候选回源闸口异常，保留既有降级路径:',
+          err
+        )
+      }
     }
 
     // 使用 Magika 检测文件类型

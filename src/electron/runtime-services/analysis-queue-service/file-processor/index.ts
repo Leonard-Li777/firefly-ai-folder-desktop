@@ -78,6 +78,7 @@ import {
   type FileInfoInput
 } from '@firefly/core-engine'
 import { executeProPreflight, executeProTagReconciliation } from '@pro'
+import { preResolveControlledCandidatesBeforePersist } from './pre-resolve-candidates'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
@@ -1429,6 +1430,12 @@ export class FileProcessor {
 
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
+        // Fix-14：落库前先把本批候选词形批量回源（本地镜像 → Omni inspectTags），
+        // 否则同步反查只覆盖本地数千条镜像词，pack 已受控的概念会被误派生为 `_ext.*`。
+        await preResolveControlledCandidatesBeforePersist(
+          { preflightContext, dimResult },
+          baseMetadata?.language
+        )
         executeProTagReconciliation({
           db,
           fileFingerprint,
@@ -2863,6 +2870,11 @@ export class FileProcessor {
         shouldPersistStage2TagsBeforePhaseReturn(phase, analysisMode, Boolean(preflightContext))
       ) {
         try {
+          // Fix-14：Stage 2 提前落库同样必须先回源，禁用本地镜像缺失时的 `_ext` 降级。
+          await preResolveControlledCandidatesBeforePersist(
+            { preflightContext, dimResult: null },
+            language
+          )
           executeProTagReconciliation({
             db,
             fileFingerprint,
@@ -3073,6 +3085,11 @@ export class FileProcessor {
         )
 
         // 运行找补裁决器单点持久化：全量注入物理事实（来源、状态、安全、水印、作者、分类、扩展名等）
+        // Fix-14：落库前批量回源受控候选，避免本地镜像未收录时把受控概念降级成 `_ext.*`。
+        await preResolveControlledCandidatesBeforePersist(
+          { preflightContext, dimResult: null },
+          language
+        )
         executeProTagReconciliation({
           db,
           fileFingerprint,
@@ -3340,6 +3357,8 @@ export class FileProcessor {
         validateRetagEpochStrict(db, fileFingerprint, serialRetagEpoch)
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
+      // Fix-14：合并前批量回源受控候选，确保 pack 已收录的概念走受控码而非 `_ext.*`。
+      await preResolveControlledCandidatesBeforePersist({ preflightContext, dimResult }, language)
       executeProTagReconciliation({
         db,
         fileFingerprint,
