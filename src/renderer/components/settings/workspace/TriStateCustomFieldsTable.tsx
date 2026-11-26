@@ -76,7 +76,7 @@ export function TriStateCustomFieldsTable(props: TriStateCustomFieldsTableProps)
                 <span className="inline-flex items-center gap-1">
                   {t('最终结算值')}
                   <span
-                    title={t('结合您的电脑性能和当前会员等级，实际生效的设置值。')}
+                    title={t('结合您的电脑性能，实际生效的设置值。')}
                     className="inline-flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-muted-foreground/50 text-[9px] text-muted-foreground"
                     aria-label={t('最终结算值说明')}
                   >

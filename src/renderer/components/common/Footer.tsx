@@ -1263,19 +1263,6 @@ export function Footer() {
             </span>
           </button>
           <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
-          <button
-            onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-            className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
-            title={t('点击打开AI引擎配置')}
-          >
-            <span className="opacity-50">{t('思考')}:</span>{' '}
-            <span
-              className={`font-bold px-1.5 py-0.5 rounded ${config?.enableThinkingMode ? 'text-green-500 bg-green-500/10' : 'text-orange-500 bg-orange-500/10'}`}
-            >
-              {config?.enableThinkingMode ? 'ON' : 'OFF'}
-            </span>
-          </button>
-          <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
           <span className="text-xs text-muted-foreground opacity-50 pr-2">v{__APP_VERSION__}</span>
           {__IS_DEV__ && (
             <>
