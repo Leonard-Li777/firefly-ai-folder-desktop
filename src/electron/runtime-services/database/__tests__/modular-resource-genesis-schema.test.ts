@@ -500,4 +500,54 @@ describe('TC-SEED-ISO: 目录种子行级失败隔离与表级自愈重建（存
       fs.rmSync(tmpBase, { recursive: true, force: true })
     }
   })
+
+  it('Ticket 02: GENESIS_V1_SCHEMA 与 GENESIS_FILE_VIDEO_SEGMENTS_DDL 包含 visual_tagger_state 表及失败三列与局部索引', async () => {
+    const { GENESIS_FILE_VIDEO_SEGMENTS_DDL } = await import('../database')
+    const memDb = new Database(':memory:')
+    const ddlDb = new Database(':memory:')
+    try {
+      memDb.exec(GENESIS_V1_SCHEMA)
+      const queueCols = memDb.prepare('PRAGMA table_info(analysis_queue)').all() as Array<{ name: string }>
+      expect(queueCols.map(c => c.name)).toEqual(
+        expect.arrayContaining(['failure_code', 'failure_encoder_id', 'failure_generation'])
+      )
+
+      const segCols = memDb.prepare('PRAGMA table_info(file_video_segments)').all() as Array<{ name: string }>
+      expect(segCols.map(c => c.name)).toEqual(
+        expect.arrayContaining(['failure_code', 'failure_encoder_id', 'failure_generation'])
+      )
+
+      const indexes = memDb
+        .prepare(
+          "SELECT name FROM sqlite_master WHERE type = 'index' AND name IN ('idx_analysis_queue_visual_failed', 'idx_fvs_visual_failed')"
+        )
+        .all() as Array<{ name: string }>
+      expect(indexes).toHaveLength(2)
+
+      memDb
+        .prepare(
+          `INSERT INTO visual_tagger_state (encoder_id, last_status, generation, expected_fingerprint, updated_at)
+           VALUES (4, 'non_ok', 1, 'abc123', 1000)`
+        )
+        .run()
+      expect(() => {
+        memDb
+          .prepare(
+            `INSERT INTO visual_tagger_state (encoder_id, last_status, generation, expected_fingerprint, updated_at)
+             VALUES (2, 'invalid', 0, NULL, 1000)`
+          )
+          .run()
+      }).toThrow(/CHECK constraint failed/)
+
+      ddlDb.exec('CREATE TABLE IF NOT EXISTS files (file_fingerprint TEXT PRIMARY KEY);')
+      ddlDb.exec(GENESIS_FILE_VIDEO_SEGMENTS_DDL)
+      const ddlCols = ddlDb.prepare('PRAGMA table_info(file_video_segments)').all() as Array<{ name: string }>
+      expect(ddlCols.map(c => c.name)).toEqual(
+        expect.arrayContaining(['failure_code', 'failure_encoder_id', 'failure_generation'])
+      )
+    } finally {
+      memDb.close()
+      ddlDb.close()
+    }
+  })
 })

@@ -22,6 +22,7 @@ import {
 import { databaseService } from '../database/database-service'
 import { resolveWorkspaceEffectiveConfig } from '../system/workspace-analysis-context'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { t } from '@app/languages'
 import { resolveEffectiveAnalysisMode, type AnalysisMode } from '../../config/analysis-mode'
 import { engineBridgeService } from '../engine-bridge'
 import { runWithEngineGateContext } from '../engine-bridge/engine-swapping-coordinator'
@@ -294,6 +295,19 @@ export class AnalysisOrchestratorWorker {
         this.updateItemStatus(next.id, 'pending', 0)
         return
       }
+      if (isTransientInfraError(err)) {
+        const nextRetries = databaseService.incrementQueueRetryCount(next.id)
+        ;(next as any).retryCount = nextRetries
+        if (nextRetries <= 3) {
+          await new Promise(resolve => setTimeout(resolve, Math.min(5000, 1000 * nextRetries)))
+          this.updateItemStatus(next.id, 'pending', 0)
+          return
+        }
+        this.updateItemStatus(next.id, 'failed', 100, t('AI 服务暂时繁忙，请稍后重试'), {
+          isTimeout: isTimeoutError(err)
+        })
+        return
+      }
       this.updateItemStatus(
         next.id,
         'failed',
@@ -444,6 +458,23 @@ export class AnalysisOrchestratorWorker {
           if (isAbortErrorLike(err, signal)) {
             this.updateItemStatus(item.id, 'pending', 0)
             notifier.notify(item.id, { outcome: 'terminal', terminalKind: 'skipped' })
+          } else if (isTransientInfraError(err)) {
+            const nextRetries = databaseService.incrementQueueRetryCount(item.id)
+            ;(item as any).retryCount = nextRetries
+            if (nextRetries <= 3) {
+              await new Promise(resolve => setTimeout(resolve, Math.min(5000, 1000 * nextRetries)))
+              this.updateItemStatus(item.id, 'pending', 0)
+              notifier.notify(item.id, { outcome: 'terminal', terminalKind: 'skipped' })
+            } else {
+              this.updateItemStatus(
+                item.id,
+                'failed',
+                100,
+                t('AI 服务暂时繁忙，请稍后重试'),
+                { isTimeout: isTimeoutError(err) }
+              )
+              notifier.notify(item.id, { outcome: 'terminal', terminalKind: 'failed' })
+            }
           } else {
             this.updateItemStatus(
               item.id,

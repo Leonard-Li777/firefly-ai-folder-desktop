@@ -47,7 +47,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
 
-import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao } from '.././dao'
+import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao, VisualTaggerStateDao } from '.././dao'
 import type { AnalysisTaskType } from '.././dao'
 import {
   DeterministicCodeGenerator,
@@ -153,6 +153,7 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
         this.localWorkflowDao = new LocalWorkflowDao(this._db)
         // [Issue 04 Step 2] 文件系统变更 DAO：单事务原子更新 workspace_files（移动/重命名/前缀批量）
         this.fsMutationDao = new FileSystemMutationDao(this._db)
+        this.visualTaggerStateDao = new VisualTaggerStateDao(this._db)
 
         this._db.pragma(`journal_mode = ${config.pragma.journal_mode}`)
         this._db.pragma(`synchronous = ${config.pragma.synchronous}`)

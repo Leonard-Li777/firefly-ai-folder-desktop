@@ -97,10 +97,13 @@ import { handleEmptyFile } from './handle-empty-file'
 import { processLocalAnalysis } from './process-local-analysis'
 import {
   classifyAnalysisError,
+  classifyVisualPerceptionError,
   tagErrorPhase,
   createTimeoutError,
   isTransientInfraError
 } from './analysis-error-classifier'
+import { OmniPerceptionHttpError } from '../../system/omni-service/types'
+import { visualTaggerCoordinator } from '../visual-tagger-coordinator'
 import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
 import { resolveFileDescription } from './resolve-file-description'
@@ -2049,6 +2052,9 @@ export class FileProcessor {
                   perceiveTimeoutSec: effectiveCpuCapMs / 1000
                 })
                 .catch((err): AnydocResult => {
+                  if (err instanceof OmniPerceptionHttpError) {
+                    throw err
+                  }
                   logger.warn(
                     LogCategory.ANALYSIS_QUEUE,
                     `[Omni/anydoc] 0号切片提取失败: ${err.message}`
@@ -2066,6 +2072,9 @@ export class FileProcessor {
           seg0DegradedRecord = perceiveOutcome.degradedRecord
         } else {
           anydocResult = await anydocService.perceive(filePath, perceiveOptions).catch(err => {
+            if (err instanceof OmniPerceptionHttpError) {
+              throw err
+            }
             logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 0号切片提取失败: ${err.message}`)
             return { content: '', assets: [], metadata: undefined, benchmark: undefined }
           })
@@ -3412,6 +3421,186 @@ export class FileProcessor {
             : ` ${t('建议减少 PDF 分析页数或关闭 OCR 功能')}`
         }
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件分析失败: ${item.name}`, error)
+
+        const visualDecision = classifyVisualPerceptionError(error)
+        if (visualDecision) {
+          const cfg = ConfigOrchestrator.getInstance()
+          const { profile } = (await import('./stage-reuse-planner')).resolveTargetProfileAndDim()
+          const { encoderId, resourceId } = (await import('../visual-tagger-coordinator')).resolveActiveVisualEncoderAndResource(
+            {
+              embeddingProfile: profile,
+              language: cfg.getValue<string>('DEFAULT_LANGUAGE'),
+              encoderIdHint: error instanceof OmniPerceptionHttpError ? error.encoderId : undefined
+            }
+          )
+          const fp = filePath ? databaseService.getFileFingerprintByPath(filePath) : null
+          if (visualDecision.kind === 'input_rejected_422') {
+            const plainErrMsg = t('图片或视频文件已损坏，无法完成画面识别')
+            databaseService.recordQueueVisualFailureTx({
+              queueId: item.id,
+              errorMessage: plainErrMsg,
+              failureCode: 'INPUT_REJECTED',
+              encoderId,
+              markStateNonOk: false
+            })
+            if (fp) {
+              databaseService.recordVideoSegmentVisualFailureTx({
+                fileId: fp,
+                segmentIndex: 0,
+                errorMessage: plainErrMsg,
+                failureCode: 'INPUT_REJECTED',
+                encoderId,
+                markStateNonOk: false
+              })
+            }
+            this.updateItemStatus(item.id, 'failed', 100, plainErrMsg)
+            return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
+          }
+
+          if (visualDecision.kind === 'asset_failure_500') {
+            const plainErrMsg = t('AI 标签不可用')
+            const { failureGeneration } = databaseService.recordQueueVisualFailureTx({
+              queueId: item.id,
+              errorMessage: plainErrMsg,
+              failureCode: visualDecision.failureCode,
+              encoderId,
+              markStateNonOk: true
+            })
+            if (fp) {
+              databaseService.recordVideoSegmentVisualFailureTx({
+                fileId: fp,
+                segmentIndex: 0,
+                errorMessage: plainErrMsg,
+                failureCode: visualDecision.failureCode,
+                encoderId,
+                markStateNonOk: true
+              })
+            }
+            const breakerRes = visualTaggerCoordinator.recordAssetFailureForBreaker(
+              encoderId,
+              failureGeneration
+            )
+            if (breakerRes.newlyTripped) {
+              visualTaggerCoordinator.notifyBreakerTripped(encoderId, failureGeneration)
+            }
+            this.updateItemStatus(item.id, 'failed', 100, plainErrMsg)
+            return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
+          }
+
+          if (visualDecision.kind === 'reconcile_409') {
+            const catalogMeta = (await import('@firefly/shared')).BUILTIN_PLUGIN_CATALOG_META[resourceId]
+            const expectedFingerprint =
+              catalogMeta?.visualVocabMeta?.matrixSha256 ||
+              catalogMeta?.expectedSha256 ||
+              resourceId
+            const reconcileRes = await visualTaggerCoordinator.handleEngineNotReady409({
+              resourceId,
+              expectedFingerprint,
+              reason: visualDecision.reason,
+              localVerifyAndHealFn: async () =>
+                modularResourceService.reconcileVisualVocabResource(resourceId, {
+                  skipDownload: true
+                }),
+              downloadAndReconcileFn: async () =>
+                modularResourceService.reconcileVisualVocabResource(resourceId, {
+                  skipDownload: false,
+                  forceDownload: true
+                })
+            })
+            if (reconcileRes.outcome === 'recovered') {
+              let appVersion: string | null = null
+              try {
+                const { app } = require('electron')
+                const v = app?.getVersion?.()
+                if (typeof v === 'string' && v.trim()) {
+                  appVersion = v.trim()
+                }
+              } catch {
+                // 单测环境忽略
+              }
+              const obs = databaseService.observeTaggerHealthyOrFingerprintChangedTx(
+                encoderId,
+                expectedFingerprint,
+                appVersion
+              )
+              visualTaggerCoordinator.resetBreakerForGeneration(obs.currentGeneration)
+              visualTaggerCoordinator.notifyRecoveryWake(encoderId, obs.currentGeneration, {
+                includeNeedsAppUpdate: Boolean(obs.appVersionChanged || obs.previousGeneration === 0)
+              })
+              this.updateItemStatus(item.id, 'pending', 0)
+              return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
+            }
+            if (reconcileRes.outcome === 'pending_reconcile') {
+              this.updateItemStatus(item.id, 'pending', 0)
+              return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
+            }
+            const plainErrMsg =
+              reconcileRes.failureCode === 'needs_app_update'
+                ? t('需要更新应用后才能继续使用 AI 标签')
+                : t('AI 标签不可用')
+            databaseService.recordQueueVisualFailureTx({
+              queueId: item.id,
+              errorMessage: plainErrMsg,
+              failureCode: reconcileRes.failureCode,
+              encoderId,
+              expectedFingerprint,
+              markStateNonOk: reconcileRes.failureCode === 'needs_plugin_update'
+            })
+            if (fp) {
+              databaseService.recordVideoSegmentVisualFailureTx({
+                fileId: fp,
+                segmentIndex: 0,
+                errorMessage: plainErrMsg,
+                failureCode: reconcileRes.failureCode,
+                encoderId,
+                expectedFingerprint,
+                markStateNonOk: reconcileRes.failureCode === 'needs_plugin_update'
+              })
+            }
+            this.updateItemStatus(item.id, 'failed', 100, plainErrMsg)
+            return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
+          }
+
+          if (visualDecision.kind === 'transient_retry') {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] 视觉服务瞬态限流/加载中 (HTTP ${visualDecision.status})，上浮 Worker 执行退避重投: ${item.name}`
+            )
+            throw error
+          }
+
+          if (visualDecision.kind === 'unexpected_http') {
+            const plainErrMsg = t('画面识别服务返回异常，请稍后重试')
+            databaseService.recordQueueVisualFailureTx({
+              queueId: item.id,
+              errorMessage: plainErrMsg,
+              failureCode: 'unexpected_http',
+              encoderId,
+              markStateNonOk: false
+            })
+            this.updateItemStatus(item.id, 'failed', 100, plainErrMsg)
+            return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
+          }
+
+          if (visualDecision.kind === 'inference_bounded_retry') {
+            const nextRetries = databaseService.incrementQueueRetryCount(item.id)
+            ;(item as any).retryCount = nextRetries
+            if (nextRetries <= visualDecision.maxRetries) {
+              this.updateItemStatus(item.id, 'pending', 0)
+              return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined
+            }
+            const plainErrMsg = t('画面识别暂时失败，请稍后重试')
+            databaseService.recordQueueVisualFailureTx({
+              queueId: item.id,
+              errorMessage: plainErrMsg,
+              failureCode: visualDecision.failureCode,
+              encoderId,
+              markStateNonOk: false
+            })
+            this.updateItemStatus(item.id, 'failed', 100, plainErrMsg)
+            return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'failed' } : undefined
+          }
+        }
 
         // 若为底层 AI 引擎瞬态未就绪错误（如 503 模型加载中、连接被拒绝 ECONNREFUSED），
         // 绝不触发 Tier 1 降级；同时严禁在此提前置为 pending(0)（防与调度主循环竞态双跑），

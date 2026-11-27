@@ -22,6 +22,7 @@ import {
   CHILD_MODEL_ENV_KEYS_TO_PURGE,
   ServiceDiscoveryFile,
   ServiceDiscoveryFileV1,
+  readReadyMarkerSync,
   isPidAlive,
   killProcessTree,
   SSE_CONNECT_TIMEOUT_MS,
@@ -46,6 +47,8 @@ import {
 } from './mount-verify-classify'
 import { isLocalDevRuntime } from '../../../main/worktree-env'
 import { OmniInstanceLock, OmniTokenManager } from '../omni-security'
+import { OmniPerceptionHttpError, type VisualVocabStatusTelemetry } from './types'
+import type { AssetsReloadResult } from '../visual-vocab-txn'
 import type {
   OmniRuntimeStatus,
   OmniBenchmarkResponse,
@@ -1333,7 +1336,9 @@ export class OmniService {
       options?.targetVectorsDir !== undefined ? options.targetVectorsDir : this.expectedVectorsDir
 
     try {
-      const res = await this.omniFetch(`http://127.0.0.1:${port}/api/v1/engine/status`, {
+      const lang = (this.getConfigValue<string>('DEFAULT_LANGUAGE') || '').trim()
+      const qs = lang ? `?lang=${encodeURIComponent(lang)}` : ''
+      const res = await this.omniFetch(`http://127.0.0.1:${port}/api/v1/engine/status${qs}`, {
         kind: 'probe',
         timeoutMs,
         internal: options?.internal ?? true
@@ -2221,6 +2226,9 @@ export class OmniService {
           const nextGen = ++this.currentGeneration
           this.emitInstanceChanged(nextGen)
         }
+        if (verifiedData?.visualVocab) {
+          this.handleStartupVisualVocabStatus({ statusData: verifiedData })
+        }
         this.notifyReady()
         return true
       }
@@ -2603,45 +2611,6 @@ export class OmniService {
               }
             }
 
-            // 自愈同步：若挂载了 chinese-clip，但物理目录缺失伴随视觉词表与矩阵，自动从随包目录同步补齐
-            if (item.resourceId === 'chinese-clip' && fs.existsSync(item.physicalDir)) {
-              try {
-                const targetBin = path.join(item.physicalDir, 'tags_visual_zh_embeddings.bin')
-                const targetTxt = path.join(item.physicalDir, 'tags_visual_zh.txt')
-                if (!fs.existsSync(targetBin)) {
-                  const srcBin =
-                    ResourceLocator.resolveResourcePath(
-                      'models/clip/tags_visual_zh_embeddings.bin'
-                    ) || ResourceLocator.resolveResourcePath('clip/tags_visual_zh_embeddings.bin')
-                  if (srcBin && fs.existsSync(srcBin)) {
-                    fs.copyFileSync(srcBin, targetBin)
-                    logger.info(
-                      LogCategory.SYSTEM,
-                      `[OmniService] 已自动为 chinese-clip 补齐缺失的视觉嵌入矩阵: ${targetBin}`
-                    )
-                  }
-                }
-                if (!fs.existsSync(targetTxt)) {
-                  const srcTxt =
-                    ResourceLocator.resolveResourcePath('models/clip/tags_visual_zh.txt') ||
-                    ResourceLocator.resolveResourcePath('clip/tags_visual_zh.txt')
-                  if (srcTxt && fs.existsSync(srcTxt)) {
-                    fs.copyFileSync(srcTxt, targetTxt)
-                    logger.info(
-                      LogCategory.SYSTEM,
-                      `[OmniService] 已自动为 chinese-clip 补齐缺失的视觉词表: ${targetTxt}`
-                    )
-                  }
-                }
-              } catch (clipSyncErr) {
-                logger.warn(
-                  LogCategory.SYSTEM,
-                  `[OmniService] 同步 chinese-clip 伴随词表异常:`,
-                  clipSyncErr
-                )
-              }
-            }
-
             let envValue =
               meta.envVarType === 'file' && meta.envFileRelativePath
                 ? path.join(item.physicalDir, meta.envFileRelativePath)
@@ -2694,6 +2663,42 @@ export class OmniService {
               moduleId: '',
               capabilitySlot: 'general'
             }
+            const diskReady = !meta.visualVocabMeta ? readReadyMarkerSync(item.physicalDir) : null
+            let effectiveVisualVocabMeta = meta.visualVocabMeta
+            if (
+              !effectiveVisualVocabMeta &&
+              diskReady?.visualVocab?.matrixSha256 &&
+              diskReady?.visualVocab?.metaSha256
+            ) {
+              const diskMetaPath = path.join(item.physicalDir, 'vocab_v.meta.json')
+              if (fs.existsSync(diskMetaPath)) {
+                try {
+                  const parsedMeta = JSON.parse(fs.readFileSync(diskMetaPath, 'utf-8')) as Record<string, any>
+                  const digest = typeof parsedMeta.encoder_digest === 'string' ? parsedMeta.encoder_digest.trim() : ''
+                  const entryCount = Array.isArray(parsedMeta.entries)
+                    ? parsedMeta.entries.length
+                    : typeof parsedMeta.entry_count === 'number'
+                      ? parsedMeta.entry_count
+                      : 0
+                  if (digest.length >= 16 && entryCount > 0) {
+                    effectiveVisualVocabMeta = {
+                      matrixFileName: 'vocab_v.f16',
+                      metaFileName: 'vocab_v.meta.json',
+                      version: diskReady.visualVocab.pluginVersion || parsedMeta.version || '2.0.0',
+                      schemaVersion: 2 as const,
+                      bakeRevision: diskReady.visualVocab.bakeRevision ?? parsedMeta.bake_revision ?? 1,
+                      encoderDigestPrefix: digest.slice(0, 16),
+                      matrixSha256: diskReady.visualVocab.matrixSha256,
+                      metaSha256: diskReady.visualVocab.metaSha256,
+                      entryCount,
+                      embedDim: 512 as const
+                    }
+                  }
+                } catch {
+                  // 忽略畸形 vocab_v.meta.json，交由后续运行时对账处理
+                }
+              }
+            }
             mountsRecord[item.resourceId] = {
               resourceId: item.resourceId,
               moduleId: modInfo.moduleId,
@@ -2706,7 +2711,8 @@ export class OmniService {
               ...(meta.tower ? { tower: meta.tower } : {}),
               ...(typeof meta.dim === 'number' ? { dim: meta.dim } : {}),
               ...(typeof meta.encoderId === 'number' ? { encoderId: meta.encoderId } : {}),
-              ...(meta.vocabMeta ? { vocabMeta: { ...meta.vocabMeta } } : {})
+              ...(meta.vocabMeta ? { vocabMeta: { ...meta.vocabMeta } } : {}),
+              ...(effectiveVisualVocabMeta ? { visualVocabMeta: { ...effectiveVisualVocabMeta } } : {})
             }
             expectedMountResourceIds.push(item.resourceId)
           }
@@ -3075,6 +3081,9 @@ export class OmniService {
           })
           const externalGen = ++this.currentGeneration
           this.emitInstanceChanged(externalGen)
+          if (verifiedExternal.data?.visualVocab) {
+            this.handleStartupVisualVocabStatus({ statusData: verifiedExternal.data })
+          }
           this.notifyReady()
           this.pushStatus().catch(() => {})
           return
@@ -3125,6 +3134,8 @@ export class OmniService {
               await this.stop()
               return false
             }
+          } else {
+            this.handleStartupVisualVocabStatus(verifyRes)
           }
           const statusData = verifyRes.statusData
           const resolvedId = this.resolveAdoptedInstanceId(
@@ -3362,7 +3373,7 @@ export class OmniService {
   }
 
   /**
-   * 双向核验 /api/v1/engine/status 中的 mountManifest 与 mobileClipVocab
+   * 双向核验 /api/v1/engine/status 中的 mountManifest 与视觉槽三态 (stale/missing/corrupt 非阻断)
    */
   public async verifyMountManifestStatus(expected?: {
     manifestPath: string | null
@@ -3375,6 +3386,8 @@ export class OmniService {
     /** true 表示失败源于超时/网络等瞬时故障（重试耗尽），不代表挂载清单不一致 */
     transient?: boolean
     statusData?: Record<string, any>
+    visualVocabStatus?: string
+    visualVocab?: VisualVocabStatusTelemetry
   }> {
     return this.verifyMountManifestStatusAttempt(expected, 1)
   }
@@ -3398,10 +3411,14 @@ export class OmniService {
     error?: string
     transient?: boolean
     statusData?: Record<string, any>
+    visualVocabStatus?: string
+    visualVocab?: VisualVocabStatusTelemetry
   }> {
     const target = expected ?? this.lastExpectedMounts
     try {
-      const res = await this.omniFetch(`${this.baseUrl}/api/v1/engine/status`, {
+      const lang = (this.getConfigValue<string>('DEFAULT_LANGUAGE') || '').trim()
+      const qs = lang ? `?lang=${encodeURIComponent(lang)}` : ''
+      const res = await this.omniFetch(`${this.baseUrl}/api/v1/engine/status${qs}`, {
         kind: 'probe',
         timeoutMs: STATUS_VERIFY_TIMEOUT_MS,
         internal: true
@@ -3465,23 +3482,26 @@ export class OmniService {
           }
         }
 
-        // 若本次激活挂载了 mobile-clip，检查英文词表双向核验（仅在非中文且为 Pro 模式下 vocab.valid 必须为 true）
-        const lang = this.getConfigValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
-        const isZh = lang.toLowerCase().startsWith('zh')
-        if (!isZh && target.expectedResourceIds.includes('mobile-clip')) {
-          const vocab = data?.mobileClipVocab
-          const isPro = data?.isPro === true
-          if (isPro && (!vocab || vocab.valid !== true || vocab.status !== 'ready')) {
-            return {
-              ok: false,
-              error: `MobileCLIP 英文词表校验未就绪 (status=${vocab?.status || 'missing'}, reason=${vocab?.rejectReason || 'unknown'})`,
-              statusData: data
-            }
-          }
+        const visualVocab = data?.visualVocab as VisualVocabStatusTelemetry | undefined
+        const visualVocabStatus =
+          typeof visualVocab?.activeStatus === 'string' ? visualVocab.activeStatus : undefined
+        return {
+          ok: true,
+          statusData: data,
+          visualVocabStatus,
+          visualVocab
         }
       }
 
-      return { ok: true, statusData: data }
+      const visualVocabEarly = data?.visualVocab as VisualVocabStatusTelemetry | undefined
+      const visualVocabStatusEarly =
+        typeof visualVocabEarly?.activeStatus === 'string' ? visualVocabEarly.activeStatus : undefined
+      return {
+        ok: true,
+        statusData: data,
+        visualVocabStatus: visualVocabStatusEarly,
+        visualVocab: visualVocabEarly
+      }
     } catch (err: any) {
       // 半截响应导致的 JSON 解析失败同样属于瞬时故障，应重试而非判死。
       const transient = isTransientStatusFetchError(err) || err?.name === 'SyntaxError'
@@ -3499,6 +3519,175 @@ export class OmniService {
 
   private sleepStatusVerifyBackoff(attempt: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, STATUS_VERIFY_BACKOFF_MS * attempt))
+  }
+
+  private visualTaggerAvailable = true
+  private startupVisualReconcileInFlight = false
+
+  public isVisualTaggerAvailable(): boolean {
+    return this.visualTaggerAvailable
+  }
+
+  /**
+   * 视觉槽启动三态非阻断处理（Spec v2.12 §3.3 / Ticket 08）：
+   * - ok: 记录视觉可用并推进代际观测；
+   * - stale: 保留进程不触发 stop()，异步调度一次本地优先对账（绝不连坐 /batch-embed-text）；
+   * - missing / corrupt: 仅标记视觉不可用，绝不终止 Omni。
+   */
+  private getHostAppVersionSafe(): string | null {
+    try {
+      const { app } = require('electron')
+      const ver = app?.getVersion?.()
+      return typeof ver === 'string' && ver.trim() ? ver.trim() : null
+    } catch {
+      return null
+    }
+  }
+
+  private notifyVisualTaggerRecovered(encoderId: number, expectedFingerprint?: string | null): void {
+    try {
+      const { visualTaggerCoordinator } = require('../../analysis-queue-service/visual-tagger-coordinator')
+      visualTaggerCoordinator?.markVisualTaggerHealthy?.(encoderId)
+      const { databaseService } = require('../../database/database-service')
+      const appVersion = this.getHostAppVersionSafe()
+      const obs = databaseService?.observeTaggerHealthyOrFingerprintChangedTx?.(
+        encoderId,
+        expectedFingerprint ?? null,
+        appVersion
+      )
+      if (obs?.bumped || obs?.appVersionChanged) {
+        visualTaggerCoordinator?.resetBreakerForGeneration?.(obs.currentGeneration)
+        visualTaggerCoordinator?.notifyRecoveryWake?.(encoderId, obs.currentGeneration, {
+          includeNeedsAppUpdate: Boolean(obs.appVersionChanged || obs.previousGeneration === 0)
+        })
+      }
+    } catch {
+      // 单元测试未初始化 DB 时忽略
+    }
+  }
+
+  public handleStartupVisualVocabStatus(verifyRes: {
+    visualVocabStatus?: string
+    visualVocab?: VisualVocabStatusTelemetry
+    statusData?: Record<string, any>
+  }): void {
+    const vv = verifyRes.visualVocab ?? (verifyRes.statusData?.visualVocab as VisualVocabStatusTelemetry | undefined)
+    const status = verifyRes.visualVocabStatus ?? vv?.activeStatus
+    if (!status || status === 'not_provisioned') {
+      return
+    }
+    const activeEncoderId = typeof vv?.activeEncoderId === 'number' ? vv.activeEncoderId : undefined
+
+    if (status === 'ok') {
+      this.visualTaggerAvailable = true
+      if (activeEncoderId !== undefined) {
+        this.notifyVisualTaggerRecovered(activeEncoderId)
+      }
+      return
+    }
+
+    if (status === 'stale') {
+      this.visualTaggerAvailable = false
+      logger.warn(
+        LogCategory.SYSTEM,
+        '[OmniService] 启动核验发现视觉词表处于 stale 状态，保留进程并触发异步对账（纯文本服务不受影响）'
+      )
+      if (!this.startupVisualReconcileInFlight && activeEncoderId !== undefined) {
+        this.startupVisualReconcileInFlight = true
+        void this.triggerStartupVisualReconcile(activeEncoderId).finally(() => {
+          this.startupVisualReconcileInFlight = false
+        })
+      }
+      return
+    }
+
+    if (status === 'missing' || status === 'corrupt') {
+      this.visualTaggerAvailable = false
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 启动核验发现视觉词表不可用 (${status})，仅标为视觉不可用，不阻断纯文本检索服务`
+      )
+    }
+  }
+
+  private async triggerStartupVisualReconcile(encoderId: number): Promise<void> {
+    const resourceId =
+      encoderId === 2 ? 'chinese-clip' : encoderId === 3 ? 'mobile-clip' : encoderId === 4 ? 'embeddinggemma-2-onnx' : null
+    if (!resourceId) return
+    try {
+      const { modularResourceService } = await import('../modular-resource-service')
+      if (typeof (modularResourceService as any)?.reconcileVisualVocabResource === 'function') {
+        const res = await (modularResourceService as any).reconcileVisualVocabResource(resourceId)
+        if (res?.ok) {
+          this.visualTaggerAvailable = true
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[OmniService] 启动期视觉词表异步对账异常:', err)
+    }
+  }
+
+  /**
+   * 独立视觉资产热重载入口（POST /api/v1/assets/reload），与 /api/v1/taxonomy/reload-policies 物理隔离
+   */
+  public async reloadVisualAssets(langOpt?: string): Promise<AssetsReloadResult> {
+    try {
+      const lang =
+        (typeof langOpt === 'string' && langOpt.trim()) ||
+        this.getConfigValue<string>('DEFAULT_LANGUAGE') ||
+        ''
+      const qs = lang.trim() ? `?lang=${encodeURIComponent(lang.trim())}` : ''
+      const res = await this.omniFetch(`${this.baseUrl}/api/v1/assets/reload${qs}`, {
+        kind: 'call',
+        method: 'POST',
+        timeoutMs: 15_000,
+        internal: true
+      })
+      const json = (await res.json().catch(() => null)) as Record<string, any> | null
+      if (!res.ok || json?.success === false) {
+        const errMsg =
+          (typeof json?.error?.message === 'string' && json.error.message) ||
+          `HTTP ${res.status}`
+        return { success: false, error: errMsg }
+      }
+      const tagger = json?.assets?.tagger as
+        | { status?: string; activeStatus?: string; activeEncoderId?: number; byEncoder?: Record<string, any> }
+        | undefined
+      const activeEncoderId = typeof tagger?.activeEncoderId === 'number' ? tagger.activeEncoderId : undefined
+      const resolvedActiveStatus =
+        tagger?.activeStatus ??
+        (activeEncoderId !== undefined ? tagger?.byEncoder?.[String(activeEncoderId)]?.status : undefined) ??
+        tagger?.status
+      if (resolvedActiveStatus === 'ok') {
+        this.visualTaggerAvailable = true
+      }
+
+      const recoveredIds = new Set<number>()
+      if (tagger?.byEncoder && typeof tagger.byEncoder === 'object') {
+        for (const [k, slot] of Object.entries(tagger.byEncoder)) {
+          if (slot?.status === 'ok') {
+            const id = typeof slot?.encoderId === 'number' ? slot.encoderId : Number(k)
+            if (Number.isInteger(id) && id > 0) {
+              recoveredIds.add(id)
+            }
+          }
+        }
+      }
+      if (resolvedActiveStatus === 'ok' && activeEncoderId !== undefined) {
+        recoveredIds.add(activeEncoderId)
+      }
+      for (const encId of recoveredIds) {
+        this.notifyVisualTaggerRecovered(encId)
+      }
+
+      return {
+        success: true,
+        activeStatus: resolvedActiveStatus,
+        byEncoder: tagger?.byEncoder
+      }
+    } catch (err: any) {
+      return { success: false, error: err?.message || String(err) }
+    }
   }
 
   /**
@@ -4464,11 +4653,45 @@ export class OmniService {
       })
 
       if (!res.ok) {
+        const rawText = await res.text().catch(() => '')
+        let parsedErr: any = null
+        try {
+          parsedErr = rawText ? JSON.parse(rawText) : null
+        } catch {
+          parsedErr = null
+        }
+        const errBlock = parsedErr?.error && typeof parsedErr.error === 'object' ? parsedErr.error : parsedErr
+        const code =
+          (typeof errBlock?.code === 'string' && errBlock.code) ||
+          (typeof parsedErr?.code === 'string' && parsedErr.code) ||
+          `HTTP_${res.status}`
+        const reason =
+          typeof errBlock?.reason === 'string'
+            ? errBlock.reason
+            : typeof parsedErr?.reason === 'string'
+              ? parsedErr.reason
+              : undefined
+        const encoderId =
+          typeof errBlock?.encoder_id === 'number'
+            ? errBlock.encoder_id
+            : typeof errBlock?.encoderId === 'number'
+              ? errBlock.encoderId
+              : undefined
+        const message =
+          typeof errBlock?.message === 'string' && errBlock.message
+            ? errBlock.message
+            : rawText || `Omni /api/perceive 返回 HTTP ${res.status}`
         logger.warn(
           LogCategory.SYSTEM,
-          `[OmniService] <<< POST /api/perceive 响应异常: status=${res.status}, 耗时: ${Date.now() - tStart}ms`
+          `[OmniService] <<< POST /api/perceive 响应异常: status=${res.status}, code=${code}, reason=${reason || 'none'}, 耗时: ${Date.now() - tStart}ms`
         )
-        return null
+        throw new OmniPerceptionHttpError({
+          status: res.status,
+          code,
+          reason,
+          encoderId,
+          message
+        })
       }
 
       const json = (await res.json()) as OmniPerceptionResponse
@@ -4552,7 +4775,6 @@ export class OmniService {
           fused_tags_count: json.fused_tags?.length || 0,
           fact_tags: json.fact_tags || [],
           fact_tags_count: json.fact_tags?.length || 0,
-          ram_tags: json.ram_tags || [],
           morphology_tags: json.morphology_tags || [],
           clip_tags: json.clip_tags || [],
           nsfw_tags: json.nsfw_tags || [],
@@ -4576,6 +4798,9 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
+      if (err instanceof OmniPerceptionHttpError) {
+        throw err
+      }
       const causeMsg =
         err?.cause?.message || err?.cause?.code || (err?.cause ? String(err.cause) : '')
       const fullError = causeMsg ? `${err.message} (cause: ${causeMsg})` : err.message
@@ -4596,6 +4821,9 @@ export class OmniService {
         try {
           return await doFetch()
         } catch (retryErr: any) {
+          if (retryErr instanceof OmniPerceptionHttpError) {
+            throw retryErr
+          }
           const retryCause =
             retryErr?.cause?.message ||
             retryErr?.cause?.code ||

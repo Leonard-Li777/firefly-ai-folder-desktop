@@ -247,6 +247,9 @@ export const GENESIS_V1_SCHEMA = `
     -- 主进程定期扫描 status='analyzing' AND claimed_at < now()-阈值 → 判孤儿回收，
     -- 杜绝孤儿 'processing' 行永无 Worker 认领导致该文件分析永久卡死（用户侧"转圈不停"）。
     claimed_at DATETIME,                         -- 认领时刻；NULL=未认领(pending)
+    failure_code TEXT,                           -- 视觉打标失败受控码 (Spec v2.12 §3.3)
+    failure_encoder_id INTEGER,                  -- 失败时对应的视觉编码器 ID
+    failure_generation INTEGER,                  -- 失败时刻捕获的 visual_tagger_state.generation
     meta TEXT NOT NULL DEFAULT '{}',             -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 任务创建时间
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP  -- 任务状态更新时间
@@ -495,6 +498,9 @@ export const GENESIS_V1_SCHEMA = `
     attempt_count INTEGER NOT NULL DEFAULT 0,
     params_hash TEXT NOT NULL,
     error_message TEXT,
+    failure_code TEXT,
+    failure_encoder_id INTEGER,
+    failure_generation INTEGER,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     UNIQUE(file_id, segment_index),
@@ -506,6 +512,20 @@ export const GENESIS_V1_SCHEMA = `
 
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start 
   ON file_video_segments(status, start_pts_sec);
+
+  CREATE INDEX IF NOT EXISTS idx_fvs_visual_failed
+  ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
+  WHERE status = 'failed' AND failure_code IS NOT NULL;
+
+  -- 16.6b 视觉打标器状态代际持久化表 (Visual Tagger Spec v2.12 §3.3)
+  CREATE TABLE IF NOT EXISTS visual_tagger_state (
+    encoder_id INTEGER PRIMARY KEY,
+    last_status TEXT NOT NULL CHECK (last_status IN ('ok', 'non_ok')),
+    generation INTEGER NOT NULL DEFAULT 0,
+    expected_fingerprint TEXT,
+    last_app_version TEXT,
+    updated_at INTEGER NOT NULL
+  );
 
   -- 16.7 内置与可选功能模块化及物理资产下载底座 (Genesis V1 创世基线 - Issue 01a)
   -- 1. 内置与可选模块注册表
@@ -805,6 +825,9 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_ftc_user_time
     ON firecore_transactions_cache(user_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_visual_failed
+    ON analysis_queue(failure_code, failure_encoder_id, failure_generation)
+    WHERE status = 'failed' AND failure_code IS NOT NULL;
   -- 注：file_video_chunks(file_fingerprint) 单列索引已由 idx_fvc_fp_start(file_fingerprint, start_sec, chunk_index, end_sec, rep_pts_sec) 5 列覆盖索引左前缀覆盖，不再建冗余索引。
 
   -- 19. FTS 同步触发器：废除 6 个内联 decompress_text 写触发器，
@@ -1214,6 +1237,9 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
     attempt_count INTEGER NOT NULL DEFAULT 0,
     params_hash TEXT NOT NULL,
     error_message TEXT,
+    failure_code TEXT,
+    failure_encoder_id INTEGER,
+    failure_generation INTEGER,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL,
     UNIQUE(file_id, segment_index),
@@ -1221,6 +1247,9 @@ export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
   );
   CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
   CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
+  CREATE INDEX IF NOT EXISTS idx_fvs_visual_failed
+    ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
+    WHERE status = 'failed' AND failure_code IS NOT NULL;
 `
 
 /**

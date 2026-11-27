@@ -21,11 +21,18 @@ import {
   LogCategory,
   PluginPathResolver,
   SecurityViolationError,
-  computeDirectoryReadyDigest,
-  writeReadyMarker,
   invalidateReadyMarkers,
-  normalizeCapabilitySlot
+  normalizeCapabilitySlot,
+  writeReadyMarker
 } from '@firefly/shared'
+import {
+  getVisualVocabEncoderId,
+  hasLocalVisualVocabFiles,
+  isVisualVocabPluginResource,
+  verifyVisualVocabWithOmniCli,
+  writePluginReadyMarkerWithVisualVocab
+} from '../system/visual-vocab-txn'
+import { omniService } from '../system/omni-service'
 import type { ModularResourceService, BuiltinModuleView } from '../system/modular-resource-service'
 import {
   fileDownloadService,
@@ -573,32 +580,81 @@ export class OfflinePackageService {
       fs.mkdirSync(targetParentDir, { recursive: true })
     }
 
-    if (fs.existsSync(targetPhysicalPath)) {
-      await invalidateReadyMarkers(targetPhysicalPath)
-      fs.rmSync(targetPhysicalPath, { recursive: true, force: true })
-    }
+    const runMaterialize = async () => {
+      if (fs.existsSync(targetPhysicalPath)) {
+        await invalidateReadyMarkers(targetPhysicalPath)
+        fs.rmSync(targetPhysicalPath, { recursive: true, force: true })
+      }
 
-    const lowerSource = extractedResPath.toLowerCase()
-    const lowerTarget = targetPhysicalPath.toLowerCase()
-    if (stat.isFile() && lowerSource.endsWith('.zip') && !lowerTarget.endsWith('.zip')) {
-      await safeExtractZip(extractedResPath, targetPhysicalPath)
-    } else {
-      try {
-        fs.renameSync(extractedResPath, targetPhysicalPath)
-      } catch {
-        fs.cpSync(extractedResPath, targetPhysicalPath, { recursive: true })
-        fs.rmSync(extractedResPath, { recursive: true, force: true })
+      const lowerSource = extractedResPath.toLowerCase()
+      const lowerTarget = targetPhysicalPath.toLowerCase()
+      if (stat.isFile() && lowerSource.endsWith('.zip') && !lowerTarget.endsWith('.zip')) {
+        await safeExtractZip(extractedResPath, targetPhysicalPath)
+      } else {
+        try {
+          fs.renameSync(extractedResPath, targetPhysicalPath)
+        } catch {
+          fs.cpSync(extractedResPath, targetPhysicalPath, { recursive: true })
+          fs.rmSync(extractedResPath, { recursive: true, force: true })
+        }
+      }
+
+      if (fs.existsSync(targetPhysicalPath) && fs.statSync(targetPhysicalPath).isDirectory()) {
+        const isVisual =
+          isVisualVocabPluginResource(res.resource_id) || hasLocalVisualVocabFiles(targetPhysicalPath)
+        if (!isVisual) {
+          await writePluginReadyMarkerWithVisualVocab(targetPhysicalPath, {
+            resourceId: res.resource_id,
+            sharedSubDir: path.basename(targetPhysicalPath)
+          })
+        } else {
+          let verifyRes: Awaited<ReturnType<typeof verifyVisualVocabWithOmniCli>> | undefined
+          const exePath = omniService?.resolveOmniExecutable?.()
+          if (exePath && fs.existsSync(exePath)) {
+            verifyRes = await verifyVisualVocabWithOmniCli(
+              targetPhysicalPath,
+              getVisualVocabEncoderId(res.resource_id),
+              { executablePath: exePath }
+            )
+            if (!verifyRes.ok && verifyRes.code !== 'OMNI_BINARY_UNAVAILABLE') {
+              throw new Error(
+                `[OfflinePackage] 视觉词表 CLI 同源校验失败 (${res.resource_id}): ${verifyRes.error || verifyRes.code}`
+              )
+            }
+          }
+          if (!verifyRes || !verifyRes.ok) {
+            let isPackaged = false
+            try {
+              isPackaged = Boolean(require('electron')?.app?.isPackaged)
+            } catch {
+              isPackaged = false
+            }
+            if (isPackaged) {
+              throw new Error(`[OfflinePackage] 缺少视觉校验程序，无法确认 ${res.resource_id} 完整性`)
+            }
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[OfflinePackage] 非打包环境未运行视觉校验，仅写基础 .ready.json（省略 visualVocab 契约块）(${res.resource_id})`
+            )
+            await writeReadyMarker(targetPhysicalPath, {
+              resourceId: res.resource_id,
+              sharedSubDir: path.basename(targetPhysicalPath)
+            })
+          } else {
+            await writePluginReadyMarkerWithVisualVocab(targetPhysicalPath, {
+              resourceId: res.resource_id,
+              sharedSubDir: path.basename(targetPhysicalPath),
+              verifyRes
+            })
+          }
+        }
       }
     }
 
-    if (fs.existsSync(targetPhysicalPath) && fs.statSync(targetPhysicalPath).isDirectory()) {
-      await invalidateReadyMarkers(targetPhysicalPath)
-      const digestResult = await computeDirectoryReadyDigest(targetPhysicalPath)
-      await writeReadyMarker(targetPhysicalPath, {
-        resourceId: res.resource_id,
-        sharedSubDir: path.basename(targetPhysicalPath),
-        digestResult
-      })
+    if (typeof (service as any).withSlotMutex === 'function') {
+      await (service as any).withSlotMutex(res.resource_id, runMaterialize)
+    } else {
+      await runMaterialize()
     }
   }
 
@@ -866,6 +922,8 @@ export class OfflinePackageService {
           reason: 'offline_bundle_import',
           restartPolicy: 'ensure-running'
         })
+      } else {
+        await omniService?.reloadVisualAssets?.().catch(() => {})
       }
 
       const returnModuleId = primaryBaseEngineId ?? verifiedModules[0].meta.moduleId
@@ -1083,6 +1141,8 @@ export class OfflinePackageService {
           reason: 'offline_bundle_import',
           restartPolicy: 'ensure-running'
         })
+      } else {
+        await omniService?.reloadVisualAssets?.().catch(() => {})
       }
 
       logger.info(LogCategory.SYSTEM, `[OfflinePackage] 离线插件包导入成功: ${moduleId}`)

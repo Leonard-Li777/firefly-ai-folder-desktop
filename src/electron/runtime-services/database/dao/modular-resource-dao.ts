@@ -660,6 +660,53 @@ export class ResourceDownloadDao implements IResourceDownloadDAO {
     return this.createOrGetTaskSync(task)
   }
 
+  /**
+   * 对齐内置 Catalog 升级后的权威元数据（asset_name / active_url / expected_bytes / expected_sha256），
+   * 避免存量 `resource_downloads` 行继续持有旧 sha256 导致升级或对账修复校验失败。
+   */
+  syncCatalogMetadataSync(spec: {
+    resource_id: string
+    asset_name: string
+    target_local_path: string
+    active_url?: string | null
+    expected_bytes: number
+    expected_sha256: string
+  }): boolean {
+    const existing = this.findByIdSync(spec.resource_id)
+    if (!existing) return false
+    const needsSync =
+      existing.asset_name !== spec.asset_name ||
+      existing.expected_bytes !== spec.expected_bytes ||
+      existing.expected_sha256 !== spec.expected_sha256 ||
+      (spec.active_url && existing.active_url !== spec.active_url) ||
+      existing.target_local_path !== spec.target_local_path
+    if (!needsSync) return false
+
+    this.db
+      .prepare(
+        `
+      UPDATE resource_downloads
+      SET asset_name = ?,
+          target_local_path = ?,
+          active_url = COALESCE(?, active_url),
+          expected_bytes = ?,
+          expected_sha256 = ?,
+          updated_at = ?
+      WHERE resource_id = ?
+    `
+      )
+      .run(
+        spec.asset_name,
+        spec.target_local_path,
+        spec.active_url ?? null,
+        spec.expected_bytes,
+        spec.expected_sha256,
+        Date.now(),
+        spec.resource_id
+      )
+    return true
+  }
+
   bindResourceToModuleSync(moduleId: string, resourceId: string): void {
     const now = Date.now()
     this.db

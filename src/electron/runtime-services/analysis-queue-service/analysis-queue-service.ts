@@ -52,6 +52,10 @@ import {
   VideoSegmentBackfillWorker,
   computeVideoVisualParamsHash
 } from './video-segment-backfill-worker'
+import {
+  visualTaggerCoordinator,
+  isVisualMediaExtensionOrPath
+} from './visual-tagger-coordinator'
 import { anydocService } from '../system/anydoc-service'
 import { omniClient } from '../../services/omni-client'
 import { resolveWorkspaceEffectiveConfig } from '../system/workspace-analysis-context'
@@ -331,7 +335,90 @@ export class AnalysisQueueService {
         },
         databaseService,
         anydocService,
-        omniClient
+        omniClient,
+        resolveActiveEncoderId: (hint?: number) => {
+          try {
+            const { resolveActiveVisualEncoderAndResource } = require('./visual-tagger-coordinator')
+            const cfg = ConfigOrchestrator.getInstance()
+            const { profile } = resolveTargetProfileAndDim()
+            return resolveActiveVisualEncoderAndResource({
+              embeddingProfile: profile,
+              language: cfg.getValue<string>('DEFAULT_LANGUAGE'),
+              encoderIdHint: hint
+            }).encoderId
+          } catch {
+            return hint ?? 2
+          }
+        },
+        onReconcile409: async (encoderId: number) => {
+          try {
+            const {
+              visualTaggerCoordinator,
+              resolveActiveVisualEncoderAndResource
+            } = require('./visual-tagger-coordinator')
+            const { modularResourceService } = require('../system/modular-resource-service')
+            const { BUILTIN_PLUGIN_CATALOG_META } = require('@firefly/shared')
+            const cfg = ConfigOrchestrator.getInstance()
+            const { profile } = resolveTargetProfileAndDim()
+            const { resourceId } = resolveActiveVisualEncoderAndResource({
+              embeddingProfile: profile,
+              language: cfg.getValue<string>('DEFAULT_LANGUAGE'),
+              encoderIdHint: encoderId
+            })
+            const catalogMeta = BUILTIN_PLUGIN_CATALOG_META[resourceId]
+            const expectedFingerprint =
+              catalogMeta?.visualVocabMeta?.matrixSha256 ||
+              catalogMeta?.expectedSha256 ||
+              resourceId
+            const res = await visualTaggerCoordinator.handleEngineNotReady409({
+              resourceId,
+              expectedFingerprint,
+              localVerifyAndHealFn: async () =>
+                modularResourceService.reconcileVisualVocabResource(resourceId, {
+                  skipDownload: true
+                }),
+              downloadAndReconcileFn: async () =>
+                modularResourceService.reconcileVisualVocabResource(resourceId, {
+                  skipDownload: false,
+                  forceDownload: true
+                })
+            })
+            if (res.outcome === 'recovered') {
+              let appVersion: string | null = null
+              try {
+                appVersion = require('electron')?.app?.getVersion?.() || null
+              } catch {
+                appVersion = null
+              }
+              const obs = databaseService.observeTaggerHealthyOrFingerprintChangedTx(
+                encoderId,
+                expectedFingerprint,
+                appVersion
+              )
+              visualTaggerCoordinator.resetBreakerForGeneration(obs.currentGeneration)
+              visualTaggerCoordinator.notifyRecoveryWake(encoderId, obs.currentGeneration, {
+                includeNeedsAppUpdate: Boolean(obs.appVersionChanged || obs.previousGeneration === 0)
+              })
+              setTimeout(() => {
+                this.videoSegmentBackfillWorker.scheduleStart('visual_409_recovered')
+              }, 0)
+              return
+            }
+            if (res.outcome === 'pending_reconcile') {
+              const nextAt = visualTaggerCoordinator.getNextVisualReconcileRetryAt()
+              const waitMs = Math.max(1000, (nextAt ?? Date.now() + 60_000) - Date.now())
+              setTimeout(() => {
+                this.wakeVisualBreakerWaiter()
+                this.videoSegmentBackfillWorker.scheduleStart('visual_409_cooldown_elapsed')
+              }, Math.min(waitMs, 30 * 60_000))
+              return
+            }
+            // 终态阻断（如 needs_plugin_update）：使用非阻塞立标暂停以免在 runLoop 内自等待 activeLoopPromise 死锁
+            this.videoSegmentBackfillWorker.requestPauseByVisualBreakerNonBlocking()
+          } catch (err) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[视频补全] 409 对账联动异常:', err)
+          }
+        }
       }
     })
     this.orphanWatchdog = new OrphanWatchdog(
@@ -395,7 +482,62 @@ export class AnalysisQueueService {
         this.writeDispatcher.updateItemStatus(itemId, status, progress, error, extra)
     )
 
+    visualTaggerCoordinator.onBreakerTripped(() => {
+      void this.videoSegmentBackfillWorker.pauseByVisualBreaker()
+      this.writeDispatcher.notifyFrontend(
+        'warning',
+        t('AI 标签不可用'),
+        true,
+        'visual-tagger-unavailable'
+      )
+      this.writeDispatcher.emitUpdate()
+    })
+
+    visualTaggerCoordinator.onRecoveryWake(({ encoderId, generation, includeNeedsAppUpdate }) => {
+      this.applyVisualTaggerGenerationRecovery(encoderId, generation, { includeNeedsAppUpdate })
+    })
+
     loggingService.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务实例已创建')
+  }
+
+  private visualBreakerWaitResolve: (() => void) | null = null
+
+  public wakeVisualBreakerWaiter(): void {
+    if (this.visualBreakerWaitResolve) {
+      const resolve = this.visualBreakerWaitResolve
+      this.visualBreakerWaitResolve = null
+      resolve()
+    }
+  }
+
+  /**
+   * 视觉槽恢复（generation 递增）后执行解封、限速重投、恢复视频补全并唤醒挂起主循环
+   */
+  public applyVisualTaggerGenerationRecovery(
+    encoderId: number,
+    generation: number,
+    opts?: { includeNeedsAppUpdate?: boolean; limit?: number }
+  ): { requeuedQueueCount: number; requeuedSegmentCount: number } {
+    visualTaggerCoordinator.resetBreakerForGeneration(generation)
+    const requeued = databaseService.requeueEligibleFailedItemsTx({
+      activeEncoderId: encoderId,
+      currentGeneration: generation,
+      limit: opts?.limit ?? 50,
+      includeNeedsAppUpdate: opts?.includeNeedsAppUpdate
+    })
+    if (requeued.requeuedQueueCount > 0 && this.queueManager) {
+      // 确保 DB 重投状态先刷入内存队列快照后再恢复后台补全与唤醒主循环，防读取陈旧 pendingItems
+      void Promise.resolve(this.queueManager.loadFromDB()).finally(() => {
+        this.videoSegmentBackfillWorker.resumeFromVisualBreaker()
+        this.wakeVisualBreakerWaiter()
+        this.writeDispatcher.emitUpdate()
+      })
+      return requeued
+    }
+    this.videoSegmentBackfillWorker.resumeFromVisualBreaker()
+    this.wakeVisualBreakerWaiter()
+    this.writeDispatcher.emitUpdate()
+    return requeued
   }
 
   async initialize(): Promise<void> {
@@ -718,16 +860,54 @@ export class AnalysisQueueService {
           break
         }
 
+        const breakerTripped = visualTaggerCoordinator.isVisualBreakerTripped()
+        const next409RetryAt = visualTaggerCoordinator.getNextVisualReconcileRetryAt()
+        const in409Cooldown = next409RetryAt !== null && next409RetryAt > Date.now()
+        const dispatchablePendingItems =
+          breakerTripped || in409Cooldown
+            ? pendingItems.filter(i => !isVisualMediaExtensionOrPath(i.path, (i as any).fileType))
+            : pendingItems
+
+        if (dispatchablePendingItems.length === 0) {
+          // 所有 pending 均为被视觉熔断或 409 退避冷却暂停的视觉文件：挂起休眠直到恢复/冷却到期/取消/新非视觉入队
+          await new Promise<void>(resolve => {
+            let cooldownTimer: ReturnType<typeof setTimeout> | null = null
+            const cleanupAndResolve = () => {
+              if (cooldownTimer) {
+                clearTimeout(cooldownTimer)
+                cooldownTimer = null
+              }
+              resolve()
+            }
+            this.visualBreakerWaitResolve = cleanupAndResolve
+            const onAbort = () => {
+              this.wakeVisualBreakerWaiter()
+            }
+            if (localController.signal.aborted) {
+              this.wakeVisualBreakerWaiter()
+              return
+            }
+            localController.signal.addEventListener('abort', onAbort, { once: true })
+            if (!breakerTripped && in409Cooldown && next409RetryAt !== null) {
+              const waitMs = Math.max(500, next409RetryAt - Date.now())
+              cooldownTimer = setTimeout(() => {
+                this.wakeVisualBreakerWaiter()
+              }, waitMs)
+            }
+          })
+          continue
+        }
+
         // 256 切片规划 + 同源 K<=64 执行窗口（Spec §2.1 / §3.1）
         if (activeWorkspaceId != null) {
           await this.batchPlanSession.planChunkForWindow(
             databaseService.db,
             activeWorkspaceId,
-            pendingItems,
+            dispatchablePendingItems,
             effectiveConfig
           )
         }
-        const windowItems = this.batchPlanSession.takeWindow(pendingItems)
+        const windowItems = this.batchPlanSession.takeWindow(dispatchablePendingItems)
         const isParallel = !isCpuEngine && isAiStageEnabled(analysisMode)
 
         // 基于同一 windowItems 推导本窗口精准预热计划
@@ -984,6 +1164,7 @@ export class AnalysisQueueService {
 
     // Spec §2.3：用户暂停队列时同步中止在途视频后台补全，绝不误触发补全
     this.videoSegmentBackfillWorker.abortCurrent()
+    this.wakeVisualBreakerWaiter()
 
     this.writeDispatcher.emitUpdate()
   }
@@ -994,6 +1175,7 @@ export class AnalysisQueueService {
     if (result.addedCount > 0 || result.updatedCount > 0) {
       this.batchPlanSession.clear()
       this.videoSegmentBackfillWorker.requestYield()
+      this.wakeVisualBreakerWaiter()
     }
     if (!this.isProcessingLoopActive && this.isInitialized) {
       void this.start()

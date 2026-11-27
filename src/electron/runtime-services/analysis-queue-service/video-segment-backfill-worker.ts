@@ -124,6 +124,7 @@ export interface VideoSegmentBackfillWorkerDeps {
 export class VideoSegmentBackfillWorker {
   private running = false
   private userPaused = false
+  private visualBreakerPaused = false
   private yieldRequested = false
   private priorityTarget?: { workspaceId: number; fileFingerprint: string }
   private current?: VideoBackfillCurrentTask
@@ -140,7 +141,7 @@ export class VideoSegmentBackfillWorker {
   public getSnapshot(): VideoBackfillSnapshot {
     return {
       running: this.running,
-      userPaused: this.userPaused,
+      userPaused: this.userPaused || this.visualBreakerPaused,
       current: this.current ? { ...this.current } : undefined,
       pendingVideoCount: this.pendingVideoCount,
       pendingSliceCount: this.pendingSliceCount
@@ -151,7 +152,7 @@ export class VideoSegmentBackfillWorker {
    * 尝试启动后台单切片补全（幂等、防重入）
    */
   public scheduleStart(reason: string): boolean {
-    if (this.running || this.userPaused) {
+    if (this.running || this.userPaused || this.visualBreakerPaused) {
       return false
     }
     if (this.deps.hasMainQueuePendingOrRunning()) {
@@ -193,6 +194,39 @@ export class VideoSegmentBackfillWorker {
   public resumeByUser(): boolean {
     this.userPaused = false
     const started = this.scheduleStart('user_resume')
+    if (!started) {
+      this.deps.emitSnapshotUpdate()
+    }
+    return started
+  }
+
+  /**
+   * 视觉打标器触发 N=3 熔断时联动暂停后台视频切片补全（防止整库烧切片）
+   */
+  public async pauseByVisualBreaker(): Promise<void> {
+    this.visualBreakerPaused = true
+    await this.abortAndWaitCurrent()
+    await this.refreshPendingCounts()
+    this.deps.emitSnapshotUpdate()
+  }
+
+  /**
+   * 在 runLoop 回调内部安全标记视觉熔断暂停（不 await activeLoopPromise，彻底杜绝自等待死锁）
+   */
+  public requestPauseByVisualBreakerNonBlocking(): void {
+    this.visualBreakerPaused = true
+    if (this.currentAbortController) {
+      this.currentAbortController.abort()
+    }
+    this.deps.emitSnapshotUpdate()
+  }
+
+  /**
+   * 视觉打标器恢复（generation 递增）后恢复后台视频切片补全
+   */
+  public resumeFromVisualBreaker(): boolean {
+    this.visualBreakerPaused = false
+    const started = this.scheduleStart('visual_breaker_recovered')
     if (!started) {
       this.deps.emitSnapshotUpdate()
     }
@@ -424,7 +458,7 @@ export class VideoSegmentBackfillWorker {
     const creepIntervalMs = this.deps.creepIntervalMs ?? CREEP_INTERVAL_MS
 
     try {
-      while (!this.yieldRequested && !this.userPaused) {
+      while (!this.yieldRequested && !this.userPaused && !this.visualBreakerPaused) {
         // 1. 抢占让路检查：主队列忙碌或有待办则立即退出让位
         if (this.deps.hasMainQueuePendingOrRunning()) {
           logger.debug(LogCategory.ANALYSIS_QUEUE, '[视频补全] 主队列有新任务，后台回填暂停让路')
@@ -552,6 +586,9 @@ export class VideoSegmentBackfillWorker {
         } else if (result.outcome === 'missing_file') {
           // 跨设备原文件缺失不改 DB 状态，本轮加入跳过集避免 50ms 无限热循环饿死后续视频
           this.sessionMissingFiles.add(segment.fileFingerprint)
+        } else if (result.outcome === 'skipped' && result.reason === 'engine_not_ready_409') {
+          // 视觉引擎 409 对账窗口期间立即退出回填循环，由对账成功或冷却定时器重新唤醒
+          break
         }
 
         // 6. 协程让出，给主队列与事件循环喘息窗口 (FIN-10)

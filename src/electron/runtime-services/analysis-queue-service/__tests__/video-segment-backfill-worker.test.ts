@@ -22,7 +22,11 @@ function createHarness(options: {
   configuredLimitSec?: number
   videoVisualAnalysisEnabled?: boolean
   mainQueueBusy?: () => boolean
-  executeImpl?: (segIndex: number) => Promise<'completed' | 'failed' | 'aborted'>
+  executeImpl?: (
+    segIndex: number
+  ) => Promise<
+    'completed' | 'failed' | 'aborted' | { outcome: 'completed' | 'failed' | 'aborted' | 'skipped'; reason?: string }
+  >
 }) {
   const segs = options.segments
   const executedSegments: Array<{ fp: string; segIndex: number }> = []
@@ -165,14 +169,16 @@ function createHarness(options: {
           s.fileFingerprint === input.segment.fileFingerprint &&
           s.segmentIndex === input.segment.segmentIndex
       )
-      const outcome = options.executeImpl
+      const rawRes = options.executeImpl
         ? await options.executeImpl(input.segment.segmentIndex)
         : 'completed'
+      const outcome = typeof rawRes === 'string' ? rawRes : rawRes.outcome
+      const reason = typeof rawRes === 'string' ? undefined : rawRes.reason
       if (target) {
         if (outcome === 'completed') target.status = 'completed'
         else if (outcome === 'failed') target.status = 'failed'
       }
-      return { outcome, frameCount: outcome === 'completed' ? 5 : 0 }
+      return { outcome, frameCount: outcome === 'completed' ? 5 : 0, ...(reason ? { reason } : {}) }
     }
   })
 
@@ -262,6 +268,73 @@ describe('VideoSegmentBackfillWorker (Ticket 02)', () => {
     ]
     const { worker } = createHarness({ segments: segs, effectiveLimitSec: 300 })
     expect(await worker.pickNextEligibleSegment()).toBeNull()
+  })
+
+  it('R3 [H-2]: 切片遇到 409 engine_not_ready_409 (skipped) 时立即退出循环不空转', async () => {
+    const segs: SegRow[] = [
+      {
+        fileFingerprint: 'fp1',
+        segmentIndex: 0,
+        startPtsSec: 0,
+        endPtsSec: 300,
+        paramsHash: 'h',
+        workspaceId: 1,
+        path: 'a.mp4',
+        name: 'a.mp4',
+        status: 'completed'
+      },
+      {
+        fileFingerprint: 'fp1',
+        segmentIndex: 1,
+        startPtsSec: 300,
+        endPtsSec: 600,
+        paramsHash: 'h',
+        workspaceId: 1,
+        path: 'a.mp4',
+        name: 'a.mp4',
+        status: 'pending'
+      },
+      {
+        fileFingerprint: 'fp1',
+        segmentIndex: 2,
+        startPtsSec: 600,
+        endPtsSec: 900,
+        paramsHash: 'h',
+        workspaceId: 1,
+        path: 'a.mp4',
+        name: 'a.mp4',
+        status: 'pending'
+      }
+    ]
+    let calls = 0
+    const { worker } = createHarness({
+      segments: segs,
+      effectiveLimitSec: 1800,
+      executeImpl: async () => {
+        calls++
+        return { outcome: 'skipped', frameCount: 0, reason: 'engine_not_ready_409' }
+      }
+    })
+    worker.scheduleStart('test_409_break')
+    await new Promise(r => setTimeout(r, 40))
+    expect(calls).toBe(1)
+    expect(worker.getSnapshot().running).toBe(false)
+
+    // R4 [H-A]: 切片执行内部触发终态非阻塞暂停，不得引发自等待死锁
+    let refWorker!: VideoSegmentBackfillWorker
+    const nonBlockingHarness = createHarness({
+      segments: segs.map(s => ({ ...s })),
+      effectiveLimitSec: 1800,
+      executeImpl: async () => {
+        refWorker.requestPauseByVisualBreakerNonBlocking()
+        return { outcome: 'skipped', frameCount: 0, reason: 'engine_not_ready_409' }
+      }
+    })
+    refWorker = nonBlockingHarness.worker
+    refWorker.scheduleStart('test_409_nonblocking_pause')
+    await new Promise(r => setTimeout(r, 40))
+    expect(refWorker.getSnapshot().running).toBe(false)
+    expect(refWorker.getSnapshot().userPaused).toBe(true)
   })
 
   it('U-04 & U-05: 逐片补全且新文件入队时在本片完成后立即抢占让路，空闲后无缝续跑', async () => {

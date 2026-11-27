@@ -234,6 +234,19 @@ export class QueueDao {
       .run(now)
   }
 
+  incrementRetryCountSync(id: number): number {
+    const now = new Date().toISOString()
+    this.db
+      .prepare(
+        `UPDATE analysis_queue SET retry_count = COALESCE(retry_count, 0) + 1, updated_at = ? WHERE id = ?`
+      )
+      .run(now, id)
+    const row = this.db
+      .prepare(`SELECT COALESCE(retry_count, 0) AS retry_count FROM analysis_queue WHERE id = ?`)
+      .get(id) as { retry_count: number } | undefined
+    return row?.retry_count ?? 1
+  }
+
   deleteAnalysis(id: number): void {
     this.db.prepare(`DELETE FROM analysis_queue WHERE id = ?`).run(id)
   }

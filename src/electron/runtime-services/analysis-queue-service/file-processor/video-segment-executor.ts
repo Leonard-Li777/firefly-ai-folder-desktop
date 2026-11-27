@@ -1,7 +1,10 @@
 // @doc-anchor: docs/specs/video-fast-first-slice-and-idle-backfill-spec.md#21-抽离公共原子单切片执行器-executesinglevideosegment
 import fs from 'node:fs'
+import { t } from '@app/languages'
 import { LogCategory, logger } from '@firefly/shared'
-import type { OmniPerceptionOptions } from '../../system/omni-service/types'
+import { OmniPerceptionHttpError, type OmniPerceptionOptions } from '../../system/omni-service/types'
+import { classifyVisualPerceptionError } from './analysis-error-classifier'
+import { visualTaggerCoordinator } from '../visual-tagger-coordinator'
 import {
   cleanupOrphanedVideoChunksDiff,
   persistOmniVectors,
@@ -37,6 +40,15 @@ export interface VideoSegmentExecutorDeps {
     ) => void
     markVideoSegmentFailedOrPending: (fileId: string, segmentIndex: number, reason: string) => void
     markVideoSegmentTerminalFailed?: (fileId: string, segmentIndex: number, reason: string) => void
+    recordVideoSegmentVisualFailureTx?: (params: {
+      fileId: string
+      segmentIndex: number
+      errorMessage: string
+      failureCode: string
+      encoderId: number
+      expectedFingerprint?: string | null
+      markStateNonOk?: boolean
+    }) => { failureGeneration: number }
     rollbackVideoSegmentProcessing: (fileId: string, segmentIndex: number) => void
     replaceVideoChunksInRange: (
       fileFingerprint: string,
@@ -60,6 +72,10 @@ export interface VideoSegmentExecutorDeps {
     deleteVectors: (fps: string[]) => Promise<any>
   }
   existsSync?: (p: string) => boolean
+  /** 异常未携带 encoderId 时动态解析当前激活视觉槽编码器 */
+  resolveActiveEncoderId?: (encoderIdHint?: number) => number
+  /** 409 `VISUAL_VOCAB_STALE` 对账触发回调（避免仅回滚 pending 而无对账唤醒） */
+  onReconcile409?: (encoderId: number) => Promise<void> | void
   /** 仅用于单测注入降级退避等待函数 */
   degradedRetrySleep?: (ms: number, signal?: AbortSignal) => Promise<void>
 }
@@ -266,7 +282,93 @@ export async function executeSingleVideoSegment(
       deps.databaseService.rollbackVideoSegmentProcessing(fileFingerprint, segmentIndex)
       return { outcome: 'aborted', frameCount: 0, reason: err?.message || 'aborted' }
     }
+    const visualDecision = classifyVisualPerceptionError(err)
     const reason = err?.message || String(err)
+    if (visualDecision) {
+      const encoderIdHint =
+        err instanceof OmniPerceptionHttpError && typeof err.encoderId === 'number'
+          ? err.encoderId
+          : undefined
+      const encoderId = encoderIdHint ?? deps.resolveActiveEncoderId?.(encoderIdHint) ?? 2
+      if (visualDecision.kind === 'input_rejected_422') {
+        if (typeof deps.databaseService.recordVideoSegmentVisualFailureTx === 'function') {
+          deps.databaseService.recordVideoSegmentVisualFailureTx({
+            fileId: fileFingerprint,
+            segmentIndex,
+            errorMessage: reason,
+            failureCode: 'INPUT_REJECTED',
+            encoderId,
+            markStateNonOk: false
+          })
+        } else {
+          deps.databaseService.markVideoSegmentTerminalFailed?.(fileFingerprint, segmentIndex, reason)
+        }
+        return { outcome: 'failed', frameCount: 0, reason: 'INPUT_REJECTED' }
+      }
+      if (visualDecision.kind === 'asset_failure_500') {
+        let gen = 0
+        if (typeof deps.databaseService.recordVideoSegmentVisualFailureTx === 'function') {
+          gen = deps.databaseService.recordVideoSegmentVisualFailureTx({
+            fileId: fileFingerprint,
+            segmentIndex,
+            errorMessage: reason,
+            failureCode: visualDecision.failureCode,
+            encoderId,
+            markStateNonOk: true
+          }).failureGeneration
+        } else {
+          deps.databaseService.markVideoSegmentTerminalFailed?.(fileFingerprint, segmentIndex, reason)
+        }
+        const breakerRes = visualTaggerCoordinator.recordAssetFailureForBreaker(encoderId, gen)
+        if (breakerRes.newlyTripped) {
+          visualTaggerCoordinator.notifyBreakerTripped(encoderId, gen)
+        }
+        return { outcome: 'failed', frameCount: 0, reason: visualDecision.failureCode }
+      }
+      if (visualDecision.kind === 'reconcile_409') {
+        if (visualDecision.failureCode === 'needs_app_update') {
+          const updateMsg = t('需要更新软件版本后才能继续自动识别视频画面标签')
+          if (typeof deps.databaseService.recordVideoSegmentVisualFailureTx === 'function') {
+            deps.databaseService.recordVideoSegmentVisualFailureTx({
+              fileId: fileFingerprint,
+              segmentIndex,
+              errorMessage: updateMsg,
+              failureCode: 'needs_app_update',
+              encoderId,
+              markStateNonOk: false
+            })
+          } else {
+            deps.databaseService.markVideoSegmentTerminalFailed?.(fileFingerprint, segmentIndex, updateMsg)
+          }
+          return { outcome: 'failed', frameCount: 0, reason: 'needs_app_update' }
+        }
+        deps.databaseService.rollbackVideoSegmentProcessing(fileFingerprint, segmentIndex)
+        try {
+          await deps.onReconcile409?.(encoderId)
+        } catch {
+          // 回调异常不阻断回滚结果
+        }
+        return { outcome: 'skipped', frameCount: 0, reason: 'engine_not_ready_409' }
+      }
+      if (
+        visualDecision.kind === 'transient_retry' ||
+        visualDecision.kind === 'inference_bounded_retry'
+      ) {
+        const plainMsg =
+          visualDecision.kind === 'transient_retry'
+            ? t('本地识图服务暂时繁忙，稍后将自动重试')
+            : t('当前视频片段画面识别遇到临时故障，稍后将自动重试')
+        deps.databaseService.markVideoSegmentFailedOrPending(fileFingerprint, segmentIndex, plainMsg)
+        return {
+          outcome: 'failed',
+          frameCount: 0,
+          reason:
+            visualDecision.kind === 'inference_bounded_retry'
+              ? visualDecision.failureCode
+              : `HTTP_${visualDecision.status}`
+        }
+      }
+    }
     logger.warn(
       LogCategory.ANALYSIS_QUEUE,
       `[视频补全] 片段 ${segmentIndex} 分析异常: ${reason}`

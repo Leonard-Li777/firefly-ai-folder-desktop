@@ -274,7 +274,6 @@ export interface OmniPerceptionResponse {
   clip_tags?: string[]
   nsfw_tags?: string[]
   nsfw_text_tags?: string[]
-  ram_tags?: string[]
   morphology_high_confidence_tags?: string[]
   clip_high_confidence_tags?: string[]
   nsfw_high_confidence_tags?: string[]
@@ -553,4 +552,43 @@ export interface InspectControlledTagResult {
 export interface InspectControlledTagsResponse {
   success: boolean
   results: InspectControlledTagResult[]
+}
+
+export interface VisualTaggerSlotHealthSnapshot {
+  status: string
+  encoderId?: number
+  encoderDigest?: string
+  reason?: string
+}
+
+export interface VisualVocabStatusTelemetry {
+  activeStatus: 'ok' | 'missing' | 'corrupt' | 'stale' | 'not_provisioned' | string
+  activeEncoderId?: number
+  byEncoder?: Record<string, VisualTaggerSlotHealthSnapshot>
+}
+
+/**
+ * Omni `/api/perceive` 结构化 HTTP 错误（Spec v2.12 §3.3 / Ticket 08-09）
+ * 严禁在客户端静默吞没为 null 或 completed。
+ */
+export class OmniPerceptionHttpError extends Error {
+  public readonly status: number
+  public readonly code: string
+  public readonly reason?: string
+  public readonly encoderId?: number
+
+  constructor(opts: {
+    status: number
+    code: string
+    reason?: string
+    encoderId?: number
+    message: string
+  }) {
+    super(opts.message)
+    this.name = 'OmniPerceptionHttpError'
+    this.status = opts.status
+    this.code = opts.code
+    this.reason = opts.reason
+    this.encoderId = opts.encoderId
+  }
 }

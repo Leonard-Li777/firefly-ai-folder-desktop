@@ -2536,6 +2536,82 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   }
 
   /**
+   * 视觉打标器状态代际 DAO 代理 (Spec v2.12 §3.3 / Ticket 09)
+   */
+  getVisualTaggerState(encoderId: number) {
+    return this.visualTaggerStateDao?.getState(encoderId) ?? null
+  }
+
+  getVisualTaggerGeneration(encoderId: number): number {
+    return this.visualTaggerStateDao?.getCurrentGeneration(encoderId) ?? 0
+  }
+
+  recordQueueVisualFailureTx(params: {
+    queueId: number
+    errorMessage: string
+    failureCode: string
+    encoderId: number
+    expectedFingerprint?: string | null
+    markStateNonOk?: boolean
+  }): { failureGeneration: number } {
+    if (!this.visualTaggerStateDao) {
+      return { failureGeneration: 0 }
+    }
+    return this.visualTaggerStateDao.recordQueueVisualFailureTx(params)
+  }
+
+  recordVideoSegmentVisualFailureTx(params: {
+    fileId: string
+    segmentIndex: number
+    errorMessage: string
+    failureCode: string
+    encoderId: number
+    expectedFingerprint?: string | null
+    markStateNonOk?: boolean
+  }): { failureGeneration: number } {
+    if (!this.visualTaggerStateDao) {
+      return { failureGeneration: 0 }
+    }
+    return this.visualTaggerStateDao.recordVideoSegmentVisualFailureTx(params)
+  }
+
+  observeTaggerHealthyOrFingerprintChangedTx(
+    encoderId: number,
+    expectedFingerprint?: string | null,
+    currentAppVersion?: string | null
+  ): {
+    bumped: boolean
+    appVersionChanged: boolean
+    previousGeneration: number
+    currentGeneration: number
+  } {
+    if (!this.visualTaggerStateDao) {
+      return { bumped: false, appVersionChanged: false, previousGeneration: 0, currentGeneration: 0 }
+    }
+    return this.visualTaggerStateDao.observeTaggerHealthyOrFingerprintChangedTx(
+      encoderId,
+      expectedFingerprint,
+      currentAppVersion
+    )
+  }
+
+  incrementQueueRetryCount(id: number): number {
+    return this.queueDao?.incrementRetryCountSync(id) ?? 1
+  }
+
+  requeueEligibleFailedItemsTx(params: {
+    activeEncoderId: number
+    currentGeneration: number
+    limit?: number
+    includeNeedsAppUpdate?: boolean
+  }): { requeuedQueueCount: number; requeuedSegmentCount: number } {
+    if (!this.visualTaggerStateDao) {
+      return { requeuedQueueCount: 0, requeuedSegmentCount: 0 }
+    }
+    return this.visualTaggerStateDao.requeueEligibleFailedItemsTx(params)
+  }
+
+  /**
    * 切换语言时重建只读调试视图的展示路径（模型 B 下 name_path 物化已退役，零数据行写入）
    */
   public rebuildDebugTagViewsForLanguage(locale: string): void {

@@ -53,6 +53,21 @@ import {
   type DownloadState
 } from '../database/dao/modular-resource-dao'
 import { GENESIS_V1_SCHEMA } from '../database/database'
+import {
+  cleanupLegacyVocabBinSync,
+  commitPluginDirectoryWithTxn,
+  computeFileSha256Sync,
+  getVisualVocabCatalogMeta,
+  getVisualVocabEncoderId,
+  hasLocalVisualVocabFiles,
+  isVisualVocabPluginResource,
+  recoverPendingPluginTxns,
+  verifyVisualVocabWithOmniCli,
+  writePluginReadyMarkerWithVisualVocab,
+  type AssetsReloadResult,
+  type ReloadAssetsFn,
+  type VerifyVisualVocabFn
+} from './visual-vocab-txn'
 
 export type { PluginCapabilitySlot, SlotPolicy, BackendType, EmbeddingEpochRecord }
 import { PluginProcessManager, getPluginProcessManager } from './plugin-process-manager'
@@ -352,6 +367,15 @@ export interface IModularResourceService {
 
   /** 是否已忽略旧目录清理提示 */
   isOldDirCleanupDismissed(): boolean
+
+  /** 槽位互斥单锁执行入口 */
+  withSlotMutex<T>(slot: string, fn: () => Promise<T>): Promise<T>
+
+  /** 409/stale 本地优先单锁对账入口 */
+  reconcileVisualVocabResource(
+    resourceId: string,
+    opts?: { skipDownload?: boolean; forceDownload?: boolean }
+  ): Promise<{ ok: boolean; diskMatchesCatalog?: boolean; error?: string }>
 }
 
 export interface ModularResourceServiceOptions {
@@ -366,6 +390,8 @@ export interface ModularResourceServiceOptions {
   offlinePackageService?: OfflinePackageService
   processManager?: PluginProcessManager
   onTopologyChanged?: TopologyChangeHandler
+  verifyVisualVocabFn?: VerifyVisualVocabFn
+  reloadAssetsFn?: ReloadAssetsFn
 }
 
 export class ModularResourceService implements IModularResourceService {
@@ -382,6 +408,8 @@ export class ModularResourceService implements IModularResourceService {
   private deleteDirectoryFn: (dirPath: string) => Promise<boolean>
   private tombstoneGC: TombstoneGCService
   private offlinePackageService: OfflinePackageService
+  private customVerifyVisualVocabFn?: VerifyVisualVocabFn
+  private customReloadAssetsFn?: ReloadAssetsFn
   private inFlightResources = new Map<string, Promise<void>>()
   private liveProgress = new Map<
     string,
@@ -491,6 +519,8 @@ export class ModularResourceService implements IModularResourceService {
     }
     this.offlinePackageService = options?.offlinePackageService ?? new OfflinePackageService(this)
     this.topologyListener = options?.onTopologyChanged ?? null
+    this.customVerifyVisualVocabFn = options?.verifyVisualVocabFn
+    this.customReloadAssetsFn = options?.reloadAssetsFn
     this.processManager =
       options?.processManager ??
       new PluginProcessManager({
@@ -516,6 +546,244 @@ export class ModularResourceService implements IModularResourceService {
    */
   public setTopologyChangeHandler(handler: TopologyChangeHandler | null): void {
     this.topologyListener = handler
+  }
+
+  private resolveDefaultVerifyVisualVocabFn(): VerifyVisualVocabFn | undefined {
+    if (this.customVerifyVisualVocabFn) {
+      return this.customVerifyVisualVocabFn
+    }
+    try {
+      const { omniService } = require('./omni-service')
+      const exePath = omniService?.resolveOmniExecutable?.()
+      if (!exePath) {
+        return undefined
+      }
+      return (dirPath, encoderId) =>
+        verifyVisualVocabWithOmniCli(dirPath, encoderId, { executablePath: exePath })
+    } catch {
+      return undefined
+    }
+  }
+
+  private resolveDefaultReloadAssetsFn(): ReloadAssetsFn | undefined {
+    if (this.customReloadAssetsFn) {
+      return this.customReloadAssetsFn
+    }
+    try {
+      const { omniService } = require('./omni-service')
+      if (omniService?.isServiceReady?.()) {
+        return () => omniService.reloadVisualAssets()
+      }
+      return undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  /**
+   * 409/stale 本地优先单锁对账入口（Spec v2.12 §3.3 / Ticket 08-09）：
+   * 1. 与安装/切换/卸载共用 `withSlotMutex` 单锁链；
+   * 2. 第一步固定执行本地同源复验（通过则零联网补写 `.ready.json` 并 `reload`）；
+   * 3. 磁盘与 catalog  hashes 一致却被引擎判不兼容 ➔ 返回 `diskMatchesCatalog: true` 暴露发布契约缺陷。
+   */
+  private async writeReadyMarkerGuardedForVisual(
+    targetDir: string,
+    resourceId: string,
+    sharedSubDir: string,
+    opts?: { skipDigest?: boolean }
+  ): Promise<boolean> {
+    const isVisual = isVisualVocabPluginResource(resourceId)
+    const hasLocalVocab = hasLocalVisualVocabFiles(targetDir)
+    const catalogEntry = (BUILTIN_PLUGIN_CATALOG_META as Record<string, any>)[resourceId]
+    if (!isVisual && !(catalogEntry?.encoderId && hasLocalVocab)) {
+      await writePluginReadyMarkerWithVisualVocab(targetDir, {
+        resourceId,
+        sharedSubDir,
+        skipDigest: opts?.skipDigest
+      })
+      return true
+    }
+
+    const vMeta = getVisualVocabCatalogMeta(resourceId)
+    if (vMeta) {
+      const matrixPath = path.join(targetDir, vMeta.matrixFileName)
+      const metaPath = path.join(targetDir, vMeta.metaFileName)
+      if (!fs.existsSync(matrixPath) || !fs.existsSync(metaPath)) {
+        logger.warn(LogCategory.SYSTEM, `[ModularResource] 视觉词表文件缺失，拒绝写 .ready.json: ${resourceId}`)
+        return false
+      }
+      try {
+        if (
+          computeFileSha256Sync(matrixPath).toLowerCase() !== vMeta.matrixSha256.toLowerCase() ||
+          computeFileSha256Sync(metaPath).toLowerCase() !== vMeta.metaSha256.toLowerCase()
+        ) {
+          logger.warn(LogCategory.SYSTEM, `[ModularResource] 视觉词表 SHA-256 与 catalog 失配，拒绝写 .ready.json: ${resourceId}`)
+          return false
+        }
+      } catch {
+        return false
+      }
+    }
+
+    const verifyFn = this.resolveDefaultVerifyVisualVocabFn()
+    const targetEncoderId =
+      getVisualVocabEncoderId(resourceId) ??
+      (typeof catalogEntry?.encoderId === 'number' ? catalogEntry.encoderId : undefined)
+    if (verifyFn) {
+      const verifyRes = await verifyFn(targetDir, targetEncoderId)
+      if (verifyRes.ok) {
+        await writePluginReadyMarkerWithVisualVocab(targetDir, {
+          resourceId,
+          sharedSubDir,
+          verifyRes,
+          skipDigest: opts?.skipDigest
+        })
+        return true
+      }
+      if (verifyRes.code !== 'OMNI_BINARY_UNAVAILABLE') {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[ModularResource] 视觉词表 CLI 同源校验失败，拒绝写 .ready.json (${resourceId}): ${verifyRes.error || verifyRes.code}`
+        )
+        return false
+      }
+    }
+
+    let isPackaged = false
+    try {
+      isPackaged = Boolean(electronApp?.isPackaged)
+    } catch {
+      isPackaged = false
+    }
+    if (isPackaged) {
+      logger.warn(LogCategory.SYSTEM, `[ModularResource] 打包环境缺少视觉校验程序，fail-closed 拒绝写 .ready.json: ${resourceId}`)
+      return false
+    }
+
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[ModularResource] 非打包环境未运行视觉校验，仅写基础 .ready.json（省略 visualVocab 契约块）: ${resourceId}`
+    )
+    await invalidateReadyMarkers(targetDir)
+    const digestResult = opts?.skipDigest ? undefined : await computeDirectoryReadyDigest(targetDir)
+    await writeReadyMarker(targetDir, { resourceId, sharedSubDir, digestResult })
+    return true
+  }
+
+  public async reconcileVisualVocabResource(
+    resourceId: string,
+    opts?: { skipDownload?: boolean; forceDownload?: boolean }
+  ): Promise<{ ok: boolean; diskMatchesCatalog?: boolean; error?: string }> {
+    return this.withSlotMutex(resourceId, async () => {
+      const dao = this.getDao()
+      const resRecord = dao.resources.findByIdSync(resourceId)
+      const sharedSubDir = resolveSharedSubDir(resourceId)
+      const relPath = resRecord?.target_local_path || `modules/_shared/${sharedSubDir}`
+      const targetDir = this.resolvePhysicalPath(relPath)
+      const vMeta = getVisualVocabCatalogMeta(resourceId)
+      const catalogEntry = (BUILTIN_PLUGIN_CATALOG_META as Record<string, any>)[resourceId]
+      const hasLocalVocab = fs.existsSync(targetDir) && hasLocalVisualVocabFiles(targetDir)
+      const needsVisualVerify =
+        isVisualVocabPluginResource(resourceId) ||
+        (typeof catalogEntry?.encoderId === 'number' && hasLocalVocab)
+      const expectedEncoderId =
+        getVisualVocabEncoderId(resourceId) ??
+        (typeof catalogEntry?.encoderId === 'number' ? catalogEntry.encoderId : undefined)
+
+      let diskMatchesCatalog = false
+      if (vMeta && fs.existsSync(targetDir)) {
+        const matrixPath = path.join(targetDir, vMeta.matrixFileName)
+        const metaPath = path.join(targetDir, vMeta.metaFileName)
+        if (fs.existsSync(matrixPath) && fs.existsSync(metaPath)) {
+          try {
+            diskMatchesCatalog =
+              computeFileSha256Sync(matrixPath).toLowerCase() === vMeta.matrixSha256.toLowerCase() &&
+              computeFileSha256Sync(metaPath).toLowerCase() === vMeta.metaSha256.toLowerCase()
+          } catch {
+            diskMatchesCatalog = false
+          }
+        }
+      }
+
+      if (!opts?.forceDownload && fs.existsSync(targetDir)) {
+        const verifyFn = this.resolveDefaultVerifyVisualVocabFn()
+        const reloadFn = this.resolveDefaultReloadAssetsFn()
+        if (needsVisualVerify && !verifyFn) {
+          return {
+            ok: false,
+            diskMatchesCatalog,
+            error: '无法定位本地视觉校验程序，暂不能确认视觉词表完整性'
+          }
+        }
+        let verifyRes = { ok: true, dir: targetDir } as Awaited<ReturnType<VerifyVisualVocabFn>>
+        if (verifyFn && needsVisualVerify) {
+          verifyRes = await verifyFn(targetDir, expectedEncoderId)
+        }
+        if (verifyRes.ok && (!vMeta || diskMatchesCatalog)) {
+          await writePluginReadyMarkerWithVisualVocab(targetDir, {
+            resourceId,
+            sharedSubDir,
+            verifyRes
+          })
+          if (reloadFn) {
+            const reloadRes = await reloadFn()
+            const slotStatus =
+              expectedEncoderId !== undefined
+                ? reloadRes.byEncoder?.[String(expectedEncoderId)]?.status
+                : reloadRes.activeStatus
+            if (!reloadRes.success || (slotStatus && slotStatus !== 'ok')) {
+              return {
+                ok: false,
+                diskMatchesCatalog,
+                error:
+                  reloadRes.error ||
+                  `reload 后视觉槽状态异常 (${slotStatus || 'unknown'})`
+              }
+            }
+          }
+          return { ok: true, diskMatchesCatalog }
+        }
+        if (diskMatchesCatalog) {
+          return {
+            ok: false,
+            diskMatchesCatalog: true,
+            error: verifyRes.error || '磁盘视觉资产与目录清单一致但未通过同源验证'
+          }
+        }
+      }
+
+      if (opts?.skipDownload) {
+        return { ok: false, diskMatchesCatalog, error: '本地复验未通过且跳过下载' }
+      }
+
+      // 本地未通过：触发对应所属模块下载修复
+      const moduleRows = dao.modules.listAllSync()
+      const owningMod = moduleRows.find(m =>
+        dao.resources.findResourcesByModuleSync(m.id).some(r => r.resource_id === resourceId)
+      )
+      if (!owningMod) {
+        return { ok: false, diskMatchesCatalog, error: `未找到视觉资源所属模块: ${resourceId}` }
+      }
+      const spec = buildResourceSpecFromCatalog(resourceId as BuiltinSharedResourceId)
+      let task = dao.resources.findByIdSync(resourceId)
+      if (!spec || !task) {
+        return { ok: false, diskMatchesCatalog, error: `未找到资源规格或下载任务: ${resourceId}` }
+      }
+      if (dao.resources.syncCatalogMetadataSync(spec)) {
+        task = dao.resources.findByIdSync(resourceId) ?? task
+      }
+      try {
+        await this.downloadAndInstallSingleResource(owningMod.id, task, spec)
+      } catch (dlErr: any) {
+        return {
+          ok: false,
+          diskMatchesCatalog,
+          error: dlErr?.message || String(dlErr)
+        }
+      }
+      cleanupLegacyVocabBinSync(targetDir)
+      return { ok: true }
+    })
   }
 
   public configureRuntimeDependencies(deps: {
@@ -1342,11 +1610,13 @@ export class ModularResourceService implements IModularResourceService {
 
       if (allFilesOk) {
         try {
-          await invalidateReadyMarkers(targetAbsDir)
-          await writeReadyMarker(targetAbsDir, {
-            resourceId: spec.resource_id,
-            sharedSubDir
+          const ok = await this.writeReadyMarkerGuardedForVisual(targetAbsDir, spec.resource_id, sharedSubDir, {
+            skipDigest: false
           })
+          if (!ok) {
+            await this.isolateCorruptDirectory(targetAbsDir)
+            return 'corrupted'
+          }
         } catch (err) {
           logger.warn(
             LogCategory.SYSTEM,
@@ -1375,11 +1645,10 @@ export class ModularResourceService implements IModularResourceService {
           task.actual_sha256.toLowerCase() === task.expected_sha256.toLowerCase())
       ) {
         try {
-          await invalidateReadyMarkers(targetAbsDir)
-          await writeReadyMarker(targetAbsDir, {
-            resourceId: spec.resource_id,
-            sharedSubDir
-          })
+          const ok = await this.writeReadyMarkerGuardedForVisual(targetAbsDir, spec.resource_id, sharedSubDir)
+          if (!ok) {
+            return 'not_found'
+          }
         } catch (err) {
           logger.warn(
             LogCategory.SYSTEM,
@@ -1477,11 +1746,15 @@ export class ModularResourceService implements IModularResourceService {
               await renameWithRetry(tmpFile, destFile)
             }
 
-            // 解压/物化完成后仅向 targetAbsDir (_shared/<sharedSubDir>) 写入标准 .ready.json
-            await writeReadyMarker(targetAbsDir, {
-              resourceId: spec.resource_id,
+            // 解压/物化完成后仅向 targetAbsDir (_shared/<sharedSubDir>) 写入经视觉门控校验的标准 .ready.json
+            const marked = await this.writeReadyMarkerGuardedForVisual(
+              targetAbsDir,
+              spec.resource_id,
               sharedSubDir
-            })
+            )
+            if (!marked) {
+              throw new Error(`L2 预置视觉校验未通过: ${spec.resource_id}`)
+            }
 
             return true
           } else {
@@ -1811,6 +2084,13 @@ export class ModularResourceService implements IModularResourceService {
         const existingIds = new Set(existingResources.map(r => r.resource_id))
         const missingIds = meta.resourceIds.filter(id => !existingIds.has(id))
 
+        // 将存量绑定资源的 Catalog 元数据（如 assetName/expectedBytes/expectedSha256）同步至当前 App 权威清单
+        for (const resSpec of resourceSpecs) {
+          if (existingIds.has(resSpec.resource_id)) {
+            dao.resources.syncCatalogMetadataSync(resSpec)
+          }
+        }
+
         if (
           modRow.total_bytes !== expectedTotalBytes ||
           missingIds.length > 0 ||
@@ -2047,9 +2327,16 @@ export class ModularResourceService implements IModularResourceService {
       } catch {}
     }
 
-    // B4: 扫描并自愈由于杀软占用或断电未完成的目录切换意图日志
+    // B4: 扫描并自愈由于杀软占用或断电未完成的目录切换意图日志与视觉插件事务日志 (.txn.json)
     const intentsDir = path.join(baseDir, '.intents')
     await reconcileDirSwitchIntents(intentsDir)
+    await this.withSlotMutex('__startup_txn__', () =>
+      recoverPendingPluginTxns({
+        intentsDir,
+        verifyFn: this.resolveDefaultVerifyVisualVocabFn(),
+        reloadAssetsFn: this.resolveDefaultReloadAssetsFn()
+      })
+    )
 
     // 自愈未完成的插件根目录大迁移意图日志 (Issue 03)
     cleanedTombstones += await this.migrationCoordinatorInstance.reconcileOnStartup(
@@ -2691,13 +2978,12 @@ export class ModularResourceService implements IModularResourceService {
 
           if (valid) {
             try {
-              await invalidateReadyMarkers(targetDir)
-              const digestResult = await computeDirectoryReadyDigest(targetDir)
-              await writeReadyMarker(targetDir, {
-                resourceId,
-                sharedSubDir,
-                digestResult
-              })
+              const marked = await this.writeReadyMarkerGuardedForVisual(targetDir, resourceId, sharedSubDir)
+              if (!marked) {
+                await invalidateReadyMarkers(targetDir).catch(() => {})
+                await this.isolateCorruptDirectory(targetDir)
+                continue
+              }
               this.fastReadySnapshot.set(resourceId, {
                 resourceId,
                 sharedSubDir,
@@ -3893,13 +4179,29 @@ export class ModularResourceService implements IModularResourceService {
       throw new Error(errMsg)
     }
 
-    // 4. 若为 .zip 或 .ffp 归档，调用 safeExtractZip（带意图日志与 renameWithRetry）
+    // 4. 若为 .zip 或 .ffp 归档，调用 safeExtractZip（视觉插件走暂存 .txn.json 事务与 Omni 同源校验+回滚闭环）
     const lowerAsset = task.asset_name.toLowerCase()
     const intentsDir = path.join(this.getBaseDir(), '.intents')
     const sharedSubDir = resolveSharedSubDir(task.resource_id)
     try {
-      // 物化写入前先使目标目录既有 .ready* 标记失效，严防 TOCTOU 读取半成品
-      await invalidateReadyMarkers(targetAbsDir)
+      const useVisualTxn = isVisualVocabPluginResource(task.resource_id)
+      const stagingDir = useVisualTxn
+        ? path.join(
+            this.getPluginsRootDir(),
+            '_staging',
+            `install-${task.resource_id}-${process.pid}-${Date.now()}`
+          )
+        : targetAbsDir
+
+      if (useVisualTxn) {
+        if (fs.existsSync(stagingDir)) {
+          fs.rmSync(stagingDir, { recursive: true, force: true })
+        }
+        fs.mkdirSync(stagingDir, { recursive: true })
+      } else {
+        // 物化写入前先使目标目录既有 .ready* 标记失效，严防 TOCTOU 读取半成品
+        await invalidateReadyMarkers(targetAbsDir)
+      }
 
       if (lowerAsset.endsWith('.zip') || lowerAsset.endsWith('.ffp')) {
         onProgress?.({
@@ -3912,7 +4214,7 @@ export class ModularResourceService implements IModularResourceService {
           isResumed: Boolean(result.isResumed),
           state: 'extracting'
         })
-        await safeExtractZip(archivePath, targetAbsDir, intentsDir)
+        await safeExtractZip(archivePath, stagingDir, intentsDir)
         // 解压成功后清理归档包临时文件
         if (fs.existsSync(archivePath)) {
           try {
@@ -3922,22 +4224,38 @@ export class ModularResourceService implements IModularResourceService {
           }
         }
       } else {
-        // 非压缩包单文件资源：直接移入目标目录 (使用 renameWithRetry 防止杀软冲突)
-        if (!fs.existsSync(targetAbsDir)) {
-          fs.mkdirSync(targetAbsDir, { recursive: true })
+        // 非压缩包单文件资源：直接移入目标/暂存目录 (使用 renameWithRetry 防止杀软冲突)
+        if (!fs.existsSync(stagingDir)) {
+          fs.mkdirSync(stagingDir, { recursive: true })
         }
-        const destFile = path.join(targetAbsDir, task.asset_name)
+        const destFile = path.join(stagingDir, task.asset_name)
         if (fs.existsSync(destFile)) {
           fs.unlinkSync(destFile)
         }
         await renameWithRetry(archivePath, destFile)
       }
 
-      // 解压或单文件物化成功后，统一计算确定性 SHA-256 摘要并原子写入标准 .ready.json
-      await writeReadyMarker(targetAbsDir, {
-        resourceId: task.resource_id,
-        sharedSubDir
-      })
+      if (useVisualTxn) {
+        const txnRes = await commitPluginDirectoryWithTxn({
+          intentsDir,
+          resourceId: task.resource_id,
+          sharedSubDir,
+          stagingDir,
+          destDir: targetAbsDir,
+          targetMode: 'install',
+          verifyFn: this.resolveDefaultVerifyVisualVocabFn(),
+          reloadAssetsFn: this.resolveDefaultReloadAssetsFn()
+        })
+        if (!txnRes.ok) {
+          throw new Error(txnRes.error || `视觉插件原子安装事务失败: ${task.resource_id}`)
+        }
+      } else {
+        // 解压或单文件物化成功后，统一计算确定性 SHA-256 摘要并原子写入标准 .ready.json
+        await writePluginReadyMarkerWithVisualVocab(targetAbsDir, {
+          resourceId: task.resource_id,
+          sharedSubDir
+        })
+      }
       this.repairPendingResources.delete(task.resource_id)
       this.fastReadySnapshot.set(task.resource_id, {
         resourceId: task.resource_id,

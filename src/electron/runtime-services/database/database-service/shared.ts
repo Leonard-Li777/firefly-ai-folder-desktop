@@ -45,7 +45,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
 
-import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao } from '.././dao'
+import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao, VisualTaggerStateDao } from '.././dao'
 import type { AnalysisTaskType } from '.././dao'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
@@ -68,6 +68,8 @@ export abstract class DatabaseSharedBase {
   protected localWorkflowDao!: LocalWorkflowDao
   /** [Issue 04 Step 2] 文件系统变更 DAO：单事务原子更新 workspace_files（取代 FileDao.updateFilePath） */
   protected fsMutationDao!: FileSystemMutationDao
+  /** 视觉打标器状态代际 DAO (Spec v2.12 §3.3 / Ticket 09) */
+  protected visualTaggerStateDao!: VisualTaggerStateDao
 
   protected initPromise: Promise<void> | null = null
 

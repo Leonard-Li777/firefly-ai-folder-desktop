@@ -1,5 +1,5 @@
 import { LogCategory, logger } from '@firefly/shared'
-import { omniService } from './omni-service'
+import { OmniPerceptionHttpError, omniService } from './omni-service'
 
 export interface AnydocAsset {
   path: string
@@ -115,6 +115,9 @@ export class AnydocService {
         `[AnydocService] 原生多模态感知返回空（引擎未就绪/推理失败），回退基础提取；视频将无法产出视觉切片: ${filePath}`
       )
     } catch (error: any) {
+      if (error instanceof OmniPerceptionHttpError) {
+        throw error
+      }
       failureReason = error?.message || 'perceive_error'
       logger.warn(
         LogCategory.ANALYSIS_QUEUE,

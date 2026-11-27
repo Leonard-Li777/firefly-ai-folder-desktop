@@ -11,6 +11,7 @@
  */
 
 import { isEngineSwappingError } from '../../engine-bridge/engine-swapping-coordinator'
+import { OmniPerceptionHttpError } from '../../system/omni-service/types'
 
 /** 分析管道错误来源阶段 */
 export type AnalysisErrorPhase = 'extraction' | 'inference'
@@ -162,6 +163,12 @@ export function isTransientInfraError(err: unknown): boolean {
     return true
   }
 
+  if (err instanceof OmniPerceptionHttpError) {
+    if (err.status === 429 || err.status === 408 || err.status === 503) {
+      return true
+    }
+    return false
+  }
   if (typeof err === 'object') {
     const e = err as {
       status?: number
@@ -174,6 +181,8 @@ export function isTransientInfraError(err: unknown): boolean {
     if (
       e.isTransient === true ||
       e.status === 503 ||
+      e.status === 429 ||
+      e.status === 408 ||
       e.statusCode === 503 ||
       e.code === 'ECONNREFUSED' ||
       e.code === 'ECONNRESET' ||
@@ -257,6 +266,72 @@ export function classifyAnalysisError(err: unknown): AnalysisErrorClassification
     // 关键底线 2：AI 接口契约违规类错误（响应格式异常/空响应/解析失败等）同上严禁降级，
     //   它们是逐文件复发的系统性故障，必须 surfaced 为 failed + 错误原因；
     // 仅 slice-3 规格 sanction 的「Tier 2 超时」类允许 Tier 1 兜底（崩溃走瞬态重试路径）。
-    allowTier1Fallback: errorPhase === 'inference' && isTimeout && !isTransient
+    allowTier1Fallback:
+      !(err instanceof OmniPerceptionHttpError) && errorPhase === 'inference' && isTimeout && !isTransient
+  }
+}
+
+export type VisualPerceptionErrorDecision =
+  | { kind: 'reconcile_409'; failureCode: 'needs_plugin_update' | 'needs_app_update'; reason?: string; encoderId?: number }
+  | { kind: 'asset_failure_500'; failureCode: 'ASSET_MISSING' | 'ASSET_CORRUPT'; countsForBreaker: true; encoderId?: number }
+  | { kind: 'input_rejected_422'; failureCode: 'INPUT_REJECTED'; countsForBreaker: false }
+  | { kind: 'transient_retry'; status: number }
+  | { kind: 'inference_bounded_retry'; failureCode: string; maxRetries: 2 }
+  | { kind: 'unexpected_http'; failureCode: 'unexpected_http'; countsForBreaker: false }
+
+/**
+ * 视觉感知 HTTP 全状态码确定性分流（Spec v2.12 §3.3 / Ticket 09）
+ */
+export function classifyVisualPerceptionError(err: unknown): VisualPerceptionErrorDecision | null {
+  if (!(err instanceof OmniPerceptionHttpError)) {
+    return null
+  }
+  if (err.status === 409 || err.code === 'ENGINE_NOT_READY') {
+    return {
+      kind: 'reconcile_409',
+      failureCode: err.reason === 'app_update_needed' ? 'needs_app_update' : 'needs_plugin_update',
+      reason: err.reason,
+      encoderId: err.encoderId
+    }
+  }
+  if (err.status === 422 || err.code === 'INPUT_REJECTED') {
+    return {
+      kind: 'input_rejected_422',
+      failureCode: 'INPUT_REJECTED',
+      countsForBreaker: false
+    }
+  }
+  if (err.code === 'ASSET_MISSING' || err.code === 'ASSET_CORRUPT') {
+    return {
+      kind: 'asset_failure_500',
+      failureCode: err.code,
+      countsForBreaker: true,
+      encoderId: err.encoderId
+    }
+  }
+  if (err.status === 429 || err.status === 408 || err.status === 503) {
+    return { kind: 'transient_retry', status: err.status }
+  }
+  if (
+    err.code === 'INFERENCE_FAILED' ||
+    ((err.status === 500 || err.status === 502 || err.status === 504) && err.code.startsWith('HTTP_'))
+  ) {
+    return {
+      kind: 'inference_bounded_retry',
+      failureCode: err.code,
+      maxRetries: 2
+    }
+  }
+  if (err.status === 413 || (err.status >= 400 && err.status < 500)) {
+    return {
+      kind: 'unexpected_http',
+      failureCode: 'unexpected_http',
+      countsForBreaker: false
+    }
+  }
+  return {
+    kind: 'inference_bounded_retry',
+    failureCode: err.code || `HTTP_${err.status}`,
+    maxRetries: 2
   }
 }
