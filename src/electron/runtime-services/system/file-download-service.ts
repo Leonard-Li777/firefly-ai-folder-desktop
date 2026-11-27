@@ -11,6 +11,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import * as childProcess from 'child_process'
+import * as iconv from 'iconv-lite'
 import { logger, LogCategory } from '@firefly/shared'
 
 // 跨 VM Realm / Vitest 环境安全兜底：修复 Buffer / Uint8Array 在 vm 隔离上下文中的 instanceof 判定失败
@@ -35,7 +36,17 @@ if (typeof Uint8Array !== 'undefined') {
   } catch {}
 }
 
-const AdmZip = require('adm-zip')
+import AdmZip from 'adm-zip'
+
+/**
+ * adm-zip 是 CJS 包，`module.exports` 即构造器本体。若被 Bun/rollup/vm 等环境二次包裹成
+ * `{ default: AdmZip }`（命名空间对象），直接 `new` 会抛 `AdmZip is not a constructor`。
+ * 这里做一次构造器归一化，同时兼容 CJS 默认导出与 ES 默认导出两种形态。
+ */
+const AdmZipCtor: typeof AdmZip =
+  typeof AdmZip === 'function'
+    ? AdmZip
+    : ((AdmZip as unknown as { default: typeof AdmZip }).default as typeof AdmZip)
 
 export interface DownloadProgress {
   percent: number // 0-100
@@ -846,6 +857,51 @@ export class DualTrackSourceRouter {
   }
 }
 
+const UTF8_FATAL_DECODER = new TextDecoder('utf-8', { fatal: true })
+
+/**
+ * 依据 ZIP 通用位 11 (UTF-8 flag / EFS) 与原始字节解码条目名：
+ * - 若 flags_efs === true，直接按 UTF-8 解码；
+ * - 若 flags_efs === false，纯 ASCII 直接 UTF-8；含非 ASCII 字节时先用严格 UTF-8 (`fatal: true`) 探测，
+ *   通过且无孤立拉丁怪字符误撞（含 CJK 字符或无 `\u0080-\u024F`）时采纳 UTF-8，否则按 CP936 (GBK) 解码。
+ */
+export function decodeZipEntryName(entry: {
+  rawEntryName?: Buffer | Uint8Array
+  entryName: string
+  header?: { flags_efs?: boolean }
+}): string {
+  const raw = entry.rawEntryName
+  if (!raw || raw.length === 0) {
+    return entry.entryName
+  }
+  const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw)
+  if (entry.header?.flags_efs) {
+    return buf.toString('utf8')
+  }
+  let isAscii = true
+  for (let i = 0; i < buf.length; i++) {
+    if (buf[i] >= 0x80) {
+      isAscii = false
+      break
+    }
+  }
+  if (isAscii) {
+    return buf.toString('utf8')
+  }
+  try {
+    const utf8Text = UTF8_FATAL_DECODER.decode(buf)
+    // 排除偶数 CP936 字节偶发撞入 2 字节拉丁补充区（无 CJK 却出现拉丁扩展怪字符）的情况
+    const hasCjk = /[\u4E00-\u9FFF]/.test(utf8Text)
+    const hasLatinExt = /[\u0080-\u024F]/.test(utf8Text)
+    if (hasCjk || !hasLatinExt) {
+      return utf8Text
+    }
+  } catch {
+    // 非合法 UTF-8 字节序列，继续走 CP936
+  }
+  return iconv.decode(buf, 'cp936')
+}
+
 export async function safeExtractZip(
   zipFilePath: string,
   destDir: string,
@@ -870,7 +926,13 @@ export async function safeExtractZip(
     let entries: any[] = []
     let useFallbackExtractor = false
     try {
-      const zip = new AdmZip(zipFilePath)
+      // 传入 latin1 字节双射 decoder 防止不同非 UTF-8 中文名在默认 UTF-8 下均解成 \uFFFD 导致构造期误判 Duplicate entry name
+      const zip = new AdmZipCtor(zipFilePath, {
+        decoder: {
+          encode: (data: string) => Buffer.from(data, 'latin1'),
+          decode: (data: Buffer | Uint8Array) => Buffer.from(data).toString('latin1')
+        }
+      })
       entries = zip.getEntries()
     } catch (zipErr: any) {
       if (zipErr?.message?.includes('Duplicate entry name')) {
@@ -903,7 +965,8 @@ export async function safeExtractZip(
       })
     } else {
       for (const entry of entries) {
-        const targetPath = safeResolveZipEntry(tmpDir, entry.entryName)
+        const entryName = decodeZipEntryName(entry)
+        const targetPath = safeResolveZipEntry(tmpDir, entryName)
 
         if (entry.isDirectory) {
           fs.mkdirSync(targetPath, { recursive: true })

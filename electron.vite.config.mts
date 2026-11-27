@@ -161,8 +161,7 @@ export default defineConfig(({ command, mode }) => {
   // 构建产物目录隔离：make（command=build）与 start:debug（command=serve）绝不共用同一构建根。
   // - dev 态写入 out_build_dev，正式构建与 electron-forge 打包写入 out_build（发布包内目录名保持不变）
   // - 可用 FF_OUT_DIR 显式覆盖（CI 不传即沿用默认，行为与改造前一致）
-  const outDirName =
-    process.env.FF_OUT_DIR || (command === 'serve' ? 'out_build_dev' : 'out_build')
+  const outDirName = process.env.FF_OUT_DIR || (command === 'serve' ? 'out_build_dev' : 'out_build')
   process.env.FF_OUT_DIR = outDirName
   // package.json 的 main 字段是静态值（out_build/main/main.js），dev 态必须显式告知 electron-vite
   // 真正的入口文件，否则它会校验/启动旧的生产构建产物。electron-vite 命中 ELECTRON_ENTRY 时会跳过 main 校验。
@@ -192,11 +191,95 @@ export default defineConfig(({ command, mode }) => {
     name: 'ff-rewrite-relative-require',
     enforce: 'pre' as const,
     async transform(this: any, code: string, id: string) {
+      if (id.includes('node_modules')) return null
       if (!/\.(ts|tsx|mts)$/.test(id) || !code.includes('require(')) return null
       const injects: string[] = []
       const bareResolutionCache = new Map<string, boolean>()
+      const cjsTargetCache = new Map<string, boolean>()
       let aliasIndex = 0
       let rewritten = 0
+
+      /**
+       * 判定裸模块是否为 CommonJS 目标（`module.exports` 即导出本体，可能是构造函数或可调用函数）。
+       * 这类包必须改写为 default import：命名空间导入会把构造器包成 `{ default: ctor }`，
+       * 调用点再 `new` / 直接调用就会抛 `X is not a constructor` / `X is not a function`。
+       * 实测误伤 adm-zip（new）、better-sqlite3（new）、sharp（调用）三个包。
+       */
+      const isCjsTarget = async (spec: string): Promise<boolean> => {
+        const cached = cjsTargetCache.get(spec)
+        if (cached !== undefined) return cached
+        let isCjs = false
+        try {
+          const resolved = await this.resolve(spec, id, { skipSelf: true })
+          let resolvedId = resolved?.id
+          // 对 external 包（如 better-sqlite3 / sharp 或 dev 态 externalizeDeps）使用 Node createRequire 解析真实入口文件
+          if (!resolvedId || resolved?.external || !path.isAbsolute(resolvedId)) {
+            try {
+              const localRequire = createRequire(id)
+              resolvedId = localRequire.resolve(spec)
+            } catch {
+              // 无法解析到物理文件（如 Node 内置模块）
+            }
+          }
+          const cleanId = resolvedId ? resolvedId.split('?')[0] : undefined
+          // 仅对真实文件路径判定；Node 内置模块与 .ts/.mts/.mjs 源码包保持命名空间形态
+          if (cleanId && path.isAbsolute(cleanId) && !/\.(ts|tsx|mts|mjs)$/.test(cleanId)) {
+            if (/\.cjs$/.test(cleanId)) {
+              isCjs = true
+            } else {
+              // 就近向上查找 package.json 的 type 字段：非 "module" 即按 CJS 处理
+              let dir = path.dirname(cleanId)
+              let pkgType: string | undefined
+              for (;;) {
+                const pkgFile = path.join(dir, 'package.json')
+                if (fs.existsSync(pkgFile)) {
+                  try {
+                    pkgType = (JSON.parse(fs.readFileSync(pkgFile, 'utf8')) as { type?: string })
+                      .type
+                  } catch {
+                    pkgType = undefined
+                  }
+                  break
+                }
+                const parent = path.dirname(dir)
+                if (parent === dir) break
+                dir = parent
+              }
+              if (pkgType === 'module') {
+                isCjs = false
+              } else if (pkgType === 'commonjs') {
+                isCjs = true
+              } else {
+                // type 缺失时：探测前 4KB 是否显式使用 ESM 语法（兼容无 type 字段的早期 ESM 包）
+                let looksLikeEsm = false
+                try {
+                  const fd = fs.openSync(cleanId, 'r')
+                  try {
+                    const buf = Buffer.alloc(4096)
+                    const bytesRead = fs.readSync(fd, buf, 0, 4096, 0)
+                    const head = buf.subarray(0, bytesRead).toString('utf8')
+                    const hasEsmSyntax =
+                      /^\s*(import\s+(?:[\s\S]*?\s+from\s+)?['"]|export\s+(?:default|async\s+function|const|let|var|function|class|type|\{|\*))/m.test(
+                        head
+                      )
+                    const hasCjsExports = /\b(module\.exports|exports\.[A-Za-z_$])\b/.test(head)
+                    looksLikeEsm = hasEsmSyntax && !hasCjsExports
+                  } finally {
+                    fs.closeSync(fd)
+                  }
+                } catch {
+                  looksLikeEsm = false
+                }
+                isCjs = !looksLikeEsm
+              }
+            }
+          }
+        } catch {
+          isCjs = false
+        }
+        cjsTargetCache.set(spec, isCjs)
+        return isCjs
+      }
 
       const canResolveBare = async (spec: string): Promise<boolean> => {
         if (bareResolutionCache.has(spec)) return bareResolutionCache.get(spec)!
@@ -238,7 +321,14 @@ export default defineConfig(({ command, mode }) => {
           }
           if (shouldRewrite) {
             const alias = `__ffReq${aliasIndex++}`
-            injects.push(`import * as ${alias} from ${quote}${spec}${quote}`)
+            // CJS 包走 default import（保住 `module.exports` 本体），ESM 包维持命名空间导入
+            const useDefaultImport =
+              !isRelative && !isAbsolute && !isNodeBuiltin && (await isCjsTarget(spec))
+            injects.push(
+              useDefaultImport
+                ? `import ${alias} from ${quote}${spec}${quote}`
+                : `import * as ${alias} from ${quote}${spec}${quote}`
+            )
             rewritten++
             replaced += codePart.slice(cursor, match.index) + alias
             cursor = match.index + match[0].length
@@ -357,9 +447,7 @@ export default defineConfig(({ command, mode }) => {
 
   const rawBasePort = parseInt(process.env.PORT || env.PORT || '38100', 10)
   const basePort =
-    Number.isInteger(rawBasePort) && rawBasePort >= 1 && rawBasePort <= 65535
-      ? rawBasePort
-      : 38100
+    Number.isInteger(rawBasePort) && rawBasePort >= 1 && rawBasePort <= 65535 ? rawBasePort : 38100
 
   let devPort: number
   if (hasExplicitNonSlotPort) {
@@ -527,73 +615,73 @@ export default defineConfig(({ command, mode }) => {
           // 这里在正式构建收尾时，以「本次 rollup 实际产出的文件名 + 本次构建期间新写入的文件」为白名单，
           // 删除 out_build/main 下其余 .js / .map / .cjs。
           // 仅作用于 command === 'build'：dev 写的是 out_build_dev，且热重载期间不允许删产物。
-            name: 'prune-stale-main-output',
-            apply: 'build',
-            buildStart() {
-              mainBuildStartedAt = Date.now()
-              emittedMainOutput.clear()
-            },
-            generateBundle(_options, bundle) {
-              for (const fileName of Object.keys(bundle)) {
-                emittedMainOutput.add(fileName.replace(/\\/g, '/'))
-              }
-              // 构建期硬门禁：main 产物里绝不允许残留相对 require 字面量。
-              // 一旦出现，打包后必然解析到不存在的文件（且多半被 try/catch 静默吞掉）。
-              const dangling: string[] = []
-              for (const [fileName, output] of Object.entries(bundle)) {
-                if (output.type !== 'chunk') continue
-                const matches = output.code.match(/require\(\s*(['"])(\.{1,2}\/[^'"]+)\1\s*\)/g)
-                if (matches?.length) dangling.push(`${fileName} ×${matches.length}`)
-              }
-              if (dangling.length > 0) {
-                const detail = dangling.join('、')
-                if (process.env.FF_STRICT_REQUIRE_GUARD === '1') {
-                  this.error(`main 产物中残留悬空相对 require：${detail}`)
-                } else {
-                  console.warn(
-                    `[vite-config] ⚠️ main 产物中仍有悬空相对 require（设置 FF_STRICT_REQUIRE_GUARD=1 可阻断构建）：${detail}`
-                  )
-                }
-              }
-            },
-            closeBundle() {
-              const mainDir = path.resolve(__dirname, outDirName, 'main')
-              if (!fs.existsSync(mainDir)) return
-              const pruneExtensions = /\.(js|map|cjs)$/
-              let removed = 0
-              let removedBytes = 0
-
-              const walk = (dir: string): void => {
-                for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-                  const fullPath = path.join(dir, entry.name)
-                  if (entry.isDirectory()) {
-                    walk(fullPath)
-                    continue
-                  }
-                  const relative = path.relative(mainDir, fullPath).replace(/\\/g, '/')
-                  if (!pruneExtensions.test(relative)) continue
-                  if (emittedMainOutput.has(relative)) continue
-                  // bytecode / 拷贝类插件在 rollup 收尾后才落盘，按时间戳豁免，避免误删本次产物
-                  try {
-                    if (fs.statSync(fullPath).mtimeMs > mainBuildStartedAt - 2000) continue
-                  } catch {
-                    continue
-                  }
-                  try {
-                    removedBytes += fs.statSync(fullPath).size
-                    fs.unlinkSync(fullPath)
-                    removed++
-                  } catch {}
-                }
-              }
-
-              walk(mainDir)
-              if (removed > 0) {
-                console.log(
-                  `[vite-config] 🧹 已清理 ${removed} 个历史构建残留（${(removedBytes / 1024 / 1024).toFixed(1)} MB）`
+          name: 'prune-stale-main-output',
+          apply: 'build',
+          buildStart() {
+            mainBuildStartedAt = Date.now()
+            emittedMainOutput.clear()
+          },
+          generateBundle(_options, bundle) {
+            for (const fileName of Object.keys(bundle)) {
+              emittedMainOutput.add(fileName.replace(/\\/g, '/'))
+            }
+            // 构建期硬门禁：main 产物里绝不允许残留相对 require 字面量。
+            // 一旦出现，打包后必然解析到不存在的文件（且多半被 try/catch 静默吞掉）。
+            const dangling: string[] = []
+            for (const [fileName, output] of Object.entries(bundle)) {
+              if (output.type !== 'chunk') continue
+              const matches = output.code.match(/require\(\s*(['"])(\.{1,2}\/[^'"]+)\1\s*\)/g)
+              if (matches?.length) dangling.push(`${fileName} ×${matches.length}`)
+            }
+            if (dangling.length > 0) {
+              const detail = dangling.join('、')
+              if (process.env.FF_STRICT_REQUIRE_GUARD === '1') {
+                this.error(`main 产物中残留悬空相对 require：${detail}`)
+              } else {
+                console.warn(
+                  `[vite-config] ⚠️ main 产物中仍有悬空相对 require（设置 FF_STRICT_REQUIRE_GUARD=1 可阻断构建）：${detail}`
                 )
               }
             }
+          },
+          closeBundle() {
+            const mainDir = path.resolve(__dirname, outDirName, 'main')
+            if (!fs.existsSync(mainDir)) return
+            const pruneExtensions = /\.(js|map|cjs)$/
+            let removed = 0
+            let removedBytes = 0
+
+            const walk = (dir: string): void => {
+              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                const fullPath = path.join(dir, entry.name)
+                if (entry.isDirectory()) {
+                  walk(fullPath)
+                  continue
+                }
+                const relative = path.relative(mainDir, fullPath).replace(/\\/g, '/')
+                if (!pruneExtensions.test(relative)) continue
+                if (emittedMainOutput.has(relative)) continue
+                // bytecode / 拷贝类插件在 rollup 收尾后才落盘，按时间戳豁免，避免误删本次产物
+                try {
+                  if (fs.statSync(fullPath).mtimeMs > mainBuildStartedAt - 2000) continue
+                } catch {
+                  continue
+                }
+                try {
+                  removedBytes += fs.statSync(fullPath).size
+                  fs.unlinkSync(fullPath)
+                  removed++
+                } catch {}
+              }
+            }
+
+            walk(mainDir)
+            if (removed > 0) {
+              console.log(
+                `[vite-config] 🧹 已清理 ${removed} 个历史构建残留（${(removedBytes / 1024 / 1024).toFixed(1)} MB）`
+              )
+            }
+          }
         },
         {
           name: 'clean-in-source-artifacts',

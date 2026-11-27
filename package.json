@@ -166,6 +166,7 @@
     "@voerkai18n/formatters": "3.0.22",
     "@voerkai18n/react": "3.0.22",
     "@voerkai18n/runtime": "3.0.22",
+    "adm-zip": "0.6.1",
     "better-sqlite3": "13.0.3",
     "bindings": "1.5.0",
     "canvas-confetti": "1.9.4",
@@ -289,9 +290,7 @@
       "target": [
         {
           "target": "nsis",
-          "arch": [
-            "x64"
-          ]
+          "arch": ["x64"]
         }
       ]
     },
