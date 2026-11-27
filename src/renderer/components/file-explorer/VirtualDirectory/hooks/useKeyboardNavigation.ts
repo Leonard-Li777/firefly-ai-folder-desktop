@@ -3,6 +3,7 @@ import { getFileNameFromPath } from '@firefly/shared'
 import { VirtualDirectoryNode } from '@firefly/types'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
 import { PAGE_IDS } from '../../../../constants/page-ids'
+import { normalizeVirtualDirectoryFile } from '../utils/vdir-file-normalize'
 
 interface UseKeyboardNavigationProps {
   treeData: VirtualDirectoryNode[]
@@ -147,12 +148,8 @@ export const useKeyboardNavigation = ({
           setActiveItem(matchedFile)
           setSelectedFileListFiles([matchedFile])
         } else {
-          const node = nextNode as any
-          const formatted = {
-            ...node,
-            path: node.originalPath,
-            id: node.fileId || node.file_id || node.id
-          }
+          // 与目录树点击、FileList 点击共用同一归一化：缺 path/extension 会让属性面板与选中态失联
+          const formatted = normalizeVirtualDirectoryFile(nextNode)
           setActiveItem(formatted)
           setSelectedFileListFiles([formatted])
         }

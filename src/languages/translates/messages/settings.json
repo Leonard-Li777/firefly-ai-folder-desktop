@@ -12082,7 +12082,7 @@
     ],
     "$id": 38928
   },
-  "结合您的电脑性能和当前会员等级，实际生效的设置值。": {
+  "结合您的电脑性能，实际生效的设置值。": {
     "en-US": "The actual effective setting value based on your computer's performance and current membership level.",
     "es-ES": "El valor de configuración que realmente se aplica, teniendo en cuenta el rendimiento de su ordenador y su nivel de suscripción actual.",
     "ar-EG": "القيمة الإعدادية الفعلية بناءً على أداء جهاز الكمبيوتر الخاص بك ومستوى عضويتك الحالي.",

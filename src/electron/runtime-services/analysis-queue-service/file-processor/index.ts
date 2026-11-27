@@ -64,6 +64,7 @@ import {
   serializeVideoDegradedMetadata,
   type VideoDegradedRecord
 } from './video-degraded-state-machine'
+import { shouldPersistStage2TagsBeforePhaseReturn } from './stage2-tag-persistence-policy'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
 import { userTierService } from '../../user-tier/user-tier-service'
 import { magikaService } from '../../system/magika-service'
@@ -76,7 +77,8 @@ import {
   hasSubstantiveContent,
   type FileInfoInput
 } from '@firefly/core-engine'
-import { executeProPreflight, executeProTagReconciliation } from '@pro'
+import { executeProPreflightAsync, executeProTagReconciliation } from '@pro'
+import { preResolveControlledCandidatesBeforePersist } from './pre-resolve-candidates'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { omniService } from '../../system/omni-service'
 import { omniClient } from '../../../services/omni-client'
@@ -1050,21 +1052,24 @@ export class FileProcessor {
           fact_tags: baseMetadata?.fact_tags
         }
 
-        const preflightContext = executeProPreflight({
-          filePath,
-          fileName: item.name,
-          fileSize: currentStats.size,
-          fileCategory: enhancedInfo.fileType,
-          mimeType: effectiveMimeType,
-          contentPreview: existingBasicData.content
-            ? existingBasicData.content.slice(0, 1000)
-            : undefined,
-          metadata: baseMetadata,
-          omniPerception: restoredOmniPerception,
-          stats: currentStats,
-          // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
-          nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
-        })
+        const preflightContext = await executeProPreflightAsync(
+          {
+            filePath,
+            fileName: item.name,
+            fileSize: currentStats.size,
+            fileCategory: enhancedInfo.fileType,
+            mimeType: effectiveMimeType,
+            contentPreview: existingBasicData.content
+              ? existingBasicData.content.slice(0, 1000)
+              : undefined,
+            metadata: baseMetadata,
+            omniPerception: restoredOmniPerception,
+            stats: currentStats,
+            // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
+            nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
+          },
+          { signal }
+        )
 
         if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
           const currentTags = preflightContext.groundTruthTags || []
@@ -1431,6 +1436,22 @@ export class FileProcessor {
 
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
+        // Fix-14：落库前先把本批候选词形批量回源（本地镜像 → Omni inspectTags），
+        // 否则同步反查只覆盖本地数千条镜像词，pack 已受控的概念会被误派生为 `_ext.*`。
+        await preResolveControlledCandidatesBeforePersist(
+          {
+            preflightContext,
+            dimResult,
+            // 作者与关键词同属「可能已有受控码」的候选，必须一并回源，不得默认落 _ext
+            authors: [baseMetadata?.author, (baseMetadata as any)?.authors].flat().filter(Boolean),
+            keywords: [
+              ...((baseMetadata?.keywords as string[] | undefined) || []),
+              ...((baseMetadata as any)?.key_bert_keywords || [])
+            ]
+          },
+          baseMetadata?.language,
+          { signal }
+        )
         executeProTagReconciliation({
           db,
           fileFingerprint,
@@ -2654,19 +2675,23 @@ export class FileProcessor {
       const effectiveMimeType = magikaCategory?.mime_type || getMimeType(enhancedFileType)
 
       // 运行 CPU 阶段预计算特征流水线 (PreflightFeaturePipeline, ADR 0030)
-      const preflightContext = executeProPreflight({
-        filePath,
-        fileName: item.name,
-        fileSize: stats.size,
-        fileCategory: enhancedFileType,
-        mimeType: effectiveMimeType,
-        contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
-        metadata: contentResult.metadata,
-        stats,
-        omniPerception: anydocResult?.perception,
-        // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
-        nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
-      })
+      // 异步版先批量回源受控候选，避免同步算子查不到未落镜像的词而铸出 `_ext.*`
+      const preflightContext = await executeProPreflightAsync(
+        {
+          filePath,
+          fileName: item.name,
+          fileSize: stats.size,
+          fileCategory: enhancedFileType,
+          mimeType: effectiveMimeType,
+          contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
+          metadata: contentResult.metadata,
+          stats,
+          omniPerception: anydocResult?.perception,
+          // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
+          nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
+        },
+        { signal }
+      )
 
       // 优先采用 Omni 原生多模态感知 / 级联仲裁给出的建议智能命名与内容描述 (Issue #631)
       const omniSmartName =
@@ -2863,10 +2888,20 @@ export class FileProcessor {
       // 该落库点被整段跳过，导致：
       //   - file_tag_relations 全表为空（标签在内存里算完即丢弃，日志有、面板无）；
       //   - workspace_files.is_analyzed 保持 0，属性面板按 is_analyzed 门控连「无标签」提示都不渲染。
-      // simple 模式本来就在本函数后半段落库，故此处仅补 full / quick_name，避免重复写入。
+      // simple 模式在单阶段（phase === 'all'）下会走到本函数后半段落库，但在双阶段（phase === 'cpu'）
+      // 下会在下方提前返回并直接进入 completeAsCpuOnly，因此 phase === 'cpu' 时也必须在此落库，
+      // 否则 simple 模式产出的标签会在内存算完即丢弃。
       // GPU 阶段的裁决器会以「补捞已存在关联 + 无损合并」方式叠加 AI 标签，不会覆盖本批事实。
-      if ((analysisMode === 'full' || analysisMode === 'quick_name') && preflightContext) {
+      if (
+        shouldPersistStage2TagsBeforePhaseReturn(phase, analysisMode, Boolean(preflightContext))
+      ) {
         try {
+          // Fix-14：Stage 2 提前落库同样必须先回源，禁用本地镜像缺失时的 `_ext` 降级。
+          await preResolveControlledCandidatesBeforePersist(
+            { preflightContext, dimResult: null },
+            language,
+            { signal }
+          )
           executeProTagReconciliation({
             db,
             fileFingerprint,
@@ -2880,7 +2915,10 @@ export class FileProcessor {
             forceReanalyze: item.forceReanalyze === true,
             preflightContext,
             dimResult: null,
-            authors: resolvedAuthor ? [resolvedAuthor] : undefined,
+            authors:
+              (resolvedAuthor ? [resolvedAuthor] : undefined) ||
+              anydocResult?.metadata?.authors ||
+              anydocResult?.metadata?.document?.authors,
             language,
             fileGroup:
               typeof magikaCategory === 'string'
@@ -2893,7 +2931,7 @@ export class FileProcessor {
         } catch (stage2SaveError) {
           logger.warn(
             LogCategory.ANALYSIS_QUEUE,
-            '[分析队列] Stage 2 标签即时落库失败（不阻断 AI 阶段）:',
+            '[分析队列] Stage 2 标签即时落库失败（不阻断后续阶段）:',
             stage2SaveError
           )
         }
@@ -3074,6 +3112,12 @@ export class FileProcessor {
         )
 
         // 运行找补裁决器单点持久化：全量注入物理事实（来源、状态、安全、水印、作者、分类、扩展名等）
+        // Fix-14：落库前批量回源受控候选，避免本地镜像未收录时把受控概念降级成 `_ext.*`。
+        await preResolveControlledCandidatesBeforePersist(
+          { preflightContext, dimResult: null },
+          language,
+          { signal }
+        )
         executeProTagReconciliation({
           db,
           fileFingerprint,
@@ -3341,6 +3385,10 @@ export class FileProcessor {
         validateRetagEpochStrict(db, fileFingerprint, serialRetagEpoch)
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
+      // Fix-14：合并前批量回源受控候选，确保 pack 已收录的概念走受控码而非 `_ext.*`。
+      await preResolveControlledCandidatesBeforePersist({ preflightContext, dimResult }, language, {
+        signal
+      })
       executeProTagReconciliation({
         db,
         fileFingerprint,

@@ -1676,27 +1676,42 @@ export class OmniService {
     const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
     const isDev = isLocalDevRuntime()
     const root = process.cwd()
+    const baseResDir = (() => {
+      try {
+        return ResourceLocator.getBaseResourceDir()
+      } catch {
+        return ''
+      }
+    })()
+    const omniWorkspaceFromRes = baseResDir ? path.resolve(baseResDir, '..', '..', '..', 'omni') : ''
     const candidates: string[] = []
     const push = (candidate: string | null | undefined): void => {
       if (!candidate) return
-      if (candidates.includes(candidate)) return
-      candidates.push(candidate)
+      const resolved = path.resolve(candidate)
+      if (candidates.includes(resolved)) return
+      candidates.push(resolved)
     }
 
-    // 1. 生产或已部署环境：通过 ResourceLocator 检索
-    push(ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni'))
-
-    // 2. 本地开发环境下，优先检索最新由 cargo 编译的 target/debug 或 target/release 原生二进制
+    // 1. 开发态优先级锁定 (Ticket 06): 本地 cargo target/{release,debug} 优先命中，防止被集成目录旧构建遮蔽
     if (isDev) {
-      push(path.join(root, 'apps', 'omni', 'target', 'debug', exeName))
+      if (omniWorkspaceFromRes) {
+        push(path.join(omniWorkspaceFromRes, 'target', 'release', exeName))
+        push(path.join(omniWorkspaceFromRes, 'target', 'debug', exeName))
+      }
       push(path.join(root, 'apps', 'omni', 'target', 'release', exeName))
+      push(path.join(root, 'apps', 'omni', 'target', 'debug', exeName))
+      push(path.join(root, '..', 'omni', 'target', 'release', exeName))
+      push(path.join(root, '..', 'omni', 'target', 'debug', exeName))
     }
+
+    // 2. 生产打包或部署态：通过 ResourceLocator 解析随包 bin/omni
+    push(ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni'))
 
     // 3. 多候选路径兜底检索
     push(path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'omni', exeName))
     push(path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', exeName))
-    push(path.join(root, 'apps', 'omni', 'target', 'debug', exeName))
     push(path.join(root, 'apps', 'omni', 'target', 'release', exeName))
+    push(path.join(root, 'apps', 'omni', 'target', 'debug', exeName))
     push(path.join(root, 'build', 'extraResources', 'bin', 'omni', exeName))
 
     return candidates.filter(candidate => fs.existsSync(candidate))
@@ -2140,7 +2155,7 @@ export class OmniService {
         targetVectorsDir: expectedVectorsDir
       }
 
-      const completeAdoption = (
+      const completeAdoption = async (
         targetPort: number,
         verifiedData: Record<string, any> | undefined,
         headerInstanceId: string | null | undefined,
@@ -2150,7 +2165,7 @@ export class OmniService {
           discovered: ServiceDiscoveryFileV1 | null
           df: ServiceDiscoveryFile | null
         }
-      ): boolean => {
+      ): Promise<boolean> => {
         const prevInstanceId =
           this.expectedIdentity?.instanceId ?? this.connectedTarget?.instanceId ?? null
         const adoptedPid =
@@ -2214,6 +2229,24 @@ export class OmniService {
         this.pendingUpdateSince = 0
         this.startDevBinaryWatch()
         this.syncConfigFromDesktop().catch(() => {})
+        // 复用已运行实例三步串行启动链（Ticket 06）：① .txn.json 恢复 ➔ ② reloadAssets ➔ ③ 非阻断状态核验
+        try {
+          const { modularResourceService } = await import('../modular-resource-service')
+          const rootDir = modularResourceService?.getPluginsRootDir?.() || ''
+          if (rootDir) {
+            const { recoverSharedVisualVocabTxns } = await import('../file-download-service')
+            recoverSharedVisualVocabTxns(PluginPathResolver.getSharedDirForRoot(rootDir))
+          }
+        } catch {}
+        await this.reloadAssets().catch(() => false)
+        const reuseVerify = await this.verifyMountManifestStatus().catch(() => null)
+        if (reuseVerify && !reuseVerify.ok) {
+          this.lastMountValidationError = reuseVerify.error || '挂载清单核验处于降级态'
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] 复用实例挂载核验降级（非阻断）: ${this.lastMountValidationError}`
+          )
+        }
         this.kickEventStreamReconnect({
           expectedTarget: {
             baseUrl: this.baseUrl,
@@ -2406,17 +2439,15 @@ export class OmniService {
       )
       const isDevMode = isLocalDevRuntime()
       const binDir = path.dirname(exePath)
+      const staticResourcesRoot = ResourceLocator.getBaseResourceDir()
+      const deployedOnnxDir = path.join(staticResourcesRoot, 'bin', 'omni')
+      const runtimeDllDir = fs.existsSync(deployedOnnxDir) ? deployedOnnxDir : binDir
       const existingPath = process.env.PATH || ''
-      const injectedPath = [binDir, existingPath].filter(Boolean).join(path.delimiter)
+      const injectedPath = [runtimeDllDir, binDir, existingPath].filter(Boolean).join(path.delimiter)
 
-      // Linux/WSL 动态链接器不搜索 exe 同目录的 .so（Windows 下 DLL 同目录即可自动加载），
-      // 必须经 LD_LIBRARY_PATH 显式下发 binDir，否则 omni 一启动就因找不到
-      // libsherpa-onnx-c-api.so / libonnxruntime.so 崩溃，HTTP 端口永不监听 ⇒
-      // OmniClient fetch failed ⇒ OmniService 反复重启直至耗尽重试次数。
-      // 保留继承的 LD_LIBRARY_PATH（系统库路径），binDir 置于最前优先解析自带库。
       const isWin = process.platform === 'win32'
       const existingLibPath = process.env.LD_LIBRARY_PATH || ''
-      const injectedLibPath = [binDir, existingLibPath].filter(Boolean).join(path.delimiter)
+      const injectedLibPath = [runtimeDllDir, binDir, existingLibPath].filter(Boolean).join(path.delimiter)
 
       // 绑定操作系统单实例文件咨询锁与安全令牌 (Spec §8)
       const runDir = dbPath
@@ -2429,99 +2460,38 @@ export class OmniService {
       this.tokenManager = new OmniTokenManager(runDir)
       const tokenPayload = this.tokenManager.createToken(port, `omni-boot-${Date.now()}`)
 
+      // 净化子进程环境变量：彻底收口 18 个散落环境变量与旧 CLI 参数，改由 omni-bootstrap.json 统一下发
       const env: Record<string, string | undefined> = {
         ...process.env,
         PATH: injectedPath,
         ...(isWin ? {} : { LD_LIBRARY_PATH: injectedLibPath }),
-        OMNI_PORT: String(port),
-        OMNI_DEV_MODE: isDevMode ? '1' : '0',
-        FIREFLY_RUN_DIR: runDir,
-        ...(userDataDir ? { FIREFLY_USER_DATA_DIR: userDataDir } : {}),
         FIREFLY_OMNI_TOKEN: tokenPayload.token,
         RUST_LOG:
           process.env.RUST_LOG ||
           (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
       }
-
-      const candidatePackPaths = [
-        ResourceLocator.resolveResourcePath?.('semantic/semantic.pack'),
-        ResourceLocator.resolveResourcePath?.('presetResources/semantic/semantic.pack'),
-        path.join(process.cwd(), 'build/extraResources/semantic/semantic.pack'),
-        path.join(process.cwd(), 'build/presetResources/semantic/semantic.pack'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/semantic/semantic.pack'),
-        path.join(process.cwd(), 'apps/desktop/build/presetResources/semantic/semantic.pack')
-      ]
-      let packPath: string | null = null
-      for (const cand of candidatePackPaths) {
-        if (cand && fs.existsSync(cand)) {
-          packPath = cand
-          break
-        }
-      }
-
-      // omni-geo 地理数据集解析（与语义包同构的显式下发）：
-      // omni-server 的数据集发现链锚定在 exe 相对 <exe_dir>/../../build/extraResources/geo 与
-      // 少数 cwd 候选上，而资源统一装配流水线（consume-preset-resources + desktop
-      // setup-extra-resources）只产出 desktop 侧 extraResources/geo。开发态桌面以
-      // target/debug/firefly-omni.exe 的相对链落空 ⇒ 地理子系统静默软不可用
-      // （历史：geo-20260825 数据包已在本地但发现链够不着）。
-      // 此处复刻 --pack-path 模式，经 OMNI_GEO_DATA_PATH 环境变量显式下发（discover.rs
-      // 最高优先级即该环境变量）；解析不到则不下发，保持服务端原有发现链行为。
-      const candidateGeoPaths = [
-        ResourceLocator.resolveResourcePath?.('geo/geonames-compact.json'),
-        path.join(process.cwd(), 'apps/desktop/build/extraResources/geo/geonames-compact.json'),
-        path.join(process.cwd(), 'apps/omni/build/extraResources/geo/geonames-compact.json'),
-        path.join(process.cwd(), 'build/extraResources/geo/geonames-compact.json')
-      ]
-      let geoPath: string | null = null
-      for (const cand of candidateGeoPaths) {
-        if (cand && fs.existsSync(cand)) {
-          geoPath = cand
-          break
-        }
-      }
-
-      const spawnArgs = ['serve', '-a', `127.0.0.1:${port}`]
-      if (dbPath) {
-        spawnArgs.push('--db-path', dbPath)
-        env.OMNI_DB_PATH = dbPath
-        logger.debug(LogCategory.SYSTEM, `[OmniService] 🎯 业务主库路径 (--db-path): ${dbPath}`)
-        const vectorsDir = expectedVectorsDir || path.join(path.dirname(dbPath), 'vectors')
-        spawnArgs.push('--vectors-path', vectorsDir)
-        env.OMNI_VECTORS_PATH = vectorsDir
-        logger.debug(
-          LogCategory.SYSTEM,
-          `[OmniService] 🎯 矢量数据隔离路径 (--vectors-path): ${vectorsDir}`
-        )
-      }
-      if (packPath) {
-        spawnArgs.push('--pack-path', packPath)
-        logger.debug(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
-      }
-      if (geoPath) {
-        env.OMNI_GEO_DATA_PATH = geoPath
-        logger.debug(
-          LogCategory.SYSTEM,
-          `[OmniService] 🌍 地理数据集路径 (OMNI_GEO_DATA_PATH): ${geoPath}`
-        )
-      } else {
-        logger.warn(
-          LogCategory.SYSTEM,
-          '[OmniService] 未解析到 omni-geo 地理数据集（geo/geonames-compact.json），逆地理编码将以 available:false 软降级'
-        )
-      }
-      // 原生动态库绝对物理隔离红线 (Issue 05 Spec §6.1)
-      // 永久锁定只读安装目录 extraResources/bin/omni，严禁从用户自定义插件目录加载 DLL
-      env.FIREFLY_ONNX_DIR = binDir
-
-      // 单轨挂载前强制净化继承环境中的全部域 B 模型路径环境变量，阻断宿主机环境变量静默注入
       for (const purgeKey of CHILD_MODEL_ENV_KEYS_TO_PURGE) {
         delete env[purgeKey]
       }
-      delete env.FIREFLY_ACTIVE_MODEL_MOUNTS_FILE
-      delete env.FIREFLY_STRICT_ACTIVE_PLUGINS
-      delete env.FIREFLY_SHARED_DIR
-      delete env.OMNI_PPOCR_MODEL_PATH
+      for (const obsoleteKey of [
+        'FIREFLY_ACTIVE_MODEL_MOUNTS_FILE',
+        'FIREFLY_STRICT_ACTIVE_PLUGINS',
+        'FIREFLY_SHARED_DIR',
+        'OMNI_PPOCR_MODEL_PATH',
+        'OMNI_PORT',
+        'OMNI_DEV_MODE',
+        'OMNI_DB_PATH',
+        'OMNI_VECTORS_PATH',
+        'OMNI_GEO_DATA_PATH',
+        'FIREFLY_ONNX_DIR',
+        'FIREFLY_RUN_DIR',
+        'FIREFLY_USER_DATA_DIR',
+        'OMNI_WATCH_STDIN',
+        'OMNI_DISABLE_DML',
+        'OMNI_TTS_EAGER_WARMUP'
+      ]) {
+        delete env[obsoleteKey]
+      }
 
       // 生成本次启动专属的唯一单轨挂载清单（域 A 与域 B 严格分界）
       let pluginsRoot = ''
@@ -2730,6 +2700,11 @@ export class OmniService {
         )
       }
 
+      if (sharedDir) {
+        const { recoverSharedVisualVocabTxns } = await import('../file-download-service')
+        recoverSharedVisualVocabTxns(sharedDir)
+      }
+
       try {
         fs.mkdirSync(runDir, { recursive: true })
         const manifestFileName = `active-mounts-${process.pid}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}.json`
@@ -2747,12 +2722,10 @@ export class OmniService {
         fs.renameSync(tmpManifestPath, manifestAbsPath)
 
         mountManifestPath = manifestAbsPath
-        env.FIREFLY_ACTIVE_MODEL_MOUNTS_FILE = manifestAbsPath
-        env.FIREFLY_STRICT_ACTIVE_PLUGINS = '1'
         this.currentMountManifestPath = manifestAbsPath
         logger.debug(
           LogCategory.SYSTEM,
-          `[OmniService] 📦 下发单轨挂载清单 (${expectedMountResourceIds.length} 项): ${expectedMountResourceIds.join(', ') || 'none'}`
+          `[OmniService] 📦 生成单轨挂载清单 (${expectedMountResourceIds.length} 项): ${expectedMountResourceIds.join(', ') || 'none'}`
         )
       } catch (manifestWriteErr) {
         logger.error(
@@ -2760,7 +2733,6 @@ export class OmniService {
           '[OmniService] 写入单轨挂载清单失败，强制启用 strict 保护模式:',
           manifestWriteErr
         )
-        env.FIREFLY_STRICT_ACTIVE_PLUGINS = '1'
       }
 
       const expectedMountsSnapshot = {
@@ -2771,58 +2743,74 @@ export class OmniService {
       }
       this.lastExpectedMounts = expectedMountsSnapshot
 
-      // PP-OCRv6 属于应用随包只读域 A 模型，严格且仅从 ResourceLocator/models/PP-OCRv6 解析（严禁扫描 _shared）
-      const ppocrDir = ResourceLocator.resolveResourcePath?.('models/PP-OCRv6')
-      if (ppocrDir && fs.existsSync(ppocrDir)) {
-        env.OMNI_PPOCR_MODEL_PATH = ppocrDir
-        logger.debug(
-          LogCategory.SYSTEM,
-          `[OmniService] 🔤 PP-OCRv6 只读底座模型目录 (OMNI_PPOCR_MODEL_PATH): ${ppocrDir}`
-        )
-      }
-
-      env.OMNI_WATCH_STDIN = '1'
-
-      // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)
+      // 提取当前激活的多模态嵌入画像档位与 MRL 维度
+      let embeddingProfile: 'classic_light' | 'gemma_unified' = 'classic_light'
+      let mrlDimension = 512
       try {
         const { ConfigOrchestrator } = await import('../../../config/config-orchestrator')
         const configOrch = ConfigOrchestrator?.getInstance?.()
         if (configOrch) {
-          const embeddingProfile =
+          embeddingProfile =
             configOrch.getValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ||
             'classic_light'
-          spawnArgs.push('--embedding-profile', embeddingProfile)
-          logger.debug(
-            LogCategory.SYSTEM,
-            `[OmniService] 🎯 嵌入画像档位 (--embedding-profile): ${embeddingProfile}`
-          )
-
-          const mrlDimension = configOrch.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
-          spawnArgs.push('--mrl-dimension', String(mrlDimension))
-          logger.debug(
-            LogCategory.SYSTEM,
-            `[OmniService] 🎯 MRL 向量维度 (--mrl-dimension): ${mrlDimension}`
-          )
+          mrlDimension = configOrch.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
         }
       } catch {}
 
-      // DirectML 原生崩溃守卫：本进程已判定（或持久标记仍在 TTL 内）时，强制 Omni 以纯 CPU 拉起，
-      // 避免在同一坏 GPU 路径上反复 abort 导致视频切片永久丢失（OMNI_DISABLE_DML 由 start_server 消费）。
+      // DirectML 原生崩溃守卫
       this.resolveDmlCrashMarker(dbPath)
       const dmlMarkerRaw = this.dmlCrashMarkerPath
         ? this.readTextFileSafe(this.dmlCrashMarkerPath)
         : null
-      if (this.forceCpuForNextStarts || shouldForceCpuFromMarker(dmlMarkerRaw, Date.now())) {
-        env.OMNI_DISABLE_DML = '1'
+      const shouldDisableDml = Boolean(
+        this.forceCpuForNextStarts || shouldForceCpuFromMarker(dmlMarkerRaw, Date.now())
+      )
+      if (shouldDisableDml) {
         logger.warn(
           LogCategory.SYSTEM,
-          '[OmniService] 检测到 DirectML 原生崩溃历史，本次以纯 CPU 兜底拉起 Omni（OMNI_DISABLE_DML=1）'
+          '[OmniService] 检测到 DirectML 原生崩溃历史，本次在 bootstrap 中置位 disableDirectMl=true'
         )
       }
 
+      // 写入唯一跨进程启动引导信封 runDir/omni-bootstrap.json 并通过 `--bootstrap <file>` 启动
+      fs.mkdirSync(runDir, { recursive: true })
+      const bootstrapPath = path.join(runDir, 'omni-bootstrap.json')
+      const tmpBootstrapPath = `${bootstrapPath}.tmp`
+      const resolvedVectorsDir = dbPath
+        ? expectedVectorsDir || path.join(path.dirname(dbPath), 'vectors')
+        : null
+      const bootstrapConfig = {
+        schemaVersion: 1,
+        listenAddr: `127.0.0.1:${port}`,
+        authTokenFile: null,
+        staticResourcesRoot,
+        storage: {
+          dbPath: dbPath || null,
+          vectorsDir: resolvedVectorsDir,
+          runDir,
+          userDataDir: userDataDir || null
+        },
+        runtime: {
+          embeddingProfile,
+          mrlDimension,
+          disableDirectMl: shouldDisableDml,
+          watchStdin: true,
+          devMode: isDevMode,
+          eagerTtsWarmup: false
+        },
+        pluginMountsFile: mountManifestPath
+      }
+      fs.writeFileSync(tmpBootstrapPath, JSON.stringify(bootstrapConfig, null, 2), 'utf-8')
+      fs.renameSync(tmpBootstrapPath, bootstrapPath)
+      const spawnArgs = ['serve', '--bootstrap', bootstrapPath]
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] ✉️ 已原子写入引导配置并启用单接缝启动 (--bootstrap): ${bootstrapPath} (staticResourcesRoot=${staticResourcesRoot})`
+      )
+
       // 托管 spawn 前预留严格递增代际号并冻结独立 LaunchContext（启动期崩溃仍精准归因当前代）
       const launchGeneration = ++this.currentGeneration
-      const spawnedWithDml = env.OMNI_DISABLE_DML !== '1'
+      const spawnedWithDml = !shouldDisableDml
 
       const child = spawn(exePath, spawnArgs, {
         cwd: binDir,
@@ -3118,22 +3106,12 @@ export class OmniService {
           const verifyRes = await this.verifyMountManifestStatus(expectedMountsSnapshot)
           if (!verifyRes.ok) {
             this.lastMountValidationError = verifyRes.error || '挂载清单双向核验未通过'
-            if (verifyRes.transient) {
-              // 瞬时超时/网络抖动 ≠ 挂载清单不一致：/health 已通过，禁止据此 SIGTERM 误杀
-              // 正在进行的视频分析（切片与封面会一起丢失）。仅显著告警，放行激活，
-              // 让后续真实推理与检索自然暴露真正的清单缺陷。
-              logger.warn(
-                LogCategory.SYSTEM,
-                `[OmniService] 挂载清单核验暂时不可达（瞬时故障，已重试 ${STATUS_VERIFY_MAX_ATTEMPTS} 次），放行激活不阻断: ${this.lastMountValidationError}`
-              )
-            } else {
-              logger.error(
-                LogCategory.SYSTEM,
-                `[OmniService] 挂载清单双向核验失败 (Fail-Closed)，停机阻断激活: ${this.lastMountValidationError}`
-              )
-              await this.stop()
-              return false
-            }
+            // Ticket 06 启动链三态非阻断约束：visualVocab / mount 状态为 stale / missing / corrupt
+            // 或瞬时探测异常时，记录降级警告并放行纯文本服务激活，严禁调用 stop() 误杀引擎进程。
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[OmniService] 挂载清单/词表核验处于降级态（非阻断，放行纯文本服务继续运行）: ${this.lastMountValidationError}`
+            )
           } else {
             this.handleStartupVisualVocabStatus(verifyRes)
           }
@@ -3373,7 +3351,36 @@ export class OmniService {
   }
 
   /**
-   * 双向核验 /api/v1/engine/status 中的 mountManifest 与视觉槽三态 (stale/missing/corrupt 非阻断)
+   * 通知已运行的 Omni 实例热重载资产与单轨挂载清单（POST /api/v1/assets/reload）
+   */
+  public async reloadAssets(): Promise<boolean> {
+    if (!this.baseUrl) return false
+    try {
+      const res = await this.omniFetch(`${this.baseUrl}/api/v1/assets/reload`, {
+        method: 'POST',
+        kind: 'probe',
+        timeoutMs: STATUS_VERIFY_TIMEOUT_MS,
+        internal: true
+      })
+      if (!res.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] POST /api/v1/assets/reload 返回 HTTP ${res.status}`
+        )
+        return false
+      }
+      return true
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] 调用 POST /api/v1/assets/reload 异常: ${err?.message || String(err)}`
+      )
+      return false
+    }
+  }
+
+  /**
+   * 双向核验 /api/v1/engine/status 中的 mountManifest 与 visualVocab / mobileClipVocab
    */
   public async verifyMountManifestStatus(expected?: {
     manifestPath: string | null

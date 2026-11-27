@@ -22,6 +22,7 @@ import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store
 import { PAGE_IDS } from '../../../../constants/page-ids'
 import { t } from '@app/languages'
 import { getUniqueVirtualDirectoryName } from '../utils/vdir-naming-utils'
+import { normalizeVirtualDirectoryFile } from '../utils/vdir-file-normalize'
 import { useVirtualNavigation } from './useVirtualNavigation'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useSearchViewAutoSwitch } from '../../FileList/hooks/useSearchViewAutoSwitch'
@@ -491,37 +492,11 @@ export const useVirtualDirectory = () => {
         : selectedNode
           ? selectedNode.files
           : rootNode?.rootFiles || []
-    const mapped = sourceFiles.map(f => {
-      let parsedTags: string[] = []
-      if (f.tags) {
-        try {
-          const arr = typeof f.tags === 'string' ? JSON.parse(f.tags) : f.tags
-          parsedTags = Array.isArray(arr) ? arr.filter(Boolean) : []
-        } catch {
-          parsedTags = []
-        }
-      }
-      return {
-        id: f.fileId || f.id,
-        path: f.originalPath,
-        name: f.name || getFileNameFromPath(f.originalPath) || 'unknown',
-        size: f.size || 0,
-        extension: '.' + (f.originalPath?.split('.').pop()?.toLowerCase() || ''),
-        isFile: true,
-        fileFingerprint: f.fileFingerprint,
-        originalPath: f.originalPath,
-        smartName: f.smartName,
-        qualityScore: f.qualityScore,
-        description: f.description,
-        tags: parsedTags,
-        author: f.author,
-        language: f.language,
-        analyzedAt: f.analyzedAt,
-        lastAnalyzedAt: f.analyzedAt,
-        modifiedAt: f.modifiedAt,
-        pathTags: isSearching ? f.pathTags : undefined
-      } as any
-    })
+    // 与左侧目录树点击共用同一归一化函数，保证两侧 activeItem 形状完全一致（path/extension 不缺失）
+    const mapped = sourceFiles.map(f => ({
+      ...normalizeVirtualDirectoryFile(f),
+      pathTags: isSearching ? f.pathTags : undefined
+    }))
 
     if (isSearching) {
       const keyword = virtualDirectoryKeyword.toLowerCase().trim()
@@ -775,8 +750,11 @@ export const useVirtualDirectory = () => {
     [selectedNode, treeData]
   )
 
+  // 与 RealDirectory / AnalyzedDirectory 保持一致：页面预览态未初始化时默认 split。
+  // 缺省 false 会让 FileExplorerLayout 的预览同步效应（if (pageId && showPreviewPanel)）永远短路，
+  // 表现为点击目录树文件后预览面板无反应，直到点一次 FileList 才把 pageStates 初始化。
   const isSplitView = usePreviewOverlayStore(
-    s => s.pageStates[PAGE_IDS.VIRTUAL_DIRECTORY]?.mode === 'split'
+    s => (s.pageStates[PAGE_IDS.VIRTUAL_DIRECTORY]?.mode ?? 'split') === 'split'
   )
   const currentWorkspaceDirectoryPath = currentWorkspaceDirectory?.path || null
 

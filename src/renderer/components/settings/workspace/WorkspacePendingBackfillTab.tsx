@@ -35,38 +35,94 @@ function toSafeSec(sec: unknown): number {
   return typeof sec === 'number' && Number.isFinite(sec) ? Math.max(0, sec) : 0
 }
 
-function formatMissingReasonLabel(reason: string): string {
-  switch (reason) {
-    case 'missing_image_ocr':
-      return t('图片文字识别')
-    case 'missing_office_cover':
-      return t('文档首页封面')
-    case 'missing_thumbnail':
-      return t('缩略图')
-    case 'missing_audio_transcript':
-      return t('语音转文字')
-    case 'missing_document_content':
-      return t('文档正文提取')
-    default:
-      return t('内容补全')
-  }
+/** 单个待补项展示徽章（同语义缺口码合并为一枚，杜绝同一文案重复渲染） */
+interface MissingReasonChip {
+  /** 展示语义键：同一键只渲染一枚徽章 */
+  key: string
+  label: string
+  className: string
 }
 
-function getMissingReasonBadgeStyle(reason: string): string {
-  switch (reason) {
-    case 'missing_image_ocr':
-      return 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20'
-    case 'missing_audio_transcript':
-      return 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20'
-    case 'missing_office_cover':
-      return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20'
-    case 'missing_document_content':
-      return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
-    case 'missing_thumbnail':
-      return 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20'
-    default:
-      return 'bg-muted text-muted-foreground border-border/50'
+/** 徽章配色台账（按展示语义分组，视觉上区分缺口类型） */
+const MISSING_REASON_CHIP_STYLE = {
+  ocr: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border-cyan-500/20',
+  ocrUpgrade: 'bg-cyan-600/10 text-cyan-800 dark:text-cyan-300 border-cyan-600/20',
+  asr: 'bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20',
+  cover: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
+  content: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  visual: 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20',
+  nsfw: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20',
+  vector: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/20',
+  profile: 'bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20',
+  video: 'bg-teal-500/10 text-teal-700 dark:text-teal-400 border-teal-500/20',
+  thumbnail: 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20',
+  other: 'bg-muted text-muted-foreground border-border/50'
+} as const
+
+function makeMissingReasonChip(
+  key: keyof typeof MISSING_REASON_CHIP_STYLE,
+  label: string
+): MissingReasonChip {
+  return { key, label, className: MISSING_REASON_CHIP_STYLE[key] }
+}
+
+/**
+ * 缺口码 → 展示徽章（Egress 反查唯一入口）
+ *
+ * 内部缺口码 100% 受控（来自 `evaluateRowCompleteness` 与恢复队列扫描），此处只做两件事：
+ * 1. 语义归并：同一能力缺口的多个码（如缺失向量 / 向量探活失败）合并为同一展示键；
+ * 2. 大白话命名：严禁把内部 code 直接抛给用户，也严禁多条不同缺口共用一个兜底文案
+ *    （否则同一文件会并列渲染两枚一模一样的「内容补全」）。
+ */
+function resolveMissingReasonChip(reason: string): MissingReasonChip {
+  if (reason === 'pending_video') return makeMissingReasonChip('video', t('长视频后续片段'))
+  if (
+    reason === 'missing_video_chunks' ||
+    reason.startsWith('video_chunk_span_outdated') ||
+    reason === 'missing_video_chunk_vectors' ||
+    reason === 'video_vector_probe_error' ||
+    reason === 'incomplete_video_segments'
+  ) {
+    return makeMissingReasonChip('video', t('画面深度分析'))
   }
+  if (reason === 'missing_image_ocr') return makeMissingReasonChip('ocr', t('图片文字识别'))
+  if (reason === 'ocr_model_upgraded') {
+    return makeMissingReasonChip('ocrUpgrade', t('文字识别精度升级'))
+  }
+  if (reason === 'missing_office_cover') return makeMissingReasonChip('cover', t('文档首页封面'))
+  if (reason === 'missing_thumbnail') return makeMissingReasonChip('thumbnail', t('缩略图'))
+  if (reason === 'missing_document_content') {
+    return makeMissingReasonChip('content', t('文档正文提取'))
+  }
+  if (reason === 'missing_audio_transcript') {
+    return makeMissingReasonChip('asr', t('语音转文字'))
+  }
+  if (reason === 'missing_file_vector' || reason === 'file_vector_probe_error') {
+    return makeMissingReasonChip('vector', t('内容索引'))
+  }
+  if (reason === 'embedding_profile_changed') {
+    return makeMissingReasonChip('profile', t('索引版本升级'))
+  }
+  if (reason === 'missing_visual_tags') {
+    return makeMissingReasonChip('visual', t('画面内容识别'))
+  }
+  if (reason === 'missing_nsfw_perception') {
+    return makeMissingReasonChip('nsfw', t('内容安全识别'))
+  }
+  return makeMissingReasonChip('other', t('内容补全'))
+}
+
+/** 单文件徽章列表：按展示语义键去重，同一缺口只出一枚 */
+function buildMissingReasonChips(missingReasons: string[]): MissingReasonChip[] {
+  const seenKeys = new Set<string>()
+  const chips: MissingReasonChip[] = []
+  for (const reason of missingReasons) {
+    const chip = resolveMissingReasonChip(reason)
+    if (seenKeys.has(chip.key)) continue
+    seenKeys.add(chip.key)
+    chips.push(chip)
+  }
+  return chips
 }
 
 /**
@@ -237,7 +293,10 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
     0
   )
   const remainingMinutes = remainingSec > 0 ? Math.max(1, Math.round(remainingSec / 60)) : 0
-  const totalMissingCapabilities = envItems.reduce((sum, e) => sum + e.missingReasons.length, 0)
+  const totalMissingCapabilities = envItems.reduce(
+    (sum, e) => sum + buildMissingReasonChips(e.missingReasons).length,
+    0
+  )
   const hasVideos = videoItems.length > 0
   const hasEnv = envItems.length > 0
 
@@ -632,42 +691,45 @@ export const WorkspacePendingBackfillTab: React.FC<WorkspacePendingBackfillTabPr
                 </div>
 
                 <div className="space-y-2">
-                  {envItems.map(item => (
-                    <div
-                      key={item.workspaceFileId}
-                      className="rounded-lg border border-border/60 bg-card/50 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 hover:border-border transition-colors"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs font-semibold text-foreground truncate">
-                          {item.name}
+                  {envItems.map(item => {
+                    const chips = buildMissingReasonChips(item.missingReasons)
+                    return (
+                      <div
+                        key={item.workspaceFileId}
+                        className="rounded-lg border border-border/60 bg-card/50 px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 hover:border-border transition-colors"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-foreground truncate">
+                            {item.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground truncate">{item.path}</div>
                         </div>
-                        <div className="text-xs text-muted-foreground truncate">{item.path}</div>
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {item.missingReasons.map(r => (
-                          <span
-                            key={r}
-                            className={cn(
-                              'text-xs px-2 py-0.5 rounded-full border font-medium',
-                              getMissingReasonBadgeStyle(r)
-                            )}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {chips.map(chip => (
+                            <span
+                              key={chip.key}
+                              className={cn(
+                                'text-xs px-2 py-0.5 rounded-full border font-medium',
+                                chip.className
+                              )}
+                            >
+                              {chip.label}
+                            </span>
+                          ))}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs ml-1"
+                            disabled={busyAction}
+                            onClick={() => void handleRecoverEnvItems([item.workspaceFileId])}
                           >
-                            {formatMissingReasonLabel(r)}
-                          </span>
-                        ))}
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs ml-1"
-                          disabled={busyAction}
-                          onClick={() => void handleRecoverEnvItems([item.workspaceFileId])}
-                        >
-                          {t('立即补全')}
-                        </Button>
+                            {t('立即补全')}
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             ) : (
