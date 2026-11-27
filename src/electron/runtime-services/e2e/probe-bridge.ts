@@ -70,6 +70,22 @@ export interface TestProbeBridgeScopes {
     halfOpenTaskInFlight: boolean
   }
   'order-status': { orderId: string; status: string }
+  'visual-tagger': {
+    breaker: {
+      tripped: boolean
+      generation: number
+      consecutiveAssetFailures: number
+      trippedEncoderId: number | null
+      threshold: number
+    }
+    queue: {
+      pendingAnalysisCount: number
+      analyzingCount: number
+      totalRetryCount: number
+    }
+    reconcile: { nextRetryAt: number | null }
+    lastFailure: { code: string; encoderId: number | null; generation: number | null } | null
+  }
 }
 
 export class ProbeBridgeService {

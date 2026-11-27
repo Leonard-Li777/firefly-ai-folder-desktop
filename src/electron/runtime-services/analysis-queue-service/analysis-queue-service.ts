@@ -58,6 +58,8 @@ import {
 } from './visual-tagger-coordinator'
 import { anydocService } from '../system/anydoc-service'
 import { omniClient } from '../../services/omni-client'
+import { ProbeBridgeService } from '../e2e/probe-bridge'
+import { getE2EConfig } from '../e2e/e2e-gate'
 import { resolveWorkspaceEffectiveConfig } from '../system/workspace-analysis-context'
 import { userTierService } from '../user-tier/user-tier-service'
 
@@ -540,6 +542,94 @@ export class AnalysisQueueService {
     return requeued
   }
 
+  /**
+   * 视觉打标可观测状态（只读）：E2E 探针与单测共用同一取值面。
+   * 每个字段都来自既有 API / SQL，严禁新建平行状态（Ticket 11 §3）。
+   */
+  public getVisualTaggerProbeState(): {
+    breaker: {
+      tripped: boolean
+      generation: number
+      consecutiveAssetFailures: number
+      trippedEncoderId: number | null
+      threshold: number
+    }
+    queue: { pendingAnalysisCount: number; analyzingCount: number; totalRetryCount: number }
+    reconcile: { nextRetryAt: number | null }
+    lastFailure: { code: string; encoderId: number | null; generation: number | null } | null
+  } {
+    const snapshot = visualTaggerCoordinator.getBreakerSnapshot()
+    const breaker = {
+      tripped: snapshot.tripped,
+      generation: snapshot.generation,
+      consecutiveAssetFailures: snapshot.consecutiveAssetFailures,
+      trippedEncoderId: snapshot.trippedEncoderId ?? null,
+      threshold: snapshot.threshold
+    }
+
+    let queue = { pendingAnalysisCount: 0, analyzingCount: 0, totalRetryCount: 0 }
+    let lastFailure: { code: string; encoderId: number | null; generation: number | null } | null =
+      null
+
+    const db = databaseService.db
+    if (db) {
+      try {
+        const aggregate = db
+          .prepare(
+            `SELECT
+               SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pendingCount,
+               SUM(CASE WHEN status = 'analyzing' THEN 1 ELSE 0 END) AS analyzingCount,
+               COALESCE(SUM(retry_count), 0) AS totalRetryCount
+             FROM analysis_queue`
+          )
+          .get() as {
+          pendingCount: number | null
+          analyzingCount: number | null
+          totalRetryCount: number | null
+        }
+        queue = {
+          pendingAnalysisCount: aggregate?.pendingCount ?? 0,
+          analyzingCount: aggregate?.analyzingCount ?? 0,
+          totalRetryCount: aggregate?.totalRetryCount ?? 0
+        }
+
+        const failure = db
+          .prepare(
+            `SELECT failure_code AS code,
+                    failure_encoder_id AS encoderId,
+                    failure_generation AS generation
+             FROM analysis_queue
+             WHERE failure_code IS NOT NULL
+             ORDER BY updated_at DESC
+             LIMIT 1`
+          )
+          .get() as { code: string; encoderId: number | null; generation: number | null } | undefined
+        lastFailure = failure ?? null
+      } catch (error) {
+        // 探针不得静默降级：失败必须显式上报，字段回落零值由调用方判定
+        logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 视觉探针读取队列快照失败:', error)
+      }
+    }
+
+    return {
+      breaker,
+      queue,
+      reconcile: { nextRetryAt: visualTaggerCoordinator.getNextVisualReconcileRetryAt() },
+      lastFailure
+    }
+  }
+
+  /**
+   * 注册 `visual-tagger` 探针作用域（仅 FF_E2E_MODE=1 生效）。
+   * 注册点收敛在服务自身，因为探针字段只由本服务持有；IPC 层仅透传。
+   */
+  private registerVisualTaggerProbe(): void {
+    if (!getE2EConfig().isE2EMode) return
+    ProbeBridgeService.registerScopeHandler('visual-tagger', async () =>
+      this.getVisualTaggerProbeState()
+    )
+  }
+
   async initialize(): Promise<void> {
     if (this.isInitialized) return
     // 并发入口共享同一个在途 Promise；失败清理只由发起者负责，避免并发重跑与监听泄漏
@@ -620,6 +710,8 @@ export class AnalysisQueueService {
       if (adaptersReady) {
         logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务初始化完成')
         this.installCanonicalMaintenance()
+        // 视觉打标探针（仅 E2E 模式注册；Ticket 11 §3）
+        this.registerVisualTaggerProbe()
       } else {
         logger.warn(
           LogCategory.ANALYSIS_QUEUE,

@@ -31,12 +31,38 @@ import { isSubPath, isPathEqual } from '@firefly/shared'
  * - 5: 恢复决策降级（manual_recovery）
  */
 export class DesktopE2EError extends Error {
-  public readonly exitCode: 1 | 2 | 3 | 4 | 5
+  public readonly exitCode: 1 | 2 | 3 | 4 | 5 | 6
 
-  constructor(exitCode: 1 | 2 | 3 | 4 | 5, message: string) {
+  constructor(exitCode: 1 | 2 | 3 | 4 | 5 | 6, message: string) {
     super(message)
     this.exitCode = exitCode
     this.name = 'DesktopE2EError'
+  }
+}
+
+/**
+ * 阻断态原因（单一事实源，Ticket 11 §2）。
+ * 所有套件（13/16/17）只允许使用此枚举中的值；新增值必须回写本类型。
+ */
+export type E2EBlockedReason =
+  | 'engine-offline'
+  | 'benchmark-missing'
+  | 'ledger-unapproved'
+  | 'plugin-fixture-missing'
+  | 'ui-capability-not-landed'
+
+/**
+ * 阻断态错误（一等终态，不是失败也不是跳过）。
+ * 命中后用例记为 blocked，运行器以退出码 6 `E_BLOCKED` 汇总；
+ * 发版门禁（FF_E2E_RELEASE_GATE=1）下 `--allow-blocked` 不生效。
+ */
+export class E2EBlockedError extends DesktopE2EError {
+  public readonly blockedReason: E2EBlockedReason
+
+  constructor(reason: E2EBlockedReason, detail: string) {
+    super(6, `[E_BLOCKED] ${reason}: ${detail}`)
+    this.name = 'E2EBlockedError'
+    this.blockedReason = reason
   }
 }
 
