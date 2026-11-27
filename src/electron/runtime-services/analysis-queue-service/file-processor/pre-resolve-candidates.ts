@@ -27,7 +27,26 @@ export interface ControlledCandidateSources {
     dimensionTags?: Record<string, TagCandidateLike[] | TagCandidateLike>
     tags?: TagCandidateLike[]
   } | null
+  /**
+   * 作者名。作者同样必须走受控优先：知名作者（真实人物）在语义包中通常已有受控概念码，
+   * 只有 Omni 明确未收录时才允许回落 `_ext.*`，不得因「作者是开放集」而跳过回源。
+   */
+  authors?: TagCandidateLike[]
+  /** 文件大类 / 文件组（Magika group 或本地化分类名），映射到 builtin.* 受控码 */
+  fileGroup?: TagCandidateLike
+  /** 关键词候选（BERT / Omni keywords），与标签同源消费 */
+  keywords?: TagCandidateLike[]
 }
+
+export interface ControlledPreResolveOptions {
+  /** 中止信号：取消时不再派发回源请求，候选留未决 */
+  signal?: AbortSignal
+}
+
+/** 回源成功/已尝试的本地记忆窗口：避免同一批次内对同一词形重复整包重传 */
+const ATTEMPT_TTL_OK_MS = 30_000
+const ATTEMPT_TTL_FAIL_MS = 5_000
+const attemptMemory = new Map<string, { ok: boolean; at: number }>()
 
 /** 从字符串或标签对象中提取词形；空串与非字符串一律丢弃 */
 function extractLemma(entry: TagCandidateLike): string | undefined {
@@ -46,9 +65,7 @@ function extractLemma(entry: TagCandidateLike): string | undefined {
  * 汇总本批落库真正会出现的候选词形（去重，保持插入顺序稳定）
  * 仅收集标签容器内的词形，不扫描 viaParentName 等父级描述字段，避免把维度名当标签回源。
  */
-export function collectControlledCandidateLemmas(
-  sources: ControlledCandidateSources
-): string[] {
+export function collectControlledCandidateLemmas(sources: ControlledCandidateSources): string[] {
   const bucket = new Set<string>()
   const push = (value: TagCandidateLike): void => {
     const lemma = extractLemma(value)
@@ -69,6 +86,12 @@ export function collectControlledCandidateLemmas(
   const flatTags = sources.dimResult?.tags
   if (Array.isArray(flatTags)) flatTags.forEach(push)
 
+  const authors = sources.authors
+  if (Array.isArray(authors)) authors.forEach(push)
+  if (sources.fileGroup) push(sources.fileGroup)
+  const keywords = sources.keywords
+  if (Array.isArray(keywords)) keywords.forEach(push)
+
   return Array.from(bucket)
 }
 
@@ -80,14 +103,42 @@ export function collectControlledCandidateLemmas(
  */
 export async function preResolveControlledCandidatesBeforePersist(
   sources: ControlledCandidateSources,
-  language: string | null | undefined
+  language: string | null | undefined,
+  options?: ControlledPreResolveOptions
 ): Promise<number> {
+  const locale = language || 'zh-CN'
   const lemmas = collectControlledCandidateLemmas(sources)
   if (lemmas.length === 0) return 0
+
+  // 已回源成功（或刚失败过）的词形在本窗口内不再重复推送，避免整包放大
+  const now = Date.now()
+  const fresh = lemmas.filter(lemma => {
+    const memo = attemptMemory.get(`${locale}\u0000${lemma}`)
+    if (!memo) return true
+    const ttl = memo.ok ? ATTEMPT_TTL_OK_MS : ATTEMPT_TTL_FAIL_MS
+    return now - memo.at >= ttl
+  })
+  if (fresh.length === 0) return 0
+
+  // 取消：不派发新请求，直接交给下游未决闸（候选保持未核验状态）
+  if (options?.signal?.aborted) {
+    logger.warn(
+      LogCategory.ANALYSIS_QUEUE,
+      `[Fix-14] 落库前受控回源被中止，${fresh.length} 个候选保持未核验（不派生 _ext.*）`
+    )
+    return 0
+  }
+
   try {
-    await preResolveControlledCandidates(lemmas, language || 'zh-CN')
-    return lemmas.length
+    await preResolveControlledCandidates(fresh, locale, { signal: options?.signal })
+    for (const lemma of fresh) {
+      attemptMemory.set(`${locale}\u0000${lemma}`, { ok: true, at: Date.now() })
+    }
+    return fresh.length
   } catch (err) {
+    for (const lemma of fresh) {
+      attemptMemory.set(`${locale}\u0000${lemma}`, { ok: false, at: Date.now() })
+    }
     logger.warn(
       LogCategory.ANALYSIS_QUEUE,
       '[Fix-14] 落库前受控候选回源异常，保留既有降级路径:',

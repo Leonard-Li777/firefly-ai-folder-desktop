@@ -77,7 +77,7 @@ import {
   hasSubstantiveContent,
   type FileInfoInput
 } from '@firefly/core-engine'
-import { executeProPreflight, executeProTagReconciliation } from '@pro'
+import { executeProPreflightAsync, executeProTagReconciliation } from '@pro'
 import { preResolveControlledCandidatesBeforePersist } from './pre-resolve-candidates'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { omniService } from '../../system/omni-service'
@@ -1049,21 +1049,24 @@ export class FileProcessor {
           fact_tags: baseMetadata?.fact_tags
         }
 
-        const preflightContext = executeProPreflight({
-          filePath,
-          fileName: item.name,
-          fileSize: currentStats.size,
-          fileCategory: enhancedInfo.fileType,
-          mimeType: effectiveMimeType,
-          contentPreview: existingBasicData.content
-            ? existingBasicData.content.slice(0, 1000)
-            : undefined,
-          metadata: baseMetadata,
-          omniPerception: restoredOmniPerception,
-          stats: currentStats,
-          // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
-          nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
-        })
+        const preflightContext = await executeProPreflightAsync(
+          {
+            filePath,
+            fileName: item.name,
+            fileSize: currentStats.size,
+            fileCategory: enhancedInfo.fileType,
+            mimeType: effectiveMimeType,
+            contentPreview: existingBasicData.content
+              ? existingBasicData.content.slice(0, 1000)
+              : undefined,
+            metadata: baseMetadata,
+            omniPerception: restoredOmniPerception,
+            stats: currentStats,
+            // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
+            nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
+          },
+          { signal }
+        )
 
         if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
           const currentTags = preflightContext.groundTruthTags || []
@@ -1433,8 +1436,18 @@ export class FileProcessor {
         // Fix-14：落库前先把本批候选词形批量回源（本地镜像 → Omni inspectTags），
         // 否则同步反查只覆盖本地数千条镜像词，pack 已受控的概念会被误派生为 `_ext.*`。
         await preResolveControlledCandidatesBeforePersist(
-          { preflightContext, dimResult },
-          baseMetadata?.language
+          {
+            preflightContext,
+            dimResult,
+            // 作者与关键词同属「可能已有受控码」的候选，必须一并回源，不得默认落 _ext
+            authors: [baseMetadata?.author, (baseMetadata as any)?.authors].flat().filter(Boolean),
+            keywords: [
+              ...((baseMetadata?.keywords as string[] | undefined) || []),
+              ...((baseMetadata as any)?.key_bert_keywords || [])
+            ]
+          },
+          baseMetadata?.language,
+          { signal }
         )
         executeProTagReconciliation({
           db,
@@ -2653,19 +2666,23 @@ export class FileProcessor {
       const effectiveMimeType = magikaCategory?.mime_type || getMimeType(enhancedFileType)
 
       // 运行 CPU 阶段预计算特征流水线 (PreflightFeaturePipeline, ADR 0030)
-      const preflightContext = executeProPreflight({
-        filePath,
-        fileName: item.name,
-        fileSize: stats.size,
-        fileCategory: enhancedFileType,
-        mimeType: effectiveMimeType,
-        contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
-        metadata: contentResult.metadata,
-        stats,
-        omniPerception: anydocResult?.perception,
-        // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
-        nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
-      })
+      // 异步版先批量回源受控候选，避免同步算子查不到未落镜像的词而铸出 `_ext.*`
+      const preflightContext = await executeProPreflightAsync(
+        {
+          filePath,
+          fileName: item.name,
+          fileSize: stats.size,
+          fileCategory: enhancedFileType,
+          mimeType: effectiveMimeType,
+          contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
+          metadata: contentResult.metadata,
+          stats,
+          omniPerception: anydocResult?.perception,
+          // perception_nsfw 未启用时，预检必须整段跳过敏感内容判定（含 AC 字典树文本兜底）
+          nsfwPerceptionEnabled: capabilities.nsfwEffectivelyEnabled
+        },
+        { signal }
+      )
 
       // 优先采用 Omni 原生多模态感知 / 级联仲裁给出的建议智能命名与内容描述 (Issue #631)
       const omniSmartName =
@@ -2873,7 +2890,8 @@ export class FileProcessor {
           // Fix-14：Stage 2 提前落库同样必须先回源，禁用本地镜像缺失时的 `_ext` 降级。
           await preResolveControlledCandidatesBeforePersist(
             { preflightContext, dimResult: null },
-            language
+            language,
+            { signal }
           )
           executeProTagReconciliation({
             db,
@@ -3088,7 +3106,8 @@ export class FileProcessor {
         // Fix-14：落库前批量回源受控候选，避免本地镜像未收录时把受控概念降级成 `_ext.*`。
         await preResolveControlledCandidatesBeforePersist(
           { preflightContext, dimResult: null },
-          language
+          language,
+          { signal }
         )
         executeProTagReconciliation({
           db,
@@ -3358,7 +3377,9 @@ export class FileProcessor {
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
       // Fix-14：合并前批量回源受控候选，确保 pack 已收录的概念走受控码而非 `_ext.*`。
-      await preResolveControlledCandidatesBeforePersist({ preflightContext, dimResult }, language)
+      await preResolveControlledCandidatesBeforePersist({ preflightContext, dimResult }, language, {
+        signal
+      })
       executeProTagReconciliation({
         db,
         fileFingerprint,

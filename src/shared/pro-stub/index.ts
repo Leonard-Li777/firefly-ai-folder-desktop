@@ -44,7 +44,6 @@ export interface ProPreflightParams {
   nsfwPerceptionEnabled?: boolean
 }
 
-
 export interface ProPreflightResult {
   groundTruthTags: ProGroundTruthTag[]
   flattenedMetadata: Record<string, any>
@@ -111,7 +110,6 @@ export interface ProTagReconciliationResult {
   tagsWrittenCount: number
 }
 
-
 /**
  * 开源社区版预检降级：仅透传基础元数据，不执行商业级既定事实推导
  */
@@ -120,6 +118,16 @@ export function executeProPreflight(params: ProPreflightParams): ProPreflightRes
     groundTruthTags: [],
     flattenedMetadata: params.metadata || {}
   }
+}
+
+/**
+ * 开源社区版预检异步降级：社区版不消费受控词表回源，直接复用同步降级实现
+ */
+export async function executeProPreflightAsync(
+  params: ProPreflightParams,
+  _options?: { signal?: AbortSignal }
+): Promise<ProPreflightResult> {
+  return executeProPreflight(params)
 }
 
 /**
@@ -133,7 +141,6 @@ export function executeProTagReconciliation(
     tagsWrittenCount: 0
   }
 }
-
 
 export interface ProHowNetSlot {
   slotName: string
@@ -189,4 +196,3 @@ export {
   type TagAdmissibilityInput,
   type TagAdmissibilityVerdict
 } from '@firefly/shared'
-
