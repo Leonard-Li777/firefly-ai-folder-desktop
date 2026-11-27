@@ -4660,45 +4660,7 @@ export class OmniService {
       })
 
       if (!res.ok) {
-        const rawText = await res.text().catch(() => '')
-        let parsedErr: any = null
-        try {
-          parsedErr = rawText ? JSON.parse(rawText) : null
-        } catch {
-          parsedErr = null
-        }
-        const errBlock = parsedErr?.error && typeof parsedErr.error === 'object' ? parsedErr.error : parsedErr
-        const code =
-          (typeof errBlock?.code === 'string' && errBlock.code) ||
-          (typeof parsedErr?.code === 'string' && parsedErr.code) ||
-          `HTTP_${res.status}`
-        const reason =
-          typeof errBlock?.reason === 'string'
-            ? errBlock.reason
-            : typeof parsedErr?.reason === 'string'
-              ? parsedErr.reason
-              : undefined
-        const encoderId =
-          typeof errBlock?.encoder_id === 'number'
-            ? errBlock.encoder_id
-            : typeof errBlock?.encoderId === 'number'
-              ? errBlock.encoderId
-              : undefined
-        const message =
-          typeof errBlock?.message === 'string' && errBlock.message
-            ? errBlock.message
-            : rawText || `Omni /api/perceive 返回 HTTP ${res.status}`
-        logger.warn(
-          LogCategory.SYSTEM,
-          `[OmniService] <<< POST /api/perceive 响应异常: status=${res.status}, code=${code}, reason=${reason || 'none'}, 耗时: ${Date.now() - tStart}ms`
-        )
-        throw new OmniPerceptionHttpError({
-          status: res.status,
-          code,
-          reason,
-          encoderId,
-          message
-        })
+        throw await this.parsePerceptionHttpError(res, 'POST /api/perceive', Date.now() - tStart)
       }
 
       const json = (await res.json()) as OmniPerceptionResponse
@@ -4958,6 +4920,57 @@ export class OmniService {
   }
 
   /**
+   * 统一解析 Omni 感知/视觉接口非 2xx 响应为强类型 `OmniPerceptionHttpError`
+   */
+  private async parsePerceptionHttpError(
+    res: Response,
+    endpointLabel: string,
+    elapsedMs?: number
+  ): Promise<OmniPerceptionHttpError> {
+    const rawText = await res.text().catch(() => '')
+    let parsedErr: any = null
+    try {
+      parsedErr = rawText ? JSON.parse(rawText) : null
+    } catch {
+      parsedErr = null
+    }
+    const errBlock =
+      parsedErr?.error && typeof parsedErr.error === 'object' ? parsedErr.error : parsedErr
+    const code =
+      (typeof errBlock?.code === 'string' && errBlock.code) ||
+      (typeof parsedErr?.code === 'string' && parsedErr.code) ||
+      `HTTP_${res.status}`
+    const reason =
+      typeof errBlock?.reason === 'string'
+        ? errBlock.reason
+        : typeof parsedErr?.reason === 'string'
+          ? parsedErr.reason
+          : undefined
+    const encoderId =
+      typeof errBlock?.encoder_id === 'number'
+        ? errBlock.encoder_id
+        : typeof errBlock?.encoderId === 'number'
+          ? errBlock.encoderId
+          : undefined
+    const message =
+      typeof errBlock?.message === 'string' && errBlock.message
+        ? errBlock.message
+        : rawText || `Omni ${endpointLabel} 返回 HTTP ${res.status}`
+    const elapsedSuffix = typeof elapsedMs === 'number' ? `, 耗时: ${elapsedMs}ms` : ''
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[OmniService] <<< ${endpointLabel} 响应异常: status=${res.status}, code=${code}, reason=${reason || 'none'}${elapsedSuffix}`
+    )
+    return new OmniPerceptionHttpError({
+      status: res.status,
+      code,
+      reason,
+      encoderId,
+      message
+    })
+  }
+
+  /**
    * 单指标：提取视觉标签 (CLIP 图像特征向量)
    * POST /api/vision/tags
    */
@@ -4981,7 +4994,9 @@ export class OmniService {
         body: JSON.stringify(reqBody),
         timeoutMs
       })
-      if (!res.ok) return null
+      if (!res.ok) {
+        throw await this.parsePerceptionHttpError(res, 'POST /api/vision/tags')
+      }
       const json = (await res.json()) as OmniVisionTagsResponse
       return json.tags || []
     }
@@ -4989,6 +5004,9 @@ export class OmniService {
     try {
       return await doFetch()
     } catch (err: any) {
+      if (err instanceof OmniPerceptionHttpError) {
+        throw err
+      }
       logger.debug(
         LogCategory.SYSTEM,
         `[OmniService] extractVisualTags 异常 (${filePath}):`,
@@ -5001,7 +5019,11 @@ export class OmniService {
       if (restarted) {
         try {
           return await doFetch()
-        } catch {}
+        } catch (retryErr: any) {
+          if (retryErr instanceof OmniPerceptionHttpError) {
+            throw retryErr
+          }
+        }
       }
       return null
     }

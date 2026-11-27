@@ -453,4 +453,64 @@ describe('Ticket 09: 409 状态机对账、N=3 视觉熔断、422 隔离与单�
     expect(mCoord.getReconcileState('chinese-clip', 'fp-dl-throw')?.attempts).toBe(1)
     expect(mCoord.getNextVisualReconcileRetryAt()).toBe(mNow + 60_000)
   })
+
+  it('OmniService.extractVisualTags 对非 2xx（409/500/422）抛出 OmniPerceptionHttpError 而不吞错返回 null', async () => {
+    const { OmniService } = await import('../../system/omni-service/omni-service')
+    const fakeService = Object.create(OmniService.prototype) as any
+    fakeService.baseUrl = 'http://127.0.0.1:38200'
+    fakeService.ensureRunning = vi.fn().mockResolvedValue(true)
+    fakeService.shouldRestartAfterFetchError = vi.fn().mockReturnValue(false)
+    fakeService.start = vi.fn().mockResolvedValue(false)
+
+    // 1. HTTP 409 ENGINE_NOT_READY
+    fakeService.omniFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code: 'ENGINE_NOT_READY',
+            reason: 'visual_vocab_stale',
+            encoder_id: 4,
+            message: 'stale vocab'
+          }
+        }),
+        { status: 409, headers: { 'Content-Type': 'application/json' } }
+      )
+    )
+    await expect(fakeService.extractVisualTags('/tmp/a.jpg')).rejects.toMatchObject({
+      name: 'OmniPerceptionHttpError',
+      status: 409,
+      code: 'ENGINE_NOT_READY',
+      reason: 'visual_vocab_stale',
+      encoderId: 4
+    })
+
+    // 2. HTTP 500 ASSET_MISSING
+    fakeService.omniFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: { code: 'ASSET_MISSING', encoder_id: 2, message: 'vocab_v.f16 missing' }
+        }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      )
+    )
+    await expect(fakeService.extractVisualTags('/tmp/b.jpg')).rejects.toMatchObject({
+      name: 'OmniPerceptionHttpError',
+      status: 500,
+      code: 'ASSET_MISSING',
+      encoderId: 2
+    })
+
+    // 3. HTTP 422 INPUT_REJECTED
+    fakeService.omniFetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ error: { code: 'INPUT_REJECTED', message: 'corrupt image' } }),
+        { status: 422, headers: { 'Content-Type': 'application/json' } }
+      )
+    )
+    await expect(fakeService.extractVisualTags('/tmp/c.jpg')).rejects.toMatchObject({
+      name: 'OmniPerceptionHttpError',
+      status: 422,
+      code: 'INPUT_REJECTED'
+    })
+  })
 })
