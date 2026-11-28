@@ -1,9 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { Suspense, lazy, useMemo } from 'react'
 import { t } from '@app/languages'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { getPreviewRouteType } from '../../lib/preview-utils'
-import { FilePreview } from './FilePreview'
-import { FlyfishPreview } from './FlyfishPreview'
 import { SupportedFormats } from '../common/SupportedFormats'
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { logger, LogCategory } from '@firefly/shared'
@@ -12,7 +10,21 @@ import { usePreviewSession } from './hooks/usePreviewSession'
 import { ExternalIframeAdapter } from './adapters/ExternalIframeAdapter'
 import { ErrorBoundary } from '../common/ErrorBoundary'
 
-interface PreviewContentProps {
+// R-23/R-24 预览拆包：重型预览器（内置媒体预览 / Flyfish 文档查看器）异步按需加载，
+// 从主渲染首屏 bundle 剥离；仅在对应候选分派命中时才拉取独立 chunk。
+const FilePreviewLazy = lazy(() => import('./FilePreview').then(m => ({ default: m.FilePreview })))
+const FlyfishPreviewLazy = lazy(() =>
+  import('./FlyfishPreview').then(m => ({ default: m.FlyfishPreview }))
+)
+
+/** 预览 chunk 加载占位（与既有文本加载态视觉一致） */
+const PreviewChunkFallback: React.FC = () => (
+  <div className="flex items-center justify-center h-full">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+)
+
+export interface PreviewContentProps {
   filePath: string
   fileName: string
   extension: string
@@ -197,16 +209,18 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
             }
             onError={() => onRetryNext()}
           >
-            <FilePreview
-              filePath={filePath}
-              fileName={fileName}
-              extension={extension}
-              multimodalContent={multimodalContent}
-              currentTime={currentTime}
-              highlightRange={highlightRange}
-              isPrivate={isPrivate}
-              workspaceDirectoryType={workspaceDirectoryType}
-            />
+            <Suspense fallback={<PreviewChunkFallback />}>
+              <FilePreviewLazy
+                filePath={filePath}
+                fileName={fileName}
+                extension={extension}
+                multimodalContent={multimodalContent}
+                currentTime={currentTime}
+                highlightRange={highlightRange}
+                isPrivate={isPrivate}
+                workspaceDirectoryType={workspaceDirectoryType}
+              />
+            </Suspense>
           </ErrorBoundary>
         </div>
       </div>
@@ -227,12 +241,14 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
             }
             onError={() => onRetryNext()}
           >
-            <FlyfishPreview
-              filePath={filePath}
-              fileName={fileName}
-              extension={extension}
-              isPrivate={isPrivate}
-            />
+            <Suspense fallback={<PreviewChunkFallback />}>
+              <FlyfishPreviewLazy
+                filePath={filePath}
+                fileName={fileName}
+                extension={extension}
+                isPrivate={isPrivate}
+              />
+            </Suspense>
           </ErrorBoundary>
         </div>
         {multimodalContent && (
