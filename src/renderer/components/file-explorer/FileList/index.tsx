@@ -1,25 +1,15 @@
-import {
-  DEFAULT_COLUMN_WIDTHS,
-  GRID_MIN_COLUMN_WIDTH,
-  GRID_ROW_HEIGHT,
-  HEADER_HEIGHT,
-  ROW_HEIGHT
-} from './constants'
-import { FileListProps, FileType, ListItemData } from './types'
+import { DEFAULT_COLUMN_WIDTHS, GRID_MIN_COLUMN_WIDTH } from './constants'
+import { FileListProps, FileType } from './types'
 import { GridCell, GridCellInner } from './components/GridCell'
 import { SEARCH_LIST_ROW_HEIGHT } from './components/SearchListCard'
 import { LogCategory, logger } from '@firefly/shared'
-import { MaterialIcon, cn } from '../../../lib/utils'
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { RowRenderer, renderAnalysisStatus } from './components/RowRenderer'
-import { formatDate, isImageFile } from './utils'
+import { cn } from '../../../lib/utils'
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { isImageFile } from './utils'
 import { formatFileSize, getFileIcon } from '../FileItem'
 
-import { AnalysisStatus, parseWorkspaceConfig, isWorkspaceConfigReady } from '@firefly/types'
 import { Button } from '../../ui/button'
 import { Sliders } from 'lucide-react'
-import { Checkbox } from '../../ui/checkbox'
-import { ColumnResizer } from './components/ColumnResizer'
 import { ContextMenu } from '../../common/ContextMenu'
 import { SelectionBox } from './components/SelectionBox'
 import { VirtualRowRenderer } from './components/VirtualRowRenderer'
@@ -27,19 +17,17 @@ import {
   FileAdmissionNoticeBar,
   readFileAdmissionNoticeDismissed
 } from './components/FileAdmissionNoticeBar'
+import { FileListListHeader } from './components/FileListListHeader'
+import { FileListTableView } from './components/FileListTableView'
 import { EmptyState } from '../../common/EmptyState'
 import { Loading } from '../../common/Loading'
 import { t } from '@app/languages'
-import { toast } from '../../common/Toast'
-import { useAnalysisQueueStore } from '../../../stores/analysis-queue-store'
 import { useFileDisplaySettings } from '../../../hooks/useFileDisplaySettings'
 import { useFileExplorerStore } from '../../../stores/app-store'
 import { useFileListContextMenu } from './hooks/useFileListContextMenu'
+import { useFileListDerivedData, useFileListItemData } from './hooks/useFileListDerivedData'
 import { useFileListScroll } from './hooks/useFileListScroll'
 import { useFileListSelection } from './hooks/useFileListSelection'
-import { useSearchStore } from '../../../stores/search-store'
-import { useTierStore } from '../../../stores/tier-store'
-import { useDragSelectStore } from '../../../stores/drag-select-store'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../../stores/virtual-directory-store'
 
@@ -56,8 +44,6 @@ const ListComponent: any = isReactWindowV2
 const GridComponent: any = isReactWindowV2
   ? ReactWindow.Grid || ReactWindowModule.Grid
   : ReactWindow.FixedSizeGrid || ReactWindowModule.FixedSizeGrid || ReactWindow
-
-const isReactWindowLoaded = !!(ListComponent && GridComponent)
 
 export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> = props => {
   const {
@@ -138,176 +124,46 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   const sortBy = propSortBy || storeSortBy
   const sortOrder = propSortOrder || storeSortOrder
 
-  const getFileAnalysisStatusNonReactive = useCallback(
-    (file: FileType): AnalysisStatus | undefined => {
-      const queueItems = useAnalysisQueueStore.getState().snapshot.items
-      const queueItem = queueItems.find(item => isPathEqual(item.path, file.path))
-      if (queueItem) return queueItem.status
-      if (file.isAnalyzed) return 'completed'
-      return undefined
-    },
-    [isPathEqual]
-  )
-
-  const items = useMemo(() => {
-    const validFiles = Array.isArray(files) ? files : []
-    const validDirs = Array.isArray(directories) ? directories : []
-    const dirs = isRealDirectory
-      ? validDirs.filter(dir => dir.parentPath === currentPath)
-      : validDirs
-    const allItems = [...dirs, ...validFiles]
-    if (disableClientSort || !sortBy) return allItems
-
-    // 如果按 analysisStatus 排序，先建立状态 Map，避免在 O(N log N) 次比较中反复 find
-    let statusMap: Map<string, string> | null = null
-    if (sortBy === 'analysisStatus') {
-      statusMap = new Map()
-      const queueItems = useAnalysisQueueStore.getState().snapshot.items
-      for (const item of queueItems) {
-        if (item?.path && item?.status) {
-          statusMap.set(item.path, item.status)
-        }
-      }
-    }
-
-    const getStatus = (file: FileType): string => {
-      if (statusMap) {
-        const s = statusMap.get(file.path)
-        if (s) return s
-      }
-      return file.isAnalyzed ? 'completed' : ''
-    }
-
-    // 单次复合排序：优先将文件夹置顶，随后按指定字段与排序方向排序
-    allItems.sort((a, b) => {
-      const isDirA = 'isDirectory' in a && Boolean(a.isDirectory)
-      const isDirB = 'isDirectory' in b && Boolean(b.isDirectory)
-
-      // 1. 文件夹始终优先于文件
-      if (isDirA !== isDirB) {
-        return isDirA ? -1 : 1
-      }
-
-      // 2. 同为文件夹或同为文件时，按 sortBy 比较
-      let valA: any = 0
-      let valB: any = 0
-
-      switch (sortBy) {
-        case 'name':
-          valA = a.name.toLowerCase()
-          valB = b.name.toLowerCase()
-          break
-        case 'size':
-          valA = isDirA ? 0 : (a as FileType).size || 0
-          valB = isDirB ? 0 : (b as FileType).size || 0
-          break
-        case 'modified':
-          valA = a.modifiedAt ? new Date(a.modifiedAt).getTime() : 0
-          valB = b.modifiedAt ? new Date(b.modifiedAt).getTime() : 0
-          break
-        case 'type':
-          valA = isDirA ? '00_dir' : (a as FileType).extension || ''
-          valB = isDirB ? '00_dir' : (b as FileType).extension || ''
-          break
-        case 'smartName':
-          valA = (isDirA ? a.name : (a as FileType).smartName || a.name).toLowerCase()
-          valB = (isDirB ? b.name : (b as FileType).smartName || b.name).toLowerCase()
-          break
-        case 'qualityScore':
-          valA = isDirA ? 0 : (a as FileType).qualityScore || 0
-          valB = isDirB ? 0 : (b as FileType).qualityScore || 0
-          break
-        case 'author':
-          valA = isDirA ? '' : (a as FileType).author || ''
-          valB = isDirB ? '' : (b as FileType).author || ''
-          break
-        case 'language':
-          valA = isDirA ? '' : (a as FileType).language || ''
-          valB = isDirB ? '' : (b as FileType).language || ''
-          break
-        case 'analysisStatus':
-          valA = isDirA ? '' : getStatus(a as FileType)
-          valB = isDirB ? '' : getStatus(b as FileType)
-          break
-        default:
-          valA = 0
-          valB = 0
-      }
-
-      if (valA < valB) return sortOrder === 'asc' ? -1 : 1
-      if (valA > valB) return sortOrder === 'asc' ? 1 : -1
-      return 0
-    })
-
-    return allItems
-  }, [directories, files, currentPath, disableClientSort, sortBy, sortOrder, isRealDirectory])
-
-  // 搜索列表模式下 1:1 对齐物理文件，无需展平多行，卡片第三行以横向画廊呈现多切片
-  const searchListItems = items
-  const effectiveItems = items
-
   // 订阅工作目录信息用于真实目录排障
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
 
-  // 匹配当前真实目录对应的工作区配置
-  const targetWorkspace = useMemo(() => {
-    if (!isRealDirectory) return null
-    const searchPath = workspaceDirectoryPath || currentPath
-    if (searchPath) {
-      const matched = workspaceDirectories.find(
-        w =>
-          w.path &&
-          (isPathEqual(w.path, searchPath) || (isSubPath && isSubPath(w.path, searchPath)))
-      )
-      if (matched) return matched
-    }
-    return currentWorkspaceDirectory
-  }, [
+  const {
+    items,
+    searchListItems,
+    effectiveItems,
+    targetWorkspace,
+    hasIncludeRulesMismatch,
+    columnCount,
+    waterfallColumnsData,
+    getAllFilesInDirectory,
+    selectedPathsSet,
+    totalWidth,
+    isAllSelected
+  } = useFileListDerivedData({
+    files,
+    directories,
+    currentPath,
+    disableClientSort,
+    sortBy,
+    sortOrder,
     isRealDirectory,
     workspaceDirectoryPath,
-    currentPath,
     workspaceDirectories,
     currentWorkspaceDirectory,
+    containerSize,
+    gridCardWidth,
+    viewMode,
+    selectedFiles,
+    selectionEnabled,
+    shouldShowField,
+    showAnalysisStatus,
+    columnWidths,
     isPathEqual,
+    normalizeForCache,
+    stripTrailingSlash,
     isSubPath
-  ])
-
-  // 检查当前工作目录是否配置了非空包含规则 (customIncludeRules 或 whitelist_patterns)
-  const hasActiveIncludeRules = useMemo(() => {
-    if (!isRealDirectory || !targetWorkspace) return false
-    // 1. 优先检查 workspace.whitelist_patterns
-    let rawWhitelist = targetWorkspace.whitelist_patterns
-    if (typeof rawWhitelist === 'string') {
-      try {
-        rawWhitelist = JSON.parse(rawWhitelist)
-      } catch {
-        rawWhitelist = []
-      }
-    }
-    if (Array.isArray(rawWhitelist) && rawWhitelist.length > 0) {
-      return true
-    }
-
-    // 2. 检查 workspace_config.customIncludeRules (直接解析原始 JSON，防 parseWorkspaceConfig 状态降级抹杀)
-    if (targetWorkspace.workspace_config) {
-      try {
-        let rawCfg = targetWorkspace.workspace_config
-        if (typeof rawCfg === 'string') {
-          rawCfg = JSON.parse(rawCfg)
-        }
-        const includeRules = (rawCfg as any)?.customIncludeRules
-        if (Array.isArray(includeRules) && includeRules.length > 0) {
-          return true
-        }
-      } catch {
-        // 安全忽略 JSON 解析异常
-      }
-    }
-    return false
-  }, [isRealDirectory, targetWorkspace])
-
-  const hasIncludeRulesMismatch = isRealDirectory && items.length === 0 && hasActiveIncludeRules
+  })
 
   const handleOpenAdmissionRules = useCallback(() => {
     const wsId = targetWorkspace?.id ?? currentWorkspaceDirectory?.id
@@ -350,79 +206,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     [items.length, hasIncludeRulesMismatch, handleOpenAdmissionRules]
   )
 
-  const columnCount = useMemo(() => {
-    // 增加安全边距（约 48px）用于处理滚动条和容器内边距，使布局更宽松
-    const availableWidth = Math.max(0, containerSize.width - 48)
-    return Math.max(1, Math.floor(availableWidth / (gridCardWidth || GRID_MIN_COLUMN_WIDTH || 160)))
-  }, [containerSize.width, gridCardWidth])
-
-  // 瀑布流布局列数、列宽与列分组性能优化计算 (O(N) 映射，解决多余的 filter 和 items.indexOf)
-  const waterfallColumnsData = useMemo(() => {
-    if (viewMode !== 'waterfall') return null
-
-    const gap = 16
-    const padding = 32 // 左右各 p-4 (16px)
-    const availableWidth = Math.max(0, containerSize.width - padding)
-    const effectiveWidth = Math.max(60, gridCardWidth || 160)
-
-    const wfColumnCount = Math.max(1, Math.floor((availableWidth + gap) / (effectiveWidth + gap)))
-    // 列宽固定为滑块值（刻度线性连续，不再弹性填满）；仅当单列放不下时才收缩到可用宽度
-    const calcColumnWidth = Math.max(
-      0,
-      Math.min(effectiveWidth, availableWidth - (wfColumnCount - 1) * gap)
-    )
-
-    // 一次性 O(N) 遍历完成分列分组
-    const columns: Array<{ colIndex: number; columnItems: Array<{ item: any; index: number }> }> =
-      Array.from({ length: wfColumnCount }, (_, i) => ({ colIndex: i, columnItems: [] }))
-
-    items.forEach((item, index) => {
-      const targetCol = index % wfColumnCount
-      columns[targetCol].columnItems.push({ item, index })
-    })
-
-    return { columnCount: wfColumnCount, calcColumnWidth, columns }
-  }, [viewMode, containerSize.width, gridCardWidth, items])
-
-  const getAllFilesInDirectory = useCallback(
-    (dirPath: string): (FileType | any)[] => {
-      const resultSet = new Set<FileType | any>()
-      const currentDir = items.find(
-        item => 'isDirectory' in item && item.isDirectory && isPathEqual(item.path, dirPath)
-      )
-      if (currentDir) resultSet.add(currentDir)
-
-      const queue = [dirPath]
-      const visited = new Set<string>()
-
-      while (queue.length > 0) {
-        const currentPath = queue.shift()!
-        const normalizedCurrentPath = normalizeForCache(stripTrailingSlash(currentPath))
-        if (visited.has(normalizedCurrentPath)) continue
-        visited.add(normalizedCurrentPath)
-
-        const currentFiles = items.filter(item => {
-          if ('isDirectory' in item && item.isDirectory) {
-            return isPathEqual(item.parentPath, currentPath)
-          } else {
-            const filePath = (item as FileType).path
-            return isSubPath(currentPath, filePath) && !isPathEqual(filePath, currentPath)
-          }
-        })
-
-        currentFiles.forEach(file => {
-          resultSet.add(file)
-          if ('isDirectory' in file && file.isDirectory) {
-            queue.push(file.path)
-          }
-        })
-      }
-
-      return Array.from(resultSet)
-    },
-    [items, isPathEqual, normalizeForCache, stripTrailingSlash, isSubPath]
-  )
-
   const { scrollOffset, handleScroll, handleGridScroll } = useFileListScroll({
     items: effectiveItems,
     hasMore,
@@ -462,7 +245,7 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     onDirectoryChangeRef.current?.(path)
   }, [])
 
-  const { handleMouseDown, handleItemClick, handleKeyDown, isDraggingRef } = useFileListSelection({
+  const { handleMouseDown, handleItemClick, handleKeyDown } = useFileListSelection({
     items: effectiveItems,
     selectedFiles,
     getSelectedFiles: stableGetSelectedFiles,
@@ -562,120 +345,36 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     }
   }, [effectiveItems, viewMode])
 
-  const selectedPathsSet = useMemo(() => {
-    const set = new Set<string>()
-    if (Array.isArray(selectedFiles)) {
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const f = selectedFiles[i]
-        // 仅以 path 作为归一化键：与列表 item.path 的渲染判定口径保持一致，
-        // 避免 id / path 混用导致匹配不到而出现「已全选但复选框未勾选」的假阴性
-        const p = typeof f === 'string' ? f : f?.path
-        const normalized = p ? normalizeForCache(p) : ''
-        if (normalized) set.add(normalized)
-      }
-    }
-    return set
-  }, [selectedFiles, normalizeForCache])
-
-  const activeColumns = useMemo(() => {
-    const cols = []
-    if (selectionEnabled !== false) {
-      cols.push('checkbox')
-    }
-    cols.push('name')
-    if (shouldShowField('qualityScore')) cols.push('qualityScore')
-    if (shouldShowField('description')) cols.push('description')
-    if (shouldShowField('tags')) cols.push('tags')
-    if (shouldShowField('author')) cols.push('author')
-    if (shouldShowField('language')) cols.push('language')
-    if (showAnalysisStatus) cols.push('analysisStatus')
-    if (shouldShowField('analyzedAt')) cols.push('analyzedAt')
-    cols.push('modified', 'type', 'size')
-    return cols
-  }, [selectionEnabled, shouldShowField, showAnalysisStatus])
-
-  const totalWidth = useMemo(() => {
-    return activeColumns.reduce((sum, col) => sum + (columnWidths[col] || 100), 0)
-  }, [activeColumns, columnWidths])
-
-  const itemData: ListItemData = useMemo(
-    () => ({
-      items: effectiveItems,
-      selectedFiles,
-      selectedPathsSet,
-      activeItem,
-      onFileSelect: stableOnFileSelect,
-      getSelectedFiles: stableGetSelectedFiles,
-      onDirectoryChange: stableOnDirectoryChange,
-      getFileIcon,
-      formatFileSize,
-      formatDate,
-      isPathEqual,
-      workspaceDirectoryPath: workspaceDirectoryPath || null,
-      normalizeForCache,
-      refreshKey: refreshKey || 0,
-      showAnalysisStatus,
-      showsmartName,
-      swapFileNameDisplay,
-      gridShowFullFileName,
-      isImageFile,
-      getAllFilesInDirectory,
-      shouldShowField,
-      getFieldLabel,
-      onContextMenu: handleContextMenu,
-      onItemClick: handleItemClick,
-      selectionEnabled,
-      viewMode,
-      t,
-      columnWidths,
-      totalWidth,
-      pageId,
-      containerWidth: containerSize.width
-    }),
-    [
-      effectiveItems,
-      selectedFiles,
-      selectedPathsSet,
-      activeItem,
-      stableOnFileSelect,
-      stableGetSelectedFiles,
-      stableOnDirectoryChange,
-      workspaceDirectoryPath,
-      normalizeForCache,
-      refreshKey,
-      showAnalysisStatus,
-      showsmartName,
-      swapFileNameDisplay,
-      gridShowFullFileName,
-      getAllFilesInDirectory,
-      shouldShowField,
-      getFieldLabel,
-      handleContextMenu,
-      handleItemClick,
-      isPathEqual,
-      selectionEnabled,
-      viewMode,
-      columnWidths,
-      totalWidth,
-      pageId,
-      containerSize.width
-    ]
-  )
-
-  const gridData = useMemo(
-    () => ({
-      ...itemData,
-      columnCount,
-      columnWidth:
-        containerSize.width > 0
-          ? Math.min(
-              gridCardWidth || GRID_MIN_COLUMN_WIDTH || 160,
-              Math.max(0, containerSize.width - 24) / Math.max(1, columnCount)
-            )
-          : gridCardWidth || GRID_MIN_COLUMN_WIDTH || 160
-    }),
-    [itemData, columnCount, containerSize.width, gridCardWidth]
-  )
+  const { itemData, gridData } = useFileListItemData({
+    effectiveItems,
+    selectedFiles,
+    selectedPathsSet,
+    activeItem,
+    stableOnFileSelect,
+    stableGetSelectedFiles,
+    stableOnDirectoryChange,
+    isPathEqual,
+    workspaceDirectoryPath,
+    normalizeForCache,
+    refreshKey,
+    showAnalysisStatus,
+    showsmartName,
+    swapFileNameDisplay,
+    gridShowFullFileName,
+    getAllFilesInDirectory,
+    shouldShowField,
+    getFieldLabel,
+    handleContextMenu,
+    handleItemClick,
+    selectionEnabled,
+    viewMode,
+    columnWidths,
+    totalWidth,
+    pageId,
+    containerWidth: containerSize.width,
+    columnCount,
+    gridCardWidth
+  })
 
   const handleResize = useCallback((column: string, newWidth: number) => {
     setColumnWidths(prev => ({
@@ -740,23 +439,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     }
   }, [viewMode, reactWindowAvailable, totalWidth])
 
-  const getSortIcon = (column: string) => {
-    if (sortBy !== column) return null
-    return sortOrder === 'asc' ? (
-      <MaterialIcon icon="arrow_upward" className="text-xs ml-1" />
-    ) : (
-      <MaterialIcon icon="arrow_downward" className="text-xs ml-1" />
-    )
-  }
-
-  const getHeaderClass = (column: string, baseClass?: string) => {
-    return cn(
-      baseClass,
-      'cursor-pointer hover:bg-accent/50 transition-colors flex items-center relative border-r border-border/50 px-2 h-full',
-      sortBy === column ? 'text-primary font-bold' : ''
-    )
-  }
-
   const handleHeaderClick = (column: any) => {
     if (onSortChange) {
       const newSortOrder = sortBy === column ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
@@ -770,11 +452,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }
     }
   }
-
-  const isAllSelected = useMemo(() => {
-    if (items.length === 0) return false
-    return items.every(item => item.path && selectedPathsSet.has(normalizeForCache(item.path)))
-  }, [items, selectedPathsSet, normalizeForCache])
 
   // 加载态提前返回必须放在本组件最后一个 Hook（isAllSelected）之后：
   // 任何 return 之前的 Hook 若随 loading 增减调用次数，会触发 "Rendered fewer hooks than expected"。
@@ -945,190 +622,26 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
         )}
 
         {/* 表头行 — 独立横向滚动容器，与列表共享同步 */}
-        <div
-          ref={headerRef}
-          className="overflow-x-auto overflow-y-hidden bg-muted/50 border-b border-border/50 flex-shrink-0 scrollbar-none"
-          style={{ scrollbarWidth: 'none' }}
-        >
-          <div
-            className="flex items-center text-xs font-medium text-foreground/70 select-none uppercase tracking-wider h-10"
-            style={{ width: totalWidth }}
-          >
-            {selectionEnabled !== false && (
-              <div
-                className="flex-shrink-0 flex justify-center items-center border-r border-border/50 h-full relative"
-                style={{ width: columnWidths.checkbox }}
-              >
-                <Checkbox
-                  checked={isAllSelected}
-                  onCheckedChange={checked => {
-                    // 以事件回调的 checked 参数为准，避免使用渲染期闭包中的 isAllSelected 造成状态滞后
-                    if (!checked) {
-                      // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
-                      const visibleKeys = new Set(
-                        items.filter(it => !!it.path).map(it => normalizeForCache(it.path!))
-                      )
-                      onFileSelect(
-                        selectedFiles.filter(
-                          f => f && f.path && !visibleKeys.has(normalizeForCache(f.path))
-                        ),
-                        true
-                      )
-                    } else {
-                      onFileSelect(
-                        items.filter(it => !!it.path).map(it => it.path!),
-                        true
-                      )
-                    }
-                  }}
-                />
-                <ColumnResizer
-                  onResize={w => handleResize('checkbox', w)}
-                  currentWidth={columnWidths.checkbox}
-                />
-              </div>
-            )}
-            <div
-              className={getHeaderClass('name', 'flex-shrink-0')}
-              style={{ width: columnWidths.name }}
-              onClick={() => handleHeaderClick(swapFileNameDisplay ? 'name' : 'smartName')}
-            >
-              <span className="truncate">
-                {!swapFileNameDisplay && showsmartName ? t('智能文件名') : t('名称')}
-              </span>{' '}
-              {getSortIcon(swapFileNameDisplay ? 'name' : 'smartName')}
-              <ColumnResizer
-                onResize={w => handleResize('name', w)}
-                currentWidth={columnWidths.name}
-              />
-            </div>
-            {shouldShowField('qualityScore') && (
-              <div
-                className={getHeaderClass('qualityScore', 'flex-shrink-0')}
-                style={{ width: columnWidths.qualityScore }}
-                onClick={() => handleHeaderClick('qualityScore')}
-              >
-                <span className="truncate">{getFieldLabel('qualityScore')}</span>{' '}
-                {getSortIcon('qualityScore')}
-                <ColumnResizer
-                  onResize={w => handleResize('qualityScore', w)}
-                  currentWidth={columnWidths.qualityScore}
-                />
-              </div>
-            )}
-            {shouldShowField('description') && (
-              <div
-                className="flex-shrink-0 px-2 flex items-center border-r border-border/50 h-full relative"
-                style={{ width: columnWidths.description }}
-              >
-                <span className="truncate">{getFieldLabel('description')}</span>
-                <ColumnResizer
-                  onResize={w => handleResize('description', w)}
-                  currentWidth={columnWidths.description}
-                />
-              </div>
-            )}
-            {shouldShowField('tags') && (
-              <div
-                className="flex-shrink-0 px-2 flex items-center border-r border-border/50 h-full relative"
-                style={{ width: columnWidths.tags }}
-              >
-                <span className="truncate">{getFieldLabel('tags')}</span>
-                <ColumnResizer
-                  onResize={w => handleResize('tags', w)}
-                  currentWidth={columnWidths.tags}
-                />
-              </div>
-            )}
-            {shouldShowField('author') && (
-              <div
-                className={getHeaderClass('author', 'flex-shrink-0')}
-                style={{ width: columnWidths.author }}
-                onClick={() => handleHeaderClick('author')}
-              >
-                <span className="truncate">{getFieldLabel('author')}</span> {getSortIcon('author')}
-                <ColumnResizer
-                  onResize={w => handleResize('author', w)}
-                  currentWidth={columnWidths.author}
-                />
-              </div>
-            )}
-            {shouldShowField('language') && (
-              <div
-                className={getHeaderClass('language', 'flex-shrink-0')}
-                style={{ width: columnWidths.language }}
-                onClick={() => handleHeaderClick('language')}
-              >
-                <span className="truncate">{getFieldLabel('language')}</span>{' '}
-                {getSortIcon('language')}
-                <ColumnResizer
-                  onResize={w => handleResize('language', w)}
-                  currentWidth={columnWidths.language}
-                />
-              </div>
-            )}
-            {showAnalysisStatus && (
-              <div
-                className={getHeaderClass('analysisStatus', 'flex-shrink-0')}
-                style={{ width: columnWidths.analysisStatus }}
-                onClick={() => handleHeaderClick('analysisStatus')}
-              >
-                <span className="truncate">{t('分析状态')}</span> {getSortIcon('analysisStatus')}
-                <ColumnResizer
-                  onResize={w => handleResize('analysisStatus', w)}
-                  currentWidth={columnWidths.analysisStatus}
-                />
-              </div>
-            )}
-            {shouldShowField('analyzedAt') && (
-              <div
-                className={getHeaderClass('analyzedAt', 'flex-shrink-0')}
-                style={{ width: columnWidths.analyzedAt }}
-                onClick={() => handleHeaderClick('analyzedAt')}
-              >
-                <span className="truncate">{getFieldLabel('analyzedAt')}</span>{' '}
-                {getSortIcon('analyzedAt')}
-                <ColumnResizer
-                  onResize={w => handleResize('analyzedAt', w)}
-                  currentWidth={columnWidths.analyzedAt}
-                />
-              </div>
-            )}
-            <div
-              className={getHeaderClass('modified', 'flex-shrink-0')}
-              style={{ width: columnWidths.modified }}
-              onClick={() => handleHeaderClick('modified')}
-            >
-              <span className="truncate">{t('修改日期')}</span> {getSortIcon('modified')}
-              <ColumnResizer
-                onResize={w => handleResize('modified', w)}
-                currentWidth={columnWidths.modified}
-              />
-            </div>
-            <div
-              className={getHeaderClass('type', 'flex-shrink-0')}
-              style={{ width: columnWidths.type }}
-              onClick={() => handleHeaderClick('type')}
-            >
-              <span className="truncate">{t('类型')}</span> {getSortIcon('type')}
-              <ColumnResizer
-                onResize={w => handleResize('type', w)}
-                currentWidth={columnWidths.type}
-              />
-            </div>
-            <div
-              className={getHeaderClass('size', 'flex-shrink-0 justify-end')}
-              style={{ width: columnWidths.size }}
-              onClick={() => handleHeaderClick('size')}
-            >
-              <span className="truncate">{t('大小')}</span> {getSortIcon('size')}
-              <ColumnResizer
-                onResize={w => handleResize('size', w)}
-                currentWidth={columnWidths.size}
-              />
-            </div>
-          </div>
-        </div>
+        <FileListListHeader
+          headerRef={headerRef}
+          totalWidth={totalWidth}
+          selectionEnabled={selectionEnabled}
+          columnWidths={columnWidths}
+          isAllSelected={isAllSelected}
+          items={items}
+          selectedFiles={selectedFiles}
+          normalizeForCache={normalizeForCache}
+          onFileSelect={onFileSelect}
+          onResize={handleResize}
+          swapFileNameDisplay={swapFileNameDisplay}
+          showsmartName={showsmartName}
+          shouldShowField={shouldShowField}
+          getFieldLabel={getFieldLabel}
+          showAnalysisStatus={showAnalysisStatus}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onHeaderClick={handleHeaderClick}
+        />
 
         <div
           className="flex-1 overflow-hidden"
@@ -1407,197 +920,38 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
   }
 
   return (
-    <div
-      className={cn(
-        'flex-1 overflow-hidden flex flex-col focus:outline-none relative',
-        showNoticeBar && 'pb-[38px]'
-      )}
-      ref={containerRef}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-      onMouseDown={handleMouseDown}
-      onClick={e => {
-        const target = e.target as HTMLElement
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
-          containerRef.current?.focus()
-        }
-      }}
-    >
-      <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
-      {items.length === 0 ? (
-        renderEmptyState(t('目录为空'))
-      ) : (
-        <div
-          className="flex-1 overflow-x-auto overflow-y-auto scrollbar-thin"
-          onScroll={e => handleScroll(e)}
-        >
-          <table className="text-sm text-left" style={{ width: totalWidth, tableLayout: 'fixed' }}>
-            <colgroup>
-              <col style={{ width: columnWidths.checkbox }} />
-              <col style={{ width: columnWidths.name }} />
-              {shouldShowField('qualityScore') && (
-                <col style={{ width: columnWidths.qualityScore }} />
-              )}
-              {shouldShowField('description') && (
-                <col style={{ width: columnWidths.description }} />
-              )}
-              {shouldShowField('tags') && <col style={{ width: columnWidths.tags }} />}
-              {shouldShowField('author') && <col style={{ width: columnWidths.author }} />}
-              {shouldShowField('language') && <col style={{ width: columnWidths.language }} />}
-              {showAnalysisStatus && <col style={{ width: columnWidths.analysisStatus }} />}
-              {shouldShowField('analyzedAt') && <col style={{ width: columnWidths.analyzedAt }} />}
-              <col style={{ width: columnWidths.modified }} />
-              <col style={{ width: columnWidths.type }} />
-              <col style={{ width: columnWidths.size }} />
-            </colgroup>
-            <thead className="bg-muted/30 sticky top-0 z-10 border-b border-border/50">
-              <tr className="text-left text-xs font-medium text-muted-foreground uppercase tracking-wider h-10">
-                <th className="p-2 border-r border-border/50 relative">
-                  <Checkbox
-                    checked={isAllSelected}
-                    onCheckedChange={checked => {
-                      if (checked) {
-                        onFileSelect(
-                          items.map(item => item.path!),
-                          true
-                        )
-                      } else {
-                        // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
-                        const visibleKeys = new Set(
-                          items.filter(it => !!it.path).map(it => normalizeForCache(it.path!))
-                        )
-                        onFileSelect(
-                          selectedFiles.filter(
-                            f => f && f.path && !visibleKeys.has(normalizeForCache(f.path))
-                          ),
-                          true
-                        )
-                      }
-                    }}
-                  />
-                  <ColumnResizer
-                    onResize={w => handleResize('checkbox', w)}
-                    currentWidth={columnWidths.checkbox}
-                  />
-                </th>
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {!swapFileNameDisplay && showsmartName ? t('智能文件名') : t('名称')}
-                  <ColumnResizer
-                    onResize={w => handleResize('name', w)}
-                    currentWidth={columnWidths.name}
-                  />
-                </th>
-                {shouldShowField('qualityScore') && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {getFieldLabel('qualityScore')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('qualityScore', w)}
-                      currentWidth={columnWidths.qualityScore}
-                    />
-                  </th>
-                )}
-                {shouldShowField('description') && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {getFieldLabel('description')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('description', w)}
-                      currentWidth={columnWidths.description}
-                    />
-                  </th>
-                )}
-                {shouldShowField('tags') && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {getFieldLabel('tags')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('tags', w)}
-                      currentWidth={columnWidths.tags}
-                    />
-                  </th>
-                )}
-                {shouldShowField('author') && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {getFieldLabel('author')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('author', w)}
-                      currentWidth={columnWidths.author}
-                    />
-                  </th>
-                )}
-                {shouldShowField('language') && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {getFieldLabel('language')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('language', w)}
-                      currentWidth={columnWidths.language}
-                    />
-                  </th>
-                )}
-                {showAnalysisStatus && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {t('分析状态')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('analysisStatus', w)}
-                      currentWidth={columnWidths.analysisStatus}
-                    />
-                  </th>
-                )}
-                {shouldShowField('analyzedAt') && (
-                  <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                    {getFieldLabel('analyzedAt')}{' '}
-                    <ColumnResizer
-                      onResize={w => handleResize('analyzedAt', w)}
-                      currentWidth={columnWidths.analyzedAt}
-                    />
-                  </th>
-                )}
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {t('修改日期')}{' '}
-                  <ColumnResizer
-                    onResize={w => handleResize('modified', w)}
-                    currentWidth={columnWidths.modified}
-                  />
-                </th>
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors border-r border-border/50 relative">
-                  {t('类型')}{' '}
-                  <ColumnResizer
-                    onResize={w => handleResize('type', w)}
-                    currentWidth={columnWidths.type}
-                  />
-                </th>
-                <th className="p-2 font-medium truncate hover:bg-accent/40 cursor-default transition-colors relative">
-                  {t('大小')}{' '}
-                  <ColumnResizer
-                    onResize={w => handleResize('size', w)}
-                    currentWidth={columnWidths.size}
-                  />
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y relative">
-              {contextMenu && (
-                <ContextMenu
-                  x={contextMenu.x}
-                  y={contextMenu.y}
-                  items={contextMenuItems}
-                  onClose={() => setContextMenu(null)}
-                />
-              )}
-              {items.map((item, index) => (
-                <RowRenderer key={item.path || index} index={index} style={{}} data={itemData} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <FileAdmissionNoticeBar
-        visible={isRealDirectory}
-        workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
-        onOpenAdmissionRules={handleOpenAdmissionRules}
-        dismissed={noticeDismissed}
-        onDismissedChange={setNoticeDismissed}
-      />
-    </div>
+    <FileListTableView
+      showNoticeBar={showNoticeBar}
+      containerRef={containerRef}
+      handleKeyDown={handleKeyDown}
+      handleMouseDown={handleMouseDown}
+      viewMode={viewMode}
+      scrollOffset={scrollOffset}
+      items={items}
+      renderEmptyState={renderEmptyState}
+      handleScroll={handleScroll}
+      totalWidth={totalWidth}
+      columnWidths={columnWidths}
+      shouldShowField={shouldShowField}
+      showAnalysisStatus={showAnalysisStatus}
+      isAllSelected={isAllSelected}
+      onFileSelect={onFileSelect}
+      selectedFiles={selectedFiles}
+      normalizeForCache={normalizeForCache}
+      onResize={handleResize}
+      swapFileNameDisplay={swapFileNameDisplay}
+      showsmartName={showsmartName}
+      getFieldLabel={getFieldLabel}
+      contextMenu={contextMenu}
+      contextMenuItems={contextMenuItems}
+      onCloseContextMenu={() => setContextMenu(null)}
+      itemData={itemData}
+      isRealDirectory={isRealDirectory}
+      workspaceId={targetWorkspace?.id ?? currentWorkspaceDirectory?.id}
+      onOpenAdmissionRules={handleOpenAdmissionRules}
+      noticeDismissed={noticeDismissed}
+      onDismissedChange={setNoticeDismissed}
+    />
   )
 }
 
