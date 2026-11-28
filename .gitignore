@@ -147,3 +147,4 @@ out_build.shielded
 .firefly-dev-runtime/*.json
 .firefly-dev-runtime.json
 
+out_build_verify/

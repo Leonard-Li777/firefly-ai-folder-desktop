@@ -105,6 +105,16 @@
         "size": 7606756,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ced-mini-1.0.0.zip"
       }
+    },
+    "offline-bundle": {
+      "version": "1.1.2",
+      "source": "shared",
+      "asset": {
+        "name": "firefly-offline-bundle-1.1.2.zip",
+        "sha256": "fc8f20d16b0fb8aae3174c20e1d447c40482e11691627ff3bbfcc0eee96a3b84",
+        "size": 1542039939,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-offline-bundle-1.1.2.zip"
+      }
     }
   },
   "engines": {
