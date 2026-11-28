@@ -15,7 +15,11 @@ export interface WriterProcessStackDeps {
   /** 主进程本地写集执行器（关态/降级合法路径） */
   localDispatcher: WriteSetBatchDispatcher
   /** 降级移交回调宿主：写集实体转投本地执行器（视频段同步 ACK 闭环） */
-  onDegradedAck: (ack: { queueId: number; result: 'ok' | 'stale' | 'error'; reason?: string }) => void
+  onDegradedAck: (ack: {
+    queueId: number
+    result: 'ok' | 'stale' | 'error'
+    reason?: string
+  }) => void
   /** 特性开关热切换读取（ANALYSIS_USE_DB_WRITER_PROCESS） */
   useDbWriterProcess: () => boolean
 }
@@ -58,13 +62,13 @@ export function createWriterProcessStack(deps: WriterProcessStackDeps): WriterPr
       }
       return localDispatcher.commitVideoSegment(seg)
     },
-    pauseForUi: timeoutMs => {
-      dbWriterProcess.yieldForUi(timeoutMs)
-      localDispatcher.pauseForUi(timeoutMs)
+    pauseForUi: (timeoutMs, leaseId) => {
+      dbWriterProcess.yieldForUi(timeoutMs, leaseId)
+      localDispatcher.pauseForUi(timeoutMs, leaseId)
     },
-    resumeFromUi: () => {
-      dbWriterProcess.resumeFromUi()
-      localDispatcher.resumeFromUi()
+    resumeFromUi: leaseId => {
+      dbWriterProcess.resumeFromUi(leaseId)
+      localDispatcher.resumeFromUi(leaseId)
     }
   }
 

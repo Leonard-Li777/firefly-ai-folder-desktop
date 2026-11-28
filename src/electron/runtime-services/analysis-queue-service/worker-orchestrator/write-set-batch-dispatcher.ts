@@ -33,6 +33,19 @@ export interface WriteAckItem {
   reason?: string
 }
 
+/**
+ * W4/J-13 让锁重排哨兵：executeBatch 在 Pre-step 异步 stat 恢复后复检到 YIELD_FOR_UI
+ * 暂停时，将本批 unshift 回 pendingWriteSets，并给空回执数组打 `deferredByPause` 标记，
+ * doFlush 据此跳过指标上报并 break。保持 `WriteAckItem[]` 形状不动以兼容既有调用方
+ * （如 worker-orchestrator.test.ts 的 `acks.find(...)`）。
+ * 严禁在暂停态继续进入 stale 写库 / 主写批撞锁，亦严禁污染 BATCH_METRICS。
+ */
+export interface DeferredAckBatch extends Array<WriteAckItem> {
+  deferredByPause?: true
+}
+
+export type ExecuteBatchResult = DeferredAckBatch
+
 export interface TailHookBatchContext {
   canonicalVectorWakeups: string[]
   workspaceDeletes: number[]
@@ -60,8 +73,12 @@ export class WriteSetBatchDispatcher {
   private coalesceTimer: ReturnType<typeof setTimeout> | null = null
   /** R2 盲审建议 3：在途 flush 的唯一 promise（flush 重入早退时返回它，保证退出路径等待真实在途批） */
   private inFlightFlush: Promise<WriteAckItem[]> | null = null
-  private pausedForUi = false
-  private pauseResumeTimer: ReturnType<typeof setTimeout> | null = null
+  /**
+   * [W4/J-13 多工作区唯一租约] 按 leaseId 追踪的让锁租约集合。
+   * 兼容既有 UI 让路：缺省 leaseId='ui'；J-13 每条 main-ingest:${wsId}:${seq} 独立租约。
+   * 仅当集合清空时才真正恢复调度，杜绝工作区 A 的 RESUME 提前解冻 B。
+   */
+  private readonly uiLeases = new Map<string, ReturnType<typeof setTimeout> | null>()
   private disposed = false
 
   /** COMMIT 尾钩子尾部防抖累积桶（Spec §6.3 v2.4） */
@@ -83,7 +100,7 @@ export class WriteSetBatchDispatcher {
   enqueue(writeSet: AnalysisWriteSet): void {
     if (this.disposed) return
     this.pendingWriteSets.push(writeSet)
-    if (this.pausedForUi) return
+    if (this.isPausedForUi()) return
     if (this.pendingWriteSets.length >= MAX_WRITE_BATCH_SIZE) {
       this.clearCoalesceTimer()
       void this.flush()
@@ -96,38 +113,59 @@ export class WriteSetBatchDispatcher {
     }
   }
 
-  /** Spec §8.3.2：YIELD_FOR_UI 双端联动 —— 暂停从缓冲开启新事务 */
-  pauseForUi(timeoutMs: number): void {
-    this.pausedForUi = true
+  /**
+   * Spec §8.3.2 + W4/J-13：YIELD_FOR_UI 双端联动 —— 暂停从缓冲开启新事务。
+   * `timeoutMs` 到期仅自动释放本租约（防异常断链永久挂死）；其他租约仍保持暂停。
+   */
+  pauseForUi(timeoutMs: number, leaseId = 'ui'): void {
     this.clearCoalesceTimer()
-    if (this.pauseResumeTimer) {
-      clearTimeout(this.pauseResumeTimer)
-      this.pauseResumeTimer = null
-    }
+    const existing = this.uiLeases.get(leaseId)
+    if (existing) clearTimeout(existing)
     if (timeoutMs > 0) {
-      this.pauseResumeTimer = setTimeout(() => {
-        this.pauseResumeTimer = null
-        this.resumeFromUi()
+      const timer = setTimeout(() => {
+        this.uiLeases.delete(leaseId)
+        if (this.uiLeases.size === 0 && this.pendingWriteSets.length > 0 && !this.disposed) {
+          setImmediate(() => void this.flush())
+        }
       }, timeoutMs)
-      this.pauseResumeTimer.unref?.()
+      timer.unref?.()
+      this.uiLeases.set(leaseId, timer)
+    } else {
+      this.uiLeases.set(leaseId, null)
     }
   }
 
-  /** 恢复写微事务调度 */
-  resumeFromUi(): void {
-    if (!this.pausedForUi) return
-    this.pausedForUi = false
-    if (this.pauseResumeTimer) {
-      clearTimeout(this.pauseResumeTimer)
-      this.pauseResumeTimer = null
-    }
+  /** 释放单个租约；集合清空后才真正恢复写微事务调度（兼容无参调用释放 'ui' 租约） */
+  resumeFromUi(leaseId = 'ui'): void {
+    const timer = this.uiLeases.get(leaseId)
+    if (timer) clearTimeout(timer)
+    this.uiLeases.delete(leaseId)
+    if (this.uiLeases.size > 0) return
     if (this.pendingWriteSets.length > 0 && !this.disposed) {
       setImmediate(() => void this.flush())
     }
   }
 
   isPausedForUi(): boolean {
-    return this.pausedForUi
+    return this.uiLeases.size > 0
+  }
+
+  /** 供单测/宿主断言租约隔离：当前活跃租约 ID 列表 */
+  getActiveUiLeaseIds(): string[] {
+    return Array.from(this.uiLeases.keys())
+  }
+
+  /**
+   * W4/J-13：等待在途 flush 彻底落地（写锁释放）后再回发 YIELD_ACK。
+   * 无在途批时立即返回；重入 await 同一 promise，保证 ACK 与真实在途批严格串行。
+   */
+  async waitForInFlightFlush(): Promise<void> {
+    if (!this.inFlightFlush) return
+    try {
+      await this.inFlightFlush
+    } catch (err) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[WriteSetDispatcher] 等待在途批落地失败:', err)
+    }
   }
 
   getPendingCount(): number {
@@ -141,7 +179,7 @@ export class WriteSetBatchDispatcher {
     if (this.inFlightFlush) {
       return this.inFlightFlush
     }
-    if (this.pausedForUi || this.pendingWriteSets.length === 0) {
+    if (this.isPausedForUi() || this.pendingWriteSets.length === 0) {
       return []
     }
     this.clearCoalesceTimer()
@@ -157,10 +195,13 @@ export class WriteSetBatchDispatcher {
   private async doFlush(): Promise<WriteAckItem[]> {
     const allAcks: WriteAckItem[] = []
 
-    while (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
+    while (this.pendingWriteSets.length > 0 && !this.isPausedForUi()) {
       const batch = this.pendingWriteSets.splice(0, MAX_WRITE_BATCH_SIZE)
       const batchStartMs = performance.now()
       const batchAcks = await this.executeBatch(batch)
+      // W4/J-13：executeBatch 内在途 stat 恢复后若已让锁，返回 deferredByPause 哨兵——
+      // 严禁把未真正落库的批计入 BATCH_METRICS 污染持锁时长验收。
+      if ('deferredByPause' in batchAcks) break
       try {
         this.deps.onBatchExecuted?.(batch.length, performance.now() - batchStartMs)
       } catch (metricErr) {
@@ -175,15 +216,18 @@ export class WriteSetBatchDispatcher {
         this.deps.onWriteAck?.(ack)
       }
       // Spec §8.3 / §9.3：每批写完让出事件循环一个 tick，确保 UI/IPC/TTS 响应
-      if (this.pendingWriteSets.length > 0 && !this.pausedForUi) {
+      if (this.pendingWriteSets.length > 0 && !this.isPausedForUi()) {
         await new Promise<void>(resolve => setImmediate(resolve))
       }
     }
     return allAcks
   }
 
-  /** 直接同步/异步执行一批写集（Pre-step 异步 stat + 批级 BEGIN IMMEDIATE 8 步 SAVEPOINT 事务） */
-  async executeBatch(batch: AnalysisWriteSet[]): Promise<WriteAckItem[]> {
+  /**
+   * 直接同步/异步执行一批写集（Pre-step 异步 stat + 批级 BEGIN IMMEDIATE 8 步 SAVEPOINT 事务）
+   * W4/J-13：返回 DeferredByPause 哨兵表示 stat 恢复期间发生让锁，本批已原序回队未落库。
+   */
+  async executeBatch(batch: AnalysisWriteSet[]): Promise<ExecuteBatchResult> {
     if (batch.length === 0) return []
     const db = this.deps.getDb()
     if (!db) {
@@ -197,6 +241,16 @@ export class WriteSetBatchDispatcher {
 
     // ==================== B2 Pre-step（事务外，并发异步 stat，零 WAL 锁） ====================
     const settled = await Promise.allSettled(batch.map(item => this.statFile(item.physicalPath)))
+
+    // W4/J-13 让锁复检：async stat 挂起期间 UI/主进程入库可能已发起 YIELD_FOR_UI——
+    // 若已暂停，本批原序 unshift 回队，严禁进入下方 stale 写库与 BEGIN IMMEDIATE 撞锁。
+    if (this.isPausedForUi()) {
+      this.pendingWriteSets.unshift(...batch)
+      const deferred: DeferredAckBatch = []
+      deferred.deferredByPause = true
+      return deferred
+    }
+
     const results: WriteAckItem[] = []
     const validBatch: AnalysisWriteSet[] = []
     const stalePreStepItems: Array<{
@@ -834,10 +888,10 @@ export class WriteSetBatchDispatcher {
   dispose(): void {
     this.disposed = true
     this.clearCoalesceTimer()
-    if (this.pauseResumeTimer) {
-      clearTimeout(this.pauseResumeTimer)
-      this.pauseResumeTimer = null
+    for (const timer of this.uiLeases.values()) {
+      if (timer) clearTimeout(timer)
     }
+    this.uiLeases.clear()
     if (this.tailHookTimer) {
       clearTimeout(this.tailHookTimer)
       this.tailHookTimer = null

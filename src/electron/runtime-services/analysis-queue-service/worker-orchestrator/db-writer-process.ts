@@ -95,6 +95,10 @@ export interface WriterProcessMetricsSnapshot {
   maxMs: number
   /** 最近一次批耗时（ms） */
   lastBatchMs: number
+  /** W4/J-13 主连接 .immediate() 写锁获取等待 p99（ms） */
+  mainLockWaitP99Ms: number
+  /** W4/J-13 主连接写锁获取等待最大值（ms） */
+  mainLockWaitMaxMs: number
 }
 
 /** 定位编译后的 analysis-db-writer-process.js 子进程入口（兼容打包与单测环境） */
@@ -140,8 +144,17 @@ export class AnalysisDbWriterProcess {
   private metricsDurations: number[] = []
   private metricsTotalFiles = 0
   private lastBatchMs = 0
+  /** W4/J-13：主连接 .immediate() 写锁等待采样（与写进程 BATCH_METRICS 分桶，避免互相污染） */
+  private mainLockWaitSamples: number[] = []
 
-  private yielded = false
+  /**
+   * W4/J-13 多租约让锁追踪：key=leaseId，value=该租约的 YIELD_ACK 等待者。
+   * 缺省 'ui' 供 Web UI 交互让路；J-13 按 workspaceId 生成 main-ingest:${wsId}:${seq}。
+   */
+  private readonly yieldLeases = new Map<
+    string,
+    { timer: ReturnType<typeof setTimeout>; resolve: (acked: boolean) => void }
+  >()
 
   constructor(private readonly deps: AnalysisDbWriterProcessDeps) {}
 
@@ -270,44 +283,101 @@ export class AnalysisDbWriterProcess {
     return null
   }
 
-  /** Spec §8.3.2：YIELD_FOR_UI 让路（就绪前入 outbox 保序，READY 后冲刷） */
-  yieldForUi(timeoutMs: number): void {
-    this.yielded = true
+  /**
+   * Spec §8.3.2 + W4/J-13：YIELD_FOR_UI 让路（就绪前入 outbox 保序，READY 后冲刷）。
+   * 缺省 leaseId='ui' 兼容既有 UI 交互；J-13 传独立租约避免跨工作区互踩。
+   */
+  yieldForUi(timeoutMs: number, leaseId = 'ui'): void {
     if (this.state === 'ready' && this.child) {
-      this.postToChild({ type: 'YIELD_FOR_UI', timeoutMs })
+      this.postToChild({ type: 'YIELD_FOR_UI', timeoutMs, leaseId })
     } else {
-      this.outbox.push({ type: 'YIELD_FOR_UI', timeoutMs })
+      this.outbox.push({ type: 'YIELD_FOR_UI', timeoutMs, leaseId })
     }
   }
 
-  /** 恢复双端执行（就绪前入 outbox 保序，READY 后冲刷） */
-  resumeFromUi(): void {
-    this.yielded = false
+  /**
+   * W4/J-13 确认式让锁：下发 YIELD_FOR_UI(200) 并等待写进程回 YIELD_ACK。
+   * 前置守卫：仅 useDbWriterProcess 且 isReady() 时发起（否则 idle/starting/crashed 下
+   * 往 outbox 空塞命令批批白等 50ms）。50ms 内未 ACK 则尽力而为继续并 logger.warn 留痕，
+   * 由 writeLockWaitMs p99 兜底观测，严禁静默吞超时。
+   */
+  sendYieldAndWaitAck(leaseId: string, timeoutMs = 200, ackWaitMs = 50): Promise<boolean> {
+    if (!this.isReady()) return Promise.resolve(false)
+    // 同租约重入：先释放旧等待者，避免悬挂 promise
+    const prev = this.yieldLeases.get(leaseId)
+    if (prev) {
+      clearTimeout(prev.timer)
+      prev.resolve(false)
+      this.yieldLeases.delete(leaseId)
+    }
+    this.postToChild({ type: 'YIELD_FOR_UI', timeoutMs, leaseId })
+    return new Promise<boolean>(resolve => {
+      const timer = setTimeout(() => {
+        const entry = this.yieldLeases.get(leaseId)
+        if (entry?.timer === timer) this.yieldLeases.delete(leaseId)
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[DbWriterProcess] lease=${leaseId} 等待 YIELD_ACK 超时 (${ackWaitMs}ms)，尽力而为继续（由写锁等待 p99 兜底）`
+        )
+        resolve(false)
+      }, ackWaitMs)
+      timer.unref?.()
+      this.yieldLeases.set(leaseId, { timer, resolve })
+    })
+  }
+
+  /** 恢复双端执行（就绪前入 outbox 保序，READY 后冲刷）；无参释放缺省 'ui' 租约 */
+  resumeFromUi(leaseId = 'ui'): void {
+    const pending = this.yieldLeases.get(leaseId)
+    if (pending) {
+      clearTimeout(pending.timer)
+      this.yieldLeases.delete(leaseId)
+      pending.resolve(false)
+    }
     if (this.state === 'ready' && this.child) {
-      this.postToChild({ type: 'RESUME' })
+      this.postToChild({ type: 'RESUME', leaseId })
     } else {
-      this.outbox.push({ type: 'RESUME' })
+      this.outbox.push({ type: 'RESUME', leaseId })
     }
   }
 
   isYielded(): boolean {
-    return this.yielded
+    return this.yieldLeases.size > 0
   }
 
-  /** 工单 05 量化指标快照（p50/p99/max） */
+  /** W4/J-13：主连接 .immediate() 写锁获取等待耗时采样（供 p99/Max 验收） */
+  observeMainLockWaitMs(ms: number): void {
+    if (!Number.isFinite(ms) || ms < 0) return
+    this.mainLockWaitSamples.push(ms)
+    if (this.mainLockWaitSamples.length > METRICS_RING_CAPACITY) {
+      this.mainLockWaitSamples.splice(0, this.mainLockWaitSamples.length - METRICS_RING_CAPACITY)
+    }
+  }
+
+  /** 工单 05 + W4/J-13 量化指标快照（p50/p99/max） */
   getMetrics(): WriterProcessMetricsSnapshot {
     const durations = [...this.metricsDurations].sort((a, b) => a - b)
     const pick = (ratio: number): number =>
       durations.length === 0
         ? 0
         : durations[Math.min(durations.length - 1, Math.floor(ratio * (durations.length - 1)))]!
+    const sortedLockWaits = [...this.mainLockWaitSamples].sort((a, b) => a - b)
+    const pickLock = (ratio: number): number =>
+      sortedLockWaits.length === 0
+        ? 0
+        : sortedLockWaits[
+            Math.min(sortedLockWaits.length - 1, Math.floor(ratio * (sortedLockWaits.length - 1)))
+          ]!
     return {
       batches: durations.length,
       totalFiles: this.metricsTotalFiles,
       p50Ms: pick(0.5),
       p99Ms: pick(0.99),
       maxMs: durations.length === 0 ? 0 : durations[durations.length - 1]!,
-      lastBatchMs: this.lastBatchMs
+      lastBatchMs: this.lastBatchMs,
+      mainLockWaitP99Ms: pickLock(0.99),
+      mainLockWaitMaxMs:
+        sortedLockWaits.length === 0 ? 0 : sortedLockWaits[sortedLockWaits.length - 1]!
     }
   }
 
@@ -321,6 +391,11 @@ export class AnalysisDbWriterProcess {
     if (this.readyTimer) {
       clearTimeout(this.readyTimer)
       this.readyTimer = null
+    }
+    for (const [leaseId, pending] of this.yieldLeases) {
+      clearTimeout(pending.timer)
+      pending.resolve(false)
+      this.yieldLeases.delete(leaseId)
     }
 
     const current = this.child
@@ -454,6 +529,21 @@ export class AnalysisDbWriterProcess {
         this.deps.onTailHook?.(msg.payload)
         break
       }
+      case 'YIELD_ACK': {
+        const leaseId = msg.leaseId ?? 'ui'
+        const pending = this.yieldLeases.get(leaseId)
+        if (pending) {
+          clearTimeout(pending.timer)
+          this.yieldLeases.delete(leaseId)
+          pending.resolve(true)
+        } else {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[DbWriterProcess] 收到无等待者的 YIELD_ACK (lease=${leaseId})，忽略防重复核销`
+          )
+        }
+        break
+      }
       case 'LOG': {
         if (msg.level === 'error') {
           logger.error(LogCategory.ANALYSIS_QUEUE, `[DbWriterProcess][child] ${msg.msg}`, msg.ctx)
@@ -569,10 +659,6 @@ export class AnalysisDbWriterProcess {
         this.pendingWriteSets.set(msg.payload.queueId, msg.payload)
       } else if (msg.type === 'VIDEO_SEGMENT_WRITE_SET') {
         this.pendingVideoSegs.push(msg.payload)
-      } else if (msg.type === 'YIELD_FOR_UI') {
-        this.yielded = true
-      } else if (msg.type === 'RESUME') {
-        this.yielded = false
       }
       this.postToChild(msg)
     }

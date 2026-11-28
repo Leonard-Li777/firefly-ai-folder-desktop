@@ -39,8 +39,8 @@ const WORKER_RESTART_BASE_DELAY_MS = 1000
 export interface WorkerWriteSink {
   enqueue(writeSet: AnalysisWriteSet): void
   commitVideoSegment(seg: VideoSegmentWriteSet): WriteAckItem | null
-  pauseForUi(timeoutMs: number): void
-  resumeFromUi(): void
+  pauseForUi(timeoutMs: number, leaseId?: string): void
+  resumeFromUi(leaseId?: string): void
 }
 
 export interface WorkerOrchestratorBridgeDeps {
@@ -195,15 +195,15 @@ export class WorkerOrchestratorBridge {
     }
   }
 
-  /** Spec §8.3.2：YIELD_FOR_UI 双端联动（Worker + 主进程写分发器同步暂停） */
-  yieldForUi(timeoutMs = 2000): void {
-    this.deps.writeDispatcher.pauseForUi(timeoutMs)
+  /** Spec §8.3.2 + W4/J-13：YIELD_FOR_UI 双端联动（Worker + 主进程写分发器按租约暂停） */
+  yieldForUi(timeoutMs = 2000, leaseId?: string): void {
+    this.deps.writeDispatcher.pauseForUi(timeoutMs, leaseId)
     this.postToWorker({ type: 'YIELD_FOR_UI', timeoutMs })
   }
 
-  /** 恢复双端执行 */
-  resumeFromUi(): void {
-    this.deps.writeDispatcher.resumeFromUi()
+  /** 恢复双端执行（按租约释放；无参回落缺省 'ui'） */
+  resumeFromUi(leaseId?: string): void {
+    this.deps.writeDispatcher.resumeFromUi(leaseId)
     this.postToWorker({ type: 'RESUME' })
   }
 

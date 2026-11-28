@@ -62,8 +62,14 @@ export type WriterInMessage =
     }
   | { type: 'WRITE_SET'; payload: AnalysisWriteSet }
   | { type: 'VIDEO_SEGMENT_WRITE_SET'; payload: VideoSegmentWriteSet }
-  | { type: 'YIELD_FOR_UI'; timeoutMs: number }
-  | { type: 'RESUME' }
+  /**
+   * [W4/J-13 多工作区唯一租约] 请求写进程让出写锁。
+   * leaseId 缺省时回落为唯一 'ui' 租约（兼容既有 Web UI 交互让路）；
+   * J-13 按 workspaceId FIFO 并发写入时每次生成 `main-ingest:${wsId}:${seq}` 独立租约，
+   * 严禁以工作区 A 的 RESUME 提前解冻工作区 B。
+   */
+  | { type: 'YIELD_FOR_UI'; timeoutMs: number; leaseId?: string }
+  | { type: 'RESUME'; leaseId?: string }
   | { type: 'SHUTDOWN' }
 
 /** 写进程 → 主进程 数据面消息 */
@@ -72,4 +78,10 @@ export type WriterOutMessage =
   | { type: 'WRITE_ACK'; ack: WriterAckItem }
   | { type: 'BATCH_METRICS'; metrics: WriterBatchMetrics }
   | { type: 'TAIL_HOOK'; payload: WriterTailHookPayload }
+  /**
+   * [W4/J-13 确认式让锁] 写进程在途批彻底落地、写锁释放后回发确认。
+   * 主进程每批短事务前 `sendYieldAndWaitAck(leaseId, 200)` 等待本消息（50ms 超时尽力而为），
+   * 收到 ACK 才进入 BEGIN IMMEDIATE，杜绝与写进程撞锁。
+   */
+  | { type: 'YIELD_ACK'; leaseId?: string }
   | { type: 'LOG'; level: 'debug' | 'info' | 'warn' | 'error'; msg: string; ctx?: unknown }

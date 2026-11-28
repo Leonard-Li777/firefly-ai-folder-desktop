@@ -2,6 +2,7 @@ import { AnalysisQueueItem, DirectoryContextAnalysis, LanguageCode } from '@fire
 import { LogCategory, logger } from '@firefly/shared'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { databaseService } from '../database/database-service'
+import { getJ13WorkspaceGeneration } from '../database/database-service/query-proxy'
 import { quotaChecker } from '../user-tier/quota-checker-proxy'
 import { createCoreEngineAdapters } from '../../adapters'
 import {
@@ -334,7 +335,13 @@ export class DirectoryProcessor {
   }
 
   /**
-   * 展开目录内容到队列
+   * 展开目录内容到队列（DB-03 批量收敛）。
+   *
+   * W4/DB-03：① 循环外只查一次 `findRootWorkspaceDirectory`（原每文件重复查）；
+   * ② 按原生 BINARY 路径键分块 `SELECT path, id ... WHERE path IN (...)` 预取到 Map，
+   *    严禁转小写/分隔符归一化（列级 BINARY collation，键必须逐字节精确）；
+   * ③ 缺失文件交 J-13 `upsertPreparedFilesBatch` 批量幂等写入（DO UPDATE ... COALESCE RETURNING id）。
+   * 保持原「遇错即停」语义：不吞单行异常，整批失败向上抛。
    */
   private async expandDirectoryToQueue(
     directoryPath: string,
@@ -343,19 +350,46 @@ export class DirectoryProcessor {
     const deps = this.getDependencies()
     const entries = fs.readdirSync(directoryPath, { withFileTypes: true })
     const newItems: EnqueueInput[] = []
+    const db = databaseService.db
+
+    // ① 工作区查询只做一次（配额检查时已取 rootWorkspaceDir，此处兜底再取一次副本）
+    const rootWorkspace = await databaseService.findRootWorkspaceDirectory(directoryPath)
+    const workspaceId = rootWorkspace?.id
+
+    // ② 分块预取既有 workspace_files id：BINARY 原生路径键，逐字节精确匹配
+    const fileEntries = entries.filter(
+      entry =>
+        !entry.isDirectory() &&
+        !shouldIgnoreFile(path.join(directoryPath, entry.name), entry.name, deps.ignoreRules)
+    )
+    const existingIds = new Map<string, number>()
+    const CHUNK = 200
+    if (db && workspaceId) {
+      for (let i = 0; i < fileEntries.length; i += CHUNK) {
+        const chunk = fileEntries.slice(i, i + CHUNK)
+        const paths = chunk.map(entry => path.join(directoryPath, entry.name))
+        const placeholders = paths.map(() => '?').join(',')
+        const rows = db
+          .prepare(
+            `SELECT path, id FROM workspace_files WHERE workspace_id = ? AND path IN (${placeholders})`
+          )
+          .all(workspaceId, ...paths) as Array<{ path: string; id: number }>
+        for (const row of rows) existingIds.set(row.path, row.id)
+      }
+    }
 
     // 第一步：确保所有子目录/文件记录存在于数据库中
+    const missingFiles: Array<{ filePath: string; stats: fs.Stats }> = []
     for (const entry of entries) {
       const fullPath = path.join(directoryPath, entry.name)
       if (shouldIgnoreFile(fullPath, entry.name, deps.ignoreRules)) continue
 
       if (entry.isDirectory()) {
-        // 确保目录记录存在
         const dir = databaseService.db
           ?.prepare(`SELECT id FROM workspace_directories WHERE path = ?`)
           .get(fullPath) as any
         if (!dir) {
-          const ws = await databaseService.findRootWorkspaceDirectory(fullPath)
+          const ws = rootWorkspace ?? (await databaseService.findRootWorkspaceDirectory(fullPath))
           if (ws && ws.id) {
             await databaseService.addDirectory(fullPath, ws.id)
           }
@@ -363,15 +397,8 @@ export class DirectoryProcessor {
         newItems.push({ path: fullPath, name: entry.name, size: 0, type: 'folder' })
       } else {
         const stat = fs.statSync(fullPath)
-        // 确保文件记录存在
-        const wf = databaseService.db
-          ?.prepare(`SELECT id FROM workspace_files WHERE path = ?`)
-          .get(fullPath) as any
-        if (!wf) {
-          const ws = await databaseService.findRootWorkspaceDirectory(directoryPath)
-          if (ws && ws.id) {
-            await databaseService.addFileFromPath(fullPath, '', ws.id)
-          }
+        if (!existingIds.has(fullPath)) {
+          missingFiles.push({ filePath: fullPath, stats: stat })
         }
         newItems.push({
           path: fullPath,
@@ -380,6 +407,19 @@ export class DirectoryProcessor {
           type: path.extname(entry.name).toLowerCase() || 'file'
         })
       }
+    }
+
+    // ③ 缺失项批量幂等落库（遇错即停，保持原语义）
+    if (missingFiles.length > 0 && workspaceId) {
+      await databaseService.upsertPreparedFilesBatch(
+        missingFiles.map(({ filePath }) => ({ filePath })),
+        {
+          workspaceId,
+          stopOnError: true,
+          // 批间复检工作区代际：展开期间目录/工作区被删除则丢弃剩余批次（防幽灵行）
+          getWorkspaceGeneration: () => getJ13WorkspaceGeneration(workspaceId)
+        }
+      )
     }
 
     if (newItems.length > 0) await this.addItems(newItems, forceReanalyze)

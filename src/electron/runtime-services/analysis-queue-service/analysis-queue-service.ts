@@ -28,6 +28,7 @@ export type { EnqueueResult }
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { createCoreEngineAdapters } from '../../adapters'
 import { databaseService } from '../database/database-service'
+import { setWriterLeaseHandshake } from '../database/database-service/writer-lease-seam'
 import { moduleHibernationCoordinator } from '../hibernation/module-hibernation-coordinator'
 import { AIServiceManager } from './ai-service-manager'
 import { AnalysisStatsCollector } from './analysis-stats-collector'
@@ -239,6 +240,18 @@ export class AnalysisQueueService {
           errorMessage
         )
       }
+    })
+
+    // W4/J-13：向 database-service 层注册写进程租约握手缝——
+    // query-proxy 每批 .immediate() 短事务前经此 await YIELD_ACK，与写进程互斥让锁。
+    // 前置守卫：仅特性开关打开且子进程 isReady() 才握手，避免 idle/starting 空塞 outbox。
+    setWriterLeaseHandshake({
+      isWriterProcessActive: () =>
+        this.writerSink !== undefined && useDbWriterProcess() && this.dbWriterProcess.isReady(),
+      sendYieldAndWaitAck: (leaseId, timeoutMs) =>
+        this.dbWriterProcess.sendYieldAndWaitAck(leaseId, timeoutMs),
+      resumeLease: leaseId => this.dbWriterProcess.resumeFromUi(leaseId),
+      observeWriteLockWaitMs: ms => this.dbWriterProcess.observeMainLockWaitMs(ms)
     })
 
     this.aiServiceManager = new AIServiceManager(
@@ -1578,14 +1591,18 @@ export class AnalysisQueueService {
     }
   }
 
-  /** Spec §8.3.2 / B7：前端交互优先让路（Worker + 主进程写分发器双端联动暂停） */
-  public yieldForUi(timeoutMs = 2000): void {
-    this.workerBridge.yieldForUi(timeoutMs)
+  /**
+   * Spec §8.3.2 / B7 + W4/J-13：前端交互优先让路（Worker + 主进程写分发器 + 写进程三端联动）。
+   * leaseId 缺省为 'ui'（UI 交互租约）；J-13 按工作区生成独立 leaseId 经 writer-lease-seam
+   * 直接握手写进程宿主，互不踩踏——严禁工作区 A 的 RESUME 提前解冻 B。
+   */
+  public yieldForUi(timeoutMs = 2000, leaseId?: string): void {
+    this.workerBridge.yieldForUi(timeoutMs, leaseId)
   }
 
-  /** 恢复双端让路状态 */
-  public resumeFromUi(): void {
-    this.workerBridge.resumeFromUi()
+  /** 恢复双端让路状态（按租约释放；无参释放缺省 'ui'） */
+  public resumeFromUi(leaseId?: string): void {
+    this.workerBridge.resumeFromUi(leaseId)
   }
 
   /** Spec §10.2 (N-1) / B6：用户主动取消任务，状态落库 failed + error='canceled_by_user' */

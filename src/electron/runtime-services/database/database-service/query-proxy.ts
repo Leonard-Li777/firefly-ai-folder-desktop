@@ -62,6 +62,89 @@ import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import type { IIgnoreRule } from '@firefly/types/settings-types'
 import { ConfigDbManager } from '../../config/config-db-manager'
+import { getWriterLeaseHandshake } from './writer-lease-seam'
+import { getCachedStatement } from '@pro/perf/statement-cache'
+
+/* ==================== W4/J-13 批量入库两段式契约 ==================== */
+
+/** J-13 异步准备阶段最小输入（路径为原生分隔符，BINARY 精确匹配，严禁归一化） */
+export interface PreparedFileUpsertInput {
+  filePath: string
+  /** 调用方已算好的指纹（watcher/目录处理器复用，避免重复哈希 I/O） */
+  fileFingerprint?: string | null
+  /**
+   * true = 复用既有指纹，事务内传 null 由 SQL COALESCE 保留旧值。
+   * 严禁把 skipHash 的 null 直接写库抹掉已分析指纹（会触发 trg_wf_update_orphan_gc 误删资产）。
+   */
+  skipHash?: boolean
+}
+
+/** J-13 落库选项 */
+export interface UpsertPreparedFilesBatchOptions {
+  workspaceId: number
+  /** 遇错即停（directory-processor 语义）默认 true；逐行容错（watcher/入队补录）传 false */
+  stopOnError?: boolean
+  /** 单批上限，默认 200（J-13 短事务），硬封顶 200 */
+  batchSize?: number
+  /** 批间复检：返回 true 则丢弃剩余批次（取消信号） */
+  isCancelled?: () => boolean
+  /** 工作区代际读取：批间复检，与进入时不一致则丢弃剩余批次 */
+  getWorkspaceGeneration?: () => number
+  /** 单批落库持有写锁耗时回调（实测 p99/Max 采样点） */
+  onBatchHoldMs?: (ms: number, batchSize: number) => void
+}
+
+/** J-13 落库结果（与输入等长，失败项 null） */
+export interface UpsertPreparedFilesBatchResult {
+  ids: (number | null)[]
+  /** 每次 .immediate() 获取写锁等待耗时（ms） */
+  writeLockWaitMs: number[]
+  /** 本轮单事务最大持锁时长（ms） */
+  maxTransactionHoldMs: number
+  /** 因取消/工作区代际失效丢弃的条目数 */
+  droppedCount: number
+}
+
+/** 模块级：按 workspaceId 的 FIFO 串行调度链（防幽灵行约束 1） */
+const j13IngestChains = new Map<number, Promise<unknown>>()
+/** 模块级：每路径单调序号（准备期间被覆盖的旧条目进入短事务前一律丢弃） */
+const j13PathSequences = new Map<string, number>()
+/** 模块级：工作区代际（删目录/工作区/unlink 时推进，批间复检） */
+const j13WorkspaceGenerations = new Map<number, number>()
+
+/**
+ * 推进工作区代际（防幽灵行）：删除文件/目录/工作区或 reset 分析后必须调用，
+ * 使准备期间产出但尚未落库的旧条目在批间复检时被丢弃，严禁复活已删除路径。
+ */
+export function bumpJ13WorkspaceGeneration(workspaceId: number): void {
+  j13WorkspaceGenerations.set(workspaceId, (j13WorkspaceGenerations.get(workspaceId) ?? 0) + 1)
+}
+
+/** 读取工作区当前代际（供外部在 options.getWorkspaceGeneration 注入） */
+export function getJ13WorkspaceGeneration(workspaceId: number): number {
+  return j13WorkspaceGenerations.get(workspaceId) ?? 0
+}
+
+/** J-13 准备阶段产物（异步准备 → 同步短事务消费，携带路径序号防幽灵行） */
+interface J13PreparedRow {
+  index: number
+  filePath: string
+  fingerprint: string | null
+  directoryId: number
+  size: number
+  mtimeMs: number
+  mtimeIso: string
+  birthtimeIso: string
+  atimeIso: string
+  isIgnored: number
+  isAnalyzed: number
+  sequence: number
+}
+
+/** J-13 单批硬上限（§5.1 第一段：每批 ≤200 行短事务） */
+const J13_MAX_BATCH_SIZE = 200
+/** 写锁瞬态竞争退避重试次数（§4.2：仅在事务外指数退避） */
+const J13_MAX_RETRIES = 2
 
 /**
  * DatabaseService 查询代理 mixin（Ticket 07）。
@@ -643,7 +726,12 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   async deleteWorkspaceDirectory(p: string) {
     await this.ensureInitialized()
     if (!this.workspaceDao) return
-    return this.workspaceDao.delete(p)
+    const wsId = await this.getWorkspaceIdByPath(p)
+    const deleted = await this.workspaceDao.delete(p)
+    if (typeof wsId === 'number' && wsId > 0) {
+      bumpJ13WorkspaceGeneration(wsId)
+    }
+    return deleted
   }
   async updateWorkspaceDirectoryAutoWatch(id: number, a: boolean) {
     if (!this.workspaceDao) return
@@ -2586,7 +2674,12 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     currentGeneration: number
   } {
     if (!this.visualTaggerStateDao) {
-      return { bumped: false, appVersionChanged: false, previousGeneration: 0, currentGeneration: 0 }
+      return {
+        bumped: false,
+        appVersionChanged: false,
+        previousGeneration: 0,
+        currentGeneration: 0
+      }
     }
     return this.visualTaggerStateDao.observeTaggerHealthyOrFingerprintChangedTx(
       encoderId,
@@ -2616,5 +2709,427 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
    */
   public rebuildDebugTagViewsForLanguage(locale: string): void {
     rebuildDebugTagViews(this._db!, locale)
+  }
+
+  /* ==================== W4/J-13 批量入库（两段式） ==================== */
+
+  /**
+   * [J-13 / DB-02] 批量预写入库：异步准备（stat / 指纹 / 同路径去重）与同步短事务分离。
+   *
+   * 三段硬约束（§4.2 防幽灵行）：
+   * 1. 同工作区 FIFO 串行 + 每路径单调序号：准备期被覆盖的旧条目进入事务前一律丢弃；
+   * 2. 每批事务首句存在性守卫：workspace / 目标目录已在批间删除则中止剩余批次；
+   * 3. 批间 setImmediate 复检取消信号与工作区代际，禁止复活准备期已被删除的文件。
+   *
+   * 写锁协议（§5.1）：每批前在事务外 `await sendYieldAndWaitAck(leaseId, 200)`（50ms ACK 超时
+   * 尽力而为继续 + warn 留痕），`finally` 必发同 leaseId RESUME；短事务一律 `.immediate()`，
+   * 严禁默认 deferred BEGIN 触发 SQLITE_BUSY_SNAPSHOT。SQL 采用
+   * `ON CONFLICT(workspace_id, path) DO UPDATE SET ... COALESCE(...) RETURNING id`，
+   * skipHash 的 null 指纹绝不抹掉既有值，且幂等返回真实数字 id。
+   */
+  async upsertPreparedFilesBatch(
+    inputs: PreparedFileUpsertInput[],
+    options: UpsertPreparedFilesBatchOptions
+  ): Promise<UpsertPreparedFilesBatchResult> {
+    const db = this._db
+    if (!db) throw new Error('数据库未初始化')
+    const { workspaceId } = options
+    const stopOnError = options.stopOnError ?? true
+    const batchSize = Math.min(
+      J13_MAX_BATCH_SIZE,
+      Math.max(1, options.batchSize ?? J13_MAX_BATCH_SIZE)
+    )
+
+    const result: UpsertPreparedFilesBatchResult = {
+      ids: new Array(inputs.length).fill(null),
+      writeLockWaitMs: [],
+      maxTransactionHoldMs: 0,
+      droppedCount: 0
+    }
+    if (inputs.length === 0) return result
+
+    const entryGeneration =
+      options.getWorkspaceGeneration?.() ?? getJ13WorkspaceGeneration(workspaceId)
+    const handshake = getWriterLeaseHandshake()
+    const needHandshake = handshake?.isWriterProcessActive() ?? false
+    const leaseId = `main-ingest:${workspaceId}:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 8)}`
+
+    // ---------- 阶段 1：异步准备（stat / 指纹 / 同路径去重），零 WAL 锁 ----------
+    const latestByPath = new Map<string, number>()
+    for (let i = 0; i < inputs.length; i++) {
+      const key = `${workspaceId}\u0000${inputs[i].filePath}`
+      latestByPath.set(key, i)
+    }
+    const prepared: J13PreparedRow[] = []
+    const activeIgnoreRules = loadIgnoreRules()
+
+    for (let i = 0; i < inputs.length; i++) {
+      const key = `${workspaceId}\u0000${inputs[i].filePath}`
+      if (latestByPath.get(key) !== i) {
+        // 同路径准备去重：仅保留最新一项，旧项丢弃（防双算哈希 + 防覆盖）
+        result.droppedCount++
+        continue
+      }
+      const input = inputs[i]
+      let stats: fs.Stats
+      try {
+        stats = await fs.promises.stat(input.filePath)
+        if (!stats.isFile()) throw new Error('not a regular file')
+      } catch (error) {
+        logger.warn(
+          LogCategory.DATABASE_SERVICE,
+          `[J-13] stat 失败，跳过 (${input.filePath}):`,
+          error
+        )
+        result.droppedCount++
+        continue
+      }
+
+      let directoryId: number
+      try {
+        directoryId = await this.addDirectory(path.dirname(input.filePath), workspaceId)
+      } catch (error) {
+        logger.warn(
+          LogCategory.DATABASE_SERVICE,
+          `[J-13] addDirectory 失败，跳过 (${input.filePath}):`,
+          error
+        )
+        result.droppedCount++
+        continue
+      }
+
+      let fingerprint: string | null = input.fileFingerprint ?? null
+      if (!input.skipHash && !fingerprint) {
+        try {
+          fingerprint = await calculateFileFingerprint(input.filePath)
+        } catch (error) {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `[J-13] 指纹计算失败，按 null 落库 (${input.filePath}):`,
+            error
+          )
+          fingerprint = null
+        }
+      }
+
+      const existing = getCachedStatement<any>(
+        db,
+        `SELECT id, file_fingerprint, is_analyzed FROM workspace_files WHERE workspace_id = ? AND path = ?`
+      ).get(workspaceId, input.filePath) as
+        | { id: number; file_fingerprint: string | null; is_analyzed: number }
+        | undefined
+
+      // skipHash：复用既有有效指纹，绝不传 null 抹掉
+      if (input.skipHash) fingerprint = existing?.file_fingerprint ?? null
+
+      const pathKey = `${workspaceId}\u0000${input.filePath}`
+      const sequence = (j13PathSequences.get(pathKey) ?? 0) + 1
+      j13PathSequences.set(pathKey, sequence)
+      prepared.push({
+        index: i,
+        filePath: input.filePath,
+        sequence,
+        fingerprint,
+        directoryId,
+        size: stats.size,
+        mtimeMs: Math.trunc(stats.mtimeMs),
+        mtimeIso: stats.mtime.toISOString(),
+        birthtimeIso: stats.birthtime.toISOString(),
+        atimeIso: stats.atime.toISOString(),
+        isIgnored: shouldIgnoreFile(
+          input.filePath,
+          path.basename(input.filePath),
+          activeIgnoreRules
+        )
+          ? 1
+          : 0,
+        isAnalyzed: existing?.is_analyzed || 0
+      })
+    }
+
+    // ---------- 阶段 2：按 workspaceId FIFO 串行落库 ----------
+    const previous = j13IngestChains.get(workspaceId) ?? Promise.resolve()
+    let releaseChain!: () => void
+    const currentChain = new Promise<void>(resolve => {
+      releaseChain = resolve
+    })
+    const chained = previous.then(() => currentChain)
+    j13IngestChains.set(workspaceId, chained)
+
+    try {
+      await previous
+      for (let offset = 0; offset < prepared.length; offset += batchSize) {
+        // 批间让出事件循环 + 取消/代际复检（§4.2 约束 3）
+        if (offset > 0) {
+          await new Promise<void>(resolve => setImmediate(resolve))
+        }
+        if (options.isCancelled?.()) {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `[J-13] workspace=${workspaceId} 收到取消信号，丢弃剩余 ${prepared.length - offset} 项`
+          )
+          result.droppedCount += prepared.length - offset
+          break
+        }
+        if (
+          (options.getWorkspaceGeneration?.() ?? getJ13WorkspaceGeneration(workspaceId)) !==
+          entryGeneration
+        ) {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `[J-13] workspace=${workspaceId} 代际变化，丢弃剩余 ${prepared.length - offset} 项（防幽灵行）`
+          )
+          result.droppedCount += prepared.length - offset
+          break
+        }
+
+        const batch = prepared.slice(offset, offset + batchSize)
+        let acked = true
+        if (needHandshake && handshake) {
+          try {
+            acked = await handshake.sendYieldAndWaitAck(leaseId, 200)
+          } catch (error) {
+            acked = false
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              `[J-13] lease=${leaseId} YIELD_FOR_UI 握手异常，尽力而为继续:`,
+              error
+            )
+          }
+          if (!acked) {
+            logger.warn(
+              LogCategory.DATABASE_SERVICE,
+              `[J-13] lease=${leaseId} 未收到 YIELD_ACK（尽力而为继续，写锁等待 p99 兜底）`
+            )
+          }
+        }
+
+        try {
+          await this.executeJ13Batch(
+            db,
+            batch,
+            workspaceId,
+            result,
+            stopOnError,
+            options.onBatchHoldMs
+          )
+        } finally {
+          if (needHandshake && handshake) {
+            try {
+              handshake.resumeLease(leaseId)
+            } catch (error) {
+              logger.warn(
+                LogCategory.DATABASE_SERVICE,
+                `[J-13] lease=${leaseId} RESUME 失败:`,
+                error
+              )
+            }
+          }
+        }
+      }
+    } finally {
+      releaseChain()
+      if (j13IngestChains.get(workspaceId) === chained) j13IngestChains.delete(workspaceId)
+    }
+
+    return result
+  }
+
+  /**
+   * J-13 单批同步短事务：事务首句存在性守卫 + 父表插入 + 幂等 UPSERT RETURNING id。
+   * 瞬态锁竞争在事务外指数退避重试（最多 2 次），失败显式 logger.error 留痕。
+   */
+  private async executeJ13Batch(
+    db: Database.Database,
+    batch: J13PreparedRow[],
+    workspaceId: number,
+    result: UpsertPreparedFilesBatchResult,
+    stopOnError: boolean,
+    onBatchHoldMs?: (ms: number, batchSize: number) => void
+  ): Promise<void> {
+    const now = new Date().toISOString()
+    let activeBatch = batch
+    let lastError: unknown
+
+    for (let attempt = 0; attempt <= J13_MAX_RETRIES; attempt++) {
+      // 防幽灵行约束 3：在获取 SQLite 写锁之前并发异步复检物理文件存在性，
+      // 严禁在 BEGIN IMMEDIATE 事务持锁期内同步 fs.statSync 阻塞磁盘 I/O（既守住棘轮基线也保 <20ms 持锁上限）。
+      const statChecks = await Promise.all(
+        activeBatch.map(async row => {
+          try {
+            const physicalStat = await fs.promises.stat(row.filePath)
+            return physicalStat.isFile()
+          } catch {
+            return false
+          }
+        })
+      )
+      const survivors: J13PreparedRow[] = []
+      for (let i = 0; i < activeBatch.length; i++) {
+        const row = activeBatch[i]
+        if (statChecks[i]) {
+          survivors.push(row)
+        } else {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `[J-13] 物理文件已在准备后消失，丢弃幽灵行 (${row.filePath})`
+          )
+          result.ids[row.index] = null
+          result.droppedCount++
+        }
+      }
+      activeBatch = survivors
+      if (activeBatch.length === 0) return
+
+      let transactionStarted = false
+      const waitStart = performance.now()
+      let lockAcquiredAt = waitStart
+      try {
+        const tx = db.transaction(() => {
+          // better-sqlite3 的 .immediate() 在事务体首句执行前已获得写锁；
+          // 此处打点即为「写锁获取完成」时刻，与事务体 SQL 执行时长分离采样。
+          lockAcquiredAt = performance.now()
+          // ---- 事务首句：workspace 存在性守卫（防批间删除造孤儿 / 23503） ----
+          const ws = getCachedStatement<any>(
+            db,
+            `SELECT 1 FROM workspaces WHERE workspace_id = ?`
+          ).get(workspaceId)
+          if (!ws) throw new Error(`workspace=${workspaceId} 已在批间删除，丢弃整批`)
+
+          const insertFileStmt = getCachedStatement<any>(
+            db,
+            `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, extension, file_group, created_at, modified_at, accessed_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+          )
+          const insertContentStmt = getCachedStatement<any>(
+            db,
+            `INSERT OR IGNORE INTO file_contents (file_fingerprint) VALUES (?)`
+          )
+          const upsertStmt = getCachedStatement<any>(
+            db,
+            `INSERT INTO workspace_files
+               (file_fingerprint, workspace_id, directory_id, path, name, created_at, modified_at, accessed_at,
+                is_analyzed, file_size, mtime_ms, is_ignored)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(workspace_id, path) DO UPDATE SET
+               file_fingerprint = COALESCE(excluded.file_fingerprint, workspace_files.file_fingerprint),
+               modified_at = excluded.modified_at,
+               file_size = excluded.file_size,
+               mtime_ms = excluded.mtime_ms,
+               is_ignored = excluded.is_ignored
+             RETURNING id`
+          )
+          const dirGuardStmt = getCachedStatement<any>(
+            db,
+            `SELECT 1 FROM workspace_directories WHERE id = ? AND workspace_id = ?`
+          )
+
+          for (const row of activeBatch) {
+            // 防幽灵行约束 1：每路径单调序号复检——准备期后同路径已被更新的旧条目一律跳过
+            const pathKey = `${workspaceId}\u0000${row.filePath}`
+            if (j13PathSequences.get(pathKey) !== row.sequence) {
+              result.ids[row.index] = null
+              result.droppedCount++
+              continue
+            }
+            // 目录存在性守卫：父目录已在批间删除则整批中止（外键 CASCADE 防孤儿）
+            const dir = dirGuardStmt.get(row.directoryId, workspaceId)
+            if (!dir) throw new Error(`directory=${row.directoryId} 已在批间删除，丢弃整批`)
+
+            // 父子写入顺序：workspace_directories → files → file_contents → workspace_files
+            if (row.fingerprint) {
+              insertFileStmt.run(
+                row.fingerprint,
+                path.basename(row.filePath),
+                row.size,
+                normalizeFileExtension(row.filePath),
+                JSON.stringify({ mime_type: 'application/octet-stream' }),
+                row.birthtimeIso,
+                row.mtimeIso,
+                row.atimeIso
+              )
+              insertContentStmt.run(row.fingerprint)
+            }
+
+            try {
+              const upserted = upsertStmt.get(
+                row.fingerprint,
+                workspaceId,
+                row.directoryId,
+                row.filePath,
+                path.basename(row.filePath),
+                now,
+                now,
+                now,
+                row.isAnalyzed,
+                row.size,
+                row.mtimeMs,
+                row.isIgnored
+              ) as { id: number } | undefined
+              result.ids[row.index] = upserted?.id ?? null
+            } catch (rowError) {
+              // SQLite 默认语句约束失败为 ABORT：仅回滚本语句，不回滚外层事务；严禁 OR ROLLBACK
+              logger.warn(
+                LogCategory.DATABASE_SERVICE,
+                `[J-13] 单行 UPSERT 失败 (${row.filePath}):`,
+                rowError
+              )
+              result.ids[row.index] = null
+              if (stopOnError) throw rowError
+            }
+          }
+        })
+        transactionStarted = true
+        tx.immediate()
+        const lockWait = lockAcquiredAt - waitStart
+        result.writeLockWaitMs.push(lockWait)
+        getWriterLeaseHandshake()?.observeWriteLockWaitMs(lockWait)
+        const holdMs = performance.now() - lockAcquiredAt
+        result.maxTransactionHoldMs = Math.max(result.maxTransactionHoldMs, holdMs)
+        onBatchHoldMs?.(holdMs, batch.length)
+        return
+      } catch (error) {
+        if (transactionStarted && db.inTransaction) {
+          try {
+            db.exec('ROLLBACK')
+          } catch (rbErr) {
+            logger.warn(LogCategory.DATABASE_SERVICE, '[J-13] 批事务回滚失败:', rbErr)
+          }
+        }
+        lastError = error
+        const message = error instanceof Error ? error.message : String(error)
+        const retryable = /BUSY|LOCKED/i.test(message)
+        if (!retryable || attempt === J13_MAX_RETRIES) {
+          // 回滚后恢复该批所有 id 为 null（此前提交批次保留，与原遇错即停语义一致）
+          for (const row of batch) result.ids[row.index] = null
+          logger.error(
+            LogCategory.DATABASE_SERVICE,
+            `[J-13] 批事务失败已回滚 (workspace=${workspaceId}, attempt=${attempt + 1}):`,
+            error
+          )
+          if (stopOnError) throw error
+          return
+        }
+        logger.warn(
+          LogCategory.DATABASE_SERVICE,
+          `[J-13] 瞬态锁竞争，事务外退避重试 (${attempt + 1}/${J13_MAX_RETRIES}):`,
+          message
+        )
+        await new Promise<void>(resolve => setTimeout(resolve, 5 * (attempt + 1)))
+      } finally {
+        // 防御：任何异常路径都不允许遗留打开的事务
+        if (db.inTransaction && !transactionStarted) {
+          try {
+            db.exec('ROLLBACK')
+          } catch (rbErr) {
+            logger.warn(LogCategory.DATABASE_SERVICE, '[J-13] 兜底回滚失败:', rbErr)
+          }
+        }
+      }
+    }
+    if (lastError) {
+      for (const row of batch) result.ids[row.index] = null
+      if (stopOnError) throw lastError
+    }
   }
 }

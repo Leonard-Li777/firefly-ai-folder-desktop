@@ -24,7 +24,11 @@ import {
 } from '../../database/database-service/sqlite-connection-setup'
 import { setDisplayLocaleReader } from '../../database/database-service/display-locale-seam'
 import { WriteSetBatchDispatcher, type WriteAckItem } from './write-set-batch-dispatcher'
-import type { WriterInMessage, WriterOutMessage, WriterTailHookPayload } from './writer-process-protocol'
+import type {
+  WriterInMessage,
+  WriterOutMessage,
+  WriterTailHookPayload
+} from './writer-process-protocol'
 
 type WriterLogLevel = Extract<WriterOutMessage, { type: 'LOG' }>['level']
 
@@ -133,7 +137,12 @@ function handleMessage(msg: WriterInMessage): void {
       } else {
         // R1 盲审发现 4：与 VIDEO_SEGMENT 分支语义对称——未 INIT 时显式 error 回执 + 留痕，
         // 严禁静默丢弃（宿主 READY 门禁保证生产不达此处，守卫仅为纵深防御）
-        log('warn', '[DbWriterProcess] 未 INIT 即收到 WRITE_SET，显式回执 error (queueId=' + msg.payload.queueId + ')')
+        log(
+          'warn',
+          '[DbWriterProcess] 未 INIT 即收到 WRITE_SET，显式回执 error (queueId=' +
+            msg.payload.queueId +
+            ')'
+        )
         parentPort?.postMessage({
           type: 'WRITE_ACK',
           ack: {
@@ -165,11 +174,22 @@ function handleMessage(msg: WriterInMessage): void {
       break
     }
     case 'YIELD_FOR_UI': {
-      dispatcher?.pauseForUi(msg.timeoutMs)
+      // W4/J-13 确认式让锁：先登记租约阻断新事务，再 await 在途批彻底落地释放写锁，
+      // 最后才回发 YIELD_ACK——严禁在写锁仍被持有时确认，否则主进程 BEGIN IMMEDIATE 撞锁。
+      const leaseId = msg.leaseId
+      dispatcher?.pauseForUi(msg.timeoutMs, leaseId)
+      void (async () => {
+        try {
+          await dispatcher?.waitForInFlightFlush()
+        } catch (err) {
+          log('warn', '[DbWriterProcess] YIELD_FOR_UI 等待在途批落地失败:', err)
+        }
+        parentPort?.postMessage({ type: 'YIELD_ACK', leaseId })
+      })()
       break
     }
     case 'RESUME': {
-      dispatcher?.resumeFromUi()
+      dispatcher?.resumeFromUi(msg.leaseId)
       break
     }
     case 'SHUTDOWN': {
@@ -223,7 +243,7 @@ if (!parentPort) {
   parentPort.on('message', event => {
     const msg =
       event && typeof event === 'object' && 'data' in (event as Record<string, unknown>)
-        ? ((event as { data: WriterInMessage }).data)
+        ? (event as { data: WriterInMessage }).data
         : (event as unknown as WriterInMessage)
     handleMessage(msg)
   })
