@@ -10,6 +10,14 @@ import { dirMigrationCoordinator } from '../runtime-services/system/dir-migratio
 import { resolveAppRegion, getWorktreeInfo } from './worktree-env'
 import { t } from '@app/languages'
 import { mark, isEnabled as isStartupTimelineEnabled } from '@pro/perf/startup-timeline'
+import { getCachedPerfFlagsArguments } from './perf-flags'
+
+/**
+ * perf-flags 快照目录：优先取 worktree 隔离后的 userData（worktree-bootstrap 已完成
+ * app.setPath('userData') 重定向），兜底 app.getPath('userData')（TM-W2 / B8 / [V-01]）。
+ */
+const resolvePerfFlagsUserDataDir = (): string =>
+  getWorktreeInfo()?.userDataDir || app.getPath('userData')
 
 const getSplashHtml = (imagePath: string) => `
 <!DOCTYPE html>
@@ -389,6 +397,8 @@ export const createWindow = () => {
         `--has-peer-data=${getWorktreeInfo()?.hasPeerData ? 'true' : 'false'}`,
         `--peer-region=${getWorktreeInfo()?.peerRegion || (appRegion === 'cn' ? 'intl' : 'cn')}`,
         ...(isStartupTimelineEnabled() ? ['--ff-startup-timeline=1'] : []),
+        // bootstrap 期配置库不可读时经 perf-flags.json 镜像同步注入启动开关（TM-W2 / B8）
+        ...getCachedPerfFlagsArguments(resolvePerfFlagsUserDataDir()),
         ...(process.env.IS_INTEGRATION_TEST === 'true' ? ['--integration-test=true'] : [])
       ]
     }
@@ -558,7 +568,12 @@ export const createPreviewWindow = (params: { filePath: string; extension: strin
       nodeIntegration: false,
       webSecurity: false,
       sandbox: true,
-      additionalArguments: [`--is-packaged=${app.isPackaged}`, `--app-region=${resolveAppRegion()}`]
+      additionalArguments: [
+        `--is-packaged=${app.isPackaged}`,
+        `--app-region=${resolveAppRegion()}`,
+        // bootstrap 期配置库不可读时经 perf-flags.json 镜像同步注入启动开关（TM-W2 / B8）
+        ...getCachedPerfFlagsArguments(resolvePerfFlagsUserDataDir())
+      ]
     }
   })
 
@@ -632,7 +647,12 @@ export const createQueueWindow = (): BrowserWindow => {
       nodeIntegration: false,
       webSecurity: false,
       sandbox: true,
-      additionalArguments: [`--is-packaged=${app.isPackaged}`, `--app-region=${resolveAppRegion()}`]
+      additionalArguments: [
+        `--is-packaged=${app.isPackaged}`,
+        `--app-region=${resolveAppRegion()}`,
+        // bootstrap 期配置库不可读时经 perf-flags.json 镜像同步注入启动开关（TM-W2 / B8）
+        ...getCachedPerfFlagsArguments(resolvePerfFlagsUserDataDir())
+      ]
     }
   })
 
