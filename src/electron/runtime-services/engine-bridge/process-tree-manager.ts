@@ -3,8 +3,8 @@
  * 遵循 L3 规格书: docs/specs/unified-module-hibernation-and-energy-transparency-spec.md §1.2 / §2.1
  */
 
-import { spawnSync } from 'node:child_process'
 import { logger, LogCategory } from '@firefly/shared'
+import { runTaskkillAsync } from '../../main/process-reaper'
 import { ProcessTreeIdentity } from '../hibernation/types'
 
 /** PID 复用容差时间 (60秒，对齐 process-reaper.ts) */
@@ -27,7 +27,7 @@ export interface IPlatformProcessTreeDriver {
   createJobObject(name: string): { jobHandle: any; name: string } | null
   assignProcessToJob(jobHandle: any, processHandle: any): boolean
   resumeThread(threadHandle: any): boolean
-  terminateProcess(processHandle: any, exitCode?: number): boolean
+  terminateProcess(processHandle: any, exitCode?: number): Promise<boolean> | boolean
   terminateJob(jobHandleOrName: any): boolean
   closeHandle(handle: any): void
   isJobExited(jobHandleOrName: any): boolean | 'unknown'
@@ -57,22 +57,28 @@ export class DefaultPlatformProcessTreeDriver implements IPlatformProcessTreeDri
     return true
   }
 
-  terminateProcess(processHandle: any, _exitCode?: number): boolean {
+  async terminateProcess(processHandle: any, _exitCode?: number): Promise<boolean> {
     const pid = typeof processHandle === 'number' ? processHandle : processHandle?.pid
     if (typeof pid !== 'number' || pid <= 0) return false
 
     try {
       if (this.isWindows()) {
-        const res = spawnSync('taskkill', ['/F', '/PID', String(pid)], {
-          windowsHide: true,
-          timeout: 5000
-        })
-        return res.status === 0 || res.status === 128
+        const res = await runTaskkillAsync(pid, { tree: false, timeoutMs: 5000 })
+        if (res.error || res.timedOut) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ProcessTreeManager] taskkill 失败 (pid=${pid}, timedOut=${res.timedOut}):`,
+            res.error
+          )
+          return false
+        }
+        return res.exitCode === 0 || res.exitCode === 128
       } else {
         process.kill(pid, 'SIGKILL')
         return true
       }
-    } catch {
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, `[ProcessTreeManager] terminateProcess 异常 (pid=${pid}):`, err)
       return false
     }
   }
@@ -194,7 +200,7 @@ export class ProcessTreeManager {
         LogCategory.SYSTEM,
         `[ProcessTreeManager] AssignProcessToJobObject 失败，执行 Fail Chain 强拔挂起子进程: pid=${spawned.pid}`
       )
-      this.driver.terminateProcess(spawned.processHandle ?? spawned.pid)
+      void this.driver.terminateProcess(spawned.processHandle ?? spawned.pid)
       this.driver.closeHandle(job.jobHandle)
       if (spawned.processHandle) this.driver.closeHandle(spawned.processHandle)
       if (spawned.threadHandle) this.driver.closeHandle(spawned.threadHandle)
@@ -208,7 +214,7 @@ export class ProcessTreeManager {
         LogCategory.SYSTEM,
         `[ProcessTreeManager] ResumeThread 失败，执行 Fail Chain 强拔挂起子进程: pid=${spawned.pid}`
       )
-      this.driver.terminateProcess(spawned.processHandle ?? spawned.pid)
+      void this.driver.terminateProcess(spawned.processHandle ?? spawned.pid)
       this.driver.closeHandle(job.jobHandle)
       if (spawned.processHandle) this.driver.closeHandle(spawned.processHandle)
       if (spawned.threadHandle) this.driver.closeHandle(spawned.threadHandle)
@@ -340,7 +346,7 @@ export class ProcessTreeManager {
     if (identity.treeHandle) {
       this.driver.terminateJob(identity.treeHandle)
     }
-    this.driver.terminateProcess(identity.pid)
+    await this.driver.terminateProcess(identity.pid)
   }
 
   /**

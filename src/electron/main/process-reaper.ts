@@ -1,8 +1,93 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { app } from 'electron'
-import { spawnSync } from 'child_process'
+import * as cp from 'node:child_process'
 import { logger, LogCategory, isPathEqual } from '@firefly/shared'
+
+const { spawnSync } = cp
+
+export interface TaskkillAsyncResult {
+  exitCode: number | null
+  timedOut: boolean
+  error: Error | null
+}
+
+let taskkillSpawnImpl: typeof cp.spawn = cp.spawn
+
+/**
+ * 覆盖或还原 `runTaskkillAsync` 使用的 spawn 实现（仅供单元测试隔离）
+ */
+export function setTaskkillSpawnForTest(fn?: typeof cp.spawn | null): void {
+  taskkillSpawnImpl = typeof fn === 'function' ? fn : cp.spawn
+}
+
+/**
+ * 异步执行 Windows `taskkill`（仅封装 Windows 分支，P1-5）
+ *
+ * 返回原始 `{ exitCode, timedOut, error }`，由各调用方按原语义自行映射 boolean 或日志等级。
+ * `timeoutMs` 默认不设（与原 `execSync` 一致）。
+ */
+export async function runTaskkillAsync(
+  pid: number,
+  options: { tree: boolean; timeoutMs?: number }
+): Promise<TaskkillAsyncResult> {
+  const args = ['/F', ...(options.tree ? ['/T'] : []), '/PID', String(pid)]
+  return await new Promise<TaskkillAsyncResult>(resolve => {
+    let settled = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    const finish = (result: TaskkillAsyncResult) => {
+      if (settled) return
+      settled = true
+      if (timer) clearTimeout(timer)
+      resolve(result)
+    }
+
+    let child: ReturnType<typeof cp.spawn>
+    try {
+      child = taskkillSpawnImpl('taskkill', args, {
+        windowsHide: true,
+        stdio: 'ignore'
+      })
+    } catch (err) {
+      finish({
+        exitCode: null,
+        timedOut: false,
+        error: err instanceof Error ? err : new Error(String(err))
+      })
+      return
+    }
+
+    if (options.timeoutMs && options.timeoutMs > 0) {
+      timer = setTimeout(() => {
+        try {
+          child.kill()
+        } catch {}
+        finish({
+          exitCode: null,
+          timedOut: true,
+          error: new Error(`taskkill timed out after ${options.timeoutMs}ms (pid=${pid})`)
+        })
+      }, options.timeoutMs)
+    }
+
+    child.once('error', err => {
+      finish({
+        exitCode: null,
+        timedOut: false,
+        error: err
+      })
+    })
+
+    child.once('close', code => {
+      finish({
+        exitCode: code,
+        timedOut: false,
+        error: null
+      })
+    })
+  })
+}
 
 interface PidRecord {
   pid: number

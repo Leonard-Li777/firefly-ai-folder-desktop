@@ -9,8 +9,8 @@
  * 5. 跨平台安全终结管线：四段式优雅退役 -> 3000ms 超时进程树强杀 -> 200ms 句柄避让。
  */
 
-import { execSync } from 'child_process'
 import { app } from 'electron'
+import { runTaskkillAsync } from '../../main/process-reaper'
 import { deriveRunDecision, type HoldReason } from './plugin-run-decision'
 import {
   getModularResourceDao,
@@ -298,7 +298,14 @@ export class PluginProcessManager {
       if (retireTimedOut && pid) {
         try {
           if (process.platform === 'win32') {
-            execSync(`taskkill /F /T /PID ${pid}`, { stdio: 'ignore' })
+            const killRes = await runTaskkillAsync(pid, { tree: true })
+            if (killRes.error || (killRes.exitCode !== 0 && killRes.exitCode !== 128)) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[PluginProcessManager] 强杀 pid ${pid} 异常 (exitCode=${killRes.exitCode}):`,
+                killRes.error
+              )
+            }
           } else {
             try {
               process.kill(-pid, 'SIGKILL')

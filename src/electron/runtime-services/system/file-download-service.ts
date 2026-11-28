@@ -947,11 +947,31 @@ export async function safeExtractZip(
     }
 
     if (useFallbackExtractor) {
+      const execTarAsync = (args: string[], captureStdout: boolean): Promise<string> =>
+        new Promise((resolve, reject) => {
+          childProcess.execFile(
+            'tar',
+            args,
+            {
+              encoding: 'utf8',
+              maxBuffer: 64 * 1024 * 1024
+            },
+            (err, stdout) => {
+              if (err) {
+                const errAny = err as any
+                if (errAny.status === undefined && typeof errAny.code === 'number') {
+                  errAny.status = errAny.code
+                }
+                reject(err)
+                return
+              }
+              resolve(captureStdout ? stdout : '')
+            }
+          )
+        })
+
       // 1. 先用 tar -tf 提取所有条目，逐项通过 safeResolveZipEntry 严格门禁检查 (防 ZipSlip 绝对路径/ADS/设备名/越界)
-      const listOutput = childProcess.execFileSync('tar', ['-tf', zipFilePath], {
-        encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'ignore']
-      })
+      const listOutput = await execTarAsync(['-tf', zipFilePath], true)
       const lines = listOutput
         .split(/\r?\n/)
         .map(l => l.trim())
@@ -960,9 +980,7 @@ export async function safeExtractZip(
         safeResolveZipEntry(tmpDir, line)
       }
       // 2. 门禁检查 100% 通过后，通过 tar -xf 原生解压到 tmpDir (天然支持 LWW 覆盖语义)
-      childProcess.execFileSync('tar', ['-xf', zipFilePath, '-C', tmpDir], {
-        stdio: ['pipe', 'pipe', 'ignore']
-      })
+      await execTarAsync(['-xf', zipFilePath, '-C', tmpDir], false)
     } else {
       for (const entry of entries) {
         const entryName = decodeZipEntryName(entry)
