@@ -120,6 +120,11 @@ if (process.env.FF_E2E_MODE === '1') {
   assertE2ESandboxOrThrow(process.env)
 }
 
+/** 退出路径专用：在 app.exit / process.exit 前同步刷出剩余日志缓冲（IO-07 / INV-6） */
+function flushLogsBeforeExit(): void {
+  loggingService.flushSync()
+}
+
 // 2. 检查单实例锁，避免重复打开多个应用实例
 // E2E 模式下同一测试套件可能并发启动多个沙箱实例（每个用例独立 runId），
 // 此时必须跳过 requestSingleInstanceLock，严禁互踢（Spec §4.4 Worktree 引导隔离规约）
@@ -128,7 +133,7 @@ const gotSingleInstanceLock = isE2EMode ? true : app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   console.log(`[App] 检测到已有实例正在运行 (${worktreeInfo.appName})，本实例直接退出。`)
   app.quit()
-  loggingService.flushSync()
+  flushLogsBeforeExit()
   process.exit(0)
 }
 
@@ -1043,7 +1048,7 @@ app.on('ready', async () => {
       } catch (err) {
         logger.error(LogCategory.MAIN, '[Test] 初始化或注入失败，应用将退出:', err)
         console.error('=== FIREFLY_CRASH: 测试模式初始化失败 ===', err)
-        loggingService.flushSync()
+        flushLogsBeforeExit()
         app.exit(1)
         return
       }
@@ -1054,7 +1059,7 @@ app.on('ready', async () => {
   } catch (error) {
     logger.error(LogCategory.MAIN, '[App] 最小服务初始化失败:', error)
     console.error('=== FIREFLY_CRASH: 最小服务初始化失败 ===', error)
-    loggingService.flushSync()
+    flushLogsBeforeExit()
     app.exit(1)
     return
   }
@@ -1124,7 +1129,7 @@ app.on('before-quit', event => {
   // 兜底超时：任一 await（如 omniService.stop）挂起时不能让应用永不退出
   const forceExitTimer = setTimeout(() => {
     logger.warn(LogCategory.MAIN, '[R2-8] 退出清理超时(10s)，强制退出以免遗留孤儿进程')
-    loggingService.flushSync()
+    flushLogsBeforeExit()
     app.exit(1)
   }, 10_000)
   forceExitTimer.unref?.()
@@ -1210,7 +1215,7 @@ app.on('before-quit', event => {
     } finally {
       clearTimeout(forceExitTimer)
       // 清理失败以非零码退出，禁止用 exit(0) 掩盖 R2-8 时序故障
-      loggingService.flushSync()
+      flushLogsBeforeExit()
       app.exit(cleanupFailed ? 1 : 0)
     }
   })()
@@ -1259,7 +1264,7 @@ const handleProcessTermination = () => {
     const { engineBridgeService } = require('../runtime-services/engine-bridge')
     engineBridgeService.stopSyncForSignal()
   } catch {}
-  loggingService.flushSync()
+  flushLogsBeforeExit()
   process.exit(0)
 }
 process.on('SIGINT', handleProcessTermination)

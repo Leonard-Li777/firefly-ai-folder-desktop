@@ -17,10 +17,15 @@ const validEntry = {
 }
 
 describe('sync-allowlist 完整性', () => {
-  it('模块登记表本身合规（无空字段、无重复键，既有 2 条含合法 ticket）', () => {
+  it('模块登记表本身合规（无空字段、无重复键，既有条与 IO-07 条目含合法 ticket）', () => {
     expect(validateSyncAllowlist(SYNCHRONOUS_ALLOWLIST)).toEqual([])
     expect(() => assertSyncAllowlistIntegrity()).not.toThrow()
-    expect(SYNCHRONOUS_ALLOWLIST).toHaveLength(2)
+    expect(SYNCHRONOUS_ALLOWLIST.length).toBeGreaterThanOrEqual(4)
+    expect(findSyncAllowlistEntry('apps/desktop/src/electron/main/index.ts', 'migrateLegacyUserDataSync')).toBeDefined()
+    expect(findSyncAllowlistEntry('apps/desktop/src/electron/main/index.ts', 'flushLogsBeforeExit')).toBeDefined()
+    expect(
+      findSyncAllowlistEntry('apps/desktop/src/electron/runtime-services/system/logging-service.ts', 'handleProcessExitFlush')
+    ).toBeDefined()
     for (const entry of SYNCHRONOUS_ALLOWLIST) {
       expect(entry.ticket.trim().length).toBeGreaterThan(0)
       expect(entry.function).not.toBe('<module-scope>')

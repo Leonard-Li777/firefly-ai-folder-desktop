@@ -51,6 +51,22 @@ export const SYNCHRONOUS_ALLOWLIST: readonly SyncAllowlistEntry[] = [
       '热部署路径依赖「返回即旧进程树已终止」后再用同端口拉起；且引擎自启/热部署用例按源码文本断言该方法签名（P1-5 / R3 决断，本期保持同步）',
     removalCondition:
       '待 M0 插桩排行证明该点为实际瓶颈后单独立项改造，届时同步改写 engine-service-autostart-wiring / engine-deploy-restart-avoidance 两处断言'
+  },
+  {
+    file: 'apps/desktop/src/electron/main/index.ts',
+    function: 'flushLogsBeforeExit',
+    ticket: 'IO-07 / P0-12',
+    reason:
+      '主进程单实例拒绝、初始化失败、退出超时、before-quit 与终止信号这 6 处 app.exit/process.exit 前同步刷出最后日志，进程即将销毁异步队列来不及落盘（INV-6 / IO-07）',
+    removalCondition: '仅当改为独立守护进程接管日志落盘且不再依赖主进程同步尾刷时移除'
+  },
+  {
+    file: 'apps/desktop/src/electron/runtime-services/system/logging-service.ts',
+    function: 'handleProcessExitFlush',
+    ticket: 'IO-07 / P0-12',
+    reason:
+      'process.on("exit") 触发时 Node 事件循环已不再驱动异步 I/O，仅允许通过同步尾刷保存未确认日志批次与缓冲（INV-6 / IO-07）',
+    removalCondition: '仅当日志写入迁出主进程到独立常驻守护进程后移除'
   }
   // 后续工单预留登记规范（不在本工单范围，须在对应工单落地时按 `file + function + ticket + reason + removalCondition` 正式入表）：
   // - W1 `B8`：`worktree-bootstrap` 之后读取 `<userData>/perf-flags.json` 的独立具名同步读函数；

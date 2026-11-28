@@ -97,10 +97,15 @@ export class LoggingService {
     // 设置全局错误处理
     this.setupGlobalErrorHandling()
 
-    // IO-07: 进程退出兜底同步刷盘
+    // IO-07: 进程退出兜底同步刷盘（具名方法供 sync-allowlist.ts 精确登记 INV-6）
     process.on('exit', () => {
-      this.flushSync()
+      this.handleProcessExitFlush()
     })
+  }
+
+  /** process.on('exit') 专用同步尾刷钩子（INV-6 / IO-07） */
+  private handleProcessExitFlush(): void {
+    this.flushSync()
   }
 
   /**
@@ -469,6 +474,7 @@ export class LoggingService {
       this.inFlightLines = batch
 
       try {
+        await fs.promises.mkdir(path.dirname(this.config.filePath), { recursive: true })
         await fs.promises.appendFile(this.config.filePath, batch.join(''), 'utf8')
         this.inFlightLines = []
 
@@ -735,12 +741,6 @@ export class LoggingService {
    */
   public updateConfig(config: Partial<typeof this.config>): void {
     this.config = { ...this.config, ...config }
-    if (config.filePath) {
-      const logDir = path.dirname(config.filePath)
-      if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir, { recursive: true })
-      }
-    }
     this.info(LogCategory.LOGGING_SERVICE, '日志配置已更新')
   }
 
