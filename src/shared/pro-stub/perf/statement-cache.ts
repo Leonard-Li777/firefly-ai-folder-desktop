@@ -79,7 +79,7 @@ const DYNAMIC_IN_PATTERN = /\bIN\s*\([^)]*\?[^)]*\)/i
 
 /** 判定该 SQL 是否属于「不进缓存」的例外项（存根恒直通，此函数仅保持语义对称） */
 export function shouldBypassStatementCache(sql: string): boolean {
-  if (typeof sql !== 'string') return true
+  if (typeof sql !== 'string' || sql.trim() === '') return true
   return (
     PRAGMA_PATTERN.test(sql) ||
     TRANSACTION_PATTERN.test(sql) ||
@@ -161,9 +161,7 @@ export function getStatementCacheStats(
 }
 
 /** no-op：开源侧无缓存句柄可释放（保持签名对称） */
-export function releaseStatementCache(
-  _db: StatementCacheConnection<StatementLike> | object
-): void {
+export function releaseStatementCache(_db: StatementCacheConnection<StatementLike> | object): void {
   /* no-op */
 }
 
