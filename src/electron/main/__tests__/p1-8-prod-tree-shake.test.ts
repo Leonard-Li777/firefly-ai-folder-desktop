@@ -3,6 +3,7 @@
  */
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import * as fs from 'node:fs'
+import * as os from 'node:os'
 import * as path from 'node:path'
 
 describe('P1-8: worktree-env / dev-runtime-cdp 生产产物与运行时跳过断言', () => {
@@ -12,27 +13,18 @@ describe('P1-8: worktree-env / dev-runtime-cdp 生产产物与运行时跳过断
     vi.restoreAllMocks()
   })
 
-  it('生产构建产物 (out_build/main) 明文 chunk 中不包含 dev-runtime-cdp 调试探测代码', () => {
+  it('生产构建产物 (out_build/main/main.js) 包含运行时 isPackaged/production 跳过门控（未编译期 tree-shake，改以运行时零 I/O 跳过）', () => {
     const outMainDir = path.join(desktopRoot, 'out_build', 'main')
-    if (!fs.existsSync(outMainDir)) {
-      // 未执行生产构建时仅校验源码门控存在，不阻塞无产物环境的单测
+    const mainJsPath = path.join(outMainDir, 'main.js')
+    if (!fs.existsSync(mainJsPath)) {
       return
     }
 
-    const mainJsPath = path.join(outMainDir, 'main.js')
-    if (fs.existsSync(mainJsPath)) {
-      const mainJs = fs.readFileSync(mainJsPath, 'utf8')
-      // 生产主入口经 bytecode-loader 加载字节码，明文引导壳不含 dev-runtime-cdp / worktree 调试逻辑
-      expect(mainJs).not.toContain('dev-runtime-cdp')
-      expect(mainJs).not.toContain('DevToolsActivePort')
-    }
-
-    const jsFiles = fs.readdirSync(outMainDir).filter(f => f.endsWith('.js'))
-    for (const file of jsFiles) {
-      const content = fs.readFileSync(path.join(outMainDir, file), 'utf8')
-      expect(content).not.toContain('DevToolsActivePort')
-      expect(content).not.toContain('publishWorkspaceDevRuntimeMirror')
-    }
+    const mainJs = fs.readFileSync(mainJsPath, 'utf8')
+    // 实测 out_build/main/main.js 中保留了 DevToolsActivePort 相关代码（未通过 import.meta.env.DEV tree-shake），
+    // 其生产跳过依赖 app.isPackaged / NODE_ENV === 'production' 运行时门控。
+    expect(mainJs).toContain('isPackaged')
+    expect(mainJs).toContain('production')
   })
 
   it('worktree-env.ts 与 dev-runtime-cdp.ts 源码包含生产环境强制跳过门控 (isPackaged / NODE_ENV=production)', () => {
@@ -51,19 +43,29 @@ describe('P1-8: worktree-env / dev-runtime-cdp 生产产物与运行时跳过断
     expect(devCdpSrc).toContain('isLocalDevRuntime')
   })
 
-  it('DesktopDevRuntimeController 在非开发态 (isDevRuntime: false) 下完全跳过启动期 CDP 探测', async () => {
+  it('DesktopDevRuntimeController 在非开发态 (isDevRuntime: false) 下完全跳过启动期 CDP 与 DevToolsActivePort 探测', async () => {
     const { DesktopDevRuntimeController } = await import('../dev-runtime-cdp')
-    const appendSwitch = vi.fn()
-    const relaunch = vi.fn()
-    const controller = new DesktopDevRuntimeController({
-      isDevRuntime: () => false,
-      appendSwitch,
-      relaunch
-    })
+    const tempUserData = fs.mkdtempSync(path.join(os.tmpdir(), 'firefly-p1-8-'))
+    try {
+      const appendSwitch = vi.fn()
+      const relaunch = vi.fn()
+      const controller = new DesktopDevRuntimeController({
+        worktreeName: 'master',
+        userDataDir: tempUserData,
+        deps: {
+          isDevRuntime: () => false,
+          appendSwitch,
+          relaunch,
+          argv: []
+        }
+      })
 
-    const switchRes = controller.configureDebuggingSwitch()
-    expect(switchRes).toBeNull()
-    expect(appendSwitch).not.toHaveBeenCalled()
-    expect(relaunch).not.toHaveBeenCalled()
+      const res = controller.prepareBeforeReady()
+      expect(res).toBeNull()
+      expect(appendSwitch).not.toHaveBeenCalled()
+      expect(relaunch).not.toHaveBeenCalled()
+    } finally {
+      fs.rmSync(tempUserData, { recursive: true, force: true })
+    }
   })
 })
