@@ -271,7 +271,7 @@ export class ResourceManager extends EventEmitter {
     // 初始化统计信息
     this.initializeStatistics()
 
-    this.initializeService()
+    // TM-01: 构造函数不自动启动周期性资源监控，按需显式调用 startResourceMonitoring()
   }
 
   private applyConfigFromSettings(): void {
@@ -293,7 +293,10 @@ export class ResourceManager extends EventEmitter {
       const enabled = value !== false
       this.hardwareMonitoringEnabled = enabled
       if (enabled) {
-        this.startResourceMonitoring()
+        // TM-01: 仅当监控已处于运行态时按配置重拉，未启动时不因配置变更事件被动拉起
+        if (this.isMonitoring) {
+          this.startResourceMonitoring()
+        }
       } else {
         this.stopResourceMonitoring()
       }
@@ -490,6 +493,11 @@ export class ResourceManager extends EventEmitter {
    * 启动资源监控
    */
   startResourceMonitoring(): void {
+    if (process.env.FF_DISABLE_PERF_TIMERS === '1') {
+      loggingService.debug(LogCategory.RESOURCE_MANAGER, 'FF_DISABLE_PERF_TIMERS=1，跳过启动资源监控')
+      return
+    }
+
     if (this.monitoringTimer) {
       this.stopResourceMonitoring()
     }
@@ -503,6 +511,7 @@ export class ResourceManager extends EventEmitter {
         loggingService.error(LogCategory.RESOURCE_MANAGER, '资源检查失败', error)
       }
     }, this.monitoringConfig.monitoringInterval)
+    this.monitoringTimer.unref?.()
 
     loggingService.debug(
       LogCategory.RESOURCE_MANAGER,

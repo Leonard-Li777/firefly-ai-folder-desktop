@@ -16,10 +16,7 @@ import { registerVoiceIPCHandlers } from './voice'
 import { registerExternalApiIPCHandlers } from './external-api'
 import { registerModularResourceIpcHandlers } from '../../runtime-services/ipc/modular-resource-ipc-handler'
 import { registerHibernationIPCHandlers } from '../../runtime-services/ipc/hibernation-ipc-handler'
-import { syncedDirectories } from '../state'
 import { logger, LogCategory } from '@firefly/shared'
-
-let syncedDirectoriesCleanupInterval: ReturnType<typeof setInterval> | null = null
 
 export async function setupIPCHandlers(): Promise<void> {
   registerConfigIPCHandlers()
@@ -40,20 +37,6 @@ export async function setupIPCHandlers(): Promise<void> {
   registerExternalApiIPCHandlers()
   registerModularResourceIpcHandlers()
   registerHibernationIPCHandlers()
-
-  if (syncedDirectoriesCleanupInterval) {
-    clearInterval(syncedDirectoriesCleanupInterval)
-  }
-  syncedDirectoriesCleanupInterval = setInterval(
-    () => {
-      if (syncedDirectories.size > 50) {
-        const entries = Array.from(syncedDirectories)
-        syncedDirectories.clear()
-        entries.slice(-50).forEach(dir => syncedDirectories.add(dir))
-      }
-    },
-    5 * 60 * 1000
-  )
 
   logger.info(LogCategory.MAIN, '[IPC] 所有 IPC 处理程序注册完成')
 }

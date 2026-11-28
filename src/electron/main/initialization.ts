@@ -458,6 +458,9 @@ export async function initDatabaseAndDependentServices(
 
 /**
  * 注册服务健康检查
+ *
+ * [N3] 周期健康巡检已停用（2026-11-27 决策），systemHealthService.start() 不再恢复；
+ * 可用性由各能力用时检查与按需拉起保证，保留以下注册代码作命名防腐。
  */
 export function registerServiceHealthChecks(): void {
   systemHealthService.registerServiceHealthCheck('database', async () => {

@@ -60,6 +60,7 @@ export class AutoRecoveryService extends EventEmitter {
     })
 
     // 监听系统健康服务的健康状态更新事件
+    // [N3] 周期健康巡检已停用（2026-11-27 决策），可用性由各能力用时检查保证；保留订阅作命名防腐
     systemHealthService.on('health-status-updated', (healthStatus: SystemHealthStatus) => {
       if (this.isRecoveryEnabled) {
         this.handleHealthStatusUpdate(healthStatus)

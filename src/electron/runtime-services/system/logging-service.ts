@@ -15,10 +15,21 @@ import {
  */
 export class LoggingService {
   private static instance: LoggingService
+  private static readonly BATCH_SIZE = 256
+  private static readonly FLUSH_INTERVAL_MS = 100
+  private static readonly MAX_BUFFER_SIZE = 10000
+
   private logEntries: LogEntry[] = []
   private runId: string = crypto.randomUUID()
   private currentSessionId: string | null = null
   private logSequence: number = 0
+
+  private writeBuffer: string[] = []
+  private inFlightLines: string[] = []
+  private flushTimer: ReturnType<typeof setTimeout> | null = null
+  private writeQueuePromise: Promise<void> = Promise.resolve()
+  private batchSequence = 0
+  private droppedBufferCount = 0
 
   public getRunId(): string {
     return this.runId
@@ -85,6 +96,11 @@ export class LoggingService {
 
     // 设置全局错误处理
     this.setupGlobalErrorHandling()
+
+    // IO-07: 进程退出兜底同步刷盘
+    process.on('exit', () => {
+      this.flushSync()
+    })
   }
 
   /**
@@ -383,7 +399,7 @@ export class LoggingService {
   }
 
   /**
-   * 文件输出日志
+   * 文件输出日志（IO-07: 入队内存缓冲，256 条或 100ms 异步批量落盘，单写者队列串行）
    */
   private logToFile(logEntry: LogEntry): void {
     try {
@@ -407,15 +423,144 @@ export class LoggingService {
         logLine += '\n'
       }
 
-      fs.appendFileSync(this.config.filePath, logLine, 'utf8')
+      if (this.writeBuffer.length >= LoggingService.MAX_BUFFER_SIZE) {
+        this.writeBuffer.shift()
+        this.droppedBufferCount++
+        process.stderr.write(
+          `[LoggingService] 日志缓冲已达上限(${LoggingService.MAX_BUFFER_SIZE})，已丢弃最旧日志，累计丢弃: ${this.droppedBufferCount}\n`
+        )
+      }
 
-      // 检查文件大小，如果超过限制则轮转
+      this.writeBuffer.push(logLine)
+
+      if (this.writeBuffer.length >= LoggingService.BATCH_SIZE) {
+        if (this.flushTimer) {
+          clearTimeout(this.flushTimer)
+          this.flushTimer = null
+        }
+        void this.scheduleAsyncFlush()
+      } else if (!this.flushTimer) {
+        this.flushTimer = setTimeout(() => {
+          this.flushTimer = null
+          void this.scheduleAsyncFlush()
+        }, LoggingService.FLUSH_INTERVAL_MS)
+        this.flushTimer.unref?.()
+      }
+    } catch (error) {
+      console.error('写入日志文件失败:', error)
+    }
+  }
+
+  /**
+   * 调度单写者异步批量刷盘
+   */
+  private scheduleAsyncFlush(): Promise<void> {
+    this.writeQueuePromise = this.writeQueuePromise.then(() => this.drainBufferAsync())
+    return this.writeQueuePromise
+  }
+
+  /**
+   * 单写者队列串行消费缓冲并执行异步落盘与轮转
+   */
+  private async drainBufferAsync(): Promise<void> {
+    while (this.writeBuffer.length > 0) {
+      const batch = this.writeBuffer.splice(0, LoggingService.BATCH_SIZE)
+      this.batchSequence++
+      this.inFlightLines = batch
+
+      try {
+        await fs.promises.appendFile(this.config.filePath, batch.join(''), 'utf8')
+        this.inFlightLines = []
+
+        const stats = await fs.promises.stat(this.config.filePath)
+        if (stats.size > this.config.maxFileSize) {
+          await this.rotateLogFileAsync()
+        }
+      } catch (error) {
+        this.inFlightLines = []
+        console.error('写入日志文件失败:', error)
+      }
+    }
+  }
+
+  /**
+   * 异步等待当前队列所有已入队日志落盘
+   */
+  public async flush(): Promise<void> {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
+    await this.scheduleAsyncFlush()
+  }
+
+  /**
+   * 同步刷盘（退出路径专用）：合并未确认的在途批次与当前缓冲，允许重复、不允许丢失
+   */
+  public flushSync(): void {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer)
+      this.flushTimer = null
+    }
+
+    const linesToFlush = [...this.inFlightLines, ...this.writeBuffer]
+    this.inFlightLines = []
+    this.writeBuffer = []
+
+    if (linesToFlush.length === 0) {
+      return
+    }
+
+    try {
+      fs.appendFileSync(this.config.filePath, linesToFlush.join(''), 'utf8')
       const stats = fs.statSync(this.config.filePath)
       if (stats.size > this.config.maxFileSize) {
         this.rotateLogFile()
       }
     } catch (error) {
       console.error('写入日志文件失败:', error)
+    }
+  }
+
+  /**
+   * 获取异步写队列诊断指标（供单测与排障使用）
+   */
+  public getQueueStats(): {
+    buffered: number
+    inFlight: number
+    droppedCount: number
+    lastBatchId: number
+  } {
+    return {
+      buffered: this.writeBuffer.length,
+      inFlight: this.inFlightLines.length,
+      droppedCount: this.droppedBufferCount,
+      lastBatchId: this.batchSequence
+    }
+  }
+
+  /**
+   * 异步轮转日志文件（在单写者队列内执行，杜绝与批量写交错）
+   */
+  private async rotateLogFileAsync(): Promise<void> {
+    const logDir = path.dirname(this.config.filePath)
+    const logName = path.basename(this.config.filePath, '.log')
+
+    const oldestFile = path.join(logDir, `${logName}.${this.config.maxFiles}.log`)
+    try {
+      await fs.promises.unlink(oldestFile)
+    } catch (err: any) {
+      if (err?.code !== 'ENOENT') throw err
+    }
+
+    for (let i = this.config.maxFiles - 1; i >= 1; i--) {
+      const oldFile = i === 1 ? this.config.filePath : path.join(logDir, `${logName}.${i}.log`)
+      const newFile = path.join(logDir, `${logName}.${i + 1}.log`)
+      try {
+        await fs.promises.rename(oldFile, newFile)
+      } catch (err: any) {
+        if (err?.code !== 'ENOENT') throw err
+      }
     }
   }
 
@@ -590,6 +735,12 @@ export class LoggingService {
    */
   public updateConfig(config: Partial<typeof this.config>): void {
     this.config = { ...this.config, ...config }
+    if (config.filePath) {
+      const logDir = path.dirname(config.filePath)
+      if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true })
+      }
+    }
     this.info(LogCategory.LOGGING_SERVICE, '日志配置已更新')
   }
 

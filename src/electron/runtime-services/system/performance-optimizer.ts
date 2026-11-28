@@ -7,22 +7,12 @@
 import { EventEmitter } from 'events'
 import { performance } from 'perf_hooks'
 import { memoryManager } from './memory-manager'
-// TODO: 实现这些模块
-// import { concurrencyController } from './concurrency-controller';
-// import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
+import { llamaServerService } from '@firefly/electron-llamaIndex-service'
+import { LicenseService, LicenseStatus } from './license-service'
 import { loggingService } from './logging-service'
 import { IChatRequest } from '@firefly/types/llama-server'
 import { logger, LogCategory } from '@firefly/shared'
 import { t } from '@app/languages'
-
-// 临时占位符 - TODO: 实现 concurrencyController
-// 注意：getStats 必须返回 queuedRequests 字段，与 getCurrentMetrics 的读取保持一致
-const concurrencyController = {
-  getStats: () => ({ activeRequests: 0, queuedRequests: 0, maxConcurrency: 4 }),
-  updateMaxConcurrency: (_: number) => {},
-  clearQueue: () => {},
-  reset: () => {}
-} as any
 
 /**
  * 性能指标接口
@@ -207,6 +197,7 @@ export class PerformanceOptimizer extends EventEmitter {
   private requestStartTimes: Map<string, number> = new Map()
   /** 当前生效的并发数（动态调整值，独立于配置中的 minConcurrency/maxConcurrency 边界） */
   private currentConcurrency = 4
+  private hasWarnedNoOptimizeMemory = false
 
   constructor() {
     super()
@@ -276,7 +267,8 @@ export class PerformanceOptimizer extends EventEmitter {
         priority: 1,
         cooldown: 15000, // 15秒冷却，防高频自激振荡
         lastExecuted: 0,
-        enabled: true
+        // D-N2-1: 真实 ConcurrencyController 未暴露并发写接口，默认关闭以保持真实请求并发上限不变
+        enabled: false
       },
       {
         name: 'increase-concurrency',
@@ -297,7 +289,8 @@ export class PerformanceOptimizer extends EventEmitter {
         priority: 2,
         cooldown: 30000,
         lastExecuted: 0,
-        enabled: true
+        // D-N2-1: 真实 ConcurrencyController 未暴露并发写接口，默认关闭以保持真实请求并发上限不变
+        enabled: false
       },
       {
         name: 'optimize-memory',
@@ -317,7 +310,8 @@ export class PerformanceOptimizer extends EventEmitter {
         priority: 4,
         cooldown: 10000,
         lastExecuted: 0,
-        enabled: true
+        // D-N2-1: 真实 ConcurrencyController.clearQueue() 会直接 reject 排队用户请求，默认关闭
+        enabled: false
       }
     ]
 
@@ -335,7 +329,7 @@ export class PerformanceOptimizer extends EventEmitter {
       lastUpdate: new Date()
     }
 
-    this.initializeService()
+    // TM-01: 构造函数不自动启动周期性性能监控，按需显式调用 startPerformanceMonitoring()
   }
 
   /**
@@ -358,6 +352,19 @@ export class PerformanceOptimizer extends EventEmitter {
   }
 
   /**
+   * 校验当前授权是否已确认（B7 安全门禁：未授权或宽限过渡态禁止执行预热与自动优化）
+   */
+  private async isLicenseConfirmed(): Promise<boolean> {
+    try {
+      const result = await LicenseService.getInstance().checkLicenseStatus()
+      return result.status === LicenseStatus.AUTHORIZED
+    } catch (error) {
+      loggingService.warn(LogCategory.PERFORMANCE_OPTIMIZER, '授权状态检查失败，跳过优化动作', error)
+      return false
+    }
+  }
+
+  /**
    * 执行模型预热
    */
   async warmupModel(): Promise<IWarmupResult> {
@@ -370,6 +377,22 @@ export class PerformanceOptimizer extends EventEmitter {
         failedRequests: 0,
         avgResponseTime: 0,
         errors: ['预热功能未启用']
+      }
+    }
+
+    if (!(await this.isLicenseConfirmed())) {
+      loggingService.info(
+        LogCategory.PERFORMANCE_OPTIMIZER,
+        '授权未确认或处于宽限过渡态，跳过模型预热'
+      )
+      return {
+        success: false,
+        duration: 0,
+        requestCount: 0,
+        successfulRequests: 0,
+        failedRequests: 0,
+        avgResponseTime: 0,
+        errors: ['授权未确认，跳过模型预热']
       }
     }
 
@@ -470,8 +493,9 @@ export class PerformanceOptimizer extends EventEmitter {
       // 获取内存信息
       const memoryInfo = await memoryManager.getCurrentMemoryInfo()
 
-      // 获取并发统计
-      const concurrencyStats = concurrencyController.getStats()
+      // 获取真实并发统计（来自 llamaServerService 私有 httpClient）
+      const perfStats = await llamaServerService.getPerformanceStats()
+      const concurrencyStats = perfStats.concurrency
 
       // 计算CPU使用率
       const cpuUsage = this.calculateCpuUsage()
@@ -515,6 +539,14 @@ export class PerformanceOptimizer extends EventEmitter {
    * 启动性能监控
    */
   startPerformanceMonitoring(): void {
+    if (process.env.FF_DISABLE_PERF_TIMERS === '1') {
+      loggingService.debug(
+        LogCategory.PERFORMANCE_OPTIMIZER,
+        'FF_DISABLE_PERF_TIMERS=1，跳过启动性能监控'
+      )
+      return
+    }
+
     if (this.monitoringTimer) {
       this.stopPerformanceMonitoring()
     }
@@ -528,6 +560,7 @@ export class PerformanceOptimizer extends EventEmitter {
         loggingService.error(LogCategory.PERFORMANCE_OPTIMIZER, '性能检查失败', error)
       }
     }, monitoringInterval)
+    this.monitoringTimer.unref?.()
 
     loggingService.debug(
       LogCategory.PERFORMANCE_OPTIMIZER,
@@ -564,6 +597,14 @@ export class PerformanceOptimizer extends EventEmitter {
   }> {
     if (this.isOptimizing && !forceOptimization) {
       throw new Error(t('性能优化正在进行中'))
+    }
+
+    if (!(await this.isLicenseConfirmed())) {
+      loggingService.info(
+        LogCategory.PERFORMANCE_OPTIMIZER,
+        '授权未确认或处于宽限过渡态，跳过自动性能优化'
+      )
+      return { executed: [], skipped: [], errors: [] }
     }
 
     this.isOptimizing = true
@@ -789,12 +830,29 @@ export class PerformanceOptimizer extends EventEmitter {
   }
 
   /**
-   * 发送预热请求
+   * 发送预热请求（仅直连本地已就绪 llamaServerService，零云端路由/零配额扣减/不计入熔断器）
    */
   private async sendWarmupRequest(): Promise<void> {
-    // 这里应该调用实际的HTTP客户端发送请求
-    // 为了简化，我们模拟一个请求
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500))
+    if (!(await this.isLicenseConfirmed())) {
+      loggingService.info(
+        LogCategory.PERFORMANCE_OPTIMIZER,
+        '授权未确认或处于宽限过渡态，跳过预热请求'
+      )
+      return
+    }
+
+    if (llamaServerService.getStatus() !== 'running') {
+      const msg = '本地 Llama 服务未运行，跳过预热请求'
+      loggingService.warn(LogCategory.PERFORMANCE_OPTIMIZER, msg)
+      throw new Error(msg)
+    }
+
+    await llamaServerService.chatCompletion({
+      model: this.warmupConfig.requestTemplate.model,
+      messages: this.warmupConfig.requestTemplate.messages,
+      temperature: this.warmupConfig.requestTemplate.temperature ?? 0.4,
+      maxTokens: Math.min(this.warmupConfig.requestTemplate.maxTokens ?? 16, 16)
+    })
   }
 
   /**
@@ -851,112 +909,51 @@ export class PerformanceOptimizer extends EventEmitter {
    * 不修改配置中的 maxConcurrency 上限，避免上限被永久性下调后无法回升。
    */
   private async reduceConcurrency(): Promise<boolean> {
-    try {
-      const previous = this.currentConcurrency
-      const newCurrent = Math.max(
-        previous - this.concurrencyOptimizationConfig.adjustmentStep,
-        this.concurrencyOptimizationConfig.minConcurrency
-      )
-
-      if (newCurrent < previous) {
-        concurrencyController.updateMaxConcurrency(newCurrent)
-        this.currentConcurrency = newCurrent
-
-        loggingService.debug(
-          LogCategory.PERFORMANCE_OPTIMIZER,
-          `并发数已降低: ${previous} -> ${newCurrent}`
-        )
-        return true
-      }
-
-      // 已处于最小并发数，属于正常边界情况而非失败
-      loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '并发数已处于下限，无需降低')
-      return true
-    } catch (error) {
-      loggingService.error(LogCategory.PERFORMANCE_OPTIMIZER, '降低并发数失败', error)
-      return false
-    }
+    loggingService.warn(
+      LogCategory.PERFORMANCE_OPTIMIZER,
+      'reduceConcurrency 已停用：llamaServerService 并发控制器未暴露写接口'
+    )
+    return false
   }
 
   /**
    * 增加并发数
    *
-   * 注意：以配置的 maxConcurrency 作为固定上限，
-   * 基于 currentConcurrency 递增；原实现误将上限同时当作当前值参与运算，
-   * 导致 newMax 恒等于 currentMax、策略永远返回 false 而周期性报错。
+   * D-N2-1: 真实 ConcurrencyController 未暴露写接口，保留方法签名但不修改真实并发上限。
    */
   private async increaseConcurrency(): Promise<boolean> {
-    try {
-      const previous = this.currentConcurrency
-      const newCurrent = Math.min(
-        previous + this.concurrencyOptimizationConfig.adjustmentStep,
-        this.concurrencyOptimizationConfig.maxConcurrency
-      )
-
-      if (newCurrent > previous) {
-        concurrencyController.updateMaxConcurrency(newCurrent)
-        this.currentConcurrency = newCurrent
-
-        loggingService.debug(
-          LogCategory.PERFORMANCE_OPTIMIZER,
-          `并发数已增加: ${previous} -> ${newCurrent}`
-        )
-        return true
-      }
-
-      // 已达到最大并发数上限，属于正常边界情况而非失败
-      loggingService.debug(LogCategory.PERFORMANCE_OPTIMIZER, '并发数已处于上限，无需增加')
-      return true
-    } catch (error) {
-      loggingService.error(LogCategory.PERFORMANCE_OPTIMIZER, '增加并发数失败', error)
-      return false
-    }
+    loggingService.warn(
+      LogCategory.PERFORMANCE_OPTIMIZER,
+      'increaseConcurrency 已停用：llamaServerService 并发控制器未暴露写接口'
+    )
+    return false
   }
 
   /**
    * 优化内存
    */
   private async optimizeMemory(): Promise<boolean> {
-    try {
-      const result = (await (memoryManager as any).optimizeMemory?.()) || []
-      const totalMemoryReleased = result.reduce(
-        (sum: number, r: any) => sum + (r.success ? r.memoryReleased : 0),
-        0
-      )
-
-      loggingService.debug(
+    if (!this.hasWarnedNoOptimizeMemory) {
+      this.hasWarnedNoOptimizeMemory = true
+      loggingService.warn(
         LogCategory.PERFORMANCE_OPTIMIZER,
-        `内存优化完成，释放内存: ${totalMemoryReleased}MB`
+        '无可执行的内存优化：MemoryManager 未提供 optimizeMemory 实现'
       )
-
-      return totalMemoryReleased > 0
-    } catch (error) {
-      loggingService.error(LogCategory.PERFORMANCE_OPTIMIZER, '内存优化失败', error)
-      return false
     }
+    return false
   }
 
   /**
    * 清理队列
+   *
+   * D-N2-1: 真实 ConcurrencyController 未暴露写接口且 clearQueue 会直接 reject 排队用户请求。
    */
   private async clearQueue(): Promise<boolean> {
-    try {
-      const statsBefore = concurrencyController.getStats()
-      concurrencyController.clearQueue()
-      const statsAfter = concurrencyController.getStats()
-
-      const clearedRequests = statsBefore.queuedRequests - statsAfter.queuedRequests
-
-      loggingService.debug(
-        LogCategory.PERFORMANCE_OPTIMIZER,
-        `队列已清理，清除请求数: ${clearedRequests}`
-      )
-
-      return clearedRequests > 0
-    } catch (error) {
-      loggingService.error(LogCategory.PERFORMANCE_OPTIMIZER, '清理队列失败', error)
-      return false
-    }
+    loggingService.warn(
+      LogCategory.PERFORMANCE_OPTIMIZER,
+      'clearQueue 已停用：llamaServerService 并发控制器未暴露写接口'
+    )
+    return false
   }
 
 /**

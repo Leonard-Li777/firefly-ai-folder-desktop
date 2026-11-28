@@ -909,6 +909,7 @@ export class AnalysisQueueService {
     this.isProcessingLoopActive = true
     let loopAbortGen = this.abortGeneration
 
+    // [N3] 周期巡检已停用（2026-11-27 决策），未启动时仅更新配置与记日志；可用性由各能力用时检查保证
     systemHealthService.updateMonitoringInterval(30000)
     cloudSyncWorker.updateInterval(30000)
     this.orphanWatchdog.start()
@@ -1198,6 +1199,7 @@ export class AnalysisQueueService {
     this.running = false
     this.current = undefined
     this.isProcessingLoopActive = false
+    // [N3] 周期巡检已停用（2026-11-27 决策），未启动时仅更新配置与记日志；可用性由各能力用时检查保证
     systemHealthService.updateMonitoringInterval(300000)
     cloudSyncWorker.updateInterval(300000)
     await updateVirtualDirectoriesAfterQueueCompletion()

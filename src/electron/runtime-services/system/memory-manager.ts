@@ -210,7 +210,7 @@ export class MemoryManager extends EventEmitter {
       lastUpdate: new Date()
     }
 
-    this.initializeService()
+    // TM-01: 构造函数不自动启动周期性内存监控，按需显式调用 startMemoryMonitoring()
   }
 
   /**
@@ -292,6 +292,11 @@ export class MemoryManager extends EventEmitter {
    * 启动内存监控
    */
   startMemoryMonitoring(): void {
+    if (process.env.FF_DISABLE_PERF_TIMERS === '1') {
+      loggingService.debug(LogCategory.MEMORY_MANAGER, 'FF_DISABLE_PERF_TIMERS=1，跳过启动内存监控')
+      return
+    }
+
     if (this.monitoringTimer) {
       this.stopMemoryMonitoring()
     }
@@ -303,6 +308,7 @@ export class MemoryManager extends EventEmitter {
         loggingService.error(LogCategory.MEMORY_MANAGER, '内存检查失败', error)
       }
     }, this.monitoringConfig.monitoringInterval)
+    this.monitoringTimer.unref?.()
 
     loggingService.debug(
       LogCategory.MEMORY_MANAGER,

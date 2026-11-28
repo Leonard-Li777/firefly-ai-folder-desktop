@@ -379,6 +379,12 @@ export function registerFileIPCHandlers() {
       if (!syncedDirectories.has(dirPath)) {
         logger.info(LogCategory.MAIN, `[Main] 首次访问目录，触发同步: ${dirPath}`)
         syncedDirectories.add(dirPath)
+        // TM-13: 插入超 100 时按 FIFO 批量裁回 50，取代 5 分钟周期定时器
+        if (syncedDirectories.size > 100) {
+          const entries = Array.from(syncedDirectories)
+          syncedDirectories.clear()
+          entries.slice(-50).forEach(dir => syncedDirectories.add(dir))
+        }
         fileWatcherService.syncDirectory(dirPath).catch(err => {
           const isPermErr = err?.code === 'EPERM' || err?.code === 'EACCES'
           if (isPermErr) {

@@ -128,6 +128,7 @@ const gotSingleInstanceLock = isE2EMode ? true : app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   console.log(`[App] 检测到已有实例正在运行 (${worktreeInfo.appName})，本实例直接退出。`)
   app.quit()
+  loggingService.flushSync()
   process.exit(0)
 }
 
@@ -1042,6 +1043,7 @@ app.on('ready', async () => {
       } catch (err) {
         logger.error(LogCategory.MAIN, '[Test] 初始化或注入失败，应用将退出:', err)
         console.error('=== FIREFLY_CRASH: 测试模式初始化失败 ===', err)
+        loggingService.flushSync()
         app.exit(1)
         return
       }
@@ -1052,6 +1054,7 @@ app.on('ready', async () => {
   } catch (error) {
     logger.error(LogCategory.MAIN, '[App] 最小服务初始化失败:', error)
     console.error('=== FIREFLY_CRASH: 最小服务初始化失败 ===', error)
+    loggingService.flushSync()
     app.exit(1)
     return
   }
@@ -1121,6 +1124,7 @@ app.on('before-quit', event => {
   // 兜底超时：任一 await（如 omniService.stop）挂起时不能让应用永不退出
   const forceExitTimer = setTimeout(() => {
     logger.warn(LogCategory.MAIN, '[R2-8] 退出清理超时(10s)，强制退出以免遗留孤儿进程')
+    loggingService.flushSync()
     app.exit(1)
   }, 10_000)
   forceExitTimer.unref?.()
@@ -1142,6 +1146,22 @@ app.on('before-quit', event => {
       }
       await fileWatcherService.cleanup()
       await systemHealthService.stop()
+      LicenseService.getInstance().stopTimeMonitor()
+      const [
+        { memoryManager },
+        { resourceManager },
+        { performanceOptimizer },
+        { voiceArchiveService }
+      ] = await Promise.all([
+        import('../runtime-services/system/memory-manager'),
+        import('../runtime-services/system/resource-manager'),
+        import('../runtime-services/system/performance-optimizer'),
+        import('../runtime-services/audio/voice-archive-service')
+      ])
+      memoryManager.stopMemoryMonitoring()
+      resourceManager.stopResourceMonitoring()
+      performanceOptimizer.stopPerformanceMonitoring()
+      voiceArchiveService.stopCleanupTimer()
       // 停止事件循环延迟监控并释放直方图/定时器
       stopEventLoopDelayMonitor()
       // 退出关库前优雅关停分析队列、Worker 线程、孤儿 watchdog 并冲刷防抖 FTS 与尾钩子，防止末批漏索引
@@ -1190,6 +1210,7 @@ app.on('before-quit', event => {
     } finally {
       clearTimeout(forceExitTimer)
       // 清理失败以非零码退出，禁止用 exit(0) 掩盖 R2-8 时序故障
+      loggingService.flushSync()
       app.exit(cleanupFailed ? 1 : 0)
     }
   })()
@@ -1238,6 +1259,7 @@ const handleProcessTermination = () => {
     const { engineBridgeService } = require('../runtime-services/engine-bridge')
     engineBridgeService.stopSyncForSignal()
   } catch {}
+  loggingService.flushSync()
   process.exit(0)
 }
 process.on('SIGINT', handleProcessTermination)

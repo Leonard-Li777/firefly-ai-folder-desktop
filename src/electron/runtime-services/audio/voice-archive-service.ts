@@ -109,6 +109,7 @@ export class VoiceArchiveService {
   private static instance: VoiceArchiveService
   private tempVoices = new Map<string, TempVoiceData>()
   private presetVoicesCache: VoiceMeta[] | null = null
+  private cleanupTimer: ReturnType<typeof setInterval> | null = null
 
   private constructor() {
     // 监听 Omni 服务启动就绪事件，崩溃重启时自动全量重放注册用户自定义音色
@@ -121,12 +122,23 @@ export class VoiceArchiveService {
     })
 
     // 定期 5 分钟扫描清理过期的临时暂存特征码
-    setInterval(
+    this.cleanupTimer = setInterval(
       () => {
         this.cleanupExpiredTempVoices()
       },
       5 * 60 * 1000
     )
+    this.cleanupTimer.unref?.()
+  }
+
+  /**
+   * 停止临时音色清理定时器（before-quit 清理路径调用）
+   */
+  public stopCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer)
+      this.cleanupTimer = null
+    }
   }
 
   public static getInstance(): VoiceArchiveService {
