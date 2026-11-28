@@ -51,8 +51,12 @@ jobs:
       mac_x64_dmg_name: ${{ steps.get_release.outputs.mac_x64_dmg_name }}
       linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
       linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
+      linux_deb_arm64_url: ${{ steps.get_release.outputs.linux_deb_arm64_url }}
+      linux_deb_arm64_name: ${{ steps.get_release.outputs.linux_deb_arm64_name }}
       linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
       linux_rpm_name: ${{ steps.get_release.outputs.linux_rpm_name }}
+      linux_rpm_arm64_url: ${{ steps.get_release.outputs.linux_rpm_arm64_url }}
+      linux_rpm_arm64_name: ${{ steps.get_release.outputs.linux_rpm_arm64_name }}
       app_name: ${{ steps.get_release.outputs.app_name }}
     steps:
       - name: Fetch Release Information
@@ -148,26 +152,46 @@ jobs:
               core.setOutput('mac_x64_dmg_name', macX64Dmg.name);
             }
 
-            // Linux .deb
-            const deb = assets.find(a => {
+            // Linux .deb (精确区分 x64/amd64 与 arm64/aarch64，防止 ubuntu-latest 误取 arm64 包)
+            const debCandidates = assets.filter(a => {
               const n = a.name.toLowerCase();
               return (n.endsWith('.deb') || n.endsWith('.appimage')) && (n.includes(region) || !n.includes('intl'));
-            }) || assets.find(a => a.name.toLowerCase().endsWith('.deb') || a.name.toLowerCase().endsWith('.appimage'));
-            if (deb) {
-              core.info(`Selected Linux DEB: ${deb.name}`);
-              core.setOutput('linux_deb_url', deb.browser_download_url);
-              core.setOutput('linux_deb_name', deb.name);
+            });
+            const debPool = debCandidates.length > 0
+              ? debCandidates
+              : assets.filter(a => a.name.toLowerCase().endsWith('.deb') || a.name.toLowerCase().endsWith('.appimage'));
+            const debAmd64 = debPool.find(a => !/arm64|aarch64/i.test(a.name)) || debPool[0];
+            const debArm64 = debPool.find(a => /arm64|aarch64/i.test(a.name));
+            if (debAmd64) {
+              core.info(`Selected Linux DEB (x64): ${debAmd64.name}`);
+              core.setOutput('linux_deb_url', debAmd64.browser_download_url);
+              core.setOutput('linux_deb_name', debAmd64.name);
+            }
+            if (debArm64) {
+              core.info(`Selected Linux DEB (arm64): ${debArm64.name}`);
+              core.setOutput('linux_deb_arm64_url', debArm64.browser_download_url);
+              core.setOutput('linux_deb_arm64_name', debArm64.name);
             }
 
-            // Linux .rpm
-            const rpm = assets.find(a => {
+            // Linux .rpm (精确区分 x86_64/amd64 与 aarch64/arm64)
+            const rpmCandidates = assets.filter(a => {
               const n = a.name.toLowerCase();
               return n.endsWith('.rpm') && (n.includes(region) || !n.includes('intl'));
-            }) || assets.find(a => a.name.toLowerCase().endsWith('.rpm'));
-            if (rpm) {
-              core.info(`Selected Linux RPM: ${rpm.name}`);
-              core.setOutput('linux_rpm_url', rpm.browser_download_url);
-              core.setOutput('linux_rpm_name', rpm.name);
+            });
+            const rpmPool = rpmCandidates.length > 0
+              ? rpmCandidates
+              : assets.filter(a => a.name.toLowerCase().endsWith('.rpm'));
+            const rpmAmd64 = rpmPool.find(a => !/arm64|aarch64/i.test(a.name)) || rpmPool[0];
+            const rpmArm64 = rpmPool.find(a => /arm64|aarch64/i.test(a.name));
+            if (rpmAmd64) {
+              core.info(`Selected Linux RPM (x64): ${rpmAmd64.name}`);
+              core.setOutput('linux_rpm_url', rpmAmd64.browser_download_url);
+              core.setOutput('linux_rpm_name', rpmAmd64.name);
+            }
+            if (rpmArm64) {
+              core.info(`Selected Linux RPM (arm64): ${rpmArm64.name}`);
+              core.setOutput('linux_rpm_arm64_url', rpmArm64.browser_download_url);
+              core.setOutput('linux_rpm_arm64_name', rpmArm64.name);
             }
 
   # ==============================================================================

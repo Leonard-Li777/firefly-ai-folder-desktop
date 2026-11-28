@@ -40,12 +40,20 @@ on:
         type: boolean
         default: true
       linux_runner:
-        description: '选择 Linux 构建的运行 Runner 环境 (默认 ubuntu-latest)'
+        description: '选择 Linux x64 构建的运行 Runner 环境 (默认 ubuntu-latest)'
         required: false
         type: choice
         default: 'ubuntu-latest'
         options:
           - 'ubuntu-latest'
+          - 'self-hosted'
+      linux_arm64_runner:
+        description: '选择 Linux ARM64 构建的运行 Runner 环境 (默认 ubuntu-22.04-arm)'
+        required: false
+        type: choice
+        default: 'ubuntu-22.04-arm'
+        options:
+          - 'ubuntu-22.04-arm'
           - 'self-hosted'
       build_region:
         description: '构建区域 (release 通道沿用单母包 dualChannels 输出双清单)'
@@ -921,14 +929,23 @@ jobs:
             out/make/**/*.ini
 
   build-linux:
-    name: Build Linux (${{ matrix.maker }})
+    name: Build Linux (${{ matrix.arch.name }} / ${{ matrix.maker }})
     needs: [plan]
     if: needs.plan.outputs.build_linux == 'true'
-    runs-on: ${{ github.event.inputs.linux_runner || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch.runner }}
     strategy:
       fail-fast: false
       matrix:
         maker: [deb, rpm]
+        arch:
+          - name: x64
+            runner: ${{ github.event.inputs.linux_runner || 'ubuntu-latest' }}
+            build_arch: x64
+            cache_suffix: x64
+          - name: arm64
+            runner: ${{ github.event.inputs.linux_arm64_runner || 'ubuntu-22.04-arm' }}
+            build_arch: arm64
+            cache_suffix: arm64
     container:
       # Debian 12 (bookworm, glibc 2.36)：满足 firefly-omni 引擎的 glibc 2.34+ 要求，
       # omni 引擎在打包产物中完整可用（老系统 Debian 10/11 已不再支持）
@@ -937,6 +954,7 @@ jobs:
       NPM_CONFIG_UNSAFE_PERM: 'true'
       PYTHON: python3
       LINUX_MAKER: ${{ matrix.maker }}
+      BUILD_ARCH: ${{ matrix.arch.build_arch }}
     steps:
       - name: Checkout Open-Source Desktop Code (Pinned to target_sha)
         uses: actions/checkout@v4
@@ -1097,9 +1115,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build/presetResources
-          key: llama-presets-linux-v3-${{ hashFiles('build/extraResources/configs/preset-resources.lock.json', 'pro/extraResources/configs/preset-resources.lock.json') }}
+          key: llama-presets-linux-${{ matrix.arch.cache_suffix }}-v3-${{ hashFiles('build/extraResources/configs/preset-resources.lock.json', 'pro/extraResources/configs/preset-resources.lock.json') }}
           restore-keys: |
-            llama-presets-linux-v3-
+            llama-presets-linux-${{ matrix.arch.cache_suffix }}-v3-
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -1286,7 +1304,7 @@ jobs:
         if: needs.plan.outputs.release_channel == 'dev'
         uses: actions/upload-artifact@v4
         with:
-          name: dev-linux-${{ matrix.maker }}
+          name: dev-linux-${{ matrix.maker }}-${{ matrix.arch.name }}
           retention-days: 7
           path: |
             out/make/**/*.deb
