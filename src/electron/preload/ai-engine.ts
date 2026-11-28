@@ -1,6 +1,7 @@
 // 由 preload.ts 按领域分片（工单 01 preload IPC 桥拆分）。正文为原 electronAPI 区间逐字节等价搬运、零行为改动、零顶层 key 增删。
 
 import type { AIClassificationResult } from '@firefly/types'
+import type { GenerativeEngineSnapshot } from '@firefly/shared'
 import type { EngineBridgeSnapshot } from '../runtime-services/engine-bridge'
 import { ipcRenderer } from 'electron'
 import { logger } from './shared-context'
@@ -37,7 +38,12 @@ export const aiEngineApi = {
 
   // 引擎桥接 (Tier 2 上层 AI 引擎监控与指令)
   engineBridge: {
-    getStatus: (): Promise<EngineBridgeSnapshot> => ipcRenderer.invoke('engine-bridge/get-status'),
+    /**
+     * 实时探活引擎状态。后台兜底 / 断连重同步探活必须传 `{ recordFailure: false }`
+     * （EQ-6：防止停机静置期误开熔断器）；用户显式刷新走默认计入熔断。
+     */
+    getStatus: (options?: { recordFailure?: boolean }): Promise<EngineBridgeSnapshot> =>
+      ipcRenderer.invoke('engine-bridge/get-status', options),
     getExeInfo: (): Promise<{ available: boolean; path: string | null; devMode: boolean }> =>
       ipcRenderer.invoke('engine-bridge/get-exe-info'),
     start: (): Promise<boolean> => ipcRenderer.invoke('engine-bridge/start'),
@@ -75,7 +81,17 @@ export const aiEngineApi = {
     getSnapshot: () => ipcRenderer.invoke('llm-gateway/get-snapshot'),
     setDesiredMode: (mode: string) => ipcRenderer.invoke('llm-gateway/set-desired-mode', mode),
     preheat: (options?: { wait?: boolean }) => ipcRenderer.invoke('llm-gateway/preheat', options),
-    drain: (waitDrainMs?: number) => ipcRenderer.invoke('llm-gateway/drain', waitDrainMs)
+    drain: (waitDrainMs?: number) => ipcRenderer.invoke('llm-gateway/drain', waitDrainMs),
+    /**
+     * 订阅主进程网关快照变更推送（TM-W2 / J-02）：
+     * 主进程在全部状态变更写出口合帧广播，渲染层据此废除周期轮询。
+     */
+    onSnapshotChanged: (callback: (snapshot: GenerativeEngineSnapshot) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, snapshot: GenerativeEngineSnapshot) =>
+        callback(snapshot)
+      ipcRenderer.on('llm-gateway/snapshot-changed', handler)
+      return () => ipcRenderer.removeListener('llm-gateway/snapshot-changed', handler)
+    }
   },
 
   // 邀请服务

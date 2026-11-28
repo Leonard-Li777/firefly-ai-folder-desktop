@@ -7,7 +7,7 @@
  *   - docs/developer/references/public-services-catalog.md
  */
 
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import {
@@ -24,7 +24,16 @@ import {
   sanitizeUnicodeContent
 } from '@firefly/shared'
 import type { TaskSpec, FinishReason } from './task-specs/types'
-import { emitRuntimeContextChange } from '../system/workspace-runtime-context-bus'
+import {
+  emitRuntimeContextChange,
+  subscribeRuntimeContextChange
+} from '../system/workspace-runtime-context-bus'
+import {
+  broadcastToRenderers,
+  createBroadcastCoalescer,
+  type BroadcastCoalescer
+} from '@pro/perf/broadcast'
+import type { EngineBridgeSnapshot } from '../engine-bridge/engine-bridge-service/types'
 import {
   shortNameTaskSpec,
   type ShortNameInput,
@@ -43,6 +52,13 @@ import { OmniService } from '../system/omni-service'
 import { modularResourceService } from '../system/modular-resource-service'
 import { EngineBridgeService, engineBridgeService } from '../engine-bridge/engine-bridge-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
+
+/**
+ * 网关快照变更推送通道（TM-W2 / J-02）：
+ * 主进程在全部状态变更写出口经 150ms 合帧后向所有渲染窗口推送最新
+ * `GenerativeEngineSnapshot`，渲染层据此废除 3s/5s 周期轮询。
+ */
+export const LLM_GATEWAY_SNAPSHOT_CHANNEL = 'llm-gateway/snapshot-changed'
 
 export type GatewayErrorCode =
   | 'MODE_DISABLED'
@@ -219,6 +235,109 @@ export class LlmGatewayService implements ILlmGatewayService {
 
   public invalidateCpuProbeCache(): void {
     this.cachedCpuInstallState = null
+    // 安装探测缓存失效意味着下一次快照可能给出不同安装态，立即推送对齐渲染层
+    this.notifySnapshotChanged('cpu_probe_cache_invalidated')
+  }
+
+  // ------------------------------------------------------------------
+  // 状态推送（TM-W2 / J-02）：全变更点事件驱动，空闲 0 定时器唤醒
+  // ------------------------------------------------------------------
+
+  /** 快照合帧广播器（惰性创建；150ms leading+trailing 合帧防风暴） */
+  private snapshotCoalescer: BroadcastCoalescer | null = null
+  /** 上一次推送的快照签名：状态未实质变化时跳过推送（消除每次推理成功后的冗余广播） */
+  private lastPushedSignature: string | null = null
+  /** 引擎桥接订阅是否已接线（构造期一次性） */
+  private statusPushWired = false
+  /** 最近一次映射出的本地底座运行态（仅真实跃迁时递增 contextEpoch） */
+  private lastLocalRuntime: GenerativeEngineRuntimeState['local'] | null = null
+
+  /**
+   * 接线状态推送源（构造期调用一次）：
+   * 1. 订阅引擎桥接快照广播：本地底座真实运行态跃迁时推送网关快照，
+   *    并 emit 运行时上下文变更（供 WorkspaceRuntimeContextService 重算生效模式）；
+   * 2. 订阅运行时上下文总线的模块态变更（module_*）：CPU 安装探测缓存失效并推送。
+   */
+  private wireStatusPush(): void {
+    if (this.statusPushWired) return
+    this.statusPushWired = true
+    try {
+      engineBridgeService.subscribe(snapshot => {
+        const mapped = this.mapBridgeSnapshotToLocalRuntime(snapshot)
+        if (mapped !== this.lastLocalRuntime) {
+          this.lastLocalRuntime = mapped
+          this.notifySnapshotChanged('engine_bridge_status_changed')
+          emitRuntimeContextChange('generative_engine_runtime_changed')
+        }
+      })
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGateway] 订阅引擎桥接状态推送失败:', err)
+    }
+    subscribeRuntimeContextChange(reason => {
+      if (reason.startsWith('module_')) {
+        this.invalidateCpuProbeCache()
+      }
+    })
+  }
+
+  /**
+   * 引擎桥接快照 → 本地底座运行态映射（系统红线：严格区分宿主 HTTP 200 与真实状态）。
+   * `connected` 仅代表宿主进程 HTTP 可响应；推理服务是否可用必须以 `raw.status` 为准：
+   * 宿主重启后 HTTP 立刻 200 但服务仍是 stopped（2026-10-30 事故形态），
+   * 此时必须映射为 'stopped'，绝不允许伪装成可用。
+   */
+  private mapBridgeSnapshotToLocalRuntime(
+    snapshot: Pick<EngineBridgeSnapshot, 'connected' | 'raw'>
+  ): GenerativeEngineRuntimeState['local'] {
+    if (!snapshot.connected) return 'stopped'
+    const status = snapshot.raw?.status
+    if (status === 'ready' || status === 'processing') return 'ready'
+    if (status === 'starting') return 'loading'
+    if (status === 'error') return 'failed'
+    // stopped / stopping / 未知上报：一律按不可用处理（fail-closed）
+    return 'stopped'
+  }
+
+  /**
+   * 状态变更写出口统一推送：快照签名去重后经合帧器广播给全部渲染窗口。
+   * 仅在真实变更点调用（模式切换 / 预热 / 排空 / 推理成败 / 桥接跃迁 / 模块态变更），
+   * 无任何周期定时器，引擎静止空闲时 0 唤醒。
+   */
+  private notifySnapshotChanged(reason: string): void {
+    try {
+      const snap = this.getSnapshot()
+      const signature = JSON.stringify([
+        snap.desiredMode,
+        snap.effectiveMode,
+        snap.unavailableReason ?? null,
+        snap.installation,
+        snap.runtime,
+        snap.cpuCrashCount,
+        snap.routeEpoch,
+        snap.cpuLastError ?? null
+      ])
+      if (signature === this.lastPushedSignature) return
+      this.lastPushedSignature = signature
+      if (!this.snapshotCoalescer) {
+        this.snapshotCoalescer = createBroadcastCoalescer({
+          logger: {
+            warn: (message, error) => logger.warn(LogCategory.SYSTEM, message, error)
+          },
+          send: (channel, payload) => {
+            if (typeof BrowserWindow?.getAllWindows !== 'function') return
+            broadcastToRenderers(BrowserWindow.getAllWindows(), channel, payload)
+          }
+        })
+      }
+      this.snapshotCoalescer.schedule(
+        { kind: 'llm-gateway-snapshot' },
+        LLM_GATEWAY_SNAPSHOT_CHANNEL,
+        () => this.getSnapshot()
+      )
+      logger.debug(LogCategory.SYSTEM, `[LlmGateway] 状态推送: ${reason}`)
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGateway] 状态推送失败:', err)
+    }
   }
 
   /**
@@ -249,6 +368,7 @@ export class LlmGatewayService implements ILlmGatewayService {
   private constructor() {
     this.initModeFromConfig()
     this.loadCrashState()
+    this.wireStatusPush()
   }
 
   public static getInstance(): LlmGatewayService {
@@ -331,6 +451,7 @@ export class LlmGatewayService implements ILlmGatewayService {
             if (this.desiredMode !== newMode) {
               this.desiredMode = newMode as GenerativeEngineMode
               this.routeEpoch++
+              this.notifySnapshotChanged('desired_mode_config_changed')
             }
           }
         }
@@ -480,13 +601,20 @@ export class LlmGatewayService implements ILlmGatewayService {
   }
 
   /**
-   * 探测本地高级引擎运行时状态
+   * 探测本地高级引擎运行时状态。
+   * 以引擎桥接的真实状态快照为权威源（raw.status），严禁把「宿主 HTTP 探活 200」
+   * 当作推理服务可用；桥接不可读时显式 warn 并按 stopped 处理（fail-closed）。
    */
   private probeLocalRuntime(): 'ready' | 'loading' | 'stopped' | 'failed' {
     if (this.runtimeOverride?.local) {
       return this.runtimeOverride.local
     }
-    return 'stopped'
+    try {
+      return this.mapBridgeSnapshotToLocalRuntime(engineBridgeService.getSnapshot())
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[LlmGateway] 读取引擎桥接真实运行态失败:', err)
+      return 'stopped'
+    }
   }
 
   /**
@@ -590,6 +718,10 @@ export class LlmGatewayService implements ILlmGatewayService {
       }
     } catch {}
 
+    // 推送必须在配置持久化之后：getSnapshot 以 ConfigOrchestrator 为 desiredMode
+    // 单一事实源，提前推送会读到旧配置并回退desiredMode、诱发配置监听器重复递增 routeEpoch
+    this.notifySnapshotChanged('desired_mode_changed')
+
     // 状态双向对齐与引擎互斥逻辑 (TASK-04 / 插件中心与全局设置双向互斥对齐)
     if (mode === 'cpu') {
       try {
@@ -644,12 +776,23 @@ export class LlmGatewayService implements ILlmGatewayService {
         await engineBridgeService.shutdown()
       } catch {}
     }
+    // 互斥对齐（插件启停 / 引擎关停 / 排空）完成后安装态与运行态可能已变化，再推送一次终态
+    this.notifySnapshotChanged('desired_mode_alignment_settled')
   }
 
   /**
-   * 显式预热底座模型 (可解开 CRASH_LOOP 熔断)
+   * 显式预热底座模型 (可解开 CRASH_LOOP 熔断)。
+   * 预热终态（成功 / 失败 / 跳过）统一经推送通道对齐渲染层，无需前端轮询等待。
    */
   public async preheat(options?: { wait?: boolean }): Promise<void> {
+    try {
+      await this.preheatInternal(options)
+    } finally {
+      this.notifySnapshotChanged('cpu_preheat_settled')
+    }
+  }
+
+  private async preheatInternal(options?: { wait?: boolean }): Promise<void> {
     const configMode = ConfigOrchestrator?.getInstance?.()?.getValue?.('AI_SERVICE_MODE') as
       | GenerativeEngineMode
       | undefined
@@ -679,6 +822,7 @@ export class LlmGatewayService implements ILlmGatewayService {
     }
 
     this.cpuRuntimeState = 'loading'
+    this.notifySnapshotChanged('cpu_preheat_loading')
 
     // 自动拉起底座微服务 (firefly-omni)，消除因微服务未启动导致的 fetch failed
     try {
@@ -773,6 +917,7 @@ export class LlmGatewayService implements ILlmGatewayService {
         method: 'DELETE'
       })
       this.cpuRuntimeState = 'stopped'
+      this.notifySnapshotChanged('cpu_drained')
     } catch {}
   }
 
@@ -932,6 +1077,7 @@ export class LlmGatewayService implements ILlmGatewayService {
         }
         this.cpuRuntimeState = 'failed'
         this.saveCrashState()
+        this.notifySnapshotChanged('cpu_chat_crashed')
         throw new LlmGatewayError('ENGINE_CRASHED', `Pocket CPU 发生故障 (500)`)
       }
       if (res.status >= 500) {
@@ -942,6 +1088,8 @@ export class LlmGatewayService implements ILlmGatewayService {
 
     const data = await res.json()
     this.cpuRuntimeState = 'ready'
+    // 签名去重保证稳态推理（ready→ready）不产生冗余广播
+    this.notifySnapshotChanged('cpu_chat_ready')
     const rawText = data?.choices?.[0]?.message?.content || ''
     const finishReason = (data?.choices?.[0]?.finish_reason as FinishReason) || 'stop'
 
@@ -1133,6 +1281,7 @@ export class LlmGatewayService implements ILlmGatewayService {
         }
         this.cpuRuntimeState = 'failed'
         this.saveCrashState()
+        this.notifySnapshotChanged('cpu_chat_crashed')
         throw new LlmGatewayError('ENGINE_CRASHED', `Pocket CPU 发生故障 (500)`)
       }
       if (res.status >= 500) {
@@ -1143,6 +1292,8 @@ export class LlmGatewayService implements ILlmGatewayService {
 
     const data = await res.json()
     this.cpuRuntimeState = 'ready'
+    // 签名去重保证稳态推理（ready→ready）不产生冗余广播
+    this.notifySnapshotChanged('cpu_chat_ready')
     const rawText = data?.choices?.[0]?.message?.content || ''
     const finishReason = (data?.choices?.[0]?.finish_reason as FinishReason) || 'stop'
 

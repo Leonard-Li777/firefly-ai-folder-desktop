@@ -6,6 +6,7 @@ import {
   type WorkspaceRuntimeContext,
   type WorkspaceRuntimeContextSnapshot as SharedRuntimeContextSnapshot
 } from '@firefly/shared'
+import { broadcastToRenderers } from '@pro/perf/broadcast'
 import type { HardwareInfo } from '@firefly/types'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../database/database-service'
@@ -325,6 +326,9 @@ export class WorkspaceRuntimeContextService {
         this.broadcast()
       })
     }, MERGE_WINDOW_MS)
+    // 合并窗口定时器不阻止进程退出；事件驱动触发，引擎静止空闲时 0 定时器唤醒（TM-W2 / J-02）
+    const timer = this.mergeTimer as unknown as { unref?: () => void }
+    timer.unref?.()
   }
 
   /** LibreOffice 手动复检入口（UI 可调用）：仅 installed 变化时触发 notifyChanged。 */
@@ -448,19 +452,23 @@ export class WorkspaceRuntimeContextService {
       libreOfficeInstalled: this.libreOfficeInstalled,
       userTier,
       tierReady,
+      // 显式视频推理后端属冷启动装配事实，refresh 重建快照时必须保留，不得静默丢失
+      videoInferenceBackend: this.snapshot.videoInferenceBackend ?? 'unknown',
       hardwareInfo
     }
   }
 
   private broadcast(): void {
     const envelope = this.getSnapshotEnvelope()
-    for (const win of BrowserWindow.getAllWindows()) {
-      if (win.isDestroyed()) continue
-      try {
-        win.webContents.send(WORKSPACE_RUNTIME_CONTEXT_CHANNEL, envelope)
-      } catch (error) {
-        logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 广播失败:', error)
-      }
+    try {
+      // 统一广播入口（TM-W2 / J-02）：逐窗存活校验，单窗故障不吞其余窗口推送
+      broadcastToRenderers(
+        BrowserWindow.getAllWindows(),
+        WORKSPACE_RUNTIME_CONTEXT_CHANNEL,
+        envelope
+      )
+    } catch (error) {
+      logger.warn(LogCategory.SYSTEM, '[WorkspaceRuntimeContext] 广播失败:', error)
     }
   }
 }

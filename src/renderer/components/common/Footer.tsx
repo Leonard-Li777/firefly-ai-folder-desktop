@@ -29,15 +29,10 @@ import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
 import { useWorkspaceRuntimeContext } from '@/renderer/stores/workspace-runtime-context-store'
+import { useLlmGatewaySnapshot } from '@/renderer/hooks/useLlmGatewaySnapshot'
 import { EnvRecoveryBanner } from './EnvRecoveryBanner'
 import { toast } from '@/renderer/components/common/Toast'
-import {
-  compareVersions,
-  LogCategory,
-  logger,
-  ErrorNormalizer,
-  type GenerativeEngineSnapshot
-} from '@firefly/shared'
+import { compareVersions, LogCategory, logger, ErrorNormalizer } from '@firefly/shared'
 import { PersistentTooltip } from '@/renderer/components/common/PersistentTooltip'
 import { EnergyTransparencyBadge } from '@/renderer/components/common/EnergyTransparencyBadge'
 
@@ -162,30 +157,9 @@ export function Footer() {
     currentAiServiceMode === 'local' && isAdvancedAiEnabled && engineOnline === false
 
   // 大模型统一网关快照状态，用于精准驱动轻量CPU引擎状态
-  const [llmSnapshot, setLlmSnapshot] = useState<GenerativeEngineSnapshot | null>(null)
-  useEffect(() => {
-    let isMounted = true
-    const fetchLlmSnapshot = async () => {
-      try {
-        if (window.electronAPI?.llmGateway?.getSnapshot) {
-          const snap = await window.electronAPI.llmGateway.getSnapshot()
-          if (isMounted) {
-            setLlmSnapshot(snap)
-          }
-        }
-      } catch (err) {
-        // 静默捕获
-      }
-    }
-    void fetchLlmSnapshot()
-    const timer = setInterval(() => {
-      void fetchLlmSnapshot()
-    }, 3000)
-    return () => {
-      isMounted = false
-      clearInterval(timer)
-    }
-  }, [])
+  // TM-W2 / J-02：废除原 3s 周期轮询，改为共享 push 订阅（与引擎设置页共用一条
+  // 订阅与一个受控退避兜底控制器）；仅启动未就绪 / 断连窗口兜底拉取，就绪后停表。
+  const { snapshot: llmSnapshot } = useLlmGatewaySnapshot()
 
   /**
    * 引导条点击链路（PRD-0043）：

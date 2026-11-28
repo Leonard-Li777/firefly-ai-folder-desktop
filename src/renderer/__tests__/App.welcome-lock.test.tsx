@@ -11,7 +11,11 @@ vi.mock('../styles.css', () => ({}))
 
 vi.mock('@firefly/shared', () => ({
   LogCategory: { RENDERER: 'renderer' },
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() }
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+  // plugin-center-store 冷启动装配需要目录元数据与槽位归一化（测试给空目录即可）
+  normalizeCapabilitySlot: (slot: string) => slot,
+  BUILTIN_MODULE_CATALOG_META: {},
+  BUILTIN_PLUGIN_CATALOG_META: {}
 }))
 
 vi.mock('@app/languages', () => ({
@@ -58,7 +62,9 @@ vi.mock('../components/ai/AIClassificationHandler', () => ({ AIClassificationHan
 vi.mock('../components/analysis/AnalysisQueueModal', () => ({ AnalysisQueueModal: () => null }))
 vi.mock('../components/analysis/QueueSplitPanel', () => ({ QueueSplitPanel: () => null }))
 vi.mock('../components/analysis/QueueWindowPage', () => ({ QueueWindowPage: () => null }))
-vi.mock('../components/analysis/ExtensionReconciliationDialog', () => ({ ExtensionReconciliationDialog: () => null }))
+vi.mock('../components/analysis/ExtensionReconciliationDialog', () => ({
+  ExtensionReconciliationDialog: () => null
+}))
 vi.mock('../components/analysis/AnalysisConfirmModal', () => ({ AnalysisConfirmModal: () => null }))
 vi.mock('../components/common/Footer', () => ({ Footer: () => null }))
 vi.mock('../components/file-explorer/RealDirectory', () => ({ RealDirectory: () => null }))
@@ -66,19 +72,31 @@ vi.mock('../components/settings', () => ({
   SystemSettingsDialog: () => null,
   WorkspaceSettingsDialog: () => null
 }))
-vi.mock('../components/file-explorer/AnalyzedDirectory/index', () => ({ AnalyzedDirectory: () => null }))
-vi.mock('../components/file-explorer/VirtualDirectory/index', () => ({ VirtualDirectory: () => null }))
+vi.mock('../components/file-explorer/AnalyzedDirectory/index', () => ({
+  AnalyzedDirectory: () => null
+}))
+vi.mock('../components/file-explorer/VirtualDirectory/index', () => ({
+  VirtualDirectory: () => null
+}))
 vi.mock('../components/file-explorer/PreviewOverlay', () => ({ PreviewOverlay: () => null }))
 vi.mock('../components/file-explorer/SplitPreviewPanel', () => ({ SplitPreviewPanel: () => null }))
 vi.mock('../components/file-explorer/Organize/index', () => ({ Organize: () => null }))
-vi.mock('../components/file-explorer/GlobalSearchOverlay', () => ({ GlobalSearchOverlay: () => null }))
-vi.mock('../components/plugin-center/PluginCenterOverlay', () => ({ PluginCenterOverlay: () => null }))
+vi.mock('../components/file-explorer/GlobalSearchOverlay', () => ({
+  GlobalSearchOverlay: () => null
+}))
+vi.mock('../components/plugin-center/PluginCenterOverlay', () => ({
+  PluginCenterOverlay: () => null
+}))
 vi.mock('../components/tier/FirecoresRulesDialog', () => ({ FirecoresRulesDialog: () => null }))
 vi.mock('../components/tier/UpgradeAccountDialog', () => ({ UpgradeAccountDialog: () => null }))
 vi.mock('../components/tier/DeviceBindModal', () => ({ DeviceBindModal: () => null }))
 vi.mock('../components/update/UpdateNotification', () => ({ UpdateNotification: () => null }))
-vi.mock('../components/common/CrossRegionNoticeBanner', () => ({ CrossRegionNoticeBanner: () => null }))
-vi.mock('../components/ui/theme-provider', () => ({ useTheme: () => ({ theme: 'light', setTheme: vi.fn() }) }))
+vi.mock('../components/common/CrossRegionNoticeBanner', () => ({
+  CrossRegionNoticeBanner: () => null
+}))
+vi.mock('../components/ui/theme-provider', () => ({
+  useTheme: () => ({ theme: 'light', setTheme: vi.fn() })
+}))
 vi.mock('../hooks/useInvitation', () => ({ useInvitation: () => {} }))
 
 vi.mock('../stores/tier-store', () => ({
@@ -138,7 +156,9 @@ vi.mock('../stores/settings-store', () => ({
   })
 }))
 vi.mock('../stores/ai-service-store', () => ({
-  useAIServiceInitialization: () => ({ initializeAIService: vi.fn().mockResolvedValue(undefined) })
+  useAIServiceInitialization: () => ({ initializeAIService: vi.fn().mockResolvedValue(undefined) }),
+  // TM-W2 / J-02：App 启动兜底 checkAIStatus 依赖热切换守卫（测试恒非切换态）
+  isModelSwitchingActive: () => false
 }))
 vi.mock('../stores/app-store', () => ({
   useAIModelStore: Object.assign(() => ({}), {

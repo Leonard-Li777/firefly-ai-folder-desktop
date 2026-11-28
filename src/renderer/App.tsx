@@ -15,7 +15,7 @@ import { QueueWindowPage } from './components/analysis/QueueWindowPage'
 import { ExtensionReconciliationDialog } from './components/analysis/ExtensionReconciliationDialog'
 import { AnalysisConfirmModal } from './components/analysis/AnalysisConfirmModal'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
-import { SettingsCategory } from '@firefly/types'
+import { SettingsCategory, AIServiceStatus } from '@firefly/types'
 import { Footer } from './components/common/Footer'
 import { RealDirectory } from './components/file-explorer/RealDirectory'
 import { SystemSettingsDialog, WorkspaceSettingsDialog } from './components/settings'
@@ -35,7 +35,9 @@ import { LicenseGateway } from './components/license/LicenseGateway'
 import { t, i18nScope } from '@app/languages'
 import { useAIModelStore } from './stores/app-store'
 import { useModelStore } from './stores/model-store'
-import { useAIServiceInitialization } from './stores/ai-service-store'
+import { useAIServiceInitialization, isModelSwitchingActive } from './stores/ai-service-store'
+import { useEngineStore } from './stores/engine-store'
+import { createPushFirstFallback, isSettledAIStatus } from './lib/push-first-fallback'
 import { useSettingsStore } from './stores/settings-store'
 import { useTheme } from './components/ui/theme-provider'
 import { usePreviewOverlayStore } from './stores/preview-overlay-store'
@@ -652,11 +654,20 @@ const App: React.FC = () => {
     }
   }, [])
 
-  const checkAIStatus = useCallback(async () => {
+  /**
+   * 拉取并对齐 AI 服务状态（启动兜底 / 可见性重同步用，非周期轮询）。
+   * 返回 true 表示已到达真实终态（就绪 / 推理中 / 真实异常 / 真实停止），可停退避表。
+   */
+  const checkAIStatus = useCallback(async (): Promise<boolean> => {
     try {
       if (window.electronAPI) {
         const aiStatus: any = await window.electronAPI.getAIStatus()
-        const isRunning = aiStatus?.status === 'running'
+        // 防状态覆盖：模型热切换期间的瞬态 STOPPED 不得覆盖加载态
+        //（与 model-store push 监听器同一守卫口径）
+        if (isModelSwitchingActive() && aiStatus?.status === AIServiceStatus.STOPPED) {
+          return false
+        }
+        const isRunning = aiStatus?.status === AIServiceStatus.PROCESSING
         useAIModelStore.getState().setModelStatus(isRunning ? 'loaded' : 'idle', isRunning)
 
         // 关键修复：同时更新 useModelStore，Footer 是从 useModelStore 读取服务状态的
@@ -671,10 +682,12 @@ const App: React.FC = () => {
           useModelStore.getState().setVramRequiredGB(aiStatus.vramRequiredGB)
           useModelStore.getState().setTotalSizeBytes(aiStatus.totalSizeBytes)
         }
+        return isSettledAIStatus(aiStatus?.status)
       }
     } catch (error) {
       logger.error(LogCategory.RENDERER, '检查AI状态失败:', error)
     }
+    return false
   }, [])
 
   const initializeApplication = useCallback(async () => {
@@ -753,18 +766,42 @@ const App: React.FC = () => {
     }
   }, [initializeApplication, startupPhase])
 
-  // 定期轮询 AI 状态，作为 onModelStatusChanged IPC 事件的回退机制
-  // 确保 Footer 始终能正确显示 AI 服务状态
+  // TM-W2 / J-02：废除原 15s 常驻轮询。模型 / 服务状态由 ai-model-status-changed
+  // push 权威驱动（model-store / ai-service-store 模块级监听）；此处仅保留
+  // 「启动未就绪窗口」的受控退避兜底，到达真实终态后立即停表（空闲 0 定时器唤醒）；
+  // 切回可见时一次性重同步（引擎裸探活 recordFailure:false，EQ-6 防误开熔断）。
   useEffect(() => {
     if (startupPhase !== 'ready') return
 
     reportRendererStartupMark('renderer:phase:ready')
 
-    const pollInterval = setInterval(() => {
-      checkAIStatus()
-    }, 15000) // 每15秒轮询一次
+    const pushAvailable = typeof window.electronAPI?.onModelStatusChanged === 'function'
+    const fallback = createPushFirstFallback({
+      pull: checkAIStatus,
+      pushAvailable
+    })
+    fallback.start()
 
-    return () => clearInterval(pollInterval)
+    // 终态 push 到达即停启动退避表（push 优先，兜底仅作启动 / 断连窗口补位）
+    const unsubscribe = window.electronAPI?.onModelStatusChanged?.(payload => {
+      if (isSettledAIStatus(payload?.status)) {
+        fallback.notifyReady()
+      }
+    })
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== 'visible') return
+      void checkAIStatus()
+      // 极端断连窗口重同步：裸探活不计入熔断（EQ-6）
+      void useEngineStore.getState().load({ recordFailure: false })
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      fallback.dispose()
+      unsubscribe?.()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [startupPhase, checkAIStatus])
 
   // 注册后台萤火变更通知监听

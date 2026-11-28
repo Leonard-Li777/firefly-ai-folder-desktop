@@ -67,8 +67,12 @@ interface EngineStoreState {
   snapshot: EngineBridgeSnapshotUI | null
   /** 是否正在拉取快照 */
   loading: boolean
-  /** 主动拉取一次实时快照（经主进程 healthCheck） */
-  load: () => Promise<void>
+  /**
+   * 主动拉取一次实时快照（经主进程 healthCheck）。
+   * 后台兜底 / 断连重同步探活必须传 `{ recordFailure: false }`
+   * （EQ-6：防止停机静置期误开熔断器）；用户显式刷新走默认计入熔断。
+   */
+  load: (options?: { recordFailure?: boolean }) => Promise<void>
   /** 拉取初始快照并订阅主进程广播；返回取消订阅函数 */
   subscribe: () => () => void
 }
@@ -107,13 +111,15 @@ export const useEngineStore = create<EngineStoreState>((set, get) => ({
   snapshot: null,
   loading: false,
 
-  load: async () => {
+  load: async (options?: { recordFailure?: boolean }) => {
     if (!window.electronAPI?.engineBridge) {
       return
     }
     set({ loading: true })
     try {
-      const snap = (await window.electronAPI.engineBridge.getStatus()) as EngineBridgeSnapshotUI
+      const snap = (await window.electronAPI.engineBridge.getStatus(
+        options
+      )) as EngineBridgeSnapshotUI
       set({ snapshot: snap })
       healStaleAiServiceErrors(snap)
     } catch (e) {

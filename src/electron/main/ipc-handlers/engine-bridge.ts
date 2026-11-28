@@ -7,23 +7,28 @@ import { t } from '@app/languages'
  * 引擎桥接 IPC 处理器（Tier 2 监控面板 / 控制指令）
  */
 export function registerEngineBridgeIPCHandlers() {
-  ipcMain.handle('engine-bridge/get-status', async () => {
-    // 若引擎正处于启动拉起流程中，避免瞬态探活失败清空状态并向前端广播离线，防止界面反复抖动
-    if (engineBridgeService.isStartingNow()) {
+  ipcMain.handle(
+    'engine-bridge/get-status',
+    async (_event, options?: { recordFailure?: boolean }) => {
+      // 若引擎正处于启动拉起流程中，避免瞬态探活失败清空状态并向前端广播离线，防止界面反复抖动
+      if (engineBridgeService.isStartingNow()) {
+        return engineBridgeService.getSnapshot()
+      }
+      // PRD-0043：Footer 等渲染层需实时探活结果，而非缓存快照
+      // 直接调用 healthCheck() 向外部引擎发起实时状态查询。
+      // EQ-6（TM-W2 / J-02）：启动兜底 / 断连窗口重同步等后台探活必须传
+      // `{ recordFailure: false }` 走裸探活，防止停机静置期误开熔断器。
+      const status = await engineBridgeService.healthCheck(options)
+      if (status) {
+        // 统一经 applyStatus 写入状态、刷新缓存并按需广播，消除 lastRawStatus 直写绕过
+        engineBridgeService.applyStatus(status)
+        return engineBridgeService.getSnapshot()
+      }
+      // 探活失败：清空缓存并按需广播离线，消除私有属性下标访问
+      engineBridgeService.applyOffline()
       return engineBridgeService.getSnapshot()
     }
-    // PRD-0043：Footer 等渲染层需实时探活结果，而非缓存快照
-    // 直接调用 healthCheck() 向外部引擎发起实时状态查询
-    const status = await engineBridgeService.healthCheck()
-    if (status) {
-      // 统一经 applyStatus 写入状态、刷新缓存并按需广播，消除 lastRawStatus 直写绕过
-      engineBridgeService.applyStatus(status)
-      return engineBridgeService.getSnapshot()
-    }
-    // 探活失败：清空缓存并按需广播离线，消除私有属性下标访问
-    engineBridgeService.applyOffline()
-    return engineBridgeService.getSnapshot()
-  })
+  )
 
   ipcMain.handle('engine-bridge/get-exe-info', async () => {
     return engineBridgeService.getExeInfo()

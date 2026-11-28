@@ -26,9 +26,10 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { AIErrorType, AIServiceStatus } from '@firefly/types'
-import { ErrorNormalizer, type GenerativeEngineSnapshot } from '@firefly/shared'
+import { ErrorNormalizer } from '@firefly/shared'
 import { useAIServiceStore } from '../../stores/ai-service-store'
 import { useEngineStore } from '../../stores/engine-store'
+import { useLlmGatewaySnapshot } from '../../hooks/useLlmGatewaySnapshot'
 import { toast } from '../common/Toast'
 import { CloudModelConfigSettings } from './cloud-model-config-settings'
 import { CloudErrorCard } from './cloud-error-card'
@@ -125,26 +126,9 @@ export const AIEngineConfigSettings: React.FC = () => {
   }, [aiServiceMode])
 
   // 大模型统一网关快照状态 (TASK-04 / Spec §5.3)
-  const [llmSnapshot, setLlmSnapshot] = useState<GenerativeEngineSnapshot | null>(null)
-
-  const fetchLlmSnapshot = React.useCallback(async () => {
-    try {
-      if (window.electronAPI?.llmGateway?.getSnapshot) {
-        const snap = await window.electronAPI.llmGateway.getSnapshot()
-        setLlmSnapshot(snap)
-      }
-    } catch (err) {
-      console.warn('获取 LLM 网关快照失败:', err)
-    }
-  }, [])
-
-  useEffect(() => {
-    void fetchLlmSnapshot()
-    const timer = setInterval(() => {
-      void fetchLlmSnapshot()
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [fetchLlmSnapshot])
+  // TM-W2 / J-02：废除原 5s 周期轮询，改为与 Footer 共享的 push 订阅；
+  // 仅启动未就绪 / 断连窗口经统一受控退避兜底拉取，就绪后停表（0 常驻定时器）。
+  const { snapshot: llmSnapshot, refresh: refreshLlmSnapshot } = useLlmGatewaySnapshot()
 
   // 3秒过渡平滑与逃生按钮机制 (TASK-04 / Spec §5.2 / AC-03)
   const [switchingTarget, setSwitchingTarget] = useState<ActiveEngineMode | null>(null)
@@ -966,7 +950,7 @@ export const AIEngineConfigSettings: React.FC = () => {
 
           {/* 轻量CPU分支：通俗大白话仪表盘 (仅开发者模式呈现) */}
           {isDeveloperMode && isCpuBranch && (
-            <CpuEngineDashboard snapshot={llmSnapshot} onRefresh={fetchLlmSnapshot} />
+            <CpuEngineDashboard snapshot={llmSnapshot} onRefresh={refreshLlmSnapshot} />
           )}
 
           {/* 云端分支：错误卡片 + 云端模型配置区 + 思考模式 */}
