@@ -12,44 +12,94 @@ export function useFileMultimodalContent(filePath: string): {
   const [multimodalContent, setMultimodalContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const lastSeenStatusRef = useRef<string | null>(null)
+  const seenTerminalDeltaKeysRef = useRef<Set<string>>(new Set())
+  const requestSeqRef = useRef<number>(0)
+  const isMountedRef = useRef<boolean>(true)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   const fetchContent = useCallback(async () => {
+    const seq = ++requestSeqRef.current
     if (!filePath) {
-      setMultimodalContent(null)
-      setLoading(false)
+      if (isMountedRef.current) {
+        setMultimodalContent(null)
+        setLoading(false)
+      }
       return
     }
 
-    setLoading(true)
+    if (isMountedRef.current) setLoading(true)
     try {
       const result = await window.electronAPI?.getFileAnalysisResult?.(filePath)
+      if (!isMountedRef.current || seq !== requestSeqRef.current) return
       setMultimodalContent(result?.multimodalContent || null)
     } catch {
+      if (!isMountedRef.current || seq !== requestSeqRef.current) return
       setMultimodalContent(null)
     } finally {
-      setLoading(false)
+      if (isMountedRef.current && seq === requestSeqRef.current) {
+        setLoading(false)
+      }
     }
   }, [filePath])
 
   // 1. 当 filePath 变化时，立即请求一次
   useEffect(() => {
     lastSeenStatusRef.current = null
+    seenTerminalDeltaKeysRef.current.clear()
     fetchContent()
   }, [fetchContent])
 
-  // 2. 监听分析队列更新事件，当该文件分析完成时立即刷新
+  // 2. 监听分析队列更新事件，当该文件分析完成时立即刷新（接入双轨 terminalDeltas）
   useEffect(() => {
     if (!filePath || !window.electronAPI?.onAnalysisQueueUpdated) return
 
-    const cleanup = window.electronAPI.onAnalysisQueueUpdated((snapshot: any) => {
+    const cleanup = window.electronAPI.onAnalysisQueueUpdated((rawPayload: any) => {
       const isPathEqual = window.electronAPI?.utils?.isPathEqual
+      const isDualTrack = Boolean(
+        rawPayload &&
+        typeof rawPayload === 'object' &&
+        'snapshot' in rawPayload &&
+        rawPayload.snapshot
+      )
+      const snapshot = isDualTrack ? rawPayload.snapshot : rawPayload
+      const terminalDeltas: any[] =
+        isDualTrack && Array.isArray(rawPayload.terminalDeltas) ? rawPayload.terminalDeltas : []
+
+      let handledByDelta = false
+      for (const delta of terminalDeltas) {
+        const matched =
+          delta?.path && (isPathEqual ? isPathEqual(delta.path, filePath) : delta.path === filePath)
+        if (!matched) continue
+        const dedupeKey = `${delta.id}:${delta.status}:${delta.updatedAt}`
+        if (seenTerminalDeltaKeysRef.current.has(dedupeKey)) continue
+        seenTerminalDeltaKeysRef.current.add(dedupeKey)
+        if (delta.status === 'completed') {
+          handledByDelta = true
+          lastSeenStatusRef.current = 'completed'
+          fetchContent()
+        } else {
+          lastSeenStatusRef.current = delta.status
+        }
+      }
+      if (handledByDelta) return
+
       const items = snapshot?.items || []
       const queueItem = items.find((i: any) =>
         i.path && isPathEqual ? isPathEqual(i.path, filePath) : i.path === filePath
       )
 
       if (queueItem) {
-        if (queueItem.status === 'completed' && lastSeenStatusRef.current !== 'completed') {
+        if (
+          !isDualTrack &&
+          queueItem.status === 'completed' &&
+          lastSeenStatusRef.current !== 'completed'
+        ) {
           lastSeenStatusRef.current = 'completed'
           fetchContent()
         } else {

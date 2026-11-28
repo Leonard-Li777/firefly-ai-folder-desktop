@@ -59,6 +59,7 @@ export function useFileDetails(
   const lastSeenStatusRef = useRef<string | null>(null)
   const reanalyzeStartTimeRef = useRef<number>(0)
   const lastSeenUpdatedAtRef = useRef<number>(0)
+  const seenTerminalDeltaKeysRef = useRef<Set<string>>(new Set())
   const requestSeqRef = useRef<number>(0)
   const analysisResultRef = useRef<any>(null)
   analysisResultRef.current = analysisResult
@@ -123,7 +124,11 @@ export function useFileDetails(
     if (!targetPath) {
       setReanalyzing(false)
       setQueueStatus(null)
+      lastSeenUpdatedAtRef.current = 0
+      seenTerminalDeltaKeysRef.current.clear()
     } else {
+      lastSeenUpdatedAtRef.current = 0
+      seenTerminalDeltaKeysRef.current.clear()
       const { isPathEqual } = window.electronAPI!.utils || {
         isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
       }
@@ -236,16 +241,70 @@ export function useFileDetails(
     onFileUpdated
   ])
 
-  // 监听分析队列更新（支持单文件与目录画像队列项）
+  // 监听分析队列更新（支持单文件与目录画像队列项，接入双轨 terminalDeltas）
   useEffect(() => {
     const targetPath =
       item?.path || (item as any)?.originalPath || currentDirectoryPath || workspaceDirectoryPath
     if (!targetPath) return
 
-    const cleanup = window.electronAPI!.onAnalysisQueueUpdated((snapshot: any) => {
+    let cancelled = false
+    const pendingTimers = new Set<ReturnType<typeof setTimeout>>()
+
+    const scheduleTerminalRefresh = (bypassCache: boolean) => {
+      const timer = setTimeout(() => {
+        pendingTimers.delete(timer)
+        if (cancelled) return
+        refreshAnalysis(bypassCache ? { bypassCache: true } : undefined)
+        if (onFileUpdated) {
+          onFileUpdated()
+        }
+      }, 200)
+      pendingTimers.add(timer)
+    }
+
+    const cleanup = window.electronAPI!.onAnalysisQueueUpdated((rawPayload: any) => {
       const { isPathEqual } = window.electronAPI!.utils || {
         isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
       }
+      const isDualTrack = Boolean(
+        rawPayload &&
+        typeof rawPayload === 'object' &&
+        'snapshot' in rawPayload &&
+        rawPayload.snapshot
+      )
+      const snapshot = isDualTrack ? rawPayload.snapshot : rawPayload
+      const terminalDeltas: any[] =
+        isDualTrack && Array.isArray(rawPayload.terminalDeltas) ? rawPayload.terminalDeltas : []
+
+      let terminalDeltaHit = false
+      for (const delta of terminalDeltas) {
+        if (!delta?.path || !isPathEqual(delta.path, targetPath)) continue
+        const dedupeKey = `${delta.id}:${delta.status}:${delta.updatedAt}`
+        if (seenTerminalDeltaKeysRef.current.has(dedupeKey)) continue
+        seenTerminalDeltaKeysRef.current.add(dedupeKey)
+        terminalDeltaHit = true
+
+        lastSeenStatusRef.current = delta.status
+        lastSeenUpdatedAtRef.current = delta.updatedAt || Date.now()
+
+        if (delta.status === 'completed') {
+          if (Date.now() - (delta.updatedAt || 0) < 5000) {
+            toast.success(isDirectory ? t('目录画像分析完成') : t('分析完成'))
+          }
+        } else if (delta.status === 'failed') {
+          toast.error(t('分析失败: {}', [delta.error]) || t('未知错误'))
+        }
+
+        setReanalyzing(false)
+        setQueueStatus(null)
+        scheduleTerminalRefresh(true)
+      }
+
+      // B1 / V-03：terminalDeltas 命中并触发 200ms 刷新后，必须跳过下方兜底清空分支，杜绝同一终态双刷
+      if (terminalDeltaHit) {
+        return
+      }
+
       const queueItem = snapshot?.items?.find((i: any) => i.path && isPathEqual(i.path, targetPath))
 
       if (queueItem) {
@@ -254,6 +313,7 @@ export function useFileDetails(
           queueItem.updatedAt && queueItem.updatedAt > lastSeenUpdatedAtRef.current
 
         if (
+          !isDualTrack &&
           (queueItem.status === 'completed' || queueItem.status === 'failed') &&
           (isStatusChange || isNewTimestamp)
         ) {
@@ -270,13 +330,7 @@ export function useFileDetails(
 
           setReanalyzing(false)
           setQueueStatus(null)
-
-          setTimeout(() => {
-            refreshAnalysis()
-            if (onFileUpdated) {
-              onFileUpdated()
-            }
-          }, 200)
+          scheduleTerminalRefresh(false)
         } else if (queueItem.status === 'analyzing' || queueItem.status === 'pending') {
           setReanalyzing(true)
           setQueueStatus(queueItem.status)
@@ -295,6 +349,11 @@ export function useFileDetails(
     })
 
     return () => {
+      cancelled = true
+      for (const timer of pendingTimers) {
+        clearTimeout(timer)
+      }
+      pendingTimers.clear()
       cleanup()
     }
   }, [

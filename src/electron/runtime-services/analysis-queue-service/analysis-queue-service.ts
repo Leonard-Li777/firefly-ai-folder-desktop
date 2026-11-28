@@ -698,7 +698,7 @@ export class AnalysisQueueService {
       }
 
       this.queueManager = new QueueManager(this.ignoreRules, {
-        onUpdate: () => this.writeDispatcher.emitUpdate()
+        onUpdate: hint => this.writeDispatcher.emitUpdate(hint)
       })
 
       await this.queueManager.loadFromDB()
@@ -1668,6 +1668,7 @@ export class AnalysisQueueService {
       this.writeSetBatchDispatcher.dispose()
     }
     flushFtsSync()
+    this.writeDispatcher.dispose()
     this.aiServiceManager.dispose()
     if (this.canonicalMaintenanceUnsubscribe) {
       try {

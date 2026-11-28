@@ -36,6 +36,20 @@ export interface EnqueueResult {
   blockedWorkspaces: number[]
 }
 
+export interface QueueUpdateHint {
+  wsId?: string | number | null
+  terminalDelta?: {
+    id: number
+    path: string
+    workspaceId?: number | string | null
+    status: 'completed' | 'failed'
+    error?: string
+    updatedAt: number
+    isDirectory?: boolean
+    itemType?: 'file' | 'directory'
+  }
+}
+
 export function pickNextPending(items: AnalysisQueueItem[]): AnalysisQueueItem | undefined {
   let best: AnalysisQueueItem | undefined
   for (const item of items) {
@@ -47,18 +61,24 @@ export function pickNextPending(items: AnalysisQueueItem[]): AnalysisQueueItem |
   return best
 }
 
+/**
+ * 等价性禁改红线（B1 / J-01）：
+ * - 运行期严禁在任务完成后自动从 `this.queue` 剔除 `completed` / `failed` 终态项
+ *   （确保快照兜底展示，副作用仅由 `terminalDeltas` 驱动；崩溃/重载兜底依赖
+ *   queue-manager 持久化状态或上层幂等/重试）。
+ */
 export class QueueManager {
   private queue: AnalysisQueueItem[] = []
   private isInitialized = false
   private ignoreRules: IIgnoreRule[] = []
 
   // 回调函数
-  private onUpdate?: () => void
+  private onUpdate?: (hint?: QueueUpdateHint) => void
 
   constructor(
     ignoreRules: IIgnoreRule[] = [],
     callbacks?: {
-      onUpdate?: () => void
+      onUpdate?: (hint?: QueueUpdateHint) => void
     }
   ) {
     this.ignoreRules = ignoreRules
@@ -937,10 +957,25 @@ export class QueueManager {
       } catch (e) {
         logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 更新目录队列项状态失败:', e)
       }
-      this.emitUpdate()
+      this.emitUpdate({
+        wsId: dirItem.workspaceId ?? null,
+        terminalDelta: {
+          id: dirItem.id,
+          path: dirItem.path,
+          workspaceId: dirItem.workspaceId ?? null,
+          status: 'completed',
+          updatedAt: dirItem.updatedAt,
+          isDirectory: true,
+          itemType: 'directory'
+        }
+      })
     }
   }
 
+  /**
+   * 获取队列快照。
+   * 等价性禁改红线（B1）：运行期不得自动剔除终态项，快照兜底全量展示。
+   */
   getSnapshot(currentItemId?: number, workspaceId?: number): AnalysisQueueSnapshot {
     let items = this.queue.slice()
     if (workspaceId !== undefined && workspaceId !== null) {
@@ -998,7 +1033,7 @@ export class QueueManager {
   getIsInitialized(): boolean {
     return this.isInitialized
   }
-  private emitUpdate(): void {
-    this.onUpdate?.()
+  private emitUpdate(hint?: QueueUpdateHint): void {
+    this.onUpdate?.(hint)
   }
 }

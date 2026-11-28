@@ -608,7 +608,10 @@ class FileWatcherService {
         }
       }
 
-      // 伴生文件乱序重评 (AC-2 / VET-08)
+      // 伴生文件乱序重评 (AC-2 / VET-08) + P0-3 异步化 (IO-14)
+      // 8 个候选扩展名改用 statOrNull 经 mapLimit(8) 并发探测，按原扩展名顺序回填判定与触发，
+      // 消除批量导入时 8 次/主文件的同步 existsSync（§7 目标：8000 → 0）。
+      // 不使用目录缓存：TTL 缓存会漏掉乱序到达的伴生文件导致永久不入库（§9 ALT-4 同一拒绝理由）。
       try {
         const policy = workspaceAdmissionService.getEffectivePolicy(workspaceId)
         const fileExt = path.extname(filePath).toLowerCase()
@@ -616,9 +619,16 @@ class FileWatcherService {
           const dir = path.dirname(filePath)
           const baseStem = path.basename(filePath, path.extname(filePath))
           const COMPANION_EXTS = ['.xmp', '.lrc', '.edl', '.cue', '.vtt', '.srt', '.ass', '.ssa']
-          for (const cExt of COMPANION_EXTS) {
-            const candidatePath = path.join(dir, `${baseStem}${cExt}`)
-            if (fs.existsSync(candidatePath) && !this.processingFiles.has(candidatePath)) {
+          const candidatePaths = COMPANION_EXTS.map(cExt => path.join(dir, `${baseStem}${cExt}`))
+          // mapLimit 按原索引回填结果，判定/触发顺序仍与原扩展名循环完全一致（INV-4 顺序契约）。
+          const probes = await mapLimit(candidatePaths, 8, candidatePath =>
+            statOrNull(candidatePath)
+          )
+          for (let i = 0; i < COMPANION_EXTS.length; i += 1) {
+            const candidatePath = candidatePaths[i]
+            // processingFiles.has 判定时机不变：仍在「探测完成、判定存在之后 / getFileByPath 之前」，
+            // 新增 await 未插入 has 与 add 之间（INV-4）。
+            if (probes[i] && !this.processingFiles.has(candidatePath)) {
               const existing = await databaseService.getFileByPath(candidatePath)
               if (!existing) {
                 void this.handleFileAdded(
@@ -632,8 +642,9 @@ class FileWatcherService {
             }
           }
         }
-      } catch {
-        // 忽略伴生补评异常
+      } catch (error) {
+        // INV-2：禁止静默吞异常，补 logger.warn（原因 + path），控制流不变。
+        logger.warn(LogCategory.FILE_WATCHER, `伴生文件探测失败: ${filePath}`, error)
       }
 
       if (!skipNotify) {

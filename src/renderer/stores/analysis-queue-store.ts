@@ -67,6 +67,149 @@ interface AnalysisQueueState {
 
 const emptySnapshot: AnalysisQueueSnapshot = { items: [], running: false }
 
+export interface AnalysisTerminalDelta {
+  id: number
+  path: string
+  workspaceId?: number | string | null
+  status: 'completed' | 'failed'
+  error?: string
+  updatedAt: number
+  isDirectory?: boolean
+  itemType?: 'file' | 'directory'
+}
+
+export interface AnalysisQueueUpdatePayload {
+  channel?: string
+  wsId?: string
+  seq?: number
+  snapshotSeq?: number
+  resyncRequired?: boolean
+  snapshot: AnalysisQueueSnapshot
+  terminalDeltas?: AnalysisTerminalDelta[]
+}
+
+const GLOBAL_BUCKET_WS = 'global'
+const DEFAULT_BUCKET_KIND = 'analysis-queue'
+const COALESCER_FALLBACK_TIMEOUT_MS = 50
+const MAX_SEEN_TERMINAL_KEYS = 5000
+
+interface NormalizedQueuePayload {
+  isDualTrack: boolean
+  wsId: string
+  kind: string
+  seq?: number
+  snapshotSeq?: number
+  resyncRequired: boolean
+  snapshot: AnalysisQueueSnapshot
+  terminalDeltas: AnalysisTerminalDelta[]
+}
+
+interface RendererBucketState {
+  key: string
+  wsId: string
+  kind: string
+  latestSeq: number
+  pendingSeq?: number
+  pendingSnapshotSeq?: number
+  pendingResync: boolean
+  pendingIsDualTrack: boolean
+  pendingMeta: Omit<AnalysisQueueSnapshot, 'items'> | null
+  pendingItemsById: Map<number, AnalysisQueueItem>
+  latestFullItemIds: Set<number> | null
+  pendingDeltas: AnalysisTerminalDelta[]
+  rafId: number | null
+  timeoutId: ReturnType<typeof setTimeout> | null
+}
+
+function normalizeQueuePayload(raw: unknown): NormalizedQueuePayload {
+  const obj = (raw ?? {}) as Record<string, any>
+  if (obj && typeof obj === 'object' && 'snapshot' in obj && obj.snapshot) {
+    const snap = obj.snapshot as AnalysisQueueSnapshot
+    return {
+      isDualTrack: true,
+      wsId:
+        obj.wsId !== undefined && obj.wsId !== null && obj.wsId !== ''
+          ? String(obj.wsId)
+          : GLOBAL_BUCKET_WS,
+      kind: DEFAULT_BUCKET_KIND,
+      seq: typeof obj.seq === 'number' ? obj.seq : undefined,
+      snapshotSeq: typeof obj.snapshotSeq === 'number' ? obj.snapshotSeq : undefined,
+      resyncRequired: obj.resyncRequired === true,
+      snapshot: snap,
+      terminalDeltas: Array.isArray(obj.terminalDeltas) ? obj.terminalDeltas : []
+    }
+  }
+  const legacySnap = (obj as AnalysisQueueSnapshot) || emptySnapshot
+  return {
+    isDualTrack: false,
+    wsId: GLOBAL_BUCKET_WS,
+    kind: DEFAULT_BUCKET_KIND,
+    seq: undefined,
+    snapshotSeq: undefined,
+    resyncRequired: false,
+    snapshot: legacySnap,
+    terminalDeltas: []
+  }
+}
+
+export function projectSnapshotForWorkspace(
+  raw: AnalysisQueueSnapshot,
+  wsId?: number | string | null
+): AnalysisQueueSnapshot {
+  const rawItems = raw.items || []
+  const filteredItems =
+    wsId !== undefined && wsId !== null && wsId !== ''
+      ? rawItems.filter((i: any) => !i.workspaceId || String(i.workspaceId) === String(wsId))
+      : rawItems
+  return {
+    ...raw,
+    items: filteredItems
+  }
+}
+
+let rawSnapshotState: AnalysisQueueSnapshot = emptySnapshot
+const rendererBuckets = new Map<string, RendererBucketState>()
+const seenTerminalKeys = new Set<string>()
+let hasInitialSnapshotLoaded = false
+let lastRunningState = false
+let latestGlobalSnapshotSeq = 0
+let refreshRequestSeq = 0
+
+function makeTerminalKey(delta: AnalysisTerminalDelta): string {
+  return `${delta.id}:${delta.status}:${delta.updatedAt}`
+}
+
+function rememberTerminalKey(key: string): boolean {
+  if (seenTerminalKeys.has(key)) return false
+  if (seenTerminalKeys.size >= MAX_SEEN_TERMINAL_KEYS) {
+    const oldest = seenTerminalKeys.values().next().value
+    if (oldest !== undefined) seenTerminalKeys.delete(oldest)
+  }
+  seenTerminalKeys.add(key)
+  return true
+}
+
+function mergeRawSnapshotFromRefresh(
+  snap: AnalysisQueueSnapshot,
+  wsId?: number | string | null
+): AnalysisQueueSnapshot {
+  if (!wsId || wsId === 0 || wsId === GLOBAL_BUCKET_WS) {
+    rawSnapshotState = { ...snap, items: (snap.items || []).slice() }
+    return rawSnapshotState
+  }
+  const targetWsStr = String(wsId)
+  const preservedOtherItems = (rawSnapshotState.items || []).filter(
+    (i: any) => i.workspaceId && String(i.workspaceId) !== targetWsStr
+  )
+  const incomingIds = new Set((snap.items || []).map(i => i.id))
+  const mergedOthers = preservedOtherItems.filter(i => !incomingIds.has(i.id))
+  rawSnapshotState = {
+    ...snap,
+    items: [...mergedOthers, ...(snap.items || [])]
+  }
+  return rawSnapshotState
+}
+
 // 全局 Store 单例 Key：防止 Vite dev 模式下同一模块被加载为多个实例
 // （例如 import URL 带 ?t= 与不带 ?t= 的模块缓存分裂），导致 zustand store
 // 被重复创建、各组件订阅不同实例而互不同步（表现为 Footer 点击切换分析队列面板失效）。
@@ -243,10 +386,18 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
     },
 
     refresh: async () => {
+      const reqSeq = ++refreshRequestSeq
       const currentWs = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
       const wsId = currentWs?.id ?? 0
       const snap = await window.electronAPI!.getAnalysisQueue(wsId)
-      set({ snapshot: snap as any })
+      // 若期间发起了更新的 refresh（例如快速切换工作区），丢弃过时响应防覆写
+      if (reqSeq !== refreshRequestSeq) return
+      const latestWsId = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.id
+      const merged = mergeRawSnapshotFromRefresh(
+        (snap as AnalysisQueueSnapshot) || emptySnapshot,
+        wsId
+      )
+      set({ snapshot: projectSnapshotForWorkspace(merged, latestWsId) })
     },
 
     addItems: async (items, forceReanalyze) => {
@@ -368,26 +519,400 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
     }
   }))
 
+function cancelBucketTimers(bucket: RendererBucketState): void {
+  if (bucket.rafId !== null) {
+    if (typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(bucket.rafId)
+    }
+    bucket.rafId = null
+  }
+  if (bucket.timeoutId !== null) {
+    clearTimeout(bucket.timeoutId)
+    bucket.timeoutId = null
+  }
+}
+
+function getOrCreateRendererBucket(wsId: string, kind: string): RendererBucketState {
+  const key = `${wsId}::${kind}`
+  let bucket = rendererBuckets.get(key)
+  if (!bucket) {
+    bucket = {
+      key,
+      wsId,
+      kind,
+      latestSeq: 0,
+      pendingSeq: undefined,
+      pendingResync: false,
+      pendingIsDualTrack: false,
+      pendingMeta: null,
+      pendingItemsById: new Map(),
+      latestFullItemIds: null,
+      pendingDeltas: [],
+      rafId: null,
+      timeoutId: null
+    }
+    rendererBuckets.set(key, bucket)
+  }
+  return bucket
+}
+
+function applyTerminalSideEffects(
+  deltas: AnalysisTerminalDelta[],
+  isDualTrack: boolean,
+  prevSnapshot: AnalysisQueueSnapshot,
+  currentSnapshot: AnalysisQueueSnapshot,
+  filteredItems: AnalysisQueueItem[]
+): void {
+  const items = currentSnapshot.items || []
+  const completedItems = items.filter((i: any) => i.status === 'completed')
+
+  // PRD-0045：分析管线云端成功点亮「已启动」/失败写入引擎异常（仅生效引擎=cloud 时）
+  try {
+    const mode = useSettingsStore.getState()?.config?.aiServiceMode
+    if (mode === 'cloud') {
+      if (isDualTrack) {
+        for (const delta of deltas) {
+          if (delta.status === 'completed') {
+            notifyCloudAnalyzeSuccess()
+          } else if (delta.status === 'failed') {
+            notifyCloudAnalyzeFailure(delta.error || 'failed', {
+              provider: '',
+              model: '',
+              asActiveEngine: true
+            })
+          }
+        }
+      } else {
+        const prevCompleted = (prevSnapshot?.items || []).filter(
+          (i: any) => i.status === 'completed'
+        ).length
+        if (completedItems.length > prevCompleted) {
+          notifyCloudAnalyzeSuccess()
+        }
+        const prevFailed = (prevSnapshot?.items || []).filter(
+          (i: any) => i.status === 'failed'
+        ).length
+        const failedItems = items.filter((i: any) => i.status === 'failed')
+        if (failedItems.length > prevFailed) {
+          const last = failedItems[failedItems.length - 1]
+          notifyCloudAnalyzeFailure(
+            last?.error || (last as any)?.message || String(last?.status || 'failed'),
+            {
+              provider: '',
+              model: '',
+              asActiveEngine: true
+            }
+          )
+        }
+      }
+    }
+  } catch {
+    // 状态通知失败不影响分析队列本身
+  }
+
+  if (lastRunningState && !currentSnapshot.running) {
+    const failedCount = items.filter((i: any) => i.status === 'failed').length
+    const completedCount = completedItems.length
+
+    captureEvent('分析会话结束', {
+      total_items: items.length,
+      completed_count: completedCount,
+      failed_count: failedCount
+    })
+
+    // 触发扩展名校准检查（带并发保护和工作区隔离）
+    const currentState = useAnalysisQueueStore.getState()
+    if (
+      !currentState.isCheckingReconciliation &&
+      window.electronAPI?.getCurrentWorkspaceDirectory
+    ) {
+      useAnalysisQueueStore.setState({ isCheckingReconciliation: true })
+      window.electronAPI
+        .getCurrentWorkspaceDirectory()
+        .then(dir => {
+          const workspaceId = dir?.id
+          if (workspaceId && window.electronAPI?.checkExtensionMismatch) {
+            window.electronAPI
+              .checkExtensionMismatch(workspaceId)
+              .then(files => {
+                if (files && files.length > 0) {
+                  useAnalysisQueueStore.setState({
+                    reconciliationFiles: files,
+                    showReconciliationDialog: true
+                  })
+                }
+              })
+              .finally(() => {
+                useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
+              })
+          } else {
+            useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
+          }
+        })
+        .catch(() => {
+          useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
+        })
+    }
+  }
+
+  // 检查是否有新的文件分析完成，触发虚拟目录的小红点/呼吸点提示
+  // 双轨模式下 terminalDeltas 本身就是增量事件，不受 hasInitialSnapshotLoaded 门控
+  if (isDualTrack) {
+    const currentWsId = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.id
+    const newlyCompletedItems = deltas.filter(d => {
+      if (d.status !== 'completed') return false
+      const isFile = d.itemType ? d.itemType === 'file' : !d.isDirectory
+      if (!isFile) return false
+      if (currentWsId && d.workspaceId && String(d.workspaceId) !== String(currentWsId)) {
+        return false
+      }
+      return true
+    })
+    if (newlyCompletedItems.length > 0) {
+      import('./analyzed-directory-store')
+        .then(({ useAnalyzedDirectoryStore }) => {
+          useAnalyzedDirectoryStore.getState().incrementNewFilesCount(newlyCompletedItems as any[])
+        })
+        .catch(err => {
+          console.error('🖥️ 无法加载已分析目录Store:', err)
+        })
+    }
+  } else if (hasInitialSnapshotLoaded) {
+    const currentCompletedFiles = filteredItems.filter(
+      (i: any) => i.status === 'completed' && i.itemType === 'file'
+    )
+    const prevCompletedIds = new Set(
+      (prevSnapshot.items || [])
+        .filter((i: any) => i.status === 'completed' && i.itemType === 'file')
+        .map((i: any) => i.id)
+    )
+
+    const newlyCompletedItems = currentCompletedFiles.filter(
+      (i: any) => !prevCompletedIds.has(i.id)
+    )
+
+    if (newlyCompletedItems.length > 0) {
+      import('./analyzed-directory-store')
+        .then(({ useAnalyzedDirectoryStore }) => {
+          useAnalyzedDirectoryStore.getState().incrementNewFilesCount(newlyCompletedItems)
+        })
+        .catch(err => {
+          console.error('🖥️ 无法加载已分析目录Store:', err)
+        })
+    }
+  } else {
+    hasInitialSnapshotLoaded = true
+  }
+
+  lastRunningState = Boolean(currentSnapshot.running)
+}
+
+function flushBucket(key: string): void {
+  const bucket = rendererBuckets.get(key)
+  if (!bucket) return
+  cancelBucketTimers(bucket)
+
+  const hasPendingSnapshot = bucket.pendingMeta !== null || bucket.latestFullItemIds !== null
+  const hasPendingDeltas = bucket.pendingDeltas.length > 0
+  if (!hasPendingSnapshot && !hasPendingDeltas) return
+
+  const prevProjectedSnapshot = useAnalysisQueueStore.getState().snapshot
+  const pendingDeltas = bucket.pendingDeltas.splice(0, bucket.pendingDeltas.length)
+  const isDualTrack = bucket.pendingIsDualTrack
+  const incomingSeq = bucket.pendingSeq
+  const incomingSnapshotSeq = bucket.pendingSnapshotSeq
+  const resyncRequired = bucket.pendingResync
+  const hasSeqGap =
+    isDualTrack &&
+    incomingSeq !== undefined &&
+    bucket.latestSeq > 0 &&
+    incomingSeq > bucket.latestSeq + 1
+
+  if (incomingSeq !== undefined && incomingSeq > bucket.latestSeq) {
+    bucket.latestSeq = incomingSeq
+  }
+  bucket.pendingSeq = undefined
+  bucket.pendingSnapshotSeq = undefined
+  bucket.pendingResync = false
+  bucket.pendingIsDualTrack = false
+
+  if (hasPendingSnapshot) {
+    // 若主进程提供了全局单调 snapshotSeq，则仅接受 >= latestGlobalSnapshotSeq 的全量快照，
+    // 防止 'global' 桶与具体 wsId 桶跨帧乱序覆盖或已删跨区条目复活
+    const isStaleGlobalSnapshot =
+      incomingSnapshotSeq !== undefined && incomingSnapshotSeq < latestGlobalSnapshotSeq
+
+    if (!isStaleGlobalSnapshot) {
+      if (incomingSnapshotSeq !== undefined) {
+        latestGlobalSnapshotSeq = incomingSnapshotSeq
+      }
+      const fullIds = bucket.latestFullItemIds
+      const nextItems: AnalysisQueueItem[] = []
+      if (incomingSnapshotSeq === undefined && bucket.wsId !== GLOBAL_BUCKET_WS) {
+        // 兼容单测直接构造的局部快照：保留其他工作区未覆盖项
+        for (const existing of rawSnapshotState.items || []) {
+          const ws = (existing as any).workspaceId
+          if (ws && String(ws) !== bucket.wsId && (!fullIds || !fullIds.has(existing.id))) {
+            nextItems.push(existing)
+          }
+        }
+      }
+      if (fullIds) {
+        for (const id of fullIds) {
+          const merged = bucket.pendingItemsById.get(id)
+          if (merged) nextItems.push(merged)
+        }
+      } else {
+        for (const merged of bucket.pendingItemsById.values()) {
+          nextItems.push(merged)
+        }
+      }
+
+      rawSnapshotState = {
+        ...(bucket.pendingMeta || rawSnapshotState),
+        items: nextItems
+      }
+    }
+    bucket.pendingMeta = null
+    bucket.pendingItemsById.clear()
+    bucket.latestFullItemIds = null
+  }
+
+  const currentWsId = useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.id
+  const projected = projectSnapshotForWorkspace(rawSnapshotState, currentWsId)
+  useAnalysisQueueStore.setState({ snapshot: projected })
+
+  const freshDeltas = pendingDeltas.filter(d => rememberTerminalKey(makeTerminalKey(d)))
+  applyTerminalSideEffects(
+    freshDeltas,
+    isDualTrack,
+    prevProjectedSnapshot,
+    rawSnapshotState,
+    projected.items
+  )
+
+  if ((resyncRequired || hasSeqGap) && typeof window.electronAPI?.getAnalysisQueue === 'function') {
+    void useAnalysisQueueStore.getState().refresh()
+  }
+}
+
+export function flushAnalysisQueueUpdates(): void {
+  for (const key of Array.from(rendererBuckets.keys())) {
+    flushBucket(key)
+  }
+}
+
+export function getRawAnalysisQueueSnapshot(): AnalysisQueueSnapshot {
+  return rawSnapshotState
+}
+
+export function resetAnalysisQueueCoalescerForTest(): void {
+  for (const bucket of rendererBuckets.values()) {
+    cancelBucketTimers(bucket)
+  }
+  rendererBuckets.clear()
+  seenTerminalKeys.clear()
+  rawSnapshotState = emptySnapshot
+  hasInitialSnapshotLoaded = false
+  lastRunningState = false
+  latestGlobalSnapshotSeq = 0
+  refreshRequestSeq = 0
+}
+
+export function enqueueAnalysisQueueUpdate(rawPayload: unknown): void {
+  const normalized = normalizeQueuePayload(rawPayload)
+  const bucket = getOrCreateRendererBucket(normalized.wsId, normalized.kind)
+
+  // 忽略乱序/过期旧帧的快照覆盖（但保留未见过的 terminalDeltas）
+  const isStaleSeq =
+    normalized.isDualTrack &&
+    normalized.seq !== undefined &&
+    bucket.latestSeq > 0 &&
+    normalized.seq <= bucket.latestSeq
+
+  if (!isStaleSeq) {
+    bucket.pendingIsDualTrack = bucket.pendingIsDualTrack || normalized.isDualTrack
+    if (normalized.seq !== undefined) {
+      bucket.pendingSeq =
+        bucket.pendingSeq !== undefined
+          ? Math.max(bucket.pendingSeq, normalized.seq)
+          : normalized.seq
+    }
+    if (normalized.snapshotSeq !== undefined) {
+      bucket.pendingSnapshotSeq =
+        bucket.pendingSnapshotSeq !== undefined
+          ? Math.max(bucket.pendingSnapshotSeq, normalized.snapshotSeq)
+          : normalized.snapshotSeq
+    }
+    if (normalized.resyncRequired) {
+      bucket.pendingResync = true
+    }
+
+    const { items = [], ...meta } = normalized.snapshot
+    bucket.pendingMeta = meta
+    const idSet = new Set<number>()
+    for (const item of items) {
+      if (item && item.id != null) {
+        idSet.add(item.id)
+        const prev = bucket.pendingItemsById.get(item.id)
+        bucket.pendingItemsById.set(item.id, prev ? { ...prev, ...item } : item)
+      }
+    }
+    bucket.latestFullItemIds = idSet
+  }
+
+  if (normalized.terminalDeltas.length > 0) {
+    for (const delta of normalized.terminalDeltas) {
+      bucket.pendingDeltas.push(delta)
+    }
+  }
+
+  if (bucket.rafId === null && bucket.timeoutId === null) {
+    if (typeof requestAnimationFrame === 'function') {
+      bucket.rafId = requestAnimationFrame(() => flushBucket(bucket.key))
+    }
+    bucket.timeoutId = setTimeout(() => flushBucket(bucket.key), COALESCER_FALLBACK_TIMEOUT_MS)
+  }
+}
+
 // 仅在首次加载的模块实例上注册全局事件订阅，避免模块实例分裂时重复注册监听器
 if (!(typeof window !== 'undefined' && (window as any)[GLOBAL_INIT_KEY])) {
   if (typeof window !== 'undefined') {
     ;(window as any)[GLOBAL_INIT_KEY] = true
   }
 
-  let hasInitialSnapshotLoaded = false
-
   // Subscribe to workspace directory changes
   useVirtualDirectoryStore.subscribe((state, prevState) => {
     if (state.currentWorkspaceDirectory?.id !== prevState.currentWorkspaceDirectory?.id) {
+      // 切换 wsId 时：flush 旧桶并取消旧定时器，不得无差别丢弃未消费原始状态
+      flushAnalysisQueueUpdates()
       hasInitialSnapshotLoaded = false
-      useAnalysisQueueStore.getState().refresh()
+      const nextWsId = state.currentWorkspaceDirectory?.id
+      useAnalysisQueueStore.setState({
+        snapshot: projectSnapshotForWorkspace(rawSnapshotState, nextWsId)
+      })
+      if (typeof window.electronAPI?.getAnalysisQueue === 'function') {
+        useAnalysisQueueStore.getState().refresh()
+      }
     }
   })
 
+  // 隐藏态双保险与恢复立刷（B1 / J-01）
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        flushAnalysisQueueUpdates()
+      } else if (document.visibilityState === 'visible') {
+        flushAnalysisQueueUpdates()
+        if (typeof window.electronAPI?.getAnalysisQueue === 'function') {
+          void useAnalysisQueueStore.getState().refresh()
+        }
+      }
+    })
+  }
+
   // Subscribe to main-process updates once per app
   if (typeof window !== 'undefined' && window.electronAPI) {
-    let lastRunningState = false
-
     // 监听分析队列动态刹车事件（当工作区处于 pending 时主动提示并引导配置）
     window.electronAPI.onAnalysisQueueLatchBrake?.((payload: { workspaceId: number }) => {
       toast.warning(
@@ -405,132 +930,8 @@ if (!(typeof window !== 'undefined' && (window as any)[GLOBAL_INIT_KEY])) {
       )
     })
 
-    const unsub = window.electronAPI!.onAnalysisQueueUpdated((snap: any) => {
-      const currentWs = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
-      const wsId = currentWs?.id
-
-      // 在 setState 之前保存旧快照，用于比对新增完成项
-      const prevSnapshot = useAnalysisQueueStore.getState().snapshot
-
-      const rawItems = snap.items || []
-      const filteredItems = wsId
-        ? rawItems.filter((i: any) => !i.workspaceId || String(i.workspaceId) === String(wsId))
-        : rawItems
-
-      useAnalysisQueueStore.setState({
-        snapshot: {
-          ...snap,
-          items: filteredItems
-        }
-      })
-
-      const items = snap.items || []
-      const completedItems = items.filter((i: any) => i.status === 'completed')
-
-      // PRD-0045：分析管线云端成功点亮「已启动」/失败写入引擎异常（仅生效引擎=cloud 时）
-      try {
-        const mode = useSettingsStore.getState()?.config?.aiServiceMode
-        if (mode === 'cloud') {
-          const prevCompleted = (prevSnapshot?.items || []).filter(
-            (i: any) => i.status === 'completed'
-          ).length
-          if (completedItems.length > prevCompleted) {
-            notifyCloudAnalyzeSuccess()
-          }
-          const prevFailed = (prevSnapshot?.items || []).filter(
-            (i: any) => i.status === 'failed'
-          ).length
-          const failedItems = items.filter((i: any) => i.status === 'failed')
-          if (failedItems.length > prevFailed) {
-            const last = failedItems[failedItems.length - 1]
-            notifyCloudAnalyzeFailure(
-              last?.error || last?.message || String(last?.status || 'failed'),
-              {
-                provider: '',
-                model: '',
-                asActiveEngine: true
-              }
-            )
-          }
-        }
-      } catch {
-        // 状态通知失败不影响分析队列本身
-      }
-
-      if (lastRunningState && !snap.running) {
-        const failedCount = items.filter((i: any) => i.status === 'failed').length
-        const completedCount = completedItems.length
-
-        captureEvent('分析会话结束', {
-          total_items: items.length,
-          completed_count: completedCount,
-          failed_count: failedCount
-        })
-
-        // 触发扩展名校准检查（带并发保护和工作区隔离）
-        const currentState = useAnalysisQueueStore.getState()
-        if (!currentState.isCheckingReconciliation) {
-          useAnalysisQueueStore.setState({ isCheckingReconciliation: true })
-          window
-            .electronAPI!.getCurrentWorkspaceDirectory()
-            .then(dir => {
-              const workspaceId = dir?.id
-              if (workspaceId) {
-                window
-                  .electronAPI!.checkExtensionMismatch(workspaceId)
-                  .then(files => {
-                    if (files && files.length > 0) {
-                      useAnalysisQueueStore.setState({
-                        reconciliationFiles: files,
-                        showReconciliationDialog: true
-                      })
-                    }
-                  })
-                  .finally(() => {
-                    useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
-                  })
-              } else {
-                useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
-              }
-            })
-            .catch(() => {
-              useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
-            })
-        }
-      }
-
-      // 检查是否有新的文件分析完成，触发虚拟目录的小红点/呼吸点提示
-      // 逻辑：用旧快照 vs 新快照比对，找出新增完成的文件项
-      // 注意：初始加载快照时不触发增量提醒，且比对必须基于工作区隔离后的 filteredItems
-      if (hasInitialSnapshotLoaded) {
-        const currentCompletedFiles = filteredItems.filter(
-          (i: any) => i.status === 'completed' && i.itemType === 'file'
-        )
-        const prevCompletedIds = new Set(
-          (prevSnapshot.items || [])
-            .filter((i: any) => i.status === 'completed' && i.itemType === 'file')
-            .map((i: any) => i.id)
-        )
-
-        const newlyCompletedItems = currentCompletedFiles.filter(
-          (i: any) => !prevCompletedIds.has(i.id)
-        )
-
-        if (newlyCompletedItems.length > 0) {
-          // 动态导入避免模块级循环依赖/打包问题
-          import('./analyzed-directory-store')
-            .then(({ useAnalyzedDirectoryStore }) => {
-              useAnalyzedDirectoryStore.getState().incrementNewFilesCount(newlyCompletedItems)
-            })
-            .catch(err => {
-              console.error('🖥️ 无法加载已分析目录Store:', err)
-            })
-        }
-      } else {
-        hasInitialSnapshotLoaded = true
-      }
-
-      lastRunningState = snap.running
+    const unsub = window.electronAPI!.onAnalysisQueueUpdated((payload: any) => {
+      enqueueAnalysisQueueUpdate(payload)
     })
 
     window.electronAPI.onQueueViewModeChanged(({ mode, isSplitOpen }) => {
