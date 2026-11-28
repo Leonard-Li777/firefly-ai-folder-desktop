@@ -29,15 +29,14 @@ import {
   SecurityViolationError,
   deriveTargetLocalPath,
   invalidateReadyMarkers,
-  normalizeCapabilitySlot,
-  writeReadyMarker
+  normalizeCapabilitySlot
 } from '@firefly/shared'
 import {
-  getVisualVocabEncoderId,
-  hasLocalVisualVocabFiles,
   isVisualVocabPluginResource,
-  verifyVisualVocabWithOmniCli,
-  writePluginReadyMarkerWithVisualVocab
+  verifyStagedVisualVocabDir,
+  writeBasicReadyMarkerCleaningLegacy,
+  writePluginReadyMarkerWithVisualVocab,
+  type VerifyVisualVocabResult
 } from '../system/visual-vocab-txn'
 import { omniService } from '../system/omni-service'
 import type { OfflinePackageDao } from './offline-package-dao'
@@ -333,6 +332,46 @@ export class BundlePromoter {
       throw partitionErr
     }
 
+    // 步骤 1.5：前置视觉词表同源校验（在进入 PROMOTING 与移动任何目录之前执行，失败零破坏）
+    const preVerifiedVisualMap = new Map<
+      string,
+      { isVisual: boolean; verifyRes?: VerifyVisualVocabResult }
+    >()
+    try {
+      for (const res of declaredResources) {
+        if (!createdResourceIds.includes(res.resource_id)) continue
+        const relPath =
+          res.target_local_path ||
+          deriveTargetLocalPath(res.resource_id) ||
+          `modules/_shared/${res.resource_id}`
+        try {
+          PluginPathResolver.resolvePhysicalPathForRoot(pluginsRootDir, relPath)
+        } catch (secErr) {
+          throw new BundlePromoterError(
+            'IO_FAILURE',
+            secErr instanceof SecurityViolationError
+              ? secErr.message
+              : `非法资产目标路径逃逸: ${relPath}`
+          )
+        }
+        const stagedAssetPath = path.resolve(stagingDir, relPath)
+        const stagedIsDir =
+          fs.existsSync(stagedAssetPath) && fs.statSync(stagedAssetPath).isDirectory()
+        if (stagedIsDir || isVisualVocabPluginResource(res.resource_id)) {
+          const verified = await verifyStagedVisualVocabDir({
+            dirPath: stagedAssetPath,
+            resourceId: res.resource_id,
+            callerTag: 'BundlePromoter',
+            exePath: omniService?.resolveOmniExecutable?.()
+          })
+          preVerifiedVisualMap.set(res.resource_id, verified)
+        }
+      }
+    } catch (preVerifyErr) {
+      dao.updateJobStatus(jobId, 'FAILED')
+      throw preVerifyErr
+    }
+
     // 在进入物理操作前，一次性原子更新协调表状态为 PROMOTING 并锁定资源归属集合
     dao.updateJobStatus(jobId, 'PROMOTING', {
       created_resource_ids: createdResourceIds,
@@ -402,53 +441,23 @@ export class BundlePromoter {
               fs.renameSync(stagedAssetPath, formalAssetPath)
             }, maxRetries)
             if (fs.existsSync(formalAssetPath) && fs.statSync(formalAssetPath).isDirectory()) {
-              const isVisual =
-                isVisualVocabPluginResource(res.resource_id) || hasLocalVisualVocabFiles(formalAssetPath)
-              if (!isVisual) {
+              const verified = preVerifiedVisualMap.get(res.resource_id)
+              if (!verified || !verified.isVisual) {
                 await writePluginReadyMarkerWithVisualVocab(formalAssetPath, {
                   resourceId: res.resource_id,
                   sharedSubDir: path.basename(formalAssetPath)
                 })
+              } else if (verified.verifyRes?.ok) {
+                await writePluginReadyMarkerWithVisualVocab(formalAssetPath, {
+                  resourceId: res.resource_id,
+                  sharedSubDir: path.basename(formalAssetPath),
+                  verifyRes: verified.verifyRes
+                })
               } else {
-                let verifyRes: Awaited<ReturnType<typeof verifyVisualVocabWithOmniCli>> | undefined
-                const exePath = omniService?.resolveOmniExecutable?.()
-                if (exePath && fs.existsSync(exePath)) {
-                  verifyRes = await verifyVisualVocabWithOmniCli(
-                    formalAssetPath,
-                    getVisualVocabEncoderId(res.resource_id),
-                    { executablePath: exePath }
-                  )
-                  if (!verifyRes.ok && verifyRes.code !== 'OMNI_BINARY_UNAVAILABLE') {
-                    throw new Error(
-                      `[BundlePromoter] 视觉词表 CLI 同源校验失败 (${res.resource_id}): ${verifyRes.error || verifyRes.code}`
-                    )
-                  }
-                }
-                if (!verifyRes || !verifyRes.ok) {
-                  let isPackaged = false
-                  try {
-                    isPackaged = Boolean(require('electron')?.app?.isPackaged)
-                  } catch {
-                    isPackaged = false
-                  }
-                  if (isPackaged) {
-                    throw new Error(`[BundlePromoter] 缺少视觉校验程序，无法确认 ${res.resource_id} 完整性`)
-                  }
-                  logger.warn(
-                    LogCategory.SYSTEM,
-                    `[BundlePromoter] 非打包环境未运行视觉校验，仅写基础 .ready.json（省略 visualVocab 契约块）(${res.resource_id})`
-                  )
-                  await writeReadyMarker(formalAssetPath, {
-                    resourceId: res.resource_id,
-                    sharedSubDir: path.basename(formalAssetPath)
-                  })
-                } else {
-                  await writePluginReadyMarkerWithVisualVocab(formalAssetPath, {
-                    resourceId: res.resource_id,
-                    sharedSubDir: path.basename(formalAssetPath),
-                    verifyRes
-                  })
-                }
+                await writeBasicReadyMarkerCleaningLegacy(formalAssetPath, {
+                  resourceId: res.resource_id,
+                  sharedSubDir: path.basename(formalAssetPath)
+                })
               }
             }
           }

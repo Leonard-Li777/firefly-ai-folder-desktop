@@ -27,6 +27,7 @@ import {
   type ReadyMarkerPayload,
   type ReadyVisualVocabMeta
 } from '@firefly/shared'
+import { t } from '@app/languages'
 
 const execFileAsync = promisify(execFile)
 
@@ -173,7 +174,10 @@ export function buildReadyVisualVocabMeta(
   let diskMetaVersion: string | undefined
   try {
     const parsedMeta = JSON.parse(fs.readFileSync(metaPath, 'utf-8')) as Record<string, unknown>
-    if (typeof parsedMeta.bake_revision === 'number' && Number.isInteger(parsedMeta.bake_revision)) {
+    if (
+      typeof parsedMeta.bake_revision === 'number' &&
+      Number.isInteger(parsedMeta.bake_revision)
+    ) {
       diskMetaBakeRevision = parsedMeta.bake_revision
     }
     if (typeof parsedMeta.version === 'string' && parsedMeta.version.trim()) {
@@ -271,6 +275,115 @@ export async function verifyVisualVocabWithOmniCli(
   }
 }
 
+/**
+ * 非打包降级写基础 `.ready.json` 前统一清扫旁路 `vocab_v.bin` 与遗留 `.ready-*`
+ */
+export async function writeBasicReadyMarkerCleaningLegacy(
+  dirPath: string,
+  opts: { resourceId: string; sharedSubDir: string }
+): Promise<ReadyMarkerPayload> {
+  cleanupLegacyVocabBinSync(dirPath)
+  await invalidateReadyMarkers(dirPath)
+  return writeReadyMarker(dirPath, opts)
+}
+
+/**
+ * 将视觉词表同源校验结果映射为面向用户的大白话报错文案（内部技术细节须写入 logger）
+ */
+export function formatVisualVocabUserError(verifyRes?: VerifyVisualVocabResult | null): string {
+  if (!verifyRes || verifyRes.code === 'OMNI_BINARY_UNAVAILABLE') {
+    return t('当前软件缺少本地校验组件，无法确认离线包完整性，请重新安装软件后再试')
+  }
+  if (
+    verifyRes.status === 'missing' ||
+    verifyRes.code === 'ASSET_MISSING' ||
+    /ASSET_MISSING/i.test(verifyRes.error || '')
+  ) {
+    return t('离线包版本过旧或内容不完整，缺少图像识别所需的词表文件，请重新获取新版离线包后再导入')
+  }
+  return t('离线包中的图像识别数据已损坏或与当前软件版本不兼容，请重新获取新版离线包后再导入')
+}
+
+/**
+ * 对暂存目录执行视觉词表同源前置校验（不触碰正式目录）：
+ * - 已注册视觉插件若缺失或被打包为非目录单文件，一律 fail-closed 拦截；
+ * - 非视觉插件直接放行；
+ * - 技术异常写 logger.error，面向调用方抛出大白话提示；
+ * - 校验程序缺失时：打包态 fail-closed 拒绝，非打包开发/测试态记 warn 并允许降级写入基础 .ready.json。
+ */
+export async function verifyStagedVisualVocabDir(params: {
+  dirPath: string
+  resourceId: string
+  callerTag: string
+  exePath?: string | null
+  isPackaged?: boolean
+}): Promise<{ isVisual: boolean; verifyRes?: VerifyVisualVocabResult }> {
+  const { dirPath, resourceId, callerTag, exePath } = params
+  const isVisualPlugin = isVisualVocabPluginResource(resourceId)
+  const isDir = fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()
+  if (!isDir) {
+    if (isVisualPlugin) {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[${callerTag}] 视觉插件暂存目录缺失或非有效目录 (${resourceId}, path=${dirPath})`
+      )
+      throw new Error(
+        formatVisualVocabUserError({
+          ok: false,
+          dir: dirPath,
+          status: 'missing',
+          code: 'ASSET_MISSING'
+        })
+      )
+    }
+    return { isVisual: false }
+  }
+
+  const isVisual = isVisualPlugin || hasLocalVisualVocabFiles(dirPath)
+  if (!isVisual) {
+    return { isVisual: false }
+  }
+
+  let verifyRes: VerifyVisualVocabResult | undefined
+  if (exePath && fs.existsSync(exePath)) {
+    verifyRes = await verifyVisualVocabWithOmniCli(dirPath, getVisualVocabEncoderId(resourceId), {
+      executablePath: exePath
+    })
+    if (!verifyRes.ok && verifyRes.code !== 'OMNI_BINARY_UNAVAILABLE') {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[${callerTag}] 视觉词表 CLI 同源校验失败 (${resourceId}, dir=${dirPath}): code=${verifyRes.code || 'UNKNOWN'}, status=${verifyRes.status || ''}, error=${verifyRes.error || ''}`
+      )
+      throw new Error(formatVisualVocabUserError(verifyRes))
+    }
+  }
+
+  if (!verifyRes || !verifyRes.ok) {
+    let packaged = params.isPackaged
+    if (packaged === undefined) {
+      try {
+        packaged = Boolean(require('electron')?.app?.isPackaged)
+      } catch {
+        packaged = false
+      }
+    }
+    if (packaged) {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[${callerTag}] 打包环境缺少视觉校验程序，拒绝导入 (${resourceId}, dir=${dirPath})`
+      )
+      throw new Error(formatVisualVocabUserError(null))
+    }
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[${callerTag}] 非打包环境未运行视觉校验，仅写基础 .ready.json（省略 visualVocab 契约块）(${resourceId})`
+    )
+    return { isVisual: true, verifyRes: undefined }
+  }
+
+  return { isVisual: true, verifyRes }
+}
+
 export function getVisualTxnFilePath(intentsDir: string, resourceId: string): string {
   const safeId = resourceId.replace(/[^a-zA-Z0-9._-]/g, '_')
   return path.join(intentsDir, `${VISUAL_TXN_FILE_PREFIX}${safeId}${VISUAL_TXN_FILE_SUFFIX}`)
@@ -336,7 +449,12 @@ export async function commitPluginDirectoryWithTxn(params: {
   targetMode: 'install' | 'switch' | 'uninstall' | 'reconcile'
   verifyFn?: VerifyVisualVocabFn
   reloadAssetsFn?: ReloadAssetsFn
-}): Promise<{ ok: boolean; rolledBack: boolean; verifyRes?: VerifyVisualVocabResult; error?: string }> {
+}): Promise<{
+  ok: boolean
+  rolledBack: boolean
+  verifyRes?: VerifyVisualVocabResult
+  error?: string
+}> {
   const { intentsDir, resourceId, sharedSubDir, stagingDir, destDir, targetMode } = params
   const backupDir = `${destDir}.bak-${process.pid}-${Date.now()}`
   const expectedEncoderId = getVisualVocabEncoderId(resourceId)
@@ -391,7 +509,9 @@ export async function commitPluginDirectoryWithTxn(params: {
       }
       verifyRes = await params.verifyFn(stagingDir, expectedEncoderId)
       if (!verifyRes.ok) {
-        return await rollback(verifyRes.error || `暂存视觉词表同源校验失败 (${verifyRes.code || 'UNKNOWN'})`)
+        return await rollback(
+          verifyRes.error || `暂存视觉词表同源校验失败 (${verifyRes.code || 'UNKNOWN'})`
+        )
       }
     }
 
@@ -425,7 +545,10 @@ export async function commitPluginDirectoryWithTxn(params: {
       if (!reloadRes.success) {
         return await rollback(reloadRes.error || 'Omni assets reload 返回失败')
       }
-      if ((targetMode === 'install' || targetMode === 'reconcile') && expectedEncoderId !== undefined) {
+      if (
+        (targetMode === 'install' || targetMode === 'reconcile') &&
+        expectedEncoderId !== undefined
+      ) {
         const slotState = reloadRes.byEncoder?.[String(expectedEncoderId)]
         if (!slotState || slotState.status !== 'ok') {
           return await rollback(
@@ -475,7 +598,9 @@ export async function recoverPendingPluginTxns(opts: {
   try {
     files = fs
       .readdirSync(opts.intentsDir)
-      .filter(name => name.startsWith(VISUAL_TXN_FILE_PREFIX) && name.endsWith(VISUAL_TXN_FILE_SUFFIX))
+      .filter(
+        name => name.startsWith(VISUAL_TXN_FILE_PREFIX) && name.endsWith(VISUAL_TXN_FILE_SUFFIX)
+      )
   } catch {
     return result
   }

@@ -1,17 +1,72 @@
+// @vitest-environment node
 /**
  * 单版本物理提升、两阶段事务与安全回滚单元测试 (Bundle Promoter Tests)
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import * as crypto from 'crypto'
 import DatabaseConstructor from 'better-sqlite3'
 import type { Database } from 'better-sqlite3'
+
+const { execFileMockState } = vi.hoisted(() => ({
+  execFileMockState: {
+    handler: null as null | ((dir: string, encoderId?: string) => Record<string, any>)
+  }
+}))
+
+vi.mock('node:child_process', async importOriginal => {
+  const actual = await importOriginal<typeof import('node:child_process')>()
+  const mockedExecFile = (file: any, args: any, options: any, callback: any) => {
+    const cb = typeof options === 'function' ? options : callback
+    const opts = typeof options === 'function' ? {} : options
+    if (Array.isArray(args) && args[0] === 'verify-visual-vocab' && execFileMockState.handler) {
+      const encoderIdx = args.indexOf('--encoder-id')
+      const encoderId = encoderIdx >= 0 ? args[encoderIdx + 1] : undefined
+      const result = execFileMockState.handler(String(args[1]), encoderId)
+      cb?.(null, { stdout: JSON.stringify(result), stderr: '' })
+      return {} as any
+    }
+    return actual.execFile(file, args, opts, (err: any, stdout: any, stderr: any) =>
+      cb?.(err, { stdout, stderr })
+    )
+  }
+  return {
+    ...actual,
+    execFile: mockedExecFile,
+    default: { ...actual, execFile: mockedExecFile }
+  }
+})
+
+vi.mock('child_process', async importOriginal => {
+  const actual = await importOriginal<typeof import('node:child_process')>()
+  const mockedExecFile = (file: any, args: any, options: any, callback: any) => {
+    const cb = typeof options === 'function' ? options : callback
+    const opts = typeof options === 'function' ? {} : options
+    if (Array.isArray(args) && args[0] === 'verify-visual-vocab' && execFileMockState.handler) {
+      const encoderIdx = args.indexOf('--encoder-id')
+      const encoderId = encoderIdx >= 0 ? args[encoderIdx + 1] : undefined
+      const result = execFileMockState.handler(String(args[1]), encoderId)
+      cb?.(null, { stdout: JSON.stringify(result), stderr: '' })
+      return {} as any
+    }
+    return actual.execFile(file, args, opts, (err: any, stdout: any, stderr: any) =>
+      cb?.(err, { stdout, stderr })
+    )
+  }
+  return {
+    ...actual,
+    execFile: mockedExecFile,
+    default: { ...actual, execFile: mockedExecFile }
+  }
+})
+
 import { BundlePromoter, type IncomingModuleMeta } from '../bundle-promoter'
 import { OfflinePackageDao } from '../offline-package-dao'
 import { signManifest, TEST_ED25519_SK } from '../offline-package-service'
+import { omniService } from '../../system/omni-service'
 
 describe('BundlePromoter (Admission, Promotion & Rollback)', () => {
   let tempDir: string
@@ -83,6 +138,8 @@ describe('BundlePromoter (Admission, Promotion & Rollback)', () => {
   })
 
   afterEach(() => {
+    execFileMockState.handler = null
+    vi.restoreAllMocks()
     try {
       db.close()
     } catch {
@@ -780,6 +837,105 @@ describe('BundlePromoter (Admission, Promotion & Rollback)', () => {
           code: 'RECOVERY_REQUIRED'
         })
       )
+    })
+  })
+
+  describe('5. 视觉词表前置校验与零破坏守卫', () => {
+    it('暂存视觉资产缺失词表时在进入 PROMOTING 前拒绝提升，保持既有正式目录零破坏并抛大白话错误', async () => {
+      const moduleId = 'clip_visual_tagger'
+      const formalModDir = path.join(baseDir, 'modules', '_shared', moduleId)
+      fs.mkdirSync(formalModDir, { recursive: true })
+      fs.writeFileSync(path.join(formalModDir, 'sentinel.txt'), 'keep-formal-module', 'utf-8')
+
+      const stagedModDir = path.join(stagingDir, moduleId)
+      fs.mkdirSync(stagedModDir, { recursive: true })
+      fs.writeFileSync(path.join(stagedModDir, 'manifest.json'), JSON.stringify({ id: moduleId }))
+
+      const assetRelPath = 'modules/_shared/emb-a42b0c8f'
+      const stagedAssetDir = path.join(stagingDir, assetRelPath)
+      fs.mkdirSync(stagedAssetDir, { recursive: true })
+      fs.writeFileSync(path.join(stagedAssetDir, 'chinese-clip-vit-b-16-int8.onnx'), 'v5-dummy')
+
+      // 预置既有可用正式视觉目录与 .ready.json，验证校验失败后绝不破坏原目录
+      const existingFormalAssetDir = path.join(baseDir, 'modules', '_shared', 'emb-a42b0c8f')
+      fs.mkdirSync(existingFormalAssetDir, { recursive: true })
+      fs.writeFileSync(path.join(existingFormalAssetDir, 'valid-v6.onnx'), 'keep-existing-clip')
+      fs.writeFileSync(
+        path.join(existingFormalAssetDir, '.ready.json'),
+        JSON.stringify({ version: 1, digest: 'keep-clip-ready' })
+      )
+
+      const fakeExe = path.join(tempDir, 'firefly-omni.exe')
+      fs.writeFileSync(fakeExe, 'stub-binary', 'utf-8')
+      vi.spyOn(omniService, 'resolveOmniExecutable').mockReturnValue(fakeExe)
+
+      execFileMockState.handler = dir => {
+        expect(path.resolve(dir)).toBe(path.resolve(stagedAssetDir))
+        return {
+          ok: false,
+          dir,
+          status: 'missing',
+          code: 'ASSET_MISSING',
+          error: 'ASSET_MISSING: tagger（vocab_v.meta.json 缺失）'
+        }
+      }
+
+      const jobId = 'job-visual-precheck-fail'
+      dao.createJob({
+        job_id: jobId,
+        job_type: 'IMPORT',
+        status: 'PREPARED',
+        archive_path: 'C:/packages/outdated-clip.ffbundle',
+        total_modules: 1
+      })
+
+      let caughtError: Error | undefined
+      try {
+        await BundlePromoter.executePromotion({
+          jobId,
+          baseDir,
+          stagingDir,
+          db,
+          dao,
+          incomingModules: [
+            {
+              moduleId,
+              version: '5.0.0',
+              manifestRawBytes: JSON.stringify({ module: { id: moduleId, version: '5.0.0' } }),
+              resources: [
+                {
+                  resource_id: 'chinese-clip',
+                  asset_name: 'chinese-clip-int8-v5.zip',
+                  target_local_path: assetRelPath,
+                  expected_sha256: sha256('v5-dummy')
+                }
+              ]
+            }
+          ]
+        })
+      } catch (err: any) {
+        caughtError = err
+      }
+
+      expect(caughtError).toBeDefined()
+      expect(caughtError!.message).toContain('离线包')
+      expect(caughtError!.message).toContain('词表文件')
+      expect(caughtError!.message).not.toMatch(/CLI|ASSET_MISSING|tagger|vocab_v\.meta\.json/i)
+
+      // 既有正式模块目录丝毫未动，无 .old-* 备份残留，job 收敛为 FAILED
+      expect(fs.readFileSync(path.join(formalModDir, 'sentinel.txt'), 'utf-8')).toBe(
+        'keep-formal-module'
+      )
+      expect(
+        fs.existsSync(path.join(baseDir, 'modules', '_shared', `${moduleId}.old-${jobId}`))
+      ).toBe(false)
+      expect(fs.readFileSync(path.join(existingFormalAssetDir, 'valid-v6.onnx'), 'utf-8')).toBe(
+        'keep-existing-clip'
+      )
+      expect(
+        JSON.parse(fs.readFileSync(path.join(existingFormalAssetDir, '.ready.json'), 'utf-8'))
+      ).toMatchObject({ digest: 'keep-clip-ready' })
+      expect(dao.getJob(jobId)?.status).toBe('FAILED')
     })
   })
 })

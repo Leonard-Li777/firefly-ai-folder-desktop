@@ -21,16 +21,16 @@ import {
   LogCategory,
   PluginPathResolver,
   SecurityViolationError,
-  invalidateReadyMarkers,
   normalizeCapabilitySlot,
-  writeReadyMarker
+  normalizeForCache
 } from '@firefly/shared'
 import {
-  getVisualVocabEncoderId,
-  hasLocalVisualVocabFiles,
   isVisualVocabPluginResource,
-  verifyVisualVocabWithOmniCli,
-  writePluginReadyMarkerWithVisualVocab
+  renameDirWithRetry,
+  verifyStagedVisualVocabDir,
+  writeBasicReadyMarkerCleaningLegacy,
+  writePluginReadyMarkerWithVisualVocab,
+  type VerifyVisualVocabResult
 } from '../system/visual-vocab-txn'
 import { omniService } from '../system/omni-service'
 import type { ModularResourceService, BuiltinModuleView } from '../system/modular-resource-service'
@@ -155,6 +155,92 @@ export function verifyManifestSignature(
   } catch (err) {
     logger.warn(LogCategory.SYSTEM, '[OfflinePackage] Ed25519 签名验证内部异常:', err)
     return false
+  }
+}
+
+interface PreparedResourceMaterialization {
+  resource: OfflinePackageManifest['resources'][number]
+  targetPhysicalPath: string
+  preparedPath: string
+  backupPath: string
+  isVisual: boolean
+  verifyRes?: VerifyVisualVocabResult
+}
+
+interface CommittedSwapRecord {
+  prepared: PreparedResourceMaterialization
+  movedExistingToBackup: boolean
+  movedPreparedToTarget: boolean
+}
+
+interface ManifestBackupRecord {
+  dir: string
+  dirExisted: boolean
+  prevManifest: Buffer | null
+  prevSig: string | null
+}
+
+/**
+ * Windows 先清后移防 EEXIST 安全回滚：优先 rename 至 .failed-* 腾出正式路径，再恢复旧备份
+ */
+async function rollbackSwappedTargetPath(
+  targetPhysicalPath: string,
+  backupPath: string,
+  movedPreparedToTarget: boolean,
+  movedExistingToBackup: boolean,
+  resourceId: string
+): Promise<void> {
+  if (movedPreparedToTarget && fs.existsSync(targetPhysicalPath)) {
+    const failedPath = `${targetPhysicalPath}.failed-${process.pid}-${Date.now()}`
+    let cleared = false
+    try {
+      await renameDirWithRetry(targetPhysicalPath, failedPath)
+      cleared = true
+      try {
+        fs.rmSync(failedPath, { recursive: true, force: true })
+      } catch (cleanErr) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OfflinePackage] 清理失败临时目录残留告警 (${resourceId}): ${failedPath}`,
+          cleanErr
+        )
+      }
+    } catch {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          fs.rmSync(targetPhysicalPath, { recursive: true, force: true })
+          cleared = !fs.existsSync(targetPhysicalPath)
+          if (cleared) break
+        } catch {
+          await new Promise(resolve => setTimeout(resolve, 40 * (attempt + 1)))
+        }
+      }
+    }
+    if (!cleared && fs.existsSync(targetPhysicalPath)) {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[OfflinePackage] 回滚清理异常资产未能腾空目标路径 (${resourceId}): ${targetPhysicalPath}`
+      )
+    }
+  }
+
+  if (movedExistingToBackup && fs.existsSync(backupPath)) {
+    if (fs.existsSync(targetPhysicalPath)) {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[OfflinePackage] 回滚中止：目标路径非空无法还原旧资产 (${resourceId})，旧备份保留于 ${backupPath}`
+      )
+      return
+    }
+    try {
+      await renameDirWithRetry(backupPath, targetPhysicalPath)
+    } catch (restoreErr) {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[OfflinePackage] 回滚恢复旧资产失败 (${resourceId}, ${backupPath} -> ${targetPhysicalPath}):`,
+        restoreErr
+      )
+    }
   }
 }
 
@@ -523,14 +609,15 @@ export class OfflinePackageService {
   }
 
   /**
-   * 校验并物化单个资源到目标物理路径（兼容目录资产与需二次解包的 .zip 资产）
+   * 阶段 A（仅暂存校验，零正式路径写入）：提取资源、核验 SHA-256、搬入隔离 .staging-* 路径并前置校验视觉词表
    */
-  private async verifyAndMaterializeResource(
+  private async prepareResourceMaterialization(
     service: ModularResourceService,
     stagingDir: string,
     moduleId: string,
-    res: OfflinePackageManifest['resources'][number]
-  ): Promise<void> {
+    res: OfflinePackageManifest['resources'][number],
+    cleanupPreparedPaths: string[]
+  ): Promise<PreparedResourceMaterialization> {
     const safeAssetName = res.asset_name
       ? res.asset_name.replace(/\\/g, '/').replace(/^\/+/, '')
       : ''
@@ -580,81 +667,258 @@ export class OfflinePackageService {
       fs.mkdirSync(targetParentDir, { recursive: true })
     }
 
-    const runMaterialize = async () => {
-      if (fs.existsSync(targetPhysicalPath)) {
-        await invalidateReadyMarkers(targetPhysicalPath)
-        fs.rmSync(targetPhysicalPath, { recursive: true, force: true })
-      }
+    const lowerSource = extractedResPath.toLowerCase()
+    const lowerTarget = targetPhysicalPath.toLowerCase()
+    const isNestedZipToDir =
+      stat.isFile() && lowerSource.endsWith('.zip') && !lowerTarget.endsWith('.zip')
+    const isDirectoryTarget = isNestedZipToDir || stat.isDirectory()
+    const uniqSuffix = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const baseName = path.basename(targetPhysicalPath)
+    const preparedPath = path.join(targetParentDir, `.staging-${baseName}-${uniqSuffix}`)
+    const backupPath = path.join(targetParentDir, `.backup-${baseName}-${uniqSuffix}`)
 
-      const lowerSource = extractedResPath.toLowerCase()
-      const lowerTarget = targetPhysicalPath.toLowerCase()
-      if (stat.isFile() && lowerSource.endsWith('.zip') && !lowerTarget.endsWith('.zip')) {
-        await safeExtractZip(extractedResPath, targetPhysicalPath)
-      } else {
-        try {
-          fs.renameSync(extractedResPath, targetPhysicalPath)
-        } catch {
-          fs.cpSync(extractedResPath, targetPhysicalPath, { recursive: true })
-          fs.rmSync(extractedResPath, { recursive: true, force: true })
-        }
-      }
+    cleanupPreparedPaths.push(preparedPath)
 
-      if (fs.existsSync(targetPhysicalPath) && fs.statSync(targetPhysicalPath).isDirectory()) {
-        const isVisual =
-          isVisualVocabPluginResource(res.resource_id) || hasLocalVisualVocabFiles(targetPhysicalPath)
-        if (!isVisual) {
-          await writePluginReadyMarkerWithVisualVocab(targetPhysicalPath, {
-            resourceId: res.resource_id,
-            sharedSubDir: path.basename(targetPhysicalPath)
-          })
-        } else {
-          let verifyRes: Awaited<ReturnType<typeof verifyVisualVocabWithOmniCli>> | undefined
-          const exePath = omniService?.resolveOmniExecutable?.()
-          if (exePath && fs.existsSync(exePath)) {
-            verifyRes = await verifyVisualVocabWithOmniCli(
-              targetPhysicalPath,
-              getVisualVocabEncoderId(res.resource_id),
-              { executablePath: exePath }
-            )
-            if (!verifyRes.ok && verifyRes.code !== 'OMNI_BINARY_UNAVAILABLE') {
-              throw new Error(
-                `[OfflinePackage] 视觉词表 CLI 同源校验失败 (${res.resource_id}): ${verifyRes.error || verifyRes.code}`
-              )
-            }
-          }
-          if (!verifyRes || !verifyRes.ok) {
-            let isPackaged = false
-            try {
-              isPackaged = Boolean(require('electron')?.app?.isPackaged)
-            } catch {
-              isPackaged = false
-            }
-            if (isPackaged) {
-              throw new Error(`[OfflinePackage] 缺少视觉校验程序，无法确认 ${res.resource_id} 完整性`)
-            }
-            logger.warn(
-              LogCategory.SYSTEM,
-              `[OfflinePackage] 非打包环境未运行视觉校验，仅写基础 .ready.json（省略 visualVocab 契约块）(${res.resource_id})`
-            )
-            await writeReadyMarker(targetPhysicalPath, {
-              resourceId: res.resource_id,
-              sharedSubDir: path.basename(targetPhysicalPath)
-            })
-          } else {
-            await writePluginReadyMarkerWithVisualVocab(targetPhysicalPath, {
-              resourceId: res.resource_id,
-              sharedSubDir: path.basename(targetPhysicalPath),
-              verifyRes
-            })
-          }
-        }
+    if (isNestedZipToDir) {
+      await safeExtractZip(extractedResPath, preparedPath)
+    } else {
+      try {
+        await renameDirWithRetry(extractedResPath, preparedPath)
+      } catch {
+        fs.cpSync(extractedResPath, preparedPath, { recursive: true })
+        fs.rmSync(extractedResPath, { recursive: true, force: true })
       }
     }
 
-    if (typeof (service as any).withSlotMutex === 'function') {
-      await (service as any).withSlotMutex(res.resource_id, runMaterialize)
-    } else {
-      await runMaterialize()
+    let isVisual = false
+    let verifyRes: VerifyVisualVocabResult | undefined
+    if (isDirectoryTarget || isVisualVocabPluginResource(res.resource_id)) {
+      const verified = await verifyStagedVisualVocabDir({
+        dirPath: preparedPath,
+        resourceId: res.resource_id,
+        callerTag: 'OfflinePackage',
+        exePath: omniService?.resolveOmniExecutable?.()
+      })
+      isVisual = verified.isVisual
+      verifyRes = verified.verifyRes
+    }
+
+    return {
+      resource: res,
+      targetPhysicalPath,
+      preparedPath,
+      backupPath,
+      isVisual,
+      verifyRes
+    }
+  }
+
+  /**
+   * 两阶段全包/单包原子物化与提交：
+   * 1. Prepare & Verify 全包去重资源（失败则零破坏退出，只清临时 staging）；
+   * 2. Atomic Swap + 清单备份覆盖 + DB 事务；任一环节失败逆序回滚已切换目录与清单；
+   * 3. 全部成功后统一清理 `.backup-*`。
+   */
+  private async materializeAndCommitBatch(
+    service: ModularResourceService,
+    stagingDir: string,
+    modules: Array<{
+      moduleId: string
+      rawManifestBytes: Buffer
+      sigHex: string
+      resources: OfflinePackageManifest['resources']
+    }>,
+    commitDbTx: () => void
+  ): Promise<void> {
+    const pluginsRootDir = service.getPluginsRootDir()
+    const cleanupPreparedPaths: string[] = []
+    const preparedTasks: PreparedResourceMaterialization[] = []
+    const committedSwaps: CommittedSwapRecord[] = []
+    const manifestBackups: ManifestBackupRecord[] = []
+
+    try {
+      // Phase 1：全量资源身份/路径碰撞预检 + 去重暂存 + 前置校验（零正式路径写入）
+      const seenResourceDecls = new Map<string, { targetKey: string; expectedSha: string }>()
+      const seenTargetPaths = new Map<string, string>()
+      for (const mod of modules) {
+        for (const res of mod.resources) {
+          const resolvedTarget = service.resolvePhysicalPath(res.target_local_path)
+          const targetKey = normalizeForCache(resolvedTarget)
+          const expectedSha = (res.expected_sha256 ?? '').trim().toLowerCase()
+
+          const prevDecl = seenResourceDecls.get(res.resource_id)
+          if (prevDecl) {
+            if (prevDecl.targetKey !== targetKey || prevDecl.expectedSha !== expectedSha) {
+              throw new Error(
+                `离线包资源声明冲突: ${res.resource_id} 在多个模块中的目标路径或校验摘要不一致`
+              )
+            }
+            continue
+          }
+
+          const occupiedByResourceId = seenTargetPaths.get(targetKey)
+          if (occupiedByResourceId && occupiedByResourceId !== res.resource_id) {
+            throw new Error(
+              `离线包资源路径碰撞: ${res.resource_id} 与 ${occupiedByResourceId} 指向同一目标路径 (${res.target_local_path})`
+            )
+          }
+
+          seenResourceDecls.set(res.resource_id, { targetKey, expectedSha })
+          seenTargetPaths.set(targetKey, res.resource_id)
+
+          const prepared = await this.prepareResourceMaterialization(
+            service,
+            stagingDir,
+            mod.moduleId,
+            res,
+            cleanupPreparedPaths
+          )
+          preparedTasks.push(prepared)
+        }
+      }
+
+      // Phase 2：单锁保护整批原子切换 + 清单写入 + 数据库事务 + 异常逆序回滚（防止无锁竞态与撕裂）
+      const executePhase2Commit = async () => {
+        try {
+          for (const task of preparedTasks) {
+            const swapRecord: CommittedSwapRecord = {
+              prepared: task,
+              movedExistingToBackup: false,
+              movedPreparedToTarget: false
+            }
+            committedSwaps.push(swapRecord)
+
+            if (fs.existsSync(task.targetPhysicalPath)) {
+              await renameDirWithRetry(task.targetPhysicalPath, task.backupPath)
+              swapRecord.movedExistingToBackup = true
+            }
+
+            await renameDirWithRetry(task.preparedPath, task.targetPhysicalPath)
+            swapRecord.movedPreparedToTarget = true
+
+            if (
+              fs.existsSync(task.targetPhysicalPath) &&
+              fs.statSync(task.targetPhysicalPath).isDirectory()
+            ) {
+              const baseName = path.basename(task.targetPhysicalPath)
+              if (!task.isVisual) {
+                await writePluginReadyMarkerWithVisualVocab(task.targetPhysicalPath, {
+                  resourceId: task.resource.resource_id,
+                  sharedSubDir: baseName
+                })
+              } else if (task.verifyRes?.ok) {
+                await writePluginReadyMarkerWithVisualVocab(task.targetPhysicalPath, {
+                  resourceId: task.resource.resource_id,
+                  sharedSubDir: baseName,
+                  verifyRes: task.verifyRes
+                })
+              } else {
+                await writeBasicReadyMarkerCleaningLegacy(task.targetPhysicalPath, {
+                  resourceId: task.resource.resource_id,
+                  sharedSubDir: baseName
+                })
+              }
+            }
+          }
+
+          // 备份并写入所有模块清单到 SSOT 目录 `_module_manifests/<moduleId>/`
+          for (const mod of modules) {
+            const finalManifestDir = PluginPathResolver.getModuleManifestDirForRoot(
+              pluginsRootDir,
+              mod.moduleId
+            )
+            const dirExisted = fs.existsSync(finalManifestDir)
+            const manifestFile = path.join(finalManifestDir, 'manifest.json')
+            const sigFile = path.join(finalManifestDir, 'manifest.sig')
+            const prevManifest = fs.existsSync(manifestFile) ? fs.readFileSync(manifestFile) : null
+            const prevSig = fs.existsSync(sigFile) ? fs.readFileSync(sigFile, 'utf8') : null
+            manifestBackups.push({ dir: finalManifestDir, dirExisted, prevManifest, prevSig })
+
+            if (!dirExisted) {
+              fs.mkdirSync(finalManifestDir, { recursive: true })
+            }
+            fs.writeFileSync(manifestFile, mod.rawManifestBytes)
+            fs.writeFileSync(sigFile, mod.sigHex, 'utf8')
+          }
+
+          // 提交 SQLite 事务
+          commitDbTx()
+
+          // 全部（物理 + 清单 + DB）提交成功后清理旧备份
+          for (const swap of committedSwaps) {
+            if (swap.movedExistingToBackup && fs.existsSync(swap.prepared.backupPath)) {
+              try {
+                fs.rmSync(swap.prepared.backupPath, { recursive: true, force: true })
+              } catch (cleanBackupErr) {
+                logger.warn(
+                  LogCategory.SYSTEM,
+                  `[OfflinePackage] 清理旧资产备份失败（不影响当前运行）: ${swap.prepared.backupPath}`,
+                  cleanBackupErr
+                )
+              }
+            }
+          }
+        } catch (commitErr) {
+          logger.error(
+            LogCategory.SYSTEM,
+            '[OfflinePackage] 批量物化或落库失败，开始全批逆序回滚:',
+            commitErr
+          )
+          for (let i = manifestBackups.length - 1; i >= 0; i--) {
+            const mb = manifestBackups[i]
+            try {
+              const manifestFile = path.join(mb.dir, 'manifest.json')
+              const sigFile = path.join(mb.dir, 'manifest.sig')
+              if (mb.prevManifest !== null) {
+                fs.writeFileSync(manifestFile, mb.prevManifest)
+              } else if (fs.existsSync(manifestFile)) {
+                fs.rmSync(manifestFile, { force: true })
+              }
+              if (mb.prevSig !== null) {
+                fs.writeFileSync(sigFile, mb.prevSig, 'utf8')
+              } else if (fs.existsSync(sigFile)) {
+                fs.rmSync(sigFile, { force: true })
+              }
+              if (!mb.dirExisted && fs.existsSync(mb.dir) && fs.readdirSync(mb.dir).length === 0) {
+                fs.rmdirSync(mb.dir)
+              }
+            } catch (manifestErr) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[OfflinePackage] 回滚恢复模块清单失败: ${mb.dir}`,
+                manifestErr
+              )
+            }
+          }
+          for (let i = committedSwaps.length - 1; i >= 0; i--) {
+            const swap = committedSwaps[i]
+            await rollbackSwappedTargetPath(
+              swap.prepared.targetPhysicalPath,
+              swap.prepared.backupPath,
+              swap.movedPreparedToTarget,
+              swap.movedExistingToBackup,
+              swap.prepared.resource.resource_id
+            )
+          }
+          throw commitErr
+        }
+      }
+
+      if (typeof (service as any).withSlotMutex === 'function') {
+        await (service as any).withSlotMutex('__offline_bundle_import__', executePhase2Commit)
+      } else {
+        await executePhase2Commit()
+      }
+    } finally {
+      for (const p of cleanupPreparedPaths) {
+        if (fs.existsSync(p)) {
+          try {
+            fs.rmSync(p, { recursive: true, force: true })
+          } catch {
+            // ignore cleanup error
+          }
+        }
+      }
     }
   }
 
@@ -798,28 +1062,7 @@ export class OfflinePackageService {
       // 阶段 2：流式解压至临时暂存目录
       await this.extractArchiveStreamingToStaging(archivePath, stagingDir)
 
-      // 阶段 3：资源去重校验与安全物化
-      const materializedResources = new Set<string>()
-      for (const { rawManifestBytes, sigHex, meta } of verifiedModules) {
-        for (const res of meta.resources) {
-          if (!materializedResources.has(res.resource_id)) {
-            await this.verifyAndMaterializeResource(service, stagingDir, meta.moduleId, res)
-            materializedResources.add(res.resource_id)
-          }
-        }
-
-        const finalManifestDir = PluginPathResolver.getModuleManifestDirForRoot(
-          pluginsRootDir,
-          meta.moduleId
-        )
-        if (!fs.existsSync(finalManifestDir)) {
-          fs.mkdirSync(finalManifestDir, { recursive: true })
-        }
-        fs.writeFileSync(path.join(finalManifestDir, 'manifest.json'), rawManifestBytes)
-        fs.writeFileSync(path.join(finalManifestDir, 'manifest.sig'), sigHex, 'utf8')
-      }
-
-      // 阶段 4：数据库单事务持久化与基础检索引擎自动激活
+      // 阶段 3 & 4：全包暂存校验 -> 原子切换与清单写入 -> 数据库单事务提交（任一步失败全批逆序回滚）
       const db = service.getDb()
       const dao = service.getDao()
       let autoActivatedSlotModuleId: string | null = null
@@ -914,7 +1157,17 @@ export class OfflinePackageService {
         }
       })
 
-      tx()
+      await this.materializeAndCommitBatch(
+        service,
+        stagingDir,
+        verifiedModules.map(({ rawManifestBytes, sigHex, meta }) => ({
+          moduleId: meta.moduleId,
+          rawManifestBytes,
+          sigHex,
+          resources: meta.resources
+        })),
+        () => tx()
+      )
 
       if (autoActivatedSlotModuleId) {
         await service.notifyRuntimePluginTopologyChanged?.({
@@ -1056,23 +1309,7 @@ export class OfflinePackageService {
         fs.writeFileSync(outPath, entryBuffer)
       }
 
-      // 阶段 4 & 5：落地校验 SHA-256 与物理迁移
-      for (const res of manifestMeta.resources) {
-        await this.verifyAndMaterializeResource(service, stagingDir, moduleId, res)
-      }
-
-      // 缓存 manifest.sig 与 manifest.json 到 SSOT 隔离清单目录 `_module_manifests/<moduleId>/`
-      const finalManifestDir = PluginPathResolver.getModuleManifestDirForRoot(
-        pluginsRootDir,
-        moduleId
-      )
-      if (!fs.existsSync(finalManifestDir)) {
-        fs.mkdirSync(finalManifestDir, { recursive: true })
-      }
-      fs.writeFileSync(path.join(finalManifestDir, 'manifest.json'), manifestBuffer)
-      fs.writeFileSync(path.join(finalManifestDir, 'manifest.sig'), sigHex, 'utf8')
-
-      // 阶段 6：数据库单事务持久化
+      // 阶段 4, 5 & 6：暂存校验 -> 原子切换与清单写入 -> 数据库单事务持久化（任一步失败逆序回滚）
       const db = service.getDb()
       const dao = service.getDao()
       let autoActivatedSlotModuleId: string | null = null
@@ -1133,7 +1370,19 @@ export class OfflinePackageService {
         }
       })
 
-      tx()
+      await this.materializeAndCommitBatch(
+        service,
+        stagingDir,
+        [
+          {
+            moduleId,
+            rawManifestBytes: manifestBuffer,
+            sigHex,
+            resources: manifestMeta.resources
+          }
+        ],
+        () => tx()
+      )
 
       if (autoActivatedSlotModuleId) {
         await service.notifyRuntimePluginTopologyChanged?.({
