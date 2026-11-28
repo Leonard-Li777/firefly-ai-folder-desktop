@@ -48,6 +48,10 @@ import { UpgradeAccountDialog } from './components/tier/UpgradeAccountDialog'
 import { DeviceBindModal } from './components/tier/DeviceBindModal'
 import { UpdateNotification } from './components/update/UpdateNotification'
 import { CrossRegionNoticeBanner } from './components/common/CrossRegionNoticeBanner'
+import {
+  reportRendererStartupMark,
+  reportRendererStartupMarkAfterPaint
+} from './lib/startup-timeline'
 // PRD-0044（S5 提前摘除）：模型激活确认对话框删除，AlertDialog/buttonVariants 导入随之下线
 
 type StartupPhase = 'determining' | 'setup' | 'config' | 'licensing' | 'initializing' | 'ready'
@@ -748,6 +752,11 @@ const App: React.FC = () => {
     return undefined
   }, [startupPhase])
 
+  // 渲染端首帧时间点上报（W0-02）
+  useEffect(() => {
+    return reportRendererStartupMarkAfterPaint('renderer:first-paint')
+  }, [])
+
   useEffect(() => {
     determineStartupPhase()
   }, [determineStartupPhase])
@@ -762,6 +771,8 @@ const App: React.FC = () => {
   // 确保 Footer 始终能正确显示 AI 服务状态
   useEffect(() => {
     if (startupPhase !== 'ready') return
+
+    reportRendererStartupMark('renderer:phase:ready')
 
     const pollInterval = setInterval(() => {
       checkAIStatus()

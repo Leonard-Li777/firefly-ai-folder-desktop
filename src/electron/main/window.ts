@@ -9,6 +9,7 @@ import { trayService } from '../runtime-services/system/tray-service'
 import { dirMigrationCoordinator } from '../runtime-services/system/dir-migration-coordinator'
 import { resolveAppRegion, getWorktreeInfo } from './worktree-env'
 import { t } from '@app/languages'
+import { mark, isEnabled as isStartupTimelineEnabled } from '@pro/perf/startup-timeline'
 
 const getSplashHtml = (imagePath: string) => `
 <!DOCTYPE html>
@@ -361,6 +362,7 @@ export const createWindow = () => {
   splashWindow.once('ready-to-show', () => {
     logger.debug(LogCategory.MAIN, `[createWindow] 显示启动画面 (使用 ${bootImageName})`)
     splashWindow.show()
+    mark('splash:shown')
   })
 
   const envWidth = process.env.WINDOW_WIDTH ? parseInt(process.env.WINDOW_WIDTH, 10) : 1600
@@ -386,10 +388,12 @@ export const createWindow = () => {
         `--app-region=${appRegion}`,
         `--has-peer-data=${getWorktreeInfo()?.hasPeerData ? 'true' : 'false'}`,
         `--peer-region=${getWorktreeInfo()?.peerRegion || (appRegion === 'cn' ? 'intl' : 'cn')}`,
+        ...(isStartupTimelineEnabled() ? ['--ff-startup-timeline=1'] : []),
         ...(process.env.IS_INTEGRATION_TEST === 'true' ? ['--integration-test=true'] : [])
       ]
     }
   })
+  mark('main:created')
 
   if (!isNaN(envWidth) && !isNaN(envHeight)) {
     mainWindow.setSize(width, height)
@@ -413,6 +417,7 @@ export const createWindow = () => {
     }
 
     mainWindow.show()
+    mark('main:ready-to-show')
     logger.debug(LogCategory.MAIN, `__IS_PROD__: ${__IS_PROD__}`)
     logger.debug(LogCategory.MAIN, `[createWindow] 应用窗口尺寸配置: ${width}x${height}`)
     logger.debug(

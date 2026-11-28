@@ -143,6 +143,7 @@ import { OrphanGcScheduler } from './orphan-gc-scheduler'
 import { recoverPendingFsJournals } from '../runtime-services/filesystem/fs-journal-recovery'
 import { enrichAIStatus, clearEnrichCache } from './utils'
 import { t, changeLanguage } from '@app/languages'
+import { mark } from '@pro/perf/startup-timeline'
 
 /**
  * 初始化硬件检测并更新统一配置
@@ -224,6 +225,7 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
           logger.warn(LogCategory.STARTUP, '同步硬件特征到云端失败:', syncError)
         }
       }
+      mark('hw:detected')
     }
 
     if (wait) {
@@ -384,6 +386,8 @@ export async function initDatabaseAndDependentServices(
       } catch (err) {
         logger.warn(LogCategory.FILE_ORGANIZATION, '启动期 fs_operation_journal 自愈异常:', err)
       }
+      mark('db:journal-recovered')
+      mark('db:ready')
 
       await analysisQueueService.reloadDatabase()
       await fileWatcherService.startAllAutoWatchers().catch(err => {
@@ -611,6 +615,7 @@ export async function initializeMinimalServices(options?: {
     } catch (err) {
       logger.warn(LogCategory.MAIN, '系统身份 Supabase 注册未完成 (可能离线):', err)
     }
+    mark('cloud:registered')
 
     // 2.5 桥接 Tier 2 上层 AI 引擎（slice-3 桌面解耦）：本地模式仅连接 38400 上的外部引擎，
     //     desktop 不再自带任何推理进程。探活失败则静默拉起引擎应用；
@@ -641,6 +646,7 @@ export async function initializeMinimalServices(options?: {
       const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
       if (initMode !== 'cloud' && initMode !== 'disabled') {
         const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
+        mark(tier2Online ? 'engine:ready' : 'engine:failed')
         if (tier2Online) {
           logger.debug(
             LogCategory.MAIN,
@@ -654,6 +660,7 @@ export async function initializeMinimalServices(options?: {
         }
       }
     } catch (bridgeError) {
+      mark('engine:failed')
       logger.warn(
         LogCategory.MAIN,
         '[EngineBridge] Tier 2 引擎桥接初始化异常（不阻断启动）:',
@@ -774,6 +781,7 @@ export async function initializeFullServices(): Promise<void> {
               `[EngineBridge] 启动阶段自适应拉起 Tier 2 引擎模型，目标意图: ${targetMode}`
             )
             const res = await engineBridgeService.ensureMode(targetMode, { force: true })
+            mark(res.ok ? 'engine:ready' : 'engine:failed')
             if (res.ok) {
               logger.debug(
                 LogCategory.MAIN,
@@ -784,6 +792,7 @@ export async function initializeFullServices(): Promise<void> {
             }
           }
         } catch (err) {
+          mark('engine:failed')
           logger.warn(LogCategory.MAIN, '[EngineBridge] 启动阶段拉起引擎模型服务失败:', err)
         }
       }
@@ -1148,6 +1157,7 @@ export async function initializeFullServices(): Promise<void> {
     await omniService.start().catch(err => {
       logger.error(LogCategory.MAIN, '[OmniService] 原生微服务启动失败:', err)
     })
+    mark('omni:ready')
     // 延迟绑定 ConfigDbManager Push/Pull 双通道自愈（不阻塞启动关键路径）
     void registerConfigDbTaxonomySelfHeal()
 
@@ -1359,7 +1369,9 @@ export async function initializeFullServices(): Promise<void> {
     }
 
     logger.info(LogCategory.MAIN, '完整服务初始化完成')
+    mark('full:done')
   } catch (error) {
     logger.error(LogCategory.MAIN, '服务初始化失败:', error)
+    mark('full:done')
   }
 }

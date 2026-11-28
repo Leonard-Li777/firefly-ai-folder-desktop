@@ -36,6 +36,11 @@ import {
   externalAppLauncher,
   type DeepLinkTargetPayload
 } from '../../runtime-services/system/external-app-launcher'
+import {
+  STARTUP_TIMELINE_DIAGNOSTIC_FILENAME,
+  isEnabled as isStartupTimelineEnabled,
+  recordRendererMark
+} from '@pro/perf/startup-timeline'
 
 export function registerMiscIPCHandlers() {
   ipcMain.handle('system:get-run-id', async () => {
@@ -712,6 +717,19 @@ export function registerMiscIPCHandlers() {
   ipcMain.handle(
     'system:write-diagnostic-log',
     async (event, filename: string, content: string) => {
+      if (filename === STARTUP_TIMELINE_DIAGNOSTIC_FILENAME) {
+        if (!isStartupTimelineEnabled()) {
+          return { success: true }
+        }
+        try {
+          const payload = JSON.parse(content)
+          recordRendererMark(payload)
+          return { success: true }
+        } catch (err: any) {
+          logger.warn(LogCategory.MAIN, '[StartupTimeline] 渲染端打点解析失败:', err?.message)
+          return { success: false, error: err?.message || 'invalid startup timeline payload' }
+        }
+      }
       try {
         const { platformAdapter } = await import('@firefly/electron-llamaIndex-service')
         const logsDir = path.join(platformAdapter.getAppDataPath(), 'logs')
