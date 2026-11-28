@@ -15,7 +15,7 @@ import { QueueWindowPage } from './components/analysis/QueueWindowPage'
 import { ExtensionReconciliationDialog } from './components/analysis/ExtensionReconciliationDialog'
 import { AnalysisConfirmModal } from './components/analysis/AnalysisConfirmModal'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
-import { FileInfo, SettingsCategory } from '@firefly/types'
+import { SettingsCategory } from '@firefly/types'
 import { Footer } from './components/common/Footer'
 import { RealDirectory } from './components/file-explorer/RealDirectory'
 import { SystemSettingsDialog, WorkspaceSettingsDialog } from './components/settings'
@@ -283,7 +283,6 @@ const App: React.FC = () => {
   }, [])
 
   const { setTheme } = useTheme()
-  const [, setFiles] = useState<FileInfo[]>([])
   const [startupPhase, setStartupPhase] = useState<StartupPhase>(() => {
     if (currentPath === '/preview-window') return 'ready'
     if (typeof window !== 'undefined') {
@@ -653,17 +652,6 @@ const App: React.FC = () => {
     }
   }, [])
 
-  const loadFiles = useCallback(async () => {
-    try {
-      if (window.electronAPI) {
-        const fileList = await window.electronAPI.getAllFiles()
-        setFiles(fileList)
-      }
-    } catch (error) {
-      logger.error(LogCategory.RENDERER, '加载文件失败:', error)
-    }
-  }, [])
-
   const checkAIStatus = useCallback(async () => {
     try {
       if (window.electronAPI) {
@@ -705,8 +693,6 @@ const App: React.FC = () => {
         logger.warn(LogCategory.RENDERER, 'AI服务初始化失败，将在后续使用时重试:', error)
       }
 
-      setStartupMessage(t('正在加载应用配置...'))
-      await loadFiles()
       setStartupMessage(t('正在检查 AI 状态...'))
       await checkAIStatus()
       // 关键修复：只有当前阶段仍是 initializing 时才设为 ready，
@@ -717,7 +703,7 @@ const App: React.FC = () => {
       // 如果初始化过程中发现授权丢失，由 determineStartupPhase 或 onUnauthorized 监听器处理
       // 此处不再强制设为 ready，而是保留当前状态
     }
-  }, [checkAIStatus, loadFiles])
+  }, [checkAIStatus])
 
   // 监听授权失效通知 (Security Enforcement)
   useEffect(() => {
