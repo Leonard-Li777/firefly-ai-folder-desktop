@@ -222,6 +222,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const [isTruncated, setIsTruncated] = useState(false)
   const [fileSize, setFileSize] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [videoDuration, setVideoDuration] = useState<number>(0)
   /** <video> 无法解码该视频格式（如 AVI/MKV）时置 true，改用静态抽帧缩图预览 */
   const [videoDecodeFailed, setVideoDecodeFailed] = useState(false)
@@ -244,10 +245,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   const logicalTimeRef = useRef(0)
   const [streamLogicalTime, setStreamLogicalTime] = useState(0)
   const [streamPlaying, setStreamPlaying] = useState(false)
-  const isVideoMuted = usePreviewOverlayStore(s => s.isVideoMuted)
-  const setVideoMuted = usePreviewOverlayStore(s => s.setVideoMuted)
-  const videoVolume = usePreviewOverlayStore(s => s.videoVolume)
-  const setVideoVolume = usePreviewOverlayStore(s => s.setVideoVolume)
+  const isMediaMuted = usePreviewOverlayStore(s => s.isMediaMuted)
+  const setMediaMuted = usePreviewOverlayStore(s => s.setMediaMuted)
+  const mediaVolume = usePreviewOverlayStore(s => s.mediaVolume)
+  const setMediaVolume = usePreviewOverlayStore(s => s.setMediaVolume)
   const mediaFitMode = usePreviewOverlayStore(s => s.mediaFitMode)
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerSize, setContainerSize] = useState<{ width: number; height: number }>({
@@ -323,13 +324,31 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     degradeSeekSnapshotRef.current = null
   }, [filePath])
 
-  // 保持当前视频音量大小与静音状态与全局视频偏好一致（仅限视频，TTS/音乐不限，办公场景防打扰）
+  // 保持预览媒体的音量与静音状态与全局音视频偏好一致（文件预览的视频/音频共用，TTS/音乐不受影响）
   useEffect(() => {
     if (category === FileCategory.VIDEO && videoRef.current) {
-      videoRef.current.volume = videoVolume
-      videoRef.current.muted = isVideoMuted
+      videoRef.current.volume = mediaVolume
+      videoRef.current.muted = isMediaMuted
+      return
     }
-  }, [videoVolume, isVideoMuted, category])
+    if (category === FileCategory.AUDIO && audioRef.current) {
+      audioRef.current.volume = mediaVolume
+      audioRef.current.muted = isMediaMuted
+    }
+  }, [mediaVolume, isMediaMuted, category, filePath])
+
+  /** 音频原生控制条的静音/音量改动回写全局偏好，保证切文件与跨会话延续用户选择 */
+  const handleAudioVolumeChange = (e: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = e.currentTarget
+    const safeVol = Math.min(1, Math.max(0, audio.volume))
+    const muted = audio.muted || safeVol === 0
+    if (Math.abs(safeVol - mediaVolume) > 0.01) {
+      setMediaVolume(safeVol)
+    }
+    if (muted !== isMediaMuted) {
+      setMediaMuted(muted)
+    }
+  }
 
   const markStreamActivity = () => {
     lastStreamActivityRef.current = Date.now()
@@ -640,9 +659,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     const duration = videoRef.current.duration
     const safeTime = clampVideoTime(targetTime, duration)
     videoRef.current.currentTime = safeTime
-    // 对齐全局视频音量与静音偏好（仅限视频，办公防打扰）
-    videoRef.current.volume = videoVolume
-    videoRef.current.muted = isVideoMuted
+    // 对齐全局音视频音量与静音偏好（办公防打扰）
+    videoRef.current.volume = mediaVolume
+    videoRef.current.muted = isMediaMuted
     tryPlayNative(videoRef.current)
   }
 
@@ -684,9 +703,9 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
         v.currentTime = clampVideoTime(currentTime, duration)
       }
     }
-    // 对齐全局视频音量与静音偏好
-    v.volume = videoVolume
-    v.muted = isVideoMuted
+    // 对齐全局音视频音量与静音偏好
+    v.volume = mediaVolume
+    v.muted = isMediaMuted
     tryPlayNative(v)
   }
 
@@ -713,13 +732,13 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       if (!resumePlayAfterSeekRef.current) {
         setStreamPlaying(!v.paused)
       }
-      v.muted = isVideoMuted
-      v.volume = videoVolume
+      v.muted = isMediaMuted
+      v.volume = mediaVolume
       return
     }
-    // 对齐全局视频音量与静音偏好
-    v.volume = videoVolume
-    v.muted = isVideoMuted
+    // 对齐全局音视频音量与静音偏好
+    v.volume = mediaVolume
+    v.muted = isMediaMuted
     const validDuration = Number.isFinite(v.duration) && v.duration > 0 ? v.duration : 0
     setVideoDuration(validDuration)
     if (v.videoWidth && v.videoHeight) {
@@ -869,12 +888,12 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   }
 
   const toggleStreamMute = () => {
-    const next = !isVideoMuted
-    setVideoMuted(next)
+    const next = !isMediaMuted
+    setMediaMuted(next)
     if (videoRef.current) {
       videoRef.current.muted = next
-      if (!next && videoVolume === 0) {
-        setVideoVolume(0.5)
+      if (!next && mediaVolume === 0) {
+        setMediaVolume(0.5)
         videoRef.current.volume = 0.5
       }
     }
@@ -882,10 +901,10 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
   const handleStreamVolumeChange = (value: number) => {
     const safe = Math.min(1, Math.max(0, value))
-    setVideoVolume(safe)
+    setMediaVolume(safe)
     const nextMuted = safe === 0
-    if (nextMuted !== isVideoMuted) {
-      setVideoMuted(nextMuted)
+    if (nextMuted !== isMediaMuted) {
+      setMediaMuted(nextMuted)
     }
     if (videoRef.current) {
       videoRef.current.volume = safe
@@ -1183,7 +1202,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     src={streamSession.streamUrl}
                     controls={false}
                     autoPlay
-                    muted={isVideoMuted}
+                    muted={isMediaMuted}
                     style={
                       !isSideBySide && maxVerticalMediaHeight
                         ? { maxHeight: `${maxVerticalMediaHeight}px` }
@@ -1196,11 +1215,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                       const v = e.currentTarget
                       const safeVol = Math.min(1, Math.max(0, v.volume))
                       const muted = v.muted || safeVol === 0
-                      if (Math.abs(safeVol - videoVolume) > 0.01) {
-                        setVideoVolume(safeVol)
+                      if (Math.abs(safeVol - mediaVolume) > 0.01) {
+                        setMediaVolume(safeVol)
                       }
-                      if (muted !== isVideoMuted) {
-                        setVideoMuted(muted)
+                      if (muted !== isMediaMuted) {
+                        setMediaMuted(muted)
                       }
                     }}
                     onProgress={markStreamActivity}
@@ -1223,8 +1242,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     currentSec={streamLogicalTime}
                     durationSec={streamSession.durationSec}
                     playing={streamPlaying}
-                    muted={isVideoMuted}
-                    volume={videoVolume}
+                    muted={isMediaMuted}
+                    volume={mediaVolume}
                     highlightRange={highlightRange}
                     onTogglePlay={toggleStreamPlay}
                     onSeek={handleStreamSeek}
@@ -1240,7 +1259,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                   src={fileUrl}
                   controls
                   autoPlay
-                  muted={isVideoMuted}
+                  muted={isMediaMuted}
                   style={
                     !isSideBySide && maxVerticalMediaHeight
                       ? { maxHeight: `${maxVerticalMediaHeight}px` }
@@ -1253,11 +1272,11 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     const v = e.currentTarget
                     const safeVol = Math.min(1, Math.max(0, v.volume))
                     const muted = v.muted || safeVol === 0
-                    if (Math.abs(safeVol - videoVolume) > 0.01) {
-                      setVideoVolume(safeVol)
+                    if (Math.abs(safeVol - mediaVolume) > 0.01) {
+                      setMediaVolume(safeVol)
                     }
-                    if (muted !== isVideoMuted) {
-                      setVideoMuted(muted)
+                    if (muted !== isMediaMuted) {
+                      setMediaMuted(muted)
                     }
                   }}
                   onError={e => {
@@ -1386,7 +1405,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               )}
             >
               <MaterialIcon icon="audiotrack" className="text-8xl text-primary mb-2 shrink-0" />
-              <audio src={fileUrl} controls className="w-full shrink-0">
+              <audio
+                ref={audioRef}
+                src={fileUrl}
+                controls
+                muted={isMediaMuted}
+                onVolumeChange={handleAudioVolumeChange}
+                className="w-full shrink-0"
+              >
                 {t('您的浏览器不支持音频播放')}
               </audio>
             </div>

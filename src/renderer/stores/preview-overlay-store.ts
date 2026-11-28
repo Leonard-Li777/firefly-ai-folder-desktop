@@ -26,12 +26,12 @@ interface PreviewOverlayState {
   extension: string
   currentTime?: number
   highlightRange?: [number, number]
-  /** 全局视频静音状态（持久化于 localStorage，仅限视频，TTS/音乐不受影响） */
-  isVideoMuted: boolean
-  setVideoMuted: (muted: boolean) => void
-  /** 全局视频音量大小 0.0~1.0（持久化于 localStorage，仅限视频，TTS/音乐不受影响） */
-  videoVolume: number
-  setVideoVolume: (volume: number) => void
+  /** 全局预览音视频静音状态（持久化于 localStorage，文件预览的视频与音频共用，TTS/音乐不受影响） */
+  isMediaMuted: boolean
+  setMediaMuted: (muted: boolean) => void
+  /** 全局预览音视频音量大小 0.0~1.0（持久化于 localStorage，文件预览的视频与音频共用，TTS/音乐不受影响） */
+  mediaVolume: number
+  setMediaVolume: (volume: number) => void
   /** 媒体预览缩放三态：contain(等比全显) | original(原始尺寸) | fit-width(适应宽度) */
   mediaFitMode: MediaFitMode
   setMediaFitMode: (mode: MediaFitMode) => void
@@ -75,41 +75,46 @@ export function getCurrentVideoPlaybackTime(): number | undefined {
   return currentVideoPlaybackTime
 }
 
-export const VIDEO_MUTED_STORAGE_KEY = 'firefly_video_muted_state'
+export const MEDIA_MUTED_STORAGE_KEY = 'firefly_media_muted_state'
 
-export function loadVideoMutedState(): boolean {
+/**
+ * 读取全局预览音视频静音偏好。
+ * 首次使用（无持久化记录）返回 true：全局音视频初始默认静音，避免办公场景意外外放；
+ * 用户手动解除静音后由 saveMediaMutedState 记忆，后续跨文件/跨会话延续用户选择。
+ */
+export function loadMediaMutedState(): boolean {
   try {
-    const val = localStorage.getItem(VIDEO_MUTED_STORAGE_KEY)
+    const val = localStorage.getItem(MEDIA_MUTED_STORAGE_KEY)
     if (val !== null) {
       return val === 'true'
     }
   } catch (err) {
-    console.error('加载视频静音状态失败:', err)
+    console.error('加载音视频静音状态失败:', err)
   }
-  return false
+  return true
 }
 
-export function saveVideoMutedState(muted: boolean): void {
+export function saveMediaMutedState(muted: boolean): void {
   try {
-    localStorage.setItem(VIDEO_MUTED_STORAGE_KEY, String(muted))
+    localStorage.setItem(MEDIA_MUTED_STORAGE_KEY, String(muted))
   } catch (err) {
-    console.error('保存视频静音状态失败:', err)
+    console.error('保存音视频静音状态失败:', err)
   }
 }
 
-export function getVideoMuted(): boolean {
-  return usePreviewOverlayStore.getState().isVideoMuted
+export function getMediaMuted(): boolean {
+  return usePreviewOverlayStore.getState().isMediaMuted
 }
 
-export function setVideoMuted(muted: boolean): void {
-  usePreviewOverlayStore.getState().setVideoMuted(muted)
+export function setMediaMuted(muted: boolean): void {
+  usePreviewOverlayStore.getState().setMediaMuted(muted)
 }
 
-export const VIDEO_VOLUME_STORAGE_KEY = 'firefly_video_volume_state'
+export const MEDIA_VOLUME_STORAGE_KEY = 'firefly_media_volume_state'
 
-export function loadVideoVolumeState(): number {
+export function loadMediaVolumeState(): number {
   try {
-    const val = localStorage.getItem(VIDEO_VOLUME_STORAGE_KEY)
+    const val = localStorage.getItem(MEDIA_VOLUME_STORAGE_KEY)
     if (val !== null) {
       const num = Number(val)
       if (Number.isFinite(num) && num >= 0 && num <= 1) {
@@ -117,26 +122,26 @@ export function loadVideoVolumeState(): number {
       }
     }
   } catch (err) {
-    console.error('加载视频音量状态失败:', err)
+    console.error('加载音视频音量状态失败:', err)
   }
   return 1.0
 }
 
-export function saveVideoVolumeState(volume: number): void {
+export function saveMediaVolumeState(volume: number): void {
   try {
     const safe = Math.min(1, Math.max(0, volume))
-    localStorage.setItem(VIDEO_VOLUME_STORAGE_KEY, String(safe))
+    localStorage.setItem(MEDIA_VOLUME_STORAGE_KEY, String(safe))
   } catch (err) {
-    console.error('保存视频音量状态失败:', err)
+    console.error('保存音视频音量状态失败:', err)
   }
 }
 
-export function getVideoVolume(): number {
-  return usePreviewOverlayStore.getState().videoVolume
+export function getMediaVolume(): number {
+  return usePreviewOverlayStore.getState().mediaVolume
 }
 
-export function setVideoVolume(volume: number): void {
-  usePreviewOverlayStore.getState().setVideoVolume(volume)
+export function setMediaVolume(volume: number): void {
+  usePreviewOverlayStore.getState().setMediaVolume(volume)
 }
 
 function getStorageKey(pageId: string): string {
@@ -182,16 +187,16 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
   previewMode: 'split',
   activePageId: '',
   pageStates: {},
-  isVideoMuted: loadVideoMutedState(),
-  setVideoMuted: (muted: boolean) => {
-    saveVideoMutedState(muted)
-    set({ isVideoMuted: muted })
+  isMediaMuted: loadMediaMutedState(),
+  setMediaMuted: (muted: boolean) => {
+    saveMediaMutedState(muted)
+    set({ isMediaMuted: muted })
   },
-  videoVolume: loadVideoVolumeState(),
-  setVideoVolume: (volume: number) => {
+  mediaVolume: loadMediaVolumeState(),
+  setMediaVolume: (volume: number) => {
     const safe = Math.min(1, Math.max(0, volume))
-    saveVideoVolumeState(safe)
-    set({ videoVolume: safe })
+    saveMediaVolumeState(safe)
+    set({ mediaVolume: safe })
   },
   mediaFitMode: 'contain',
   setMediaFitMode: (mode: MediaFitMode) => set({ mediaFitMode: mode }),
