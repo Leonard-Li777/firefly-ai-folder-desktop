@@ -16,10 +16,11 @@
  *    - 独立 Worker 线程单飞串行校验，两段式淘汰 (TTL 7天 + FIFO 50条)，大包永不误删。
  */
 
-import * as fs from 'fs'
+import { promises as fsp } from 'fs'
 import * as path from 'path'
 import type { Database } from 'better-sqlite3'
 import { logger, LogCategory, deriveTargetLocalPath, PluginPathResolver } from '@firefly/shared'
+import { existsAsync } from '../../infra/fs/async-fs'
 import type { OfflinePackageDao, OfflinePackageJobRecord } from './offline-package-dao'
 import { BundlePromoter, type IncomingModuleMeta } from './bundle-promoter'
 import { BackgroundVerificationQueue } from './background-verification-queue'
@@ -56,9 +57,24 @@ export interface ReconcileResult {
 
 export class StartupReconciler {
   /**
-   * 应用冷启动同步轻量对账入口 (<5ms)
+   * 串行门（J-04 / IO-21）：执行中再次调用时，等在途调用结束后再完整重跑一次，
+   * 不复用结果、不并发，保持第二次在 reconcileBuiltinModuleBindingsSync 之后的完整重跑语义。
    */
-  static async reconcileOnStartup(options: ReconcileOptions): Promise<ReconcileResult> {
+  private static serialTail: Promise<void> = Promise.resolve()
+
+  /**
+   * 应用冷启动异步轻量对账入口（IO-21 串行门）
+   */
+  static reconcileOnStartup(options: ReconcileOptions): Promise<ReconcileResult> {
+    const run = this.serialTail.then(() => this.runReconcileOnStartup(options))
+    this.serialTail = run.then(
+      () => undefined,
+      () => undefined
+    )
+    return run
+  }
+
+  private static async runReconcileOnStartup(options: ReconcileOptions): Promise<ReconcileResult> {
     const {
       baseDir,
       db,
@@ -110,10 +126,10 @@ export class StartupReconciler {
           // 自动嗅探匹配属于该任务的所有 .old-<jobId> 备份目录，并从 DB 补全资源目标路径供独占清理
           const affectedModules: IncomingModuleMeta[] = []
           const seenModIds = new Set<string>()
-          const collectRollbackModulesFromDir = (dir: string) => {
-            if (!fs.existsSync(dir)) return
+          const collectRollbackModulesFromDir = async (dir: string) => {
+            if (!(await existsAsync(dir))) return
             const suffix = `.old-${job.job_id}`
-            for (const entry of fs.readdirSync(dir)) {
+            for (const entry of await fsp.readdir(dir)) {
               if (entry.endsWith(suffix)) {
                 const modId = entry.replace(suffix, '')
                 if (seenModIds.has(modId)) continue
@@ -127,8 +143,8 @@ export class StartupReconciler {
               }
             }
           }
-          collectRollbackModulesFromDir(sharedModulesDir)
-          collectRollbackModulesFromDir(moduleManifestsDir)
+          await collectRollbackModulesFromDir(sharedModulesDir)
+          await collectRollbackModulesFromDir(moduleManifestsDir)
 
           if (createdResIds.length > 0) {
             const dbResRows = db
@@ -194,18 +210,18 @@ export class StartupReconciler {
           const candidateModuleIds = new Set<string>()
 
           // 1. 从 .old-<jobId> 备份目录识别被本 job 影响的模块
-          if (fs.existsSync(sharedModulesDir)) {
+          if (await existsAsync(sharedModulesDir)) {
             const suffix = `.old-${job.job_id}`
-            const entries = fs.readdirSync(sharedModulesDir)
+            const entries = await fsp.readdir(sharedModulesDir)
             for (const entry of entries) {
               if (entry.endsWith(suffix)) {
                 candidateModuleIds.add(entry.replace(suffix, ''))
               }
             }
           }
-          if (fs.existsSync(moduleManifestsDir)) {
+          if (await existsAsync(moduleManifestsDir)) {
             const suffix = `.old-${job.job_id}`
-            for (const entry of fs.readdirSync(moduleManifestsDir)) {
+            for (const entry of await fsp.readdir(moduleManifestsDir)) {
               if (entry.endsWith(suffix)) {
                 candidateModuleIds.add(entry.replace(suffix, ''))
               }
@@ -213,8 +229,8 @@ export class StartupReconciler {
           }
 
           // 2. 若 candidateModuleIds 为空 (全新安装)，仅扫描携带 manifest.json/manifest.sig 的模块目录（绝不误伤纯权重目录）
-          if (candidateModuleIds.size === 0 && fs.existsSync(moduleManifestsDir)) {
-            for (const entry of fs.readdirSync(moduleManifestsDir)) {
+          if (candidateModuleIds.size === 0 && (await existsAsync(moduleManifestsDir))) {
+            for (const entry of await fsp.readdir(moduleManifestsDir)) {
               if (
                 entry.includes('.old-') ||
                 entry.includes('.uninstalled-') ||
@@ -224,15 +240,15 @@ export class StartupReconciler {
               }
               const subDir = path.join(moduleManifestsDir, entry)
               if (
-                fs.existsSync(path.join(subDir, 'manifest.json')) ||
-                fs.existsSync(path.join(subDir, 'manifest.sig'))
+                (await existsAsync(path.join(subDir, 'manifest.json'))) ||
+                (await existsAsync(path.join(subDir, 'manifest.sig')))
               ) {
                 candidateModuleIds.add(entry)
               }
             }
           }
-          if (candidateModuleIds.size === 0 && fs.existsSync(sharedModulesDir)) {
-            const entries = fs.readdirSync(sharedModulesDir)
+          if (candidateModuleIds.size === 0 && (await existsAsync(sharedModulesDir))) {
+            const entries = await fsp.readdir(sharedModulesDir)
             for (const entry of entries) {
               if (
                 entry.includes('.old-') ||
@@ -243,8 +259,8 @@ export class StartupReconciler {
               }
               const subDir = path.join(sharedModulesDir, entry)
               if (
-                fs.existsSync(path.join(subDir, 'manifest.json')) ||
-                fs.existsSync(path.join(subDir, 'manifest.sig'))
+                (await existsAsync(path.join(subDir, 'manifest.json'))) ||
+                (await existsAsync(path.join(subDir, 'manifest.sig')))
               ) {
                 candidateModuleIds.add(entry)
               }
@@ -260,20 +276,20 @@ export class StartupReconciler {
             const ssotDir = PluginPathResolver.getModuleManifestDirForRoot(pluginsRootDir, modId)
             const legacyDir = path.join(sharedModulesDir, modId)
             const dirPath =
-              fs.existsSync(path.join(ssotDir, 'manifest.json')) ||
-              fs.existsSync(path.join(ssotDir, 'manifest.sig'))
+              (await existsAsync(path.join(ssotDir, 'manifest.json'))) ||
+              (await existsAsync(path.join(ssotDir, 'manifest.sig')))
                 ? ssotDir
                 : legacyDir
             const manifestPath = path.join(dirPath, 'manifest.json')
             const sigPath = path.join(dirPath, 'manifest.sig')
 
-            if (!fs.existsSync(manifestPath) || !fs.existsSync(sigPath)) {
+            if (!(await existsAsync(manifestPath)) || !(await existsAsync(sigPath))) {
               allValid = false
               break
             }
 
-            const raw = fs.readFileSync(manifestPath)
-            const sig = fs.readFileSync(sigPath, 'utf-8').trim()
+            const raw = await fsp.readFile(manifestPath)
+            const sig = (await fsp.readFile(sigPath, 'utf-8')).trim()
             if (!verifyManifestSignature(raw, sig, customPublicKey || ROOT_ED25519_PK)) {
               allValid = false
               break
@@ -375,16 +391,20 @@ export class StartupReconciler {
           tx()
 
           // d. 事务提交成功后，物理清理 .old-<jobId> 备份
-          if (fs.existsSync(sharedModulesDir)) {
+          if (await existsAsync(sharedModulesDir)) {
             try {
-              const files = fs.readdirSync(sharedModulesDir)
+              const files = await fsp.readdir(sharedModulesDir)
               for (const f of files) {
                 if (f.includes(`.old-${job.job_id}`)) {
-                  fs.rmSync(path.join(sharedModulesDir, f), { recursive: true, force: true })
+                  await fsp.rm(path.join(sharedModulesDir, f), { recursive: true, force: true })
                 }
               }
-            } catch {
-              // ignore
+            } catch (rmErr) {
+              logger.warn(
+                LogCategory.SYSTEM,
+                `[StartupReconciler] 清理 .old-${job.job_id} 备份异常:`,
+                rmErr
+              )
             }
           }
 
@@ -395,9 +415,9 @@ export class StartupReconciler {
           // 任一模块损坏或凭据缺失：触发全量回滚置 FAILED
           const createdResIds: string[] = JSON.parse(job.created_resource_ids || '[]')
           const affectedModules: IncomingModuleMeta[] = []
-          if (fs.existsSync(sharedModulesDir)) {
+          if (await existsAsync(sharedModulesDir)) {
             const suffix = `.old-${job.job_id}`
-            const entries = fs.readdirSync(sharedModulesDir)
+            const entries = await fsp.readdir(sharedModulesDir)
             for (const entry of entries) {
               if (entry.endsWith(suffix)) {
                 const modId = entry.replace(suffix, '')
@@ -424,16 +444,20 @@ export class StartupReconciler {
         }
       } else if (job.status === 'DB_COMMITTED') {
         // 物理与数据库均已就位：清理残留的 .old-<jobId> 备份，置 FINISHED
-        if (fs.existsSync(sharedModulesDir)) {
+        if (await existsAsync(sharedModulesDir)) {
           try {
-            const files = fs.readdirSync(sharedModulesDir)
+            const files = await fsp.readdir(sharedModulesDir)
             for (const f of files) {
               if (f.includes(`.old-${job.job_id}`)) {
-                fs.rmSync(path.join(sharedModulesDir, f), { recursive: true, force: true })
+                await fsp.rm(path.join(sharedModulesDir, f), { recursive: true, force: true })
               }
             }
-          } catch {
-            // ignore
+          } catch (rmErr) {
+            logger.warn(
+              LogCategory.SYSTEM,
+              `[StartupReconciler] 清理 .old-${job.job_id} 备份异常:`,
+              rmErr
+            )
           }
         }
         dao.updateJobStatus(job.job_id, 'FINISHED', { nowMs })
@@ -447,7 +471,7 @@ export class StartupReconciler {
     const groupedExports = dao.getJobsGroupedByArchivePath()
     result.reconciledExports.convergedGroupsCount = groupedExports.size
 
-    groupedExports.forEach(({ authoritative, others }, archivePath) => {
+    for (const [archivePath, { authoritative, others }] of groupedExports.entries()) {
       // 1. 组内其余次级任务统一批量置为 FAILED
       if (others.length > 0) {
         const otherIds = others.map(j => j.job_id)
@@ -462,7 +486,7 @@ export class StartupReconciler {
         result.reconciledExports.markedFailedCount++
 
         // 权属恢复：若同路径磁盘存在旧 .ffp，反查被权威任务 supersede 的历史旧任务
-        if (fs.existsSync(archivePath)) {
+        if (await existsAsync(archivePath)) {
           const oldJob = dao.findSupersededExportJob(archivePath, authoritative.job_id)
           if (oldJob) {
             // 同事务显式清空 superseded_by_job_id / superseded_at 并重置连续崩溃计数，自愈恢复为 CLEANUP_PENDING
@@ -476,20 +500,20 @@ export class StartupReconciler {
         }
       } else if (authoritative.status === 'CLEANUP_PENDING') {
         // 权威任务处于 CLEANUP_PENDING：若物理文件不存在置为 FAILED，存在则保持
-        if (!fs.existsSync(archivePath)) {
+        if (!(await existsAsync(archivePath))) {
           dao.updateJobStatus(authoritative.job_id, 'FAILED', { nowMs })
           result.reconciledExports.markedFailedCount++
         }
       }
-    })
+    }
 
     // ------------------------------------------------------------------
     // 阶段 1C: 异步孤儿 staging 目录清理
     // ------------------------------------------------------------------
     const stagingDir = path.join(pluginsRootDir, '_staging')
-    if (fs.existsSync(stagingDir)) {
+    if (await existsAsync(stagingDir)) {
       try {
-        fs.rmSync(stagingDir, { recursive: true, force: true })
+        await fsp.rm(stagingDir, { recursive: true, force: true })
       } catch (err) {
         logger.warn(
           LogCategory.SYSTEM,

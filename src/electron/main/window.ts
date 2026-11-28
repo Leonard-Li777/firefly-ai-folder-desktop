@@ -19,7 +19,7 @@ import { getCachedPerfFlagsArguments } from './perf-flags'
 const resolvePerfFlagsUserDataDir = (): string =>
   getWorktreeInfo()?.userDataDir || app.getPath('userData')
 
-const getSplashHtml = (imagePath: string) => `
+const getSplashHtml = (imagePath: string, initialMessage = '') => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,8 +35,10 @@ const getSplashHtml = (imagePath: string) => `
             height: 100vh;
             overflow: hidden;
             -webkit-app-region: drag;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         .bg-image {
+            position: relative;
             width: 100%;
             height: 100%;
             background-image: url('${imagePath}');
@@ -44,15 +46,29 @@ const getSplashHtml = (imagePath: string) => `
             background-position: center;
             background-repeat: no-repeat;
         }
+        .splash-status {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 36px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 13px;
+            letter-spacing: 0.02em;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
+        }
     </style>
 </head>
 <body>
-    <div class="bg-image"></div>
+    <div class="bg-image">
+      <div id="splash-status" class="splash-status">${initialMessage.replace(/[<>&"']/g, '')}</div>
+    </div>
 </body>
 </html>
 `
 
 let mainWindowInstance: BrowserWindow | null = null
+let splashWindowInstance: BrowserWindow | null = null
 
 // ---------------------------------------------------------------------------
 // 渲染进程崩溃兜底（白屏自愈）
@@ -335,8 +351,61 @@ export const getMainWindow = (): BrowserWindow | null => {
   return null
 }
 
-export const createWindow = () => {
-  logger.debug(LogCategory.MAIN, '[createWindow] 开始创建主浏览器窗口...')
+export const getSplashWindow = (): BrowserWindow | null => {
+  if (splashWindowInstance && !splashWindowInstance.isDestroyed()) {
+    return splashWindowInstance
+  }
+  return null
+}
+
+export const destroySplash = (): void => {
+  if (splashWindowInstance && !splashWindowInstance.isDestroyed()) {
+    splashWindowInstance.destroy()
+  }
+  splashWindowInstance = null
+}
+
+export const updateSplashMessage = (message: string): void => {
+  const splash = getSplashWindow()
+  if (!splash) return
+  try {
+    void splash.webContents
+      .executeJavaScript(
+        `(() => { const el = document.getElementById('splash-status'); if (el) el.textContent = ${JSON.stringify(message)}; })()`
+      )
+      .catch(() => {
+        // splash 可能在更新瞬间已被销毁，忽略
+      })
+  } catch {
+    // 窗口已销毁，忽略
+  }
+}
+
+export const focusSplashOrMainWindow = (): void => {
+  const win = getMainWindow()
+  if (win) {
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.focus()
+    return
+  }
+  const splash = getSplashWindow()
+  if (splash) {
+    if (splash.isMinimized()) splash.restore()
+    splash.show()
+    splash.focus()
+  }
+}
+
+/**
+ * 极早期创建并展示启动画面（ST-P0-1：不阻塞于网络与外部进程初始化）
+ */
+export const createSplash = (initialMessage = ''): BrowserWindow => {
+  const existing = getSplashWindow()
+  if (existing) {
+    if (initialMessage) updateSplashMessage(initialMessage)
+    return existing
+  }
 
   const splashWindow = new BrowserWindow({
     width: 1024,
@@ -354,6 +423,12 @@ export const createWindow = () => {
       sandbox: true
     }
   })
+  splashWindowInstance = splashWindow
+  splashWindow.once('closed', () => {
+    if (splashWindowInstance === splashWindow) {
+      splashWindowInstance = null
+    }
+  })
 
   const appRegion = resolveAppRegion()
   const bootImageName = appRegion === 'cn' ? 'boot.jpg' : 'boot_en.jpg'
@@ -363,15 +438,31 @@ export const createWindow = () => {
 
   const bootImageUrl = pathToFileURL(bootImagePath).toString()
 
-  splashWindow.loadURL(
-    `data:text/html;charset=UTF-8,${encodeURIComponent(getSplashHtml(bootImageUrl))}`
+  void splashWindow.loadURL(
+    `data:text/html;charset=UTF-8,${encodeURIComponent(getSplashHtml(bootImageUrl, initialMessage))}`
   )
 
   splashWindow.once('ready-to-show', () => {
-    logger.debug(LogCategory.MAIN, `[createWindow] 显示启动画面 (使用 ${bootImageName})`)
-    splashWindow.show()
-    mark('splash:shown')
+    logger.debug(LogCategory.MAIN, `[createSplash] 显示启动画面 (使用 ${bootImageName})`)
+    if (!splashWindow.isDestroyed()) {
+      splashWindow.show()
+      mark('splash:shown')
+    }
   })
+
+  return splashWindow
+}
+
+/**
+ * 创建主浏览器窗口（ST-P0-2：与早期 Splash 创建解耦，避免重复创建）
+ */
+export const createMainWindow = (): BrowserWindow => {
+  const existingMain = getMainWindow()
+  if (existingMain) {
+    return existingMain
+  }
+  logger.debug(LogCategory.MAIN, '[createMainWindow] 开始创建主浏览器窗口...')
+  const appRegion = resolveAppRegion()
 
   const envWidth = process.env.WINDOW_WIDTH ? parseInt(process.env.WINDOW_WIDTH, 10) : 1600
   const envHeight = process.env.WINDOW_HEIGHT ? parseInt(process.env.WINDOW_HEIGHT, 10) : 1100
@@ -416,10 +507,8 @@ export const createWindow = () => {
   installRendererCrashGuards(mainWindow, 'main')
 
   mainWindow.once('ready-to-show', () => {
-    logger.debug(LogCategory.MAIN, '[createWindow] 渲染进程内容已加载完毕，准备显示窗口。')
-    if (!splashWindow.isDestroyed()) {
-      splashWindow.destroy()
-    }
+    logger.debug(LogCategory.MAIN, '[createMainWindow] 渲染进程内容已加载完毕，准备显示窗口。')
+    destroySplash()
 
     if (!isNaN(envWidth) && !isNaN(envHeight)) {
       mainWindow.setSize(width, height)
@@ -548,6 +637,14 @@ export const createWindow = () => {
   })
 
   return mainWindow
+}
+
+/**
+ * 兼容入口：确保 Splash 存在后创建主窗口
+ */
+export const createWindow = (): BrowserWindow => {
+  createSplash()
+  return createMainWindow()
 }
 
 export const createPreviewWindow = (params: { filePath: string; extension: string }) => {

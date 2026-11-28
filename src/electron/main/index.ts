@@ -94,8 +94,18 @@ import { DesktopDevRuntimeController, extractDevServerPort } from './dev-runtime
 process.env.APP_REGION = resolveAppRegion()
 import { processReaper } from './process-reaper'
 import { iconExtractorClient } from './icon-extractor-client'
-import { createWindow, getMainWindow } from './window'
+import {
+  createWindow,
+  createSplash,
+  createMainWindow,
+  destroySplash,
+  focusSplashOrMainWindow,
+  getMainWindow
+} from './window'
 import { deepLinkManager } from './deep-link'
+import { initStartupGates, settleGateOk, settleGateFailed } from './startup-gates'
+import { getPerfFlagsSnapshot } from './perf-flags'
+import { t } from '@app/languages'
 
 // 1. Worktree 实例环境与 userData 隔离已在 worktree-bootstrap 模块求值阶段完成
 // （见文件顶部第一条 import 的说明），此处仅输出启动实例信息。
@@ -117,6 +127,34 @@ function flushLogsBeforeExit(): void {
   loggingService.flushSync()
 }
 
+/**
+ * 启动致命错误唯一受控退出终态（ST-P0-2 / B6）：
+ * 立即销毁 splash（绝不留僵尸启动画面），正常交互态弹原生大白话提示后 exit(1)；
+ * test / __FF_E2E__ / --ff-test-staged-startup 自动化模式下跳过模态框，记错后直接 exit(1)。
+ */
+function handleFatalStartupError(message: string, error?: unknown): never {
+  logger.error(LogCategory.MAIN, `[FATAL_STARTUP_ERROR] ${message}`, error)
+  console.error('[FATAL_STARTUP_ERROR]', message, error)
+  destroySplash()
+
+  const isAutomated =
+    process.env.NODE_ENV === 'test' ||
+    (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) ||
+    process.argv.includes('--ff-test-staged-startup')
+
+  if (!isAutomated) {
+    try {
+      dialog.showErrorBox(t('应用启动失败'), message)
+    } catch (dialogErr) {
+      logger.warn(LogCategory.MAIN, '[FATAL_STARTUP_ERROR] 显示错误弹窗失败:', dialogErr)
+    }
+  }
+
+  flushLogsBeforeExit()
+  app.exit(1)
+  process.exit(1)
+}
+
 // 2. 检查单实例锁，避免重复打开多个应用实例
 // E2E 模式下同一测试套件可能并发启动多个沙箱实例（每个用例独立 runId），
 // 此时必须跳过 requestSingleInstanceLock，严禁互踢（Spec §4.4 Worktree 引导隔离规约）
@@ -129,11 +167,11 @@ if (!gotSingleInstanceLock) {
   process.exit(0)
 }
 
-// 3. 启动前清理历史遗留的僵尸子进程
-// 必须放在单实例锁判定之后：runtime-pids.json 记录的是本实例的子进程 PID，
-// 而登记发生在 spawn 之后（进程存活期间就会写入）。若已有实例正在运行，
-// 文件里的 PID 就是它的活子进程 —— 提前清理会把正在运行的实例的引擎直接杀掉。
-processReaper.cleanupStaleProcesses()
+// 3. 启动前异步清理历史遗留的僵尸子进程，并衔接 reaperDone 门闸（J-06 / B5）
+void processReaper
+  .cleanupStaleProcessesAsync()
+  .then(() => settleGateOk('reaperDone'))
+  .catch(err => settleGateFailed('reaperDone', err))
 
 // 3.1 本地开发运行时 CDP 端口治理与镜像发布控制器（严格置于单实例锁成功之后）
 const devRuntimeController = new DesktopDevRuntimeController({
@@ -162,12 +200,7 @@ app.on('second-instance', (_event, commandLine) => {
   void devRuntimeController.republishOnSecondInstance().catch(err => {
     logger.warn(LogCategory.MAIN, '[DevRuntime] second-instance 重发布开发运行时镜像失败:', err)
   })
-  const win = getMainWindow()
-  if (win && !win.isDestroyed()) {
-    if (win.isMinimized()) win.restore()
-    win.show()
-    win.focus()
-  }
+  focusSplashOrMainWindow()
 
   const deepLinkArg = commandLine.find(arg => arg.startsWith('firefly://'))
   if (deepLinkArg) {
@@ -699,7 +732,7 @@ ConfigOrchestrator.getInstance().onValueChange<boolean>('LANGUAGE_CONFIRMED', as
         win.webContents.send('database-switched', { language })
       })
     } catch (error) {
-      logger.error(LogCategory.MAIN, '建立数据库失败:', error)
+      handleFatalStartupError(t('本地数据初始化失败，请检查磁盘空间与文件权限后重试。'), error)
     }
   }
 })
@@ -810,6 +843,12 @@ mark('mod:eval:end')
 
 app.on('ready', async () => {
   mark('app:ready')
+  const perfFlags = getPerfFlagsSnapshot(app.getPath('userData'))
+  initStartupGates({ bypassAll: !perfFlags.startup.earlyWindow })
+  // ST-P0-1：ready 首步立即弹出启动画面，解除主窗/splash 与网络及外部进程的串行阻塞
+  if (perfFlags.startup.earlySplash) {
+    createSplash()
+  }
   // IO-03 主进程事件循环延迟监控（dev / FF_EVENT_LOOP_MONITOR=1 canary 默认启用；生产构建门禁关闭）
   startEventLoopDelayMonitor({
     logger: {
@@ -932,7 +971,7 @@ app.on('ready', async () => {
   // system:setup-overlay-ready 就绪信号（该信号已无发送方），避免首启无谓等待 5s 超时
   if (isInitialSetupNeeded) {
     logger.info(LogCategory.MAIN, '[App] 检测到首次运行或版本升级，提前创建窗口')
-    createWindow()
+    createMainWindow()
   }
 
   // 处理安装程序的语言选择
@@ -1038,22 +1077,14 @@ app.on('ready', async () => {
         })
         logger.debug(LogCategory.MAIN, '[Test] 已成功注入预设工作目录')
       } catch (err) {
-        logger.error(LogCategory.MAIN, '[Test] 初始化或注入失败，应用将退出:', err)
-        console.error('=== FIREFLY_CRASH: 测试模式初始化失败 ===', err)
-        flushLogsBeforeExit()
-        app.exit(1)
-        return
+        handleFatalStartupError(t('测试模式初始化失败'), err)
       }
     }
 
     await regionDetectPromise
     mark('region:done')
   } catch (error) {
-    logger.error(LogCategory.MAIN, '[App] 最小服务初始化失败:', error)
-    console.error('=== FIREFLY_CRASH: 最小服务初始化失败 ===', error)
-    flushLogsBeforeExit()
-    app.exit(1)
-    return
+    handleFatalStartupError(t('应用核心服务初始化失败，请检查本地数据目录后重启应用。'), error)
   }
 
   try {
@@ -1089,7 +1120,7 @@ app.on('ready', async () => {
 
   if (!isInitialSetupNeeded) {
     logger.debug(LogCategory.MAIN, '[App] 准备创建主窗口...')
-    createWindow()
+    createMainWindow()
     logger.info(LogCategory.MAIN, '[App] 主窗口创建指令已发送。')
   } else {
     logger.debug(LogCategory.MAIN, '[App] 初始安装已在早期创建窗口，跳过重复创建')
@@ -1108,8 +1139,9 @@ app.on('window-all-closed', () => {
 let quitCleanupStarted = false
 app.on('before-quit', event => {
   trayService.setQuitting(true)
+  processReaper.markQuitting()
   if (quitCleanupStarted) return
-  // 同步门闩：必须在任何 await 之前置位，防清理未完成时二次 before-quit 重入
+  // B7 不可取消红线：同步门闩单向置位绝不复位，严禁在此放置任何退出确认弹窗
   quitCleanupStarted = true
   // Electron 不等待 async before-quit 监听器的 Promise；必须先阻止默认退出，
   // 待 R2-8 时序全部 await 完成后再显式 app.exit，否则 checkpoint/close 会被跳过。
@@ -1215,7 +1247,7 @@ app.on('before-quit', event => {
 })
 
 app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow()
+  if (!getMainWindow() && BrowserWindow.getAllWindows().length === 0) createWindow()
 })
 
 process.on('uncaughtException', err => {
@@ -1251,6 +1283,7 @@ process.on('unhandledRejection', reason => {
 
 // 处理终端终止信号 (Ctrl+C / 进程管理器杀进程)，确保 omni 等所有常驻子服务彻底释放
 const handleProcessTermination = () => {
+  processReaper.markQuitting()
   try {
     devRuntimeController.revokeSync()
     omniService.stopImmediatelySync()

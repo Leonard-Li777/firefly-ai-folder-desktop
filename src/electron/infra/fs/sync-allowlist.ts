@@ -43,8 +43,7 @@ export const SYNCHRONOUS_ALLOWLIST: readonly SyncAllowlistEntry[] = [
       '仅当引入「迁移前置就绪屏障」并整体重排 ConfigOrchestrator 读取时序时移除，届时须新增 ADR 并改写初始化铁律'
   },
   {
-    file:
-      'apps/desktop/src/electron/runtime-services/engine-bridge/engine-bridge-service/engine-bridge-service.ts',
+    file: 'apps/desktop/src/electron/runtime-services/engine-bridge/engine-bridge-service/engine-bridge-service.ts',
     function: 'killOwnProcess',
     ticket: 'IO-11 / P1-5',
     reason:
@@ -83,12 +82,26 @@ export const SYNCHRONOUS_ALLOWLIST: readonly SyncAllowlistEntry[] = [
     ticket: 'TM-W2 / B8',
     reason:
       '缓存包装仅首次调用透传 readPerfFlagsSnapshotSync 的启动前同步读（4 处窗口创建共用同一快照），无独立新增同步 I/O（INV-6 / [V-01]）',
-    removalCondition: '随 readPerfFlagsSnapshotSync 豁免一并移除（W3 窗口创建后移至配置就绪屏障之后）'
+    removalCondition:
+      '随 readPerfFlagsSnapshotSync 豁免一并移除（W3 窗口创建后移至配置就绪屏障之后）'
+  },
+  {
+    file: 'apps/desktop/src/electron/main/process-reaper.ts',
+    function: 'cleanup',
+    ticket: 'J-06 / IO-23',
+    reason:
+      '应用退出钩子（before-quit / exit / SIGINT / SIGTERM）触发时事件循环即将停止，必须同步定向校验并销毁本实例登记的子进程（启动路径已拆出为 cleanupStaleProcessesAsync）',
+    removalCondition:
+      '仅当子进程全部迁移至系统级托管守护进程且不再由 Electron 主进程负责退出兜底清理时移除'
+  },
+  {
+    file: 'apps/desktop/src/electron/main/process-reaper.ts',
+    function: 'writePidsAtomically',
+    ticket: 'J-06 / IO-23',
+    reason:
+      '退出路径 cleanup() 收尾时必须使用 writeFileAtomicSync 同步原子更新 runtime-pids.json，进程即将退出时异步落盘来不及完成（INV-6 / J-06）',
+    removalCondition: '随 cleanup 退出同步豁免一并移除'
   }
-  // 后续工单预留登记规范（不在本工单范围，须在对应工单落地时按 `file + function + ticket + reason + removalCondition` 正式入表）：
-  // - W3 `J-06`（`apps/desktop/src/electron/main/process-reaper.ts`）：当前退出 `cleanup()` → `killVerified(..., 'fast')`
-  //   与启动深校验 `cleanupStaleProcesses()` → `killVerified(..., 'deep')` 共用同一函数，按 `file:function` 登记会把启动路径一并豁免，
-  //   与「启动阶段改异步」直接冲突。须待拆出独立退出同步函数（含 `writeFileAtomicSync` 退出写盘）后再精确入表（见 ADR-0075 决策 4 / ticket 23）。
 ]
 
 /**
@@ -141,9 +154,12 @@ export function validateSyncAllowlist(entries: readonly SyncAllowlistEntry[]): s
       problems.push(`禁止使用宽泛 <module-scope> 豁免，必须提取为精确具名同步函数: ${file}`)
     }
     if (!ticket) problems.push(`登记项缺少 ticket（必须关联工单号）: ${file}:${functionName}`)
-    if (!reason) problems.push(`登记项缺少 reason（无理由豁免等于永久豁免）: ${file}:${functionName}`)
+    if (!reason)
+      problems.push(`登记项缺少 reason（无理由豁免等于永久豁免）: ${file}:${functionName}`)
     if (!removalCondition) {
-      problems.push(`登记项缺少 removalCondition（没有移除条件的豁免会永久化）: ${file}:${functionName}`)
+      problems.push(
+        `登记项缺少 removalCondition（没有移除条件的豁免会永久化）: ${file}:${functionName}`
+      )
     }
 
     const key = `${file}:${functionName}`

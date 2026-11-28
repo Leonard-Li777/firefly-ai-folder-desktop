@@ -47,17 +47,21 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { t } from '@app/languages'
 
-import { WorkspaceDao, FileDao, TagUnitDao, QueueDao, LocalWorkflowDao, FileSystemMutationDao, VisualTaggerStateDao } from '.././dao'
-import type { AnalysisTaskType } from '.././dao'
 import {
-  DeterministicCodeGenerator,
-  configureControlledPreResolver
-} from '@firefly/core-engine'
+  WorkspaceDao,
+  FileDao,
+  TagUnitDao,
+  QueueDao,
+  LocalWorkflowDao,
+  FileSystemMutationDao,
+  VisualTaggerStateDao
+} from '.././dao'
+import type { AnalysisTaskType } from '.././dao'
+import { DeterministicCodeGenerator, configureControlledPreResolver } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { ConfigDbManager } from '../../config/config-db-manager'
-
 
 /**
  * DatabaseService 初始化生命周期 mixin（Ticket 07）。
@@ -108,6 +112,7 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
 
     if (this.initPromise) return this.initPromise
 
+    const previousLanguage = this.currentLanguage
     this.currentLanguage = language
 
     this.initPromise = (async () => {
@@ -228,25 +233,33 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
             if (!resp?.success) return null
             return resp.results
           },
-          seedAliasRows: (rows, locale) =>
-            (this as any).seedTagAliasRows(rows, locale) as number
+          seedAliasRows: (rows, locale) => (this as any).seedTagAliasRows(rows, locale) as number
         })
 
-        // Issue 01 目标 4：建库/迁移与初始语言别名准备完成后，按当前语言重建动态调试视图。
+        // Issue 01 目标 4：建库/迁移与初始语言别名准备完成后，按当前语言重建动态调试视图（ST-P2-5：仅开发态或语言变化时重建）。
         // 视图仅供开发调试直查（零数据行写入），业务读侧一律 JOIN tag_paths；
         // 语言沿用 initialize 入参（与切语言链路同源），非法值由 rebuildDebugTagViews 内部白名单回退。
-        try {
-          rebuildDebugTagViews(this._db!, language)
-        } catch (viewError) {
-          logger.warn(LogCategory.DATABASE_SERVICE, '重建调试标签视图失败（不影响启动）', {
-            error: viewError
-          })
+        if (
+          (typeof __IS_DEV__ !== 'undefined' && __IS_DEV__) ||
+          (previousLanguage !== undefined && previousLanguage !== language)
+        ) {
+          try {
+            rebuildDebugTagViews(this._db!, language)
+          } catch (viewError) {
+            logger.warn(LogCategory.DATABASE_SERVICE, '重建调试标签视图失败（不影响启动）', {
+              error: viewError
+            })
+          }
         }
       } catch (error) {
-        logger.error(LogCategory.DATABASE_SERVICE, t('数据库初始化失败'), {
-          error,
-          dbPath: this.dbPath
-        })
+        logger.error(
+          LogCategory.DATABASE_SERVICE,
+          `[FATAL_STARTUP_ERROR] ${t('数据库初始化失败')}`,
+          {
+            error,
+            dbPath: this.dbPath
+          }
+        )
         if (this._db) {
           try {
             ;(this._db as any).close()
@@ -262,7 +275,6 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
 
     return this.initPromise
   }
-
 
   /**
    * 清理分析队列中的孤儿项
@@ -364,7 +376,6 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
     }
   }
 
-
   protected registerIgnoreFunction(): void {
     if (!this._db) return
 
@@ -386,5 +397,4 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
       }
     })
   }
-
 }

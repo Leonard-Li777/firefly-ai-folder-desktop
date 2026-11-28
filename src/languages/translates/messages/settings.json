@@ -391,7 +391,7 @@
     "fr-FR": "Exemples : ajoutez plus de points aux histoires comiques ; réduire le poids des indicateurs techniques ; la description du contenu multimodal se concentre sur les relations entre les personnages, traduites par {activeLanguage}",
     "ko-KR": "예: 코미디 이야기에 더 많은 포인트를 추가합니다. 기술 지표의 가중치를 줄입니다. 다중 모드 콘텐츠 설명은 문자 관계에 중점을 두고 있으며, {activeLanguage}로 번역됩니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2547-2617)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2627-2698)"
     ],
     "$id": 22320
   },
@@ -406,7 +406,7 @@
     "fr-FR": "Exemple : les noms de fichiers intelligents doivent être traduits en {activeLanguage}. Un maximum de 20 balises peuvent être générées, et chaque balise ne doit pas dépasser 2 mots. Au moins une balise doit être extraite du nom du fichier, et les autres doivent être extraites de cet ensemble : [Bonheur, Douleur, Ressentiment,...]",
     "ko-KR": "예: 스마트 파일 이름은 {activeLanguage}로 번역되어야 합니다. 최대 20개의 태그를 생성할 수 있으며, 각 태그는 2단어를 초과할 수 없습니다. 파일 이름에서 최소한 하나의 태그를 추출해야 하며, 나머지 태그는 이 세트에서 추출되어야 합니다: [행복, 고통, 분노,...]",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2770-2873)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(2856-2960)"
     ],
     "$id": 22321
   },
@@ -421,7 +421,7 @@
     "fr-FR": "Prompt IA avancé",
     "ko-KR": "고급 AI 프롬프트",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3271-3282)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3372-3383)"
     ],
     "$id": 20517
   },
@@ -436,7 +436,7 @@
     "fr-FR": "Actif",
     "ko-KR": "활성화됨",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3661-3668)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3770-3777)"
     ],
     "$id": 20518
   },
@@ -451,8 +451,8 @@
     "fr-FR": "Le moteur générateur doit être allumé",
     "ko-KR": "생성 엔진을 켜야 합니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3672-3684)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(5859-5871)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3781-3793)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(6021-6033)"
     ],
     "$id": 28355
   },
@@ -467,7 +467,7 @@
     "fr-FR": "Le prompt personnalisé permet d'affiner les règles de génération du modèle pour le nommage des catégories et l'évaluation de la qualité",
     "ko-KR": "사용자 지정 프롬프트를 사용하여 분류 명명 및 품질 평가 생성 규칙을 미세 조정합니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3799-3829)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3912-3942)"
     ],
     "$id": 20520
   },
@@ -482,7 +482,7 @@
     "fr-FR": "Le moteur génératif n'est actuellement pas activé et les mots d'invite ne sont pas actuellement en vigueur.",
     "ko-KR": "생성 엔진은 현재 활성화되어 있지 않으며 프롬프트 단어도 현재 적용되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4522-4544)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4649-4671)"
     ],
     "$id": 28356
   },
@@ -497,7 +497,7 @@
     "fr-FR": "Les scores de qualité personnalisés et les invites de génération d’étiquettes s’appuient sur les capacités de compréhension du modèle de langage du moteur génératif. Il prend effet après la mise en marche du moteur générateur.",
     "ko-KR": "사용자 정의 품질 점수 및 라벨 생성 프롬프트는 생성 엔진의 언어 모델 이해 기능에 의존합니다. 생성 엔진이 켜진 후에 적용됩니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4659-4708)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(4789-4838)"
     ],
     "$id": 28357
   },
@@ -512,8 +512,8 @@
     "fr-FR": "Allez pour activer le moteur génératif",
     "ko-KR": "생성 엔진 활성화로 이동",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5047-5060)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(7492-7505)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5187-5200)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(7692-7705)"
     ],
     "$id": 28358
   },
@@ -528,7 +528,7 @@
     "fr-FR": "Notes sur l'optimisation du prompt",
     "ko-KR": "프롬프트 최적화 안내",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5503-5514)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5653-5664)"
     ],
     "$id": 20524
   },
@@ -543,7 +543,7 @@
     "fr-FR": "Il est recommandé d'utiliser un modèle cloud ou un modèle à grands paramètres avec une bonne conformité. Si l'échec de l'analyse IA est causé par un nombre excessif de caractères dans le prompt, veuillez simplifier le contenu de manière appropriée. Pour les modèles locaux légers, il est conseillé de le réduire à moins de 100 caractères.",
     "ko-KR": "순수도를 비교적 잘 따르는 클라우드 모델이나 대량 파라미터 모델을 사용하는 것을 권장합니다. 프롬프트 문자 수가 많아 AI 분석이 실패하는 경우, 내용을 적절히 간결하게 하세요. 로컬 경량 소형 모델을 사용하는 경우 100자 이내로 줄이도록 권장합니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5559-5637)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(5712-5790)"
     ],
     "$id": 20525
   },
@@ -558,7 +558,7 @@
     "fr-FR": "Prompts de notation de la qualité",
     "ko-KR": "질량 채점 프롬프트",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6145-6156)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6311-6322)"
     ],
     "$id": 20526
   },
@@ -573,8 +573,8 @@
     "fr-FR": "Le moteur génératif n'est pas activé",
     "ko-KR": "생성 엔진이 활성화되지 않았습니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6424-6436)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8908-8920)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6595-6607)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9141-9153)"
     ],
     "$id": 28359
   },
@@ -589,7 +589,7 @@
     "fr-FR": "Ajustement des priorités et de la logique de pondération de la notation du contenu multimodal",
     "ko-KR": "다중 모드 콘텐츠 채점 우선순위 및 가중치 로직 조정",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6582-6603)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6758-6779)"
     ],
     "$id": 20528
   },
@@ -604,9 +604,9 @@
     "fr-FR": "Effacer",
     "ko-KR": "지우기",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(6982-6988)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9466-9472)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(6628-6634)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7169-7175)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9715-9721)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(6810-6816)"
     ],
     "$id": 20529
   },
@@ -621,9 +621,9 @@
     "fr-FR": "Le moteur génératif n'est pas allumé et les mots d'invite ne sont pas encore efficaces.",
     "ko-KR": "생성 엔진이 켜지지 않았고 프롬프트 단어가 아직 효과적이지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7785-7805)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10258-10278)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8247-8267)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7994-8014)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10529-10549)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8470-8490)"
     ],
     "$id": 28360
   },
@@ -638,9 +638,9 @@
     "fr-FR": "Prompt personnalisé configuré",
     "ko-KR": "사용자 정의 프롬프트가 구성되었습니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7933-7946)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10402-10415)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8627-8640)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8146-8159)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10677-10690)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8859-8872)"
     ],
     "$id": 20531
   },
@@ -655,9 +655,9 @@
     "fr-FR": "Si laissé vide, le modèle de prompt par défaut sera utilisé",
     "ko-KR": "기본 프롬프트 단어 템플릿을 사용하려면 비워 두세요.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7950-7966)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10419-10435)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8644-8660)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8163-8179)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10694-10710)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8876-8892)"
     ],
     "$id": 20532
   },
@@ -672,9 +672,9 @@
     "fr-FR": "Caractères",
     "ko-KR": "문자",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8149-8155)",
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10610-10616)",
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8829-8835)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8366-8372)",
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10889-10895)",
+      "src/renderer/components/settings/unit-recognition-settings.tsx(9065-9071)"
     ],
     "$id": 20533
   },
@@ -689,7 +689,7 @@
     "fr-FR": "Prompt de génération du nom de fichier intelligent et des étiquettes",
     "ko-KR": "태그 및 지능형 파일 이름 생성 프롬프트",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8623-8640)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(8851-8868)"
     ],
     "$id": 20534
   },
@@ -704,7 +704,7 @@
     "fr-FR": "Guide le modèle sur la manière d'extraire des mots-clés, de formater les noms de fichiers et de sélectionner les étiquettes de classification",
     "ko-KR": "모델이 키워드를 추출하고 파일 이름을 포맷팅하며 분류 태그를 선택하는 방법을 안내합니다",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9066-9095)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(9304-9333)"
     ],
     "$id": 20535
   },
@@ -719,7 +719,7 @@
     "fr-FR": "Les modifications du prompt seront enregistrées automatiquement avec une temporisation en temps réel et appliquées à toutes les tâches d'analyse de fichiers déclenchées ultérieurement.",
     "ko-KR": "프롬프트가 수정되면 실시간으로 디바운싱되어 저장되며 이후 트리거된 모든 파일 분석 작업에 적용됩니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10911-10947)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(11201-11237)"
     ],
     "$id": 20536
   },
@@ -734,7 +734,7 @@
     "fr-FR": "Les mots d'invite s'appuient sur les grandes capacités de modèle de langage des moteurs génératifs. Après avoir activé le moteur génératif, la configuration ici participera automatiquement à l'analyse.",
     "ko-KR": "프롬프트 단어는 생성 엔진의 대규모 언어 모델 기능에 의존합니다. 생성 엔진을 켜면 여기의 구성이 자동으로 분석에 참여합니다.",
     "$files": [
-      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10963-11007)"
+      "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(11254-11298)"
     ],
     "$id": 28361
   },
@@ -749,7 +749,7 @@
     "fr-FR": "Moteur opérationnel",
     "ko-KR": "엔진 상태 양호",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(2050-2060)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(2093-2103)"
     ],
     "$id": 19430
   },
@@ -764,7 +764,7 @@
     "fr-FR": "Anomalie intermittente du moteur, réessai automatique en cours",
     "ko-KR": "엔진 간헐적 오류 발생, 자동 재시도 중",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(2103-2120)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(2146-2163)"
     ],
     "$id": 19431
   },
@@ -779,7 +779,7 @@
     "fr-FR": "Le moteur est en panne continuellement et a été temporairement désactivé et est repris par le moteur de recherche.",
     "ko-KR": "엔진이 지속적으로 오류가 발생하여 일시적으로 비활성화되어 검색 엔진에 의해 대체되고 있습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(2159-2184)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(2202-2227)"
     ],
     "$id": 28362
   },
@@ -794,7 +794,7 @@
     "fr-FR": "Commutation annulée et moteur d'origine restauré",
     "ko-KR": "전환이 취소되고 원래 엔진이 복원되었습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11497-11512)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11136-11151)"
     ],
     "$id": 30513
   },
@@ -809,7 +809,7 @@
     "fr-FR": "L'opération a échoué, veuillez vérifier le journal",
     "ko-KR": "작업이 실패,로그를 확인하시기 바랍니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(15378-15392)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15017-15031)"
     ],
     "$id": 20099
   },
@@ -824,7 +824,7 @@
     "fr-FR": "Exception de moteur",
     "ko-KR": "엔진 예외",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(16860-16868)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16499-16507)"
     ],
     "$id": 11422
   },
@@ -839,7 +839,7 @@
     "fr-FR": "Démarré",
     "ko-KR": "시작됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(16907-16914)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16546-16553)"
     ],
     "$id": 19433
   },
@@ -854,7 +854,7 @@
     "fr-FR": "Connecté",
     "ko-KR": "연결됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(16955-16962)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16594-16601)"
     ],
     "$id": 20101
   },
@@ -869,9 +869,9 @@
     "fr-FR": "Détection en cours...",
     "ko-KR": "감지 중...  ",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(17003-17013)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(15571-15581)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(16781-16791)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16642-16652)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(15950-15960)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(17184-17194)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(22640-22650)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(23862-23872)"
     ],
@@ -888,7 +888,7 @@
     "fr-FR": "Moteur non déployé",
     "ko-KR": "���진 미배포",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(17057-17066)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16696-16705)"
     ],
     "$id": 20102
   },
@@ -903,7 +903,7 @@
     "fr-FR": "Non connecté",
     "ko-KR": "미연결",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(17098-17105)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16737-16744)"
     ],
     "$id": 20103
   },
@@ -918,7 +918,7 @@
     "fr-FR": "Le fichier est endommagé et doit être réparé",
     "ko-KR": "파일이 손상되어 복구가 필요합니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21556-21568)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21195-21207)"
     ],
     "$id": 31558
   },
@@ -933,7 +933,7 @@
     "fr-FR": "Non installé",
     "ko-KR": "미설치  ",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(21817-21824)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21456-21463)"
     ],
     "$id": 31418
   },
@@ -948,7 +948,7 @@
     "fr-FR": "Protection par fusible",
     "ko-KR": "퓨즈 보호",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(22129-22137)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21768-21776)"
     ],
     "$id": 30514
   },
@@ -963,7 +963,7 @@
     "fr-FR": "Manque de mémoire",
     "ko-KR": "메모리 부족",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(22449-22457)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(22088-22096)"
     ],
     "$id": 30515
   },
@@ -978,7 +978,7 @@
     "fr-FR": "Chargement...",
     "ko-KR": "로드 중...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(22785-22795)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(22424-22434)"
     ],
     "$id": 30516
   },
@@ -993,7 +993,7 @@
     "fr-FR": "Prêt",
     "ko-KR": "준비가 된",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(23252-23260)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(22891-22899)",
       "src/renderer/components/settings/cpu-engine-dashboard.tsx(2810-2818)",
       "src/renderer/components/settings/VramArbiterMeterCard.tsx(10676-10684)"
     ],
@@ -1010,7 +1010,7 @@
     "fr-FR": "Modèle non chargé",
     "ko-KR": "모델이 로드되지 않았습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(23495-23504)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23134-23143)"
     ],
     "$id": 30517
   },
@@ -1025,7 +1025,7 @@
     "fr-FR": "Échec du démarrage du moteur IA Firefly, veuillez ouvrir manuellement le moteur IA Firefly depuis le menu Démarrer puis réessayer",
     "ko-KR": "Firefly AI 엔진 시작 실패. 시작 메뉴에서 Firefly AI 엔진을 수동으로 시작한 후 다시 시도하십시오",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24184-24218)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23823-23857)"
     ],
     "$id": 19434
   },
@@ -1040,7 +1040,7 @@
     "fr-FR": "Fonctionnement local pur du processeur, seulement quelques centaines de mégaoctets de mémoire, réponse de deuxième niveau à seuil 0, complètement hors ligne et privé.",
     "ko-KR": "순수 CPU 로컬 작업, 불과 수백 메가바이트의 메모리, 0-임계값 2차 수준 응답, 완전 오프라인 및 비공개입니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24338-24374)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23977-24013)"
     ],
     "$id": 30518
   },
@@ -1055,7 +1055,7 @@
     "fr-FR": "Prise en charge par Firefly AI Folder, application open source indépendante offrant un service local accéléré par le matériel, utilisée hors ligne pour la confidentialité et la sécurité.",
     "ko-KR": "화이어핵 AI 엔진이 독립적으로 오픈소스화한 애플리케이션을 지원하며, 하드웨어 가속을 갖춘 로컬 AI 서비스로 프라��버시와 안전성을 보장하고 오프라인에서도 사용할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24388-24430)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24027-24069)"
     ],
     "$id": 19435
   },
@@ -1070,7 +1070,7 @@
     "fr-FR": "Connectez d'autres services d'IA tiers pour une analyse, offrant de meilleures capacités de cognition linguistique. Une connexion réseau est requise.",
     "ko-KR": "기타 제3자 AI 서비스에 연결하여 분석을 수행하며, 더 강력한 언어 인지 기능을 제공합니다. 네트워크 연결 유지가 필요합니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24444-24483)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24083-24122)"
     ],
     "$id": 19436
   },
@@ -1085,8 +1085,8 @@
     "fr-FR": "Allumez le moteur générateur",
     "ko-KR": "생성 엔진을 켜세요",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28396-28407)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(29061-29072)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28035-28046)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28700-28711)"
     ],
     "$id": 28363
   },
@@ -1101,7 +1101,7 @@
     "fr-FR": "Activé",
     "ko-KR": "활성화됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28743-28750)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28382-28389)"
     ],
     "$id": 19438
   },
@@ -1116,7 +1116,7 @@
     "fr-FR": "Désactivé",
     "ko-KR": "비활성화됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28754-28761)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28393-28400)"
     ],
     "$id": 19439
   },
@@ -1131,7 +1131,7 @@
     "fr-FR": "Sélectionnez le moteur efficace : lorsqu'il est activé, il peut prendre en charge une meilleure expérience d'analyse de l'IA. Lorsqu'il est désactivé, seul le moteur de récupération est utilisé et le moteur génératif n'est pas autorisé à occuper des ressources.",
     "ko-KR": "효과적인 엔진 선택: 활성화하면 더 나은 AI 분석 경험을 지원할 수 있습니다. 비활성화되면 검색 엔진만 사용되며 생성 엔진은 리소스를 점유할 수 없습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(28876-28943)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(28515-28582)"
     ],
     "$id": 28364
   },
@@ -1146,7 +1146,7 @@
     "fr-FR": "Moteur générateur désactivé",
     "ko-KR": "생성 엔진이 비활성화되었습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(29699-29711)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29338-29350)"
     ],
     "$id": 28365
   },
@@ -1161,7 +1161,7 @@
     "fr-FR": "L'analyse générative de l'IA est désactivée et les fichiers seront automatiquement traités par le moteur de récupération léger intégré.",
     "ko-KR": "AI 생성 분석이 꺼지고 내장된 경량 검색 엔진에 의해 파일이 자동으로 처리됩니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(29832-29865)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29471-29504)"
     ],
     "$id": 28366
   },
@@ -1176,7 +1176,7 @@
     "fr-FR": "Capacités de rétention des moteurs de recherche",
     "ko-KR": "검색 엔진 보존 기능",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30309-30322)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29948-29961)"
     ],
     "$id": 28367
   },
@@ -1191,7 +1191,7 @@
     "fr-FR": "Prise en charge de l'attribution automatique d'étiquettes précises aux fichiers",
     "ko-KR": "파일에는 자동적으로 정확한 태그를 지정할 수 있음",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30447-30463)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30086-30102)"
     ],
     "$id": 19563
   },
@@ -1206,7 +1206,7 @@
     "fr-FR": "Prise en charge de la recherche sémantique du contenu texte et image",
     "ko-KR": "텍스트와 이미지 콘텐츠의 의미 기반 검색 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30488-30503)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30127-30142)"
     ],
     "$id": 19564
   },
@@ -1221,7 +1221,7 @@
     "fr-FR": "Prise en charge de noms de fichiers et de descriptions intelligents",
     "ko-KR": "지능형 파��� 이름 및 설명 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30528-30542)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30167-30181)"
     ],
     "$id": 19565
   },
@@ -1236,7 +1236,7 @@
     "fr-FR": "Prise en charge de la génération d'une structure de répertoires d'organisation des fichiers et de la classification selon cette structure",
     "ko-KR": "파일 정리를 위한 디렉터리 구조 생성 지원, 디렉터리 구조에 따른 분류 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30567-30593)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30206-30232)"
     ],
     "$id": 19566
   },
@@ -1251,7 +1251,7 @@
     "fr-FR": "Léger et rapide, compatible avec tous les environnements matériels",
     "ko-KR": "경량 및 고속, 모든 하드웨어 환경 지원",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(30618-30635)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30257-30274)"
     ],
     "$id": 19567
   },
@@ -1266,7 +1266,7 @@
     "fr-FR": "Débloqué en allumant le moteur générateur",
     "ko-KR": "생성 엔진을 켜면 잠금 해제됩니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31434-31448)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31073-31087)"
     ],
     "$id": 28368
   },
@@ -1281,7 +1281,7 @@
     "fr-FR": "Reformulation approfondie intelligente des noms de fichiers et descriptions (fini le ton mécanique)",
     "ko-KR": "파일 이름 및 설명의 자연스러운 심층 정제(기계적인 느낌 제거)",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31573-31596)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31212-31235)"
     ],
     "$id": 20540
   },
@@ -1296,7 +1296,7 @@
     "fr-FR": "Développer plus de balises de fichier",
     "ko-KR": "더 많은 파일 태그 확장",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31621-31633)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31260-31272)"
     ],
     "$id": 31419
   },
@@ -1311,7 +1311,7 @@
     "fr-FR": "Description approfondie en langage naturel des images et contenus visuels",
     "ko-KR": "이미지 및 시각 콘텐츠의 자연어 심층 설명",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31658-31678)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31297-31317)"
     ],
     "$id": 20541
   },
@@ -1326,7 +1326,7 @@
     "fr-FR": "Évaluation intelligente de la qualité des fichiers selon des critères professionnels",
     "ko-KR": "전문적 차원 기준에 따른 파일 품질의 지능형 평가",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31703-31720)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31342-31359)"
     ],
     "$id": 20542
   },
@@ -1341,7 +1341,7 @@
     "fr-FR": "Génération de plusieurs plans de rangement de fichiers au choix",
     "ko-KR": "다양한 파일 정리 방식 생성으로 자유로운 선택 가능",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(31745-31764)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31384-31403)"
     ],
     "$id": 20543
   },
@@ -1356,7 +1356,7 @@
     "fr-FR": "Moteur actif",
     "ko-KR": "적용 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(32552-32560)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(32191-32199)"
     ],
     "$id": 19443
   },
@@ -1371,7 +1371,7 @@
     "fr-FR": "Moteur CPU léger",
     "ko-KR": "경량 CPU 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(32845-32856)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(32484-32495)"
     ],
     "$id": 30519
   },
@@ -1386,7 +1386,7 @@
     "fr-FR": "Réparer",
     "ko-KR": "수리하다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(33698-33705)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(33337-33344)"
     ],
     "$id": 31559
   },
@@ -1401,7 +1401,7 @@
     "fr-FR": "Moteur de téléchargement",
     "ko-KR": "다운로드 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(33709-33717)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(33348-33356)"
     ],
     "$id": 31420
   },
@@ -1416,9 +1416,9 @@
     "fr-FR": "Moteur AI Firefly",
     "ko-KR": "Firefly AI Folder 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(33935-33945)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(39903-39913)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(39970-39980)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(33574-33584)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(39544-39554)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(39611-39621)"
     ],
     "$id": 19444
   },
@@ -1433,7 +1433,7 @@
     "fr-FR": "Votre appareil dispose de moins de 4 Go de mémoire vidéo. Il est recommandé d'utiliser un moteur CPU léger.",
     "ko-KR": "귀하의 장치에는 4GB 미만의 비디오 메모리가 있습니다. 가벼운 CPU 엔진을 사용하는 것이 좋습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(34195-34223)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(33834-33862)"
     ],
     "$id": 30521
   },
@@ -1448,7 +1448,7 @@
     "fr-FR": "Moteur IA cloud",
     "ko-KR": "클라우드 AI 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(34398-34408)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(34037-34047)"
     ],
     "$id": 19445
   },
@@ -1463,7 +1463,7 @@
     "fr-FR": "Veuillez sélectionner le service cloud et terminer la configuration, le moteur basculera automatiquement...",
     "ko-KR": "클라우드 서비스를 선택하고 구성을 완료하십시오,엔진이 자동으로 전환됩니다...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(35443-35469)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35082-35108)"
     ],
     "$id": 41013
   },
@@ -1478,7 +1478,7 @@
     "fr-FR": "Le changement de moteur est en cours (attend plus de 3 secondes), vous pouvez continuer à attendre ou annuler immédiatement.",
     "ko-KR": "엔진 전환이 진행 중인 경우(3초 이상 대기 중) 계속 대기하거나 즉시 취소할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(35493-35531)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35132-35170)"
     ],
     "$id": 30523
   },
@@ -1493,7 +1493,7 @@
     "fr-FR": "Annuler le changement et restaurer le moteur d'origine",
     "ko-KR": "전환을 취소하고 원래 엔진을 복원합니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(36020-36034)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35659-35673)"
     ],
     "$id": 30524
   },
@@ -1508,7 +1508,7 @@
     "fr-FR": "Mode de pensée modèle",
     "ko-KR": "모델 사고 모드",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(37486-37496)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37127-37137)"
     ],
     "$id": 7738
   },
@@ -1523,7 +1523,7 @@
     "fr-FR": "Augmentera la consommation de temps",
     "ko-KR": "시간 소모가 늘어나게 됩니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(37707-37716)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37348-37357)"
     ],
     "$id": 8286
   },
@@ -1538,7 +1538,7 @@
     "fr-FR": "Après l'avoir activé, les modèles locaux et cloud sont autorisés à passer en mode réflexion, ce qui peut améliorer la qualité de l'analyse de l'IA, mais augmentera considérablement le temps de réponse.",
     "ko-KR": "이 기능을 켜면 로컬 및 클라우드 모델이 사고 모드를 시작할 수 있어 AI 분석 품질이 향상될 수 있지만 응답 시간이 크게 늘어납니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(37941-38015)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37582-37656)"
     ],
     "$id": 7850
   },
@@ -1553,7 +1553,7 @@
     "fr-FR": "Les modèles étiquetés Instruct ne sont pas pris en charge.",
     "ko-KR": "Instruct 태그가 지정된 모델은 지원되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(38177-38200)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(37818-37841)"
     ],
     "$id": 7741
   },
@@ -1568,7 +1568,7 @@
     "fr-FR": "Port de communication local",
     "ko-KR": "로컬 통신 ���트",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(40865-40875)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(40506-40516)"
     ],
     "$id": 20107
   },
@@ -1583,7 +1583,7 @@
     "fr-FR": "Arrêt en cours...",
     "ko-KR": "중지 중...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(41992-42002)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(41633-41643)"
     ],
     "$id": 19446
   },
@@ -1598,7 +1598,7 @@
     "fr-FR": "Arrêter le service",
     "ko-KR": "서비스 중지",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(42006-42014)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(41647-41655)"
     ],
     "$id": 19447
   },
@@ -1613,8 +1613,8 @@
     "fr-FR": "Démarrage en cours...",
     "ko-KR": "시작 중...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(42734-42744)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(49797-49807)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(42375-42385)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(49438-49448)"
     ],
     "$id": 20109
   },
@@ -1629,7 +1629,7 @@
     "fr-FR": "Démarrer le service",
     "ko-KR": "서비스 시작",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(42748-42756)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(42389-42397)"
     ],
     "$id": 19448
   },
@@ -1644,7 +1644,7 @@
     "fr-FR": "Gérer les modèles dans le moteur Firefly AI",
     "ko-KR": "Firefly AI ​​엔진에서 모델 관리",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(43443-43459)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(43084-43100)"
     ],
     "$id": 30525
   },
@@ -1659,7 +1659,7 @@
     "fr-FR": "Moteur de calcul",
     "ko-KR": "컴퓨팅 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(44153-44161)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(43794-43802)"
     ],
     "$id": 19450
   },
@@ -1674,7 +1674,7 @@
     "fr-FR": "Inconnu",
     "ko-KR": "알려지지 않은",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(44647-44653)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(44288-44294)"
     ],
     "$id": 10571
   },
@@ -1689,7 +1689,7 @@
     "fr-FR": "Hors ligne",
     "ko-KR": "오프라인",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(44687-44693)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(44328-44334)"
     ],
     "$id": 20113
   },
@@ -1704,7 +1704,7 @@
     "fr-FR": "Modèles installés",
     "ko-KR": "설치된 모델",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(45031-45040)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(44672-44681)"
     ],
     "$id": 19453
   },
@@ -1719,7 +1719,7 @@
     "fr-FR": "Disponibles",
     "ko-KR": "개 사용 가능",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(45288-45295)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(44929-44936)"
     ],
     "$id": 19575
   },
@@ -1734,7 +1734,7 @@
     "fr-FR": "Modèle actuel",
     "ko-KR": "현재 모델",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(45777-45785)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(45418-45426)"
     ],
     "$id": 19576
   },
@@ -1749,7 +1749,7 @@
     "fr-FR": "État de santé du moteur",
     "ko-KR": "엔진 상태",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(46567-46577)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(46208-46218)"
     ],
     "$id": 19454
   },
@@ -1764,8 +1764,8 @@
     "fr-FR": "Le binaire du moteur est déployé",
     "ko-KR": "엔진 바이너리가 배포되었습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(48141-48153)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(50400-50412)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(47782-47794)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(50041-50053)"
     ],
     "$id": 20118
   },
@@ -1780,7 +1780,7 @@
     "fr-FR": "Le binaire du moteur n'est pas détecté et l'analyse en ligne est automatiquement effectuée par le moteur de recherche.",
     "ko-KR": "엔진 바이너리가 감지되지 않으며 검색 엔진에서 자동으로 온라인 분석을 수행합니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(48183-48212)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(47824-47853)"
     ],
     "$id": 28369
   },
@@ -1795,7 +1795,7 @@
     "fr-FR": "Le moteur Firefly AI Folder n'est pas connecté",
     "ko-KR": "Firefly AI Folder 엔진이 연결되지 않았습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(48934-48947)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(48575-48588)"
     ],
     "$id": 19456
   },
@@ -1810,7 +1810,7 @@
     "fr-FR": "Le moteur Firefly AI Folder n'est actuellement pas en cours d'exécution. Cliquez sur le bouton ci-dessous pour démarrer automatiquement le moteur et ouvrir la fenêtre du moteur.",
     "ko-KR": "Firefly AI Folder 엔진이 현재 실행되지 않습니다. 아래 버튼을 클릭하면 엔진이 자동으로 시작되고 엔진 창이 열립니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(49132-49170)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(48773-48811)"
     ],
     "$id": 19457
   },
@@ -1825,7 +1825,7 @@
     "fr-FR": "Aucun moteur IA Firefly AI Folder n’a été détecté. Veuillez vous assurer que l’installation de l’application est complète, puis réessayer. Cliquez sur le bouton ci-dessous pour tenter de nouveau de le démarrer.",
     "ko-KR": "Firefly AI ​​엔진 프로그램이 감지되지 않았습니다. 애플리케이션이 완전히 설치되었는지 확인한 후 다시 시도하십시오. 다시 시작하려면 아래 버튼을 클릭하세요.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(49200-49275)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(48841-48916)"
     ],
     "$id": 19458
   },
@@ -1840,7 +1840,7 @@
     "fr-FR": "Ouvrir le moteur IA Firefly AI Folder",
     "ko-KR": "Firefly AI Folder 엔진 열기",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(49811-49823)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(49452-49464)"
     ],
     "$id": 19459
   },
@@ -1855,7 +1855,7 @@
     "fr-FR": "Binaire du moteur non détecté",
     "ko-KR": "엔진 바이너리가 감지되지 않았습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(50442-50455)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(50083-50096)"
     ],
     "$id": 19577
   },
@@ -1870,7 +1870,7 @@
     "fr-FR": "Les moteurs de recherche disent automatiquement la vérité",
     "ko-KR": "검색 엔진은 자동으로 진실을 말해줍니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(51253-51266)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(50894-50907)"
     ],
     "$id": 28370
   },
@@ -1885,7 +1885,7 @@
     "fr-FR": "Lorsque le moteur génératif (Firefox Engine ou cloud) ne parvient pas à analyser en continu ou n'est pas connecté, le pipeline d'analyse rétrograde silencieusement vers le canal purement local du moteur de recherche, garantissant que les fichiers peuvent toujours recevoir des noms et des balises intelligents sans échecs visibles par l'utilisateur.",
     "ko-KR": "생성 엔진(Firefox 엔진 또는 클라우드)이 지속적으로 분석에 실패하거나 연결되지 않은 경우 분석 파이프라인은 검색 엔진의 순수 로컬 채널로 자동으로 다운그레이드되어 사용자가 볼 수 있는 오류 없이 파일이 지능적인 이름 지정 및 태그를 계속 수신할 수 있도록 합니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(51420-51525)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(51061-51166)"
     ],
     "$id": 28371
   },
@@ -1900,7 +1900,7 @@
     "fr-FR": "Exceptions récentes",
     "ko-KR": "최근 예외",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(51820-51828)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(51461-51469)"
     ],
     "$id": 20122
   },
@@ -2057,10 +2057,10 @@
       "src/renderer/components/settings/WorkspaceConfigPanel.tsx(29062-29068)",
       "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(37063-37069)",
       "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(28526-28532)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28290-28296)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30094-30100)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32166-32172)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34164-34170)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29034-29040)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30877-30883)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32996-33002)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(35038-35044)"
     ],
     "$id": 20552
   },
@@ -2669,7 +2669,7 @@
     "fr-FR": "Récupérer la liste des modèles",
     "ko-KR": "모델 목록 가져오기",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(777-787)"
+      "src/renderer/components/settings/cloud-error-card.tsx(802-812)"
     ],
     "$id": 19462
   },
@@ -2684,7 +2684,7 @@
     "fr-FR": "Analyser la demande",
     "ko-KR": "요청 분석",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(822-830)"
+      "src/renderer/components/settings/cloud-error-card.tsx(849-857)"
     ],
     "$id": 19463
   },
@@ -2699,7 +2699,7 @@
     "fr-FR": "Probe de conversation",
     "ko-KR": "대화 탐지",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(858-866)"
+      "src/renderer/components/settings/cloud-error-card.tsx(887-895)"
     ],
     "$id": 19464
   },
@@ -2714,7 +2714,7 @@
     "fr-FR": "Détails de l'erreur du moteur cloud",
     "ko-KR": "클라우드 엔진 오류 세부 정보",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(1794-1806)"
+      "src/renderer/components/settings/cloud-error-card.tsx(1843-1855)"
     ],
     "$id": 19465
   },
@@ -2729,8 +2729,8 @@
     "fr-FR": "Effacer",
     "ko-KR": "초기화",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(1990-1996)",
-      "src/renderer/components/settings/cloud-error-card.tsx(3973-3979)"
+      "src/renderer/components/settings/cloud-error-card.tsx(2045-2051)",
+      "src/renderer/components/settings/cloud-error-card.tsx(4080-4086)"
     ],
     "$id": 19466
   },
@@ -2745,7 +2745,7 @@
     "fr-FR": "Heure",
     "ko-KR": "시간",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(2313-2319)"
+      "src/renderer/components/settings/cloud-error-card.tsx(2377-2383)"
     ],
     "$id": 19467
   },
@@ -2760,7 +2760,7 @@
     "fr-FR": "Fournisseur",
     "ko-KR": "서비스 제공자",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(2536-2543)"
+      "src/renderer/components/settings/cloud-error-card.tsx(2606-2613)"
     ],
     "$id": 19468
   },
@@ -2775,7 +2775,7 @@
     "fr-FR": "Modèle",
     "ko-KR": "모델",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(2710-2716)"
+      "src/renderer/components/settings/cloud-error-card.tsx(2784-2790)"
     ],
     "$id": 19469
   },
@@ -2790,7 +2790,7 @@
     "fr-FR": "Étape de l'échec",
     "ko-KR": "실패 단��",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(2880-2888)"
+      "src/renderer/components/settings/cloud-error-card.tsx(2958-2966)"
     ],
     "$id": 19470
   },
@@ -2805,7 +2805,7 @@
     "fr-FR": "Test en cours...",
     "ko-KR": "테스트 중...",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(3703-3713)"
+      "src/renderer/components/settings/cloud-error-card.tsx(3802-3812)"
     ],
     "$id": 19471
   },
@@ -2820,7 +2820,7 @@
     "fr-FR": "Retester",
     "ko-KR": "다시 테스트",
     "$files": [
-      "src/renderer/components/settings/cloud-error-card.tsx(3717-3725)"
+      "src/renderer/components/settings/cloud-error-card.tsx(3816-3824)"
     ],
     "$id": 19472
   },
@@ -2835,7 +2835,7 @@
     "fr-FR": "Réglages d'extraction du contenu",
     "ko-KR": "내용 추출 설정",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(5488-5498)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(5663-5673)"
     ],
     "$id": 20640
   },
@@ -2850,7 +2850,7 @@
     "fr-FR": "Contrôlez la plage d'extraction et l'exactitude du texte des fichiers et des documents, de l'OCR des images et d'autres contenus.",
     "ko-KR": "파일 및 문서 텍스트, 이미지 OCR 및 기타 콘텐츠의 추출 범위와 정확성을 제어합니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(5571-5600)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(5748-5777)"
     ],
     "$id": 22165
   },
@@ -2865,7 +2865,7 @@
     "fr-FR": "Extraction de documents et de contenu",
     "ko-KR": "문서 및 콘텐츠 추출",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(5975-5986)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6163-6174)"
     ],
     "$id": 20642
   },
@@ -2880,7 +2880,7 @@
     "fr-FR": "Limite de taille maximale pour l'extraction de contenu (incluant l'OCR)",
     "ko-KR": "콘텐츠(OCR 포함) 추출 크기 상한",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(6370-6388)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6566-6584)"
     ],
     "$id": 20643
   },
@@ -2895,7 +2895,7 @@
     "fr-FR": "Taille maximale d'extraction pour une métrique de texte individuelle (texte/document/OCR/HTML). Les contenus trop longs seront automatiquement tronqués. Autrement, une consommation excessive de stockage et une dégradation des performances en résulteraient.",
     "ko-KR": "단일 텍스트 지표(텍스트/문서/OCR/HTML)의 최대 추출 크기. 과도하게 긴 콘텐츠는 자동으로 잘립니다. 그렇지 않으면 저장 공간이 과다하게 차지되어 성능에 영향을 미칩니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(6478-6562)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(6677-6762)"
     ],
     "$id": 20644
   },
@@ -2910,10 +2910,10 @@
     "fr-FR": "Illimitée",
     "ko-KR": "제한 없음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(6906-6912)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(10440-10446)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(19163-19169)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(21712-21718)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(7113-7119)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(10717-10723)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(19622-19628)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(22224-22230)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(2977-2983)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(3309-3315)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(13264-13270)",
@@ -2934,8 +2934,8 @@
     "fr-FR": "10 000",
     "ko-KR": "만",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(7595-7600)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(7932-7937)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(7814-7819)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(8157-8162)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(13748-13753)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(14025-14030)"
     ],
@@ -2952,7 +2952,7 @@
     "fr-FR": "Équivaut à environ {zh} caractères ou {en} mots",
     "ko-KR": "약 {zh}자 또는 {en} 단어에 해당",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(8036-8060)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(8263-8287)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(14436-14460)"
     ],
     "$id": 20647
@@ -2968,7 +2968,7 @@
     "fr-FR": "Activer la capture d'écran de couverture pour les documents Office",
     "ko-KR": "Office 문서 커버 스크린샷 활성화",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(11090-11108)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(11383-11401)"
     ],
     "$id": 20648
   },
@@ -2983,7 +2983,7 @@
     "fr-FR": "Permet l'exportation de la première page des documents Office en miniature de couverture, mais augmente considérablement le temps d'extraction du contenu Office ; les PDF ne sont pas affectés. Nécessite l'installation de LibreOffice.",
     "ko-KR": "Office 문서 첫 페이지를 커버 섬네일로 내보내는 기능을 지원하지만, Office 콘텐츠 추출 시간이 크게 증가하며, PDF에는 영향을 미치지 않습니다. LibreOffice 설치가 필요합니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(11204-11297)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(11500-11594)"
     ],
     "$id": 20649
   },
@@ -2998,7 +2998,7 @@
     "fr-FR": "Activer, utiliser LibreOffice pour convertir la première page en vignette de couverture (très chronophage)",
     "ko-KR": "활성, LibreOffice를 호출하여 첫 페이지를 섬네일 커버로 변환(매우 오래 걸림)",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(11538-11573)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(11841-11876)"
     ],
     "$id": 20650
   },
@@ -3013,7 +3013,7 @@
     "fr-FR": "Désactiver, ignorer l’extraction de la couverture Office",
     "ko-KR": "비활성, Office 커버 이미지 추출 건너뛰기",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(11599-11619)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(11903-11923)"
     ],
     "$id": 20651
   },
@@ -3028,7 +3028,7 @@
     "fr-FR": "Installation du plugin : LibreOffice",
     "ko-KR": "플러그인 설치: LibreOffice",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(12511-12531)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(12834-12854)"
     ],
     "$id": 20652
   },
@@ -3043,7 +3043,7 @@
     "fr-FR": "Prise en charge de la conversion de page entière de fichiers Office et de l’extraction de la couverture",
     "ko-KR": "Office 파일 전체 페이지 변환 및 커버 이미지 추출 지원",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(12694-12718)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(13021-13045)"
     ],
     "$id": 20653
   },
@@ -3058,7 +3058,7 @@
     "fr-FR": "Cependant, cela augmente considérablement le temps d’extraction du contenu des fichiers Office ; les PDF ne sont pas affectés",
     "ko-KR": "그러나 Office 콘텐츠 추출에 소요되는 시간을 크게 증가시키며, PDF에는 영향 없음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(12827-12857)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(13156-13186)"
     ],
     "$id": 20654
   },
@@ -3073,7 +3073,7 @@
     "fr-FR": "Replier le Tutoriel d’installation Windows 💡",
     "ko-KR": "수축 Windows 설치 가이드 💡",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(13511-13533)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(13852-13874)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(20906-20928)"
     ],
     "$id": 20655
@@ -3089,7 +3089,7 @@
     "fr-FR": "Déplier le Tutoriel d’installation Windows et de configuration du PATH 💡",
     "ko-KR": "전개 Windows 설치 및 PATH 구성 가이드 💡",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(13569-13600)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(13911-13942)"
     ],
     "$id": 20656
   },
@@ -3104,7 +3104,7 @@
     "fr-FR": "Comment configurer :",
     "ko-KR": "설정 방법:",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14275-14284)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(14627-14636)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(21338-21347)"
     ],
     "$id": 20657
@@ -3120,7 +3120,7 @@
     "fr-FR": "Veuillez d'abord ajouter le chemin d'installation de LibreOffice à la variable d'environnement PATH du système",
     "ko-KR": "먼저 LibreOffice 설치 경로를 시스템의 PATH 환경 변수에 추가하세요.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14443-14484)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(14798-14839)"
     ],
     "$id": 20658
   },
@@ -3135,7 +3135,7 @@
     "fr-FR": "Emplacement par défaut :",
     "ko-KR": "기본 위치:",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14566-14575)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(14923-14932)"
     ],
     "$id": 20659
   },
@@ -3150,7 +3150,7 @@
     "fr-FR": "Redémarrez l'application après configuration, puis cliquez à nouveau sur « Redétecter ».",
     "ko-KR": "설정 후 앱을 재시작하고 다시 '다시 감지'를 클릭하세요.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(14658-14678)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(15016-15036)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(21758-21778)"
     ],
     "$id": 20660
@@ -3166,7 +3166,7 @@
     "fr-FR": "Accéder au téléchargement",
     "ko-KR": "다운로드 페이지로 이동",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(15244-15252)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(15616-15624)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(22326-22334)"
     ],
     "$id": 20661
@@ -3182,7 +3182,7 @@
     "fr-FR": "Installé",
     "ko-KR": "설치됨",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(15900-15907)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(16284-16291)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(22979-22986)"
     ],
     "$id": 20662
@@ -3198,7 +3198,7 @@
     "fr-FR": "Non détecté",
     "ko-KR": "검출되지 않음",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(16342-16350)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(16733-16741)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(23428-23436)"
     ],
     "$id": 20663
@@ -3214,7 +3214,7 @@
     "fr-FR": "Redétecter",
     "ko-KR": "다시 감지",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(16795-16803)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(17198-17206)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(23876-23884)"
     ],
     "$id": 20664
@@ -3230,7 +3230,7 @@
     "fr-FR": "OCR : reconnaissance et traitement",
     "ko-KR": "OCR 인식 및 처리",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(17257-17270)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(17674-17687)"
     ],
     "$id": 20668
   },
@@ -3245,7 +3245,7 @@
     "fr-FR": "Activer la reconnaissance OCR intelligente des images",
     "ko-KR": "이미지 OCR 지능형 인식 활성화",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(17660-17675)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(18085-18100)"
     ],
     "$id": 20669
   },
@@ -3260,8 +3260,8 @@
     "fr-FR": "Perception intelligente de la présence de texte dans les images en quelques millisecondes ; si du texte est détecté, lancer la reconnaissance OCR",
     "ko-KR": "밀리초 수준의 지능형 감지로 이미지 내 텍스트 유무를 확인하고, 텍스트가 있으면 OCR 인식을 수행",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(17765-17794)",
-      "src/renderer/components/settings/content-extraction-settings.tsx(17922-17951)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(18193-18222)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(18354-18383)"
     ],
     "$id": 20670
   },
@@ -3276,7 +3276,7 @@
     "fr-FR": "Quantité de reconnaissance OCR des documents",
     "ko-KR": "문서 OCR 인식 수량",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(18729-18742)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(19179-19192)"
     ],
     "$id": 20671
   },
@@ -3291,7 +3291,7 @@
     "fr-FR": "Limite de quantité de reconnaissance OCR des documents (nombre d'images intégrées dans les documents Office / nombre de pages du document PDF)",
     "ko-KR": "문서 OCR 인식 수량 상한선(Office 문서 내장 이미지 수 / PDF 문서 페이지 수)",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(18832-18873)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(19285-19326)"
     ],
     "$id": 20672
   },
@@ -3306,7 +3306,7 @@
     "fr-FR": "Désactivé (0)",
     "ko-KR": "꺼짐 (0)",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(19245-19255)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(19706-19716)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(25889-25899)"
     ],
     "$id": 20673
@@ -3322,7 +3322,7 @@
     "fr-FR": "éléments/page",
     "ko-KR": "항/페이지",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(19307-19314)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(19769-19776)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(25911-25918)"
     ],
     "$id": 20674
@@ -3338,7 +3338,7 @@
     "fr-FR": "Précision de la reconnaissance OCR",
     "ko-KR": "OCR 인식 정확도",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(22169-22180)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(22694-22705)"
     ],
     "$id": 20675
   },
@@ -3353,7 +3353,7 @@
     "fr-FR": "Sélectionnez le niveau de précision de la reconnaissance de texte par OCR. OCR ultra-rapide convient à la plupart des scénarios ; OCR haute précision offre une reconnaissance plus exacte mais nécessite un peu plus de temps.",
     "ko-KR": "OCR 텍스트 인식의 정확도 레벨을 선택합니다. 초고속 OCR은 대부분의 시나리오에 적합하며, 고정밀 OCR은 더 정확하지만 소액의 시간이 더 소요됩니다.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(22247-22317)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(22774-22845)"
     ],
     "$id": 20676
   },
@@ -3368,7 +3368,7 @@
     "fr-FR": "Recommandé",
     "ko-KR": "권장",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(23319-23325)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(23865-23871)",
       "src/renderer/components/settings/m5-tts-settings.tsx(12684-12690)",
       "src/renderer/components/settings/m5-tts-settings.tsx(23317-23323)",
       "src/renderer/components/settings/tts-settings.tsx(19005-19011)",
@@ -3390,7 +3390,7 @@
     "fr-FR": "OCR ultra rapide",
     "ko-KR": "Lightning-Fast OCR",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(24114-24123)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(24675-24684)"
     ],
     "$id": 20677
   },
@@ -3405,7 +3405,7 @@
     "fr-FR": "Traitement d'une image en 1 à 2 secondes, adapté à la plupart des scénarios",
     "ko-KR": "Completions a single image within 1–2 seconds, suitable for most scenarios.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(24285-24306)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(24850-24871)"
     ],
     "$id": 20678
   },
@@ -3420,7 +3420,7 @@
     "fr-FR": "OCR haute précision",
     "ko-KR": "High-accuracy OCR",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(25784-25794)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(26378-26388)"
     ],
     "$id": 20679
   },
@@ -3435,7 +3435,7 @@
     "fr-FR": "Traitement d'une image en 2 à 4 secondes, améliorant la précision de reconnaissance",
     "ko-KR": "Completions a single image within 2–4 seconds, improving recognition accuracy.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(25956-25976)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(26554-26574)"
     ],
     "$id": 20680
   },
@@ -3450,7 +3450,7 @@
     "fr-FR": "Réutilisation des données lors de l'analyse",
     "ko-KR": "Reuse data when re-analyzing",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(26507-26520)",
+      "src/renderer/components/settings/content-extraction-settings.tsx(27118-27131)",
       "src/renderer/components/settings/workspace/BasicAIEngineTab.tsx(2862-2875)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(2450-2463)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(32958-32971)"
@@ -3468,7 +3468,7 @@
     "fr-FR": "Si le fichier a été mis à jour, veuillez désactiver cette option ; sinon, si les informations de base du fichier existent déjà, l'acquisition de ces informations est ignorée. Les informations de base comprennent : le type de fichier, l'aperçu, les métadonnées et le contenu du fichier",
     "ko-KR": "If files have been updated, uncheck this option. Otherwise, any file's basic information already present will cause that information retrieval to be skipped. Basic information includes: file type, thumbnail, metadata, and file content.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(26610-26698)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(27224-27313)"
     ],
     "$id": 20682
   },
@@ -3483,7 +3483,7 @@
     "fr-FR": "Accélération de l'analyse, les informations de l'étape standard d'analyse ne seront pas réacquises",
     "ko-KR": "Speeds up analysis without re-fetching information from the standard analysis stage.",
     "$files": [
-      "src/renderer/components/settings/content-extraction-settings.tsx(26847-26871)"
+      "src/renderer/components/settings/content-extraction-settings.tsx(27467-27491)"
     ],
     "$id": 20683
   },
@@ -4973,7 +4973,7 @@
       "src/renderer/components/settings/external-api-settings.tsx(21593-21600)",
       "src/renderer/components/settings/WorkspaceConfigPanel.tsx(11600-11607)",
       "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(16840-16847)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14524-14531)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14955-14962)"
     ],
     "$id": 23076
   },
@@ -6174,7 +6174,7 @@
     "ko-KR": "파일",
     "$files": [
       "src/renderer/components/settings/storage-energy-settings.tsx(11247-11254)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12938-12945)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15374-15381)"
     ],
     "$id": 38359
   },
@@ -7302,7 +7302,7 @@
     "fr-FR": "Exemple : Les caractéristiques d'un ensemble de fichiers en tant qu'unité globale sont : un ensemble de fichiers dont les noms portent des suffixes numériques, par exemple : 1.txt, 2.txt, 3.txt",
     "ko-KR": "Example: Features of file collections treated as a single unit: file collections whose names carry numeric suffixes. For example: 1.txt, 2.txt, 3.txt",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(2780-2848)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(2867-2936)"
     ],
     "$id": 20684
   },
@@ -7317,7 +7317,7 @@
     "fr-FR": "Identification des unités minimales",
     "ko-KR": "최소 단위 식별",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(2982-2992)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(3078-3088)"
     ],
     "$id": 20685
   },
@@ -7332,7 +7332,7 @@
     "fr-FR": "Identification des unités globales telles que des séries de fichiers, des albums audio, des répertoires de projets, avec prise en charge des mots-clés personnalisés pour l'identification",
     "ko-KR": "시리즈 파일, 음원 앨범, 프로젝트 디렉터리 등 전체 단위를 식별하며 사용자 정의 단위 식별 프롬프트를 지원함",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(3065-3104)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(3163-3202)"
     ],
     "$id": 20686
   },
@@ -7347,7 +7347,7 @@
     "fr-FR": "Activer l'identification des unités minimales",
     "ko-KR": "최소 단위 식별 사용",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(3812-3824)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(3927-3939)"
     ],
     "$id": 20687
   },
@@ -7362,7 +7362,7 @@
     "fr-FR": "Les catégories suivantes sont forcées et identifiées sans activation nécessaire : répertoires système, répertoires d'installation de logiciels, projets d'ingénierie, paquets de jeux, ensembles de données/modèles IA, caches et LFS, environnements virtuels",
     "ko-KR": "다음 카테고리들은 강제로 식별되며 활성화 불필요: 시스템 디렉터리, 소프트웨어 설치 디렉터리, 프로젝트, 게임 패키지, AI 데이터셋/모델, 캐시 및 LFS, 가상 환경",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(3908-3988)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(4026-4107)"
     ],
     "$id": 20688
   },
@@ -7377,7 +7377,7 @@
     "fr-FR": "Après activation, les répertoires identifiés comme unités minimales éviteront l'analyse fichier par fichier",
     "ko-KR": "사용 후, 최소 단위로 식별된 디렉터리는 개별 파일 분석을 건너뜀",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(4150-4177)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(4274-4301)"
     ],
     "$id": 20689
   },
@@ -7392,7 +7392,7 @@
     "fr-FR": "Séries de fichiers : documents ou images numérotés de manière séquentielle (par ex. 01.jpg, 02.jpg, 03.jpg)",
     "ko-KR": "시리즈 파일: 연속된 번호가 매겨진 문서 또는 이미지 (예: 01.jpg, 02.jpg, 03.jpg)",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(4759-4804)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(4900-4945)"
     ],
     "$id": 20690
   },
@@ -7407,7 +7407,7 @@
     "fr-FR": "Audio Album : Ensemble de fichiers audio appartenant au même album (par ex. .flac, .mp3)",
     "ko-KR": "오디오 앨범: 동일한 앨범의 트랙 파일 집합 (예: .flac, .mp3)",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(4829-4864)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(4971-5006)"
     ],
     "$id": 20691
   },
@@ -7422,7 +7422,7 @@
     "fr-FR": "Projet de design : Projet de conception incluant le fichier de projet et le répertoire des ressources (par ex. .prproj, .aep, .blend)",
     "ko-KR": "디자인 엔지니어링: 엔지니어링 파일 및 리소스 디렉터리를 포함하는 디자인 프로젝트 (예: .prproj, .aep, .blend)",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(4889-4936)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(5032-5079)"
     ],
     "$id": 20692
   },
@@ -7437,7 +7437,7 @@
     "fr-FR": "Astuce : Une fois désactivé, tous les fichiers seront analysés indépendamment, ce qui convient aux scénarios où une description et des étiquettes doivent être générées individuellement pour chaque fichier",
     "ko-KR": "팁: 비활성화 시 모든 파일이 독립적으로 분석되며, 각 파일에 대한 설명 및 태그를 개별적으로 생성해야 하는 시나리오에 적합합니다",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(5054-5095)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(5200-5241)"
     ],
     "$id": 20693
   },
@@ -7452,7 +7452,7 @@
     "fr-FR": "Mot-clé de l'identification de l'unité minimale",
     "ko-KR": "최소 단위 식별 프롬프트",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(5548-5561)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(5705-5718)"
     ],
     "$id": 20694
   },
@@ -7467,7 +7467,7 @@
     "fr-FR": "Doit être activé à l'aide de l'interrupteur ci-dessus pour prendre effet",
     "ko-KR": "위 온/오프 스위치를 켜야만 활성화됩니다",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(6085-6100)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(6251-6266)"
     ],
     "$id": 20695
   },
@@ -7482,7 +7482,7 @@
     "fr-FR": "Définit quel ensemble de fichiers doit être considéré comme une unité unique, afin d'affiner le jugement de reconnaissance du modèle",
     "ko-KR": "무슨 유형의 파일 집합이 하나의 전체 단위로 고려되어야 하는지 정의하여 모델의 식별 판단을 미세 조정합니다",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(6243-6277)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(6414-6448)"
     ],
     "$id": 20696
   },
@@ -7497,7 +7497,7 @@
     "fr-FR": "Le mot d’invite d’unité minimale personnalisé repose sur la capacité de compréhension du modèle de langage du moteur génératif et n’est actuellement pas activé.",
     "ko-KR": "사용자 정의 최소 단위 프롬프트 단어는 생성 엔진의 언어 모델 이해 능력에 의존하며 현재 활성화되어 있지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(7119-7156)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(7311-7348)"
     ],
     "$id": 28430
   },
@@ -7512,7 +7512,7 @@
     "fr-FR": "L'interrupteur ci-dessus n'étant pas activé, le prompt n'est pas appliqué pour le moment.",
     "ko-KR": "위쪽 스위치가 켜지지 않아 프롬프트가 일시적으로 적용되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(8491-8510)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(8719-8738)"
     ],
     "$id": 20698
   },
@@ -7527,7 +7527,7 @@
     "fr-FR": "Le dossier identifié comme unité minimale est traité dans son ensemble comme un fichier unique, afin d'éviter la génération de résultats d'analyse trop fragmentés.",
     "ko-KR": "최소 단위로 식별된 디렉터리는 하나의 파일로 전체 처리되어 과도한 조각 분석 결과를 방지합니다.",
     "$files": [
-      "src/renderer/components/settings/unit-recognition-settings.tsx(9077-9118)"
+      "src/renderer/components/settings/unit-recognition-settings.tsx(9322-9363)"
     ],
     "$id": 20699
   },
@@ -8453,7 +8453,7 @@
     "ko-KR": "그림 텍스트 인식",
     "$files": [
       "src/renderer/components/settings/WorkspaceConfigPanel.tsx(19771-19781)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1588-1598)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(3629-3639)"
     ],
     "$id": 38390
   },
@@ -9091,7 +9091,7 @@
     "ko-KR": "바인딩되지 않은 워크플로",
     "$files": [
       "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(16651-16661)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16808-16818)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17291-17301)"
     ],
     "$id": 32287
   },
@@ -9264,7 +9264,7 @@
       "src/renderer/components/settings/workspace/BasicAIEngineTab.tsx(35895-35906)",
       "src/renderer/components/settings/workspace/BasicAIEngineTab.tsx(56507-56518)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(9678-9689)",
-      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(4920-4931)",
+      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(4913-4924)",
       "src/renderer/components/settings/workspace/TriStateFieldFeedback.tsx(9084-9095)",
       "src/renderer/components/settings/workspace/TriStateFieldFeedback.tsx(10474-10485)",
       "src/renderer/components/settings/workspace/WorkspacePluginsTab.tsx(8624-8635)"
@@ -9286,7 +9286,7 @@
       "src/renderer/components/settings/workspace/BasicAIEngineTab.tsx(35928-35938)",
       "src/renderer/components/settings/workspace/BasicAIEngineTab.tsx(56522-56532)",
       "src/renderer/components/settings/workspace/ContentExtractionTab.tsx(9711-9721)",
-      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(4935-4945)",
+      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(4928-4938)",
       "src/renderer/components/settings/workspace/TriStateFieldFeedback.tsx(9099-9109)",
       "src/renderer/components/settings/workspace/TriStateFieldFeedback.tsx(10489-10499)",
       "src/renderer/components/settings/workspace/WorkspacePluginsTab.tsx(8639-8649)"
@@ -9335,7 +9335,7 @@
     "ko-KR": "복원",
     "$files": [
       "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(24301-24307)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10738-10744)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11069-11075)"
     ],
     "$id": 38412
   },
@@ -9367,8 +9367,8 @@
     "$files": [
       "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(25356-25364)",
       "src/renderer/components/settings/WorkspaceSettingsDialog.tsx(25642-25650)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11306-11314)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11552-11560)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11649-11657)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11900-11908)"
     ],
     "$id": 38414
   },
@@ -12093,7 +12093,7 @@
     "fr-FR": "Valeur de paramétrage effectivement appliquée, en fonction des performances de votre ordinateur et de votre niveau d'adhésion actuel.",
     "ko-KR": "컴퓨터 성능과 현재 멤버십 등급을 고려한 실제 적용 설정값입니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(2965-2994)"
+      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(2965-2987)"
     ],
     "$id": 38929
   },
@@ -12108,7 +12108,7 @@
     "fr-FR": "Explication de la valeur du règlement final",
     "ko-KR": "최종 정산액 설명",
     "$files": [
-      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(3205-3216)"
+      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(3198-3209)"
     ],
     "$id": 38930
   },
@@ -12123,7 +12123,7 @@
     "fr-FR": "Opérations",
     "ko-KR": "작업",
     "$files": [
-      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(3413-3419)"
+      "src/renderer/components/settings/workspace/TriStateCustomFieldsTable.tsx(3406-3412)"
     ],
     "$id": 38454
   },
@@ -13153,7 +13153,7 @@
     "ko-KR": "포함 규칙 지우기",
     "$files": [
       "src/renderer/components/settings/workspace/WorkspaceAdmissionRulesTab.tsx(19830-19840)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(20345-20355)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(20896-20906)"
     ],
     "$id": 26944
   },
@@ -13708,7 +13708,7 @@
     "fr-FR": "L'environnement actuel ne peut pas ouvrir directement le répertoire local",
     "ko-KR": "현재 환경에서는 로컬 디렉터리를 직접 열 수 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(4720-4738)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(4871-4889)"
     ],
     "$id": 23317
   },
@@ -13723,7 +13723,7 @@
     "fr-FR": "Échec de l'ouverture du répertoire",
     "ko-KR": "디렉터리를 열지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(4808-4818)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(4962-4972)"
     ],
     "$id": 23318
   },
@@ -13738,7 +13738,7 @@
     "fr-FR": "La surveillance automatique a été activée : les nouvelles modifications de fichiers seront automatiquement ajoutées à la file d'attente d'analyse AI",
     "ko-KR": "자동 모니터링이 켜졌습니다. 새로운 파일 변경 사항이 AI 분석 대기열에 자동으로 추가됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(5235-5265)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(5403-5433)"
     ],
     "$id": 23319
   },
@@ -13753,7 +13753,7 @@
     "fr-FR": "La surveillance automatique a été suspendue : les modifications des fichiers externes ne seront plus automatiquement suivies",
     "ko-KR": "자동 모니터링이 일시 중지되었습니다. 외부 파일 변경 사항이 더 이상 자동으로 추적되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(5281-5305)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(5450-5474)"
     ],
     "$id": 23320
   },
@@ -13768,7 +13768,7 @@
     "fr-FR": "Échec de la mise à jour de l'état d'écoute du répertoire",
     "ko-KR": "디렉터리 수신 상태를 업데이트하지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(5410-5424)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(5584-5598)"
     ],
     "$id": 23321
   },
@@ -13783,7 +13783,7 @@
     "fr-FR": "Il n'y a aucun fichier nouveau ou modifié dans le répertoire actuel",
     "ko-KR": "현재 디렉터리에 새 파일이나 변경된 파일이 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6092-6108)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6286-6302)"
     ],
     "$id": 23322
   },
@@ -13798,7 +13798,7 @@
     "fr-FR": "L'interface de numérisation n'est pas disponible",
     "ko-KR": "스캔 인터페이스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6181-6192)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6379-6390)"
     ],
     "$id": 23323
   },
@@ -13813,7 +13813,7 @@
     "fr-FR": "Échec de la nouvelle analyse du répertoire",
     "ko-KR": "디렉터리 재검색 실패",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6262-6274)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6463-6475)"
     ],
     "$id": 23324
   },
@@ -13828,7 +13828,7 @@
     "fr-FR": "Aucun dossier vide trouvé, la structure des répertoires est très soignée !",
     "ko-KR": "빈 폴더가 없습니다. 디렉터리 구조가 매우 깔끔합니다!",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6752-6773)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6968-6989)"
     ],
     "$id": 23325
   },
@@ -13843,7 +13843,7 @@
     "fr-FR": "L'analyse du dossier vide a échoué",
     "ko-KR": "빈 폴더를 스캔하지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(6911-6923)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(7133-7145)"
     ],
     "$id": 23326
   },
@@ -13858,7 +13858,7 @@
     "fr-FR": "Les données d'analyse de l'espace de travail ont été réinitialisées en toute sécurité et les fichiers partagés par d'autres répertoires ont été entièrement conservés conformément à la loi.",
     "ko-KR": "작업공간 분석 데이터는 안전하게 재설정되었으며, 다른 디렉터리와 공유된 파일은 법률에 따라 완전히 보관됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8016-8051)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8267-8302)"
     ],
     "$id": 23327
   },
@@ -13873,7 +13873,7 @@
     "fr-FR": "Interface de réinitialisation non détectée",
     "ko-KR": "재설정 인터페이스가 감지되지 않음",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8148-8160)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8403-8415)"
     ],
     "$id": 23328
   },
@@ -13888,7 +13888,7 @@
     "fr-FR": "Réinitialiser l'exception de l'espace de travail",
     "ko-KR": "작업공간 예외 재설정",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8230-8241)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8488-8499)"
     ],
     "$id": 23329
   },
@@ -13903,7 +13903,7 @@
     "fr-FR": "Le répertoire de travail '{name}' a été supprimé de l'application",
     "ko-KR": "작업 디렉터리 '{name}'이(가) 애플리케이션에서 제거되었습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8630-8653)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8902-8925)"
     ],
     "$id": 23330
   },
@@ -13918,7 +13918,7 @@
     "fr-FR": "Échec de la suppression du répertoire de travail",
     "ko-KR": "작업 디렉터리를 제거하지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8803-8815)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(9079-9091)"
     ],
     "$id": 23331
   },
@@ -13933,7 +13933,7 @@
     "fr-FR": "Supprimer l'exception du répertoire de travail",
     "ko-KR": "작업 디렉토리 예외 제거",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(8895-8907)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(9175-9187)"
     ],
     "$id": 23332
   },
@@ -13948,8 +13948,8 @@
     "fr-FR": "Le flux de travail a été dissocié et l'instantané actuel de la liste blanche a été conservé en toute sécurité.",
     "ko-KR": "워크플로 바인딩이 해제되었으며 현재 화이트리스트 스냅샷이 안전하게 보관되었습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10633-10658)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11680-11705)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(10961-10986)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12034-12059)"
     ],
     "$id": 23333
   },
@@ -13964,7 +13964,7 @@
     "fr-FR": "La liaison de workflow précédente a été restaurée",
     "ko-KR": "이전 워크플로 바인딩이 복원되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11148-11164)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11488-11504)"
     ],
     "$id": 38486
   },
@@ -13979,7 +13979,7 @@
     "fr-FR": "Échec de la dissociation du flux de travail",
     "ko-KR": "워크플로 바인딩을 해제하지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11850-11863)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12209-12222)"
     ],
     "$id": 23334
   },
@@ -13994,7 +13994,7 @@
     "fr-FR": "Exception de workflow de dissociation",
     "ko-KR": "바인딩 해제 워크플로 예외",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(11944-11957)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12307-12320)"
     ],
     "$id": 23335
   },
@@ -14009,7 +14009,7 @@
     "fr-FR": "La liste blanche a été effacée et est revenue au mode d'admission complète standard.",
     "ko-KR": "화이트리스트가 지워지고 표준 전체 허용 모드로 돌아왔습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(12911-12934)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13303-13326)"
     ],
     "$id": 23336
   },
@@ -14024,7 +14024,7 @@
     "fr-FR": "Échec de la suppression de la liste vide",
     "ko-KR": "빈 목록을 지우지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13075-13086)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13471-13482)"
     ],
     "$id": 23337
   },
@@ -14039,7 +14039,7 @@
     "fr-FR": "Supprimer l'exception de liste vide",
     "ko-KR": "빈 목록 예외 지우기",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13167-13178)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13567-13578)"
     ],
     "$id": 23338
   },
@@ -14054,7 +14054,7 @@
     "fr-FR": "Maintenance et gestion d'annuaire",
     "ko-KR": "디렉토리 유지 및 관리",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13551-13562)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13963-13974)"
     ],
     "$id": 23339
   },
@@ -14069,7 +14069,7 @@
     "fr-FR": "Surveillez les modifications de fichiers, effectuez une analyse complète, nettoyez les dossiers vides ou réinitialisez les données d'analyse AI du répertoire actuel.",
     "ko-KR": "파일 변경 사항을 모니터링하고, 전체 검사를 수행하고, 빈 폴더를 정리하거나, 현재 디렉터리의 AI 분석 데이터를 재설정합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(13658-13697)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14073-14112)"
     ],
     "$id": 23340
   },
@@ -14084,7 +14084,7 @@
     "fr-FR": "A configurer",
     "ko-KR": "구성 예정",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14742-14749)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15177-15184)"
     ],
     "$id": 23341
   },
@@ -14099,7 +14099,7 @@
     "fr-FR": "Temps ajouté :",
     "ko-KR": "추가된 시간:",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(14981-14991)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15421-15431)"
     ],
     "$id": 23347
   },
@@ -14114,7 +14114,7 @@
     "fr-FR": "Afficher ce dossier dans l'explorateur du système d'exploitation",
     "ko-KR": "운영 체제 탐색기에서 이 폴더 보기",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15614-15635)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16071-16092)"
     ],
     "$id": 23342
   },
@@ -14129,7 +14129,7 @@
     "fr-FR": "Ouvrir le dossier",
     "ko-KR": "폴더 열기",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(15728-15737)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16188-16197)"
     ],
     "$id": 23343
   },
@@ -14144,7 +14144,7 @@
     "fr-FR": "Flux de travail lié:",
     "ko-KR": "바운드 워크플로:",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16460-16471)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(16936-16947)"
     ],
     "$id": 38487
   },
@@ -14159,7 +14159,7 @@
     "fr-FR": "Le flux de travail commercial exclusif a été lié. Après la dissociation, le répertoire reviendra en mode universel et les instantanés contenant des règles seront automatiquement conservés pour empêcher l'afflux de fichiers non cibles.",
     "ko-KR": "독점적인 비즈니스 워크플로우가 바인딩되었습니다. 바인딩 해제 후 디렉터리는 범용 모드로 돌아가고, 규칙이 포함된 스냅샷은 자동으로 유지되어 대상이 아닌 파일의 유입을 방지합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17041-17116)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17530-17597)"
     ],
     "$id": 27065
   },
@@ -14174,7 +14174,7 @@
     "fr-FR": "Le répertoire actuel n'est pas associé à un flux de travail dédié. S'il existe un instantané contenant des règles, il continuera à être efficace en tant que protection de sécurité et pourra être effacé et restauré en mode complet à tout moment.",
     "ko-KR": "현재 디렉터리에는 바인딩된 전용 워크플로가 없습니다. 규칙이 포함된 스냅샷이 있는 경우 이는 보안 보호로서 계속 유효하며 언제든지 삭제하고 전체 모드로 복원할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17159-17234)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17642-17712)"
     ],
     "$id": 27069
   },
@@ -14189,7 +14189,7 @@
     "fr-FR": "Dissocier le flux de travail",
     "ko-KR": "워크플로 바인딩 해제",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(17942-17953)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18437-18448)"
     ],
     "$id": 23366
   },
@@ -14204,8 +14204,8 @@
     "fr-FR": "Reliure du flux de travail",
     "ko-KR": "리바인드 워크플로",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18307-18316)",
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18362-18371)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18812-18821)",
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18869-18878)"
     ],
     "$id": 38488
   },
@@ -14220,7 +14220,7 @@
     "fr-FR": "Accéder au workflow de liaison",
     "ko-KR": "바인딩 워크플로로 이동",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(18774-18785)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19292-19303)"
     ],
     "$id": 23368
   },
@@ -14235,7 +14235,7 @@
     "fr-FR": "Aperçu de l'extension en vigueur :",
     "ko-KR": "적용 중인 확장의 스냅샷:",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19214-19227)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(19742-19755)"
     ],
     "$id": 23369
   },
@@ -14250,7 +14250,7 @@
     "fr-FR": "Surveiller automatiquement les modifications de fichiers (Auto Watch)",
     "ko-KR": "파일 변경 사항 자동 모니터링(Auto Watch)",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21165-21190)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21735-21760)"
     ],
     "$id": 23348
   },
@@ -14265,7 +14265,7 @@
     "fr-FR": "Surveillance en temps réel",
     "ko-KR": "실시간 모니터링",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21401-21410)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21975-21984)"
     ],
     "$id": 23349
   },
@@ -14280,7 +14280,7 @@
     "fr-FR": "Détectez les fichiers nouveaux, modifiés et supprimés dans le répertoire actuel en temps réel. Après ouverture, les nouveaux fichiers seront automatiquement synchronisés et ajoutés à la file d'attente d'analyse intelligente de l'IA.",
     "ko-KR": "현재 디렉토리에서 신규, 수정, 삭제된 파일을 실시간으로 탐지합니다. 열면 새 파일이 자동으로 동기화되어 AI 지능형 분석 대기열에 추가됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(21562-21629)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22141-22209)"
     ],
     "$id": 23350
   },
@@ -14295,7 +14295,7 @@
     "fr-FR": "Nouvelle analyse et détection des modifications",
     "ko-KR": "재검색 및 변경 감지",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22665-22678)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23271-23284)"
     ],
     "$id": 23351
   },
@@ -14310,7 +14310,7 @@
     "fr-FR": "Effectuez une comparaison complète des fichiers du disque physique pour vérifier si de nouveaux fichiers ou des modifications ont été ajoutés hors ligne et, éventuellement, placez-les dans la file d'attente d'analyse.",
     "ko-KR": "물리적 디스크 파일의 전체 비교를 수행하여 새 파일이나 오프라인으로 추가된 변경 사항이 있는지 확인하고 선택적으로 분석 대기열에 푸시합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(22775-22840)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23383-23449)"
     ],
     "$id": 23352
   },
@@ -14325,7 +14325,7 @@
     "fr-FR": "Nouvelle analyse",
     "ko-KR": "다시 스캔",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23348-23356)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23976-23984)"
     ],
     "$id": 23353
   },
@@ -14340,7 +14340,7 @@
     "fr-FR": "Scanner et nettoyer les dossiers vides",
     "ko-KR": "빈 폴더 스캔 및 정리",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(23943-23956)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24582-24595)"
     ],
     "$id": 23354
   },
@@ -14355,7 +14355,7 @@
     "fr-FR": "Analysez de manière récursive le répertoire actuel à la recherche des dossiers vides laissés après le tri ou la suppression. Il prend en charge l'affichage des détails et le nettoyage par lots en un seul clic.",
     "ko-KR": "정렬 또는 삭제 후 남은 빈 폴더가 있는지 현재 디렉터리를 반복적으로 검색합니다. 한 번의 클릭으로 세부 정보 보기 및 일괄 정리를 지원합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24053-24094)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24694-24735)"
     ],
     "$id": 23355
   },
@@ -14370,7 +14370,7 @@
     "fr-FR": "Nettoyer les dossiers vides",
     "ko-KR": "빈 폴더 정리",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(24613-24623)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25272-25282)"
     ],
     "$id": 23356
   },
@@ -14385,7 +14385,7 @@
     "fr-FR": "Réinitialisez en toute sécurité les données d'analyse du catalogue",
     "ko-KR": "카탈로그 분석 데이터를 안전하게 재설정",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25269-25283)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25939-25953)"
     ],
     "$id": 23370
   },
@@ -14400,7 +14400,7 @@
     "fr-FR": "Effacez les balises AI, le cache du storyboard et l'index de texte de tous les fichiers du répertoire actuel. Protégés par le mécanisme de protection des orphelins entre espaces de travail, les fichiers partagés ne seront jamais endommagés accidentellement.",
     "ko-KR": "현재 디렉터리에 있는 모든 파일의 AI 태그, 스토리보드 캐시, 텍스트 인덱스를 지웁니다. 작업 공간 간 고아 보호 메커니즘으로 보호되므로 공유 파일이 실수로 손상되는 일이 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25380-25452)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26052-26125)"
     ],
     "$id": 23371
   },
@@ -14415,7 +14415,7 @@
     "fr-FR": "Réinitialiser les données...",
     "ko-KR": "데이터 재설정...",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(25836-25847)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26523-26534)"
     ],
     "$id": 23372
   },
@@ -14430,7 +14430,7 @@
     "fr-FR": "Supprimer le répertoire de travail de l'application",
     "ko-KR": "애플리케이션에서 작업 디렉터리를 제거합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26416-26430)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27114-27128)"
     ],
     "$id": 23373
   },
@@ -14445,7 +14445,7 @@
     "fr-FR": "Dissociez ce répertoire dans l'application et effacez ses enregistrements d'index. Cette opération n’affecte ni ne supprime du tout les fichiers réels sur le disque physique.",
     "ko-KR": "애플리케이션 내에서 이 디렉터리를 바인딩 해제하고 해당 인덱스 레코드를 지웁니다. 이 작업은 물리적 디스크의 실제 파일에 전혀 영향을 주거나 삭제하지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(26527-26592)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27227-27293)"
     ],
     "$id": 23374
   },
@@ -14460,7 +14460,7 @@
     "fr-FR": "Supprimer le répertoire...",
     "ko-KR": "디렉토리 제거...",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27023-27034)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27738-27749)"
     ],
     "$id": 23375
   },
@@ -14475,7 +14475,7 @@
     "fr-FR": "Confirmer la réinitialisation sécurisée « {name} » ?",
     "ko-KR": "'{name}' 안전한 재설정을 확인하시겠습니까?",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27441-27460)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28168-28187)"
     ],
     "$id": 23376
   },
@@ -14490,7 +14490,7 @@
     "fr-FR": "Cette opération effacera les résultats de l'analyse IA et le cache du storyboard de tous les fichiers du répertoire actuel, mais ne supprimera pas les fichiers réels sur le disque physique.",
     "ko-KR": "이 작업을 수행하면 현재 디렉터리에 있는 모든 파일의 AI 분석 결과와 스토리보드 캐시가 지워지지만 실제 디스크에 있는 실제 파일은 삭제되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(27700-27771)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28432-28504)"
     ],
     "$id": 23377
   },
@@ -14505,7 +14505,7 @@
     "fr-FR": "Protégés par le mécanisme de protection des orphelins : les fichiers partagés référencés par d'autres espaces de travail sont automatiquement protégés par la rétention immunitaire.",
     "ko-KR": "고아 보호 메커니즘으로 보호됨: 다른 작업 공간에서 참조하는 공유 파일은 면역 보존을 통해 자동으로 보호됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28047-28082)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28785-28820)"
     ],
     "$id": 23378
   },
@@ -14520,7 +14520,7 @@
     "fr-FR": "Confirmer la réinitialisation sécurisée",
     "ko-KR": "안전한 재설정 확인",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(28841-28851)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29599-29609)"
     ],
     "$id": 23379
   },
@@ -14535,7 +14535,7 @@
     "fr-FR": "Êtes-vous sûr de vouloir supprimer le répertoire de travail « {name} » ?",
     "ko-KR": "정말로 \"{name}\" 작업 디렉터리를 제거하시겠습니까?",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29312-29333)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30082-30103)"
     ],
     "$id": 23380
   },
@@ -14550,7 +14550,7 @@
     "fr-FR": "Êtes-vous sûr de vouloir supprimer ce répertoire de travail de l'application ? Les données pertinentes d’indexation et d’analyse des fichiers seront nettoyées.",
     "ko-KR": "앱에서 이 작업 디렉터리를 삭제하시겠습니까? 관련 파일 인덱싱 및 분석 데이터가 정리됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29554-29591)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30328-30365)"
     ],
     "$id": 23381
   },
@@ -14565,7 +14565,7 @@
     "fr-FR": "Sûr et sécurisé : les fichiers et dossiers sur le disque physique sont 100 % intacts.",
     "ko-KR": "안전하고 안전함: 물리적 디스크의 파일과 폴더는 100% 손상되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(29855-29887)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30632-30664)"
     ],
     "$id": 23382
   },
@@ -14580,7 +14580,7 @@
     "fr-FR": "Confirmer la suppression",
     "ko-KR": "제거 확인",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(30641-30649)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31438-31446)"
     ],
     "$id": 23383
   },
@@ -14595,7 +14595,7 @@
     "fr-FR": "Êtes-vous sûr de dissocier le flux de travail ?",
     "ko-KR": "워크플로 바인딩을 해제하시겠습니까?",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31118-31132)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31927-31941)"
     ],
     "$id": 23384
   },
@@ -14610,7 +14610,7 @@
     "fr-FR": "Après dissociation du workflow, l'annuaire passera en mode de gestion générale et ne sera plus régi par des règles de workflow spécifiques.",
     "ko-KR": "워크플로 바인딩을 해제하면 디렉터리는 일반 관리 모드로 전환되며 더 이상 특정 워크플로 규칙의 적용을 받지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31346-31386)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32160-32200)"
     ],
     "$id": 23385
   },
@@ -14625,7 +14625,7 @@
     "fr-FR": "[Protection de sécurité des instantanés] : afin d'empêcher les fichiers indésirables non cibles d'inonder soudainement la file d'attente d'analyse, les extensions de règles d'inclusion actuellement efficaces (un total de {count} éléments) seront entièrement conservées en tant qu'instantanés de sécurité.",
     "ko-KR": "[스냅샷 보안 보호]: 대상이 아닌 정크 파일이 갑자기 분석 대기열로 넘쳐나는 것을 방지하기 위해 현재 유효한 포함 규칙 확장(총 {count}개 항목)이 보안 스냅샷으로 완전히 유지됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(31688-31780)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32507-32600)"
     ],
     "$id": 27220
   },
@@ -14640,7 +14640,7 @@
     "fr-FR": "Dissocier (conserver l'instantané)",
     "ko-KR": "바인딩 해제(스냅샷 유지)",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(32559-32574)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33399-33414)"
     ],
     "$id": 23387
   },
@@ -14655,7 +14655,7 @@
     "fr-FR": "Êtes-vous sûr d'effacer les règles d'inclusion et de restaurer le mode complet ?",
     "ko-KR": "포함 규칙을 지우고 전체 모드를 복원하시겠습니까?",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33072-33092)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33924-33944)"
     ],
     "$id": 27234
   },
@@ -14670,7 +14670,7 @@
     "fr-FR": "Après avoir effacé les règles d'inclusion, le répertoire reviendra au mode de saisie complète standard. En plus des éléments bloqués par le système et des règles d'exclusion personnalisées, tous les fichiers légitimes nouveaux et existants seront inclus dans la file d'attente d'analyse et d'analyse IA.",
     "ko-KR": "포함 규칙을 지우면 디렉터리가 표준 전체 항목 모드로 되돌아갑니다. 시스템 및 사용자 정의 제외 규칙에 의해 차단된 항목 외에도 모든 신규 및 기존 합법적인 파일이 검색 및 AI 분석 대기열에 포함됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33306-33399)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34163-34257)"
     ],
     "$id": 27279
   },
@@ -14685,7 +14685,7 @@
     "fr-FR": "Cette opération effacera les règles d'inclusion d'extension {count} actuellement configurées et déclenchera des analyses incrémentielles.",
     "ko-KR": "이 작업은 현재 구성된 {count} 확장 프로그램 포함 규칙을 지우고 증분 스캔을 트리거합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(33727-33771)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34591-34635)"
     ],
     "$id": 27354
   },
@@ -14700,9 +14700,54 @@
     "fr-FR": "Effacez la liste vide et restaurez la pleine capacité",
     "ko-KR": "빈 목록을 지우고 전체 용량을 복원합니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(34577-34591)"
+      "src/renderer/components/settings/workspace/WorkspaceMaintenanceTab.tsx(35461-35475)"
     ],
     "$id": 23391
+  },
+  "长视频后续片段": {
+    "en-US": "Long video follow-up clip",
+    "es-ES": "Clip de seguimiento de video largo",
+    "ar-EG": "مقطع متابعة فيديو طويل",
+    "pt-PT": "Vídeo de acompanhamento longo",
+    "ru-RU": "Длинный видеоклип-продолжение",
+    "ja-JP": "長いビデオのフォローアップクリップ",
+    "de-DE": "Langer Video-Follow-up-Clip",
+    "fr-FR": "Long clip de suivi vidéo",
+    "ko-KR": "긴 비디오 후속 클립",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(3238-3249)"
+    ],
+    "$id": 32708
+  },
+  "画面深度分析": {
+    "en-US": "In-depth picture analysis",
+    "es-ES": "Análisis de imagen en profundidad",
+    "ar-EG": "تحليل متعمق للصورة",
+    "pt-PT": "Análise aprofundada da imagem",
+    "ru-RU": "Углубленный анализ изображений",
+    "ja-JP": "詳細な画像分析",
+    "de-DE": "Eingehende Bildanalyse",
+    "fr-FR": "Analyse approfondie de l'image",
+    "ko-KR": "심층 사진 분석",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(3538-3548)"
+    ],
+    "$id": 32709
+  },
+  "文字识别精度升级": {
+    "en-US": "Text recognition accuracy upgrade",
+    "es-ES": "Actualización de precisión de reconocimiento de texto",
+    "ar-EG": "ترقية دقة التعرف على النص",
+    "pt-PT": "Atualização da precisão do reconhecimento de texto",
+    "ru-RU": "Повышение точности распознавания текста",
+    "ja-JP": "テキスト認識精度のアップグレード",
+    "de-DE": "Verbesserung der Genauigkeit der Texterkennung",
+    "fr-FR": "Amélioration de la précision de la reconnaissance de texte",
+    "ko-KR": "텍스트 인식 정확도 업그레이드",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(3730-3742)"
+    ],
+    "$id": 32710
   },
   "文档首页封面": {
     "en-US": "Document homepage cover",
@@ -14715,7 +14760,7 @@
     "fr-FR": "Couverture de la page d'accueil du document",
     "ko-KR": "문서 홈페이지 커버",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1646-1656)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(3828-3838)"
     ],
     "$id": 39833
   },
@@ -14730,24 +14775,9 @@
     "fr-FR": "Miniature",
     "ko-KR": "썸네일",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1701-1708)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(3921-3928)"
     ],
     "$id": 39834
-  },
-  "语音转文字": {
-    "en-US": "Speech to text",
-    "es-ES": "Voz a texto",
-    "ar-EG": "الكلام إلى نص",
-    "pt-PT": "Discurso para texto",
-    "ru-RU": "Преобразование речи в текст",
-    "ja-JP": "テキストへのスピーチ",
-    "de-DE": "Sprache zu Text",
-    "fr-FR": "Parole au texte",
-    "ko-KR": "텍스트 음성 변환",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1760-1769)"
-    ],
-    "$id": 39835
   },
   "文档正文提取": {
     "en-US": "Document body extraction",
@@ -14760,9 +14790,85 @@
     "fr-FR": "Extraction du corps du document",
     "ko-KR": "문서 본문 추출",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1821-1831)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4022-4032)"
     ],
     "$id": 39836
+  },
+  "语音转文字": {
+    "en-US": "Speech to text",
+    "es-ES": "Voz a texto",
+    "ar-EG": "الكلام إلى نص",
+    "pt-PT": "Discurso para texto",
+    "ru-RU": "Преобразование речи в текст",
+    "ja-JP": "テキストへのスピーチ",
+    "de-DE": "Sprache zu Text",
+    "fr-FR": "Parole au texte",
+    "ko-KR": "텍스트 음성 변환",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4126-4135)"
+    ],
+    "$id": 39835
+  },
+  "内容索引": {
+    "en-US": "Content index",
+    "es-ES": "Índice de contenido",
+    "ar-EG": "فهرس المحتوى",
+    "pt-PT": "Índice de conteúdo",
+    "ru-RU": "Индекс содержания",
+    "ja-JP": "コンテンツインデックス",
+    "de-DE": "Inhaltsverzeichnis",
+    "fr-FR": "Index du contenu",
+    "ko-KR": "콘텐츠 인덱스",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4267-4275)"
+    ],
+    "$id": 32711
+  },
+  "索引版本升级": {
+    "en-US": "Index version upgrade",
+    "es-ES": "Actualización de la versión del índice",
+    "ar-EG": "ترقية إصدار الفهرس",
+    "pt-PT": "Atualização da versão do Índice",
+    "ru-RU": "Обновление версии индекса",
+    "ja-JP": "インデックスバージョンアップ",
+    "de-DE": "Aktualisierung der Indexversion",
+    "fr-FR": "Mise à niveau de la version de l'index",
+    "ko-KR": "인덱스 버전 업그레이드",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4374-4384)"
+    ],
+    "$id": 32712
+  },
+  "画面内容识别": {
+    "en-US": "Screen content recognition",
+    "es-ES": "Reconocimiento de contenido en pantalla",
+    "ar-EG": "التعرف على محتوى الشاشة",
+    "pt-PT": "Reconhecimento do conteúdo do ecrã",
+    "ru-RU": "Распознавание содержимого экрана",
+    "ja-JP": "画面コンテンツ認識",
+    "de-DE": "Erkennung von Bildschirminhalten",
+    "fr-FR": "Reconnaissance du contenu de l'écran",
+    "ko-KR": "화면 콘텐츠 인식",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4476-4486)"
+    ],
+    "$id": 32713
+  },
+  "内容安全识别": {
+    "en-US": "Content security identification",
+    "es-ES": "Identificación de seguridad de contenido",
+    "ar-EG": "تعريف أمان المحتوى",
+    "pt-PT": "Identificação de segurança de conteúdo",
+    "ru-RU": "Идентификация безопасности контента",
+    "ja-JP": "コンテンツセキュリティの識別",
+    "de-DE": "Identifizierung der Inhaltssicherheit",
+    "fr-FR": "Identification de la sécurité du contenu",
+    "ko-KR": "콘텐츠 보안 식별",
+    "$files": [
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4580-4590)",
+      "src/renderer/components/settings/workspace/WorkspacePluginsTab.tsx(12230-12240)"
+    ],
+    "$id": 38499
   },
   "内容补全": {
     "en-US": "Content completion",
@@ -14775,7 +14881,7 @@
     "fr-FR": "Achèvement du contenu",
     "ko-KR": "콘텐츠 완성",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(1859-1867)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(4637-4645)"
     ],
     "$id": 39837
   },
@@ -14790,7 +14896,7 @@
     "fr-FR": "La complétion inactive en arrière-plan a été restaurée",
     "ko-KR": "백그라운드 유휴 완료가 복원되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5399-5412)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7798-7811)"
     ],
     "$id": 39838
   },
@@ -14805,7 +14911,7 @@
     "fr-FR": "L'achèvement de la vidéo en arrière-plan a été suspendu",
     "ko-KR": "배경 비디오 완성이 일시 중지되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5484-5497)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7883-7896)"
     ],
     "$id": 39839
   },
@@ -14820,7 +14926,7 @@
     "fr-FR": "{count} Les fragments ayant échoué ont été réinitialisés et la complétion a commencé",
     "ko-KR": "{count}실패한 조각이 재설정되고 다시 완료가 시작되었습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(5819-5847)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8218-8246)"
     ],
     "$id": 39840
   },
@@ -14835,7 +14941,7 @@
     "fr-FR": "A été défini sur achèvement prioritaire",
     "ko-KR": "우선 순위 완료로 설정되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(6152-6163)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8551-8562)"
     ],
     "$id": 39841
   },
@@ -14850,7 +14956,7 @@
     "fr-FR": "Les fichiers {count} ont été ajoutés à la file d'attente d'analyse pour compléter le contenu",
     "ko-KR": "{count}파일을 분석 큐에 추가하여 콘텐츠를 완성했습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(6539-6567)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8938-8966)"
     ],
     "$id": 39842
   },
@@ -14865,7 +14971,7 @@
     "fr-FR": "La liste à remplir a été effacée",
     "ko-KR": "채워질 목록이 지워졌습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7362-7373)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9761-9772)"
     ],
     "$id": 40897
   },
@@ -14880,7 +14986,7 @@
     "fr-FR": "Impossible d'effacer la liste en attente",
     "ko-KR": "보류 중인 목록을 지우지 못했습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(7581-7593)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9980-9992)"
     ],
     "$id": 40898
   },
@@ -14895,7 +15001,7 @@
     "fr-FR": "Atelier de complétion automatique inactif",
     "ko-KR": "유휴 자동 완성 작업대",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8506-8519)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(10942-10955)"
     ],
     "$id": 39844
   },
@@ -14910,7 +15016,7 @@
     "fr-FR": "La file d'attente principale est occupée et cède automatiquement",
     "ko-KR": "메인 큐가 사용 중이며 자동으로 방법을 제공합니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8713-8728)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11149-11164)"
     ],
     "$id": 39845
   },
@@ -14925,7 +15031,7 @@
     "fr-FR": "L'achèvement de l'arrière-plan a été suspendu",
     "ko-KR": "배경 완료가 일시 중지되었습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(8848-8859)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11284-11295)"
     ],
     "$id": 39846
   },
@@ -14940,7 +15046,7 @@
     "fr-FR": "Compléter en arrière-plan",
     "ko-KR": "백그라운드에서 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9015-9025)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11451-11461)"
     ],
     "$id": 39847
   },
@@ -14955,8 +15061,8 @@
     "fr-FR": "En attente d'achèvement inactif",
     "ko-KR": "유휴 완료 대기 중",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9144-9154)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21136-21146)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11580-11590)",
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23572-23582)"
     ],
     "$id": 39848
   },
@@ -14971,7 +15077,7 @@
     "fr-FR": "Aucune vidéo à inventer",
     "ko-KR": "만들 비디오 없음",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9158-9168)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11594-11604)"
     ],
     "$id": 39849
   },
@@ -14986,7 +15092,7 @@
     "fr-FR": "Compléter automatiquement segment par segment lorsqu'il est inactif; pause automatique pour faire place lors de l'importation de nouveaux fichiers",
     "ko-KR": "유휴 상태 일 때 세그먼트별로 자동으로 세그먼트 완료;새 파일을 가져올 때 자동으로 일시 중지됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(9290-9316)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11726-11752)"
     ],
     "$id": 41065
   },
@@ -15001,7 +15107,7 @@
     "fr-FR": "Longue analyse vidéo approfondie",
     "ko-KR": "긴 비디오 심층 분석",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(10432-10443)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12868-12879)"
     ],
     "$id": 41066
   },
@@ -15016,7 +15122,7 @@
     "fr-FR": "Une partie de la vidéo",
     "ko-KR": "비디오의 일부",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11026-11033)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13462-13469)"
     ],
     "$id": 41067
   },
@@ -15031,7 +15137,7 @@
     "fr-FR": "Minutes à reconstituer",
     "ko-KR": "보충 할 분",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11309-11317)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13745-13753)"
     ],
     "$id": 41068
   },
@@ -15046,7 +15152,7 @@
     "fr-FR": "Découpez automatiquement paragraphe par paragraphe pour établir une ligne de texte intégral et un index d'image",
     "ko-KR": "단락별로 단락을 자동으로 슬라이스하여 전체 텍스트 줄 및 그림 인덱스를 설정합니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(11454-11475)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13890-13911)"
     ],
     "$id": 41069
   },
@@ -15061,7 +15167,7 @@
     "fr-FR": "Autres documents à compléter",
     "ko-KR": "기타 완료해야 할 서류",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12353-12364)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14789-14800)"
     ],
     "$id": 41070
   },
@@ -15076,7 +15182,7 @@
     "fr-FR": "Capacité à récupérer",
     "ko-KR": "회복 능력",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(12568-12576)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15004-15012)"
     ],
     "$id": 41071
   },
@@ -15091,7 +15197,7 @@
     "fr-FR": "Écart de capacité d'article",
     "ko-KR": "품목 수용량 간격",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13229-13238)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15665-15674)"
     ],
     "$id": 41072
   },
@@ -15106,7 +15212,7 @@
     "fr-FR": "Lacunes dans le corps du document, le texte OCR ou la transcription vocale",
     "ko-KR": "문서 본문,원문 텍스트 또는 음성 전사의 간격",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(13375-13396)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15811-15832)"
     ],
     "$id": 41073
   },
@@ -15121,7 +15227,7 @@
     "fr-FR": "Liste des vidéos intégrales à réaliser",
     "ko-KR": "구성될 전체 길이의 비디오 목록",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14192-14204)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(16628-16640)"
     ],
     "$id": 41074
   },
@@ -15136,7 +15242,7 @@
     "fr-FR": "A été découpé et segmenté selon 5 minutes; prend en charge l'achèvement prioritaire d'une seule vidéo ou réessaye les clips ayant échoué",
     "ko-KR": "5 분에 따라 슬라이스 및 분할되었습니다;단일 비디오 또는 재시도 실패 클립의 우선 순위 완료를 지원합니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14334-14367)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(16770-16803)"
     ],
     "$id": 41075
   },
@@ -15151,7 +15257,7 @@
     "fr-FR": "Upgrade Mise à niveau Pro pour terminer immédiatement",
     "ko-KR": "업그레이드 프로는 즉시 완료 할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(14887-14905)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17323-17341)"
     ],
     "$id": 41076
   },
@@ -15166,7 +15272,7 @@
     "fr-FR": "Terminez toutes les longues vidéos immédiatement",
     "ko-KR": "모든 긴 비디오를 즉시 완료하십시오",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15325-15338)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17761-17774)"
     ],
     "$id": 41077
   },
@@ -15181,7 +15287,7 @@
     "fr-FR": "Suspendre l'achèvement de l'arrière-plan",
     "ko-KR": "배경 완료 일시 중지",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15342-15352)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17778-17788)"
     ],
     "$id": 39852
   },
@@ -15196,7 +15302,7 @@
     "fr-FR": "Réessayez tous les fragments ayant échoué",
     "ko-KR": "실패한 모든 조각을 다시 시도하십시오",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(15774-15786)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(18210-18222)"
     ],
     "$id": 39853
   },
@@ -15211,8 +15317,8 @@
     "fr-FR": "Effacer la liste à remplir",
     "ko-KR": "채울 목록 지우기",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(16154-16164)",
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26971-26981)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(18590-18600)",
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29407-29417)"
     ],
     "$id": 40899
   },
@@ -15227,7 +15333,7 @@
     "fr-FR": "La version gratuite a terminé les 5 premières minutes d'analyse d'écran et de récupération de deuxième niveau pour vous",
     "ko-KR": "무료 버전은 당신을 위해 화면 분석 및 두 번째 수준의 검색의 처음 5 분을 완료했습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17162-17189)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(19598-19625)"
     ],
     "$id": 41139
   },
@@ -15242,7 +15348,7 @@
     "fr-FR": "La mise à niveau Pro peut déverrouiller automatiquement l'analyse en plein écran des {minutes} minutes restantes de la longue vidéo et prendre en charge jusqu'à 3 heures de n'importe quel écran de la vidéo entière pour trouver des images.",
     "ko-KR": "업그레이드 프로는 자동으로 긴 비디오의 나머지{minutes}분의 전체 화면 분석의 잠금을 해제하고,사진을 찾기 위해 전체 비디오의 모든 화면의 3 시간까지 지원할 수 있습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17321-17411)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(19757-19847)"
     ],
     "$id": 41140
   },
@@ -15257,7 +15363,7 @@
     "fr-FR": "Mise à niveau Pro maintenant pour déverrouiller →",
     "ko-KR": "이제 프로를 업그레이드하여 잠금을 해제하십시오.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(17974-17991)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20410-20427)"
     ],
     "$id": 41141
   },
@@ -15272,7 +15378,7 @@
     "fr-FR": "En cours d'achèvement",
     "ko-KR": "완료 중",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20556-20563)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(22992-22999)"
     ],
     "$id": 39861
   },
@@ -15287,7 +15393,7 @@
     "fr-FR": "Une partie du fragment a échoué",
     "ko-KR": "조각의 일부가 실패했습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(20866-20876)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23302-23312)"
     ],
     "$id": 39862
   },
@@ -15302,7 +15408,7 @@
     "fr-FR": "Minutes analysées {done} / cibles {target} (total {total} minutes)",
     "ko-KR": "분석{done}/목표{target}분(총{total}분)",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21460-21505)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23896-23941)"
     ],
     "$id": 39863
   },
@@ -15317,7 +15423,7 @@
     "fr-FR": "La partie excédentaire n'est pas indexée et ne peut pas être récupérée",
     "ko-KR": "초과 부분은 인덱싱되지 않으며 검색할 수 없습니다",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(21943-21960)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(24379-24396)"
     ],
     "$id": 41078
   },
@@ -15332,7 +15438,7 @@
     "fr-FR": "Unlock Déverrouillez l'intégralité de l'analyse",
     "ko-KR": "전체 분석 조각을 잠금 해제하십시오.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(22775-22788)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25211-25224)"
     ],
     "$id": 41079
   },
@@ -15347,7 +15453,7 @@
     "fr-FR": "Complétez d'abord ce fichier",
     "ko-KR": "이 파일을 먼저 완료하십시오",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23278-23289)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25714-25725)"
     ],
     "$id": 39864
   },
@@ -15362,7 +15468,7 @@
     "fr-FR": "N'est plus complet",
     "ko-KR": "더 이상 완료되지 않음",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(23927-23935)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26363-26371)"
     ],
     "$id": 40901
   },
@@ -15377,7 +15483,7 @@
     "fr-FR": "Il n'y a pas de longs clips vidéo à poursuivre dans le répertoire actuel.",
     "ko-KR": "현재 디렉토리에 계속 될 긴 비디오 클립이 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25027-25047)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(27463-27483)"
     ],
     "$id": 40902
   },
@@ -15392,7 +15498,7 @@
     "fr-FR": "Lors de l'importation d'une longue vidéo d'une durée supérieure à 5 minutes, les clips restants seront automatiquement mis en file d'attente ici une fois la première analyse terminée.",
     "ko-KR": "5 분 이상 지속되는 긴 비디오를 가져올 때 첫 번째 분석이 완료된 후 나머지 클립이 자동으로 여기에 대기됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25158-25199)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(27594-27635)"
     ],
     "$id": 40903
   },
@@ -15407,7 +15513,7 @@
     "fr-FR": "Autres documents à compléter (récupération de capacité)",
     "ko-KR": "보충해야 할 기타 서류(능력 회복)",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(25965-25982)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(28401-28418)"
     ],
     "$id": 39865
   },
@@ -15422,7 +15528,7 @@
     "fr-FR": "Après avoir terminé la reconnaissance du texte de l'image, la couverture du document ou la synthèse vocale, les étiquettes et les descriptions seront automatiquement réorganisées.",
     "ko-KR": "그림 텍스트 인식,문서 표지 또는 음성 텍스트 변환을 완료하면 레이블과 설명이 자동으로 재구성됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26112-26150)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(28548-28586)"
     ],
     "$id": 39866
   },
@@ -15437,7 +15543,7 @@
     "fr-FR": "Complétez tout immédiatement",
     "ko-KR": "즉시 모두 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(26640-26650)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29076-29086)"
     ],
     "$id": 39867
   },
@@ -15452,7 +15558,7 @@
     "fr-FR": "Terminez immédiatement",
     "ko-KR": "즉시 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(28735-28743)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(31305-31313)"
     ],
     "$id": 39869
   },
@@ -15467,7 +15573,7 @@
     "fr-FR": "Il n'y a pas de fichiers à restaurer dans d'autres environnements ou de texte/OCR/transcription manquant dans le répertoire actuel.",
     "ko-KR": "다른 환경에서 복원 할 파일이 없거나 현재 디렉토리에 텍스트/오커/전사가 누락되었습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29217-29251)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(31815-31849)"
     ],
     "$id": 40904
   },
@@ -15482,7 +15588,7 @@
     "fr-FR": "Si une lacune est détectée après la restauration de l'environnement (par exemple, terminer le modèle, installer des composants dépendants), elle sera automatiquement répertoriée ici pour une complétion en un clic.",
     "ko-KR": "환경이 복원된 후(모델 완료,종속 구성 요소 설치 등)간격이 발견되면 한 번의 클릭으로 완료하기 위해 여기에 자동으로 나열됩니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29362-29426)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(31960-32024)"
     ],
     "$id": 40905
   },
@@ -15497,7 +15603,7 @@
     "fr-FR": "Tous les documents du catalogue actuel ont été analysés selon les normes établies, et il n'y a aucun document à compléter.",
     "ko-KR": "현재 카탈로그의 모든 문서는 설정된 표준에 따라 분석되었으며 보충 할 문서가 없습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29868-29900)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(32466-32498)"
     ],
     "$id": 39870
   },
@@ -15512,7 +15618,7 @@
     "fr-FR": "Lorsqu'une longue vidéo de plus de 5 minutes est importée à l'avenir, l'écran restant apparaîtra automatiquement ici et sera rempli lorsqu'il sera libre.",
     "ko-KR": "나중에 5 분 이상의 긴 비디오를 가져올 때 나머지 화면이 자동으로 여기에 표시되며 무료 일 때 채워집니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(29989-30030)"
+      "src/renderer/components/settings/workspace/WorkspacePendingBackfillTab.tsx(32587-32628)"
     ],
     "$id": 39871
   },
@@ -15671,21 +15777,6 @@
       "src/renderer/components/settings/workspace/WorkspacePluginsTab.tsx(12179-12187)"
     ],
     "$id": 38498
-  },
-  "内容安全识别": {
-    "en-US": "Content security identification",
-    "es-ES": "Identificación de seguridad de contenido",
-    "ar-EG": "تعريف أمان المحتوى",
-    "pt-PT": "Identificação de segurança de conteúdo",
-    "ru-RU": "Идентификация безопасности контента",
-    "ja-JP": "コンテンツセキュリティの識別",
-    "de-DE": "Identifizierung der Inhaltssicherheit",
-    "fr-FR": "Identification de la sécurité du contenu",
-    "ko-KR": "콘텐츠 보안 식별",
-    "$files": [
-      "src/renderer/components/settings/workspace/WorkspacePluginsTab.tsx(12230-12240)"
-    ],
-    "$id": 38499
   },
   "压缩包透视与深度解析器": {
     "en-US": "Compressed package perspective and depth parser",
@@ -16960,7 +17051,7 @@
     "ko-KR": "현재 디렉터리가 비어 있습니다. 파일을 배치하면 자동으로 분류 및 정렬됩니다.",
     "$files": [
       "src/renderer/components/settings/workspace/workspace-setup-wizard/helpers.ts(9252-9275)",
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(8602-8625)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(8832-8855)"
     ],
     "$id": 31461
   },
@@ -17080,7 +17171,7 @@
     "fr-FR": "Exemples de noms",
     "ko-KR": "명명 예",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/preview-tree-node-view.tsx(1551-1559)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/preview-tree-node-view.tsx(1590-1598)"
     ],
     "$id": 31439
   },
@@ -17095,7 +17186,7 @@
     "fr-FR": "Modèle nommé",
     "ko-KR": "명명된 템플릿",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/preview-tree-node-view.tsx(1842-1850)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/preview-tree-node-view.tsx(1887-1895)"
     ],
     "$id": 31696
   },
@@ -17320,7 +17411,7 @@
     "fr-FR": "Assistant de flux de travail du répertoire de travail",
     "ko-KR": "작업 디렉터리 워크플로 마법사",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(1107-1120)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(1143-1156)"
     ],
     "$id": 31702
   },
@@ -17335,7 +17426,7 @@
     "fr-FR": "Écologie de répertoires de détection intelligente, assemblage automatisé de pipelines d'archivage virtuel dédiés",
     "ko-KR": "지능형 감지 디렉터리 생태학, 전용 가상 보관 파이프라인의 자동화된 조립",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(1221-1247)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(1260-1286)"
     ],
     "$id": 31450
   },
@@ -17350,7 +17441,7 @@
     "fr-FR": "Sélectionnez le flux de travail",
     "ko-KR": "워크플로 선택",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(1927-1936)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(1985-1994)"
     ],
     "$id": 31451
   },
@@ -17365,7 +17456,7 @@
     "fr-FR": "Inclure et exclure la confirmation de règle",
     "ko-KR": "규칙 확인 포함 및 제외",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(2497-2510)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(2569-2582)"
     ],
     "$id": 31452
   },
@@ -17380,7 +17471,7 @@
     "fr-FR": "Échec de l'enregistrement de la stratégie",
     "ko-KR": "정책 저장 실패",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(3592-3602)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(3694-3704)"
     ],
     "$id": 31453
   },
@@ -17395,7 +17486,7 @@
     "fr-FR": "Réessayez d'enregistrer",
     "ko-KR": "다시 저장해 보세요",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(4397-4405)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(4516-4524)"
     ],
     "$id": 31454
   },
@@ -17410,7 +17501,7 @@
     "fr-FR": "Copier les informations de diagnostic d'erreur",
     "ko-KR": "오류 진단 정보 복사",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(4695-4707)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(4822-4834)"
     ],
     "$id": 31455
   },
@@ -17425,7 +17516,7 @@
     "fr-FR": "Rester sur la page actuelle",
     "ko-KR": "현재 페이지에 머물다",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(5052-5061)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(5189-5198)"
     ],
     "$id": 31456
   },
@@ -17440,7 +17531,7 @@
     "fr-FR": "Caractéristiques des fichiers du répertoire courant",
     "ko-KR": "현재 디렉터리의 파일 특성",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(5966-5980)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6132-6146)"
     ],
     "$id": 31457
   },
@@ -17455,7 +17546,7 @@
     "fr-FR": "Exemples de fichiers {count}",
     "ko-KR": "샘플 {count} 파일",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6106-6124)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6275-6293)"
     ],
     "$id": 31458
   },
@@ -17470,7 +17561,7 @@
     "fr-FR": "Caractéristiques des fichiers de répertoire d'analyse approfondie...",
     "ko-KR": "심층 스캐닝 디렉터리 파일 특성...",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6577-6596)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6756-6775)"
     ],
     "$id": 23415
   },
@@ -17485,7 +17576,7 @@
     "fr-FR": "Répertoire vide (aucun fichier détecté)",
     "ko-KR": "빈 디렉터리(검색된 파일 없음)",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6769-6785)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6952-6968)"
     ],
     "$id": 31459
   },
@@ -17500,7 +17591,7 @@
     "fr-FR": "Reniflage de portraits multidimensionnels terminé",
     "ko-KR": "다차원 초상화 스니핑 완료",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(6918-6931)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(7106-7119)"
     ],
     "$id": 31460
   },
@@ -17515,7 +17606,7 @@
     "fr-FR": "La composition des fichiers statistiques est en cours de calcul pour déduire le meilleur modèle de puissance de calcul...",
     "ko-KR": "최적의 컴퓨팅 파워 모델을 추론하기 위해 통계적 파일 구성을 계산하고 있습니다.",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(8455-8479)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(8681-8705)"
     ],
     "$id": 23424
   },
@@ -17530,7 +17621,7 @@
     "fr-FR": "Flux de travail sélectionné :",
     "ko-KR": "선택한 작업 흐름:",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(9595-9606)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(9863-9874)"
     ],
     "$id": 23442
   },
@@ -17545,7 +17636,7 @@
     "fr-FR": "Étape précédente : resélectionner un workflow",
     "ko-KR": "이전 단계: 워크플로 다시 선택",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(10118-10131)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(10398-10411)"
     ],
     "$id": 31482
   },
@@ -17560,8 +17651,8 @@
     "fr-FR": "Ignorer l'assistant",
     "ko-KR": "마법사 건너뛰기",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(10781-10789)",
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(12157-12165)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(11077-11085)",
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(12485-12493)"
     ],
     "$id": 32291
   },
@@ -17576,7 +17667,7 @@
     "fr-FR": "Étape suivante",
     "ko-KR": "다음 단계",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(11481-11488)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(11794-11801)"
     ],
     "$id": 31483
   },
@@ -17591,7 +17682,7 @@
     "fr-FR": "Affinement personnalisé de la configuration du répertoire de travail",
     "ko-KR": "작업 디렉터리 구성의 개인화된 미세 조정",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(12974-12989)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(13316-13331)"
     ],
     "$id": 31484
   },
@@ -17606,7 +17697,7 @@
     "fr-FR": "Postulez immédiatement et entrez dans le répertoire de travail",
     "ko-KR": "즉시 신청하고 작업 디렉토리에 들어가세요",
     "$files": [
-      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(13694-13709)"
+      "src/renderer/components/settings/workspace/workspace-setup-wizard/wizard-chrome.tsx(14053-14068)"
     ],
     "$id": 31485
   },

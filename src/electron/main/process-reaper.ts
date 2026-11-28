@@ -1,8 +1,11 @@
 import * as fs from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import * as path from 'node:path'
 import { app } from 'electron'
 import * as cp from 'node:child_process'
 import { logger, LogCategory, isPathEqual } from '@firefly/shared'
+import { existsAsync } from '../infra/fs/async-fs'
+import { writeFileAtomic, writeFileAtomicSync } from '../infra/fs/atomic-write'
 
 const { spawnSync } = cp
 
@@ -228,16 +231,12 @@ const queryProcessNames = (pids: number[]): Map<number, string> | null => {
         `$ErrorActionPreference='SilentlyContinue';` +
         `Get-Process -Id ${pids.join(',')} | ` +
         `Select-Object Id,ProcessName,Path | ConvertTo-Json -Compress`
-      const res = spawnSync(
-        'powershell',
-        ['-NoProfile', '-NonInteractive', '-Command', script],
-        {
-          encoding: 'utf8',
-          windowsHide: true,
-          stdio: ['ignore', 'pipe', 'ignore'],
-          timeout: QUERY_TIMEOUT_MS
-        }
-      )
+      const res = spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], {
+        encoding: 'utf8',
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: QUERY_TIMEOUT_MS
+      })
       if (res.error) return null
       // 非 0 退出 = 查询失败（执行策略拦截 / PowerShell 不可用），必须拒绝盲杀
       if (res.status !== 0) return null
@@ -293,16 +292,12 @@ const queryProcessIdentities = (pids: number[]): Map<number, ProcIdentity> | nul
         `$ErrorActionPreference='SilentlyContinue';` +
         `Get-CimInstance Win32_Process -Filter "${filter}" | ` +
         `Select-Object ProcessId,Name,ExecutablePath,CreationDate | ConvertTo-Json -Compress`
-      const res = spawnSync(
-        'powershell',
-        ['-NoProfile', '-NonInteractive', '-Command', script],
-        {
-          encoding: 'utf8',
-          windowsHide: true,
-          stdio: ['ignore', 'pipe', 'ignore'],
-          timeout: DEEP_QUERY_TIMEOUT_MS
-        }
-      )
+      const res = spawnSync('powershell', ['-NoProfile', '-NonInteractive', '-Command', script], {
+        encoding: 'utf8',
+        windowsHide: true,
+        stdio: ['ignore', 'pipe', 'ignore'],
+        timeout: DEEP_QUERY_TIMEOUT_MS
+      })
       if (res.error) return null
       // 顺序很重要：PowerShell 命中 0 条时以 0 退出且输出为空（「查到了，没有」），
       // 而非 0 退出 + 空输出是真正的查询失败（执行策略拦截 / CIM 服务异常）。
@@ -370,6 +365,95 @@ const queryProcessIdentities = (pids: number[]): Map<number, ProcIdentity> | nul
   }
 }
 
+/** 异步 execFile 封装，供启动期异步深度身份查询使用（J-06 / IO-23） */
+const execFileAsync = (
+  file: string,
+  args: string[],
+  options: cp.ExecFileOptions
+): Promise<{ stdout: string; status: number | null; error: Error | null }> =>
+  new Promise(resolve => {
+    cp.execFile(file, args, { ...options, encoding: 'utf8' }, (error, stdout) => {
+      if (error) {
+        const exitCode = typeof (error as any).code === 'number' ? (error as any).code : null
+        resolve({ stdout: typeof stdout === 'string' ? stdout : '', status: exitCode, error })
+        return
+      }
+      resolve({ stdout: typeof stdout === 'string' ? stdout : '', status: 0, error: null })
+    })
+  })
+
+/**
+ * 异步深度身份查询：取回进程名 + 可执行文件路径 + 实际启动时间（J-06 / IO-23）。
+ * 供启动期 cleanupStaleProcessesAsync 使用，不阻塞主进程事件循环。
+ */
+const queryProcessIdentitiesAsync = async (
+  pids: number[]
+): Promise<Map<number, ProcIdentity> | null> => {
+  if (pids.length === 0) return new Map()
+  try {
+    if (process.platform === 'win32') {
+      const filter = pids.map(p => `ProcessId=${p}`).join(' or ')
+      const script =
+        `$ErrorActionPreference='SilentlyContinue';` +
+        `Get-CimInstance Win32_Process -Filter "${filter}" | ` +
+        `Select-Object ProcessId,Name,ExecutablePath,CreationDate | ConvertTo-Json -Compress`
+      const res = await execFileAsync(
+        'powershell',
+        ['-NoProfile', '-NonInteractive', '-Command', script],
+        {
+          windowsHide: true,
+          timeout: DEEP_QUERY_TIMEOUT_MS
+        }
+      )
+      if (res.error || res.status !== 0) return null
+      if (!res.stdout || !res.stdout.trim()) return new Map()
+      const parsed = JSON.parse(res.stdout.trim())
+      const rows = Array.isArray(parsed) ? parsed : [parsed]
+      const map = new Map<number, ProcIdentity>()
+      for (const row of rows) {
+        const pid = Number(row?.ProcessId)
+        if (!pid) continue
+        map.set(pid, {
+          pid,
+          name: String(row?.Name ?? ''),
+          exePath: String(row?.ExecutablePath ?? ''),
+          startedAtMs: parseSerializedDate(row?.CreationDate)
+        })
+      }
+      return map
+    }
+
+    const res = await execFileAsync('ps', ['-p', pids.join(','), '-o', 'pid=,lstart=,comm='], {
+      timeout: DEEP_QUERY_TIMEOUT_MS
+    })
+    if (!res.stdout || !res.stdout.trim()) {
+      return res.error && res.status === null ? null : new Map()
+    }
+    if (res.error || res.status !== 0) return null
+    const map = new Map<number, ProcIdentity>()
+    for (const line of res.stdout.split(/\r?\n/)) {
+      const m = line.trim().match(/^(\d+)\s+(\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.+)$/)
+      if (!m) continue
+      const pid = Number(m[1])
+      let exePath = ''
+      try {
+        exePath = await fsp.readlink(`/proc/${pid}/exe`)
+      } catch {
+        // macOS 无 /proc，路径留空即可
+      }
+      map.set(pid, {
+        pid,
+        name: path.basename(m[3].trim()),
+        exePath,
+        startedAtMs: Number.isFinite(Date.parse(m[2])) ? Date.parse(m[2]) : 0
+      })
+    }
+    return map
+  } catch {
+    return null
+  }
+}
+
 /**
  * 全局进程守护与精准防孤儿清理器 (ProcessReaper)
  * 负责记录本 worktree 实例名下的子进程 PID，并在退出/启动前定向清理，杜绝孤儿进程与跨 worktree 误杀。
@@ -390,6 +474,7 @@ export class ProcessReaper {
   private pids: Map<number, PidRecord> = new Map()
   private lockFilePath = ''
   private isCleanedUp = false
+  private isQuitting = false
   /**
    * 本实例是否真的登记过子进程。
    *
@@ -440,7 +525,7 @@ export class ProcessReaper {
       exeName: deriveExeName(name, exeName),
       exePath: exePath ? path.resolve(exePath) : undefined
     })
-    this.persistPids()
+    this.writePidsAtomically()
     logger.info(LogCategory.SYSTEM, `[ProcessReaper] 已登记子进程: ${name} (PID: ${pid})`)
   }
 
@@ -450,14 +535,22 @@ export class ProcessReaper {
   public unregisterChild(pid: number | undefined): void {
     if (!pid) return
     if (this.pids.delete(pid)) {
-      this.persistPids()
+      this.writePidsAtomically()
     }
   }
 
   /**
-   * 清理属于本 Worktree 实例的所有子进程
+   * 单向置位退出标记（B7 不可取消红线：置位后绝不复位）
+   */
+  public markQuitting(): void {
+    this.isQuitting = true
+  }
+
+  /**
+   * 清理属于本 Worktree 实例的所有子进程（退出路径专用同步函数，已具名登记 sync-allowlist）
    */
   public cleanup(): void {
+    this.isQuitting = true
     if (this.isCleanedUp) return
     this.isCleanedUp = true
 
@@ -474,7 +567,7 @@ export class ProcessReaper {
     // 只有「本实例确实拥有过记录」时才回写。
     // 否则第二个实例的退出会把文件覆写成 []，抹掉正在运行实例的登记（详见 hasOwnedRecords）。
     if (this.hasOwnedRecords) {
-      this.persistPids()
+      this.writePidsAtomically()
     }
   }
 
@@ -512,6 +605,133 @@ export class ProcessReaper {
       logger.warn(
         LogCategory.SYSTEM,
         `[ProcessReaper] 清理历史遗留记录失败，下次启动将重新校验: ${err?.message || err}`
+      )
+    }
+  }
+
+  /**
+   * 异步回收本 Worktree 历史遗留的僵尸子进程（J-06 / B5）：
+   * 1. 仅操作启动瞬间读取的独立遗留快照；
+   * 2. 杀进程前二次核对目标 PID 不在当前实例内存 this.pids 中（已登记则豁免）；
+   * 3. 持久化前先检查 !isQuitting && !isCleanedUp，再重读最新 this.pids 经 writeFileAtomic 原子替换，
+   *    严禁 pids.clear() 或写旧快照覆盖新登记记录。
+   */
+  public async cleanupStaleProcessesAsync(): Promise<void> {
+    if (!this.lockFilePath || !(await existsAsync(this.lockFilePath))) return
+    try {
+      const content = await fsp.readFile(this.lockFilePath, 'utf-8')
+      const records = sanitizeRecords(JSON.parse(content))
+      if (records.length > 0) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[ProcessReaper] 发现上一次异常退出遗留的 ${records.length} 个子进程，正在异步定向清理...`
+        )
+        const identities = await queryProcessIdentitiesAsync(records.map(r => r.pid))
+        for (const record of records) {
+          if (this.isQuitting || this.isCleanedUp) return
+          if (this.pids.has(record.pid)) {
+            logger.info(
+              LogCategory.SYSTEM,
+              `[ProcessReaper] PID=${record.pid} (${record.name}) 已被当前实例重新登记，跳过异步清理`
+            )
+            continue
+          }
+          await this.killVerifiedAsync(record, identities)
+        }
+      }
+
+      if (this.isQuitting || this.isCleanedUp) return
+      const latestRecords = Array.from(this.pids.values())
+      await writeFileAtomic(this.lockFilePath, JSON.stringify(latestRecords, null, 2), {
+        encoding: 'utf8'
+      })
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] 异步清理历史遗留记录失败，下次启动将重新校验: ${err?.message || err}`
+      )
+    }
+  }
+
+  private async killVerifiedAsync(
+    record: PidRecord,
+    identities: Map<number, ProcIdentity> | null
+  ): Promise<void> {
+    const { pid, name } = record
+    const expectedExeName = deriveExeName(name, record.exeName)
+
+    if (!identities) {
+      logger.error(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] ⛔ 进程身份校验能力不可用（deep-async），为避免误杀已跳过清理: ${name} (PID: ${pid})。若确认该进程为孤儿，请手动结束。`
+      )
+      return
+    }
+
+    const info = identities.get(pid)
+    if (!info) {
+      logger.info(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] 子进程已自行退出，无需清理: ${name} (PID: ${pid})`
+      )
+      return
+    }
+
+    if (!isNameMatch(expectedExeName, info.name)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] ⚠️ PID 身份不匹配，拒绝清理（该 PID 已被其他进程占用）: 记录=${name}(${expectedExeName}) PID=${pid}，当前进程名=${info.name}`
+      )
+      return
+    }
+
+    if (record.exePath && info.exePath && !isPathEqual(record.exePath, info.exePath)) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] ⚠️ 可执行文件路径不一致，拒绝清理: ${name} (PID: ${pid})，记录=${record.exePath}，当前=${info.exePath}`
+      )
+      return
+    }
+
+    if (
+      record.createdAt > 0 &&
+      info.startedAtMs > 0 &&
+      info.startedAtMs > record.createdAt + PID_REUSE_TOLERANCE_MS
+    ) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] ⚠️ 进程启动时间晚于登记时间，判定为同名新进程，拒绝清理: ${name} (PID: ${pid})，实际启动=${new Date(info.startedAtMs).toISOString()}，登记时间=${new Date(record.createdAt).toISOString()}`
+      )
+      return
+    }
+
+    // 杀前最后一次复检：若在异步校验期间本实例已重新登记同 PID 或进入退出流程，立即放弃
+    if (this.isQuitting || this.isCleanedUp || this.pids.has(pid)) {
+      return
+    }
+
+    try {
+      if (process.platform === 'win32') {
+        const res = await runTaskkillAsync(pid, { tree: true, timeoutMs: QUERY_TIMEOUT_MS })
+        if (res.error || res.exitCode !== 0) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[ProcessReaper] 异步 taskkill 未能结束进程: ${name} (PID: ${pid}), exitCode=${res.exitCode}, err=${res.error?.message ?? ''}`
+          )
+          return
+        }
+      } else {
+        process.kill(pid, 'SIGKILL')
+      }
+      logger.info(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] ✅ 已异步销毁遗留子进程: ${name} (PID: ${pid})`
+      )
+    } catch (err: any) {
+      if (err?.code === 'ESRCH') return
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[ProcessReaper] 异步结束进程失败: ${name} (PID: ${pid}), code=${err?.code ?? 'unknown'}, ${err?.message || err}`
       )
     }
   }
@@ -645,12 +865,17 @@ export class ProcessReaper {
     }
   }
 
-  private persistPids(): void {
+  /** 退出与子进程登记路径专用同步原子写盘（已具名登记 sync-allowlist） */
+  private writePidsAtomically(): void {
     if (!this.lockFilePath) return
     try {
       const records = Array.from(this.pids.values())
-      fs.writeFileSync(this.lockFilePath, JSON.stringify(records, null, 2), 'utf-8')
-    } catch {}
+      writeFileAtomicSync(this.lockFilePath, JSON.stringify(records, null, 2), {
+        encoding: 'utf8'
+      })
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[ProcessReaper] 同步原子落盘 runtime-pids.json 失败:', err)
+    }
   }
 
   private registerExitHooks(): void {
