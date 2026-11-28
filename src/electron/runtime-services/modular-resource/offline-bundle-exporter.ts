@@ -16,6 +16,7 @@ import * as crypto from 'crypto'
 import type JSZip from 'jszip'
 import * as yauzl from 'yauzl'
 import { PluginPathResolver } from '@firefly/shared'
+import { existsAsync, safeUnlink } from '../../infra/fs'
 import { computeFileStreamSha256, computeResourceDirSha256 } from './deterministic-hasher'
 import type { OfflinePackageDao } from './offline-package-dao'
 
@@ -240,14 +241,14 @@ export class OfflineBundleExporter {
         }
 
         // 检查 manifest.json 与 manifest.sig 是否存在
-        if (!fs.existsSync(mod.manifestPath)) {
+        if (!(await existsAsync(mod.manifestPath))) {
           throw new OfflineBundleExportError(
             'SOURCE_RESOURCE_CORRUPTED',
             `模块 ${mod.id} 的清单文件不存在: ${mod.manifestPath}`,
             { moduleId: mod.id }
           )
         }
-        if (!fs.existsSync(mod.sigPath)) {
+        if (!(await existsAsync(mod.sigPath))) {
           throw new OfflineBundleExportError(
             'SIGNATURE_INVALID',
             `模块 ${mod.id} 缺少官方原始签名文件 manifest.sig`,
@@ -303,7 +304,7 @@ export class OfflineBundleExporter {
             )
           }
 
-          if (!fs.existsSync(physicalPath)) {
+          if (!(await existsAsync(physicalPath))) {
             throw new OfflineBundleExportError(
               'SOURCE_RESOURCE_CORRUPTED',
               `模块 ${mod.id} 关联的物理资产不存在: ${physicalPath}`,
@@ -477,9 +478,7 @@ export class OfflineBundleExporter {
       const error = err as Error
       // 导出中途取消或报错：清理临时半成品，更新协调表为 FAILED
       try {
-        if (fs.existsSync(partialPath)) {
-          await fs.promises.rm(partialPath, { force: true })
-        }
+        await safeUnlink(partialPath)
       } catch {
         // 忽略清理临时文件失败
       }

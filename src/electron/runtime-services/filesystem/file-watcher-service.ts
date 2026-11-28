@@ -534,6 +534,9 @@ class FileWatcherService {
       return
     }
 
+    // [KD-1 已知缺陷 · 本期不修、下期修] 参见 docs/issues/desktop-sync-io-async-upgrade/31-kd1-handle-file-added-reentrancy.md
+    // 并发同路径事件下 has() 位于 await 之前、add() 位于 await 之后，存在双 add 窗口；
+    // 按 PRD INV-4 保持原位不变，留待 KD-1 专项修复。
     if (this.processingFiles.has(filePath)) {
       logger.debug(LogCategory.FILE_WATCHER, `文件正在处理中，跳过添加: ${filePath}`)
       return
@@ -681,6 +684,9 @@ class FileWatcherService {
       return
     }
 
+    // [KD-1 已知缺陷 · 本期不修、下期修] 参见 docs/issues/desktop-sync-io-async-upgrade/31-kd1-handle-file-added-reentrancy.md
+    // 并发同路径事件下 has() 位于 await 之前、add() 位于 await 之后，存在双 add 窗口；
+    // 按 PRD INV-4 保持原位不变，留待 KD-1 专项修复。
     if (this.processingFiles.has(filePath)) {
       logger.debug(LogCategory.FILE_WATCHER, `文件正在处理中，跳过修改处理: ${filePath}`)
       return
@@ -762,6 +768,9 @@ class FileWatcherService {
     filePath: string,
     skipNotify?: boolean
   ): Promise<void> {
+    // [KD-1 已知缺陷 · 本期不修、下期修] 参见 docs/issues/desktop-sync-io-async-upgrade/31-kd1-handle-file-added-reentrancy.md
+    // 并发同路径事件下 has() 位于 await 之前、add() 位于 await 之后，存在双 add 窗口；
+    // 按 PRD INV-4 保持原位不变，留待 KD-1 专项修复。
     if (this.processingFiles.has(filePath)) {
       logger.debug(LogCategory.FILE_WATCHER, `文件正在处理中，跳过删除处理: ${filePath}`)
       return

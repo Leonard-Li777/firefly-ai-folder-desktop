@@ -39,6 +39,8 @@ import {
   type VerifyVisualVocabResult
 } from '../system/visual-vocab-txn'
 import { omniService } from '../system/omni-service'
+import { existsAsync, mkdirp, readdirTyped, statOrNull } from '../../infra/fs'
+import { ResourceIoDispatcher } from './bundle-extractor-dispatcher'
 import type { OfflinePackageDao } from './offline-package-dao'
 import {
   partitionResourcesByDiskState,
@@ -313,7 +315,7 @@ export class BundlePromoter {
     }
     const declaredResources = Array.from(declaredResourcesMap.values())
     const sharedModulesDir = path.join(pluginsRootDir, '_shared')
-    fs.mkdirSync(sharedModulesDir, { recursive: true })
+    await mkdirp(sharedModulesDir)
 
     // 步骤 1：静态所有权划分与前置持久化 (Crash-Window Ownership Guard)
     let createdResourceIds: string[] = []
@@ -355,8 +357,8 @@ export class BundlePromoter {
           )
         }
         const stagedAssetPath = path.resolve(stagingDir, relPath)
-        const stagedIsDir =
-          fs.existsSync(stagedAssetPath) && fs.statSync(stagedAssetPath).isDirectory()
+        const stagedStat = await statOrNull(stagedAssetPath)
+        const stagedIsDir = Boolean(stagedStat?.isDirectory())
         if (stagedIsDir || isVisualVocabPluginResource(res.resource_id)) {
           const verified = await verifyStagedVisualVocabDir({
             dirPath: stagedAssetPath,
@@ -390,19 +392,31 @@ export class BundlePromoter {
         const stagedModuleDir = path.join(stagingDir, mod.moduleId)
 
         // 若 formalDir 存在，先原子重命名为 .old-<jobId> 备份
-        if (fs.existsSync(formalDir)) {
-          await retryWithBackoff(() => {
-            fs.renameSync(formalDir, oldBackupDir)
-          }, maxRetries)
+        if (await existsAsync(formalDir)) {
+          await retryWithBackoff(
+            () =>
+              ResourceIoDispatcher.run({
+                type: 'MOVE_DIR',
+                sourcePath: formalDir,
+                targetPath: oldBackupDir
+              }),
+            maxRetries
+          )
         }
 
         // 将暂存目录原子重命名就位 (若暂存目录不存在直接显式报警阻断)
-        if (!fs.existsSync(stagedModuleDir)) {
+        if (!(await existsAsync(stagedModuleDir))) {
           throw new BundlePromoterError('IO_FAILURE', `暂存区缺少模块物理目录: ${stagedModuleDir}`)
         }
-        await retryWithBackoff(() => {
-          fs.renameSync(stagedModuleDir, formalDir)
-        }, maxRetries)
+        await retryWithBackoff(
+          () =>
+            ResourceIoDispatcher.run({
+              type: 'MOVE_DIR',
+              sourcePath: stagedModuleDir,
+              targetPath: formalDir
+            }),
+          maxRetries
+        )
 
         promotedModuleIds.push(mod.moduleId)
       }
@@ -428,19 +442,27 @@ export class BundlePromoter {
 
         if (createdResourceIds.includes(res.resource_id)) {
           // 独占新创建资产：从暂存区移动到正式目录
-          if (fs.existsSync(stagedAssetPath)) {
-            fs.mkdirSync(path.dirname(formalAssetPath), { recursive: true })
+          if (await existsAsync(stagedAssetPath)) {
+            await mkdirp(path.dirname(formalAssetPath))
             // 先清后移防 Windows EEXIST，并于物化前后维护统一 `.ready.json` 标记
-            if (fs.existsSync(formalAssetPath)) {
+            if (await existsAsync(formalAssetPath)) {
               await invalidateReadyMarkers(formalAssetPath)
-              await retryWithBackoff(() => {
-                fs.rmSync(formalAssetPath, { recursive: true, force: true })
-              }, maxRetries)
+              await retryWithBackoff(
+                () => ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: formalAssetPath }),
+                maxRetries
+              )
             }
-            await retryWithBackoff(() => {
-              fs.renameSync(stagedAssetPath, formalAssetPath)
-            }, maxRetries)
-            if (fs.existsSync(formalAssetPath) && fs.statSync(formalAssetPath).isDirectory()) {
+            await retryWithBackoff(
+              () =>
+                ResourceIoDispatcher.run({
+                  type: 'MOVE_DIR',
+                  sourcePath: stagedAssetPath,
+                  targetPath: formalAssetPath
+                }),
+              maxRetries
+            )
+            const formalStat = await statOrNull(formalAssetPath)
+            if (formalStat?.isDirectory()) {
               const verified = preVerifiedVisualMap.get(res.resource_id)
               if (!verified || !verified.isVisual) {
                 await writePluginReadyMarkerWithVisualVocab(formalAssetPath, {
@@ -583,8 +605,8 @@ export class BundlePromoter {
       for (const mod of modulesToPhysicallyPromote) {
         const oldBackupDir = path.join(sharedModulesDir, `${mod.moduleId}.old-${jobId}`)
         try {
-          if (fs.existsSync(oldBackupDir)) {
-            fs.rmSync(oldBackupDir, { recursive: true, force: true })
+          if (await existsAsync(oldBackupDir)) {
+            await ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: oldBackupDir })
           }
         } catch (cleanErr) {
           logger.warn(
@@ -648,24 +670,32 @@ export class BundlePromoter {
       const oldBackupDir = path.join(sharedModulesDir, `${mod.moduleId}.old-${jobId}`)
 
       try {
-        if (fs.existsSync(oldBackupDir)) {
+        if (await existsAsync(oldBackupDir)) {
           // 只要存在旧备份目录，无论 formalDir 当前是否存在，均须先清 formalDir 再还原 oldBackupDir
-          if (fs.existsSync(formalDir)) {
+          if (await existsAsync(formalDir)) {
             // 步骤 1：先强制删除未完成的新正式目录 (彻底杜绝 Windows 目标目录已存在导致 EEXIST/EPERM 瘫痪)
-            await retryWithBackoff(() => {
-              fs.rmSync(formalDir, { recursive: true, force: true })
-            }, maxRetries)
+            await retryWithBackoff(
+              () => ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: formalDir }),
+              maxRetries
+            )
           }
 
           // 步骤 2：再原子重命名还原 .old 备份目录
-          await retryWithBackoff(() => {
-            fs.renameSync(oldBackupDir, formalDir)
-          }, maxRetries)
-        } else if (fs.existsSync(formalDir)) {
+          await retryWithBackoff(
+            () =>
+              ResourceIoDispatcher.run({
+                type: 'MOVE_DIR',
+                sourcePath: oldBackupDir,
+                targetPath: formalDir
+              }),
+            maxRetries
+          )
+        } else if (await existsAsync(formalDir)) {
           // 全新模块导入中途失败（无 old 备份）：直接强制删除新生成的正式目录
-          await retryWithBackoff(() => {
-            fs.rmSync(formalDir, { recursive: true, force: true })
-          }, maxRetries)
+          await retryWithBackoff(
+            () => ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: formalDir }),
+            maxRetries
+          )
         }
       } catch (restoreErr) {
         logger.error(
@@ -707,10 +737,11 @@ export class BundlePromoter {
       }
 
       try {
-        if (fs.existsSync(formalAssetPath)) {
-          await retryWithBackoff(() => {
-            fs.rmSync(formalAssetPath, { recursive: true, force: true })
-          }, maxRetries)
+        if (await existsAsync(formalAssetPath)) {
+          await retryWithBackoff(
+            () => ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: formalAssetPath }),
+            maxRetries
+          )
         }
       } catch (rmResErr) {
         logger.warn(
@@ -745,10 +776,16 @@ export class BundlePromoter {
       `${moduleId}.uninstalled-${timestamp}`
     )
 
-    if (fs.existsSync(formalDir)) {
-      await retryWithBackoff(() => {
-        fs.renameSync(formalDir, retentionDir)
-      }, maxRetries)
+    if (await existsAsync(formalDir)) {
+      await retryWithBackoff(
+        () =>
+          ResourceIoDispatcher.run({
+            type: 'MOVE_DIR',
+            sourcePath: formalDir,
+            targetPath: retentionDir
+          }),
+        maxRetries
+      )
     }
 
     const stmt = db.prepare(`
@@ -775,13 +812,14 @@ export class BundlePromoter {
     const sharedDir = path.join(resolvedPluginsRoot, '_shared')
     const prefix = `${moduleId}.uninstalled-`
 
-    if (!fs.existsSync(sharedDir)) {
+    if (!(await existsAsync(sharedDir))) {
       throw new BundlePromoterError('RECOVERY_REQUIRED', `共享目录不存在: ${sharedDir}`)
     }
 
     // 扫描匹配最新的 .uninstalled-* 候选目录
-    const candidates = fs
-      .readdirSync(sharedDir)
+    const entries = await readdirTyped(sharedDir)
+    const candidates = entries
+      .map(e => e.name)
       .filter(name => name.startsWith(prefix))
       .sort((a, b) => {
         const timeA = parseInt(a.replace(prefix, ''), 10) || 0
@@ -800,15 +838,15 @@ export class BundlePromoter {
     const manifestPath = path.join(latestCandidateDir, 'manifest.json')
     const sigPath = path.join(latestCandidateDir, 'manifest.sig')
 
-    if (!fs.existsSync(manifestPath) || !fs.existsSync(sigPath)) {
+    if (!(await existsAsync(manifestPath)) || !(await existsAsync(sigPath))) {
       throw new BundlePromoterError(
         'RECOVERY_REQUIRED',
         `备份目录 ${candidates[0]} 缺少 manifest.json 或 manifest.sig，无法安全自愈恢复`
       )
     }
 
-    const rawManifest = fs.readFileSync(manifestPath)
-    const sigHex = fs.readFileSync(sigPath, 'utf-8').trim()
+    const rawManifest = await fs.promises.readFile(manifestPath)
+    const sigHex = (await fs.promises.readFile(sigPath, 'utf-8')).trim()
 
     // 权威 Ed25519 验签防篡改
     if (!verifyManifestSignature(rawManifest, sigHex, ROOT_ED25519_PK)) {
@@ -823,14 +861,21 @@ export class BundlePromoter {
     const formalDir = path.join(sharedDir, moduleId)
 
     // 若正式目录已存在残存，先清理再还原
-    if (fs.existsSync(formalDir)) {
-      await retryWithBackoff(() => {
-        fs.rmSync(formalDir, { recursive: true, force: true })
-      }, maxRetries)
+    if (await existsAsync(formalDir)) {
+      await retryWithBackoff(
+        () => ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: formalDir }),
+        maxRetries
+      )
     }
-    await retryWithBackoff(() => {
-      fs.renameSync(latestCandidateDir, formalDir)
-    }, maxRetries)
+    await retryWithBackoff(
+      () =>
+        ResourceIoDispatcher.run({
+          type: 'MOVE_DIR',
+          sourcePath: latestCandidateDir,
+          targetPath: formalDir
+        }),
+      maxRetries
+    )
 
     // 数据库事务恢复为 installed_inactive 并重新建立资源关联
     const nowMs = Date.now()

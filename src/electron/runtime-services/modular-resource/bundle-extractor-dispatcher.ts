@@ -12,12 +12,16 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { Worker } from 'worker_threads'
 import { logger, LogCategory } from '@firefly/shared'
+import { existsAsync } from '../../infra/fs'
 import {
   BundleExtractorError,
   type BundleExtractorWorkerOptions,
   type BundleExtractorResult,
   type ExtractorWorkerInMessage,
-  type ExtractorWorkerOutMessage
+  type ExtractorWorkerOutMessage,
+  type ResourceIoOp,
+  type ResourceIoOpResult,
+  inProcessExecuteResourceIoOp
 } from './workers/bundle-extractor-worker'
 
 export interface DispatchOptions {
@@ -243,5 +247,97 @@ export class BundleExtractorDispatcher {
         options: workerOptions
       } satisfies ExtractorWorkerInMessage)
     })
+  }
+}
+
+/**
+ * 资源目录 I/O 下沉调度器（P2-3：复用既有 bundle-extractor-worker，禁新建第二个 worker 进程模型）
+ *
+ * 失败回退契约：Worker 脚本缺失、启动失败或执行崩溃时，显式记录 `logger.warn` 并递增 `fallbackCount`，
+ * 再回退至主进程异步实现 `inProcessExecuteResourceIoOp`（严禁静默降级）。
+ */
+export class ResourceIoDispatcher {
+  private static fallbackCount = 0
+  private static workerDispatchCount = 0
+
+  public static getStats(): { workerDispatchCount: number; fallbackCount: number } {
+    return {
+      workerDispatchCount: this.workerDispatchCount,
+      fallbackCount: this.fallbackCount
+    }
+  }
+
+  public static resetStatsForTesting(): void {
+    this.fallbackCount = 0
+    this.workerDispatchCount = 0
+  }
+
+  public static async run(
+    op: ResourceIoOp,
+    options?: { customWorkerScriptPath?: string; forceWorkerFailureForTest?: boolean }
+  ): Promise<ResourceIoOpResult> {
+    try {
+      if (options?.forceWorkerFailureForTest) {
+        throw new Error('simulated resource io worker failure')
+      }
+      const workerScript = resolveExtractorWorkerPath(options?.customWorkerScriptPath)
+      if (!(await existsAsync(workerScript))) {
+        throw new Error(`worker 脚本不存在: ${workerScript}`)
+      }
+      const isTsFile = workerScript.endsWith('.ts')
+      this.workerDispatchCount += 1
+
+      return await new Promise<ResourceIoOpResult>((resolve, reject) => {
+        let settled = false
+        let worker: Worker | null = null
+        const settle = (fn: () => void): void => {
+          if (settled) return
+          settled = true
+          if (worker) {
+            try {
+              void worker.terminate()
+            } catch {
+              // ignore
+            }
+            worker = null
+          }
+          fn()
+        }
+
+        try {
+          worker = new Worker(workerScript, {
+            execArgv: isTsFile ? ['--import', 'tsx'] : []
+          })
+        } catch (err) {
+          settle(() => reject(err))
+          return
+        }
+
+        worker.on('message', (msg: ExtractorWorkerOutMessage) => {
+          if (msg?.type === 'FS_OP_RESULT') {
+            settle(() => resolve(msg.result))
+          } else if (msg?.type === 'ERROR') {
+            settle(() =>
+              reject(new BundleExtractorError(msg.error.code, msg.error.message, msg.error.details))
+            )
+          }
+        })
+        worker.on('error', err => settle(() => reject(err)))
+        worker.on('exit', code => {
+          if (!settled && code !== 0) {
+            settle(() => reject(new Error(`bundle-extractor-worker 异常退出 (exitCode=${code})`)))
+          }
+        })
+        worker.postMessage({ type: 'FS_OP', op } satisfies ExtractorWorkerInMessage)
+      })
+    } catch (err) {
+      // 仅对 Worker 基础设施错误（缺失/启动失败/崩溃）回退；业务错误（如 ENOENT/EPERM）也显式记录并回退验证
+      this.fallbackCount += 1
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[ResourceIoDispatcher] Worker 执行 ${op.type} 失败，回退主进程异步 inProcessExecuteResourceIoOp (fallbackCount=${this.fallbackCount}): ${err instanceof Error ? err.message : String(err)}`
+      )
+      return await inProcessExecuteResourceIoOp(op)
+    }
   }
 }

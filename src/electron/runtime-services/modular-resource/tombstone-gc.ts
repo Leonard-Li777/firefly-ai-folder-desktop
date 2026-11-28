@@ -11,8 +11,10 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { app as electronApp } from 'electron'
-import { logger, LogCategory } from '@firefly/shared'
+import { getPlatform, logger, LogCategory } from '@firefly/shared'
+import { existsAsync } from '../../infra/fs'
 import { safeDeleteDirectory, cleanOrphanTombstones } from '../system/file-download-service'
+import { ResourceIoDispatcher } from './bundle-extractor-dispatcher'
 
 export interface PendingDeletionItem {
   path: string
@@ -105,9 +107,35 @@ export class TombstoneGCService {
 
   /**
    * 获取所有被句柄占用的待清理路径
+   * 按 INV-7：按父目录一次 readdir + Set 判定，仅对 basename 按平台大小写折叠，替代逐条 existsSync
    */
   public getPendingDeletions(): PendingDeletionItem[] {
-    return Array.from(this.pendingDeletions.values()).filter(item => fs.existsSync(item.path))
+    const items = Array.from(this.pendingDeletions.values())
+    if (items.length === 0) return []
+
+    const caseInsensitive = getPlatform() !== 'linux'
+    const dirEntriesCache = new Map<string, Set<string>>()
+
+    return items.filter(item => {
+      const parentDir = path.dirname(item.path)
+      const base = path.basename(item.path)
+      const foldedBase = caseInsensitive ? base.toLowerCase() : base
+
+      let nameSet = dirEntriesCache.get(parentDir)
+      if (!nameSet) {
+        nameSet = new Set<string>()
+        try {
+          const entries = fs.readdirSync(parentDir)
+          for (const entry of entries) {
+            nameSet.add(caseInsensitive ? entry.toLowerCase() : entry)
+          }
+        } catch {
+          // 父目录不存在或不可读，返回空集合
+        }
+        dirEntriesCache.set(parentDir, nameSet)
+      }
+      return nameSet.has(foldedBase)
+    })
   }
 
   /**
@@ -148,7 +176,7 @@ export class TombstoneGCService {
       deleteDirectoryFn?: (p: string) => Promise<boolean>
     }
   ): Promise<boolean> {
-    if (!fs.existsSync(dirPath)) {
+    if (!(await existsAsync(dirPath))) {
       this.clearPendingDeletion(dirPath)
       return true
     }
@@ -186,20 +214,20 @@ export class TombstoneGCService {
 
     // 1. 扫描清理所有物理孤儿目录
     for (const d of baseDirs) {
-      if (fs.existsSync(d)) {
+      if (await existsAsync(d)) {
         totalCleaned += await cleanOrphanTombstones(d)
       }
     }
 
     // 2. 重试清理已登记的 pendingDeletions 列表
     for (const [pathStr] of Array.from(this.pendingDeletions.entries())) {
-      if (!fs.existsSync(pathStr)) {
+      if (!(await existsAsync(pathStr))) {
         this.clearPendingDeletion(pathStr)
         totalCleaned++
         continue
       }
       try {
-        fs.rmSync(pathStr, { recursive: true, force: true })
+        await ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: pathStr })
         this.clearPendingDeletion(pathStr)
         totalCleaned++
         logger.info(LogCategory.SYSTEM, `[TombstoneGC] 启动期成功清空占用目录: ${pathStr}`)

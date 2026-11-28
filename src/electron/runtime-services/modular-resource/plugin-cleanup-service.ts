@@ -11,6 +11,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { logger, LogCategory, readCurrentJsonSync } from '@firefly/shared'
+import { existsAsync, writeFileAtomic } from '../../infra/fs'
+import { ResourceIoDispatcher } from './bundle-extractor-dispatcher'
 
 export interface CleanupResult {
   removedDirs: string[]
@@ -34,7 +36,7 @@ export class PluginCleanupService {
       pendingDeletions: []
     }
 
-    if (!sharedDir || !fs.existsSync(sharedDir)) {
+    if (!sharedDir || !(await existsAsync(sharedDir))) {
       return result
     }
 
@@ -126,7 +128,7 @@ export class PluginCleanupService {
     pendingDeleteFile: string,
     result: CleanupResult
   ): Promise<void> {
-    if (!fs.existsSync(pendingDeleteFile)) return
+    if (!(await existsAsync(pendingDeleteFile))) return
 
     let pendingList: string[] = []
     try {
@@ -139,11 +141,11 @@ export class PluginCleanupService {
 
     const stillPending: string[] = []
     for (const targetPath of pendingList) {
-      if (!fs.existsSync(targetPath)) continue
+      if (!(await existsAsync(targetPath))) continue
       try {
         const st = await fs.promises.stat(targetPath)
         if (st.isDirectory()) {
-          await fs.promises.rm(targetPath, { recursive: true, force: true })
+          await ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath })
           result.removedDirs.push(path.basename(targetPath))
         } else {
           await fs.promises.rm(targetPath, { force: true })
@@ -157,11 +159,9 @@ export class PluginCleanupService {
 
     try {
       if (stillPending.length > 0) {
-        await fs.promises.writeFile(
-          pendingDeleteFile,
-          JSON.stringify(stillPending, null, 2),
-          'utf-8'
-        )
+        await writeFileAtomic(pendingDeleteFile, JSON.stringify(stillPending, null, 2), {
+          encoding: 'utf8'
+        })
       } else {
         await fs.promises.rm(pendingDeleteFile, { force: true })
       }
@@ -177,7 +177,7 @@ export class PluginCleanupService {
   ): Promise<void> {
     let pendingList: string[] = []
     try {
-      if (fs.existsSync(pendingDeleteFile)) {
+      if (await existsAsync(pendingDeleteFile)) {
         const raw = await fs.promises.readFile(pendingDeleteFile, 'utf-8')
         pendingList = JSON.parse(raw)
         if (!Array.isArray(pendingList)) pendingList = []
@@ -191,7 +191,9 @@ export class PluginCleanupService {
     }
 
     try {
-      await fs.promises.writeFile(pendingDeleteFile, JSON.stringify(pendingList, null, 2), 'utf-8')
+      await writeFileAtomic(pendingDeleteFile, JSON.stringify(pendingList, null, 2), {
+        encoding: 'utf8'
+      })
     } catch {}
   }
 }

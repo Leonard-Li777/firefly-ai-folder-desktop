@@ -18,6 +18,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Worker } from 'worker_threads'
+import { existsAsync, writeFileAtomic } from '../../infra/fs'
 import { logger, LogCategory } from '@firefly/shared'
 import type { OfflinePackageDao, OfflinePackageJobRecord } from './offline-package-dao'
 import type { BackgroundVerificationLockState } from './offline-bundle-exporter'
@@ -204,7 +205,7 @@ export class BackgroundVerificationQueue {
     const nowMs = Date.now()
 
     // 若磁盘文件根本不存在，确定性失败置为 FAILED
-    if (!fs.existsSync(ffpPath)) {
+    if (!(await existsAsync(ffpPath))) {
       logger.warn(LogCategory.SYSTEM, `[BackgroundVerificationQueue] 物理包文件不存在: ${ffpPath}`)
       this.dao.updateJobStatus(job.job_id, 'FAILED', { nowMs })
       return
@@ -221,7 +222,7 @@ export class BackgroundVerificationQueue {
       try {
         const res = await logic.verify(workerOptions)
         // 校验通过：覆写旁路 <targetPath>.sha256
-        this.writeBypassSha256(ffpPath, res.computedFileSha256)
+        await this.writeBypassSha256(ffpPath, res.computedFileSha256)
         this.dao.resetWorkerCrash(job.job_id, nowMs)
         this.dao.updateJobStatus(job.job_id, 'FINISHED', { nowMs })
       } catch (err: unknown) {
@@ -234,7 +235,7 @@ export class BackgroundVerificationQueue {
           this.dao.resetWorkerCrash(job.job_id, nowMs)
         } else {
           // 确定性损坏：置为 FAILED，移入 Tombstone 隔离
-          this.moveCorruptedToTombstone(ffpPath)
+          await this.moveCorruptedToTombstone(ffpPath)
           this.dao.updateJobStatus(job.job_id, 'FAILED', { nowMs })
         }
       }
@@ -257,7 +258,7 @@ export class BackgroundVerificationQueue {
         if (msg.type === 'DONE') {
           isFinished = true
           // 1. 现场重新覆写旁路 <targetPath>.sha256 文本文件
-          this.writeBypassSha256(ffpPath, msg.result.computedFileSha256)
+          void this.writeBypassSha256(ffpPath, msg.result.computedFileSha256)
           // 2. 重置连续崩溃计数
           this.dao.resetWorkerCrash(job.job_id, Date.now())
           // 3. 更新为 FINISHED 终态
@@ -272,7 +273,7 @@ export class BackgroundVerificationQueue {
             this.dao.resetWorkerCrash(job.job_id, Date.now())
           } else {
             // 确定性损坏：移入 Tombstone，更新为 FAILED
-            this.moveCorruptedToTombstone(ffpPath)
+            void this.moveCorruptedToTombstone(ffpPath)
             this.dao.updateJobStatus(job.job_id, 'FAILED', { nowMs: Date.now() })
           }
         }
@@ -316,10 +317,10 @@ export class BackgroundVerificationQueue {
   /**
    * 旁路覆盖写入 <targetPath>.sha256 (1ms 文本写入，绝不因旁路文件不一致误删有效 .ffp)
    */
-  private writeBypassSha256(ffpPath: string, sha256Hex: string): void {
+  private async writeBypassSha256(ffpPath: string, sha256Hex: string): Promise<void> {
     const bypassPath = `${ffpPath}.sha256`
     try {
-      fs.writeFileSync(bypassPath, sha256Hex, 'utf-8')
+      await writeFileAtomic(bypassPath, sha256Hex, { fsync: false, encoding: 'utf8' })
     } catch (err) {
       logger.warn(
         LogCategory.SYSTEM,
@@ -332,13 +333,13 @@ export class BackgroundVerificationQueue {
   /**
    * 确定性损坏文件的 Tombstone 隔离
    */
-  private moveCorruptedToTombstone(ffpPath: string): void {
+  private async moveCorruptedToTombstone(ffpPath: string): Promise<void> {
     try {
-      if (fs.existsSync(ffpPath)) {
+      if (await existsAsync(ffpPath)) {
         const dir = path.dirname(ffpPath)
         const base = path.basename(ffpPath)
         const tombstonePath = path.join(dir, `${base}.corrupted-${Date.now()}`)
-        fs.renameSync(ffpPath, tombstonePath)
+        await fs.promises.rename(ffpPath, tombstonePath)
       }
     } catch (err) {
       logger.warn(

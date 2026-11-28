@@ -99,17 +99,33 @@ export interface BundleExtractorResult {
 }
 
 /**
+ * 资源目录搬运/复制/回收/体积统计下沉操作契约（P2-3 扩展 bundle-extractor-worker）
+ */
+export type ResourceIoOp =
+  | { type: 'REMOVE_DIR'; targetPath: string }
+  | { type: 'MOVE_DIR'; sourcePath: string; targetPath: string; overwrite?: boolean }
+  | { type: 'COPY_DIR'; sourcePath: string; targetPath: string }
+  | { type: 'COMPUTE_PATH_BYTES'; targetPath: string }
+
+export interface ResourceIoOpResult {
+  ok: true
+  bytes?: number
+}
+
+/**
  * 消息通信协议定义
  */
 export type ExtractorWorkerInMessage =
   | { type: 'START'; options: BundleExtractorWorkerOptions }
   | { type: 'ABORT' }
+  | { type: 'FS_OP'; op: ResourceIoOp }
 
 export type ExtractorWorkerOutMessage =
   | { type: 'PROGRESS'; processedBytes: number; totalBytes: number; currentEntry?: string }
   | { type: 'RELEASED' }
   | { type: 'RELEASE_TIMEOUT' }
   | { type: 'SUCCESS'; result: BundleExtractorResult }
+  | { type: 'FS_OP_RESULT'; result: ResourceIoOpResult }
   | { type: 'ERROR'; error: { code: BundleExtractorErrorCode; message: string; details?: string } }
 
 /**
@@ -677,12 +693,95 @@ export async function runBundleExtractorRoutine(
   })
 }
 
+async function computePathTotalBytesAsync(targetPath: string): Promise<number> {
+  const st = await fs.promises.lstat(targetPath)
+  if (!st.isDirectory()) {
+    return st.size
+  }
+  let total = 0
+  const stack: string[] = [targetPath]
+  while (stack.length > 0) {
+    const cur = stack.pop()!
+    const entries = await fs.promises.readdir(cur, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.isSymbolicLink()) continue
+      const full = path.join(cur, entry.name)
+      const itemStat = await fs.promises.lstat(full)
+      if (itemStat.isSymbolicLink()) continue
+      if (itemStat.isDirectory()) {
+        stack.push(full)
+      } else {
+        total += itemStat.size
+      }
+    }
+  }
+  return total
+}
+
+/**
+ * 主进程/Worker 共用的资源目录异步操作执行器（遵循命名防腐 `inProcess*`）
+ */
+export async function inProcessExecuteResourceIoOp(op: ResourceIoOp): Promise<ResourceIoOpResult> {
+  switch (op.type) {
+    case 'REMOVE_DIR': {
+      await fs.promises.rm(op.targetPath, { recursive: true, force: true })
+      return { ok: true }
+    }
+    case 'MOVE_DIR': {
+      await fs.promises.mkdir(path.dirname(op.targetPath), { recursive: true })
+      if (op.overwrite) {
+        await fs.promises.rm(op.targetPath, { recursive: true, force: true })
+      }
+      try {
+        await fs.promises.rename(op.sourcePath, op.targetPath)
+      } catch (err: any) {
+        if (err?.code === 'EXDEV') {
+          await fs.promises.cp(op.sourcePath, op.targetPath, { recursive: true })
+          await fs.promises.rm(op.sourcePath, { recursive: true, force: true })
+        } else {
+          throw err
+        }
+      }
+      return { ok: true }
+    }
+    case 'COPY_DIR': {
+      await fs.promises.mkdir(path.dirname(op.targetPath), { recursive: true })
+      await fs.promises.cp(op.sourcePath, op.targetPath, { recursive: true })
+      return { ok: true }
+    }
+    case 'COMPUTE_PATH_BYTES': {
+      const bytes = await computePathTotalBytesAsync(op.targetPath)
+      return { ok: true, bytes }
+    }
+  }
+}
+
 /**
  * Worker 线程初始化监听器
  */
 export function initWorkerListener(port: MessagePort): void {
   port.on('message', async (msg: ExtractorWorkerInMessage) => {
     if (!msg || typeof msg !== 'object') return
+
+    if (msg.type === 'FS_OP') {
+      try {
+        const result = await inProcessExecuteResourceIoOp(msg.op)
+        port.postMessage({
+          type: 'FS_OP_RESULT',
+          result
+        } satisfies ExtractorWorkerOutMessage)
+      } catch (err) {
+        port.postMessage({
+          type: 'ERROR',
+          error: {
+            code: 'IO_FAILURE',
+            message: (err as Error)?.message ?? '资源目录操作失败',
+            details: (err as Error)?.stack
+          }
+        } satisfies ExtractorWorkerOutMessage)
+      }
+      return
+    }
 
     if (msg.type === 'START') {
       try {

@@ -40,6 +40,8 @@ import {
   safeExtractZip
 } from '../system/file-download-service'
 import { computeFileStreamSha256, computeResourceDirSha256 } from './deterministic-hasher'
+import { existsAsync, mkdirp, statOrNull } from '../../infra/fs'
+import { ResourceIoDispatcher } from './bundle-extractor-dispatcher'
 import type { BundleManifest } from './offline-bundle-exporter'
 
 /**
@@ -55,25 +57,6 @@ MCowBQYDK2VwAyEAQ+anExlPLilrSWg/STA/1xXijaBj5DuoPS63yYc5st4=
 export const TEST_ED25519_SK = `-----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIKGwIbpF/QyjrXzc8FBbw/oB5szFDqGQVkLLSFbqB2Cc
 -----END PRIVATE KEY-----`
-
-function computePathTotalBytesSync(targetPath: string): number {
-  const st = fs.lstatSync(targetPath)
-  if (st.isFile()) return st.size
-  if (!st.isDirectory()) return 0
-  let total = 0
-  for (const entry of fs.readdirSync(targetPath, { withFileTypes: true })) {
-    if (entry.name.startsWith('.')) continue
-    const full = path.join(targetPath, entry.name)
-    const itemStat = fs.lstatSync(full)
-    if (itemStat.isSymbolicLink()) continue
-    if (itemStat.isFile()) {
-      total += itemStat.size
-    } else if (itemStat.isDirectory()) {
-      total += computePathTotalBytesSync(full)
-    }
-  }
-  return total
-}
 
 /**
  * 单文件解压配额限制 (2GB)
@@ -664,9 +647,7 @@ export class OfflinePackageService {
 
     const targetPhysicalPath = service.resolvePhysicalPath(res.target_local_path)
     const targetParentDir = path.dirname(targetPhysicalPath)
-    if (!fs.existsSync(targetParentDir)) {
-      fs.mkdirSync(targetParentDir, { recursive: true })
-    }
+    await mkdirp(targetParentDir)
 
     const lowerSource = extractedResPath.toLowerCase()
     const lowerTarget = targetPhysicalPath.toLowerCase()
@@ -686,8 +667,12 @@ export class OfflinePackageService {
       try {
         await renameDirWithRetry(extractedResPath, preparedPath)
       } catch {
-        fs.cpSync(extractedResPath, preparedPath, { recursive: true })
-        fs.rmSync(extractedResPath, { recursive: true, force: true })
+        await ResourceIoDispatcher.run({
+          type: 'MOVE_DIR',
+          sourcePath: extractedResPath,
+          targetPath: preparedPath,
+          overwrite: true
+        })
       }
     }
 
@@ -1058,7 +1043,7 @@ export class OfflinePackageService {
     )
 
     try {
-      fs.mkdirSync(stagingDir, { recursive: true })
+      await mkdirp(stagingDir)
 
       // 阶段 2：流式解压至临时暂存目录
       await this.extractArchiveStreamingToStaging(archivePath, stagingDir)
@@ -1069,16 +1054,30 @@ export class OfflinePackageService {
       let autoActivatedSlotModuleId: string | null = null
       let primaryBaseEngineId: string | null = null
 
+      const precomputedResourceBytes = new Map<string, number>()
+      for (const { meta } of verifiedModules) {
+        for (const res of meta.resources) {
+          if (precomputedResourceBytes.has(res.resource_id)) continue
+          const absPath = service.resolvePhysicalPath(res.target_local_path)
+          if (await existsAsync(absPath)) {
+            const sizeRes = await ResourceIoDispatcher.run({
+              type: 'COMPUTE_PATH_BYTES',
+              targetPath: absPath
+            })
+            precomputedResourceBytes.set(res.resource_id, sizeRes.bytes ?? res.size ?? 0)
+          } else {
+            precomputedResourceBytes.set(res.resource_id, res.size ?? 0)
+          }
+        }
+      }
+
       const tx = db.transaction(() => {
         const upsertedResources = new Set<string>()
         for (const { meta } of verifiedModules) {
           for (const res of meta.resources) {
             if (upsertedResources.has(res.resource_id)) continue
             upsertedResources.add(res.resource_id)
-            const absPath = service.resolvePhysicalPath(res.target_local_path)
-            const bytes = fs.existsSync(absPath)
-              ? computePathTotalBytesSync(absPath)
-              : (res.size ?? 0)
+            const bytes = precomputedResourceBytes.get(res.resource_id) ?? res.size ?? 0
             dao.resources.createOrGetTaskSync({
               resource_id: res.resource_id,
               asset_name: res.asset_name,
@@ -1187,9 +1186,9 @@ export class OfflinePackageService {
       )
       return service.getModule(returnModuleId)!
     } finally {
-      if (fs.existsSync(stagingDir)) {
+      if (await existsAsync(stagingDir)) {
         try {
-          fs.rmSync(stagingDir, { recursive: true, force: true })
+          await ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: stagingDir })
         } catch {}
       }
     }
@@ -1316,13 +1315,24 @@ export class OfflinePackageService {
       const dao = service.getDao()
       let autoActivatedSlotModuleId: string | null = null
 
+      const precomputedSingleBytes = new Map<string, number>()
+      for (const res of manifestMeta.resources) {
+        const absPath = service.resolvePhysicalPath(res.target_local_path)
+        if (await existsAsync(absPath)) {
+          const sizeRes = await ResourceIoDispatcher.run({
+            type: 'COMPUTE_PATH_BYTES',
+            targetPath: absPath
+          })
+          precomputedSingleBytes.set(res.resource_id, sizeRes.bytes ?? res.size ?? 0)
+        } else {
+          precomputedSingleBytes.set(res.resource_id, res.size ?? 0)
+        }
+      }
+
       const tx = db.transaction(() => {
         // 1. 写入/更新 resource_downloads
         for (const res of manifestMeta.resources) {
-          const absPath = service.resolvePhysicalPath(res.target_local_path)
-          const bytes = fs.existsSync(absPath)
-            ? computePathTotalBytesSync(absPath)
-            : (res.size ?? 0)
+          const bytes = precomputedSingleBytes.get(res.resource_id) ?? res.size ?? 0
           dao.resources.createOrGetTaskSync({
             resource_id: res.resource_id,
             asset_name: res.asset_name,
@@ -1400,9 +1410,9 @@ export class OfflinePackageService {
       return service.getModule(moduleId)!
     } finally {
       // 清理临时 staging 目录
-      if (fs.existsSync(stagingDir)) {
+      if (await existsAsync(stagingDir)) {
         try {
-          fs.rmSync(stagingDir, { recursive: true, force: true })
+          await ResourceIoDispatcher.run({ type: 'REMOVE_DIR', targetPath: stagingDir })
         } catch {}
       }
     }
