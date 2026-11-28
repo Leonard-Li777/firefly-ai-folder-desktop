@@ -63,10 +63,14 @@ const organizeSessionVectorCache = new Map<number, number[]>()
  * 投影必须与烘焙脚本 `bake-preset-organize-assets.py::generate_semantic_vector` 逐元素一致
  * （由 parity 测试门禁），否则与 `structures_*.bin` 不在同一空间，余弦无意义。
  */
-function buildAggregateCanonicalVector(
+function yieldToEventLoop(): Promise<void> {
+  return new Promise(resolve => setImmediate(resolve))
+}
+
+async function buildAggregateCanonicalVector(
   fileIds: number[],
   dim: number
-): number[] | undefined {
+): Promise<number[] | undefined> {
   const db = databaseService.db
   if (!db || !fileIds || fileIds.length === 0) return undefined
 
@@ -102,6 +106,9 @@ function buildAggregateCanonicalVector(
         for (let d = 0; d < dim; d++) agg[d] += v[d]
         used++
       }
+      if (i + chunkSize < fileIds.length) {
+        await yieldToEventLoop()
+      }
     }
 
     if (used === 0) return undefined
@@ -128,7 +135,9 @@ function buildAggregateCanonicalVector(
  * 供「媒体类型占比」通道使用：运行期只负责统计扩展名分布，扩展名到受控媒体类型码的映射
  * 完全由烧录期物化（`structures.meta.json::media_type_code_by_extension`），此处禁止硬编码。
  */
-function buildExtensionCounts(fileIds: number[]): Record<string, number> | undefined {
+async function buildExtensionCounts(
+  fileIds: number[]
+): Promise<Record<string, number> | undefined> {
   const db = databaseService.db
   if (!db || !fileIds || fileIds.length === 0) return undefined
 
@@ -157,6 +166,9 @@ function buildExtensionCounts(fileIds: number[]): Record<string, number> | undef
         if (!ext) continue
         counts[ext] = (counts[ext] || 0) + 1
         total++
+      }
+      if (i + chunkSize < fileIds.length) {
+        await yieldToEventLoop()
       }
     }
 
@@ -1079,6 +1091,9 @@ export function registerVirtualDirectoryIPCHandlers() {
                   weight: typeof row.weight === 'number' ? row.weight : 1.0
                 })
               }
+              if (i + chunkSize < request.fileIds.length) {
+                await yieldToEventLoop()
+              }
             }
             if (cacheKey) {
               if (fileTagsSessionCache.size >= 10) {
@@ -1098,11 +1113,11 @@ export function registerVirtualDirectoryIPCHandlers() {
       // 经与烘焙脚本严格同算法的确定性语义投影生成聚合向量。
       // 维度跟当前 Profile 严格一致（classic_light/bekko -> 384，gemma_unified -> 512），
       // 两套引擎各有独立的烘焙向量矩阵，禁止跨维度复用。
-      const fileVector = buildAggregateCanonicalVector(
+      const fileVector = await buildAggregateCanonicalVector(
         request.fileIds,
         activeProfile === 'gemma_512' ? 512 : 384
       )
-      const extensionCounts = buildExtensionCounts(request.fileIds)
+      const extensionCounts = await buildExtensionCounts(request.fileIds)
       return await matchService.matchPerspectivesAndStructures({
         ...request,
         aiProfile: activeProfile,
@@ -1267,6 +1282,9 @@ export function registerVirtualDirectoryIPCHandlers() {
                     }
                   }
                 }
+              }
+              if (i + CHUNK_SIZE < fileIds.length) {
+                await yieldToEventLoop()
               }
             }
           }
