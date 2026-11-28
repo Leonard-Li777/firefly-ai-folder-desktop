@@ -1193,12 +1193,47 @@ export default defineConfig(({ command, mode }) => {
       },
       build: {
         outDir: `${outDirName}/renderer`,
+        // R-W5A：渲染段 esbuild 压缩 + 目标与 CSS 目标显式对齐 Electron 内置 Chromium，
+        // 避免向低版本降级产出冗余兼容代码；sourcemap 关闭以压缩首屏解析体积。
+        target: 'chrome120',
+        cssTarget: 'chrome120',
+        minify: 'esbuild',
+        cssMinify: true,
+        sourcemap: false,
+        reportCompressedSize: false,
+        chunkSizeWarningLimit: 1500,
         rollupOptions: {
           input: {
             index: 'index.html',
             preview: 'preview.html'
           },
-          external: ['electron']
+          external: ['electron'],
+          output: {
+            // 静态分包：仅对稳定的框架级依赖做显式分组（长缓存 + 首屏可并行下载）；
+            // 其余模块（含重型预览器与 specialist renderer）继续沿用 Rollup 默认策略，
+            // 由动态 import 天然形成按需 chunk，严禁把它们并入常驻首屏 vendor。
+            manualChunks: (id: string) => {
+              if (!id.includes('node_modules')) return undefined
+              if (
+                /[\\/]node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/.test(
+                  id
+                )
+              ) {
+                return 'react-vendor'
+              }
+              if (/[\\/]node_modules[\\/](zustand|use-sync-external-store)[\\/]/.test(id)) {
+                return 'state-vendor'
+              }
+              if (
+                /[\\/]node_modules[\\/](clsx|tailwind-merge|class-variance-authority|lucide-react)[\\/]/.test(
+                  id
+                )
+              ) {
+                return 'ui-vendor'
+              }
+              return undefined
+            }
+          }
         }
       }
     }

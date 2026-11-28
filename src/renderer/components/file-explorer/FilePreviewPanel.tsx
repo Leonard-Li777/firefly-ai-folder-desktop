@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { t } from '@app/languages'
 import { EmptyState } from '../common/EmptyState'
 import { PreviewToolbar } from './PreviewToolbar'
-import { PreviewContent } from './PreviewContent'
+import { PreviewContent } from './PreviewContentLazy'
 import { usePreviewContent } from './hooks/usePreviewContent'
 import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
 import { useIsPrivateFile } from './hooks/useIsPrivateFile'
@@ -75,19 +75,16 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
 
   const currentTime = isControlled
     ? externalCurrentTime
-    : (previewFile?.currentTime as number | undefined) ??
-      ((previewFile?.matchedChunk as any)?.startSec as number | undefined)
+    : ((previewFile?.currentTime as number | undefined) ??
+      ((previewFile?.matchedChunk as any)?.startSec as number | undefined))
 
   const highlightRange: [number, number] | undefined = isControlled
     ? externalHighlightRange
-    : (previewFile?.highlightRange as [number, number] | undefined) ??
+    : ((previewFile?.highlightRange as [number, number] | undefined) ??
       ((previewFile?.matchedChunk as any)?.startSec !== undefined &&
       (previewFile?.matchedChunk as any)?.endSec !== undefined
-        ? [
-            (previewFile?.matchedChunk as any).startSec,
-            (previewFile?.matchedChunk as any).endSec
-          ]
-        : undefined)
+        ? [(previewFile?.matchedChunk as any).startSec, (previewFile?.matchedChunk as any).endSec]
+        : undefined))
 
   // 使用公共的预览内容 hook
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =

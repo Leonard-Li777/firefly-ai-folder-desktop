@@ -2,7 +2,7 @@ import React, { useEffect, useCallback, useRef } from 'react'
 import { t } from '@app/languages'
 import { usePreviewOverlayStore } from '../../stores/preview-overlay-store'
 import { PreviewToolbar } from './PreviewToolbar'
-import { PreviewContent } from './PreviewContent'
+import { PreviewContent } from './PreviewContentLazy'
 import { usePreviewContent } from './hooks/usePreviewContent'
 import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
 import { useIsPrivateFile } from './hooks/useIsPrivateFile'
@@ -32,7 +32,11 @@ export const PreviewOverlay: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
-    usePreviewContent({ filePath: effectiveFilePath, fileName: effectiveFileName, extension: effectiveExtension })
+    usePreviewContent({
+      filePath: effectiveFilePath,
+      fileName: effectiveFileName,
+      extension: effectiveExtension
+    })
 
   const { multimodalContent } = useFileMultimodalContent(effectiveFilePath)
   const isPrivate = useIsPrivateFile({ filePath: effectiveFilePath })
@@ -114,7 +118,6 @@ export const PreviewOverlay: React.FC = () => {
         pageId={activePageId}
         filePath={effectiveFilePath}
         fileName={effectiveFileName}
-
         showSwitch={showSwitch}
         showRawText={showRawText}
         onToggleRawText={setShowRawText}
@@ -126,7 +129,6 @@ export const PreviewOverlay: React.FC = () => {
       <div className="flex-1 relative h-full overflow-hidden">
         <PreviewContent
           filePath={effectiveFilePath}
-  
           fileName={effectiveFileName}
           extension={effectiveExtension}
           showRawText={showRawText}
