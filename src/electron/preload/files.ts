@@ -25,6 +25,11 @@ export const filesApi = {
       const subscription = (_event: any, result: any) => callback(result)
       ipcRenderer.on('license:unauthorized', subscription)
       return () => ipcRenderer.removeListener('license:unauthorized', subscription)
+    },
+    onStatusChanged: (callback: (result: any) => void) => {
+      const subscription = (_event: any, result: any) => callback(result)
+      ipcRenderer.on('license:status-changed', subscription)
+      return () => ipcRenderer.removeListener('license:status-changed', subscription)
     }
   },
 

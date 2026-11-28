@@ -11,7 +11,7 @@ import {
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { SystemIdentityService } from './system-identity-service'
-import { app, net } from 'electron'
+import { app, BrowserWindow, net } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'
 import crypto from 'node:crypto'
@@ -31,17 +31,25 @@ export { LicenseStatus }
 const IS_DEV = process.env.NODE_ENV === 'development'
 const GRACE_PERIOD_MS = IS_DEV ? 3 * 60 * 1000 : 3 * 24 * 60 * 60 * 1000
 
+export interface LicenseCheckResult {
+  status: LicenseStatus
+  expiry?: string
+  error?: string
+  type?: string
+  source?: 'offline_file' | 'local_fast' | 'online' | 'test'
+}
+
+const PROCESS_START_TIME = Date.now()
+
 export class LicenseService {
   private static instance: LicenseService
   private licenseFilePath: string
   private publicKey: string
   private isOnlineAuthorized = false // 内存中的在线授权状态
-  private cachedResult: {
-    status: LicenseStatus
-    expiry?: string
-    error?: string
-    type?: string
-  } | null = null // 缓存的授权状态
+  private cachedResult: LicenseCheckResult | null = null // 缓存的授权状态
+  private licenseConfirmed = false
+  private confirmListeners = new Set<() => void | Promise<void>>()
+  private inFlightOnlineCheck: Promise<LicenseCheckResult> | null = null
   private hmacKey: Buffer | null = null // HMAC 密钥，启动时派生一次
   private lastForceCheckTime = 0 // 上次强制检查的时间戳
 
@@ -190,23 +198,136 @@ export class LicenseService {
     return this.getIdentCode()
   }
 
+  public isLicenseConfirmed(): boolean {
+    return this.licenseConfirmed
+  }
+
+  public onLicenseConfirmed(listener: () => void | Promise<void>): () => void {
+    this.confirmListeners.add(listener)
+    return () => {
+      this.confirmListeners.delete(listener)
+    }
+  }
+
+  private updateConfirmedState(confirmed: boolean): void {
+    const prev = this.licenseConfirmed
+    this.licenseConfirmed = confirmed
+    if (!prev && confirmed) {
+      for (const listener of Array.from(this.confirmListeners)) {
+        try {
+          void Promise.resolve(listener()).catch(err => {
+            logger.warn(LogCategory.SYSTEM, '[License] onLicenseConfirmed 回调异常:', err)
+          })
+        } catch (err) {
+          logger.warn(LogCategory.SYSTEM, '[License] onLicenseConfirmed 同步调用异常:', err)
+        }
+      }
+    }
+  }
+
+  private broadcastStatusChanged(result: LicenseCheckResult): void {
+    try {
+      BrowserWindow.getAllWindows().forEach(win => {
+        if (!win.isDestroyed()) {
+          win.webContents.send('license:status-changed', result)
+          if (
+            result.status !== LicenseStatus.AUTHORIZED &&
+            result.status !== LicenseStatus.LOCAL_GRACE_PENDING
+          ) {
+            win.webContents.send('license:unauthorized', result)
+          }
+        }
+      })
+    } catch {
+      // 测试或退出阶段忽略窗口广播异常
+    }
+  }
+
+  /**
+   * 纯本地授权快速判定（ST-P0-3）：零网络请求。
+   * - 离线授权文件验签通过 → AUTHORIZED (source: 'offline_file', licenseConfirmed=true)
+   * - 3 天宽限期内 → LOCAL_GRACE_PENDING (source: 'local_fast', licenseConfirmed=false，非终态)
+   * - 首次未联网/超期/篡改 → UNAUTHORIZED / TIME_TAMPERED / EXPIRED
+   */
+  async checkLocalLicenseFast(): Promise<LicenseCheckResult> {
+    if (isTestEnvironment()) {
+      const res: LicenseCheckResult = { status: LicenseStatus.AUTHORIZED, source: 'test' }
+      this.cachedResult = res
+      this.updateConfirmedState(true)
+      return res
+    }
+
+    const offlineResult = await this.checkOfflineLicense()
+    if (offlineResult.status === LicenseStatus.AUTHORIZED) {
+      const res: LicenseCheckResult = { ...offlineResult, source: 'offline_file' }
+      this.cachedResult = res
+      this.updateConfirmedState(true)
+      return res
+    }
+
+    if (offlineResult.status === LicenseStatus.EXPIRED) {
+      const res: LicenseCheckResult = { ...offlineResult, source: 'local_fast' }
+      this.cachedResult = res
+      this.updateConfirmedState(false)
+      return res
+    }
+
+    try {
+      this.checkTimeIntegrity()
+    } catch (e) {
+      const res: LicenseCheckResult = {
+        status: LicenseStatus.TIME_TAMPERED,
+        error: e instanceof Error ? e.message : '检测到系统时间异常',
+        source: 'local_fast'
+      }
+      this.cachedResult = res
+      this.updateConfirmedState(false)
+      return res
+    }
+
+    const lastServerConnect =
+      ConfigOrchestrator.getInstance().getValue<number>('LAST_SERVER_CONNECT_TIME') || 0
+    if (lastServerConnect > 0 && this.checkServerConnectivityGrace()) {
+      const res: LicenseCheckResult = {
+        status: LicenseStatus.LOCAL_GRACE_PENDING,
+        source: 'local_fast'
+      }
+      this.cachedResult = res
+      this.updateConfirmedState(false)
+      return res
+    }
+
+    const res: LicenseCheckResult = { status: LicenseStatus.UNAUTHORIZED, source: 'local_fast' }
+    this.cachedResult = res
+    this.updateConfirmedState(false)
+    return res
+  }
+
   /**
    * 检查授权状态 (核心逻辑)
    */
-  async checkLicenseStatus(
-    force = false
-  ): Promise<{ status: LicenseStatus; expiry?: string; error?: string; type?: string }> {
-    // force 节流：5 秒内不重复强制检查，避免启动阶段短时间多次调用
-    if (force && this.cachedResult) {
+  async checkLicenseStatus(force = false): Promise<LicenseCheckResult> {
+    const isPendingOrLocalFast =
+      this.cachedResult?.status === LicenseStatus.LOCAL_GRACE_PENDING ||
+      this.cachedResult?.source === 'local_fast'
+
+    // force 节流：5 秒内不重复强制检查（但 LOCAL_GRACE_PENDING / local_fast 必须穿透节流，保证云端权威覆盖）
+    if (force && this.cachedResult && !isPendingOrLocalFast) {
       const now = Date.now()
       if (now - this.lastForceCheckTime < 5000) {
         return this.cachedResult
       }
       this.lastForceCheckTime = now
+    } else if (force && !isPendingOrLocalFast) {
+      this.lastForceCheckTime = Date.now()
     }
 
-    if (!force && this.cachedResult) {
+    if (!force && this.cachedResult && !isPendingOrLocalFast) {
       return this.cachedResult
+    }
+
+    if (this.inFlightOnlineCheck) {
+      return this.inFlightOnlineCheck
     }
 
     const machineId = SystemIdentityService.getInstance().getMachineId()
@@ -220,21 +341,16 @@ export class LicenseService {
       force
     })
 
-    const runCheck = async (): Promise<{
-      status: LicenseStatus
-      expiry?: string
-      error?: string
-      type?: string
-    }> => {
+    const runCheck = async (): Promise<LicenseCheckResult> => {
       if (isTestEnvironment()) {
-        return { status: LicenseStatus.AUTHORIZED }
+        return { status: LicenseStatus.AUTHORIZED, source: 'test' }
       }
 
       // 1. 优先检查离线授权文件 (最可靠，离线可用，企业版用户首选)
       const offlineResult = await this.checkOfflineLicense()
       if (offlineResult.status === LicenseStatus.AUTHORIZED) {
         logger.debug(LogCategory.SYSTEM, `[License] 离线授权校验成功`)
-        return offlineResult
+        return { ...offlineResult, source: 'offline_file' }
       }
 
       // 记录离线授权是否过期，以便后续回退或兜底
@@ -254,7 +370,7 @@ export class LicenseService {
         }
         // 更新服务器连通时间戳，确保 Grace 检测使用最新值
         this.updateTimeWithHmac('LAST_SERVER_CONNECT_TIME', Date.now())
-        return { status: LicenseStatus.AUTHORIZED, type: 'ONLINE' }
+        return { status: LicenseStatus.AUTHORIZED, type: 'ONLINE', source: 'online' }
       } else {
         logger.warn(LogCategory.SYSTEM, '[License] 在线连通性校验未通过，可能处于断网环境')
       }
@@ -263,10 +379,14 @@ export class LicenseService {
       // 如果 Supabase 不可达，检查是否触发 grace（3 天内有运行记录但未连接服务器）
       const gracePassed = this.checkServerConnectivityGrace()
       if (!gracePassed) {
-        logger.warn(LogCategory.SYSTEM, '[License] Grace 检查未通过，服务器长期不可达（离线超过 3 天）')
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[License] Grace 检查未通过，服务器长期不可达（离线超过 3 天）'
+        )
         return {
           status: LicenseStatus.UNAUTHORIZED,
-          error: '离线使用已超过 3 天，请联网刷新授权后继续使用'
+          error: '离线使用已超过 3 天，请联网刷新授权后继续使用',
+          source: 'online'
         }
       }
 
@@ -281,31 +401,44 @@ export class LicenseService {
         )
         return {
           status: LicenseStatus.TIME_TAMPERED,
-          error: e instanceof Error ? e.message : '检测到系统时间异常'
+          error: e instanceof Error ? e.message : '检测到系统时间异常',
+          source: 'online'
         }
       }
 
       // 5. 最终兜底：如果之前离线授权过期了，即便没有在线授权，也应该返回 EXPIRED 而不是 UNAUTHORIZED
       if (isOfflineExpired) {
-        return offlineResult
+        return { ...offlineResult, source: 'online' }
       }
 
       logger.debug(LogCategory.SYSTEM, '[License] 未找到有效授权')
-      return { status: LicenseStatus.UNAUTHORIZED }
+      return { status: LicenseStatus.UNAUTHORIZED, source: 'online' }
     }
 
-    const result = await runCheck()
-    this.cachedResult = result
-    return result
+    this.inFlightOnlineCheck = runCheck()
+      .then(result => {
+        const prevStatus = this.cachedResult?.status
+        this.cachedResult = result
+        this.updateConfirmedState(result.status === LicenseStatus.AUTHORIZED)
+        if (prevStatus !== result.status) {
+          this.broadcastStatusChanged(result)
+        }
+        return result
+      })
+      .finally(() => {
+        this.inFlightOnlineCheck = null
+      })
+
+    return this.inFlightOnlineCheck
   }
 
   /**
    * 检查互联网真实连通性 (避免假阳性)
    */
   private async checkRealConnectivity(): Promise<boolean> {
-    // 优化：优先使用 RegionDetectionService 的结果，避免重复探测
+    // 优化：优先使用本进程新鲜的 RegionDetectionService 结果，避免重复探测
     const regionResult = regionDetectionService.getLastResult()
-    if (regionResult) {
+    if (regionResult && (!regionResult.timestamp || regionResult.timestamp >= PROCESS_START_TIME)) {
       const isActuallyOnline = regionResult.google || regionResult.baidu
       logger.debug(
         LogCategory.SYSTEM,

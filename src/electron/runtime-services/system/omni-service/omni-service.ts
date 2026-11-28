@@ -31,7 +31,8 @@ import {
   ConnectedTargetIdentity,
   readWithWatchdog,
   sleepCancellable,
-  SseWatchdogTimeoutError
+  SseWatchdogTimeoutError,
+  isTestEnvironment
 } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
 import { resolveAnalysisTimeoutBudget } from '../analysis-timeout-policy'
@@ -2834,6 +2835,17 @@ export class OmniService {
       // 托管 spawn 前预留严格递增代际号并冻结独立 LaunchContext（启动期崩溃仍精准归因当前代）
       const launchGeneration = ++this.currentGeneration
       const spawnedWithDml = !shouldDisableDml
+
+      // J-06 / B5：spawn 前必须等待 reaperDone 门闸落地，并复检退出态
+      const { gate, isStartupGatesInitialized } = await import('../../../main/startup-gates')
+      if (!isTestEnvironment() || isStartupGatesInitialized()) {
+        await gate('reaperDone')
+      }
+      const { processReaper: omniReaperCheck } = await import('../../../main/process-reaper')
+      if (omniReaperCheck.isQuittingState() || (this as any).isStopping) {
+        logger.info(LogCategory.SYSTEM, '[OmniService] 进程正在退出，取消拉起 firefly-omni')
+        return false
+      }
 
       const child = spawn(exePath, spawnArgs, {
         cwd: binDir,

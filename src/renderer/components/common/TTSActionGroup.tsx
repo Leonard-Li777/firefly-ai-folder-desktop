@@ -74,27 +74,26 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     )
   }, [modules])
 
-  const {
-    playingTextId,
-    status,
-    currentSentenceIndex,
-    totalSentences,
-    currentSid,
-    currentVoiceId,
-    speed,
-    allVoices,
-    refreshVoices,
-    play,
-    pause,
-    resume,
-    setSid,
-    setVoiceId,
-    setSpeed,
-    locateAudio,
-    exportAudio,
-    bufferedDuration,
-    targetBufferDuration
-  } = useTTSAudioStore()
+  // R-30：整店订阅改稳定细粒度 selector，无关 TTS store 字段更新不再触发本组件重渲染
+  const playingTextId = useTTSAudioStore(s => s.playingTextId)
+  const status = useTTSAudioStore(s => s.status)
+  const currentSentenceIndex = useTTSAudioStore(s => s.currentSentenceIndex)
+  const totalSentences = useTTSAudioStore(s => s.totalSentences)
+  const currentSid = useTTSAudioStore(s => s.currentSid)
+  const currentVoiceId = useTTSAudioStore(s => s.currentVoiceId)
+  const speed = useTTSAudioStore(s => s.speed)
+  const allVoices = useTTSAudioStore(s => s.allVoices)
+  const refreshVoices = useTTSAudioStore(s => s.refreshVoices)
+  const play = useTTSAudioStore(s => s.play)
+  const pause = useTTSAudioStore(s => s.pause)
+  const resume = useTTSAudioStore(s => s.resume)
+  const setSid = useTTSAudioStore(s => s.setSid)
+  const setVoiceId = useTTSAudioStore(s => s.setVoiceId)
+  const setSpeed = useTTSAudioStore(s => s.setSpeed)
+  const locateAudio = useTTSAudioStore(s => s.locateAudio)
+  const exportAudio = useTTSAudioStore(s => s.exportAudio)
+  const bufferedDuration = useTTSAudioStore(s => s.bufferedDuration)
+  const targetBufferDuration = useTTSAudioStore(s => s.targetBufferDuration)
 
   // 仅在已激活 TTS 插件时拉取最新音色库（未激活时跳过，避免无效调用）
   useEffect(() => {

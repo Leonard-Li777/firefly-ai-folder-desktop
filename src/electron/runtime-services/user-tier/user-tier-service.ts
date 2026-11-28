@@ -57,15 +57,22 @@ export class UserTierService {
     }
   }
 
-  /** 获取或创建 UserTierDataManager */
+  /** 获取或创建 UserTierDataManager（禁止空密钥或未确认态构造单例） */
   private getDataManager(): UserTierDataManager {
     if (!this.dataManager) {
+      if (!this.encryptionKey || !this.hmacKey) {
+        throw new Error('[UserTierService] 密钥尚未派生，禁止构造 UserTierDataManager')
+      }
+      const tierConstants = this.getTierConstants()
+      if (!tierConstants || !tierConstants.tierLimits) {
+        throw new Error('[UserTierService] TIER_CONSTANTS 尚未就绪，禁止构造 UserTierDataManager')
+      }
       const orchestrator = ConfigOrchestrator.getInstance()
       const machineId = SystemIdentityService.getInstance().getMachineId()
 
       this.dataManager = UserTierDataManager.getInstance({
         machineId,
-        tierConstants: this.getTierConstants(),
+        tierConstants,
         db: () => databaseService.db,
         getTierService: () => this.getTierService(),
         encryptionKey: this.encryptionKey!,
@@ -125,7 +132,24 @@ export class UserTierService {
     return this.tierService
   }
 
+  private getUnconfirmedProfilePlaceholder(): UserTierProfile {
+    return {
+      tier: 'free' as any,
+      firecores: 0,
+      ref_code: '',
+      entitlements: [],
+      counters: {} as any,
+      computed_limits: {
+        can_offline: false
+      } as any,
+      subscription: undefined
+    }
+  }
+
   getCachedData(): UserTierData | null {
+    if (!this.encryptionKey || !this.hmacKey) {
+      return null
+    }
     try {
       return this.getDataManager().getData()
     } catch {
@@ -135,20 +159,28 @@ export class UserTierService {
 
   async getProfile(): Promise<UserTierProfile> {
     await databaseService.ensureInitialized()
-    const data = this.getDataManager().getData()
-    return {
-      tier: data.tier,
-      firecores: data.firecores,
-      ref_code: data.ref_code,
-      entitlements: data.entitlements,
-      counters: data.counters,
-      computed_limits: data.computed_limits,
-      subscription: data.subscription
+    if (!this.encryptionKey || !this.hmacKey || !this.getTierConstants()?.tierLimits) {
+      return this.getUnconfirmedProfilePlaceholder()
+    }
+    try {
+      const data = this.getDataManager().getData()
+      return {
+        tier: data.tier,
+        firecores: data.firecores,
+        ref_code: data.ref_code,
+        entitlements: data.entitlements,
+        counters: data.counters,
+        computed_limits: data.computed_limits,
+        subscription: data.subscription
+      }
+    } catch {
+      return this.getUnconfirmedProfilePlaceholder()
     }
   }
 
   async getUserTierData(): Promise<UserTierData> {
     await databaseService.ensureInitialized()
+    await this.ensureKeysIfConfirmed()
     return this.getDataManager().getData()
   }
 
@@ -363,6 +395,15 @@ export class UserTierService {
     // 本地无记录：只走一次阻塞拉取（云端为流水 SSOT），
     // 严禁再并发触发后台第二次请求——否则同一份流水会被推送两次，弹窗列表反复重绘表现为闪动
     return this.fetchAndPushCloudTransactions(machineId)
+  }
+
+  public async ensureKeysIfConfirmed(): Promise<boolean> {
+    const { LicenseService } = await import('../system/license-service')
+    if (!LicenseService.getInstance().isLicenseConfirmed()) {
+      return false
+    }
+    await this.ensureKeys()
+    return Boolean(this.encryptionKey && this.hmacKey)
   }
 
   private async ensureKeys(): Promise<void> {
@@ -767,15 +808,46 @@ export class UserTierService {
         typeof net.isOnline
       )
       const machineId = await SystemIdentityService.getInstance().getMachineId()
-      logger.debug(LogCategory.SYSTEM, '[UserTierService] 初始化开始, machineId:', machineId)
+      logger.debug(
+        LogCategory.SYSTEM,
+        '[UserTierService] 绑定监听（状态跃迁驱动）, machineId:',
+        machineId
+      )
       await this.refreshVerifiedOfflineLicense()
-      // ensureKeys 可能因网络等问题失败，但不阻塞后续初始化
-      try {
-        await this.ensureKeys()
-      } catch (e) {
-        logger.warn(LogCategory.SYSTEM, '[UserTierService] 密钥派生失败，降级继续初始化:', e)
+
+      const { LicenseService } = await import('../system/license-service')
+      const licenseService = LicenseService.getInstance()
+
+      const activateOnConfirmed = async () => {
+        // 离线授权文件模式免等 cloudReady，避免离线用户或初始化串行链死锁
+        const localCached = (licenseService as any).cachedResult
+        if (localCached?.source !== 'offline_file') {
+          try {
+            const { gate } = await import('../../main/startup-gates')
+            await gate('cloudReady')
+          } catch {}
+        }
+        try {
+          await this.ensureKeys()
+        } catch (e) {
+          logger.warn(LogCategory.SYSTEM, '[UserTierService] 状态跃迁密钥派生失败:', e)
+          return
+        }
+        if (this.getTierConstants()?.tierLimits) {
+          this.getDataManager()
+          this.notifyProfileChanged()
+          await this.syncLocalCacheAndNotify(machineId).catch(err => {
+            logger.error(LogCategory.SYSTEM, '[UserTierService] 授权确认后云端同步失败:', err)
+          })
+        }
       }
+
+      licenseService.onLicenseConfirmed(activateOnConfirmed)
+
       this.configCleanup = ConfigOrchestrator.getInstance().onConfigChange(changes => {
+        if (!licenseService.isLicenseConfirmed()) {
+          return
+        }
         if ('DEFAULT_LANGUAGE' in changes) {
           UserTierDataManager.resetInstance()
           this.dataManager = null
@@ -792,7 +864,7 @@ export class UserTierService {
         // 重置已构造的 tierService/dataManager 单例，确保后续同步使用权威常量。
         if ('TIER_CONSTANTS' in changes) {
           const tc = this.getTierConstants()
-          if (tc && tc.tierLimits) {
+          if (tc && tc.tierLimits && this.encryptionKey && this.hmacKey) {
             logger.info(
               LogCategory.SYSTEM,
               '[UserTierService] TIER_CONSTANTS 已就绪，重置 tier 服务单例并重新同步'
@@ -813,16 +885,13 @@ export class UserTierService {
           }
         }
       })
-      // 初始化 DataManager (它会自动启动定时器和同步)
-      this.getDataManager()
-      // 初始时通知一次 Profile 改变，防止渲染进程显示残留/为 0
-      this.notifyProfileChanged()
-      logger.debug(LogCategory.SYSTEM, '[UserTierService] 初始化完成，开始后台同步')
-      // 后台同步
-      await this.syncLocalCacheAndNotify(machineId).catch(err => {
-        logger.error(LogCategory.SYSTEM, '[UserTierService] 初始云端同步失败:', err)
-      })
-      logger.debug(LogCategory.SYSTEM, '[UserTierService] 初始云端同步完成')
+
+      // 仅当授权已确认（如离线文件授权或测试环境）且常量就绪时才非阻塞激活，避免阻塞 Deferred 前置链
+      if (licenseService.isLicenseConfirmed()) {
+        void activateOnConfirmed().catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[UserTierService] 初始授权激活异常:', err)
+        })
+      }
     }
 
     if (app.isReady()) {

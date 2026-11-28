@@ -28,6 +28,7 @@ class FileWatcherService {
   private autoWatchMuteUntil: Map<number, number> = new Map()
   private ignoreRules: IIgnoreRule[] = []
   private isInitialized = false
+  private startAllTail: Promise<void> = Promise.resolve()
   private syncingPaths: Set<string> = new Set()
   private notificationTimers: Map<string, NodeJS.Timeout> = new Map()
   private processingFiles: Set<string> = new Set() // 防止同一文件重复处理
@@ -126,24 +127,35 @@ class FileWatcherService {
   }
 
   /**
-   * 启动所有启用了 autoWatch 的工作目录的监听
+   * 启动所有启用了 autoWatch 的工作目录的监听（J-11 第 2 步：串行门 + 工作区间让出事件循环）
    */
   async startAllAutoWatchers(): Promise<void> {
-    try {
-      const directories = await databaseService.getAllWorkspaceDirectories()
-      const autoWatchDirs = directories.filter(dir => dir.autoWatch && dir.isActive)
+    const run = this.startAllTail.then(async () => {
+      try {
+        const directories = await databaseService.getAllWorkspaceDirectories()
+        const autoWatchDirs = directories.filter(dir => dir.autoWatch && dir.isActive)
 
-      logger.debug(LogCategory.FILE_WATCHER, `找到 ${autoWatchDirs.length} 个启用自动监听的目录`)
+        logger.debug(LogCategory.FILE_WATCHER, `找到 ${autoWatchDirs.length} 个启用自动监听的目录`)
 
-      for (const directory of autoWatchDirs) {
-        if (directory.id) {
-          await this.startWatching(directory.id, directory.path)
+        for (let i = 0; i < autoWatchDirs.length; i++) {
+          const directory = autoWatchDirs[i]
+          if (directory.id) {
+            await this.startWatching(directory.id, directory.path)
+            if (i + 1 < autoWatchDirs.length) {
+              await new Promise<void>(resolve => setImmediate(resolve))
+            }
+          }
         }
+      } catch (error) {
+        logger.error(LogCategory.FILE_WATCHER, '启动自动监听失败:', error)
+        throw error
       }
-    } catch (error) {
-      logger.error(LogCategory.FILE_WATCHER, '启动自动监听失败:', error)
-      throw error
-    }
+    })
+    this.startAllTail = run.then(
+      () => undefined,
+      () => undefined
+    )
+    return run
   }
 
   /**

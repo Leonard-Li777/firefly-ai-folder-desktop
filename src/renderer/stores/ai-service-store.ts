@@ -63,7 +63,11 @@ export interface IAIServiceState {
  */
 export interface IAIServiceActions {
   /** 初始化AI服务 */
-  initializeAIService: (options?: { forceDeploy?: boolean; onlyDeploy?: boolean }) => Promise<void>
+  initializeAIService: (options?: {
+    forceDeploy?: boolean
+    onlyDeploy?: boolean
+    startupPhaseAOnly?: boolean
+  }) => Promise<void>
   // PRD-0049：initializeAIServiceWithCpu / initializeAIServiceWithVulkan 已清退
   // 引擎切换归萤核AI引擎（engineBridge.switchBackend），不再写桌面配置
   /** 通知模型切换 */
@@ -143,7 +147,11 @@ export const useAIServiceStore = create<TAIServiceStore>()(
     lastActivity: null,
 
     // 操作方法
-    initializeAIService: async (options?: { forceDeploy?: boolean; onlyDeploy?: boolean }) => {
+    initializeAIService: async (options?: {
+      forceDeploy?: boolean
+      onlyDeploy?: boolean
+      startupPhaseAOnly?: boolean
+    }) => {
       const state = get()
 
       // 如果已经在运行或正在初始化，跳过
@@ -232,11 +240,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
 
         set({
           status: AIServiceStatus.ERROR,
-          error: ErrorNormalizer.normalize(
-            error,
-            undefined,
-            'AIServiceStore'
-          ),
+          error: ErrorNormalizer.normalize(error, undefined, 'AIServiceStore'),
           lastActivity: new Date()
         })
 
@@ -577,16 +581,15 @@ export const useAIServiceStatus = () => {
   const currentPhase = useAIServiceStore(aiServiceSelectors.getCurrentPhase)
   const capabilities = useAIServiceStore(aiServiceSelectors.getCapabilities)
 
-  const {
-    initializeAIService,
-    updateStatus,
-    setError,
-    clearError,
-    setPhase,
-    enterConfigurationPhase,
-    enterInitializationPhase,
-    enterRuntimePhase
-  } = useAIServiceStore()
+  // R-20：action 整店解构改稳定细粒度 selector，避免无关状态更新触发订阅方重渲染
+  const initializeAIService = useAIServiceStore(s => s.initializeAIService)
+  const updateStatus = useAIServiceStore(s => s.updateStatus)
+  const setError = useAIServiceStore(s => s.setError)
+  const clearError = useAIServiceStore(s => s.clearError)
+  const setPhase = useAIServiceStore(s => s.setPhase)
+  const enterConfigurationPhase = useAIServiceStore(s => s.enterConfigurationPhase)
+  const enterInitializationPhase = useAIServiceStore(s => s.enterInitializationPhase)
+  const enterRuntimePhase = useAIServiceStore(s => s.enterRuntimePhase)
 
   return {
     status,
@@ -653,8 +656,11 @@ export const useStartupPhases = () => {
   const currentPhase = useAIServiceStore(aiServiceSelectors.getCurrentPhase)
   const status = useAIServiceStore(aiServiceSelectors.getStatus)
 
-  const { enterConfigurationPhase, enterInitializationPhase, enterRuntimePhase, setPhase } =
-    useAIServiceStore()
+  // R-20：action 整店解构改稳定细粒度 selector
+  const enterConfigurationPhase = useAIServiceStore(s => s.enterConfigurationPhase)
+  const enterInitializationPhase = useAIServiceStore(s => s.enterInitializationPhase)
+  const enterRuntimePhase = useAIServiceStore(s => s.enterRuntimePhase)
+  const setPhase = useAIServiceStore(s => s.setPhase)
 
   return {
     currentPhase,
@@ -680,7 +686,10 @@ export const useAIServiceInitialization = () => {
   const isInitializing = useAIServiceStore(aiServiceSelectors.getIsInitializing)
   const hasError = useAIServiceStore(aiServiceSelectors.getHasError)
 
-  const { initializeAIService, clearError, resetState } = useAIServiceStore()
+  // R-20：action 整店解构改稳定细粒度 selector
+  const initializeAIService = useAIServiceStore(s => s.initializeAIService)
+  const clearError = useAIServiceStore(s => s.clearError)
+  const resetState = useAIServiceStore(s => s.resetState)
 
   return {
     initializeAIService,

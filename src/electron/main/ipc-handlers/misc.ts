@@ -444,6 +444,12 @@ export function registerMiscIPCHandlers() {
 
   ipcMain.handle('get-machine-id', async () => SystemIdentityService.getInstance().getMachineId())
   ipcMain.handle('license/get-status', async () => {
+    const { getPerfFlagsSnapshot } = await import('../perf-flags')
+    const { app } = await import('electron')
+    const perfFlags = getPerfFlagsSnapshot(app.getPath('userData'))
+    if (perfFlags.startup.licenseLocalFirst) {
+      return LicenseService.getInstance().checkLocalLicenseFast()
+    }
     return LicenseService.getInstance().checkLicenseStatus(true)
   })
   ipcMain.handle('license/check-online', async () => {

@@ -6,7 +6,6 @@ import { PersistentTooltip } from '../common/PersistentTooltip'
 import { UserAvatarMenu } from '../tier/UserAvatarMenu'
 import { WorkspaceDirectory, parseWorkspaceConfig, SettingsCategory } from '@firefly/types'
 import { logoIcon } from '../ui/icon'
-import { openExternalLink } from '../../lib/external-link'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useConfigStore } from '../../stores/config-store'
@@ -26,6 +25,8 @@ import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { useWorkspaceRuntimeContext } from '../../stores/workspace-runtime-context-store'
 import { computeLocalEffectiveConfig } from '../../lib/workspace-policy/workspace-ai-client'
 import { LayoutActionSlot, LayoutSwitcherButtons, PAGE_IDS, PageId } from './layout-switcher'
+import NewsTicker from './header/NewsTicker'
+import { subscribeSharedTicker } from './header/header-clock'
 
 interface DirectoryHeaderProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -62,8 +63,11 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const currentPath = location.pathname
     const [isMaximized, setIsMaximized] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-    const { hasNewFiles, setHasNewFiles, newFilesCount } = useAnalyzedDirectoryStore()
-    const { computed_limits } = useTierStore()
+    // R-20：整店订阅改稳定细粒度 selector，无关 store 字段更新不再触发 Header 重渲染
+    const hasNewFiles = useAnalyzedDirectoryStore(s => s.hasNewFiles)
+    const setHasNewFiles = useAnalyzedDirectoryStore(s => s.setHasNewFiles)
+    const newFilesCount = useAnalyzedDirectoryStore(s => s.newFilesCount)
+    const computed_limits = useTierStore(s => s.computed_limits)
     const [licenseType, setLicenseType] = useState<string | null>(null)
 
     // 插件中心全局覆盖弹层状态
@@ -228,13 +232,11 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       }
     }, [activeWorkspaceDir, runtimeSnapshot, localWorkflowNames, activeLanguage])
 
-    // 消息轮播相关
+    // 消息轮播相关（J-03：轮播索引/下拉/定时器已下沉 NewsTicker 叶节点，
+    // 父级仅保留下拉开合镜像供拖拽区 isAnyDropdownOpen 判定）
     const config = useConfigStore(state => state.config)
     const latestNews = (config?.LATEST_NEWS as LatestNewsItem[]) || []
-    const [currentNewsIndex, setCurrentNewsIndex] = useState(0)
     const [isNewsDropdownOpen, setIsNewsDropdownOpen] = useState(false)
-    const newsDropdownRef = useRef<HTMLDivElement | null>(null)
-    const newsTimerRef = useRef<NodeJS.Timeout | null>(null)
     const headerRef = useRef<HTMLElement | null>(null)
 
     const STEPS: Step[] = [
@@ -324,14 +326,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         }
 
         if (
-          isNewsDropdownOpen &&
-          newsDropdownRef.current &&
-          !newsDropdownRef.current.contains(event.target as Node)
-        ) {
-          setIsNewsDropdownOpen(false)
-        }
-
-        if (
           showHistoryPopover &&
           searchContainerRef.current &&
           !searchContainerRef.current.contains(event.target as Node)
@@ -341,38 +335,16 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         }
       }
 
-      if (showDirectoryDropdown || isNewsDropdownOpen || showHistoryPopover) {
+      if (showDirectoryDropdown || showHistoryPopover) {
         document.addEventListener('pointerdown', handleClickOutside)
       }
 
       return () => {
         document.removeEventListener('pointerdown', handleClickOutside)
       }
-    }, [
-      showDirectoryDropdown,
-      isNewsDropdownOpen,
-      showHistoryPopover,
-      onToggleDirectoryDropdown,
-      dropdownRef
-    ])
+    }, [showDirectoryDropdown, showHistoryPopover, onToggleDirectoryDropdown, dropdownRef])
 
     const isEnterprise = licenseType === 'ENTERPRISE'
-
-    // 轮播逻辑（最新资讯）
-    useEffect(() => {
-      if (latestNews.length <= 1) {
-        if (newsTimerRef.current) clearInterval(newsTimerRef.current)
-        return
-      }
-
-      newsTimerRef.current = setInterval(() => {
-        setCurrentNewsIndex(prev => (prev + 1) % latestNews.length)
-      }, 5000)
-
-      return () => {
-        if (newsTimerRef.current) clearInterval(newsTimerRef.current)
-      }
-    }, [latestNews.length])
 
     // 搜索框动态 Placeholder 候选列表（遵循国际化支持）
     const SEARCH_PLACEHOLDERS = useMemo(
@@ -390,57 +362,22 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       [activeLanguage]
     )
 
-    const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0)
-
+    // J-03：占位符轮播改 ref 直写 DOM（零 React state），订阅模块级共享 3600ms Ticker。
+    // input 的 placeholder prop 保持常量首项，React 不会覆写后续 DOM 直写值。
     useEffect(() => {
-      const placeholderTimer = setInterval(() => {
-        setCurrentPlaceholderIndex(prev => (prev + 1) % SEARCH_PLACEHOLDERS.length)
-      }, 3600)
-
-      return () => {
-        clearInterval(placeholderTimer)
+      let index = 0
+      const writePlaceholder = () => {
+        const input = searchInputRef.current
+        if (!input) return
+        if (input.closest('.opacity-0')) return
+        input.placeholder = SEARCH_PLACEHOLDERS[index % SEARCH_PLACEHOLDERS.length]
       }
-    }, [SEARCH_PLACEHOLDERS.length])
-
-    const handleNewsClick = (url: string | undefined) => {
-      if (url) {
-        openExternalLink(url, { errorTitle: t('无法打开链接') })
-        setIsNewsDropdownOpen(false)
-      }
-    }
-
-    const getLevelStyles = (level?: string) => {
-      switch (level) {
-        case 'error':
-          return {
-            bg: 'bg-red-500/10 hover:bg-red-500/20',
-            dot: 'bg-red-500',
-            text: 'text-red-500',
-            ring: 'ring-red-500/30'
-          }
-        case 'warn':
-          return {
-            bg: 'bg-amber-500/10 hover:bg-amber-500/20',
-            dot: 'bg-amber-500',
-            text: 'text-amber-500',
-            ring: 'ring-amber-500/30'
-          }
-        case 'info':
-          return {
-            bg: 'bg-primary/10 hover:bg-primary/20',
-            dot: 'bg-primary',
-            text: 'text-primary',
-            ring: 'ring-primary/30'
-          }
-        default:
-          return {
-            bg: 'bg-primary/10 hover:bg-primary/20',
-            dot: 'bg-primary',
-            text: 'text-primary',
-            ring: 'ring-primary/30'
-          }
-      }
-    }
+      writePlaceholder()
+      return subscribeSharedTicker(3600, () => {
+        index = (index + 1) % SEARCH_PLACEHOLDERS.length
+        writePlaceholder()
+      })
+    }, [SEARCH_PLACEHOLDERS])
 
     const handleMinimize = () => {
       window.electronAPI!.window.minimize()
@@ -506,103 +443,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
           {/* Right Side: News & Controls */}
           <div className="flex items-center justify-end space-x-3 flex-1 min-w-0 relative z-[105]">
-            {/* News Carousel: 默认左对齐、宽度自适应（文本多长才多长，超出溢出省略） */}
+            {/* News Carousel: J-03 下沉 NewsTicker 叶节点，5000ms tick 不再带动整个 Header 重渲染 */}
             {!isEnterprise && (
-              <div
-                className="relative flex items-center text-xs text-primary transition-all duration-500 min-w-0 flex-1 justify-start"
-                ref={newsDropdownRef}
-                onPointerDown={e => e.stopPropagation()}
-              >
-                {latestNews.length > 0 ? (
-                  <>
-                    <div
-                      className={cn(
-                        'flex items-center gap-1.5 px-1 py-1 rounded-md animate-in fade-in duration-500 cursor-pointer max-w-full min-w-0 hover:opacity-85 transition-opacity',
-                        getLevelStyles(latestNews[currentNewsIndex]?.level).text
-                      )}
-                      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                      onClick={() => setIsNewsDropdownOpen(!isNewsDropdownOpen)}
-                    >
-                      <span
-                        className={cn(
-                          'flex h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0',
-                          getLevelStyles(latestNews[currentNewsIndex]?.level).dot
-                        )}
-                      />
-                      <span
-                        className="truncate font-medium min-w-0 text-left"
-                        title={latestNews[currentNewsIndex]?.text}
-                      >
-                        {latestNews[currentNewsIndex]?.text}
-                      </span>
-                      <MaterialIcon
-                        icon={isNewsDropdownOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
-                        className="text-base opacity-70 flex-shrink-0"
-                      />
-                    </div>
-
-                    {isNewsDropdownOpen && (
-                      <div
-                        className="absolute top-full left-0 mt-2 bg-popover border border-border rounded-md shadow-xl z-[120] py-1 min-w-[280px] max-w-[420px]"
-                        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                      >
-                        <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground border-b border-border mb-1 uppercase tracking-wider">
-                          {t('最新动态')}
-                        </div>
-                        <div className="max-h-60 overflow-y-auto">
-                          {latestNews.map((news, index) => {
-                            const styles = getLevelStyles(news.level)
-                            return (
-                              <button
-                                key={index}
-                                className={cn(
-                                  'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group whitespace-nowrap',
-                                  news.url
-                                    ? 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
-                                    : 'cursor-default',
-                                  'border-b border-border/50 last:border-none'
-                                )}
-                                onClick={() => handleNewsClick(news.url)}
-                              >
-                                <span
-                                  className={cn(
-                                    'flex h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0',
-                                    news.level
-                                      ? styles.dot
-                                      : index === currentNewsIndex
-                                        ? 'bg-primary animate-pulse'
-                                        : 'bg-muted-foreground/40'
-                                  )}
-                                />
-                                <div className="min-w-0">
-                                  <div
-                                    className={cn('text-xs font-medium', news.level && styles.text)}
-                                  >
-                                    {news.text}
-                                  </div>
-                                  {news.url && (
-                                    <div className="text-[10px] text-muted-foreground truncate opacity-60 transition-colors duration-200 group-hover:text-accent-foreground/70">
-                                      {news.url}
-                                    </div>
-                                  )}
-                                </div>
-                                {news.url && (
-                                  <MaterialIcon
-                                    icon="open_in_new"
-                                    className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center"
-                                  />
-                                )}
-                              </button>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <span className="truncate px-2">{t('AI 摘要功能已上线!')}</span>
-                )}
-              </div>
+              <NewsTicker
+                latestNews={latestNews}
+                open={isNewsDropdownOpen}
+                onOpenChange={setIsNewsDropdownOpen}
+              />
             )}
 
             {/* Controls Group */}
@@ -1333,7 +1180,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                     onSearch?.(val)
                   }
                 }}
-                placeholder={SEARCH_PLACEHOLDERS[currentPlaceholderIndex]}
+                placeholder={SEARCH_PLACEHOLDERS[0]}
                 className={cn(
                   'w-full h-9 rounded-full pl-8.5 text-xs transition-all duration-200 ease-out select-text',
                   localSearchInput ? 'pr-26' : 'pr-8',

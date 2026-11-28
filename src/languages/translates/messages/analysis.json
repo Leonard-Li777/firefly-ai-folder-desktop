@@ -80,7 +80,9 @@
     "de-DE": "Analyse",
     "fr-FR": "Analyse",
     "ko-KR": "분석",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(3735-3741)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(3735-3741)"
+    ],
     "$id": 11399
   },
   "未分析": {
@@ -126,7 +128,9 @@
     "de-DE": "Bestätigen Sie den Umfang der Analyse",
     "fr-FR": "Confirmer la portée de l'analyse",
     "ko-KR": "분석 범위 확인",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(6597-6607)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(6597-6607)"
+    ],
     "$id": 11401
   },
   "已选择 {total} 个文件。": {
@@ -139,7 +143,9 @@
     "de-DE": "{total} Dateien wurden ausgewählt.",
     "fr-FR": "{total} les fichiers ont été sélectionnés.",
     "ko-KR": "{total}파일이 선택되었습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(6854-6874)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(6854-6874)"
+    ],
     "$id": 11424
   },
   "其中 {count} 个完全未分析，将直接加入分析列表。": {
@@ -152,7 +158,9 @@
     "de-DE": "{count} von ihnen werden überhaupt nicht analysiert und direkt zur Analyseliste hinzugefügt.",
     "fr-FR": "{count} d'entre eux ne sont pas du tout analysés et seront directement ajoutés à la liste d'analyse.",
     "ko-KR": "{count}는 전혀 분석되지 않으며 분석 목록에 직접 추가됩니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(6995-7027)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(6995-7027)"
+    ],
     "$id": 11425
   },
   "{count} 个已完成【{mode}】分析，无需重复分析。": {
@@ -165,7 +173,9 @@
     "de-DE": "{count} Die [{mode}]-Analyse wurde abgeschlossen und es ist nicht erforderlich, die Analyse zu wiederholen.",
     "fr-FR": "{count} L'analyse [{mode}] est terminée et il n'est pas nécessaire de répéter l'analyse.",
     "ko-KR": "{count}[{mode}]분석이 완료되었으며 분석을 반복할 필요가 없습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(7674-7708)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(7674-7708)"
+    ],
     "$id": 11426
   },
   "{count} 个已完成分析（历史数据未记录模式），无需重复分析。": {
@@ -178,7 +188,9 @@
     "de-DE": "{count} Die Analyse wurde abgeschlossen (die historischen Daten werden im Modus nicht aufgezeichnet) und es ist nicht erforderlich, die Analyse zu wiederholen.",
     "fr-FR": "{count} L'analyse est terminée (les données historiques ne sont pas enregistrées dans le mode) et il n'est pas nécessaire de répéter l'analyse.",
     "ko-KR": "{count}분석이 완료되었으며(이력 데이터가 모드에 기록되지 않음)분석을 반복할 필요가 없습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(7865-7902)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(7865-7902)"
+    ],
     "$id": 11427
   },
   "{count} 个仅完成【{done}】，尚未达到当前【{current}】模式的要求，将一并加入分析列表。": {
@@ -191,7 +203,9 @@
     "de-DE": "{count} Nur abgeschlossenes [{done}], das die Anforderungen des aktuellen [{current}] Modus noch nicht erfüllt hat, wird der Analyseliste hinzugefügt.",
     "fr-FR": "{count} Seulement terminé [{done}], et n'a pas encore satisfait aux exigences du mode [{current}] actuel, sera ajouté à la liste d'analyse.",
     "ko-KR": "{count}만 완료[{done}],아직 현재[{current}]모드의 요구 사항을 충족하지 않은,분석 목록에 추가됩니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(8368-8449)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(8368-8449)"
+    ],
     "$id": 11428
   },
   "已完成【{mode}】分析的文件，本次将跳过": {
@@ -204,7 +218,9 @@
     "de-DE": "Dateien, die die [{mode}]-Analyse abgeschlossen haben, werden diesmal übersprungen",
     "fr-FR": "Les fichiers qui ont terminé l'analyse [{mode}] seront ignorés cette fois",
     "ko-KR": "[{mode}]분석을 완료한 파일은 이번에는 건너뜁니다",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(9355-9381)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(9355-9381)"
+    ],
     "$id": 11429
   },
   "已完成分析的文件（均已满足当前模式要求），本次将跳过": {
@@ -217,7 +233,9 @@
     "de-DE": "Die Dateien, die die Analyse abgeschlossen haben (die alle die Anforderungen des aktuellen Modus erfüllt haben), werden diesmal übersprungen",
     "fr-FR": "Les fichiers qui ont terminé l'analyse (qui ont tous satisfait aux exigences du mode actuel) seront ignorés cette fois",
     "ko-KR": "분석을 완료한 파일(모두 현재 모드의 요구 사항을 충족한 파일)은 이번에는 건너뜁니다",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(9496-9526)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(9496-9526)"
+    ],
     "$id": 11430
   },
   "{count} 个": {
@@ -230,7 +248,9 @@
     "de-DE": "{count} PC",
     "fr-FR": "{count} pièces",
     "ko-KR": "제품 정보",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(9623-9636)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(9623-9636)"
+    ],
     "$id": 11431
   },
   "跳过：将这 {skipped} 个已完成文件排除，仅分析其余 {rest} 个文件，不再消耗算力。": {
@@ -243,7 +263,9 @@
     "de-DE": "Überspringen: Schließen Sie diese {skipped} abgeschlossenen Dateien aus und analysieren Sie nur die verbleibenden {rest} Dateien, die keine Rechenleistung mehr verbrauchen.",
     "fr-FR": "Ignorer: Exclure ces {skipped}fichiers terminés et analyser uniquement les {rest} fichiers restants, ne consommant plus de puissance de calcul.",
     "ko-KR": "건너 뛰기:이{skipped}완료된 파일을 제외하고 나머지{rest}파일 만 분석하여 더 이상 컴퓨팅 성능을 소비하지 않습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(10827-10901)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(10827-10901)"
+    ],
     "$id": 11433
   },
   "继续：按当前分析模式补全这 {rest} 个文件，已完成的部分不会重复提取。": {
@@ -256,7 +278,9 @@
     "de-DE": "Fortfahren: Vervollständigen Sie diese {rest} -Dateien gemäß dem aktuellen Analysemodus, und die fertigen Teile werden nicht wiederholt extrahiert.",
     "fr-FR": "Continuer: Complétez ces fichiers {rest} selon le mode d'analyse actuel, et les parties terminées ne seront pas extraites à plusieurs reprises.",
     "ko-KR": "계속:현재 분석 모드에 따라 이러한{rest}파일을 완료하면 완료된 부분이 반복적으로 추출되지 않습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(11077-11119)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(11077-11119)"
+    ],
     "$id": 11434
   },
   "重新分析：全部 {total} 个文件强制重新分析（例如更换模型后需要按新模型重跑）。": {
@@ -269,7 +293,9 @@
     "de-DE": "Erneute Analyse: Alle {total} -Dateien müssen erneut analysiert werden (z. B. müssen Sie nach dem Ändern des Modells gemäß dem neuen Modell erneut ausgeführt werden).",
     "fr-FR": "Réanalyse: Tous les fichiers {total} sont forcés d'être réanalysés (par exemple, après avoir changé le modèle, vous devez réexécuter en fonction du nouveau modèle).",
     "ko-KR": "재 분석:모든{total}파일은 강제로 다시 분석됩니다(예:모델을 변경 한 후 새 모델에 따라 다시 실행해야 함).",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(11454-11501)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(11454-11501)"
+    ],
     "$id": 11435
   },
   "取消": {
@@ -284,7 +310,7 @@
     "ko-KR": "취소",
     "$files": [
       "src/renderer/components/analysis/AnalysisConfirmModal.tsx(11861-11867)",
-      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7077-7083)"
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7258-7264)"
     ],
     "$id": 10239
   },
@@ -298,7 +324,9 @@
     "de-DE": "Alle neu analysieren ({count})",
     "fr-FR": "Réanalysez tout ({count})",
     "ko-KR": "모두 다시 분석({count})",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(12204-12224)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(12204-12224)"
+    ],
     "$id": 11436
   },
   "全部重新分析": {
@@ -311,7 +339,9 @@
     "de-DE": "Alles neu analysieren",
     "fr-FR": "Réanalysez tout",
     "ko-KR": "모두 다시 분석",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(12265-12275)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(12265-12275)"
+    ],
     "$id": 11441
   },
   "跳过已完成": {
@@ -324,7 +354,9 @@
     "de-DE": "Überspringen abgeschlossen",
     "fr-FR": "Saut terminé",
     "ko-KR": "건너뛰기 완료",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(12776-12785)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(12776-12785)"
+    ],
     "$id": 11442
   },
   "跳过已完成，分析其余 {count} 个": {
@@ -337,7 +369,9 @@
     "de-DE": "Überspringen abgeschlossen, analysieren Sie die verbleibenden {count}",
     "fr-FR": "Passer terminé, analyser les {count}restants",
     "ko-KR": "건너 뛰기 완료,나머지{count}분석",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(12839-12863)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(12839-12863)"
+    ],
     "$id": 11443
   },
   "继续分析 {count} 个文件（保留已完成部分）": {
@@ -350,7 +384,9 @@
     "de-DE": "Fahren Sie mit der Analyse von {count} -Dateien fort (behalten Sie den fertigen Teil)",
     "fr-FR": "Continuer à analyser les fichiers {count} (conserver la partie terminée)",
     "ko-KR": "{count}파일을 계속 분석(완료된 부분 유지)",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(12913-12942)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(12913-12942)"
+    ],
     "$id": 11444
   },
   "分析失败": {
@@ -363,7 +399,9 @@
     "de-DE": "Die Analyse ist fehlgeschlagen",
     "fr-FR": "L'analyse a échoué",
     "ko-KR": "분석 실패",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(2215-2223)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(2215-2223)"
+    ],
     "$id": 7960
   },
   "处理中": {
@@ -376,7 +414,9 @@
     "de-DE": "Verarbeitung",
     "fr-FR": "Traitement",
     "ko-KR": "처리",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(2453-2460)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(2453-2460)"
+    ],
     "$id": 7961
   },
   "已完成": {
@@ -389,7 +429,9 @@
     "de-DE": "Abgeschlossen",
     "fr-FR": "Terminé",
     "ko-KR": "완료됨",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(2714-2721)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(2714-2721)"
+    ],
     "$id": 3870
   },
   "待处理": {
@@ -402,7 +444,9 @@
     "de-DE": "Ausstehend",
     "fr-FR": "En attente",
     "ko-KR": "처리 대기 중",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(2871-2878)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(2871-2878)"
+    ],
     "$id": 3868
   },
   "拖动调整列宽": {
@@ -415,7 +459,9 @@
     "de-DE": "Ziehen Sie, um die Spaltenbreite anzupassen",
     "fr-FR": "Faites glisser pour ajuster la largeur de la colonne",
     "ko-KR": "드래그하여 열 너비 조정",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(3842-3852)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(3842-3852)"
+    ],
     "$id": 7791
   },
   "特征识别中": {
@@ -444,7 +490,9 @@
     "de-DE": "Inhaltsextraktion läuft",
     "fr-FR": "Extraction de contenu en cours",
     "ko-KR": "콘텐츠 추출 진행 중",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4376-4385)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4376-4385)"
+    ],
     "$id": 9495
   },
   "质量评分中": {
@@ -457,7 +505,9 @@
     "de-DE": "Qualitätsbewertung läuft",
     "fr-FR": "Évaluation de la qualité en cours",
     "ko-KR": "품질 평가 진행 중",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4429-4438)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4429-4438)"
+    ],
     "$id": 9496
   },
   "维度分析中": {
@@ -470,7 +520,9 @@
     "de-DE": "Dimensionsanalyse läuft",
     "fr-FR": "Analyse dimensionnelle en cours",
     "ko-KR": "차원 분석 진행 중",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4482-4491)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4482-4491)"
+    ],
     "$id": 9497
   },
   "特征识别": {
@@ -483,7 +535,9 @@
     "de-DE": "Merkmalserkennung",
     "fr-FR": "Reconnaissance des fonctionnalités",
     "ko-KR": "특징 인식",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4720-4728)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4720-4728)"
+    ],
     "$id": 9498
   },
   "内容提取": {
@@ -496,7 +550,9 @@
     "de-DE": "Inhaltsextraktion",
     "fr-FR": "Extraction de contenu",
     "ko-KR": "컨텐츠 추출",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4768-4776)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4768-4776)"
+    ],
     "$id": 9499
   },
   "质量评分": {
@@ -509,7 +565,9 @@
     "de-DE": "Qualitätsfaktor",
     "fr-FR": "Niveau de qualité",
     "ko-KR": "품질평가점수",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4816-4824)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4816-4824)"
+    ],
     "$id": 9500
   },
   "维度分析": {
@@ -522,7 +580,9 @@
     "de-DE": "Dimensionsanalyse",
     "fr-FR": "Analyse dimensionnelle",
     "ko-KR": "차원 분석",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(4864-4872)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(4864-4872)"
+    ],
     "$id": 9501
   },
   "视频分析：已完成 {done}/{total} 个片段": {
@@ -537,7 +597,7 @@
     "ko-KR": "비디오 분석: {done}/{total} 클립 완료",
     "$files": [
       "src/renderer/components/analysis/AnalysisQueueContent.tsx(5784-5815)",
-      "src/renderer/components/analysis/AnalysisQueueContent.tsx(33720-33751)"
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(34415-34446)"
     ],
     "$id": 38312
   },
@@ -551,7 +611,9 @@
     "de-DE": "Der aktuelle Fortschritt beträgt etwa {pct} %",
     "fr-FR": "La progression actuelle est d'environ {pct} %",
     "ko-KR": "현재 진행률은 약 {pct}%입니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(5939-5955)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(5939-5955)"
+    ],
     "$id": 38313
   },
   "已经有序，跳过分析，如需强制分析：请创建独立的工作目录": {
@@ -564,7 +626,9 @@
     "de-DE": "Bereits organisiert, Analyse wird übersprungen. Für eine obligatorische Analyse erstellen Sie bitte ein unabhängiges Arbeitsverzeichnis.",
     "fr-FR": "Déjà organisé, analyse ignorée. Pour une analyse obligatoire, veuillez créer un répertoire de travail indépendant.",
     "ko-KR": "이미 정리되어 분석을 건너뜁니다. 강제 분석이 필요한 경우 독립적인 작업 디렉토리를 생성하십시오.",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(9189-9220)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(9189-9220)"
+    ],
     "$id": 6234
   },
   "未知失败原因": {
@@ -577,7 +641,9 @@
     "de-DE": "Unbekannter Fehlergrund",
     "fr-FR": "Raison d'échec inconnue",
     "ko-KR": "알 수 없는 실패 원인",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(9279-9289)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(9279-9289)"
+    ],
     "$id": 3872
   },
   "来自云端缓存": {
@@ -590,7 +656,9 @@
     "de-DE": "Aus Cloud-Cache",
     "fr-FR": "Depuis le cache cloud",
     "ko-KR": "클라우드 캐시에서",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(10882-10892)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(10882-10892)"
+    ],
     "$id": 3378
   },
   "该目录为最小不可分割单元概率为{confidence}%，不对其内容进行单个分析。你可以将它创建为工作目录，才可继续分析。": {
@@ -603,7 +671,9 @@
     "de-DE": "Die Wahrscheinlichkeit, dass dieses Verzeichnis die kleinste unteilbare Einheit ist, beträgt {confidence} %, und es wird keine individuelle Analyse seines Inhalts durchgeführt. Sie können es als Arbeitsverzeichnis erstellen, bevor Sie mit der Analyse fortfahren.",
     "fr-FR": "La probabilité que ce répertoire soit la plus petite unité indivisible est de {confidence} %, et aucune analyse individuelle de son contenu n'est effectuée. Vous pouvez le créer en tant que répertoire de travail avant de poursuivre l'analyse.",
     "ko-KR": "이 디렉터리가 분할할 수 없는 가장 작은 단위일 확률은 {confidence}%이며 해당 콘텐츠에 대한 개별 분석은 수행되지 않습니다. 분석을 계속하기 전에 작업 디렉터리로 생성할 수 있습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(11578-11660)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(11578-11660)"
+    ],
     "$id": 4486
   },
   "重试": {
@@ -616,7 +686,9 @@
     "de-DE": "Wiederholen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(12475-12481)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(12475-12481)"
+    ],
     "$id": 3873
   },
   "删除": {
@@ -629,7 +701,9 @@
     "de-DE": "Löschen",
     "fr-FR": "Supprimer",
     "ko-KR": "삭제",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(12743-12749)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(12743-12749)"
+    ],
     "$id": 3874
   },
   "分析队列暂无文件": {
@@ -642,7 +716,9 @@
     "de-DE": "In der Analysewarteschlange befinden sich derzeit keine Dokumente.",
     "fr-FR": "Aucun fichier n'est actuellement présent dans la file d'attente d'analyse",
     "ko-KR": "분석 대기열에 파일이 없습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(16813-16825)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(16813-16825)"
+    ],
     "$id": 11245
   },
   "文件分析队列": {
@@ -655,7 +731,9 @@
     "de-DE": "Dateianalysewarteschlange",
     "fr-FR": "File d'attente d'analyse de fichiers",
     "ko-KR": "파일 분석 대기열",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25662-25672)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(25662-25672)"
+    ],
     "$id": 10228
   },
   "【排队中】": {
@@ -668,7 +746,9 @@
     "de-DE": "【In der Warteschlange】",
     "fr-FR": "【Dans la file d'attente】",
     "ko-KR": "【대기중】",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25900-25909)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(25900-25909)"
+    ],
     "$id": 7792
   },
   "【已暂停】": {
@@ -681,7 +761,9 @@
     "de-DE": "【Pausiert】",
     "fr-FR": "[En pause]",
     "ko-KR": "[일시 중지됨]",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25913-25922)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(25913-25922)"
+    ],
     "$id": 3876
   },
   "【正在文件分析】": {
@@ -694,7 +776,9 @@
     "de-DE": "[Dateianalyse läuft]",
     "fr-FR": "[Analyse de fichiers en cours]",
     "ko-KR": "[파일 분석 중]",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(26198-26210)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(26198-26210)"
+    ],
     "$id": 19553
   },
   "{count1} 项 · {count2} 单元": {
@@ -707,7 +791,9 @@
     "de-DE": "{count1} Artikel · {count2} Einheiten",
     "fr-FR": "{count1} articles · {count2} unités",
     "ko-KR": "{count1}개 항목 · {count2}개 단위",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(26412-26440)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(26412-26440)"
+    ],
     "$id": 7793
   },
   "暂停文件分析": {
@@ -720,7 +806,9 @@
     "de-DE": "Dateianalyse pausieren",
     "fr-FR": "Mettre en pause l'analyse de fichiers",
     "ko-KR": "파일 분석 일시정지",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(27114-27124)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(27114-27124)"
+    ],
     "$id": 19555
   },
   "开始": {
@@ -733,7 +821,9 @@
     "de-DE": "Starten",
     "fr-FR": "Démarrer",
     "ko-KR": "시작",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(27417-27423)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(27417-27423)"
+    ],
     "$id": 3887
   },
   "重试失败": {
@@ -746,7 +836,9 @@
     "de-DE": "Wiederholungsversuch fehlgeschlagen",
     "fr-FR": "La nouvelle tentative a échoué",
     "ko-KR": "재시도 실패",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(27623-27631)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(27623-27631)"
+    ],
     "$id": 7794
   },
   "清空队列": {
@@ -759,7 +851,9 @@
     "de-DE": "Warteschlange löschen",
     "fr-FR": "Vider la file d'attente",
     "ko-KR": "대기열 비우기",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(27762-27770)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(27762-27770)"
+    ],
     "$id": 3886
   },
   "清空待处理": {
@@ -772,7 +866,9 @@
     "de-DE": "Ausstehende löschen",
     "fr-FR": "Vider les éléments en attente",
     "ko-KR": "처리 대기 중 전체 삭제",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(27953-27962)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(27953-27962)"
+    ],
     "$id": 3884
   },
   "结果简陋？切为【增强分析】或【全面分析】": {
@@ -785,7 +881,9 @@
     "de-DE": "Ergebnis unzureichend? Wechseln Sie zu [Erweiterte Analyse] oder [Umfassende Analyse]",
     "fr-FR": "Résultats insatisfaisants ? Basculez vers [Analyse renforcée] ou [Analyse complète]",
     "ko-KR": "결과가 부실한가요? [강화 분석] 또는 [전체 분석]으로 전환하세요",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(28587-28611)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(28587-28611)"
+    ],
     "$id": 19422
   },
   "需要评分描述？切为【全面分析】": {
@@ -798,7 +896,9 @@
     "de-DE": "Benötigen Sie eine Bewertungsbeschreibung? Schnitt zu 【Umfassende Analyse】",
     "fr-FR": "Besoin d'une description de la note ? Passer à 【Analyse complète】",
     "ko-KR": "등급 설명이 필요하십니까? 【종합분석】으로 이동",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(28684-28703)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(28684-28703)"
+    ],
     "$id": 9419
   },
   "分析太慢？切为【增强分析】或【标准分析】": {
@@ -811,7 +911,9 @@
     "de-DE": "Analyse zu langsam? Wechseln Sie zu [Erweiterte Analyse] oder [Standardanalyse]",
     "fr-FR": "Analyse trop lente ? Basculez vers [Analyse renforcée] ou [Analyse standard]",
     "ko-KR": "분석이 너무 느리나요? [강화 분석] 또는 [표준 분석]으로 전환하세요",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(28727-28751)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(28727-28751)"
+    ],
     "$id": 19423
   },
   "切为独立窗口": {
@@ -824,7 +926,9 @@
     "de-DE": "Machen Sie daraus ein separates Fenster",
     "fr-FR": "Faites-en une fenêtre séparée",
     "ko-KR": "별도의 창으로 만들어주세요",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29090-29100)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(29090-29100)"
+    ],
     "$id": 7797
   },
   "切为底部分栏": {
@@ -837,7 +941,9 @@
     "de-DE": "Auf die unterste Spalte schneiden",
     "fr-FR": "Couper à la colonne du bas",
     "ko-KR": "아래쪽 기둥까지 자르기",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29104-29114)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(29104-29114)"
+    ],
     "$id": 7798
   },
   "独立窗口": {
@@ -850,7 +956,9 @@
     "de-DE": "Unabhängiges Fenster",
     "fr-FR": "Fenêtre indépendante",
     "ko-KR": "독립창",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29293-29301)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(29293-29301)"
+    ],
     "$id": 7799
   },
   "底部分栏": {
@@ -863,7 +971,9 @@
     "de-DE": "Untere Spalte",
     "fr-FR": "Colonne du bas",
     "ko-KR": "하단 열",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(29472-29480)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(29472-29480)"
+    ],
     "$id": 7800
   },
   "最小化": {
@@ -892,7 +1002,9 @@
     "de-DE": "Maximieren",
     "fr-FR": "Maximiser",
     "ko-KR": "최대화하다",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30219-30226)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(30219-30226)"
+    ],
     "$id": 7802
   },
   "展开": {
@@ -905,7 +1017,9 @@
     "de-DE": "Expandieren",
     "fr-FR": "Développer",
     "ko-KR": "확장하다",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(30650-30656)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(30650-30656)"
+    ],
     "$id": 7803
   },
   "关闭": {
@@ -918,7 +1032,9 @@
     "de-DE": "Schließung",
     "fr-FR": "Fermeture",
     "ko-KR": "폐쇄",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31114-31120)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(31114-31120)"
+    ],
     "$id": 7804
   },
   "文件分析运行期间会持续占用 CPU，若搜索、语音合成、文件整理、文件清理出现卡顿，可暂停分析队列把算力让给当前操作": {
@@ -947,8 +1063,40 @@
     "de-DE": "Wusste",
     "fr-FR": "Savait",
     "ko-KR": "알고 있었다",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(31871-31878)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(31871-31878)"
+    ],
     "$id": 22300
+  },
+  "正在加载识别模型，首次准备稍慢…": {
+    "en-US": "Loading the recognition model, the first preparation is slightly slower…",
+    "es-ES": "Cargando el modelo de reconocimiento, la primera preparación es un poco más lenta. …",
+    "ar-EG": "عند تحميل نموذج التعرف ، يكون الإعداد الأول أبطأ قليلا…",
+    "pt-PT": "Carregando o modelo de reconhecimento, a primeira preparação é ligeiramente mais lenta…",
+    "ru-RU": "При загрузке модели распознавания первая подготовка выполняется немного медленнее…",
+    "ja-JP": "認識モデルをロードすると、最初の準備が少し遅くなります…",
+    "de-DE": "Beim Laden des Erkennungsmodells ist die erste Vorbereitung etwas langsamer…",
+    "fr-FR": "Chargement du modèle de reconnaissance, la première préparation est légèrement plus lente…",
+    "ko-KR": "인식 모델을로드하면 첫 번째 준비가 약간 느립니다…",
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(32709-32729)"
+    ],
+    "$id": 32704
+  },
+  "正在准备分析引擎，完成后自动开始": {
+    "en-US": "Preparing the analysis engine, it will start automatically after completion",
+    "es-ES": "Preparando el motor de análisis, se iniciará automáticamente una vez finalizado",
+    "ar-EG": "إعداد محرك التحليل ، وسوف تبدأ تلقائيا بعد الانتهاء",
+    "pt-PT": "Preparando o mecanismo de análise, ele iniciará automaticamente após a conclusão",
+    "ru-RU": "После завершения подготовки механизма анализа он запустится автоматически",
+    "ja-JP": "解析エンジンの準備が完了すると、自動的に開始されます",
+    "de-DE": "Wenn Sie die Analyse-Engine vorbereiten, wird sie nach Abschluss automatisch gestartet",
+    "fr-FR": "Préparation du moteur d'analyse, il démarrera automatiquement une fois terminé",
+    "ko-KR": "분석 엔진을 준비,그것은 완료 후에 자동적으로 시작할 것입니다",
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(32751-32771)"
+    ],
+    "$id": 32705
   },
   "后台视频补全等待中": {
     "en-US": "Background video completion is waiting",
@@ -960,7 +1108,9 @@
     "de-DE": "Die Fertigstellung des Hintergrundvideos wartet",
     "fr-FR": "L'achèvement de la vidéo d'arrière-plan est en attente",
     "ko-KR": "배경 비디오 완성이 기다리고 있습니다",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(32958-32971)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(33653-33666)"
+    ],
     "$id": 39819
   },
   "待补 {videos} 个长视频（剩余 {slices} 段）": {
@@ -973,7 +1123,9 @@
     "de-DE": "{videos} lange Videos, die erstellt werden sollen (verbleibende {slices} Segmente)",
     "fr-FR": "{videos} longues vidéos à composer (segments {slices} restants)",
     "ko-KR": "{videos}구성해야 할 긴 동영상(나머지{slices}세그먼트)",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(33099-33134)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(33794-33829)"
+    ],
     "$id": 39820
   },
   "视频补全": {
@@ -986,7 +1138,9 @@
     "de-DE": "Videovervollständigung",
     "fr-FR": "Achèvement de la vidéo",
     "ko-KR": "비디오 완성",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(34561-34569)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(35256-35264)"
+    ],
     "$id": 39821
   },
   "管理待补文件": {
@@ -999,7 +1153,9 @@
     "de-DE": "Ausstehende Dokumente verwalten",
     "fr-FR": "Gérer les documents en attente",
     "ko-KR": "보류 중인 문서 관리",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(35326-35336)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(36021-36031)"
+    ],
     "$id": 39822
   },
   "文件名": {
@@ -1012,7 +1168,9 @@
     "de-DE": "Dateiname",
     "fr-FR": "Nom du fichier",
     "ko-KR": "파일명",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(36469-36476)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(37164-37171)"
+    ],
     "$id": 3877
   },
   "当前阶段": {
@@ -1025,7 +1183,9 @@
     "de-DE": "Aktuelle Stufe",
     "fr-FR": "Stade actuel",
     "ko-KR": "현재 단계",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(36806-36814)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(37501-37509)"
+    ],
     "$id": 38314
   },
   "状态": {
@@ -1038,7 +1198,9 @@
     "de-DE": "Status",
     "fr-FR": "Statut",
     "ko-KR": "상태",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(37163-37169)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(37858-37864)"
+    ],
     "$id": 3879
   },
   "失败/跳过原因": {
@@ -1051,7 +1213,9 @@
     "de-DE": "Fehler-/Übersprungsgrund",
     "fr-FR": "Raison de l'échec/du saut",
     "ko-KR": "실패/건너뛰기 이유",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(37514-37525)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(38209-38220)"
+    ],
     "$id": 7805
   },
   "缓存/耗时": {
@@ -1064,7 +1228,9 @@
     "de-DE": "Cache / Laufzeit",
     "fr-FR": "Cache / Temps écoulé",
     "ko-KR": "캐시/소요 시간",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(37886-37895)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(38581-38590)"
+    ],
     "$id": 3416
   },
   "最小单元": {
@@ -1077,7 +1243,9 @@
     "de-DE": "Mindesteinheit",
     "fr-FR": "Unité minimale",
     "ko-KR": "최소 단위",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(38227-38235)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(38922-38930)"
+    ],
     "$id": 6232
   },
   "操作": {
@@ -1090,7 +1258,9 @@
     "de-DE": "Aktionen",
     "fr-FR": "Opérations",
     "ko-KR": "작업",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(38593-38599)"],
+    "$files": [
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(39288-39294)"
+    ],
     "$id": 3881
   },
   "智能文件名扩展名确认": {
@@ -1103,7 +1273,9 @@
     "de-DE": "Intelligente Dateinamenerweiterungsbestätigung",
     "fr-FR": "Confirmation intelligente de l'extension du nom de fichier",
     "ko-KR": "스마트 파일명 확장자 확인",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2077-2091)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2143-2157)"
+    ],
     "$id": 10231
   },
   "此操作仅会更新智能文件名，不会影响磁盘中的原始文件。": {
@@ -1116,7 +1288,9 @@
     "de-DE": "Dieser Vorgang aktualisiert nur den intelligenten Dateinamen und hat keinen Einfluss auf die ursprüngliche Datei auf der Festplatte.",
     "fr-FR": "Cette opération ne mettra à jour que le nom de fichier intelligent, sans affecter le fichier original sur le disque.",
     "ko-KR": "이 작업은 스마트 파일명만 업데이트하며, 디스크의 원본 파일에는 영향을 주지 않습니다.",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2151-2181)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2219-2249)"
+    ],
     "$id": 10232
   },
   "智能文件名": {
@@ -1129,7 +1303,9 @@
     "de-DE": "Intelligente Dateinamen",
     "fr-FR": "Noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2476-2485)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2550-2559)"
+    ],
     "$id": 7682
   },
   "定位": {
@@ -1142,7 +1318,9 @@
     "de-DE": "Standort",
     "fr-FR": "Positionner",
     "ko-KR": "위치",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2536-2542)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2611-2617)"
+    ],
     "$id": 10235
   },
   "扩展名确认": {
@@ -1155,7 +1333,9 @@
     "de-DE": "Erweiterungsbestätigung",
     "fr-FR": "Confirmation de l'extension",
     "ko-KR": "확장자 확인",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2569-2578)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2645-2654)"
+    ],
     "$id": 10236
   },
   "在文件夹中打开": {
@@ -1168,7 +1348,9 @@
     "de-DE": "Im Ordner öffnen",
     "fr-FR": "Ouvrir dans le dossier",
     "ko-KR": "폴더에서 열기",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(4558-4569)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(4682-4693)"
+    ],
     "$id": 10237
   },
   "不更名": {
@@ -1181,7 +1363,9 @@
     "de-DE": "Umbenennen unterlassen",
     "fr-FR": "Ne pas renommer",
     "ko-KR": "이름 변경 안 함",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(5454-5461)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(5597-5604)"
+    ],
     "$id": 10238
   },
   "确认": {
@@ -1194,7 +1378,9 @@
     "de-DE": "Bestätigen",
     "fr-FR": "Confirmer",
     "ko-KR": "확인하다",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7149-7155)"],
+    "$files": [
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7332-7338)"
+    ],
     "$id": 10240
   },
   "拖拽改变分栏高度": {
@@ -1207,7 +1393,9 @@
     "de-DE": "Spaltenhöhe durch Ziehen ändern",
     "fr-FR": "Glisser pour modifier la hauteur des panneaux",
     "ko-KR": "컬럼 높이 드래그로 조정",
-    "$files": ["src/renderer/components/analysis/QueueSplitPanel.tsx(1986-1998)"],
+    "$files": [
+      "src/renderer/components/analysis/QueueSplitPanel.tsx(1986-1998)"
+    ],
     "$id": 8148
   }
 }

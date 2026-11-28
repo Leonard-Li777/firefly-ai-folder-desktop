@@ -21,12 +21,39 @@ import { enrichAIStatus, getActiveHardwareBackend, clearEnrichCache } from '../u
 export function registerAIServiceIPCHandlers() {
   ipcMain.handle(
     'ai-service/initialize',
-    async (_event, options?: { onlyDeploy?: boolean; forceDeploy?: boolean }) => {
+    async (
+      _event,
+      options?: { onlyDeploy?: boolean; forceDeploy?: boolean; startupPhaseAOnly?: boolean }
+    ) => {
       try {
         logger.debug(
           LogCategory.MAIN,
           `[IPC] 收到AI服务初始化请求, options: ${JSON.stringify(options)}`
         )
+
+        const { getPerfFlagsSnapshot } = await import('../perf-flags')
+        const { app } = await import('electron')
+        const perfFlags = getPerfFlagsSnapshot(app.getPath('userData'))
+        if (
+          perfFlags.startup.splitInitPhase &&
+          options?.startupPhaseAOnly === true &&
+          !options?.forceDeploy &&
+          !options?.onlyDeploy
+        ) {
+          if (!globalLlamaIndexService) {
+            const service = LlamaIndexAIService.getInstance(
+              ConfigOrchestrator.getInstance(),
+              llamaServerService,
+              ConfigOrchestrator.getInstance()
+            )
+            setGlobalLlamaIndexService(service)
+          }
+          logger.debug(
+            LogCategory.MAIN,
+            '[IPC] 启动阶段 A 轻量放行 (startupPhaseAOnly=true)，后台 Deferred 链将完成引擎与全量加载'
+          )
+          return { success: true, deferred: true }
+        }
 
         const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
         const isTestEnv = shouldSkipAIServiceInTest()
@@ -57,7 +84,10 @@ export function registerAIServiceIPCHandlers() {
         }
 
         if (options?.onlyDeploy) {
-          logger.debug(LogCategory.MAIN, '[IPC] 检测到 onlyDeploy 标志，仅确认引擎可用性，不启动服务')
+          logger.debug(
+            LogCategory.MAIN,
+            '[IPC] 检测到 onlyDeploy 标志，仅确认引擎可用性，不启动服务'
+          )
           if (!globalLlamaIndexService) {
             const service = LlamaIndexAIService.getInstance(
               ConfigOrchestrator.getInstance(),

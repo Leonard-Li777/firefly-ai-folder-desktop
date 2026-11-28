@@ -547,6 +547,13 @@ export class ProcessReaper {
   }
 
   /**
+   * 只读查询当前是否已进入退出流程（供各后台服务 await gate('reaperDone') 后复检）
+   */
+  public isQuittingState(): boolean {
+    return this.isQuitting
+  }
+
+  /**
    * 清理属于本 Worktree 实例的所有子进程（退出路径专用同步函数，已具名登记 sync-allowlist）
    */
   public cleanup(): void {

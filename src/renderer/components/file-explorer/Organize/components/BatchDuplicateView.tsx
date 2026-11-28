@@ -19,7 +19,7 @@ import { Input } from '../../../ui/input'
 import { DuplicateGroup, DuplicateFileItem, DuplicateDetectionStrategy } from '@firefly/types'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
-import { FileTypeIcon, extractFileExtension } from '../../../common/FileTypeIcon'
+import { extractFileExtension } from '../../../common/FileTypeIcon'
 import { SplitPreviewPanel } from '../../SplitPreviewPanel'
 import { PAGE_IDS } from '../../../../constants/page-ids'
 import { usePreviewOverlayStore } from '../../../../stores/preview-overlay-store'
@@ -28,6 +28,7 @@ import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
 import { notifyEnqueueResult } from '../../../../utils/enqueue-notifier'
 import { LogCategory, logger } from '@firefly/shared'
 import { resolveThumbnailUrl } from '../../FileList/components/thumbnail-url-utils'
+import { DuplicateVirtualList } from './batch-duplicate-view/DuplicateVirtualList'
 
 interface BatchDuplicateViewProps {
   files: any[]
@@ -65,23 +66,6 @@ interface StrategyCategory {
   name: string
   icon: string
 }
-
-/** 常见图片扩展名集合 */
-const IMAGE_EXTENSIONS = new Set([
-  'jpg',
-  'jpeg',
-  'png',
-  'gif',
-  'webp',
-  'bmp',
-  'svg',
-  'ico',
-  'avif',
-  'heic',
-  'heif',
-  'tiff',
-  'tif'
-])
 
 export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   files,
@@ -437,45 +421,48 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   )
 
   // 点击文件的多选框切换选择状态（selectedForDelete 代表待删除/待处理，按组独立隔离）
-  const handleToggleFileSelection = (
-    targetGroup: DuplicateGroup,
-    targetPath: string,
-    nextChecked?: boolean
-  ) => {
-    setDuplicateGroups(prev => {
-      return prev.map(group => {
-        // 严格且唯一匹配当前操作的 targetGroup 实例/groupId，避免跨组影响同路径文件
-        const isTargetGroup =
-          (group.groupId && targetGroup.groupId && group.groupId === targetGroup.groupId) ||
-          group === targetGroup
-        if (!isTargetGroup) return group
+  // useCallback 稳定引用：虚拟行 React.memo 依赖 handler 引用稳定，避免勾选引发全列表重渲染
+  const handleToggleFileSelection = useCallback(
+    (targetGroup: DuplicateGroup, targetPath: string, nextChecked?: boolean) => {
+      setDuplicateGroups(prev => {
+        return prev.map(group => {
+          // 严格且唯一匹配当前操作的 targetGroup 实例/groupId，避免跨组影响同路径文件
+          const isTargetGroup =
+            (group.groupId && targetGroup.groupId && group.groupId === targetGroup.groupId) ||
+            group === targetGroup
+          if (!isTargetGroup) return group
 
-        const newFiles = group.files.map(file => {
-          if (file.path !== targetPath) return file
-          const targetSelected =
-            typeof nextChecked === 'boolean' ? nextChecked : !file.selectedForDelete
+          const newFiles = group.files.map(file => {
+            if (file.path !== targetPath) return file
+            const targetSelected =
+              typeof nextChecked === 'boolean' ? nextChecked : !file.selectedForDelete
+            return {
+              ...file,
+              selectedForDelete: targetSelected,
+              isRecommendedKeep: !targetSelected
+            }
+          })
           return {
-            ...file,
-            selectedForDelete: targetSelected,
-            isRecommendedKeep: !targetSelected
+            ...group,
+            files: newFiles
           }
         })
-        return {
-          ...group,
-          files: newFiles
-        }
       })
-    })
-  }
+    },
+    []
+  )
 
   // 点击文件触发右侧分栏预览
-  const handleSelectFileForPreview = (file: DuplicateFileItem) => {
-    setPreviewingPath(file.path)
-    const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
-    const meta = fileMetaMap.get(file.path)
-    const displayTitle = meta?.smartName || file.name
-    usePreviewOverlayStore.getState().openPreview(file.path, displayTitle, ext, PAGE_IDS.ORGANIZE)
-  }
+  const handleSelectFileForPreview = useCallback(
+    (file: DuplicateFileItem) => {
+      setPreviewingPath(file.path)
+      const ext = extractFileExtension(file.path) || extractFileExtension(file.name)
+      const meta = fileMetaMap.get(file.path)
+      const displayTitle = meta?.smartName || file.name
+      usePreviewOverlayStore.getState().openPreview(file.path, displayTitle, ext, PAGE_IDS.ORGANIZE)
+    },
+    [fileMetaMap]
+  )
 
   // 右键菜单状态（对齐 FileList 组件）
   const [contextMenu, setContextMenu] = useState<{
@@ -484,18 +471,22 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     file: DuplicateFileItem
   } | null>(null)
 
-  const handleContextMenu = useCallback((e: React.MouseEvent, file: DuplicateFileItem) => {
-    e.preventDefault()
-    e.stopPropagation()
-    handleSelectFileForPreview(file)
-    setContextMenu({
-      x: e.clientX,
-      y: e.clientY,
-      file
-    })
-  }, [])
+  const handleContextMenu = useCallback(
+    (e: React.MouseEvent, file: DuplicateFileItem) => {
+      e.preventDefault()
+      e.stopPropagation()
+      handleSelectFileForPreview(file)
+      setContextMenu({
+        x: e.clientX,
+        y: e.clientY,
+        file
+      })
+    },
+    [handleSelectFileForPreview]
+  )
 
-  const { addItems } = useAnalysisQueueStore()
+  // R-25：改为 getState() 直取稳定 action，不再整份订阅分析队列 store
+  // （原全量订阅形态会让队列每次进度推送都重渲染整个查重视图）
 
   // 构建右键菜单项（同 FileList 组件）
   const contextMenuItems = useMemo((): ContextMenuItem[] => {
@@ -506,6 +497,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     const displayTitle = meta?.smartName || file.name
 
     const queueItems = useAnalysisQueueStore.getState().snapshot.items
+    const addItems = useAnalysisQueueStore.getState().addItems
     const isPathEqual =
       window.electronAPI?.utils?.isPathEqual || ((p1: string, p2: string) => p1 === p2)
     const queueItem = queueItems.find(q => isPathEqual(q.path, file.path))
@@ -629,37 +621,37 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         }
       }
     ]
-  }, [contextMenu, fileMetaMap, addItems])
+  }, [contextMenu, fileMetaMap])
 
   // 单个组内：全选删除 / 全保留 / 反选 (仅在当前组生效)
-  const handleToggleGroupAction = (
-    targetGroup: DuplicateGroup,
-    action: 'keep_all' | 'trash_all' | 'invert'
-  ) => {
-    setDuplicateGroups(prev => {
-      return prev.map(group => {
-        const isTargetGroup =
-          (group.groupId && targetGroup.groupId && group.groupId === targetGroup.groupId) ||
-          group === targetGroup
-        if (!isTargetGroup) return group
+  const handleToggleGroupAction = useCallback(
+    (targetGroup: DuplicateGroup, action: 'keep_all' | 'trash_all' | 'invert') => {
+      setDuplicateGroups(prev => {
+        return prev.map(group => {
+          const isTargetGroup =
+            (group.groupId && targetGroup.groupId && group.groupId === targetGroup.groupId) ||
+            group === targetGroup
+          if (!isTargetGroup) return group
 
-        const newFiles = group.files.map(f => {
-          if (action === 'keep_all') {
-            return { ...f, isRecommendedKeep: true, selectedForDelete: false }
-          } else if (action === 'trash_all') {
-            return { ...f, isRecommendedKeep: false, selectedForDelete: true }
-          } else {
-            const nextSelected = !f.selectedForDelete
-            return { ...f, isRecommendedKeep: !nextSelected, selectedForDelete: nextSelected }
+          const newFiles = group.files.map(f => {
+            if (action === 'keep_all') {
+              return { ...f, isRecommendedKeep: true, selectedForDelete: false }
+            } else if (action === 'trash_all') {
+              return { ...f, isRecommendedKeep: false, selectedForDelete: true }
+            } else {
+              const nextSelected = !f.selectedForDelete
+              return { ...f, isRecommendedKeep: !nextSelected, selectedForDelete: nextSelected }
+            }
+          })
+          return {
+            ...group,
+            files: newFiles
           }
         })
-        return {
-          ...group,
-          files: newFiles
-        }
       })
-    })
-  }
+    },
+    []
+  )
 
   // 全局动作：全保留 / 反选 (全局有效)
   const handleGlobalToggleAction = (action: 'keep_all' | 'invert') => {
@@ -684,134 +676,137 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   }
 
   // 单组执行即时专属操作 (优化/清理/更名/修正/移入回收站)
-  const handleExecuteGroupAction = async (group: DuplicateGroup, gIdx: number) => {
-    // 耗时操作（如视频优化、Exif清理）按文件大小从小到大升序排序，小文件优先秒级完成，最慢的大文件排在最后
-    const sortedFiles = [...group.files]
-      .filter(f => f.selectedForDelete && f.path)
-      .sort((a, b) => (a.size || 0) - (b.size || 0))
-    const targetPaths = sortedFiles.map(f => f.path)
-    if (targetPaths.length === 0) {
-      toast.warning(t('本组内未勾选任何文件'))
-      return
-    }
+  const handleExecuteGroupAction = useCallback(
+    async (group: DuplicateGroup, gIdx: number) => {
+      // 耗时操作（如视频优化、Exif清理）按文件大小从小到大升序排序，小文件优先秒级完成，最慢的大文件排在最后
+      const sortedFiles = [...group.files]
+        .filter(f => f.selectedForDelete && f.path)
+        .sort((a, b) => (a.size || 0) - (b.size || 0))
+      const targetPaths = sortedFiles.map(f => f.path)
+      if (targetPaths.length === 0) {
+        toast.warning(t('本组内未勾选任何文件'))
+        return
+      }
 
-    setTrashingGroupId(group.groupId || String(gIdx))
-    const isVideoOpt = group.strategy === 'video_optimizer'
-    const isExifClean = group.strategy === 'exif_remover'
-    const loadingToastId = isVideoOpt
-      ? toast.loading(
-          t('正在对 {count} 个视频进行高效能优化转码，首个完成后将自动定位...', {
-            count: targetPaths.length
-          })
-        )
-      : isExifClean
+      setTrashingGroupId(group.groupId || String(gIdx))
+      const isVideoOpt = group.strategy === 'video_optimizer'
+      const isExifClean = group.strategy === 'exif_remover'
+      const loadingToastId = isVideoOpt
         ? toast.loading(
-            t('正在处理 {count} 个图片的 Exif 隐私信息清除，首个完成后将自动定位...', {
+            t('正在对 {count} 个视频进行高效能优化转码，首个完成后将自动定位...', {
               count: targetPaths.length
             })
           )
-        : null
+        : isExifClean
+          ? toast.loading(
+              t('正在处理 {count} 个图片的 Exif 隐私信息清除，首个完成后将自动定位...', {
+                count: targetPaths.length
+              })
+            )
+          : null
 
-    try {
-      if (group.strategy === 'video_optimizer') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
-          'optimize',
-          targetPaths,
-          workspaceDirectoryPath
-        )
-        if (loadingToastId) toast.dismiss(loadingToastId)
-        if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
-          toast.error(t('视频优化转码失败: {err}', { err: res.errors[0]?.error || '' }))
-          return
+      try {
+        if (group.strategy === 'video_optimizer') {
+          const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+            'optimize',
+            targetPaths,
+            workspaceDirectoryPath
+          )
+          if (loadingToastId) toast.dismiss(loadingToastId)
+          if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
+            toast.error(t('视频优化转码失败: {err}', { err: res.errors[0]?.error || '' }))
+            return
+          }
+          toast.success(
+            t('已完成 {count} 个视频的高效能转码优化并导出至目录', {
+              count: res?.successCount || targetPaths.length
+            })
+          )
+        } else if (group.strategy === 'exif_remover') {
+          const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+            'clean_exif',
+            targetPaths,
+            workspaceDirectoryPath
+          )
+          if (loadingToastId) toast.dismiss(loadingToastId)
+          if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
+            toast.error(t('Exif 隐私信息擦除失败: {err}', { err: res.errors[0]?.error || '' }))
+            return
+          }
+          toast.success(
+            t('已成功生成 {count} 个无 Exif 隐私信息的图片副本至目录', {
+              count: res?.successCount || targetPaths.length
+            })
+          )
+        } else if (group.strategy === 'bad_names') {
+          const badNameTargets = group.files
+            .filter(f => f.selectedForDelete && f.path)
+            .map(f => ({ path: f.path, newName: f.fingerprint || undefined }))
+          const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+            'rename_bad_name',
+            badNameTargets,
+            workspaceDirectoryPath
+          )
+          toast.success(
+            t('已成功按推荐名更名 {count} 个异常文件名', {
+              count: res?.successCount || targetPaths.length
+            })
+          )
+        } else if (group.strategy === 'bad_extensions') {
+          const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+            'fix_extension',
+            targetPaths,
+            workspaceDirectoryPath
+          )
+          toast.success(
+            t('已成功修正 {count} 个文件的错误扩展名', {
+              count: res?.successCount || targetPaths.length
+            })
+          )
+        } else {
+          await onExecuteTrash(targetPaths)
         }
-        toast.success(
-          t('已完成 {count} 个视频的高效能转码优化并导出至目录', {
-            count: res?.successCount || targetPaths.length
-          })
-        )
-      } else if (group.strategy === 'exif_remover') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
-          'clean_exif',
-          targetPaths,
-          workspaceDirectoryPath
-        )
-        if (loadingToastId) toast.dismiss(loadingToastId)
-        if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
-          toast.error(t('Exif 隐私信息擦除失败: {err}', { err: res.errors[0]?.error || '' }))
-          return
+
+        // 操作成功后从当前状态中移除已被处理的文件或组
+        setDuplicateGroups(prev => {
+          const nextGroups = prev
+            .map(g => {
+              if (g.groupId === group.groupId || prev.indexOf(g) === gIdx) {
+                const remainingFiles = g.files.filter(f => !targetPaths.includes(f.path))
+                return { ...g, files: remainingFiles }
+              }
+              return g
+            })
+            .filter(g => {
+              const isStandalone = [
+                'empty_files',
+                'empty_folders',
+                'big_files',
+                'temporary_files',
+                'invalid_symlinks',
+                'broken_files',
+                'bad_extensions',
+                'bad_names',
+                'exif_remover',
+                'video_optimizer'
+              ].includes(g.strategy)
+              return isStandalone ? g.files.length > 0 : g.files.length > 1
+            })
+          return nextGroups
+        })
+
+        // 通知父组件和全局重新拉取最新数据库真实文件名列表
+        if (onFilesChanged) {
+          await onFilesChanged()
         }
-        toast.success(
-          t('已成功生成 {count} 个无 Exif 隐私信息的图片副本至目录', {
-            count: res?.successCount || targetPaths.length
-          })
-        )
-      } else if (group.strategy === 'bad_names') {
-        const badNameTargets = group.files
-          .filter(f => f.selectedForDelete && f.path)
-          .map(f => ({ path: f.path, newName: f.fingerprint || undefined }))
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
-          'rename_bad_name',
-          badNameTargets,
-          workspaceDirectoryPath
-        )
-        toast.success(
-          t('已成功按推荐名更名 {count} 个异常文件名', {
-            count: res?.successCount || targetPaths.length
-          })
-        )
-      } else if (group.strategy === 'bad_extensions') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
-          'fix_extension',
-          targetPaths,
-          workspaceDirectoryPath
-        )
-        toast.success(
-          t('已成功修正 {count} 个文件的错误扩展名', {
-            count: res?.successCount || targetPaths.length
-          })
-        )
-      } else {
-        await onExecuteTrash(targetPaths)
+      } catch (err: any) {
+        toast.error(err?.message || t('执行操作失败'))
+      } finally {
+        setTrashingGroupId(null)
       }
-
-      // 操作成功后从当前状态中移除已被处理的文件或组
-      setDuplicateGroups(prev => {
-        const nextGroups = prev
-          .map(g => {
-            if (g.groupId === group.groupId || prev.indexOf(g) === gIdx) {
-              const remainingFiles = g.files.filter(f => !targetPaths.includes(f.path))
-              return { ...g, files: remainingFiles }
-            }
-            return g
-          })
-          .filter(g => {
-            const isStandalone = [
-              'empty_files',
-              'empty_folders',
-              'big_files',
-              'temporary_files',
-              'invalid_symlinks',
-              'broken_files',
-              'bad_extensions',
-              'bad_names',
-              'exif_remover',
-              'video_optimizer'
-            ].includes(g.strategy)
-            return isStandalone ? g.files.length > 0 : g.files.length > 1
-          })
-        return nextGroups
-      })
-
-      // 通知父组件和全局重新拉取最新数据库真实文件名列表
-      if (onFilesChanged) {
-        await onFilesChanged()
-      }
-    } catch (err: any) {
-      toast.error(err?.message || t('执行操作失败'))
-    } finally {
-      setTrashingGroupId(null)
-    }
-  }
+    },
+    [workspaceDirectoryPath, onExecuteTrash, onFilesChanged]
+  )
 
   // 统计信息计算
   const statistics = useMemo(() => {
@@ -1350,24 +1345,6 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     }
   }
 
-  // 判断某组是否以图片网格展示：
-  // 规则：异常与失效文件组（如断裂软链接、损坏文件、错误扩展名、异常文件名）必须以列表模式显示，以便突出排查理由
-  const isImageGroup = useCallback((group: DuplicateGroup): boolean => {
-    const isAnomaly =
-      group.strategy === 'invalid_symlinks' ||
-      group.strategy === 'broken_files' ||
-      group.strategy === 'bad_extensions' ||
-      group.strategy === 'bad_names'
-    if (isAnomaly) return false
-
-    if (group.strategy === 'image_phash') return true
-    const imageCount = group.files.filter(f => {
-      const ext = extractFileExtension(f.path) || extractFileExtension(f.name)
-      return IMAGE_EXTENSIONS.has(ext)
-    }).length
-    return imageCount > 0 && imageCount >= group.files.length / 2
-  }, [])
-
   return (
     <div data-testid="batch-duplicate-view" className="flex-1 flex overflow-hidden bg-background">
       <SplitPane
@@ -1752,9 +1729,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {/* 扫描中顶部流式状态 Banner (不遮挡下方的实时流式结果) */}
-                  {isScanning && (
+                {/* 扫描中顶部流式状态 Banner：固定在列表上方，不随结果滚动 (不遮挡下方的实时流式结果) */}
+                {isScanning && (
+                  <div className="px-4 pt-4 shrink-0">
                     <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/10 via-card to-background p-4 shadow-sm space-y-3">
                       {/* 背景动态流光 */}
                       <div className="absolute top-0 right-0 w-48 h-full bg-primary/5 rounded-full blur-2xl pointer-events-none -z-10 animate-pulse" />
@@ -1817,9 +1794,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         )}
                       </div>
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {!hasScanned && !isScanning ? (
+                {!hasScanned && !isScanning ? (
+                  <div className="flex-1 overflow-y-auto p-4">
                     <div className="h-full min-h-[380px] flex flex-col items-center justify-center p-6 text-center select-none">
                       <div className="relative max-w-md w-full p-8 rounded-3xl border border-border/60 bg-gradient-to-b from-card/80 via-card/50 to-background/90 backdrop-blur-md shadow-lg shadow-black/5 dark:shadow-black/20 flex flex-col items-center space-y-6 transition-all duration-300 hover:border-primary/30">
                         {/* 装饰性背景微光晕 */}
@@ -1881,7 +1860,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         </div>
                       </div>
                     </div>
-                  ) : filteredGroups.length === 0 ? (
+                  </div>
+                ) : filteredGroups.length === 0 ? (
+                  <div className="flex-1 overflow-y-auto p-4">
                     <div className="h-72 flex flex-col items-center justify-center text-muted-foreground space-y-3">
                       <div
                         className={cn(
@@ -1935,670 +1916,23 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         )}
                       </div>
                     </div>
-                  ) : (
-                    filteredGroups.map((group, gIdx) => {
-                      const isImage = isImageGroup(group)
-                      const maxGroupSize = Math.max(...group.files.map(f => f.size || 0))
-                      const bestScore = Math.max(...group.files.map(f => f.qualityScore || 0))
-                      const groupSelectedCount = group.files.filter(f => f.selectedForDelete).length
-                      const isTrashingThisGroup =
-                        trashingGroupId === (group.groupId || String(gIdx))
-
-                      return (
-                        <div
-                          key={group.groupId || gIdx}
-                          className="rounded-2xl border border-border/70 bg-card p-4 space-y-3.5 shadow-xs hover:border-border transition-colors"
-                        >
-                          <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-border/40">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <Badge
-                                variant="secondary"
-                                className="font-bold text-xs gap-1.5 px-2.5 py-1 rounded-lg"
-                              >
-                                <MaterialIcon
-                                  icon={
-                                    group.strategy === 'invalid_symlinks' ||
-                                    group.strategy === 'broken_files' ||
-                                    group.strategy === 'bad_extensions' ||
-                                    group.strategy === 'bad_names'
-                                      ? 'error_outline'
-                                      : 'hub'
-                                  }
-                                  className={cn(
-                                    'text-xs',
-                                    group.strategy === 'invalid_symlinks' ||
-                                      group.strategy === 'broken_files' ||
-                                      group.strategy === 'bad_extensions' ||
-                                      group.strategy === 'bad_names'
-                                      ? 'text-amber-500'
-                                      : 'text-primary'
-                                  )}
-                                />
-                                {group.strategy === 'exact_hash'
-                                  ? t('100% 精确一致')
-                                  : group.strategy === 'image_phash'
-                                    ? t('视觉相似图片')
-                                    : group.strategy === 'audio_hash' ||
-                                        group.strategy === 'audio_match'
-                                      ? t('相似音乐')
-                                      : group.strategy === 'video_phash' ||
-                                          group.strategy === 'video_keyframes'
-                                        ? t('相似视频')
-                                        : group.strategy === 'empty_folders'
-                                          ? t('空文件夹')
-                                          : group.strategy === 'big_files'
-                                            ? t('超大文件')
-                                            : group.strategy === 'empty_files'
-                                              ? t('空文件')
-                                              : group.strategy === 'temporary_files'
-                                                ? t('临时缓存')
-                                                : group.strategy === 'invalid_symlinks'
-                                                  ? t('断裂软链接')
-                                                  : group.strategy === 'broken_files'
-                                                    ? t('损坏文件')
-                                                    : group.strategy === 'bad_extensions'
-                                                      ? t('错误扩展名')
-                                                      : group.strategy === 'bad_names'
-                                                        ? t('异常文件名')
-                                                        : group.strategy === 'exif_remover'
-                                                          ? t('Exif隐私清理')
-                                                          : group.strategy === 'video_optimizer'
-                                                            ? t('视频优化')
-                                                            : group.strategy === 'text_simhash'
-                                                              ? t('文档语义相似')
-                                                              : t('副本衍生文件')}
-                                {/* 专属指标徽章 (根据策略动态呈现贴切文案：相似度、置信度、可优化度等) */}
-                                {(() => {
-                                  const strat = group.strategy
-                                  const percent = Math.round(group.similarityPercentage || 100)
-
-                                  if (strat === 'exact_hash') {
-                                    return (
-                                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                                        {t('精确一致 100%')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'broken_files') {
-                                    return (
-                                      <span className="text-xs text-destructive font-mono font-bold px-2 py-0.5 rounded-md bg-destructive/10 border border-destructive/20">
-                                        {t('损坏置信度 100%')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'invalid_symlinks') {
-                                    return (
-                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                        {t('断裂失效 100%')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'bad_extensions') {
-                                    return (
-                                      <span className="text-xs text-indigo-600 dark:text-indigo-400 font-mono font-bold px-2 py-0.5 rounded-md bg-indigo-500/10 border border-indigo-500/20">
-                                        {t('格式置信度 100%')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'bad_names') {
-                                    return (
-                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                        {t('命名合规度 100%')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'video_optimizer') {
-                                    return (
-                                      <span className="text-xs text-primary font-mono font-bold px-2 py-0.5 rounded-md bg-primary/10 border border-primary/20">
-                                        {t('优化空间 {percent}%', { percent })}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'exif_remover') {
-                                    return (
-                                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                                        {t('隐私敏感度 100%')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'empty_files') {
-                                    return (
-                                      <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
-                                        {t('0 字节空文件')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'empty_folders') {
-                                    return (
-                                      <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
-                                        {t('空文件夹')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'temporary_files') {
-                                    return (
-                                      <span className="text-xs text-muted-foreground font-mono font-bold px-2 py-0.5 rounded-md bg-muted/60 border border-border/40">
-                                        {t('临时缓存')}
-                                      </span>
-                                    )
-                                  }
-                                  if (strat === 'big_files') {
-                                    return (
-                                      <span className="text-xs text-amber-600 dark:text-amber-400 font-mono font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                                        {t('大文件排序')}
-                                      </span>
-                                    )
-                                  }
-
-                                  // 默认多模态查重（图片、音乐、视频、文档相似度）
-                                  return (
-                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20">
-                                      {t('相似度 {percent}%', { percent })}
-                                    </span>
-                                  )
-                                })()}
-                              </Badge>
-                            </div>
-
-                            <div className="flex items-center gap-2 flex-wrap ml-auto justify-end">
-                              {/* 组快捷操作按钮 */}
-                              <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/40">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleToggleGroupAction(group, 'keep_all')}
-                                  className="h-6 px-2 text-[11px] text-muted-foreground hover:text-emerald-600 rounded-md cursor-pointer font-medium"
-                                  title={t('本组全部保留')}
-                                >
-                                  {t('全保留')}
-                                </Button>
-                                <span className="text-border text-xs">|</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleToggleGroupAction(group, 'invert')}
-                                  className="h-6 px-2 text-[11px] text-muted-foreground hover:text-primary rounded-md cursor-pointer font-medium"
-                                  title={t('反选本组状态')}
-                                >
-                                  {t('反选')}
-                                </Button>
-                              </div>
-
-                              {/* 本组专属：执行操作按钮 (针对特殊策略显示 优化/清理/更名/修正，普通查重显示 删除) */}
-                              {(() => {
-                                const isVideoOpt = group.strategy === 'video_optimizer'
-                                const isExif = group.strategy === 'exif_remover'
-                                const isBadNames = group.strategy === 'bad_names'
-                                const isBadExt = group.strategy === 'bad_extensions'
-
-                                let actionLabel = t('删除')
-                                let actionIcon = 'delete'
-                                let actionVariantClass =
-                                  'border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground'
-
-                                if (isVideoOpt) {
-                                  actionLabel = t('优化')
-                                  actionIcon = 'auto_fix_high'
-                                  actionVariantClass =
-                                    'border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground'
-                                } else if (isExif) {
-                                  actionLabel = t('清理')
-                                  actionIcon = 'cleaning_services'
-                                  actionVariantClass =
-                                    'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white'
-                                } else if (isBadNames) {
-                                  actionLabel = t('更名')
-                                  actionIcon = 'drive_file_rename_outline'
-                                  actionVariantClass =
-                                    'border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white'
-                                } else if (isBadExt) {
-                                  actionLabel = t('修正')
-                                  actionIcon = 'build'
-                                  actionVariantClass =
-                                    'border-indigo-500/30 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white'
-                                }
-
-                                const countText =
-                                  groupSelectedCount > 0
-                                    ? `${actionLabel} (${groupSelectedCount})`
-                                    : actionLabel
-
-                                return (
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={() => handleExecuteGroupAction(group, gIdx)}
-                                    disabled={
-                                      isTrashingThisGroup || isTrashing || groupSelectedCount === 0
-                                    }
-                                    className={cn(
-                                      'h-6.5 px-2.5 text-xs font-bold gap-1 rounded-lg transition-all cursor-pointer shadow-2xs',
-                                      actionVariantClass
-                                    )}
-                                    title={t('对本组选中的文件执行{action}', {
-                                      action: actionLabel
-                                    })}
-                                  >
-                                    <MaterialIcon
-                                      icon={isTrashingThisGroup ? 'sync' : actionIcon}
-                                      className={cn(
-                                        'text-xs',
-                                        isTrashingThisGroup && 'animate-spin'
-                                      )}
-                                    />
-                                    <span>{isTrashingThisGroup ? t('处理中...') : countText}</span>
-                                  </Button>
-                                )
-                              })()}
-                            </div>
-                          </div>
-
-                          {isImage ? (
-                            /* 1. 图片网格展示模式：平均分布，达到最小间隙自动换行 */
-                            <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
-                              {group.files.map((file, fIdx) => {
-                                const isSelectedForDelete = !!file.selectedForDelete
-                                const isPreviewing = previewingPath === file.path
-                                const meta = fileMetaMap.get(file.path)
-                                const isMaxSize = file.size === maxGroupSize && maxGroupSize > 0
-                                const thumbUrl = getFileThumbnailUrl(file)
-                                const ext =
-                                  extractFileExtension(file.path) || extractFileExtension(file.name)
-
-                                const isVideoOpt = group.strategy === 'video_optimizer'
-                                const isExif = group.strategy === 'exif_remover'
-                                const isBadNames = group.strategy === 'bad_names'
-                                const isBadExt = group.strategy === 'bad_extensions'
-                                const isFixStrategy = isVideoOpt || isExif || isBadNames || isBadExt
-
-                                let selectedClass =
-                                  'border-destructive/60 bg-destructive/10 ring-1 ring-destructive/30 shadow-xs'
-                                if (isVideoOpt) {
-                                  selectedClass =
-                                    'border-primary/60 bg-primary/10 ring-1 ring-primary/30 shadow-xs'
-                                } else if (isExif) {
-                                  selectedClass =
-                                    'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-xs'
-                                } else if (isBadNames) {
-                                  selectedClass =
-                                    'border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs'
-                                } else if (isBadExt) {
-                                  selectedClass =
-                                    'border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30 shadow-xs'
-                                }
-
-                                return (
-                                  <div
-                                    key={file.fileId || fIdx}
-                                    onClick={() => handleSelectFileForPreview(file)}
-                                    onContextMenu={e => handleContextMenu(e, file)}
-                                    className={cn(
-                                      'group relative rounded-xl border p-2.5 cursor-pointer transition-all duration-150 select-none flex flex-col justify-between',
-                                      'bg-background hover:shadow-md hover:border-primary/50',
-                                      isSelectedForDelete
-                                        ? selectedClass
-                                        : 'border-border/60 bg-background',
-                                      isPreviewing && 'ring-2 ring-primary border-primary'
-                                    )}
-                                    title={`${file.name}\n${t('大小: {size}', { size: formatBytes(file.size) })}\n${file.resolution ? `${t('分辨率: {res}', { res: file.resolution })}\n` : ''}${t('路径: {path}', { path: file.path })}`}
-                                  >
-                                    {/* 顶部大 Checkbox 悬浮/固定于右上角 */}
-                                    <div
-                                      className="absolute top-0 right-0 z-20 shadow-xs cursor-pointer select-none"
-                                      onClick={e => {
-                                        e.stopPropagation()
-                                        handleToggleFileSelection(group, file.path)
-                                      }}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        checked={isSelectedForDelete}
-                                        onChange={e => {
-                                          e.stopPropagation()
-                                          handleToggleFileSelection(
-                                            group,
-                                            file.path,
-                                            e.target.checked
-                                          )
-                                        }}
-                                        onClick={e => e.stopPropagation()}
-                                        className="h-5 w-5 rounded-md border-2 border-primary text-destructive accent-destructive cursor-pointer"
-                                        title={t('勾选此文件')}
-                                      />
-                                    </div>
-
-                                    {/* 图片缩略图预览容器 */}
-                                    <div className="w-full aspect-square rounded-lg overflow-hidden bg-muted/30 flex items-center justify-center relative mb-2 border border-border/30">
-                                      {thumbUrl ? (
-                                        <img
-                                          src={thumbUrl}
-                                          alt={file.name}
-                                          loading="lazy"
-                                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                          onError={e => {
-                                            ;(e.target as HTMLElement).style.display = 'none'
-                                          }}
-                                        />
-                                      ) : (
-                                        <FileTypeIcon
-                                          path={file.path}
-                                          extension={ext}
-                                          className="w-12 h-12 object-contain"
-                                        />
-                                      )}
-
-                                      {/* 图片规格角标 */}
-                                      {file.resolution && (
-                                        <div className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/60 text-white text-[9px] font-mono">
-                                          {file.resolution}
-                                        </div>
-                                      )}
-                                    </div>
-
-                                    {/* 文件名信息 (真实文件名 + 智能文件名) */}
-                                    <div className="space-y-1 min-w-0">
-                                      <div
-                                        className={cn(
-                                          'text-xs font-semibold truncate',
-                                          isSelectedForDelete && !isFixStrategy
-                                            ? 'text-muted-foreground line-through opacity-80'
-                                            : 'text-foreground'
-                                        )}
-                                        title={file.name}
-                                      >
-                                        {file.name}
-                                      </div>
-
-                                      {meta?.smartName && meta.smartName !== file.name && (
-                                        <div
-                                          className="text-[11px] text-primary truncate font-medium flex items-center gap-1"
-                                          title={t('智能命名: {name}', { name: meta.smartName })}
-                                        >
-                                          <MaterialIcon
-                                            icon="auto_awesome"
-                                            className="text-[10px] shrink-0"
-                                          />
-                                          <span className="truncate">{meta.smartName}</span>
-                                        </div>
-                                      )}
-
-                                      <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-1">
-                                        <span>{formatBytes(file.size)}</span>
-                                        {isMaxSize && group.files.length > 1 && (
-                                          <span className="text-[9px] px-1 py-0 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
-                                            {t('最大')}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            /* 2. 文档列表展示模式 (左侧图标/缩略图，右侧文件信息) */
-                            <div className="space-y-2">
-                              {group.files.map((file, fIdx) => {
-                                const isSelectedForDelete = !!file.selectedForDelete
-                                const isPreviewing = previewingPath === file.path
-                                const meta = fileMetaMap.get(file.path)
-                                const ext =
-                                  extractFileExtension(file.path) || extractFileExtension(file.name)
-                                const isMaxSize = file.size === maxGroupSize && maxGroupSize > 0
-                                const isBestScore = file.qualityScore === bestScore && bestScore > 0
-                                const thumbUrl = getFileThumbnailUrl(file)
-
-                                const isVideoOpt = group.strategy === 'video_optimizer'
-                                const isExif = group.strategy === 'exif_remover'
-                                const isBadNames = group.strategy === 'bad_names'
-                                const isBadExt = group.strategy === 'bad_extensions'
-                                const isFixStrategy = isVideoOpt || isExif || isBadNames || isBadExt
-
-                                let selectedClass =
-                                  'border-destructive/60 bg-destructive/10 ring-1 ring-destructive/30 shadow-xs'
-                                if (isVideoOpt) {
-                                  selectedClass =
-                                    'border-primary/60 bg-primary/10 ring-1 ring-primary/30 shadow-xs'
-                                } else if (isExif) {
-                                  selectedClass =
-                                    'border-emerald-500/60 bg-emerald-500/10 ring-1 ring-emerald-500/30 shadow-xs'
-                                } else if (isBadNames) {
-                                  selectedClass =
-                                    'border-amber-500/60 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs'
-                                } else if (isBadExt) {
-                                  selectedClass =
-                                    'border-indigo-500/60 bg-indigo-500/10 ring-1 ring-indigo-500/30 shadow-xs'
-                                }
-
-                                return (
-                                  <div
-                                    key={file.fileId || fIdx}
-                                    onClick={() => handleSelectFileForPreview(file)}
-                                    onContextMenu={e => handleContextMenu(e, file)}
-                                    className={cn(
-                                      'flex items-center justify-between p-3 rounded-xl border transition-all duration-150 cursor-pointer select-none gap-3.5',
-                                      'bg-background hover:bg-accent/40',
-                                      isSelectedForDelete
-                                        ? selectedClass
-                                        : 'border-border/60 bg-background',
-                                      isPreviewing && 'ring-2 ring-primary border-primary'
-                                    )}
-                                  >
-                                    {/* 左侧：文件图标/缩略图 + 文件名/路径信息 */}
-                                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                                      <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center shrink-0 border border-border/40 overflow-hidden">
-                                        {thumbUrl ? (
-                                          <img
-                                            src={thumbUrl}
-                                            alt={file.name}
-                                            loading="lazy"
-                                            className="w-full h-full object-cover"
-                                            onError={e => {
-                                              ;(e.target as HTMLElement).style.display = 'none'
-                                            }}
-                                          />
-                                        ) : (
-                                          <FileTypeIcon
-                                            path={file.path}
-                                            extension={ext}
-                                            className="w-7 h-7 object-contain"
-                                          />
-                                        )}
-                                      </div>
-
-                                      <div className="min-w-0 flex-1 space-y-1">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span
-                                            className={cn(
-                                              'text-xs font-bold truncate max-w-[280px] sm:max-w-[420px]',
-                                              isSelectedForDelete && !isFixStrategy
-                                                ? 'text-muted-foreground line-through opacity-80'
-                                                : 'text-foreground'
-                                            )}
-                                            title={file.name}
-                                          >
-                                            {file.name}
-                                          </span>
-
-                                          {/* 针对异常文件策略的特有字段重点高亮呈现 */}
-                                          {group.strategy === 'bad_names' && file.fingerprint && (
-                                            <span
-                                              className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 border border-emerald-500/20"
-                                              title={t('建议更名: {name}', {
-                                                name: file.fingerprint
-                                              })}
-                                            >
-                                              <MaterialIcon
-                                                icon="drive_file_rename_outline"
-                                                className="text-xs shrink-0"
-                                              />
-                                              <span>
-                                                {t('推荐更名: {name}', { name: file.fingerprint })}
-                                              </span>
-                                            </span>
-                                          )}
-
-                                          {group.strategy === 'bad_extensions' &&
-                                            file.fingerprint && (
-                                              <span
-                                                className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 border border-amber-500/20"
-                                                title={t('真实格式应为: {ext}', {
-                                                  ext: file.fingerprint
-                                                })}
-                                              >
-                                                <MaterialIcon
-                                                  icon="extension"
-                                                  className="text-xs shrink-0"
-                                                />
-                                                <span>
-                                                  {t('实际格式: {ext}', { ext: file.fingerprint })}
-                                                </span>
-                                              </span>
-                                            )}
-
-                                          {group.strategy === 'broken_files' &&
-                                            file.fingerprint && (
-                                              <span
-                                                className="text-[11px] px-2 py-0.5 rounded-md bg-destructive/10 text-destructive font-medium flex items-center gap-1 border border-destructive/20"
-                                                title={file.fingerprint}
-                                              >
-                                                <MaterialIcon
-                                                  icon="error"
-                                                  className="text-xs shrink-0"
-                                                />
-                                                <span className="truncate max-w-[220px]">
-                                                  {file.fingerprint}
-                                                </span>
-                                              </span>
-                                            )}
-
-                                          {group.strategy === 'invalid_symlinks' &&
-                                            file.fingerprint && (
-                                              <span
-                                                className="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 border border-amber-500/20"
-                                                title={file.fingerprint}
-                                              >
-                                                <MaterialIcon
-                                                  icon="link_off"
-                                                  className="text-xs shrink-0"
-                                                />
-                                                <span className="truncate max-w-[240px]">
-                                                  {file.fingerprint}
-                                                </span>
-                                              </span>
-                                            )}
-
-                                          {group.strategy === 'video_optimizer' &&
-                                            file.fingerprint && (
-                                              <span
-                                                className="text-[11px] px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium flex items-center gap-1 border border-primary/20"
-                                                title={file.fingerprint}
-                                              >
-                                                <MaterialIcon
-                                                  icon="smart_display"
-                                                  className="text-xs shrink-0"
-                                                />
-                                                <span className="truncate max-w-[220px]">
-                                                  {file.fingerprint}
-                                                </span>
-                                              </span>
-                                            )}
-                                        </div>
-
-                                        {meta?.smartName &&
-                                          meta.smartName !== file.name &&
-                                          group.strategy !== 'bad_names' && (
-                                            <div className="text-xs text-primary font-semibold truncate flex items-center gap-1.5">
-                                              <MaterialIcon
-                                                icon="auto_awesome"
-                                                className="text-xs shrink-0"
-                                              />
-                                              <span className="truncate">{meta.smartName}</span>
-                                            </div>
-                                          )}
-
-                                        <div
-                                          className="text-[10px] text-muted-foreground/80 font-mono truncate"
-                                          title={file.path}
-                                        >
-                                          {file.path}
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* 右侧：元数据信息 (大小、修改时间、质量分) + 尾部大 Checkbox */}
-                                    <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground shrink-0">
-                                      <div className="text-right">
-                                        <div className="flex items-center justify-end gap-1.5">
-                                          <span className="font-bold text-foreground">
-                                            {formatBytes(file.size)}
-                                          </span>
-                                          {isMaxSize && group.files.length > 1 && (
-                                            <span className="text-[9px] px-1 py-0 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold">
-                                              {t('最大')}
-                                            </span>
-                                          )}
-                                        </div>
-                                        {file.modifiedAt && (
-                                          <div className="text-[10px] text-muted-foreground/70">
-                                            {file.modifiedAt.split('T')[0] || file.modifiedAt}
-                                          </div>
-                                        )}
-                                      </div>
-
-                                      {file.qualityScore !== undefined &&
-                                        file.qualityScore !== null && (
-                                          <div className="text-right hidden sm:block">
-                                            <div className="text-[10px] text-muted-foreground">
-                                              {t('质量分')}
-                                            </div>
-                                            <div className="font-bold text-foreground flex items-center gap-1">
-                                              {file.qualityScore}
-                                              {isBestScore && (
-                                                <span className="text-[9px] px-1 py-0 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold">
-                                                  {t('最优')}
-                                                </span>
-                                              )}
-                                            </div>
-                                          </div>
-                                        )}
-
-                                      {/* 列表尾部的大 Checkbox */}
-                                      <div
-                                        className="pl-2 border-l border-border/40 flex items-center p-1 cursor-pointer select-none"
-                                        onClick={e => {
-                                          e.stopPropagation()
-                                          handleToggleFileSelection(group, file.path)
-                                        }}
-                                      >
-                                        <input
-                                          type="checkbox"
-                                          checked={isSelectedForDelete}
-                                          onChange={e => {
-                                            e.stopPropagation()
-                                            handleToggleFileSelection(
-                                              group,
-                                              file.path,
-                                              e.target.checked
-                                            )
-                                          }}
-                                          onClick={e => e.stopPropagation()}
-                                          className="h-5 w-5 rounded-md border-2 border-primary text-destructive accent-destructive cursor-pointer"
-                                          title={t('勾选以删除此文件')}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-
+                  </div>
+                ) : (
+                  <DuplicateVirtualList
+                    groups={filteredGroups}
+                    fileMetaMap={fileMetaMap}
+                    previewingPath={previewingPath}
+                    trashingGroupId={trashingGroupId}
+                    isTrashing={isTrashing}
+                    formatBytes={formatBytes}
+                    getFileThumbnailUrl={getFileThumbnailUrl}
+                    onToggleFileSelection={handleToggleFileSelection}
+                    onSelectFileForPreview={handleSelectFileForPreview}
+                    onContextMenu={handleContextMenu}
+                    onToggleGroupAction={handleToggleGroupAction}
+                    onExecuteGroupAction={handleExecuteGroupAction}
+                  />
+                )}
                 {/* 隐藏的批量处理执行触发挂载点（供顶部统一操作栏触发） */}
                 <button
                   id="btn-trash-duplicates-trigger"

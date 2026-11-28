@@ -21,7 +21,8 @@ import {
   type ConnectedTargetIdentity,
   readWithWatchdog,
   sleepCancellable,
-  isPathEqual
+  isPathEqual,
+  isTestEnvironment
 } from '@firefly/shared'
 import { Tier2CircuitBreaker, Tier2CircuitState } from '../tier2-circuit-breaker'
 import { CRASH_HEAL_MAX_ATTEMPTS, decideCrashHeal } from '../crash-heal-policy'
@@ -1281,7 +1282,10 @@ export class EngineBridgeService {
 
   /** 判断当前 SSE 连接是否已健康绑定在目标身份上 */
   private isCurrentTargetHealthy(expectedTarget?: ConnectedTargetIdentity): boolean {
-    if (this.eventStreamAbortController === null || this.eventStreamAbortController.signal.aborted) {
+    if (
+      this.eventStreamAbortController === null ||
+      this.eventStreamAbortController.signal.aborted
+    ) {
       return false
     }
     if (this.connectedTarget === null || this.connectedTarget.baseUrl !== this.baseUrl) {
@@ -1659,6 +1663,14 @@ export class EngineBridgeService {
    * @returns 是否发现并采纳了可用端口
    */
   private async adoptRunningEnginePort(epoch: number = this.stopEpoch): Promise<boolean> {
+    const { gate, isStartupGatesInitialized } = await import('../../../main/startup-gates')
+    if (!isTestEnvironment() || isStartupGatesInitialized()) {
+      await gate('reaperDone')
+    }
+    const { processReaper } = await import('../../../main/process-reaper')
+    if (epoch !== this.stopEpoch || processReaper.isQuittingState()) {
+      return false
+    }
     for (let port = TIER2_ENGINE_PORT; port < TIER2_ENGINE_PORT + PORT_SCAN_RANGE; port++) {
       if (epoch !== this.stopEpoch) {
         return false
@@ -2138,6 +2150,18 @@ export class EngineBridgeService {
         this.isStarting = false
         this.broadcastStatus()
         return true
+      }
+
+      // J-06 / B5：spawn 前必须等待 reaperDone 门闸落地，并复检退出态
+      const { gate, isStartupGatesInitialized } = await import('../../../main/startup-gates')
+      if (!isTestEnvironment() || isStartupGatesInitialized()) {
+        await gate('reaperDone')
+      }
+      const { processReaper: reaperForCheck } = await import('../../../main/process-reaper')
+      if (reaperForCheck.isQuittingState() || this.stopController.signal.aborted) {
+        logger.info(LogCategory.SYSTEM, '[EngineBridge] 进程正在退出，取消拉起 Tier 2 引擎')
+        this.isStarting = false
+        return false
       }
 
       // 即将拉起新宿主：清零隐式启动节流窗口（新进程 ⇒ 新窗口）
@@ -2778,9 +2802,7 @@ export class EngineBridgeService {
    * 仅在共享体自身以失败终态结束时触发一次（含孤儿共享体终态）；
    * 单个调用方自身的短超时或 Abort 绝不触发本事件。
    */
-  public onEnsureFailed(
-    fn: (mode: EngineTargetMode, res: EnsureReadyResult) => void
-  ): () => void {
+  public onEnsureFailed(fn: (mode: EngineTargetMode, res: EnsureReadyResult) => void): () => void {
     this.ensureFailedListeners.add(fn)
     return () => {
       this.ensureFailedListeners.delete(fn)
@@ -2836,12 +2858,7 @@ export class EngineBridgeService {
           } 模型就绪超时（${Math.round(callerTimeoutMs / 1000)}s）`
         }
       }
-      const waitRes = await this.raceCallerWithShared(
-        existing.promise,
-        mode,
-        waitRemaining,
-        signal
-      )
+      const waitRes = await this.raceCallerWithShared(existing.promise, mode, waitRemaining, signal)
       if (waitRes.code === 'caller_timeout') {
         return waitRes
       }
@@ -2945,10 +2962,7 @@ export class EngineBridgeService {
     })
 
     if (res.ok) {
-      logger.info(
-        LogCategory.SYSTEM,
-        `[EngineBridge] 引擎推理服务已就绪（模式: ${mode}）`
-      )
+      logger.info(LogCategory.SYSTEM, `[EngineBridge] 引擎推理服务已就绪（模式: ${mode}）`)
       return res
     }
 

@@ -17,7 +17,12 @@
  */
 import { logger, LogCategory } from '@firefly/shared'
 
-export type StartupGateName = 'dbReady' | 'reaperDone' | 'cloudReady' | 'licenseConfirmed' | 'phaseAGate'
+export type StartupGateName =
+  | 'dbReady'
+  | 'reaperDone'
+  | 'cloudReady'
+  | 'licenseConfirmed'
+  | 'phaseAGate'
 
 export type GateSettlement = { ok: true; bypassed?: boolean } | { ok: false; reason: string }
 
@@ -38,6 +43,7 @@ interface GateEntry {
 }
 
 let gates: Map<StartupGateName, GateEntry> | null = null
+let gatesInitialized = false
 
 function createEntry(): GateEntry {
   let settle!: (settlement: GateSettlement) => void
@@ -66,11 +72,16 @@ function settleOnce(name: StartupGateName, settlement: GateSettlement): void {
  * 已落地门闸保持原结果（first-settle-wins，严禁运行期翻转）。
  */
 export function initStartupGates(options: { bypassAll?: boolean } = {}): void {
+  gatesInitialized = true
   ensureGates()
   if (options.bypassAll !== true) return
   for (const name of STARTUP_GATE_NAMES) {
     settleOnce(name, { ok: true, bypassed: true })
   }
+}
+
+export function isStartupGatesInitialized(): boolean {
+  return gatesInitialized
 }
 
 /** 等待门闸落地（永不 reject；失败以 `{ ok: false, reason }` 结构化返回） */
@@ -108,4 +119,5 @@ export function assertPhaseReady(name: StartupGateName, caller: string): void {
 /** 仅供单测：重置全部门闸状态 */
 export function resetStartupGatesForTesting(): void {
   gates = null
+  gatesInitialized = false
 }

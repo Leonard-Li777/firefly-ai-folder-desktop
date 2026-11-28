@@ -77,7 +77,9 @@ export class LibreOfficeDaemonService {
    * 确保 LibreOffice 常驻守护服务在当前应用生命周期内稳定运行
    * 若未启动或崩溃则自动拉起，应用退出时自动彻底销毁，防范内存泄漏
    */
-  public async ensureDaemonRunning(defaultPort: number = APP_PORTS.LIBREOFFICE_DAEMON): Promise<LibreOfficeDaemonStatus> {
+  public async ensureDaemonRunning(
+    defaultPort: number = APP_PORTS.LIBREOFFICE_DAEMON
+  ): Promise<LibreOfficeDaemonStatus> {
     // 1. 如果当前应用生命周期内已知正在运行且 PID 有效，直接复用
     if (
       this.activePort &&
@@ -108,6 +110,21 @@ export class LibreOfficeDaemonService {
 
     const freePort = await this.getFreePort(defaultPort)
     try {
+      // J-06 / B5：spawn 前必须等待 reaperDone 门闸落地，并复检退出态
+      const { gate, isStartupGatesInitialized } = await import('../../main/startup-gates')
+      const { isTestEnvironment } = await import('@firefly/shared')
+      if (!isTestEnvironment() || isStartupGatesInitialized()) {
+        await gate('reaperDone')
+      }
+      const { processReaper } = await import('../../main/process-reaper')
+      if (processReaper.isQuittingState()) {
+        logger.info(
+          LogCategory.PROCESS_MANAGER,
+          '[LibreOfficeDaemon] 进程正在退出，取消拉起 LibreOffice 常驻服务'
+        )
+        return { running: false, reused: false }
+      }
+
       logger.info(
         LogCategory.PROCESS_MANAGER,
         `[LibreOfficeDaemon] 正在启动常驻守护服务 (Port: ${freePort}, Exe: ${loInfo.path})...`

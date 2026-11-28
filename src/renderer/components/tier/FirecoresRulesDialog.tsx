@@ -62,7 +62,13 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
   // 兑换无限额度：处理中状态
   const [isUnlocking, setIsUnlocking] = useState(false)
-  const { counters, firecores = 0, tier, subscription, spendFirecores, refCode } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const counters = useTierStore(s => s.counters)
+  const firecores = useTierStore(s => s.firecores) ?? 0
+  const tier = useTierStore(s => s.tier)
+  const subscription = useTierStore(s => s.subscription)
+  const spendFirecores = useTierStore(s => s.spendFirecores)
+  const refCode = useTierStore(s => s.refCode)
   const wasInvited = counters?.is_invited === 1
 
   const config = useConfigStore(state => state.config)
@@ -877,8 +883,11 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
  * 展示用户的萤火收入与支出记录，切到该 Tab 时自动拉取最新数据
  */
 const ConsumptionDetailTab: React.FC = () => {
-  const { consumptionDetails, fetchConsumptionDetails, isConsumptionLoading, subscription } =
-    useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const consumptionDetails = useTierStore(s => s.consumptionDetails)
+  const fetchConsumptionDetails = useTierStore(s => s.fetchConsumptionDetails)
+  const isConsumptionLoading = useTierStore(s => s.isConsumptionLoading)
+  const subscription = useTierStore(s => s.subscription)
 
   useEffect(() => {
     fetchConsumptionDetails()
