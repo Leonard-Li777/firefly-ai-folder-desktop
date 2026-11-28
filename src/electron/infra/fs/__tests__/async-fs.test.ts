@@ -2,15 +2,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { promises as fsp } from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
-import { statOrNull, statOrThrow, existsAsync, readdirTyped, mkdirp, safeUnlink } from '../async-fs'
+import { logger } from '@firefly/shared'
+import {
+  statOrNull,
+  statOrThrow,
+  existsAsync,
+  readdirTyped,
+  mkdirp,
+  safeUnlink,
+  setDefaultStatErrorReporter
+} from '../async-fs'
+import { mapLimit } from '../concurrency'
 
 let tmpDir = ''
 
 beforeEach(async () => {
+  setDefaultStatErrorReporter()
   tmpDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'ff-async-fs-'))
 })
 
 afterEach(async () => {
+  setDefaultStatErrorReporter()
   await fsp.rm(tmpDir, { recursive: true, force: true })
   vi.restoreAllMocks()
 })
@@ -56,10 +68,12 @@ describe('statOrNull —— INV-1 四类输入分支契约', () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
-  it('stat 抛非「未命中」错误（EACCES）→ 返回 null，并回调 onError 交调用方 logger.warn（禁止静默降级）', async () => {
+  it('stat 抛非「未命中」错误（EACCES）→ 返回 null，且仅回调传入的 onError（不走默认上报器）', async () => {
     const denied = Object.assign(new Error('permission denied'), { code: 'EACCES' })
     vi.spyOn(fsp, 'stat').mockRejectedValueOnce(denied)
     const onError = vi.fn()
+    const defaultReporter = vi.fn()
+    setDefaultStatErrorReporter(defaultReporter)
 
     const stat = await statOrNull(path.join(tmpDir, 'whatever'), onError)
 
@@ -67,6 +81,66 @@ describe('statOrNull —— INV-1 四类输入分支契约', () => {
     expect(onError).toHaveBeenCalledTimes(1)
     expect(onError.mock.calls[0][0]?.code).toBe('EACCES')
     expect(onError.mock.calls[0][1]).toBe(path.join(tmpDir, 'whatever'))
+    expect(defaultReporter).not.toHaveBeenCalled()
+  })
+
+  it('裸调 statOrNull(p) 遇到 EACCES/EPERM → 默认走 @firefly/shared logger.warn 且返回 null', async () => {
+    const denied = Object.assign(new Error('operation not permitted'), { code: 'EPERM' })
+    vi.spyOn(fsp, 'stat').mockRejectedValueOnce(denied)
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const target = path.join(tmpDir, 'locked.txt')
+
+    const stat = await statOrNull(target)
+
+    expect(stat).toBeNull()
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(String(warnSpy.mock.calls[0][1])).toContain('EPERM')
+    expect(String(warnSpy.mock.calls[0][1])).toContain(target)
+  })
+
+  it('ENOENT / ENOTDIR 正常未命中时默认上报器调用 0 次', async () => {
+    const defaultReporter = vi.fn()
+    setDefaultStatErrorReporter(defaultReporter)
+
+    await expect(statOrNull(path.join(tmpDir, 'missing.txt'))).resolves.toBeNull()
+    expect(defaultReporter).not.toHaveBeenCalled()
+  })
+
+  it('mapLimit(paths, 2, statOrNull) 与 Array.map 传入数字索引第 2 参时不抛 TypeError 且走默认上报器', async () => {
+    const denied = Object.assign(new Error('permission denied'), { code: 'EACCES' })
+    vi.spyOn(fsp, 'stat').mockRejectedValue(denied)
+    const defaultReporter = vi.fn()
+    setDefaultStatErrorReporter(defaultReporter)
+
+    const paths = [path.join(tmpDir, 'p0.txt'), path.join(tmpDir, 'p1.txt')]
+
+    const resultsFromMapLimit = await mapLimit(
+      paths,
+      2,
+      statOrNull as unknown as (item: string, index: number) => Promise<Awaited<ReturnType<typeof statOrNull>>>
+    )
+    const resultsFromArrayMap = await Promise.all(
+      paths.map(statOrNull as unknown as (item: string, index: number) => Promise<Awaited<ReturnType<typeof statOrNull>>>)
+    )
+
+    expect(resultsFromMapLimit).toEqual([null, null])
+    expect(resultsFromArrayMap).toEqual([null, null])
+    expect(defaultReporter).toHaveBeenCalledTimes(4)
+  })
+
+  it('onError 自身抛错时仍受隔离保护，绝不打破 INV-1 恒返回 null 契约', async () => {
+    const denied = Object.assign(new Error('permission denied'), { code: 'EACCES' })
+    vi.spyOn(fsp, 'stat').mockRejectedValueOnce(denied)
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const brokenOnError = vi.fn(() => {
+      throw new Error('reporter crashed')
+    })
+
+    const stat = await statOrNull(path.join(tmpDir, 'crash.txt'), brokenOnError)
+
+    expect(stat).toBeNull()
+    expect(brokenOnError).toHaveBeenCalledTimes(1)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
   })
 
   it('跟随符号链接语义（与 existsSync 一致，禁止 lstat）', async () => {
@@ -110,6 +184,20 @@ describe('existsAsync', () => {
 
     await expect(existsAsync(filePath)).resolves.toBe(true)
     await expect(existsAsync(path.join(tmpDir, 'none.txt'))).resolves.toBe(false)
+  })
+
+  it('第 2 参被误传数字索引且遇 EACCES 时不抛 TypeError，走默认上报器并返回 false', async () => {
+    const denied = Object.assign(new Error('permission denied'), { code: 'EACCES' })
+    vi.spyOn(fsp, 'stat').mockRejectedValueOnce(denied)
+    const defaultReporter = vi.fn()
+    setDefaultStatErrorReporter(defaultReporter)
+
+    const exists = await (
+      existsAsync as unknown as (p: string, index: number) => Promise<boolean>
+    )(path.join(tmpDir, 'locked.txt'), 0)
+
+    expect(exists).toBe(false)
+    expect(defaultReporter).toHaveBeenCalledTimes(1)
   })
 })
 

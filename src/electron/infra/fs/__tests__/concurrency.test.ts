@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { mapLimit, createLimiter, DEFAULT_CONCURRENCY } from '../concurrency'
 
 const sleep = (ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms))
@@ -79,6 +79,85 @@ describe('mapLimit', () => {
     expect(startedIndices.length).toBeLessThan(total)
     // 抛出时在途任务已经收敛：不存在「已抛错但磁盘写还在飞」
     expect(settledIndices.sort((a, b) => a - b)).toEqual([...startedIndices].sort((a, b) => a - b))
+  })
+
+  it('入口已 aborted 的 AbortSignal：零任务启动并直接抛 AbortError', async () => {
+    const controller = new AbortController()
+    controller.abort('pre-cancelled')
+    const mapper = vi.fn(async (item: number) => item * 2)
+
+    await expect(
+      mapLimit([1, 2, 3], 2, mapper, { signal: controller.signal })
+    ).rejects.toMatchObject({ name: 'AbortError' })
+    expect(mapper).not.toHaveBeenCalled()
+
+    await expect(
+      mapLimit([], 2, mapper, { signal: controller.signal })
+    ).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('执行中途 abort 后停止新任务派发，并等全部在途任务落定后再抛 AbortError（无在途泄漏）', async () => {
+    const controller = new AbortController()
+    const total = 10
+    const startedIndices: number[] = []
+    const settledIndices: number[] = []
+    let activeCount = 0
+
+    const run = mapLimit(
+      Array.from({ length: total }, (_, i) => i),
+      2,
+      async (_item, index) => {
+        startedIndices.push(index)
+        activeCount += 1
+        await sleep(10)
+        if (index === 0) {
+          controller.abort()
+        }
+        await sleep(10)
+        activeCount -= 1
+        settledIndices.push(index)
+        return index
+      },
+      { signal: controller.signal }
+    )
+
+    let caughtError: unknown
+    try {
+      await run
+    } catch (error) {
+      caughtError = error
+    }
+
+    expect(caughtError).toBeInstanceOf(Error)
+    expect((caughtError as Error).name).toBe('AbortError')
+    // 停止派发新索引
+    expect(startedIndices.length).toBeLessThan(total)
+    // 抛出时全部在途任务均已收敛，无仍在飞任务
+    expect(activeCount).toBe(0)
+    expect(settledIndices.sort((a, b) => a - b)).toEqual([...startedIndices].sort((a, b) => a - b))
+  })
+
+  it('传入未触发的 AbortSignal 时正常完成全部映射', async () => {
+    const controller = new AbortController()
+    const results = await mapLimit([10, 20, 30], 2, async item => item + 1, {
+      signal: controller.signal
+    })
+    expect(results).toEqual([11, 21, 31])
+  })
+
+  it('mapper 抛出 null 时同样停止派发新任务并原样抛出 null', async () => {
+    const startedIndices: number[] = []
+    const total = 8
+
+    const run = mapLimit(Array.from({ length: total }, (_, i) => i), 2, async (_item, index) => {
+      startedIndices.push(index)
+      await sleep(5)
+      if (index === 0) throw null
+      return index
+    })
+
+    await expect(run).rejects.toBeNull()
+    expect(startedIndices.length).toBeLessThan(total)
   })
 })
 

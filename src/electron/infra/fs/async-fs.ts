@@ -12,6 +12,7 @@
  */
 import { promises as fsp } from 'node:fs'
 import type { Dirent, Stats } from 'node:fs'
+import { logger, LogCategory } from '@firefly/shared'
 
 /** 探测未命中（文件不存在 / 路径经过非目录）——属于正常结果，不回调 onError */
 const PROBE_MISS_CODES: ReadonlySet<string> = new Set(['ENOENT', 'ENOTDIR'])
@@ -26,10 +27,32 @@ const PROBE_MISS_CODES: ReadonlySet<string> = new Set(['ENOENT', 'ENOTDIR'])
 export type StatErrorHandler = (error: NodeJS.ErrnoException, targetPath: string) => void
 
 /**
+ * 模块级默认非未命中错误上报器：经 `@firefly/shared` `logger.warn` 输出错误码、错误信息与目标路径，
+ * 确保未传 `onError` 时也不会静默吞掉权限/I/O 故障。
+ */
+const defaultLoggerStatErrorReporter: StatErrorHandler = (error, targetPath) => {
+  logger.warn(
+    LogCategory.SYSTEM,
+    `[infra/fs] stat 探测异常 (${error?.code ?? 'UNKNOWN'}): ${targetPath} - ${error?.message ?? String(error)}`
+  )
+}
+
+let defaultStatErrorReporter: StatErrorHandler = defaultLoggerStatErrorReporter
+
+/**
+ * 设置或还原模块级默认非未命中错误上报器（供单元测试隔离使用）。
+ * 传入 `null` / `undefined` 或无参调用时还原为默认的 `logger.warn` 上报器。
+ */
+export function setDefaultStatErrorReporter(reporter?: StatErrorHandler | null): void {
+  defaultStatErrorReporter =
+    typeof reporter === 'function' ? reporter : defaultLoggerStatErrorReporter
+}
+
+/**
  * 探测单个路径的状态：存在则返回 `Stats`，不存在/不可用则返回 `null`。
  *
  * 分支契约（INV-1）：存在文件 → Stats；不存在 → null；路径为目录 → 目录 Stats（由调用方按自身语义分流）；
- * 任何 stat 异常 → null（其中非「未命中」类错误会先回调 `onError`）。
+ * 任何 stat 异常 → null（其中非「未命中」类错误优先回调 `onError`，未传函数型 `onError` 时走默认告警上报器）。
  */
 export async function statOrNull(
   targetPath: string,
@@ -39,8 +62,23 @@ export async function statOrNull(
     return await fsp.stat(targetPath)
   } catch (error) {
     const err = error as NodeJS.ErrnoException
-    if (onError && !PROBE_MISS_CODES.has(err?.code ?? '')) {
-      onError(err, targetPath)
+    if (!PROBE_MISS_CODES.has(err?.code ?? '')) {
+      // 必须校验 typeof === 'function'：防止 `mapLimit(paths, 32, statOrNull)` 或 `paths.map(statOrNull)`
+      // 自动把第 2 参数字索引 `index` 传入 `onError`，导致遇到非 ENOENT 错误时抛出 TypeError
+      const reporter = typeof onError === 'function' ? onError : defaultStatErrorReporter
+      try {
+        reporter(err, targetPath)
+      } catch (reporterError) {
+        try {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[infra/fs] statOrNull 错误上报回调异常: ${targetPath}`,
+            reporterError
+          )
+        } catch {
+          // 日志系统自身异常时保底吞掉，确保绝不打破 INV-1「statOrNull 恒返回 null」契约
+        }
+      }
     }
     return null
   }
@@ -61,7 +99,8 @@ export async function existsAsync(
   targetPath: string,
   onError?: StatErrorHandler
 ): Promise<boolean> {
-  return (await statOrNull(targetPath, onError)) !== null
+  const safeOnError = typeof onError === 'function' ? onError : undefined
+  return (await statOrNull(targetPath, safeOnError)) !== null
 }
 
 /**

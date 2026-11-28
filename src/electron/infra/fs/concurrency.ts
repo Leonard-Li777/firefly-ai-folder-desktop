@@ -16,6 +16,24 @@ export const DEFAULT_CONCURRENCY = 32
 /** 限流器：把任意异步任务投递进固定大小的并发池 */
 export type Limiter = <T>(task: () => Promise<T>) => Promise<T>
 
+/** `mapLimit` 可选配置 */
+export interface MapLimitOptions {
+  /** 取消信号：触发后立即停止派发新索引，待在途任务收敛后抛出标准 AbortError */
+  signal?: AbortSignal
+}
+
+/** 构造标准 AbortError（保证 `err.name === 'AbortError'` 且为 `Error` 实例） */
+function createAbortError(reason?: unknown): Error {
+  if (reason instanceof Error && reason.name === 'AbortError') {
+    return reason
+  }
+  const message =
+    typeof reason === 'string' && reason.length > 0 ? reason : 'The operation was aborted'
+  const error = new Error(message, reason !== undefined ? { cause: reason } : undefined)
+  error.name = 'AbortError'
+  return error
+}
+
 /**
  * 归一化并发上限：非法值（NaN / Infinity / < 1）一律收敛到 1。
  *
@@ -34,40 +52,54 @@ function normalizeLimit(limit: number): number {
  * @param items 输入集合（只读，不会被修改）
  * @param limit 并发上限（非法值收敛为 1）
  * @param mapper 逐项异步映射，入参含原索引，便于调用方自行携带上下文
+ * @param options 可选配置（支持 `AbortSignal` 中断派发并等待在途任务收敛）
  */
 export async function mapLimit<T, R>(
   items: readonly T[],
   limit: number,
-  mapper: (item: T, index: number) => Promise<R>
+  mapper: (item: T, index: number) => Promise<R>,
+  options?: MapLimitOptions
 ): Promise<R[]> {
+  const signal = options?.signal
+  if (signal?.aborted) {
+    throw createAbortError(signal.reason)
+  }
+
   const total = items.length
   if (total === 0) return []
 
   const effectiveLimit = normalizeLimit(limit)
   const results = new Array<R>(total)
   let nextIndex = 0
-  let firstError: unknown = null
+  let hasError = false
+  let firstError: unknown
 
   const worker = async (): Promise<void> => {
     while (true) {
-      if (firstError !== null) return
+      if (hasError || signal?.aborted) return
       const index = nextIndex
       if (index >= total) return
       nextIndex = index + 1
       try {
         results[index] = await mapper(items[index], index)
       } catch (error) {
-        if (firstError === null) firstError = error
+        if (!hasError) {
+          hasError = true
+          firstError = error
+        }
         return
       }
     }
   }
 
   const workerCount = Math.min(effectiveLimit, total)
-  // 等全部 worker 收敛（含失败后仍在途的任务），保证「抛错时磁盘操作已结束」再上浮第一个错误。
+  // 等全部 worker 收敛（含失败/取消后仍在途的任务），保证「抛错时磁盘操作已结束」再上浮
   await Promise.all(Array.from({ length: workerCount }, () => worker()))
 
-  if (firstError !== null) throw firstError
+  if (signal?.aborted) {
+    throw createAbortError(signal.reason)
+  }
+  if (hasError) throw firstError
   return results
 }
 

@@ -11,15 +11,41 @@ import {
 const validEntry = {
   file: 'apps/desktop/src/electron/foo.ts',
   function: 'bar',
+  ticket: 'IO-99',
   reason: '启动前置',
   removalCondition: '引入就绪屏障后移除'
 }
 
 describe('sync-allowlist 完整性', () => {
-  it('模块登记表本身合规（无空字段、无重复键）', () => {
+  it('模块登记表本身合规（无空字段、无重复键，既有 2 条含合法 ticket）', () => {
     expect(validateSyncAllowlist(SYNCHRONOUS_ALLOWLIST)).toEqual([])
     expect(() => assertSyncAllowlistIntegrity()).not.toThrow()
-    expect(SYNCHRONOUS_ALLOWLIST.length).toBeGreaterThan(0)
+    expect(SYNCHRONOUS_ALLOWLIST).toHaveLength(2)
+    for (const entry of SYNCHRONOUS_ALLOWLIST) {
+      expect(entry.ticket.trim().length).toBeGreaterThan(0)
+      expect(entry.function).not.toBe('<module-scope>')
+    }
+  })
+
+  it('ticket 缺失或空串视为违规（无法追溯工单来源）', () => {
+    const emptyTicket = validateSyncAllowlist([{ ...validEntry, ticket: '   ' }])
+    const missingTicket = validateSyncAllowlist([
+      { ...validEntry, ticket: undefined as unknown as string }
+    ])
+
+    expect(emptyTicket).toHaveLength(1)
+    expect(emptyTicket[0]).toContain('ticket')
+    expect(missingTicket).toHaveLength(1)
+    expect(missingTicket[0]).toContain('ticket')
+  })
+
+  it('使用宽泛 <module-scope> 豁免视为违规（必须具名同步函数）', () => {
+    const problems = validateSyncAllowlist([
+      { ...validEntry, file: 'apps/desktop/src/electron/main/index.ts', function: '<module-scope>' }
+    ])
+
+    expect(problems).toHaveLength(1)
+    expect(problems[0]).toContain('<module-scope>')
   })
 
   it('缺少 reason 视为违规（无理由豁免等于永久豁免）', () => {
@@ -65,10 +91,11 @@ describe('登记键归一化仅服务匹配', () => {
 
     const entry = findSyncAllowlistEntry(
       'apps\\desktop\\src\\electron\\main\\index.ts',
-      '<module-scope>'
+      'migrateLegacyUserDataSync'
     )
     expect(entry).toBeDefined()
     expect(entry?.file).toContain('main/index.ts')
+    expect(entry?.ticket).toBe('J-05 / IO-23')
   })
 
   it('未登记的 file:function 返回 undefined（ratchet 据此判违规）', () => {
