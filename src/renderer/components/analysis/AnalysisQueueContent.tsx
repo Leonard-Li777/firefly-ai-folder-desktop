@@ -9,7 +9,7 @@ import { t } from '@app/languages'
 import { getUnitTypeLabel } from '../file-explorer/FileList/utils'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
 import { notifyEnqueueResult } from '../../utils/enqueue-notifier'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsStore, useConfigValue } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
 import {
   ExternalLink,
@@ -589,20 +589,20 @@ export function AnalysisQueueContent({
   onClose,
   onHeaderMouseDown
 }: AnalysisQueueContentProps) {
-  const {
-    snapshot,
-    start,
-    pause,
-    retryFailed,
-    clearPending,
-    clearAll,
-    viewMode,
-    setViewMode,
-    setIsSplitOpen,
-    setShowModal,
-    isSplitMinimized,
-    setIsSplitMinimized
-  } = useAnalysisQueueStore()
+  // R-20：整店订阅改稳定细粒度 selector（snapshot 为本组件必需数据源，
+  // 但无关字段如对账/确认弹窗状态更新不再触发队列内容重渲染）
+  const snapshot = useAnalysisQueueStore(s => s.snapshot)
+  const start = useAnalysisQueueStore(s => s.start)
+  const pause = useAnalysisQueueStore(s => s.pause)
+  const retryFailed = useAnalysisQueueStore(s => s.retryFailed)
+  const clearPending = useAnalysisQueueStore(s => s.clearPending)
+  const clearAll = useAnalysisQueueStore(s => s.clearAll)
+  const viewMode = useAnalysisQueueStore(s => s.viewMode)
+  const setViewMode = useAnalysisQueueStore(s => s.setViewMode)
+  const setIsSplitOpen = useAnalysisQueueStore(s => s.setIsSplitOpen)
+  const setShowModal = useAnalysisQueueStore(s => s.setShowModal)
+  const isSplitMinimized = useAnalysisQueueStore(s => s.isSplitMinimized)
+  const setIsSplitMinimized = useAnalysisQueueStore(s => s.setIsSplitMinimized)
 
   const { items, running } = snapshot
   const currentWs = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
@@ -625,6 +625,7 @@ export function AnalysisQueueContent({
     if (!isAdvancedAi) return 'simple'
     return (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'full'
   })
+  const configuredAnalysisMode = useConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name'
 
   // 算力提示横幅的「知道了」记忆：关闭后不再打扰（存量数据清空后才会重新出现）
   const [isCpuHintDismissed, setIsCpuHintDismissed] = useState(() => {
@@ -862,24 +863,18 @@ export function AnalysisQueueContent({
           </Button>
 
           {/* 分析模式切换提示 */}
-          {(() => {
-            const currentMode =
-              useSettingsStore.getState().getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name'
-            return (
-              <span
-                className="text-xs text-primary/80 hover:text-primary cursor-pointer transition-colors hidden md:inline-block ml-1"
-                onClick={() =>
-                  useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG)
-                }
-              >
-                {currentMode === 'simple' || currentMode === 'document'
-                  ? t('结果简陋？切为【增强分析】或【全面分析】')
-                  : currentMode === 'quick_name'
-                    ? t('需要评分描述？切为【全面分析】')
-                    : t('分析太慢？切为【增强分析】或【标准分析】')}
-              </span>
-            )
-          })()}
+          <span
+            className="text-xs text-primary/80 hover:text-primary cursor-pointer transition-colors hidden md:inline-block ml-1"
+            onClick={() =>
+              useSettingsStore.getState().openSettings(SettingsCategory.WORKSPACE_CONFIG)
+            }
+          >
+            {configuredAnalysisMode === 'simple' || configuredAnalysisMode === 'document'
+              ? t('结果简陋？切为【增强分析】或【全面分析】')
+              : configuredAnalysisMode === 'quick_name'
+                ? t('需要评分描述？切为【全面分析】')
+                : t('分析太慢？切为【增强分析】或【标准分析】')}
+          </span>
 
           {/* 模式切换按钮 (窗口模式 <-> 分栏模式) */}
           <Button

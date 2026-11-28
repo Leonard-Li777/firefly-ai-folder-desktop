@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { Button } from '../ui/button'
 import { Switch } from '../ui/switch'
-import { MaterialIcon } from '../../lib/utils'
+import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import { createPortal } from 'react-dom'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsStore, useConfigValue } from '../../stores/settings-store'
 import { Check, Sparkles, FileText } from 'lucide-react'
-import { cn } from '../../lib/utils'
 import type { FileListViewMode } from '../file-explorer/FileList/types'
 
 /** 可展示的视图模式：含搜索临时态 search-list（弹窗内仍只提供 4 种常驻模式） */
@@ -42,7 +41,11 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
       const buttonRef = useRef<HTMLButtonElement>(null)
       const popoverRef = useRef<HTMLDivElement>(null)
 
-      const { getConfigValue, updateConfigValue } = useSettingsStore()
+      // R-20/C4：整店订阅改稳定 selector；render 期配置读取改 useConfigValue 细粒度订阅
+      const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+      const swapFileNameDisplay = useConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
+      const gridShowFullFileName = useConfigValue<boolean>('GRID_SHOW_FULL_FILE_NAME') ?? false
+      const showMissingFiles = useConfigValue<boolean>('SHOW_MISSING_FILES') ?? true
 
       // 计算 Popover 定位
       const updatePosition = useCallback(() => {
@@ -51,7 +54,10 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
           const popoverWidth = 256
           setCoords({
             top: rect.bottom + 6,
-            left: Math.min(window.innerWidth - popoverWidth - 16, Math.max(16, rect.right - popoverWidth))
+            left: Math.min(
+              window.innerWidth - popoverWidth - 16,
+              Math.max(16, rect.right - popoverWidth)
+            )
           })
         }
       }, [])
@@ -110,13 +116,17 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                 <div
                   className={cn(
                     'w-1.5 h-[3.2px] rounded-[1px] shrink-0 transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/50 group-hover:bg-muted-foreground/80'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/50 group-hover:bg-muted-foreground/80'
                   )}
                 />
                 <div
                   className={cn(
                     'h-[3.2px] flex-1 rounded-[1px] transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/40 group-hover:bg-muted-foreground/70'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/40 group-hover:bg-muted-foreground/70'
                   )}
                 />
               </div>
@@ -125,13 +135,17 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                 <div
                   className={cn(
                     'w-1.5 h-[3.2px] rounded-[1px] shrink-0 transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/50 group-hover:bg-muted-foreground/80'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/50 group-hover:bg-muted-foreground/80'
                   )}
                 />
                 <div
                   className={cn(
                     'h-[3.2px] flex-1 rounded-[1px] transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/40 group-hover:bg-muted-foreground/70'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/40 group-hover:bg-muted-foreground/70'
                   )}
                 />
               </div>
@@ -140,13 +154,17 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                 <div
                   className={cn(
                     'w-1.5 h-[3.2px] rounded-[1px] shrink-0 transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/50 group-hover:bg-muted-foreground/80'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/50 group-hover:bg-muted-foreground/80'
                   )}
                 />
                 <div
                   className={cn(
                     'h-[3.2px] flex-1 rounded-[1px] transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/40 group-hover:bg-muted-foreground/70'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/40 group-hover:bg-muted-foreground/70'
                   )}
                 />
               </div>
@@ -161,25 +179,33 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
               <div
                 className={cn(
                   'w-3 h-2.5 rounded-[2px] transition-colors',
-                  selected ? 'bg-primary' : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
+                  selected
+                    ? 'bg-primary'
+                    : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
                 )}
               />
               <div
                 className={cn(
                   'w-3 h-2.5 rounded-[2px] transition-colors',
-                  selected ? 'bg-primary' : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
+                  selected
+                    ? 'bg-primary'
+                    : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
                 )}
               />
               <div
                 className={cn(
                   'w-3 h-2.5 rounded-[2px] transition-colors',
-                  selected ? 'bg-primary' : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
+                  selected
+                    ? 'bg-primary'
+                    : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
                 )}
               />
               <div
                 className={cn(
                   'w-3 h-2.5 rounded-[2px] transition-colors',
-                  selected ? 'bg-primary' : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
+                  selected
+                    ? 'bg-primary'
+                    : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
                 )}
               />
             </div>
@@ -194,13 +220,17 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                 <div
                   className={cn(
                     'w-full h-3 rounded-[2px] transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
                   )}
                 />
                 <div
                   className={cn(
                     'w-full h-1.5 rounded-[2px] transition-colors',
-                    selected ? 'bg-primary/70' : 'bg-muted-foreground/35 group-hover:bg-muted-foreground/55'
+                    selected
+                      ? 'bg-primary/70'
+                      : 'bg-muted-foreground/35 group-hover:bg-muted-foreground/55'
                   )}
                 />
               </div>
@@ -208,13 +238,17 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                 <div
                   className={cn(
                     'w-full h-2 rounded-[2px] transition-colors',
-                    selected ? 'bg-primary/70' : 'bg-muted-foreground/35 group-hover:bg-muted-foreground/55'
+                    selected
+                      ? 'bg-primary/70'
+                      : 'bg-muted-foreground/35 group-hover:bg-muted-foreground/55'
                   )}
                 />
                 <div
                   className={cn(
                     'w-full h-2.5 rounded-[2px] transition-colors',
-                    selected ? 'bg-primary' : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
+                    selected
+                      ? 'bg-primary'
+                      : 'bg-muted-foreground/45 group-hover:bg-muted-foreground/75'
                   )}
                 />
               </div>
@@ -222,10 +256,6 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
           )
         }
       ]
-
-      const swapFileNameDisplay = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
-      const gridShowFullFileName = getConfigValue<boolean>('GRID_SHOW_FULL_FILE_NAME') ?? false
-      const showMissingFiles = getConfigValue<boolean>('SHOW_MISSING_FILES') ?? true
 
       const isSearchListMode = viewMode === 'search-list'
       const effectiveMin = isSearchListMode ? 88 : min
@@ -284,12 +314,20 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       {t('视图模式')}
                     </span>
                     <span className="text-[11px] font-medium text-foreground/80">
-                      {viewModeOptions.find(o => o.value === viewMode || (o.value === 'list' && viewMode === 'search-list'))?.label}
+                      {
+                        viewModeOptions.find(
+                          o =>
+                            o.value === viewMode ||
+                            (o.value === 'list' && viewMode === 'search-list')
+                        )?.label
+                      }
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/40">
                     {viewModeOptions.map(option => {
-                      const isSelected = viewMode === option.value || (option.value === 'list' && viewMode === 'search-list')
+                      const isSelected =
+                        viewMode === option.value ||
+                        (option.value === 'list' && viewMode === 'search-list')
                       return (
                         <button
                           key={option.value}
@@ -339,7 +377,9 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                         type="button"
                         className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer disabled:opacity-30 transition-colors shrink-0"
                         disabled={gridCardWidth <= effectiveMin}
-                        onClick={() => onGridCardWidthChange(Math.max(effectiveMin, gridCardWidth - 10))}
+                        onClick={() =>
+                          onGridCardWidthChange(Math.max(effectiveMin, gridCardWidth - 10))
+                        }
                         title={t('缩小')}
                       >
                         <div className="w-2.5 h-2.5 rounded-[2px] border-2 border-current" />
@@ -366,7 +406,9 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                         type="button"
                         className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 cursor-pointer disabled:opacity-30 transition-colors shrink-0"
                         disabled={gridCardWidth >= effectiveMax}
-                        onClick={() => onGridCardWidthChange(Math.min(effectiveMax, gridCardWidth + 10))}
+                        onClick={() =>
+                          onGridCardWidthChange(Math.min(effectiveMax, gridCardWidth + 10))
+                        }
                         title={t('放大')}
                       >
                         <div className="w-3.5 h-3.5 rounded-[2px] border-2 border-current" />
@@ -379,7 +421,8 @@ export const MiniViewDisplaySettingsPopover: React.FC<MiniViewDisplaySettingsPop
                       <span
                         className={cn(
                           'cursor-pointer hover:text-primary transition-colors',
-                          Math.abs(gridCardWidth - effectiveDefault) <= 5 && 'text-primary font-semibold'
+                          Math.abs(gridCardWidth - effectiveDefault) <= 5 &&
+                            'text-primary font-semibold'
                         )}
                         onClick={() => onGridCardWidthChange(effectiveDefault)}
                       >

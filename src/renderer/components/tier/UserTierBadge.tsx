@@ -9,7 +9,12 @@ import { FirecoresRulesDialog } from './FirecoresRulesDialog'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
 
 export const UserTierBadge: React.FC<{ className?: string }> = ({ className }) => {
-  const { tier, firecores, fetchProfile, isLoading, openUpgradeDialog } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const tier = useTierStore(s => s.tier)
+  const firecores = useTierStore(s => s.firecores)
+  const fetchProfile = useTierStore(s => s.fetchProfile)
+  const isLoading = useTierStore(s => s.isLoading)
+  const openUpgradeDialog = useTierStore(s => s.openUpgradeDialog)
   const [isConsumptionOpen, setIsConsumptionOpen] = React.useState(false)
   // isUpgradeOpen 由全局 useTierStore 与 App 托管
 

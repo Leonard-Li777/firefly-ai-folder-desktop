@@ -15,8 +15,10 @@ import { t } from '@app/languages'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
 
 export function ExtensionReconciliationDialog() {
-  const { reconciliationFiles, showReconciliationDialog, setShowReconciliationDialog } =
-    useAnalysisQueueStore()
+  // R-20：整店订阅改稳定细粒度 selector，队列进度推送不再触发本对话框重渲染
+  const reconciliationFiles = useAnalysisQueueStore(s => s.reconciliationFiles)
+  const showReconciliationDialog = useAnalysisQueueStore(s => s.showReconciliationDialog)
+  const setShowReconciliationDialog = useAnalysisQueueStore(s => s.setShowReconciliationDialog)
 
   const [choices, setChoices] = useState<Record<string, string>>({})
   const [workspacePath, setWorkspacePath] = useState<string>('')

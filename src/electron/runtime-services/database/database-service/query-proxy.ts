@@ -31,6 +31,7 @@ import {
   getFileCategory,
   CONTROLLED_CODE_TO_CANONICAL_NAME,
   DIMENSION_CODES,
+  DB_WRITE_CONCURRENCY_BOUNDARIES,
   type TagProvenanceGroup
 } from '@firefly/shared'
 import {
@@ -64,6 +65,7 @@ import type { IIgnoreRule } from '@firefly/types/settings-types'
 import { ConfigDbManager } from '../../config/config-db-manager'
 import { getWriterLeaseHandshake } from './writer-lease-seam'
 import { getCachedStatement } from '@pro/perf/statement-cache'
+import { getSchedulerService, type IdleTaskHandle } from '@pro/perf/scheduler'
 
 /* ==================== W4/J-13 批量入库两段式契约 ==================== */
 
@@ -141,8 +143,8 @@ interface J13PreparedRow {
   sequence: number
 }
 
-/** J-13 单批硬上限（§5.1 第一段：每批 ≤200 行短事务） */
-const J13_MAX_BATCH_SIZE = 200
+/** J-13 单批硬上限（§5.1 第一段：每批 ≤200 行短事务；DB-01 常量唯一来源） */
+const J13_MAX_BATCH_SIZE = DB_WRITE_CONCURRENCY_BOUNDARIES.mainBulkIngestBatchSize
 /** 写锁瞬态竞争退避重试次数（§4.2：仅在事务外指数退避） */
 const J13_MAX_RETRIES = 2
 
@@ -152,6 +154,19 @@ const J13_MAX_RETRIES = 2
  * 全部代码自 database-service.ts 原样搬移，未改动查询语义。
  */
 export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
+  /** [DB-15] 空闲 checkpoint 去重句柄（同一时刻只允许一个 PASSIVE 片） */
+  private idleCheckpointHandle: IdleTaskHandle | null = null
+  /** [DB-15] 低频 optimize 计数（每 10 次空闲 checkpoint 执行一次，避免批量尾段段合并尖峰） */
+  private idleCheckpointCount = 0
+  /** [DB-15] 最近一次空闲 checkpoint 结果：W4 压测观测 (busy, log, checkpointed) */
+  private lastIdleCheckpointRecord: {
+    busy: number
+    log: number
+    checkpointed: number
+    reason: string
+    at: number
+  } | null = null
+
   // --- DAO Forwarding Methods ---
 
   async addFileFromPath(
@@ -1044,6 +1059,8 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         )
       }
     })()
+    // [DB-15] watcher 初始扫描等大批量入库收尾后，空闲通道做一次 PASSIVE checkpoint
+    this.scheduleIdleCheckpoint('addFilesFromPathsBatch')
   }
 
   // --- Misc Methods ---
@@ -1054,6 +1071,8 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     return this._db !== null
   }
   async close() {
+    this.idleCheckpointHandle?.cancel()
+    this.idleCheckpointHandle = null
     try {
       AccessTimeBatchUpdater.getInstance().flush()
     } catch (e) {
@@ -1067,13 +1086,64 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   }
 
   /**
+   * [DB-15] 大批量导入 / 重置收尾后挂起一次空闲 PASSIVE checkpoint。
+   * PASSIVE 不阻塞读写；同一时刻只保留一个空闲片，忙时把机会让给交互写与查询。
+   */
+  scheduleIdleCheckpoint(reason: string): void {
+    if (!this._db || this.idleCheckpointHandle) return
+    this.idleCheckpointHandle = getSchedulerService().runWhenIdle(
+      'db:wal-checkpoint-passive',
+      () => {
+        this.idleCheckpointHandle = null
+        this.runIdleCheckpointNow(reason)
+      },
+      { priority: 'normal' }
+    )
+  }
+
+  /** W4 压测读取最近一次空闲 checkpoint 的 (busy, log, checkpointed) 原始值 */
+  getLastIdleCheckpoint():
+    | { busy: number; log: number; checkpointed: number; reason: string; at: number }
+    | null {
+    return this.lastIdleCheckpointRecord
+  }
+
+  private runIdleCheckpointNow(reason: string): void {
+    const db = this._db
+    if (!db) return
+    try {
+      const raw = db.pragma('wal_checkpoint(PASSIVE)') as unknown
+      const row = (Array.isArray(raw) ? raw[0] : raw) as
+        | { busy?: number | bigint; log?: number | bigint; checkpointed?: number | bigint }
+        | undefined
+      this.lastIdleCheckpointRecord = {
+        busy: Number(row?.busy ?? 0),
+        log: Number(row?.log ?? 0),
+        checkpointed: Number(row?.checkpointed ?? 0),
+        reason,
+        at: Date.now()
+      }
+      // 低频 optimize：批量尾段不做全表段合并，避免把空闲片撑爆 50ms 预算
+      if (++this.idleCheckpointCount % 10 === 0) db.pragma('optimize')
+      logger.debug(LogCategory.DATABASE_SERVICE, '空闲 WAL checkpoint 完成 (PASSIVE)', {
+        reason,
+        result: this.lastIdleCheckpointRecord
+      })
+    } catch (e) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '空闲 WAL checkpoint 失败(非致命，安全放行):', e)
+    }
+  }
+
+  /**
    * [Issue 04 Step 5 / R2-8] 退出时序：应用关闭前对主库执行安全 checkpoint。
    * 须在 Omni 子进程已停止（释放只读连接池）之后调用；用 busy_timeout=1500 包裹，
    * 并发只读游标未清空时 PASSIVE 立即安全放行，杜绝退出卡死。
    */
   async checkpointBeforeClose(): Promise<void> {
-    if (!this._db) return
+    if (this._db) this.idleCheckpointHandle?.cancel()
+    this.idleCheckpointHandle = null
     try {
+      if (!this._db) return
       this._db.pragma('busy_timeout = 1500')
       this._db.pragma('optimize')
       this._db.pragma('wal_checkpoint(PASSIVE)')
@@ -1101,6 +1171,8 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         this._db!.prepare('DELETE FROM analysis_queue').run()
         // Spec §3.3 铁律：清空分析数据仅重置文件业务状态，坚决不删除 file_video_chunks，保护切片时序与向量资产
       })()
+      // [DB-15] 全量重置是大事务尾段，收尾 checkpoint 走空闲通道
+      this.scheduleIdleCheckpoint('resetAllAnalysisData')
       logger.info(LogCategory.DATABASE_SERVICE, t('所有AI分析数据已重置'))
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, t('重置所有AI分析数据失败'), { error })
@@ -2887,7 +2959,10 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         let acked = true
         if (needHandshake && handshake) {
           try {
-            acked = await handshake.sendYieldAndWaitAck(leaseId, 200)
+            acked = await handshake.sendYieldAndWaitAck(
+              leaseId,
+              DB_WRITE_CONCURRENCY_BOUNDARIES.yieldForUiTimeoutMs
+            )
           } catch (error) {
             acked = false
             logger.warn(
@@ -2932,6 +3007,8 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
       if (j13IngestChains.get(workspaceId) === chained) j13IngestChains.delete(workspaceId)
     }
 
+    // [DB-15] J-13 批量入库收尾后空闲 PASSIVE checkpoint（不阻塞后续分析写集）
+    if (result.ids.some(id => id !== null)) this.scheduleIdleCheckpoint('upsertPreparedFilesBatch')
     return result
   }
 

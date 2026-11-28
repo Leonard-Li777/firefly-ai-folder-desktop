@@ -35,7 +35,9 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
   metadata,
   firecoreOperationType
 }) => {
-  const { firecores, spendFirecores } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const firecores = useTierStore(s => s.firecores)
+  const spendFirecores = useTierStore(s => s.spendFirecores)
   const [step, setStep] = useState<Step>('confirm')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [rulesBackStep, setRulesBackStep] = useState<Step>('insufficient')

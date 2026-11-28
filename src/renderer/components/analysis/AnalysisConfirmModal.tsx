@@ -49,16 +49,15 @@ const KNOWN_ANALYSIS_MODES = new Set(['simple', 'quick_name', 'full'])
  */
 export function AnalysisConfirmModal() {
   const { t } = useVoerkaI18n(i18nScope)
-  const {
-    showConfirmModal,
-    setShowConfirmModal,
-    confirmModalFiles,
-    confirmModalInsufficientFiles,
-    confirmModalUntouchedCount,
-    pendingAddItems,
-    handleConfirmSkip,
-    handleConfirmReanalyze
-  } = useAnalysisQueueStore()
+  // R-20：整店订阅改稳定细粒度 selector，队列进度推送不再触发本确认弹窗重渲染
+  const showConfirmModal = useAnalysisQueueStore(s => s.showConfirmModal)
+  const setShowConfirmModal = useAnalysisQueueStore(s => s.setShowConfirmModal)
+  const confirmModalFiles = useAnalysisQueueStore(s => s.confirmModalFiles)
+  const confirmModalInsufficientFiles = useAnalysisQueueStore(s => s.confirmModalInsufficientFiles)
+  const confirmModalUntouchedCount = useAnalysisQueueStore(s => s.confirmModalUntouchedCount)
+  const pendingAddItems = useAnalysisQueueStore(s => s.pendingAddItems)
+  const handleConfirmSkip = useAnalysisQueueStore(s => s.handleConfirmSkip)
+  const handleConfirmReanalyze = useAnalysisQueueStore(s => s.handleConfirmReanalyze)
 
   // 响应式读取当前分析模式，用于文案「未达到当前【全面分析】模式的要求」
   const currentMode = useSettingsStore(s => {

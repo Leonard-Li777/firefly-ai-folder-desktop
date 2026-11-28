@@ -10,23 +10,22 @@ export interface GlobalTTSPlaybackBarProps {
 /**
  * DirectoryHeader 全局 TTS 播放控制条胶囊组件
  * 紧邻用户头像 (UserAvatarMenu) 左侧
- * 
+ *
  * 仅在 status === 'playing' | 'paused' | 'loading' 时渲染
  * 支持播放/暂停切换、片段刻度拖动进度条、悬浮气泡预览与彻底关闭
  */
 export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ className }) => {
-  const {
-    status,
-    currentTitle,
-    currentFilePath,
-    currentRealName,
-    currentSentenceIndex,
-    totalSentences,
-    pause,
-    resume,
-    stop,
-    seekSentence
-  } = useTTSAudioStore()
+  // R-30：整店订阅改稳定细粒度 selector，无关 TTS store 字段更新不再触发本组件重渲染
+  const status = useTTSAudioStore(s => s.status)
+  const currentTitle = useTTSAudioStore(s => s.currentTitle)
+  const currentFilePath = useTTSAudioStore(s => s.currentFilePath)
+  const currentRealName = useTTSAudioStore(s => s.currentRealName)
+  const currentSentenceIndex = useTTSAudioStore(s => s.currentSentenceIndex)
+  const totalSentences = useTTSAudioStore(s => s.totalSentences)
+  const pause = useTTSAudioStore(s => s.pause)
+  const resume = useTTSAudioStore(s => s.resume)
+  const stop = useTTSAudioStore(s => s.stop)
+  const seekSentence = useTTSAudioStore(s => s.seekSentence)
 
   // 片段刻度进度条交互状态（始终保持在组件最顶层，严格遵循 React Hooks 规则）
   const [isHoveringSlider, setIsHoveringSlider] = useState(false)
@@ -45,15 +44,16 @@ export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ clas
   const displayTitle = currentTitle && currentTitle.trim() ? currentTitle.trim() : t('文本朗读')
 
   // 真实文件名：优先 currentRealName（DB 字段 name），降级从路径提取 basename
-  const realFileName = currentRealName
-    || (currentFilePath ? currentFilePath.replace(/^.*[\\/]/, '') : null)
+  const realFileName =
+    currentRealName || (currentFilePath ? currentFilePath.replace(/^.*[\\/]/, '') : null)
 
   // 当前刻度预览索引（拖动优先于悬浮，悬浮优先于当前播放句）
-  const previewIndex = isDragging && dragIndex !== null
-    ? dragIndex
-    : hoverIndex !== null
-      ? hoverIndex
-      : currentSentenceIndex
+  const previewIndex =
+    isDragging && dragIndex !== null
+      ? dragIndex
+      : hoverIndex !== null
+        ? hoverIndex
+        : currentSentenceIndex
 
   // 实时分句数据源供 Tooltip 气泡预览分句文本（Hooks 必须在所有 early return 之前调用）
   const currentChunks = useMemo(() => {
@@ -93,7 +93,10 @@ export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ clas
       style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
     >
       {/* 状态图标 */}
-      <div className="flex items-center justify-center text-primary flex-shrink-0" title={isPlaying ? t('正在朗读') : isPaused ? t('朗读已暂停') : t('正在加载语音')}>
+      <div
+        className="flex items-center justify-center text-primary flex-shrink-0"
+        title={isPlaying ? t('正在朗读') : isPaused ? t('朗读已暂停') : t('正在加载语音')}
+      >
         {isLoading ? (
           <MaterialIcon icon="refresh" className="text-[14px] animate-spin" />
         ) : (
@@ -107,15 +110,15 @@ export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ clas
         onMouseEnter={() => setIsHoveringTitle(true)}
         onMouseLeave={() => setIsHoveringTitle(false)}
       >
-        <span
-          className="text-xs font-medium text-foreground truncate max-w-[70px] sm:max-w-[90px] lg:max-w-[110px] block cursor-default"
-        >
+        <span className="text-xs font-medium text-foreground truncate max-w-[70px] sm:max-w-[90px] lg:max-w-[110px] block cursor-default">
           {displayTitle}
         </span>
         {isHoveringTitle && (
           <div className="absolute top-full left-0 mt-1.5 z-50 min-w-[200px] max-w-[320px] p-2.5 bg-popover border border-border text-popover-foreground text-xs rounded-md shadow-xl pointer-events-none backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
             {/* 第一行：完整智能文件名 */}
-            <div className="font-medium text-foreground break-all whitespace-normal leading-relaxed">{displayTitle}</div>
+            <div className="font-medium text-foreground break-all whitespace-normal leading-relaxed">
+              {displayTitle}
+            </div>
             {/* 第二行：真实文件名（与 displayTitle 不同时才显示） */}
             {realFileName && realFileName !== displayTitle && (
               <div className="text-muted-foreground mt-1 break-all whitespace-normal leading-relaxed">
@@ -154,12 +157,12 @@ export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ clas
             value={isDragging && dragIndex !== null ? dragIndex : currentSentenceIndex}
             onMouseDown={() => setIsDragging(true)}
             onTouchStart={() => setIsDragging(true)}
-            onInput={(e) => {
+            onInput={e => {
               const val = Number((e.target as HTMLInputElement).value)
               setDragIndex(val)
               setHoverIndex(val)
             }}
-            onChange={(e) => {
+            onChange={e => {
               const val = Number((e.target as HTMLInputElement).value)
               setDragIndex(val)
               setIsDragging(false)
@@ -188,8 +191,12 @@ export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ clas
           {(isHoveringSlider || isDragging) && (
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 min-w-[180px] max-w-[260px] p-2 bg-popover/95 border border-border text-popover-foreground text-xs rounded-md shadow-xl pointer-events-none backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center justify-between font-medium text-[11px] text-primary pb-1 mb-1 border-b border-border/50">
-                <span>{t('片段')} {previewIndex + 1} / {totalSentences}</span>
-                <span className="text-[10px] text-muted-foreground font-normal">{t('拖动即播')}</span>
+                <span>
+                  {t('片段')} {previewIndex + 1} / {totalSentences}
+                </span>
+                <span className="text-[10px] text-muted-foreground font-normal">
+                  {t('拖动即播')}
+                </span>
               </div>
               <div className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed break-all">
                 {currentChunks[previewIndex] || t('正在准备分句...')}
@@ -224,10 +231,7 @@ export const GlobalTTSPlaybackBar: React.FC<GlobalTTSPlaybackBarProps> = ({ clas
         title={isPlaying ? t('暂停') : t('继续播放')}
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
-        <MaterialIcon
-          icon={isPlaying ? 'pause' : 'play_arrow'}
-          className="text-[15px]"
-        />
+        <MaterialIcon icon={isPlaying ? 'pause' : 'play_arrow'} className="text-[15px]" />
       </button>
 
       {/* 关闭按钮 */}

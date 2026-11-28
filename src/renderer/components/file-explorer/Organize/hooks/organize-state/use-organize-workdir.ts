@@ -12,7 +12,8 @@ export function useOrganizeWorkdir() {
   const currentWorkspaceDirectory = useAnalyzedDirectoryStore(
     (s: any) => s.currentWorkspaceDirectory
   )
-  const { computed_limits } = useTierStore()
+  // R-26：精确 selector 订阅，隔离 tier store 无关状态变化的传播范围
+  const computed_limits = useTierStore(s => s.computed_limits)
 
   // ─── 工作目录 ─────────────────────────────────────────────────────────────
   const workspaceDirectories = useVirtualDirectoryStore((s: any) => s.workspaceDirectories)

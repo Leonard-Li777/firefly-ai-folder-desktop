@@ -24,7 +24,6 @@ import { t } from '@app/languages'
 import { getUniqueVirtualDirectoryName } from '../utils/vdir-naming-utils'
 import { normalizeVirtualDirectoryFile } from '../utils/vdir-file-normalize'
 import { useVirtualNavigation } from './useVirtualNavigation'
-import { useSettingsStore } from '../../../../stores/settings-store'
 import { useSearchViewAutoSwitch } from '../../FileList/hooks/useSearchViewAutoSwitch'
 
 export const useVirtualDirectory = () => {
@@ -97,8 +96,10 @@ export const useVirtualDirectory = () => {
   const setCurrentWorkspaceDirectory = useAnalyzedDirectoryStore(
     s => s.setCurrentWorkspaceDirectory
   )
-  const { virtualDirectoryKeyword, setVirtualDirectoryKeyword, setAnalyzedDirectoryKeyword } =
-    useSearchStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const virtualDirectoryKeyword = useSearchStore(s => s.virtualDirectoryKeyword)
+  const setVirtualDirectoryKeyword = useSearchStore(s => s.setVirtualDirectoryKeyword)
+  const setAnalyzedDirectoryKeyword = useSearchStore(s => s.setAnalyzedDirectoryKeyword)
 
   // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
   useSearchViewAutoSwitch({
@@ -106,7 +107,8 @@ export const useVirtualDirectory = () => {
     viewMode,
     setViewMode
   })
-  const { computed_limits, entitlements } = useTierStore()
+  const computed_limits = useTierStore(s => s.computed_limits)
+  const entitlements = useTierStore(s => s.entitlements)
 
   const vdirSlotLimit = useMemo(() => {
     const wsId = currentWorkspaceDirectory?.id

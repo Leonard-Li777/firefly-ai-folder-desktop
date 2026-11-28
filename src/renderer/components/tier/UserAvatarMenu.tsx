@@ -46,8 +46,14 @@ interface UserAvatarMenuProps {
 }
 
 export const UserAvatarMenu: React.FC<UserAvatarMenuProps> = ({ onOpenChange }) => {
-  const { tier, firecores, subscription, fetchProfile, openRulesDialog, logout } = useTierStore()
-  const { openSettings } = useSettingsStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const tier = useTierStore(s => s.tier)
+  const firecores = useTierStore(s => s.firecores)
+  const subscription = useTierStore(s => s.subscription)
+  const fetchProfile = useTierStore(s => s.fetchProfile)
+  const openRulesDialog = useTierStore(s => s.openRulesDialog)
+  const logout = useTierStore(s => s.logout)
+  const openSettings = useSettingsStore(s => s.openSettings)
   const config = useConfigStore(state => state.config)
   const location = useLocation()
 

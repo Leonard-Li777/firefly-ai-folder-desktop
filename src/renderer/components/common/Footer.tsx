@@ -91,16 +91,15 @@ function stage2BarTarget(isSimpleMode: boolean, done?: number, total?: number): 
  */
 export function Footer() {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
-  const {
-    modelName,
-    serviceStatus,
-    modelMode,
-    lastError,
-    provider,
-    vramRequiredGB,
-    totalSizeBytes,
-    backend
-  } = useModelStore()
+  // R-20：整店订阅改稳定细粒度 selector，无关 store 字段更新不再触发状态栏重渲染
+  const modelName = useModelStore(s => s.modelName)
+  const serviceStatus = useModelStore(s => s.serviceStatus)
+  const modelMode = useModelStore(s => s.modelMode)
+  const lastError = useModelStore(s => s.lastError)
+  const provider = useModelStore(s => s.provider)
+  const vramRequiredGB = useModelStore(s => s.vramRequiredGB)
+  const totalSizeBytes = useModelStore(s => s.totalSizeBytes)
+  const backend = useModelStore(s => s.backend)
   const { error, openErrorDialog } = useAIServiceError()
   const toggleQueue = useAnalysisQueueStore(s => s.toggleQueue)
   const isPaused = useAnalysisQueueStore(s => s.snapshot?.status === 'paused')
@@ -131,8 +130,9 @@ export function Footer() {
     s => s.snapshot?.items?.filter(i => i.status === 'pending').length || 0
   )
   const videoBackfill = useAnalysisQueueStore(s => s.snapshot?.videoBackfill)
-  const { config } = useConfigStore()
-  const { openSettings, openWorkspaceSettings } = useSettingsStore()
+  const config = useConfigStore(s => s.config)
+  const openSettings = useSettingsStore(s => s.openSettings)
+  const openWorkspaceSettings = useSettingsStore(s => s.openWorkspaceSettings)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const { capabilities } = useAIServiceStatus()
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)

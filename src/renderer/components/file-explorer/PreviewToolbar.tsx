@@ -55,14 +55,13 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   textContent,
   onClose
 }) => {
-  const {
-    filePath: storeFilePath,
-    pageStates,
-    mediaFitMode,
-    cycleMediaFitMode,
-    togglePreviewMode,
-    closePreview
-  } = usePreviewOverlayStore()
+  // R-20：整店订阅改稳定细粒度 selector，无关预览 store 字段更新不再触发工具栏重渲染
+  const storeFilePath = usePreviewOverlayStore(s => s.filePath)
+  const pageStates = usePreviewOverlayStore(s => s.pageStates)
+  const mediaFitMode = usePreviewOverlayStore(s => s.mediaFitMode)
+  const cycleMediaFitMode = usePreviewOverlayStore(s => s.cycleMediaFitMode)
+  const togglePreviewMode = usePreviewOverlayStore(s => s.togglePreviewMode)
+  const closePreview = usePreviewOverlayStore(s => s.closePreview)
   const pageMode = pageStates[pageId]?.mode || 'split'
 
   // 优先使用当前预览文件路径，避免 store 中残留其他页面的文件路径导致打开错误文件

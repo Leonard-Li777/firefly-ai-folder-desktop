@@ -27,16 +27,15 @@ const SearchBarComponent: React.FC<SearchBarProps> = ({
   onToggleSuggestions,
   compactMode = false
 }) => {
-  const {
-    realDirectoryKeyword,
-    analyzedDirectoryKeyword,
-    virtualDirectoryKeyword,
-    setRealDirectoryKeyword,
-    setAnalyzedDirectoryKeyword,
-    setVirtualDirectoryKeyword,
-    getSearchSuggestions,
-    addSearchHistory
-  } = useSearchStore()
+  // R-20：整店订阅改稳定细粒度 selector，无关搜索 store 字段更新不再触发本组件重渲染
+  const realDirectoryKeyword = useSearchStore(s => s.realDirectoryKeyword)
+  const analyzedDirectoryKeyword = useSearchStore(s => s.analyzedDirectoryKeyword)
+  const virtualDirectoryKeyword = useSearchStore(s => s.virtualDirectoryKeyword)
+  const setRealDirectoryKeyword = useSearchStore(s => s.setRealDirectoryKeyword)
+  const setAnalyzedDirectoryKeyword = useSearchStore(s => s.setAnalyzedDirectoryKeyword)
+  const setVirtualDirectoryKeyword = useSearchStore(s => s.setVirtualDirectoryKeyword)
+  const getSearchSuggestions = useSearchStore(s => s.getSearchSuggestions)
+  const addSearchHistory = useSearchStore(s => s.addSearchHistory)
 
   const keyword =
     type === 'real-directory'

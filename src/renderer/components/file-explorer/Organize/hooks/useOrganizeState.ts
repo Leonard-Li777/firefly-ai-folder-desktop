@@ -40,7 +40,9 @@ export function useOrganizeState() {
     return set
   }, [dimensionGroups])
 
-  const { computed_limits, fetchProfile } = useTierStore()
+  // R-26：精确 selector 订阅，避免 tier store 无关字段（profile 加载态等）变化触发整理页全量重渲染
+  const computed_limits = useTierStore(s => s.computed_limits)
+  const fetchProfile = useTierStore(s => s.fetchProfile)
 
   // ─── 阶段 & 模式 (绑定 Zustand store 实现 Keep-Alive) ────────────────────
   const stage = useOrganizeStore(s => s.stage)

@@ -87,7 +87,8 @@ function formatErrorMessage(err?: string, fallbackMessage?: string): string {
 }
 
 export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenChange }) => {
-  const { syncFromCloud } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector（action 引用稳定）
+  const syncFromCloud = useTierStore(s => s.syncFromCloud)
   const [step, setStep] = useState<BindStep>('qr_loading')
   const [bindData, setBindData] = useState<BindCodeData | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -405,7 +406,11 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
     const cleanInvite = extractInvitationCodeInput(invitationCode) || ''
 
     if (cleanPasscode !== OA_FOLLOW_PASSCODE) {
-      setError(t('口令不正确，请扫码关注公众号「{name}」后输入自动回复中的 4 位数字口令', { name: OA_ACCOUNT_NAME }))
+      setError(
+        t('口令不正确，请扫码关注公众号「{name}」后输入自动回复中的 4 位数字口令', {
+          name: OA_ACCOUNT_NAME
+        })
+      )
       toast.error(t('口令不正确，请核对公众号自动回复'))
       return
     }
@@ -553,7 +558,10 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                     <Laptop className="w-3.5 h-3.5" />
                     <span>{bindData.deviceLabel || t('当前电脑')}</span>
                   </div>
-                  <span>{t('尾号: ...')}{bindData.machineIdTail || '----'}</span>
+                  <span>
+                    {t('尾号: ...')}
+                    {bindData.machineIdTail || '----'}
+                  </span>
                 </div>
               </div>
             )}
@@ -648,13 +656,17 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                       {t('微信扫码关注「{name}」', { name: OA_ACCOUNT_NAME })}
                     </div>
                     <p className="text-muted-foreground text-[11px]">
-                      {t('关注后点击：私信，查看欢迎消息中的 4 位数字口令（也可在公众号内回复“口令”获取）')}
+                      {t(
+                        '关注后点击：私信，查看欢迎消息中的 4 位数字口令（也可在公众号内回复“口令”获取）'
+                      )}
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-foreground">{t('4 位数字口令')}</label>
+                  <label className="text-xs font-semibold text-foreground">
+                    {t('4 位数字口令')}
+                  </label>
                   <Input
                     data-testid="oa-passcode-input"
                     type="text"
@@ -729,7 +741,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
                 {deviceConsumedInvitation ? (
                   <span className="text-[11px] text-muted-foreground">{t('本机已参与过')}</span>
                 ) : (
-                  <span className="text-[11px] text-primary font-medium">{t('填写可获专属赠送奖励')}</span>
+                  <span className="text-[11px] text-primary font-medium">
+                    {t('填写可获专属赠送奖励')}
+                  </span>
                 )}
               </div>
               <Input
@@ -804,7 +818,9 @@ export const DeviceBindModal: React.FC<DeviceBindModalProps> = ({ open, onOpenCh
           >
             <CheckCircle2 className="w-16 h-16 text-emerald-500" />
             <span className="text-base font-bold text-foreground">{t('绑定与账号激活成功')}</span>
-            <span className="text-xs text-muted-foreground">{t('正在同步会员资产并进入软件...')}</span>
+            <span className="text-xs text-muted-foreground">
+              {t('正在同步会员资产并进入软件...')}
+            </span>
           </div>
         )}
       </DialogContent>

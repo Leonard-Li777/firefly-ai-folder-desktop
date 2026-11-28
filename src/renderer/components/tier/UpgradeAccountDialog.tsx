@@ -20,7 +20,8 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
   open,
   onOpenChange
 }) => {
-  const { tier } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const tier = useTierStore(s => s.tier)
   const config = useConfigStore(state => state.config)
   const tierConstants = (config as any)?.TIER_CONSTANTS as TierConstants | undefined
   const operationPrices = (config as any)?.OPERATION_PRICES

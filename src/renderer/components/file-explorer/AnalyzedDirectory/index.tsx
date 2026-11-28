@@ -73,7 +73,8 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   const showDetailsPanel = useAnalyzedDirectoryStore(s => s.showDetailsPanel)
   const setShowDetailsPanel = useAnalyzedDirectoryStore(s => s.setShowDetailsPanel)
 
-  const { setAnalyzedDirectoryKeyword } = useSearchStore()
+  // R-20：整店订阅改稳定细粒度 selector（action 引用稳定）
+  const setAnalyzedDirectoryKeyword = useSearchStore(s => s.setAnalyzedDirectoryKeyword)
 
   // Manage local states - isOrganizeMode: true = 整理模式, false = 浏览模式(默认)
   const [isOrganizeMode, setIsOrganizeMode] = useState(() => {
@@ -184,7 +185,8 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     }
   }, [currentPath, selectedItem])
 
-  const { computed_limits, fetchProfile } = useTierStore()
+  const computed_limits = useTierStore(s => s.computed_limits)
+  const fetchProfile = useTierStore(s => s.fetchProfile)
 
   const isWorkspaceActive = useMemo(() => {
     if (!currentWorkspaceDirectory || !workspaceDirectories.length) return true

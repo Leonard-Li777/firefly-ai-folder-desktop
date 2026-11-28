@@ -43,6 +43,7 @@ import type { PinyinMatchType } from '../../utils/pinyin-text'
 import { queryPinyinCandidates, verifyPinyinCandidates } from './hybrid-candidates-pinyin'
 import { FileDao } from '../../database/dao/file-dao'
 import { userTierService } from '../../user-tier/user-tier-service'
+import { getSchedulerService, type IdleTaskHandle } from '@pro/perf/scheduler'
 
 import {
   HYBRID_SEARCH_RRF_K,
@@ -497,6 +498,15 @@ const defaultPinyinReconcileTimerFactory = (cb: () => void, ms: number): { clear
  * 混合检索仲裁器：编排 FTS5 / 向量 / 文件名三路信号并按加权 RRF 融合，
  * 真实目录模式下补充 FS 实时未分析命中。构造函数支持注入熔断器便于单测。
  */
+/** [J-09] 拼音补写空闲通道最小接缝（与 @pro/perf/scheduler.runWhenIdle 同签名子集） */
+type PinyinIdleScheduler = {
+  runWhenIdle: (
+    id: string,
+    fn: () => void | Promise<void> | boolean | Promise<boolean>,
+    opts?: { priority?: 'normal' | 'startup-deferred' }
+  ) => IdleTaskHandle
+}
+
 export class HybridSearchArbiter {
   private readonly vectorBreaker: EndpointCircuitBreaker
   private readonly fsBreaker: EndpointCircuitBreaker
@@ -507,6 +517,10 @@ export class HybridSearchArbiter {
    */
   private readonly clipBreaker: EndpointCircuitBreaker
   private readonly networkSignals: boolean
+  /** [J-09] 拼音补写空闲通道：搜索路径只负责挂起任务，不执行任何写事务 */
+  private readonly pinyinIdleScheduler: PinyinIdleScheduler
+  /** 同一实例内去重：避免 30s tick 与搜索 tick 重复挂起同一空闲片 */
+  private pinyinIdleHandle: IdleTaskHandle | null = null
   /** 上次 CLIP 文本编码成功的时间戳（0 = 从未成功 ⇒ 冷态） */
   private lastClipSuccessAt = 0
   /** 上次成功时的热态纪元（与当前纪元不一致 ⇒ 已发生引擎重启 ⇒ 冷态） */
@@ -528,6 +542,8 @@ export class HybridSearchArbiter {
       enablePinyinReconcileTimer?: boolean
       /** 测试注入：假定时器工厂（生产用 setInterval，句柄 unref 防常驻） */
       pinyinReconcileTimerFactory?: (cb: () => void, ms: number) => { clear: () => void }
+      /** [J-09] 空闲通道注入（生产走 @pro/perf/scheduler 单例；测试可同步直跑） */
+      idleScheduler?: PinyinIdleScheduler
     }
   ) {
     this.vectorBreaker = options?.vectorBreaker ?? new EndpointCircuitBreaker()
@@ -541,6 +557,12 @@ export class HybridSearchArbiter {
         CLIP_BREAKER_BACKOFF_FACTOR
       )
     this.networkSignals = options?.networkSignals ?? !isTestEnvironment()
+    this.pinyinIdleScheduler =
+      options?.idleScheduler ??
+      {
+        runWhenIdle: (id, fn, opts) =>
+          getSchedulerService().runWhenIdle(id, fn, { priority: opts?.priority ?? 'normal' })
+      }
 
     const timerEnabled = options?.enablePinyinReconcileTimer ?? !isTestEnvironment()
     if (timerEnabled) {
@@ -561,6 +583,8 @@ export class HybridSearchArbiter {
       this.pinyinReconcileTimer.clear()
       this.pinyinReconcileTimer = null
     }
+    this.pinyinIdleHandle?.cancel()
+    this.pinyinIdleHandle = null
   }
 
   /**
@@ -789,11 +813,12 @@ export class HybridSearchArbiter {
   private pinyinReconcileTimer: { clear: () => void } | null = null
 
   /**
-   * 拼音索引 reconciler tick（设计文档 §4.3）：30s 节流批量补写缺失/陈旧拼音行。
+   * [J-09] 拼音索引 reconciler tick：30s 节流**只挂起空闲任务**，搜索路径零同步写。
    *
    * 取代 10-18 的 syncWorkspaceEntities（向封闭词库注册工作区实体）——正排索引架构下
    * 不再有内存词库，工作区标签/路径名的拼音由索引侧 write-through 承载，
    * 此处只兜底覆盖不走 syncFTSTags 的变更路径（如触发器维护的 smart_name 更新）。
+   * 只有只读探测到 pending / 历史缺口时才挂起空闲片（"有待补写数据才挂起"）。
    */
   private reconcilePinyinIndexTick(): void {
     const now = Date.now()
@@ -804,19 +829,30 @@ export class HybridSearchArbiter {
       return
     }
     HybridSearchArbiter.lastPinyinReconcileAt = now
-    try {
-      // P1-D：优先消费 idx_files_pinyin_pending 标脏行（state=0 → 1/2），
-      // 再以 hash reconciler 兜底外部绕过闸口的 smart_name / description 变更。
-      this.getFileDao().syncPinyinPendingBatch(200)
-      this.getFileDao().syncPinyinIndexDirty(300)
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(
-        LogCategory.VIRTUAL_DIRECTORY,
-        '[HybridSearchArbiter] 拼音索引 reconciler tick 失败:',
-        msg
-      )
-    }
+    if (this.pinyinIdleHandle) return
+
+    this.pinyinIdleHandle = this.pinyinIdleScheduler.runWhenIdle(
+      'db:j09:pinyin-reconcile',
+      () => {
+        this.pinyinIdleHandle = null
+        try {
+          const dao = this.getFileDao()
+          if (!dao.hasPinyinBacklog()) return
+          // P1-D：优先消费 idx_files_pinyin_pending 标脏行（state=0 → 1/2），
+          // 再以 hash reconciler 兜底外部绕过闸口的 smart_name / description 变更。
+          dao.syncPinyinPendingBatch(200)
+          dao.syncPinyinIndexDirty(300)
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            '[HybridSearchArbiter] 拼音索引空闲 reconciler 失败:',
+            msg
+          )
+        }
+      },
+      { priority: 'normal' }
+    )
   }
 
   /** 懒构造 FileDao（与数据库服务共享同一 db 连接；仅用于拼音源字段收集与 reconciler） */
@@ -857,7 +893,8 @@ export class HybridSearchArbiter {
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
     const attemptedFs = !!workspaceDirectoryPath
 
-    // 0. 拼音索引 reconciler tick（30s 节流兜底）+ 查询分类规划（PinyinQueryPlanner）
+    // 0. [J-09] 搜索路径只做只读探测与挂起空闲片，拼音补写不在搜索事务内执行；
+    //    reconcilePinyinIndexTick 内部 30s 节流，且写动作全部在 runWhenIdle 通道。
     this.reconcilePinyinIndexTick()
     const plan = PinyinQueryPlanner.getInstance().plan(keyword)
 

@@ -3,7 +3,9 @@ import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
 import { AnalysisQueueContent } from './AnalysisQueueContent'
 
 export function AnalysisQueueModal() {
-  const { showModal, setShowModal } = useAnalysisQueueStore()
+  // R-20：整店订阅改稳定细粒度 selector，队列进度推送不再触发本弹窗重渲染
+  const showModal = useAnalysisQueueStore(s => s.showModal)
+  const setShowModal = useAnalysisQueueStore(s => s.setShowModal)
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const isDraggingRef = useRef(false)
   const startPosRef = useRef({ x: 0, y: 0 })

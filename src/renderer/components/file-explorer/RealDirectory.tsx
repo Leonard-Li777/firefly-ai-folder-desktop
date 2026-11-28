@@ -93,7 +93,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     }
   }, [location.pathname, selectedItem])
 
-  const { computed_limits, entitlements, fetchProfile } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector，无关权益 store 字段更新不再触发本页重渲染
+  const computed_limits = useTierStore(s => s.computed_limits)
+  const entitlements = useTierStore(s => s.entitlements)
+  const fetchProfile = useTierStore(s => s.fetchProfile)
 
   // 优化选择回调，减少重渲染及复杂度
   const selectedItemRef = useRef(selectedItem)

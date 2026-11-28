@@ -52,7 +52,8 @@ export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
   const location = useLocation()
-  const { setAnalyzedDirectoryKeyword } = useSearchStore()
+  // R-26：精确 selector 只订阅稳定 action，避免搜索 store 任何状态变化都重渲染整个 Organize 页面
+  const setAnalyzedDirectoryKeyword = useSearchStore(s => s.setAnalyzedDirectoryKeyword)
 
   const config = useSettingsStore(s => s.config)
 

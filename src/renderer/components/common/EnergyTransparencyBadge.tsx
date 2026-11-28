@@ -121,7 +121,12 @@ export const EnergyTransparencyBadge: React.FC<{ className?: string }> = ({ clas
     maxHeight: 480
   })
 
-  const { snapshot, isReclaiming, reclaimAll, retryModule, subscribe } = useHibernationStore()
+  // R-20：整店订阅改稳定细粒度 selector，无关休眠 store 字段更新不再触发本徽章重渲染
+  const snapshot = useHibernationStore(s => s.snapshot)
+  const isReclaiming = useHibernationStore(s => s.isReclaiming)
+  const reclaimAll = useHibernationStore(s => s.reclaimAll)
+  const retryModule = useHibernationStore(s => s.retryModule)
+  const subscribe = useHibernationStore(s => s.subscribe)
 
   // 挂载时订阅主进程广播
   useEffect(() => {

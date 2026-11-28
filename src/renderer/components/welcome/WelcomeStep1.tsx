@@ -15,7 +15,9 @@ interface WelcomeStep1Props {
 
 export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
   const { t, changeLanguage, activeLanguage } = useVoerkaI18n(i18nScope)
-  const { getConfigValue, updateConfigValue } = useSettingsStore()
+  // R-20：整店订阅改稳定细粒度 selector（action 引用稳定，不随配置更新重渲染）
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(
     () => getConfigValue<LanguageCode>('DEFAULT_LANGUAGE') || getDefaultLanguage()
   )
@@ -91,11 +93,17 @@ export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
                   <span className="block text-sm font-semibold text-foreground truncate">
                     {language.nativeName}
                   </span>
-                  <span className="block text-xs text-muted-foreground truncate">{language.name}</span>
+                  <span className="block text-xs text-muted-foreground truncate">
+                    {language.name}
+                  </span>
                 </div>
                 <RadioGroupItem value={language.code} className="peer sr-only" />
                 {selectedLanguage === language.code ? (
-                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-white">
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    className="h-5 w-5 shrink-0 text-white"
+                  >
                     <circle cx="12" cy="12" r="12" className="fill-primary" />
                     <path
                       d="M7 13l3 3 7-7"
@@ -117,4 +125,3 @@ export function WelcomeStep1({ onNext }: WelcomeStep1Props) {
     </WelcomeStepLayout>
   )
 }
-

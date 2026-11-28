@@ -44,7 +44,12 @@ export const AccountManagementDialog: React.FC<AccountManagementDialogProps> = (
   open,
   onOpenChange
 }) => {
-  const { tier, subscription, firecores, syncFromCloud, fetchProfile } = useTierStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const tier = useTierStore(s => s.tier)
+  const subscription = useTierStore(s => s.subscription)
+  const firecores = useTierStore(s => s.firecores)
+  const syncFromCloud = useTierStore(s => s.syncFromCloud)
+  const fetchProfile = useTierStore(s => s.fetchProfile)
   const config = useConfigStore(state => state.config)
   const paymentInfo = (config as any)?.PAYMENT_INFO
 

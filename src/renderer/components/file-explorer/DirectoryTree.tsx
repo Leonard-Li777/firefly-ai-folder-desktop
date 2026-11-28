@@ -181,7 +181,9 @@ export const DirectoryTree: React.FC<DirectoryTreeProps> = ({
   onDirectoryChange,
   currentPath
 }) => {
-  const { expandedDirectories, toggleDirectory } = useFileExplorerStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const expandedDirectories = useFileExplorerStore(s => s.expandedDirectories)
+  const toggleDirectory = useFileExplorerStore(s => s.toggleDirectory)
 
   const treeItems = useMemo(() => {
     return buildTree(directories, files)

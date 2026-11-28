@@ -62,7 +62,9 @@ export const useToastStore = create<ToastStore>(set => ({
 
 // Toast容器组件
 export const ToastContainer: React.FC = () => {
-  const { toasts, removeToast } = useToastStore()
+  // R-20：整店订阅改稳定细粒度 selector
+  const toasts = useToastStore(s => s.toasts)
+  const removeToast = useToastStore(s => s.removeToast)
 
   return (
     <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
@@ -163,6 +165,8 @@ export const toast = {
   info: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
     useToastStore.getState().addToast({ message, type: 'info', duration, id, action }),
   loading: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
-    useToastStore.getState().addToast({ message, type: 'loading', duration: duration ?? 0, id, action }),
+    useToastStore
+      .getState()
+      .addToast({ message, type: 'loading', duration: duration ?? 0, id, action }),
   dismiss: (id: string) => useToastStore.getState().removeToast(id)
 }

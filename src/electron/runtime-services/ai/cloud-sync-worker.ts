@@ -5,7 +5,8 @@ import {
   sanitizeObject,
   toUTCString
 } from '@firefly/shared'
-import { net, powerMonitor } from 'electron'
+import { net } from 'electron'
+import { subscribePowerEvent } from '../../main/power-hub'
 
 import { cloudAnalysisService } from '@firefly/server'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
@@ -35,11 +36,15 @@ export class CloudSyncWorker {
   private nextSyncAllowedAt: number | null = null
 
   private constructor() {
-    // 监听系统唤醒事件，唤醒后立即尝试同步
-    powerMonitor.on('resume', () => {
-      logger.info(LogCategory.SUPABASE, 'CloudSyncWorker: System resumed, triggering sync...')
-      this.triggerSync(5000) // 唤醒后等 5 秒待网络稳定
-    })
+    // 通过 PowerEventHub 订阅系统唤醒事件，错峰 500ms 后触发同步
+    subscribePowerEvent(
+      'resume',
+      () => {
+        logger.info(LogCategory.SUPABASE, 'CloudSyncWorker: System resumed, triggering sync...')
+        this.triggerSync(5000) // 唤醒后等 5 秒待网络稳定
+      },
+      { id: 'cloud-sync-worker', resumeOffsetMs: 500 }
+    )
   }
 
   public static getInstance(): CloudSyncWorker {

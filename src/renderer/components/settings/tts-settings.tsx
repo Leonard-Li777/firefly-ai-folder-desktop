@@ -62,7 +62,44 @@ const SPEED_CHOICES = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
 export const TTSSettings: React.FC = () => {
   const config = useSettingsStore(s => s.config)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
-  const ttsAudioStore = useTTSAudioStore()
+  // R-30：整店订阅改稳定细粒度 selector，仅相关播放状态变化才重渲染；
+  // useMemo 聚合保持 ttsAudioStore 引用稳定（下游 useCallback deps 语义不变）
+  const ttsStatus = useTTSAudioStore(s => s.status)
+  const ttsPlayingTextId = useTTSAudioStore(s => s.playingTextId)
+  const ttsPlayingText = useTTSAudioStore(s => s.playingText)
+  const ttsSetSpeed = useTTSAudioStore(s => s.setSpeed)
+  const ttsSetVoiceId = useTTSAudioStore(s => s.setVoiceId)
+  const ttsPlay = useTTSAudioStore(s => s.play)
+  const ttsPause = useTTSAudioStore(s => s.pause)
+  const ttsResume = useTTSAudioStore(s => s.resume)
+  const ttsStop = useTTSAudioStore(s => s.stop)
+  const ttsRefreshVoices = useTTSAudioStore(s => s.refreshVoices)
+  const ttsAudioStore = useMemo(
+    () => ({
+      status: ttsStatus,
+      playingTextId: ttsPlayingTextId,
+      playingText: ttsPlayingText,
+      setSpeed: ttsSetSpeed,
+      setVoiceId: ttsSetVoiceId,
+      play: ttsPlay,
+      pause: ttsPause,
+      resume: ttsResume,
+      stop: ttsStop,
+      refreshVoices: ttsRefreshVoices
+    }),
+    [
+      ttsStatus,
+      ttsPlayingTextId,
+      ttsPlayingText,
+      ttsSetSpeed,
+      ttsSetVoiceId,
+      ttsPlay,
+      ttsPause,
+      ttsResume,
+      ttsStop,
+      ttsRefreshVoices
+    ]
+  )
 
   // 1. 读取配置（保持高容错并自动迁移历史旧数字配置）
   const ttsSpeed = config.ttsSpeed ?? 1.0

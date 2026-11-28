@@ -71,37 +71,42 @@ export const useAnalyzedDirectoryState = (
   const navigate = useNavigate()
   const location = useLocation()
   const currentPath = location.pathname
-  const {
-    currentWorkspaceDirectory,
-    setCurrentWorkspaceDirectory,
-    dimensionGroups,
-    setDimensionGroups,
-    setPathCountMap,
-    selectedTags,
-    filteredFiles,
-    setFilteredFiles,
-    sortBy,
-    sortOrder,
-    viewMode,
-    setSortBy,
-    setSortOrder,
-    setViewMode,
-    setSavedDirectories,
-    isLoading,
-    setIsLoading,
-    selectedItem,
-    setSelectedItem,
-    showDetailsPanel,
-    setShowDetailsPanel,
-    totalFilesCount,
-    setTotalFilesCount,
-    workspaceDirectories,
-    setWorkspaceDirectories
-  } = useAnalyzedDirectoryStore()
+  // R-20：整店订阅改稳定细粒度 selector，无关 store 字段更新不再触发本页重渲染
+  const currentWorkspaceDirectory = useAnalyzedDirectoryStore(s => s.currentWorkspaceDirectory)
+  const setCurrentWorkspaceDirectory = useAnalyzedDirectoryStore(
+    s => s.setCurrentWorkspaceDirectory
+  )
+  const dimensionGroups = useAnalyzedDirectoryStore(s => s.dimensionGroups)
+  const setDimensionGroups = useAnalyzedDirectoryStore(s => s.setDimensionGroups)
+  const setPathCountMap = useAnalyzedDirectoryStore(s => s.setPathCountMap)
+  const selectedTags = useAnalyzedDirectoryStore(s => s.selectedTags)
+  const filteredFiles = useAnalyzedDirectoryStore(s => s.filteredFiles)
+  const setFilteredFiles = useAnalyzedDirectoryStore(s => s.setFilteredFiles)
+  const sortBy = useAnalyzedDirectoryStore(s => s.sortBy)
+  const sortOrder = useAnalyzedDirectoryStore(s => s.sortOrder)
+  const viewMode = useAnalyzedDirectoryStore(s => s.viewMode)
+  const setSortBy = useAnalyzedDirectoryStore(s => s.setSortBy)
+  const setSortOrder = useAnalyzedDirectoryStore(s => s.setSortOrder)
+  const setViewMode = useAnalyzedDirectoryStore(s => s.setViewMode)
+  const setSavedDirectories = useAnalyzedDirectoryStore(s => s.setSavedDirectories)
+  const isLoading = useAnalyzedDirectoryStore(s => s.isLoading)
+  const setIsLoading = useAnalyzedDirectoryStore(s => s.setIsLoading)
+  const selectedItem = useAnalyzedDirectoryStore(s => s.selectedItem)
+  const setSelectedItem = useAnalyzedDirectoryStore(s => s.setSelectedItem)
+  const showDetailsPanel = useAnalyzedDirectoryStore(s => s.showDetailsPanel)
+  const setShowDetailsPanel = useAnalyzedDirectoryStore(s => s.setShowDetailsPanel)
+  const totalFilesCount = useAnalyzedDirectoryStore(s => s.totalFilesCount)
+  const setTotalFilesCount = useAnalyzedDirectoryStore(s => s.setTotalFilesCount)
+  const workspaceDirectories = useAnalyzedDirectoryStore(s => s.workspaceDirectories)
+  const setWorkspaceDirectories = useAnalyzedDirectoryStore(s => s.setWorkspaceDirectories)
 
-  const { config, getConfigValue, updateConfigValue } = useSettingsStore()
-  const { serviceStatus, modelMode } = useModelStore()
-  const { analyzedDirectoryKeyword, setAnalyzedDirectoryKeyword } = useSearchStore()
+  const config = useSettingsStore(s => s.config)
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const serviceStatus = useModelStore(s => s.serviceStatus)
+  const modelMode = useModelStore(s => s.modelMode)
+  const analyzedDirectoryKeyword = useSearchStore(s => s.analyzedDirectoryKeyword)
+  const setAnalyzedDirectoryKeyword = useSearchStore(s => s.setAnalyzedDirectoryKeyword)
 
   // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
   useSearchViewAutoSwitch({
@@ -109,7 +114,6 @@ export const useAnalyzedDirectoryState = (
     viewMode,
     setViewMode
   })
-  const { snapshot } = useAnalysisQueueStore()
 
   const [isDimensionLoading, setIsDimensionLoading] = useState(false)
   const [showDirectoryDropdown, setShowDirectoryDropdown] = useState(false)
@@ -139,40 +143,64 @@ export const useAnalyzedDirectoryState = (
     loadWorkspaceDirectories()
   }, [])
 
-  // 监听分析队列状态变化，自动刷新数据
-  useEffect(() => {
-    const completedItems = snapshot.items.filter(item => item.status === 'completed')
-    const currentCompletedIds = new Set<number>(completedItems.map(item => item.id))
+  // R-21：分析队列完成检测由渲染期整店订阅改为 useEffect 内 subscribe 静默比对，
+  // 队列进度推送不再触发已分析目录整页重渲染；加载器经 ref 取最新闭包，避免冻结旧状态。
+  const refreshLoadersRef = useRef<{
+    loadFilteredFiles: () => void
+    loadDimensionGroups: () => void
+    onAnalysisComplete?: () => void
+  } | null>(null)
 
-    let hasNewCompletion = false
-    for (const id of currentCompletedIds) {
-      if (!lastCompletedIds.current.has(id)) {
-        hasNewCompletion = true
-        break
+  useEffect(() => {
+    const detectNewCompletion = (items: Array<{ id: number; status: string }>) => {
+      const currentCompletedIds = new Set<number>()
+      for (const item of items) {
+        if (item.status === 'completed') currentCompletedIds.add(item.id)
+      }
+
+      let hasNewCompletion = false
+      for (const id of currentCompletedIds) {
+        if (!lastCompletedIds.current.has(id)) {
+          hasNewCompletion = true
+          break
+        }
+      }
+
+      if (hasNewCompletion) {
+        // 立即更新已知完成 ID 集合，防止防抖等待期间后续队列推送重复触发误判
+        lastCompletedIds.current = currentCompletedIds
+
+        logger.info(LogCategory.RENDERER, `[虚拟目录] 检测到项目分析完成，准备刷新数据...`)
+        if (refreshTimer.current) clearTimeout(refreshTimer.current)
+
+        refreshTimer.current = setTimeout(() => {
+          refreshLoadersRef.current?.loadFilteredFiles()
+          refreshLoadersRef.current?.loadDimensionGroups()
+          refreshTimer.current = null
+          refreshLoadersRef.current?.onAnalysisComplete?.()
+        }, 1500)
+      } else if (currentCompletedIds.size !== lastCompletedIds.current.size) {
+        lastCompletedIds.current = currentCompletedIds
       }
     }
 
-    if (hasNewCompletion) {
-      // 立即更新已知完成 ID 集合，防止防抖等待期间后续队列推送重复触发误判
-      lastCompletedIds.current = currentCompletedIds
+    // 挂载守卫（C4）：注册 subscribe 后立即对当前 getState() 执行一次初始检测，
+    // 防完成态早于 effect 挂载达成而漏刷
+    detectNewCompletion(useAnalysisQueueStore.getState().snapshot.items)
 
-      logger.info(LogCategory.RENDERER, `[虚拟目录] 检测到项目分析完成，准备刷新数据...`)
-      if (refreshTimer.current) clearTimeout(refreshTimer.current)
+    const unsubscribe = useAnalysisQueueStore.subscribe((state, prevState) => {
+      if (state.snapshot.items !== prevState.snapshot.items) {
+        detectNewCompletion(state.snapshot.items)
+      }
+    })
 
-      refreshTimer.current = setTimeout(() => {
-        loadFilteredFiles()
-        loadDimensionGroups()
-        refreshTimer.current = null
-        onAnalysisComplete?.()
-      }, 1500)
-    } else if (currentCompletedIds.size !== lastCompletedIds.current.size) {
-      lastCompletedIds.current = currentCompletedIds
-    }
-  }, [snapshot.items])
-
-  useEffect(() => {
+    // StrictMode 双调用幂等清理：取消订阅并撤销未决防抖
     return () => {
-      if (refreshTimer.current) clearTimeout(refreshTimer.current)
+      unsubscribe()
+      if (refreshTimer.current) {
+        clearTimeout(refreshTimer.current)
+        refreshTimer.current = null
+      }
     }
   }, [])
 
@@ -476,6 +504,9 @@ export const useAnalyzedDirectoryState = (
       performanceTracker.end(perfKey)
     }
   }
+
+  // R-21：每次渲染刷新加载器引用，供 subscribe 防抖回调取最新闭包（避免冻结旧 store 快照）
+  refreshLoadersRef.current = { loadFilteredFiles, loadDimensionGroups, onAnalysisComplete }
 
   return {
     navigate,

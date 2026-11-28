@@ -11,7 +11,6 @@ import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import { useTTSAudioStore } from '../../stores/tts-audio-store'
 import { triggerTTSFlyAnimation } from '../../lib/tts-fly-animation'
-import { useConfigStore } from '../../stores/config-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { usePluginCenterStore } from '../../stores/plugin-center-store'
 import { SettingsCategory } from '@firefly/types'
@@ -215,7 +214,10 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
           className
         )}
       >
-        <MaterialIcon icon="volume_off" className="text-[13px] text-muted-foreground/70 flex-shrink-0" />
+        <MaterialIcon
+          icon="volume_off"
+          className="text-[13px] text-muted-foreground/70 flex-shrink-0"
+        />
         <span className="text-[10px] text-muted-foreground/70 whitespace-nowrap">
           {t('语音播放待安装/启动')}
         </span>

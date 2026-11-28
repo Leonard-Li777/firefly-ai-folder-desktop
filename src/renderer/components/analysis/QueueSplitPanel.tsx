@@ -4,7 +4,11 @@ import { AnalysisQueueContent } from './AnalysisQueueContent'
 import { t } from '@app/languages'
 
 export function QueueSplitPanel() {
-  const { viewMode, isSplitOpen, splitHeight, setSplitHeight } = useAnalysisQueueStore()
+  // R-20：整店订阅改稳定细粒度 selector，队列进度推送不再触发本面板重渲染
+  const viewMode = useAnalysisQueueStore(s => s.viewMode)
+  const isSplitOpen = useAnalysisQueueStore(s => s.isSplitOpen)
+  const splitHeight = useAnalysisQueueStore(s => s.splitHeight)
+  const setSplitHeight = useAnalysisQueueStore(s => s.setSplitHeight)
   const isDraggingRef = useRef(false)
   const startYRef = useRef(0)
   const startHeightRef = useRef(0)

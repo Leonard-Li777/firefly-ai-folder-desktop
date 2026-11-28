@@ -27,7 +27,8 @@ export const SettingsButton: React.FC<ISettingsButtonProps> = ({
   category,
   children
 }) => {
-  const { openSettings } = useSettingsStore()
+  // R-20：整店订阅改稳定细粒度 selector（action 引用稳定）
+  const openSettings = useSettingsStore(s => s.openSettings)
 
   const handleClick = async () => {
     await openSettings(category)
@@ -61,7 +62,8 @@ export const SettingsIconButton: React.FC<Omit<ISettingsButtonProps, 'children'>
   className,
   category
 }) => {
-  const { openSettings } = useSettingsStore()
+  // R-20：整店订阅改稳定细粒度 selector（action 引用稳定）
+  const openSettings = useSettingsStore(s => s.openSettings)
 
   const handleClick = async () => {
     await openSettings(category)
