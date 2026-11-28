@@ -279,9 +279,9 @@ export class OmniService {
   private hasLiveManagedProcess(): boolean {
     return Boolean(
       this.process &&
-        this.process.exitCode === null &&
-        this.process.signalCode === null &&
-        !this.process.killed
+      this.process.exitCode === null &&
+      this.process.signalCode === null &&
+      !this.process.killed
     )
   }
 
@@ -294,9 +294,7 @@ export class OmniService {
 
   /** 判断是否仍处于最近一次拉起后的启动宽限期内 */
   private isWithinStartupGrace(): boolean {
-    return (
-      this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < OmniService.STARTUP_GRACE_MS
-    )
+    return this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < OmniService.STARTUP_GRACE_MS
   }
 
   /** 判断请求 URL 的 origin 是否严格等于当前已采纳的 baseUrl */
@@ -312,7 +310,10 @@ export class OmniService {
 
   /** 复用态/已采纳身份立即自失效（ECONNREFUSED 或 X-Omni-Instance-Id 不匹配触发） */
   private invalidateAdoptedIdentity(reason: string): void {
-    logger.warn(LogCategory.SYSTEM, `[OmniService] 检测到当前实例身份失效 (${reason})，立即清零采纳状态`)
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[OmniService] 检测到当前实例身份失效 (${reason})，立即清零采纳状态`
+    )
     this.expectedIdentity = null
     this.cachedVersion = null
     this.connectedTarget = null
@@ -409,8 +410,13 @@ export class OmniService {
     const isRequestResponse = kind === 'call' || kind === 'long'
     const isCurrentBase = this.isRequestTargetCurrentBaseUrl(url)
 
-    const { kind: _k, timeoutMs: explicitTimeoutMs, internal: _i, signal: callerSignal, ...restInit } =
-      init ?? {}
+    const {
+      kind: _k,
+      timeoutMs: explicitTimeoutMs,
+      internal: _i,
+      signal: callerSignal,
+      ...restInit
+    } = init ?? {}
 
     let effectiveSignal: AbortSignal | undefined = callerSignal ?? undefined
     const defaultTimeoutMs =
@@ -1291,9 +1297,7 @@ export class OmniService {
     }
     if (this.process !== null) {
       return (
-        this.process.exitCode === null &&
-        this.process.signalCode === null &&
-        !this.process.killed
+        this.process.exitCode === null && this.process.signalCode === null && !this.process.killed
       )
     }
     return (
@@ -1347,9 +1351,7 @@ export class OmniService {
         return { ok: false, explicitNonTimeoutFailure: true }
       }
       const headerInstanceId =
-        res.headers?.get?.('x-omni-instance-id') ??
-        res.headers?.get?.('X-Omni-Instance-Id') ??
-        null
+        res.headers?.get?.('x-omni-instance-id') ?? res.headers?.get?.('X-Omni-Instance-Id') ?? null
       const data = (await res.json()) as Record<string, any>
       if (!data || data.status !== 'ok') {
         return { ok: false, explicitNonTimeoutFailure: true }
@@ -1361,8 +1363,7 @@ export class OmniService {
           pid: typeof data.pid === 'number' ? data.pid : undefined,
           userDataDir: typeof data.userDataDir === 'string' ? data.userDataDir : null,
           masterDbPath: typeof data.masterDbPath === 'string' ? data.masterDbPath : null,
-          targetVectorsDir:
-            typeof data.targetVectorsDir === 'string' ? data.targetVectorsDir : null
+          targetVectorsDir: typeof data.targetVectorsDir === 'string' ? data.targetVectorsDir : null
         },
         {
           expectedPort: port,
@@ -1683,7 +1684,9 @@ export class OmniService {
         return ''
       }
     })()
-    const omniWorkspaceFromRes = baseResDir ? path.resolve(baseResDir, '..', '..', '..', 'omni') : ''
+    const omniWorkspaceFromRes = baseResDir
+      ? path.resolve(baseResDir, '..', '..', '..', 'omni')
+      : ''
     const candidates: string[] = []
     const push = (candidate: string | null | undefined): void => {
       if (!candidate) return
@@ -1705,7 +1708,9 @@ export class OmniService {
     }
 
     // 2. 生产打包或部署态：通过 ResourceLocator 解析随包 bin/omni
-    push(ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni'))
+    push(
+      ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni')
+    )
 
     // 3. 多候选路径兜底检索
     push(path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'omni', exeName))
@@ -2020,9 +2025,7 @@ export class OmniService {
 
   /** 读取 LaunchContext 合并后的 stderr 尾段（包含无换行尾段 stderrPartial） */
   private getLaunchStderrTail(ctx: LaunchContext): string {
-    const lines = ctx.stderrPartial
-      ? [...ctx.stderrLines, ctx.stderrPartial]
-      : [...ctx.stderrLines]
+    const lines = ctx.stderrPartial ? [...ctx.stderrLines, ctx.stderrPartial] : [...ctx.stderrLines]
     return lines.join('\n')
   }
 
@@ -2289,7 +2292,11 @@ export class OmniService {
           }
         )
         if (dfOrigin.ok) {
-          const verified = await this.verifyOmniInstance(discovered.port, discovered.pid, verifyOpts)
+          const verified = await this.verifyOmniInstance(
+            discovered.port,
+            discovered.pid,
+            verifyOpts
+          )
           if (verified.ok) {
             matchedPort = discovered.port
             matchedData = verified.data
@@ -2307,7 +2314,10 @@ export class OmniService {
       // 仅当发现文件未命中时，对 38200..=38219 执行并发单发 3000ms（0 重试）探测（彻底弃用同步端口快照）
       const scanResultByPort = new Map<number, VerifyInstanceResult>()
       if (matchedPort === null) {
-        const ports = Array.from({ length: APP_PORTS.MAX_ATTEMPTS }, (_, idx) => this.basePort + idx)
+        const ports = Array.from(
+          { length: APP_PORTS.MAX_ATTEMPTS },
+          (_, idx) => this.basePort + idx
+        )
         const settled = await Promise.allSettled(
           ports.map(async p => ({
             port: p,
@@ -2443,11 +2453,15 @@ export class OmniService {
       const deployedOnnxDir = path.join(staticResourcesRoot, 'bin', 'omni')
       const runtimeDllDir = fs.existsSync(deployedOnnxDir) ? deployedOnnxDir : binDir
       const existingPath = process.env.PATH || ''
-      const injectedPath = [runtimeDllDir, binDir, existingPath].filter(Boolean).join(path.delimiter)
+      const injectedPath = [runtimeDllDir, binDir, existingPath]
+        .filter(Boolean)
+        .join(path.delimiter)
 
       const isWin = process.platform === 'win32'
       const existingLibPath = process.env.LD_LIBRARY_PATH || ''
-      const injectedLibPath = [runtimeDllDir, binDir, existingLibPath].filter(Boolean).join(path.delimiter)
+      const injectedLibPath = [runtimeDllDir, binDir, existingLibPath]
+        .filter(Boolean)
+        .join(path.delimiter)
 
       // 绑定操作系统单实例文件咨询锁与安全令牌 (Spec §8)
       const runDir = dbPath
@@ -2643,8 +2657,14 @@ export class OmniService {
               const diskMetaPath = path.join(item.physicalDir, 'vocab_v.meta.json')
               if (fs.existsSync(diskMetaPath)) {
                 try {
-                  const parsedMeta = JSON.parse(fs.readFileSync(diskMetaPath, 'utf-8')) as Record<string, any>
-                  const digest = typeof parsedMeta.encoder_digest === 'string' ? parsedMeta.encoder_digest.trim() : ''
+                  const parsedMeta = JSON.parse(fs.readFileSync(diskMetaPath, 'utf-8')) as Record<
+                    string,
+                    any
+                  >
+                  const digest =
+                    typeof parsedMeta.encoder_digest === 'string'
+                      ? parsedMeta.encoder_digest.trim()
+                      : ''
                   const entryCount = Array.isArray(parsedMeta.entries)
                     ? parsedMeta.entries.length
                     : typeof parsedMeta.entry_count === 'number'
@@ -2656,7 +2676,8 @@ export class OmniService {
                       metaFileName: 'vocab_v.meta.json',
                       version: diskReady.visualVocab.pluginVersion || parsedMeta.version || '2.0.0',
                       schemaVersion: 2 as const,
-                      bakeRevision: diskReady.visualVocab.bakeRevision ?? parsedMeta.bake_revision ?? 1,
+                      bakeRevision:
+                        diskReady.visualVocab.bakeRevision ?? parsedMeta.bake_revision ?? 1,
                       encoderDigestPrefix: digest.slice(0, 16),
                       matrixSha256: diskReady.visualVocab.matrixSha256,
                       metaSha256: diskReady.visualVocab.metaSha256,
@@ -2682,7 +2703,9 @@ export class OmniService {
               ...(typeof meta.dim === 'number' ? { dim: meta.dim } : {}),
               ...(typeof meta.encoderId === 'number' ? { encoderId: meta.encoderId } : {}),
               ...(meta.vocabMeta ? { vocabMeta: { ...meta.vocabMeta } } : {}),
-              ...(effectiveVisualVocabMeta ? { visualVocabMeta: { ...effectiveVisualVocabMeta } } : {})
+              ...(effectiveVisualVocabMeta
+                ? { visualVocabMeta: { ...effectiveVisualVocabMeta } }
+                : {})
             }
             expectedMountResourceIds.push(item.resourceId)
           }
@@ -3502,7 +3525,9 @@ export class OmniService {
 
       const visualVocabEarly = data?.visualVocab as VisualVocabStatusTelemetry | undefined
       const visualVocabStatusEarly =
-        typeof visualVocabEarly?.activeStatus === 'string' ? visualVocabEarly.activeStatus : undefined
+        typeof visualVocabEarly?.activeStatus === 'string'
+          ? visualVocabEarly.activeStatus
+          : undefined
       return {
         ok: true,
         statusData: data,
@@ -3551,9 +3576,14 @@ export class OmniService {
     }
   }
 
-  private notifyVisualTaggerRecovered(encoderId: number, expectedFingerprint?: string | null): void {
+  private notifyVisualTaggerRecovered(
+    encoderId: number,
+    expectedFingerprint?: string | null
+  ): void {
     try {
-      const { visualTaggerCoordinator } = require('../../analysis-queue-service/visual-tagger-coordinator')
+      const {
+        visualTaggerCoordinator
+      } = require('../../analysis-queue-service/visual-tagger-coordinator')
       visualTaggerCoordinator?.markVisualTaggerHealthy?.(encoderId)
       const { databaseService } = require('../../database/database-service')
       const appVersion = this.getHostAppVersionSafe()
@@ -3578,7 +3608,9 @@ export class OmniService {
     visualVocab?: VisualVocabStatusTelemetry
     statusData?: Record<string, any>
   }): void {
-    const vv = verifyRes.visualVocab ?? (verifyRes.statusData?.visualVocab as VisualVocabStatusTelemetry | undefined)
+    const vv =
+      verifyRes.visualVocab ??
+      (verifyRes.statusData?.visualVocab as VisualVocabStatusTelemetry | undefined)
     const status = verifyRes.visualVocabStatus ?? vv?.activeStatus
     if (!status || status === 'not_provisioned') {
       return
@@ -3619,7 +3651,13 @@ export class OmniService {
 
   private async triggerStartupVisualReconcile(encoderId: number): Promise<void> {
     const resourceId =
-      encoderId === 2 ? 'chinese-clip' : encoderId === 3 ? 'mobile-clip' : encoderId === 4 ? 'embeddinggemma-2-onnx' : null
+      encoderId === 2
+        ? 'chinese-clip'
+        : encoderId === 3
+          ? 'mobile-clip'
+          : encoderId === 4
+            ? 'embeddinggemma-2-onnx'
+            : null
     if (!resourceId) return
     try {
       const { modularResourceService } = await import('../modular-resource-service')
@@ -3653,17 +3691,24 @@ export class OmniService {
       const json = (await res.json().catch(() => null)) as Record<string, any> | null
       if (!res.ok || json?.success === false) {
         const errMsg =
-          (typeof json?.error?.message === 'string' && json.error.message) ||
-          `HTTP ${res.status}`
+          (typeof json?.error?.message === 'string' && json.error.message) || `HTTP ${res.status}`
         return { success: false, error: errMsg }
       }
       const tagger = json?.assets?.tagger as
-        | { status?: string; activeStatus?: string; activeEncoderId?: number; byEncoder?: Record<string, any> }
+        | {
+            status?: string
+            activeStatus?: string
+            activeEncoderId?: number
+            byEncoder?: Record<string, any>
+          }
         | undefined
-      const activeEncoderId = typeof tagger?.activeEncoderId === 'number' ? tagger.activeEncoderId : undefined
+      const activeEncoderId =
+        typeof tagger?.activeEncoderId === 'number' ? tagger.activeEncoderId : undefined
       const resolvedActiveStatus =
         tagger?.activeStatus ??
-        (activeEncoderId !== undefined ? tagger?.byEncoder?.[String(activeEncoderId)]?.status : undefined) ??
+        (activeEncoderId !== undefined
+          ? tagger?.byEncoder?.[String(activeEncoderId)]?.status
+          : undefined) ??
         tagger?.status
       if (resolvedActiveStatus === 'ok') {
         this.visualTaggerAvailable = true
@@ -3741,8 +3786,7 @@ export class OmniService {
     } else if (opts.moduleId === 'tts_moss_onnx' || opts.moduleId === 'tts_m5_onnx') {
       const expectedEngine =
         opts.moduleId === 'tts_m5_onnx' ? 'express-voice-24k' : 'clone-voice-48k'
-      const hibernationTargetId =
-        opts.moduleId === 'tts_m5_onnx' ? 'tts-m5-onnx' : 'tts-moss-onnx'
+      const hibernationTargetId = opts.moduleId === 'tts_m5_onnx' ? 'tts-m5-onnx' : 'tts-moss-onnx'
 
       // 1. 先探活 /api/audio/tts/status 确认挂载路由激活且模型包已安装 (installed)
       const statusDeadline = Date.now() + 5_000
@@ -5617,6 +5661,7 @@ export class OmniService {
     profile: 'classic_light' | 'gemma_unified'
     model_paths?: Record<string, string>
     test_tokens?: string[]
+    timeoutMs?: number
   }): Promise<{ success: boolean; latency_ms?: number; error?: string; errorCode?: string }> {
     try {
       await this.ensureRunning()
@@ -5640,9 +5685,15 @@ export class OmniService {
       }
 
       const tokens = payload.test_tokens || ['test', '向量', 'search', '检索', 'firefly']
+      // 冷启动时 Gemma 加密文本塔首次解密装载通常耗时 ~20s，旧 4000ms 硬编码会导致首次引导/切换底座被误判失败
+      const defaultTimeoutMs = payload.profile === 'gemma_unified' ? 30_000 : 15_000
+      const smokeTimeoutMs =
+        typeof payload.timeoutMs === 'number' && payload.timeoutMs > 0
+          ? payload.timeoutMs
+          : defaultTimeoutMs
       const testEmbed = await this.batchEmbedText(tokens, {
         profile: payload.profile,
-        timeoutMs: 4000
+        timeoutMs: smokeTimeoutMs
       })
       if (
         !testEmbed ||

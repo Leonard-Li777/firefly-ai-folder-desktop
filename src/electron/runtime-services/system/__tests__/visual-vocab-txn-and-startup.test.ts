@@ -266,14 +266,16 @@ describe('Ticket 08: 视觉词表 .txn.json 事务、崩溃恢复与非阻断启
     }
   })
 
-  it('R2 fixes: embeddinggemma-2-onnx 未发布 visualVocabMeta 时不受视觉事务门禁阻塞；reloadVisualAssets 隔离 inactive 槽并唤醒协调器；reconcile fail-closed', async () => {
+  it('R2 fixes: 三套视觉适配器均纳入视觉事务门禁（纯文本 bekko-a8m 除外）；reloadVisualAssets 隔离 inactive 槽并唤醒协调器；reconcile fail-closed', async () => {
     const { isVisualVocabPluginResource } = await import('../visual-vocab-txn')
-    expect(isVisualVocabPluginResource('embeddinggemma-2-onnx')).toBe(false)
+    expect(isVisualVocabPluginResource('embeddinggemma-2-onnx')).toBe(true)
     expect(isVisualVocabPluginResource('chinese-clip')).toBe(true)
     expect(isVisualVocabPluginResource('mobile-clip')).toBe(true)
+    expect(isVisualVocabPluginResource('bekko-a8m')).toBe(false)
 
     const { OmniService } = await import('../omni-service/omni-service')
-    const { visualTaggerCoordinator } = await import('../../analysis-queue-service/visual-tagger-coordinator')
+    const { visualTaggerCoordinator } =
+      await import('../../analysis-queue-service/visual-tagger-coordinator')
     visualTaggerCoordinator.recordAssetFailureForBreaker(2, 0)
     visualTaggerCoordinator.recordAssetFailureForBreaker(2, 0)
     visualTaggerCoordinator.recordAssetFailureForBreaker(2, 0)
@@ -319,7 +321,8 @@ describe('Ticket 08: 视觉词表 .txn.json 事务、崩溃恢复与非阻断启
     expect(fs.existsSync(path.join(clipDir, '.ready.json'))).toBe(false)
 
     // R3 [H-4]: commitPluginDirectoryWithTxn 与 recoverPendingPluginTxns 在无 verifyFn 时必须 fail-closed 回滚
-    const { commitPluginDirectoryWithTxn, buildReadyVisualVocabMeta } = await import('../visual-vocab-txn')
+    const { commitPluginDirectoryWithTxn, buildReadyVisualVocabMeta } =
+      await import('../visual-vocab-txn')
     const txnIntents = path.join(tmpRoot, '.intents-no-cli')
     const txnDest = path.join(tmpRoot, '_shared', 'emb-r3-dest')
     const txnStaged = path.join(tmpRoot, '_staging', 'emb-r3-staged')
