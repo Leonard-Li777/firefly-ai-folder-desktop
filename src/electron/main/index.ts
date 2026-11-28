@@ -4,11 +4,37 @@
 // 详见 ./worktree-bootstrap.ts 的说明。
 import { worktreeInfo } from './worktree-bootstrap'
 import { mark, setStartupTimelineLogger, flushIfNeeded } from '@pro/perf/startup-timeline'
+import {
+  startEventLoopDelayMonitor,
+  stopEventLoopDelayMonitor
+} from '@pro/perf/event-loop-monitor'
 import * as fs from 'node:fs'
 import fixPath from 'fix-path'
 
 // 精确记录静态 import 图求值结束时刻（ESM import 会提升至模块体前求值，W0-02 §9）
 mark('mod:imports:evaluated')
+
+// IO-02 同步 I/O 插桩入口接线：仅非生产构建且显式开启 FF_SYNC_IO_INSTRUMENT=1 时在最早期生效；
+// 生产构建由 __IS_DEV__ 死代码消除与 vite 插件双重剥离，确保不打入正式产物。
+if (__IS_DEV__ && process.env.FF_SYNC_IO_INSTRUMENT === '1') {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires -- dev/harness 条件加载，prod 由 __IS_DEV__ 与 vite 插件共同剥离
+  const instr = require('../infra/fs/instrument') as typeof import('../infra/fs/instrument')
+  const rawDelayMs = Number(process.env.FF_SYNC_IO_DELAY_MS)
+  instr.enableSyncIoInstrumentation({
+    delayMs: Number.isFinite(rawDelayMs) && rawDelayMs >= 0 ? rawDelayMs : undefined,
+    countSync: true,
+    countAsync: process.env.FF_SYNC_IO_COUNT_ASYNC === '1',
+    logger: {
+      warn: (message, error) => {
+        try {
+          logger.warn(LogCategory.SYSTEM, message, error)
+        } catch {
+          console.warn(message, error)
+        }
+      }
+    }
+  })
+}
 
 // 在 macOS 和 Linux 上修复 PATH 环境变量（必须在所有其他逻辑之前执行）
 if (process.platform !== 'win32') {
@@ -149,7 +175,8 @@ app.on('open-url', (event, url) => {
 })
 
 // 执行双应用数据目录隔离与迁移（用于改名 yonuc-ai-folder -> firefly-ai-folder 的无缝升级）
-;(() => {
+// 须保持具名函数 migrateLegacyUserDataSync：与 infra/fs/sync-allowlist.ts 精确登记键一致（J-05 / IO-23）
+function migrateLegacyUserDataSync(): void {
   try {
     const appDataDir = app.getPath('appData')
     const oldDir = path.join(appDataDir, 'yonuc-ai-folder')
@@ -248,7 +275,8 @@ app.on('open-url', (event, url) => {
   } catch (err) {
     loggingService.error(LogCategory.DATABASE, '[Migration] 初始化新版数据目录失败:', err)
   }
-})()
+}
+migrateLegacyUserDataSync()
 
 // 开发模式下清理陈旧 DevToolsActivePort 与孤儿 desktop-dev-config.json，
 // 并基于平台有界子槽位 + 单次快照选定候选 CDP 端口（子槽位耗尽则自动切入 --remote-debugging-port=0）
@@ -776,6 +804,15 @@ mark('mod:eval:end')
 
 app.on('ready', async () => {
   mark('app:ready')
+  // IO-03 主进程事件循环延迟监控（dev / FF_EVENT_LOOP_MONITOR=1 canary 默认启用；生产构建门禁关闭）
+  startEventLoopDelayMonitor({
+    logger: {
+      warn: (message, error) => logger.warn(LogCategory.SYSTEM, message, error)
+    },
+    reporter: (event, properties) => {
+      postHogMain.capture(event, properties)
+    }
+  })
   // 本地开发模式：建窗前完成 DevToolsActivePort + /json/version 真值核验与镜像发布；
   // 若发生 TOCTOU 抢占导致绑定失败，静默 relaunch 切入 --remote-debugging-port=0 后立即返回
   try {
@@ -1090,6 +1127,8 @@ app.on('before-quit', event => {
       }
       await fileWatcherService.cleanup()
       await systemHealthService.stop()
+      // 停止事件循环延迟监控并释放直方图/定时器
+      stopEventLoopDelayMonitor()
       // 退出关库前优雅关停分析队列、Worker 线程、孤儿 watchdog 并冲刷防抖 FTS 与尾钩子，防止末批漏索引
       await analysisQueueService.dispose()
       // [R2-8] Omni 已停止（释放只读池）后再对主库做安全 checkpoint，再真正关闭连接
@@ -1105,6 +1144,15 @@ app.on('before-quit', event => {
       await devRuntimeController.revokeAsync()
       // 精准清理所有名下登记的子进程
       processReaper.cleanup()
+      if (__IS_DEV__ && process.env.FF_SYNC_IO_INSTRUMENT === '1') {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires -- dev/harness 条件加载，与入口保持对称
+        const instr = require('../infra/fs/instrument') as typeof import('../infra/fs/instrument')
+        const reportPath = process.env.FF_SYNC_IO_REPORT_PATH
+        if (reportPath) {
+          instr.writeSyncIoReportToFile(reportPath)
+        }
+        instr.disableSyncIoInstrumentation()
+      }
       logger.info(LogCategory.MAIN, '资源清理完成')
     } catch (error) {
       cleanupFailed = true

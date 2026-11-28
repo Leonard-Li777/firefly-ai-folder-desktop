@@ -558,6 +558,23 @@ export default defineConfig(({ command, mode }) => {
       publicDir: assetsDir,
       plugins: [
         rewriteRelativeRequire,
+        // IO-02 生产构建硬剥离：即使入口存在条件引用，生产打包也不把 dev-only 插桩层打入产物
+        {
+          name: 'strip-dev-sync-io-instrument',
+          enforce: 'pre' as const,
+          resolveId(source: string) {
+            if (isProd && /(?:^|[\\/])infra[\\/]fs[\\/]instrument(?:\.[mc]?[jt]s)?$/.test(source)) {
+              return '\0noop-sync-io-instrument'
+            }
+            return null
+          },
+          load(id: string) {
+            if (id === '\0noop-sync-io-instrument') {
+              return 'export {}'
+            }
+            return null
+          }
+        },
         {
           name: 'copy-jieba-wasm',
           // 在 dev 和 build 模式都拷贝 wasm 文件到 <outDirName>/main/
