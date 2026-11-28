@@ -8,6 +8,14 @@ import {
   startEventLoopDelayMonitor,
   stopEventLoopDelayMonitor
 } from '@pro/perf/event-loop-monitor'
+import {
+  startIpcDiagnostics,
+  stopIpcDiagnostics,
+  formatIpcCounterSummaryJson,
+  logIpcCounterSummary,
+  isIpcSendCounterInstalled,
+  isTimerWakeSamplerRunning
+} from '@pro/perf/ipc-counter'
 import * as fs from 'node:fs'
 import fixPath from 'fix-path'
 
@@ -813,6 +821,13 @@ app.on('ready', async () => {
       postHogMain.capture(event, properties)
     }
   })
+  // W0-03 IPC 发送计数与定时器唤醒采样（dev 默认启用；打包/生产须由 FF_IPC_COUNTER=1 / FF_TIMER_WAKE_SAMPLER=1 显式启用）
+  startIpcDiagnostics({
+    logger: {
+      info: message => logger.info(LogCategory.SYSTEM, message),
+      warn: (message, error) => logger.warn(LogCategory.SYSTEM, message, error)
+    }
+  })
   // 本地开发模式：建窗前完成 DevToolsActivePort + /json/version 真值核验与镜像发布；
   // 若发生 TOCTOU 抢占导致绑定失败，静默 relaunch 切入 --remote-debugging-port=0 后立即返回
   try {
@@ -1144,6 +1159,21 @@ app.on('before-quit', event => {
       await devRuntimeController.revokeAsync()
       // 精准清理所有名下登记的子进程
       processReaper.cleanup()
+      // 停止 W0-03 IPC/定时器诊断，如有落盘目标或显式采样开关则先导出摘要再还原原生定时器与 send
+      if (isIpcSendCounterInstalled() || isTimerWakeSamplerRunning()) {
+        const ipcReportPath = process.env.FF_IPC_COUNTER_REPORT_PATH
+        if (ipcReportPath) {
+          await fs.promises.writeFile(ipcReportPath, formatIpcCounterSummaryJson(), 'utf8')
+        }
+        if (
+          process.env.FF_IPC_COUNTER === '1' ||
+          process.env.FF_TIMER_WAKE_SAMPLER === '1' ||
+          process.env.FF_IPC_COUNTER_LOG === '1'
+        ) {
+          logIpcCounterSummary({ info: message => logger.info(LogCategory.SYSTEM, message) })
+        }
+        stopIpcDiagnostics()
+      }
       if (__IS_DEV__ && process.env.FF_SYNC_IO_INSTRUMENT === '1') {
         // eslint-disable-next-line @typescript-eslint/no-var-requires -- dev/harness 条件加载，与入口保持对称
         const instr = require('../infra/fs/instrument') as typeof import('../infra/fs/instrument')
