@@ -8,7 +8,7 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../../../stores/analyzed-directory-store'
 import { useOrganizeStore } from '../../../../../stores/organize-store'
-import { useSettingsStore } from '../../../../../stores/settings-store'
+import { useConfigValue } from '../../../../../stores/settings-store'
 import { OrganizeMode } from '../../types'
 import {
   collectAllFiles,
@@ -87,6 +87,11 @@ export function useOrganizeExecution({
 
   const reorganizeTaskRef = useRef<Promise<any> | null>(null)
   const isForceReorganizeRef = useRef(false)
+
+  // R-20 双层 getter 硬规则：渲染层禁止 getState().getConfigValue()，
+  // 队列批大小与批次数告警上限统一经 useConfigValue 取活值（config-sync 装载后自动生效）
+  const queueBatchSize = useConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50
+  const maxBatchWarnLimit = useConfigValue<number>('ORGANIZE_MAX_BATCH_WARN_LIMIT') ?? 20
 
   const [showBatchLimitConfirm, setShowBatchLimitConfirm] = useState(false)
 
@@ -315,7 +320,7 @@ export function useOrganizeExecution({
         files: isForceReorganize ? toOrganizeFiles : filesToOrganize,
         userInstruction: draft.strategy,
         allowCreateNew: options.allowCreateNew,
-        batchSize: useSettingsStore.getState().getConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50,
+        batchSize: queueBatchSize,
         dimensionInfo: dimensionGroups,
         isForceReorganize
       })
@@ -399,6 +404,7 @@ export function useOrganizeExecution({
     organizeMode,
     toOrganizeFiles,
     options.allowCreateNew,
+    queueBatchSize,
     setCurrentVDir
   ])
 
@@ -415,9 +421,7 @@ export function useOrganizeExecution({
       return
     }
 
-    const batchSize = useSettingsStore.getState().getConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50
-    const maxBatchWarnLimit =
-      useSettingsStore.getState().getConfigValue<number>('ORGANIZE_MAX_BATCH_WARN_LIMIT') ?? 20
+    const batchSize = queueBatchSize
 
     // 优先使用后端估算的批次数（与实际整理上报的 totalSteps 保持一致）。
     // 此前按全部文件数估算会导致与实际批次数不一致（例如快速整理的骨架直出会先按已有标签预分配文件）。
@@ -482,7 +486,9 @@ export function useOrganizeExecution({
     regenerateFiles,
     executeStartOrganize,
     bypassCapacityLimit,
-    organizeCapacityLimit
+    organizeCapacityLimit,
+    queueBatchSize,
+    maxBatchWarnLimit
   ])
 
   const handleSelectFilesToOrganize = useCallback(() => {

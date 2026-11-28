@@ -7,7 +7,7 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../../../stores/analyzed-directory-store'
 import { useOrganizeStore } from '../../../../../stores/organize-store'
-import { useSettingsStore } from '../../../../../stores/settings-store'
+import { useConfigValue } from '../../../../../stores/settings-store'
 import {
   convertTreeForBackend,
   countUnclassified,
@@ -49,6 +49,9 @@ export function useOrganizeRescue({
   const hasRescueFailed = useOrganizeStore(s => s.hasRescueFailed)
   const setHasRescueFailed = useOrganizeStore(s => s.setHasRescueFailed)
   const options = useOrganizeStore(s => s.options)
+
+  // R-20 双层 getter 硬规则：找补批次大小经 useConfigValue 取活值，禁止 getState().getConfigValue()
+  const queueBatchSize = useConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50
 
   const [isAutoRescuing, setIsAutoRescuing] = useState(false)
   const [isRescuing, setIsRescuing] = useState(false)
@@ -115,7 +118,7 @@ export function useOrganizeRescue({
           files: filesToRescue,
           userInstruction: draft?.strategy,
           allowCreateNew: options.allowCreateNew,
-          batchSize: useSettingsStore.getState().getConfigValue<number>('QUEUE_BATCH_SIZE') ?? 50,
+          batchSize: queueBatchSize,
           isRescue: true
         })
 
@@ -189,7 +192,8 @@ export function useOrganizeRescue({
       organizeMode,
       draftTree,
       draft?.strategy,
-      options.allowCreateNew
+      options.allowCreateNew,
+      queueBatchSize
     ]
   )
 

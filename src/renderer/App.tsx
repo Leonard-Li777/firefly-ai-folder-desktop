@@ -898,11 +898,16 @@ const App: React.FC = () => {
     })
     fallback.start()
 
-    // 终态 push 到达即停启动退避表（push 优先，兜底仅作启动 / 断连窗口补位）
-    const unsubscribe = window.electronAPI?.onModelStatusChanged?.(payload => {
-      if (isSettledAIStatus(payload?.status)) {
-        fallback.notifyReady()
-      }
+    // TODO-02 收口：终态就绪判定改为订阅 model-store 已落地的状态字段，
+    // 严禁在此再注册一份 onModelStatusChanged IPC 监听（model-store / ai-service-store
+    // 已在模块级权威监听同一 push，App 侧重复注册会双写同一次广播、放大主线程回调）。
+    const settleIfSettled = (status: string | null | undefined) => {
+      if (isSettledAIStatus(status)) fallback.notifyReady()
+    }
+    settleIfSettled(useModelStore.getState().serviceStatus)
+    const unsubscribe = useModelStore.subscribe((state, prev) => {
+      if (state.serviceStatus === prev.serviceStatus) return
+      settleIfSettled(state.serviceStatus)
     })
 
     const handleVisibilityChange = () => {
@@ -915,7 +920,7 @@ const App: React.FC = () => {
 
     return () => {
       fallback.dispose()
-      unsubscribe?.()
+      unsubscribe()
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [startupPhase, checkAIStatus])

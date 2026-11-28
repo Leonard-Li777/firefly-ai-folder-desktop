@@ -5,7 +5,7 @@ import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../../../stores/analyzed-directory-store'
-import { useSettingsStore, useConfigValue } from '../../../../../stores/settings-store'
+import { useConfigValue } from '../../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../../stores/organize-store'
 import { Stage } from '../../types'
 
@@ -29,10 +29,8 @@ export function useOrganizeCapacity({ rawToOrganizeCount }: UseOrganizeCapacityP
   const setStage = useOrganizeStore(s => s.setStage)
 
   // ─── 配置中心：单次整理容量上限（默认 3,000）与切片/穿透控制 ──────────────────
-  const organizeCapacityLimit =
-    useConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ??
-    useSettingsStore.getState().getConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ??
-    3000
+  // R-20 双层 getter 硬规则：渲染层禁止 getState().getConfigValue()，统一经 useConfigValue 取活值
+  const organizeCapacityLimit = useConfigValue<number>('ORGANIZE_CAPACITY_LIMIT') ?? 3000
   const organizeFileLimitOverride = useOrganizeStore(s => s.organizeFileLimitOverride)
   const setOrganizeFileLimitOverride = useOrganizeStore(s => s.setOrganizeFileLimitOverride)
   const bypassCapacityLimit = useOrganizeStore(s => s.bypassCapacityLimit)
@@ -120,7 +118,14 @@ export function useOrganizeCapacity({ rawToOrganizeCount }: UseOrganizeCapacityP
         count: Math.min(rawToOrganizeCount, organizeCapacityLimit).toLocaleString()
       })
     )
-  }, [organizeCapacityLimit, rawToOrganizeCount, setOrganizeFileLimitOverride, setBypassCapacityLimit, setStage, t])
+  }, [
+    organizeCapacityLimit,
+    rawToOrganizeCount,
+    setOrganizeFileLimitOverride,
+    setBypassCapacityLimit,
+    setStage,
+    t
+  ])
 
   const handleBypassLimitAndOrganizeAll = useCallback(() => {
     setBypassCapacityLimit(true)
