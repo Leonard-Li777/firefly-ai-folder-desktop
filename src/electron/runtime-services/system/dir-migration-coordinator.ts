@@ -12,11 +12,13 @@
  */
 
 import * as fs from 'fs'
+import { promises as fsp } from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import { BrowserWindow } from 'electron'
 import { logger, LogCategory, isPathEqual, READY_MARKER_FILENAME } from '@firefly/shared'
 import type { DirRuntimePhase, PluginDirErrorCode } from '@firefly/types/config-types'
+import { mkdirp, writeFileAtomic } from '../../infra/fs'
 import { ModularResourceError, validatePluginDirectory } from './plugin-dir-validator'
 
 export type DirMigrationStage =
@@ -151,28 +153,25 @@ export class DirMigrationCoordinator {
   /**
    * 获取意图日志持久化路径
    */
-  private getJournalPath(userDataDir: string, migrationId: string): string {
+  private async getJournalPath(userDataDir: string, migrationId: string): Promise<string> {
     const intentsDir = path.join(userDataDir, 'intents')
-    if (!fs.existsSync(intentsDir)) {
-      fs.mkdirSync(intentsDir, { recursive: true })
-    }
+    await mkdirp(intentsDir)
     return path.join(intentsDir, `dir-migration-${migrationId}.json`)
   }
 
   /**
    * 原子持久化意图日志并执行物理刷盘 (fsync)
+   * 统一复用 infra/fs/atomic-write.ts 的 writeFileAtomic（写临时文件 -> handle.sync() -> close -> rename）
    */
-  public persistJournalWithFsync(userDataDir: string, journal: DirMigrationJournal): void {
-    const journalPath = this.getJournalPath(userDataDir, journal.migrationId)
-    const tmpPath = `${journalPath}.tmp`
+  public async persistJournalWithFsync(
+    userDataDir: string,
+    journal: DirMigrationJournal
+  ): Promise<void> {
+    const journalPath = await this.getJournalPath(userDataDir, journal.migrationId)
     const content = JSON.stringify(journal, null, 2)
 
     try {
-      const fd = fs.openSync(tmpPath, 'w')
-      fs.writeSync(fd, content)
-      fs.fsyncSync(fd)
-      fs.closeSync(fd)
-      fs.renameSync(tmpPath, journalPath)
+      await writeFileAtomic(journalPath, content, { fsync: true, encoding: 'utf8' })
     } catch (err) {
       logger.error(LogCategory.MAIN, `[DirMigration] 持久化日志失败 (${journal.stage}):`, err)
     }
@@ -239,7 +238,7 @@ export class DirMigrationCoordinator {
 
     try {
       // 0. 持久化初始化 Journal
-      this.persistJournalWithFsync(options.userDataDir, journal)
+      await this.persistJournalWithFsync(options.userDataDir, journal)
 
       // 1. 扫描源目录已就绪模块 (白名单) 并核验符号链接
       const sourceShared = path.join(sourceDir, '_shared')
@@ -379,7 +378,7 @@ export class DirMigrationCoordinator {
       journal.totalFiles = fileList.length
       journal.totalBytes = totalBytes
       journal.stage = 'STAGING'
-      this.persistJournalWithFsync(options.userDataDir, journal)
+      await this.persistJournalWithFsync(options.userDataDir, journal)
 
       // 2. 零资产特殊情况秒切 (totalBytes === 0)
       if (totalBytes === 0) {
@@ -448,7 +447,7 @@ export class DirMigrationCoordinator {
       // 4. VERIFYING 阶段：全量刷盘
       journal.stage = 'VERIFYING'
       context.stage = 'VERIFYING'
-      this.persistJournalWithFsync(options.userDataDir, journal)
+      await this.persistJournalWithFsync(options.userDataDir, journal)
       this.broadcastProgress(
         {
           migrationId,
@@ -466,7 +465,7 @@ export class DirMigrationCoordinator {
       // 5. COMMITTING 阶段严格五步原子提交时序
       journal.stage = 'COMMITTING'
       context.stage = 'COMMITTING'
-      this.persistJournalWithFsync(options.userDataDir, journal)
+      await this.persistJournalWithFsync(options.userDataDir, journal)
 
       this.broadcastProgress(
         {
@@ -499,7 +498,7 @@ export class DirMigrationCoordinator {
           try {
             fs.renameSync(entry.finalPath, backup)
             entry.backupPath = backup
-            this.persistJournalWithFsync(options.userDataDir, journal)
+            await this.persistJournalWithFsync(options.userDataDir, journal)
           } catch (err: any) {
             throw new ModularResourceError(
               'TARGET_MODULE_LOCKED',
@@ -512,7 +511,7 @@ export class DirMigrationCoordinator {
         if (fs.existsSync(entry.stagingPath)) {
           fs.renameSync(entry.stagingPath, entry.finalPath)
           entry.state = 'ACTIVATED'
-          this.persistJournalWithFsync(options.userDataDir, journal)
+          await this.persistJournalWithFsync(options.userDataDir, journal)
         }
       }
 
@@ -522,7 +521,7 @@ export class DirMigrationCoordinator {
       // Step ⑤: Journal 标记 COMMITTED，切换为 PENDING_RESTART
       journal.stage = 'COMMITTED'
       context.stage = 'COMMITTED'
-      this.persistJournalWithFsync(options.userDataDir, journal)
+      await this.persistJournalWithFsync(options.userDataDir, journal)
 
       // 异步清理孤儿暂存区
       try {
@@ -583,7 +582,7 @@ export class DirMigrationCoordinator {
       } catch {}
 
       journal.stage = 'ABORTED'
-      this.persistJournalWithFsync(options.userDataDir, journal)
+      await this.persistJournalWithFsync(options.userDataDir, journal)
       options.onPhaseChange('STABLE')
 
       if (err instanceof ModularResourceError) {
@@ -623,13 +622,13 @@ export class DirMigrationCoordinator {
     this.currentContext.stage = 'CANCELLED'
     this.currentContext.abortController.abort()
 
-    const journalPath = this.getJournalPath(userDataDir, this.currentContext.migrationId)
+    const journalPath = await this.getJournalPath(userDataDir, this.currentContext.migrationId)
     if (fs.existsSync(journalPath)) {
       try {
         const raw = fs.readFileSync(journalPath, 'utf-8')
         const journal: DirMigrationJournal = JSON.parse(raw)
         journal.stage = 'CANCELLED'
-        this.persistJournalWithFsync(userDataDir, journal)
+        await this.persistJournalWithFsync(userDataDir, journal)
       } catch {}
     }
 
@@ -672,7 +671,7 @@ export class DirMigrationCoordinator {
             } catch {}
           }
           journal.stage = 'ABORTED'
-          this.persistJournalWithFsync(userDataDir, journal)
+          await this.persistJournalWithFsync(userDataDir, journal)
         } else if (journal.stage === 'COMMITTING') {
           // COMMITTING 阶段双分支自愈
           const isTargetCommitted = isPathEqual(currentCommittedDir, journal.targetDir)
@@ -688,7 +687,7 @@ export class DirMigrationCoordinator {
               }
             }
             journal.stage = 'COMMITTED'
-            this.persistJournalWithFsync(userDataDir, journal)
+            await this.persistJournalWithFsync(userDataDir, journal)
             if (fs.existsSync(journal.stagingDir)) {
               try {
                 fs.rmSync(journal.stagingDir, { recursive: true, force: true })
@@ -724,7 +723,7 @@ export class DirMigrationCoordinator {
               }
             }
             journal.stage = 'ABORTED'
-            this.persistJournalWithFsync(userDataDir, journal)
+            await this.persistJournalWithFsync(userDataDir, journal)
             if (fs.existsSync(journal.stagingDir)) {
               try {
                 fs.rmSync(journal.stagingDir, { recursive: true, force: true })
@@ -800,15 +799,18 @@ export class DirMigrationCoordinator {
         reject(err)
       })
 
-      destStream.on('finish', () => {
+      destStream.on('finish', async () => {
         if (isAborted) return
         abortSignal.removeEventListener('abort', onAbort)
 
         try {
-          // 物理刷盘
-          const fd = fs.openSync(destPath, 'r+')
-          fs.fsyncSync(fd)
-          fs.closeSync(fd)
+          // 物理刷盘（异步 handle.sync() 等价于原 fsyncSync）
+          const handle = await fsp.open(destPath, 'r+')
+          try {
+            await handle.sync()
+          } finally {
+            await handle.close()
+          }
 
           const srcSha = sourceHasher.digest('hex').toLowerCase()
           const destSha = targetHasher.digest('hex').toLowerCase()

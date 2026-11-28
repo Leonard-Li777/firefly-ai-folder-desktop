@@ -230,6 +230,8 @@ export class LlmGatewayService implements ILlmGatewayService {
     state: 'installed' | 'not_installed' | 'corrupt'
     expireAt: number
   } | null = null
+  // 本地引擎（llama.cpp 随包二进制）进程生命周期内探测缓存
+  private cachedLocalInstallState: 'installed' | 'not_installed' | 'corrupt' | null = null
   private lastReportedCpuState: string | null = null
   private readonly CPU_PROBE_CACHE_TTL_MS = 15_000
 
@@ -237,6 +239,10 @@ export class LlmGatewayService implements ILlmGatewayService {
     this.cachedCpuInstallState = null
     // 安装探测缓存失效意味着下一次快照可能给出不同安装态，立即推送对齐渲染层
     this.notifySnapshotChanged('cpu_probe_cache_invalidated')
+  }
+
+  public invalidateLocalProbeCache(): void {
+    this.cachedLocalInstallState = null
   }
 
   // ------------------------------------------------------------------
@@ -548,22 +554,27 @@ export class LlmGatewayService implements ILlmGatewayService {
   }
 
   /**
-   * 真实探测本地高级引擎资产安装状态
+   * 真实探测本地高级引擎资产安装状态（进程生命周期内缓存，避免重复落盘）
    */
   private probeLocalInstallation(): 'installed' | 'not_installed' | 'corrupt' {
     if (this.installationOverride?.local) {
       return this.installationOverride.local
+    }
+    if (this.cachedLocalInstallState !== null) {
+      return this.cachedLocalInstallState
     }
 
     try {
       // 萤核AI引擎为系统内置捆绑组件（PRD-0044 Invariant），探查实际引擎可执行文件
       const exe = EngineBridgeService?.getInstance?.()?.resolveEngineExecutable?.()
       if (exe && fs.existsSync(exe)) {
+        this.cachedLocalInstallState = 'installed'
         return 'installed'
       }
 
       // 生产环境打包后恒为内置已安装
       if (process.env.NODE_ENV === 'production' || app?.isPackaged) {
+        this.cachedLocalInstallState = 'installed'
         return 'installed'
       }
 
@@ -573,13 +584,17 @@ export class LlmGatewayService implements ILlmGatewayService {
         path.join(process.cwd(), 'build/extraResources/bin/llama.cpp')
       ]
       for (const p of candidates) {
-        if (fs.existsSync(p)) return 'installed'
+        if (fs.existsSync(p)) {
+          this.cachedLocalInstallState = 'installed'
+          return 'installed'
+        }
       }
     } catch (err) {
       logger.warn(LogCategory.SYSTEM, '[LlmGatewayService] 探测本地高级引擎安装资产异常:', err)
     }
 
     // 萤核AI引擎随客户端捆绑交付，默认作为内置已安装
+    this.cachedLocalInstallState = 'installed'
     return 'installed'
   }
 
