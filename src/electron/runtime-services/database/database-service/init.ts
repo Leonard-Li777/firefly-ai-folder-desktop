@@ -62,6 +62,72 @@ import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from '.././access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { ConfigDbManager } from '../../config/config-db-manager'
+import { getSchedulerService, type IdleTaskHandle } from '@pro/perf/scheduler'
+
+/** [J-10] 空闲拼音回填所需的最小 DAO 接缝（便于单测注入，不拖入整个 FileDao） */
+export interface J10PinyinFileDao {
+  syncPinyinPendingBatch(limit?: number): number
+  hasPinyinBacklog(): boolean
+  syncPinyinIndexBackfill(timeBudgetMs?: number): number
+}
+
+/** [J-10] 空闲调度器接缝（与 @pro/perf/scheduler.runWhenIdle 同签名子集） */
+export interface J10IdleScheduler {
+  runWhenIdle(
+    id: string,
+    fn: () => void | Promise<void> | boolean | Promise<boolean>,
+    opts?: { priority?: 'normal' | 'startup-deferred' }
+  ): IdleTaskHandle
+}
+
+/**
+ * [J-10 / DB-07] 启动最多同步执行 0–1 批 pending 回填（200 行）；
+ * 余量全部挂到 normal 空闲通道，历史库缺口由单次有界 backfill 片承接。
+ * @returns 启动同步阶段实际刷新行数（0 或 200）
+ */
+export function scheduleJ10PinyinBackfill(
+  fileDao: J10PinyinFileDao,
+  scheduler: J10IdleScheduler = getSchedulerService()
+): number {
+  let pendingHandle: IdleTaskHandle | null = null
+  const enqueuePendingSlice = (): void => {
+    if (pendingHandle) return
+    pendingHandle = scheduler.runWhenIdle(
+      'db:j10:pinyin-pending',
+      () => {
+        pendingHandle = null
+        try {
+          if (fileDao.syncPinyinPendingBatch(200) > 0) enqueuePendingSlice()
+        } catch (idleError) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '拼音 pending 空闲回填失败', {
+            error: idleError
+          })
+        }
+      },
+      { priority: 'normal' }
+    )
+  }
+
+  const pendingRefreshed = fileDao.syncPinyinPendingBatch(200)
+  if (pendingRefreshed > 0) {
+    enqueuePendingSlice()
+  } else if (fileDao.hasPinyinBacklog()) {
+    scheduler.runWhenIdle(
+      'db:j10:pinyin-index-backfill',
+      () => {
+        try {
+          fileDao.syncPinyinIndexBackfill(3_000)
+        } catch (idleError) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '拼音索引空闲回填失败', {
+            error: idleError
+          })
+        }
+      },
+      { priority: 'normal' }
+    )
+  }
+  return pendingRefreshed
+}
 
 /**
  * DatabaseService 初始化生命周期 mixin（Ticket 07）。
@@ -189,21 +255,12 @@ export class DatabaseInitMixin extends DatabaseMigrationMixin {
 
         this.cleanupOrphanQueueItems()
 
-        // P1-D 方案 B：按 idx_files_pinyin_pending 部分索引分批回填（pinyin_state=0 → 1/2），
-        // 取代冷启动全库同步扫描；单批 200、最多 50 批，剩余交给 HybridSearch 周期 tick。
-        // 历史库兼容：若无任何 pending 行则回退一次 hash 幂等扫描，避免存量缺口。
+        // [J-10 / DB-07] 启动链路最多同步执行 0–1 批 pending 回填（200 行），
+        // 余量统一交给 @pro/perf/scheduler 的 normal 空闲通道；严禁回到 50×200 同步写事务。
         try {
-          let pendingRefreshed = 0
-          for (let batch = 0; batch < 50; batch++) {
-            const n = this.fileDao.syncPinyinPendingBatch(200)
-            if (n <= 0) break
-            pendingRefreshed += n
-          }
-          if (pendingRefreshed === 0) {
-            this.fileDao.syncPinyinIndexBackfill(3_000)
-          }
+          scheduleJ10PinyinBackfill(this.fileDao)
         } catch (pinyinError) {
-          logger.warn(LogCategory.DATABASE_SERVICE, '拼音索引启动回填失败（不影响启动）', {
+          logger.warn(LogCategory.DATABASE_SERVICE, '拼音索引启动回填调度失败（不影响启动）', {
             error: pinyinError
           })
         }

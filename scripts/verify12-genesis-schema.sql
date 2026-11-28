@@ -428,6 +428,8 @@
   ON file_video_chunks(file_fingerprint, start_sec, chunk_index, end_sec, rep_pts_sec);
 
   -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 - 读时派生升维版)
+  -- [DB-14] 建表 + 三个索引统一来自 GENESIS_FILE_VIDEO_SEGMENTS_DDL 单一事实源（严禁在此再写第二份字面量）。
+  
   CREATE TABLE IF NOT EXISTS file_video_segments (
     id TEXT PRIMARY KEY,
     file_id TEXT NOT NULL,
@@ -449,16 +451,12 @@
     UNIQUE(file_id, segment_index),
     FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
-
-  CREATE INDEX IF NOT EXISTS idx_fvs_file_status 
-  ON file_video_segments(file_id, status);
-
-  CREATE INDEX IF NOT EXISTS idx_fvs_status_start 
-  ON file_video_segments(status, start_pts_sec);
-
+  CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
+  CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
   CREATE INDEX IF NOT EXISTS idx_fvs_visual_failed
-  ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
-  WHERE status = 'failed' AND failure_code IS NOT NULL;
+    ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
+    WHERE status = 'failed' AND failure_code IS NOT NULL;
+
 
   -- 16.6b 视觉打标器状态代际持久化表 (Visual Tagger Spec v2.12 §3.3)
   CREATE TABLE IF NOT EXISTS visual_tagger_state (
@@ -768,6 +766,9 @@
   CREATE INDEX IF NOT EXISTS idx_ftc_user_time
     ON firecore_transactions_cache(user_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  -- [DB-05 / W1] 队列条目反查（按 (item_type, item_id) 等值 / IN 删除时不再全表扫描）。
+  -- 队列管理与准入删除的高频路径依赖本左前缀索引定位；队列表体量小，B 树维护开销可忽略。
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_item ON analysis_queue(item_type, item_id);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_visual_failed
     ON analysis_queue(failure_code, failure_encoder_id, failure_generation)
     WHERE status = 'failed' AND failure_code IS NOT NULL;

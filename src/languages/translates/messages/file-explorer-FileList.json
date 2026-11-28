@@ -289,7 +289,7 @@
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(45939-45947)",
       "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(27736-27744)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(31753-31761)"
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(32584-32592)"
     ],
     "$id": 8511
   },
@@ -319,7 +319,7 @@
     "de-DE": "Kleinste Einheit",
     "fr-FR": "La plus petite unité",
     "ko-KR": "가장 작은 단위",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1537-1545)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1593-1601)"],
     "$id": 8513
   },
   "系统/配置": {
@@ -332,7 +332,7 @@
     "de-DE": "System/Konfiguration",
     "fr-FR": "Système/Configuration",
     "ko-KR": "시스템/구성",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1641-1650)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1701-1710)"],
     "$id": 8514
   },
   "软件应用": {
@@ -345,7 +345,7 @@
     "de-DE": "Softwareanwendung",
     "fr-FR": "Logiciel",
     "ko-KR": "소프트웨어 응용",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1690-1698)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1752-1760)"],
     "$id": 8515
   },
   "缓存/LFS": {
@@ -358,7 +358,7 @@
     "de-DE": "Cache/LFS",
     "fr-FR": "Cache/LFS",
     "ko-KR": "캐시/LFS",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1739-1749)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1803-1813)"],
     "$id": 8516
   },
   "虚拟环境": {
@@ -371,7 +371,7 @@
     "de-DE": "Virtuelle Umgebung",
     "fr-FR": "Environnement virtuel",
     "ko-KR": "가상 환경",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1792-1800)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1858-1866)"],
     "$id": 8517
   },
   "设计工程": {
@@ -384,7 +384,7 @@
     "de-DE": "Konstruktionstechnik",
     "fr-FR": "Ingénierie de conception",
     "ko-KR": "디자인 엔지니어링",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1842-1850)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1910-1918)"],
     "$id": 8518
   },
   "游戏/MOD": {
@@ -397,7 +397,7 @@
     "de-DE": "Spiele/MODs",
     "fr-FR": "Jeux/MOD",
     "ko-KR": "게임/MOD",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1890-1900)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1960-1970)"],
     "$id": 8519
   },
   "数据集/模型": {
@@ -410,7 +410,7 @@
     "de-DE": "Datensatz/Modell",
     "fr-FR": "Ensemble de données/Modèle",
     "ko-KR": "데이터세트/모델",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1941-1951)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(2013-2023)"],
     "$id": 8520
   },
   "音频专辑": {
@@ -423,7 +423,7 @@
     "de-DE": "Audioalbum",
     "fr-FR": "Album audio",
     "ko-KR": "오디오 앨범",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(1984-1992)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(2058-2066)"],
     "$id": 8521
   },
   "文件系列": {
@@ -436,7 +436,7 @@
     "de-DE": "Dokumentenreihe",
     "fr-FR": "Série de documents",
     "ko-KR": "문서 시리즈",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(2026-2034)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(2102-2110)"],
     "$id": 8522
   },
   "工程项目": {
@@ -449,7 +449,7 @@
     "de-DE": "Ingenieurprojekte",
     "fr-FR": "Projets d'ingénierie",
     "ko-KR": "엔지니어링 프로젝트",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(2095-2103)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(2173-2181)"],
     "$id": 8523
   },
   "置信度": {
@@ -462,7 +462,7 @@
     "de-DE": "Vertrauen",
     "fr-FR": "Confiance",
     "ko-KR": "신뢰",
-    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(7073-7080)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(7323-7330)"],
     "$id": 8524
   },
   "我的文件不在列表中？试试修改": {
@@ -475,7 +475,9 @@
     "de-DE": "Meine Datei ist nicht in der Liste? Versuchen Sie es zu ändern",
     "fr-FR": "Mon fichier n'est pas dans la liste ? Essayez de modifier",
     "ko-KR": "내 파일이 목록에 없나요? 수정해 보세요",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/FileAdmissionNoticeBar.tsx(2622-2640)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/FileAdmissionNoticeBar.tsx(2622-2640)"
+    ],
     "$id": 32292
   },
   "文件准入与包含规则": {
@@ -488,7 +490,9 @@
     "de-DE": "Dateizugriffs- und Einschlussregeln",
     "fr-FR": "Règles d'accès et d'inclusion aux fichiers",
     "ko-KR": "파일 액세스 및 포함 규칙",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/FileAdmissionNoticeBar.tsx(3012-3025)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/FileAdmissionNoticeBar.tsx(3012-3025)"
+    ],
     "$id": 32293
   },
   "知道了": {
@@ -501,7 +505,9 @@
     "de-DE": "Wusste",
     "fr-FR": "Savait",
     "ko-KR": "알고 있었다",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/FileAdmissionNoticeBar.tsx(3386-3393)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/FileAdmissionNoticeBar.tsx(3386-3393)"
+    ],
     "$id": 32294
   },
   "关闭": {
@@ -546,8 +552,8 @@
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11481-11502)",
       "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(19922-19943)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(9870-9891)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(15440-15461)"
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(10124-10145)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(15843-15864)"
     ],
     "$id": 8526
   },
@@ -564,7 +570,7 @@
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(12581-12588)",
       "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(23364-23371)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(18353-18360)"
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(18831-18838)"
     ],
     "$id": 8527
   },
@@ -578,7 +584,9 @@
     "de-DE": "Vektorähnlichkeit",
     "fr-FR": "Similarité vectorielle",
     "ko-KR": "벡터 유사성",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(13092-13101)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(13092-13101)"
+    ],
     "$id": 21047
   },
   "未知失败原因": {
@@ -591,7 +599,9 @@
     "de-DE": "Unbekannter Fehlergrund",
     "fr-FR": "Raison d'échec inconnue",
     "ko-KR": "알 수 없는 실패 원인",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4200-4210)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4200-4210)"
+    ],
     "$id": 8528
   },
   "已分析": {
@@ -604,7 +614,9 @@
     "de-DE": "Analysiert\r",
     "fr-FR": "Analysé",
     "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4481-4488)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4481-4488)"
+    ],
     "$id": 8529
   },
   "分析队列中": {
@@ -617,7 +629,9 @@
     "de-DE": "In der Analysewarteschlange\r",
     "fr-FR": "En attente d'analyse",
     "ko-KR": "분석 대기열에 있음",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4801-4810)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4801-4810)"
+    ],
     "$id": 8530
   },
   "分析中": {
@@ -630,7 +644,9 @@
     "de-DE": "Analysieren",
     "fr-FR": "En cours d'analyse",
     "ko-KR": "분석 중",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(5100-5107)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(5100-5107)"
+    ],
     "$id": 8531
   },
   "失败": {
@@ -643,7 +659,9 @@
     "de-DE": "Fehlgeschlagen",
     "fr-FR": "Échec",
     "ko-KR": "실패",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(5364-5370)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(5364-5370)"
+    ],
     "$id": 8532
   },
   "文件夹": {
@@ -658,7 +676,7 @@
     "ko-KR": "폴더",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(15465-15472)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(24656-24663)"
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(25299-25306)"
     ],
     "$id": 8533
   },
@@ -674,7 +692,7 @@
     "ko-KR": "파일",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(30732-30738)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(24690-24696)"
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(25333-25339)"
     ],
     "$id": 8534
   },
@@ -704,7 +722,9 @@
     "de-DE": "Klicken Sie auf die Sprungachse, um eine Vorschau anzuzeigen, doppelklicken Sie auf den externen Player, um ihn zu öffnen",
     "fr-FR": "Cliquez sur l'axe de saut pour prévisualiser, double-cliquez sur le lecteur externe pour l'ouvrir",
     "ko-KR": "미리 볼 점프 축을 클릭하고 열 외부 플레이어를 두 번 클릭합니다",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4271-4291)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4271-4291)"
+    ],
     "$id": 21858
   },
   "未检测到支持精准定位的外部应用，已按默认方式打开": {
@@ -720,7 +740,7 @@
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4758-4786)",
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9278-9306)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8567-8595)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8819-8847)"
     ],
     "$id": 21986
   },
@@ -737,8 +757,8 @@
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4905-4915)",
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(9427-9437)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7843-7853)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8762-8772)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8076-8086)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9018-9028)"
     ],
     "$id": 8537
   },
@@ -752,7 +772,9 @@
     "de-DE": "Klicken Sie zum Zuhören auf die Sprungachse und doppelklicken Sie auf den externen Player, um ihn zu öffnen",
     "fr-FR": "Cliquez sur l'axe de saut pour écouter, double-cliquez sur le lecteur externe pour l'ouvrir",
     "ko-KR": "점프 축을 클릭하여 듣고, 외부 플레이어를 두 번 클릭하여 엽니다.",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8638-8658)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8638-8658)"
+    ],
     "$id": 22002
   },
   "语义召回": {
@@ -797,7 +819,9 @@
     "de-DE": "Bereits zur Analysewarteschlange hinzugefügt",
     "fr-FR": "Déjà ajouté à la file d'attente d'analyse",
     "ko-KR": "분석 대기열에 이미 추가됨",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(18669-18680)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(18669-18680)"
+    ],
     "$id": 8542
   },
   "免费版仅整理前 5 分钟，升级 Pro 解锁完整 {total} 分钟": {
@@ -810,7 +834,9 @@
     "de-DE": "Die kostenlose Version organisiert nur die ersten 5 Minuten. Upgraden Sie auf die Pro-Version, um die vollen {total} Minuten freizuschalten",
     "fr-FR": "La version gratuite n'organise que les 5 premières minutes, passez à Pro pour débloquer les {total} minutes complètes",
     "ko-KR": "무료 버전은 처음 5분만 구성하고, Pro로 업그레이드하여 전체 {total}분을 잠금 해제하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(24463-24502)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(24463-24502)"
+    ],
     "$id": 23457
   },
   "拼音展开: {cand}": {
@@ -823,7 +849,9 @@
     "de-DE": "Pinyin-Erweiterung: {cand}",
     "fr-FR": "Développement pinyin: {cand}",
     "ko-KR": "병음 확장:{cand}",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(25535-25551)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(25535-25551)"
+    ],
     "$id": 21866
   },
   "向量语义召回": {
@@ -836,7 +864,9 @@
     "de-DE": "Vektor semantischer Rückruf",
     "fr-FR": "Rappel sémantique vectoriel",
     "ko-KR": "벡터 시맨틱 리콜",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(26173-26183)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(26173-26183)"
+    ],
     "$id": 21283
   },
   "AI描述": {
@@ -849,7 +879,9 @@
     "de-DE": "KI-Beschreibung",
     "fr-FR": "Description de l'IA",
     "ko-KR": "AI 설명",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(31329-31337)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(31329-31337)"
+    ],
     "$id": 22003
   },
   "尚未进行 AI 深度分析，命中文件名": {
@@ -862,7 +894,9 @@
     "de-DE": "AI eingehende Analyse wurde nicht durchgeführt, drücken Sie den Dateinamen",
     "fr-FR": "L'analyse approfondie de l'IA n'a pas été effectuée, appuyez sur le nom du fichier",
     "ko-KR": "인공 지능에 대한 심층 분석이 수행되지 않은,파일 이름을 누르십시오",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(31671-31693)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(31671-31693)"
+    ],
     "$id": 20126
   },
   "已提交": {
@@ -875,7 +909,9 @@
     "de-DE": "Hochgeladen",
     "fr-FR": "Soumis",
     "ko-KR": "제출",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32163-32170)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32163-32170)"
+    ],
     "$id": 21282
   },
   "立即分析": {
@@ -890,7 +926,7 @@
     "ko-KR": "즉시 분석",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(32174-32182)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10179-10187)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10478-10486)"
     ],
     "$id": 8544
   },
@@ -904,7 +940,9 @@
     "de-DE": "Keine zusätzlichen Kontextinformationen",
     "fr-FR": "Aucune information contextuelle supplémentaire",
     "ko-KR": "추가 상황 정보 없음",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(33693-33705)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(33693-33705)"
+    ],
     "$id": 22004
   },
   "未能确定待整理文件，请重新选择后再试": {
@@ -917,7 +955,9 @@
     "de-DE": "Die zu sortierenden Dateien konnten nicht ermittelt werden. Bitte wählen Sie sie erneut aus und versuchen Sie es erneut.",
     "fr-FR": "Impossible de déterminer les fichiers à trier, veuillez les sélectionner à nouveau et réessayer.",
     "ko-KR": "정렬할 파일을 결정할 수 없습니다. 다시 선택하고 다시 시도하십시오.",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(3454-3476)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(3550-3572)"
+    ],
     "$id": 22248
   },
   "已排除 {count} 个不可整理的选中项（未分析、已失效或目录）": {
@@ -930,7 +970,9 @@
     "de-DE": "{count} unorganisierte Auswahlen (nicht analysiert, abgelaufen oder Verzeichnisse) ausgeschlossen",
     "fr-FR": "{count} sélections non organisées (non analysées, expirées ou répertoires) exclues",
     "ko-KR": "{count} 정리되지 않은 선택 항목(분석되지 않음, 만료됨 또는 디렉터리) 제외",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(3564-3601)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(3666-3703)"
+    ],
     "$id": 22249
   },
   "批量重新分析": {
@@ -943,7 +985,9 @@
     "de-DE": "Batch-Reanalyse",
     "fr-FR": "Réanalyse par lots",
     "ko-KR": "배치 재분석",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5188-5198)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5343-5353)"
+    ],
     "$id": 22250
   },
   "批量更名": {
@@ -956,7 +1000,9 @@
     "de-DE": "Änderung des Chargennamens",
     "fr-FR": "Changement de nom de lot",
     "ko-KR": "배치 이름 변경",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5473-5481)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5637-5645)"
+    ],
     "$id": 22251
   },
   "批量标签": {
@@ -969,7 +1015,9 @@
     "de-DE": "Massenetikett",
     "fr-FR": "Étiquette en vrac",
     "ko-KR": "대량 라벨",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5667-5675)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5837-5845)"
+    ],
     "$id": 22252
   },
   "批量整理": {
@@ -982,7 +1030,9 @@
     "de-DE": "Stapelsortierung",
     "fr-FR": "Tri par lots",
     "ko-KR": "일괄 정렬",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5838-5846)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6014-6022)"
+    ],
     "$id": 22253
   },
   "预览": {
@@ -995,7 +1045,9 @@
     "de-DE": "Vorschau",
     "fr-FR": "Aperçu",
     "ko-KR": "시사",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7017-7023)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7227-7233)"
+    ],
     "$id": 8535
   },
   "用默认程序打开": {
@@ -1008,7 +1060,9 @@
     "de-DE": "Mit Standardprogramm öffnen",
     "fr-FR": "Ouvrir avec le programme par défaut",
     "ko-KR": "기본 프로그램으로 열기",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7553-7564)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7779-7790)"
+    ],
     "$id": 8536
   },
   "在外部应用中精准定位打开": {
@@ -1021,7 +1075,9 @@
     "de-DE": "Genaues Auffinden und Öffnen in externen Anwendungen",
     "fr-FR": "Localiser et ouvrir avec précision dans des applications externes",
     "ko-KR": "외부 응용 프로그램에서 정확하게 찾아 열기",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(7957-7973)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8197-8213)"
+    ],
     "$id": 21985
   },
   "复制文件路径": {
@@ -1034,7 +1090,9 @@
     "de-DE": "Dateipfad kopieren",
     "fr-FR": "Copier le chemin du fichier",
     "ko-KR": "파일 경로 복사",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(8892-8902)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9155-9165)"
+    ],
     "$id": 8538
   },
   "已复制到剪贴板": {
@@ -1047,7 +1105,9 @@
     "de-DE": "In die Zwischenablage kopiert",
     "fr-FR": "Copié dans le presse-papiers",
     "ko-KR": "클립보드에 복사됨",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9464-9475)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9740-9751)"
+    ],
     "$id": 8539
   },
   "复制失败": {
@@ -1060,7 +1120,9 @@
     "de-DE": "Das Kopieren ist fehlgeschlagen",
     "fr-FR": "Échec de la copie",
     "ko-KR": "복사 실패",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9600-9608)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9879-9887)"
+    ],
     "$id": 8540
   },
   "重新分析": {
@@ -1073,7 +1135,9 @@
     "de-DE": "Erneut analysieren",
     "fr-FR": "Réanalyser",
     "ko-KR": "재분석",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9690-9698)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(9975-9983)"
+    ],
     "$id": 8541
   },
   "操作失败": {
@@ -1087,9 +1151,9 @@
     "fr-FR": "L'opération a échoué",
     "ko-KR": "작업 실패",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10095-10103)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10587-10595)",
-      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(12200-12208)"
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10389-10397)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10895-10903)",
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(12558-12566)"
     ],
     "$id": 8543
   },
@@ -1103,7 +1167,9 @@
     "de-DE": "Ändern Sie den Smart-Dateinamen aus der Vorlage",
     "fr-FR": "Changer le nom du fichier intelligent à partir du modèle",
     "ko-KR": "템플릿에서 스마트 파일 이름 변경",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(10763-10776)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11079-11092)"
+    ],
     "$id": 22254
   },
   "更改标签": {
@@ -1116,7 +1182,9 @@
     "de-DE": "Etikett ändern",
     "fr-FR": "Changer l'étiquette",
     "ko-KR": "라벨 변경",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11041-11049)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11364-11372)"
+    ],
     "$id": 22255
   },
   "在真实目录中定位": {
@@ -1129,7 +1197,9 @@
     "de-DE": "Suchen Sie im echten Verzeichnis",
     "fr-FR": "Localiser dans un répertoire réel",
     "ko-KR": "실제 디렉토리에서 찾기",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11276-11288)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11607-11619)"
+    ],
     "$id": 8545
   },
   "打开目录失败": {
@@ -1142,7 +1212,9 @@
     "de-DE": "Verzeichnis konnte nicht geöffnet werden",
     "fr-FR": "Échec de l'ouverture du répertoire",
     "ko-KR": "디렉터리를 열지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11584-11594)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11923-11933)"
+    ],
     "$id": 8546
   },
   "在虚拟目录中定位": {
@@ -1155,7 +1227,9 @@
     "de-DE": "Suchen Sie im virtuellen Verzeichnis",
     "fr-FR": "Localiser dans le répertoire virtuel",
     "ko-KR": "가상 디렉터리에서 찾기",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11651-11663)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(11995-12007)"
+    ],
     "$id": 8547
   },
   "请先导出虚拟目录（虚拟目录不占硬盘空间）": {
@@ -1168,7 +1242,9 @@
     "de-DE": "Bitte exportieren Sie zuerst das virtuelle Verzeichnis (das virtuelle Verzeichnis belegt keinen Festplattenspeicher).",
     "fr-FR": "Veuillez d'abord exporter le répertoire virtuel (le répertoire virtuel n'occupe pas d'espace sur le disque dur)",
     "ko-KR": "먼저 가상 디렉터리를 내보내십시오. (가상 디렉터리는 하드 디스크 공간을 차지하지 않습니다.)",
-    "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(12032-12056)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(12386-12410)"
+    ],
     "$id": 8548
   }
 }

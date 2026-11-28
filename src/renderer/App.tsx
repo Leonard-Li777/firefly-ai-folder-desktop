@@ -1,24 +1,18 @@
 import './material-icons.css'
 import './styles.css'
 
-import { AIServiceErrorDialog, useAIServiceErrorDialog } from './components/ai/AIServiceErrorDialog'
 import { LogCategory, logger } from '@firefly/shared'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { cn } from './lib/utils'
 import { ToastContainer, toast } from './components/common/Toast'
 
 import { AIClassificationHandler } from './components/ai/AIClassificationHandler'
-import { AnalysisQueueModal } from './components/analysis/AnalysisQueueModal'
 import { QueueSplitPanel } from './components/analysis/QueueSplitPanel'
-import { QueueWindowPage } from './components/analysis/QueueWindowPage'
-import { ExtensionReconciliationDialog } from './components/analysis/ExtensionReconciliationDialog'
-import { AnalysisConfirmModal } from './components/analysis/AnalysisConfirmModal'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { SettingsCategory, AIServiceStatus } from '@firefly/types'
 import { Footer } from './components/common/Footer'
 import { RealDirectory } from './components/file-explorer/RealDirectory'
-import { SystemSettingsDialog, WorkspaceSettingsDialog } from './components/settings'
 import { AnalyzedDirectory } from './components/file-explorer/AnalyzedDirectory/index'
 import { VirtualDirectory } from './components/file-explorer/VirtualDirectory/index'
 import { PreviewOverlay } from './components/file-explorer/PreviewOverlay'
@@ -32,21 +26,23 @@ import { resolveWelcomeGateState, type WelcomeGateModuleLike } from './lib/welco
 // PRD-0044（S5）：InitialSetupOverlay / GpuDriverOverlay / ModelDownloadProgress / use-model-download
 // 等模型下载与本地切换残留 UI 已随「模型激活归萤核AI引擎独占」整体清退
 import { LicenseGateway } from './components/license/LicenseGateway'
-import { t, i18nScope } from '@app/languages'
+import { i18nScope } from '@app/languages'
 import { useAIModelStore } from './stores/app-store'
 import { useModelStore } from './stores/model-store'
-import { useAIServiceInitialization, isModelSwitchingActive } from './stores/ai-service-store'
+import {
+  useAIServiceInitialization,
+  useAIServiceStore,
+  isModelSwitchingActive
+} from './stores/ai-service-store'
+import { useAnalysisQueueStore } from './stores/analysis-queue-store'
 import { useEngineStore } from './stores/engine-store'
 import { createPushFirstFallback, isSettledAIStatus } from './lib/push-first-fallback'
 import { useSettingsStore } from './stores/settings-store'
 import { useTheme } from './components/ui/theme-provider'
-import { usePreviewOverlayStore } from './stores/preview-overlay-store'
 import { useInvitation } from './hooks/useInvitation'
 import { useAnalyzedDirectoryStore } from './stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from './stores/virtual-directory-store'
 import { useTierStore } from './stores/tier-store'
-import { FirecoresRulesDialog } from './components/tier/FirecoresRulesDialog'
-import { UpgradeAccountDialog } from './components/tier/UpgradeAccountDialog'
 import { DeviceBindModal } from './components/tier/DeviceBindModal'
 import { UpdateNotification } from './components/update/UpdateNotification'
 import { CrossRegionNoticeBanner } from './components/common/CrossRegionNoticeBanner'
@@ -54,7 +50,84 @@ import {
   reportRendererStartupMark,
   reportRendererStartupMarkAfterPaint
 } from './lib/startup-timeline'
+import { LazyMount } from '@pro/perf/lazy-mount'
+import { ViewVisibilityContext, useViewVisible } from './lib/view-visibility'
 // PRD-0044（S5 提前摘除）：模型激活确认对话框删除，AlertDialog/buttonVariants 导入随之下线
+
+// R-05：低频非门禁弹窗 LazyMount 异步加载器与开合自订阅 hook（模块级稳定引用，
+// 保证 React.lazy 缓存与 hook 调用顺序稳定；isOpen 订阅落在 LazyMount 边界而非 App 根）。
+// 硬性排除项（DeviceBindModal / LicenseGateway / WelcomeWizard / GlobalSearchOverlay）保持静态引入。
+const loadFirecoresRulesDialog = () =>
+  import('./components/tier/FirecoresRulesDialog').then(m => ({ default: m.FirecoresRulesDialog }))
+const useRulesOpen = () => useTierStore(s => s.isRulesOpen)
+const loadUpgradeAccountDialog = () =>
+  import('./components/tier/UpgradeAccountDialog').then(m => ({ default: m.UpgradeAccountDialog }))
+const useUpgradeOpen = () => useTierStore(s => s.isUpgradeOpen)
+const loadSystemSettingsDialog = () =>
+  import('./components/settings/SystemSettingsDialog').then(m => ({
+    default: m.SystemSettingsDialog
+  }))
+const useSystemSettingsOpen = () => useSettingsStore(s => s.isSystemSettingsOpen)
+const loadWorkspaceSettingsDialog = () =>
+  import('./components/settings/WorkspaceSettingsDialog').then(m => ({
+    default: m.WorkspaceSettingsDialog
+  }))
+const useWorkspaceSettingsOpen = () => useSettingsStore(s => s.isWorkspaceSettingsOpen)
+const loadAnalysisQueueModal = () =>
+  import('./components/analysis/AnalysisQueueModal').then(m => ({ default: m.AnalysisQueueModal }))
+const useQueueModalOpen = () => useAnalysisQueueStore(s => s.showModal)
+const loadExtensionReconciliationDialog = () =>
+  import('./components/analysis/ExtensionReconciliationDialog').then(m => ({
+    default: m.ExtensionReconciliationDialog
+  }))
+const useReconciliationOpen = () => useAnalysisQueueStore(s => s.showReconciliationDialog)
+const loadAnalysisConfirmModal = () =>
+  import('./components/analysis/AnalysisConfirmModal').then(m => ({
+    default: m.AnalysisConfirmModal
+  }))
+const useConfirmModalOpen = () => useAnalysisQueueStore(s => s.showConfirmModal)
+const loadAIServiceErrorDialog = () =>
+  import('./components/ai/AIServiceErrorDialog').then(m => ({ default: m.AIServiceErrorDialog }))
+const useAIErrorDialogOpen = () => useAIServiceStore(s => s.isErrorDialogOpen)
+
+// R-11：/queue-window 独立入口懒加载（独立异步 chunk，主窗口首屏不承载队列窗代码）
+const QueueWindowPageLazy = lazy(() =>
+  import('./components/analysis/QueueWindowPage').then(m => ({ default: m.QueueWindowPage }))
+)
+
+// 根部解耦：四主视图 React.memo，App 根状态（授权/启动阶段等）更新不再波及已挂载视图
+const MemoOrganize = React.memo(Organize)
+const MemoRealDirectory = React.memo(RealDirectory)
+const MemoAnalyzedDirectory = React.memo(AnalyzedDirectory)
+const MemoVirtualDirectory = React.memo(VirtualDirectory)
+
+/**
+ * R-23：KeepAlive 视图包装层。pathname 门禁与 200ms 过渡动画保持不变；
+ * 经 ViewVisibilityContext 向后代广播可见性，内层消费上下文驱动 aria-hidden。
+ */
+const KeepAlivePaneBody: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const visible = useViewVisible()
+  return (
+    <div
+      aria-hidden={!visible}
+      className={cn(
+        'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
+        visible ? 'opacity-100 z-10' : 'opacity-0 pointer-events-none z-0'
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+const KeepAlivePane: React.FC<{ visible: boolean; children: React.ReactNode }> = ({
+  visible,
+  children
+}) => (
+  <ViewVisibilityContext.Provider value={visible}>
+    <KeepAlivePaneBody>{children}</KeepAlivePaneBody>
+  </ViewVisibilityContext.Provider>
+)
 
 type StartupPhase = 'determining' | 'setup' | 'config' | 'licensing' | 'initializing' | 'ready'
 
@@ -62,17 +135,11 @@ const App: React.FC = () => {
   // Initialize invitation system
   useInvitation()
 
-  const {
-    isRulesOpen,
-    rulesDefaultTab,
-    openRulesDialog,
-    closeRulesDialog,
-    isUpgradeOpen,
-    openUpgradeDialog,
-    closeUpgradeDialog,
-    isDeviceBindOpen,
-    setIsDeviceBindOpen
-  } = useTierStore()
+  // R-20/R-05：整店订阅改精确 selector；isRulesOpen/isUpgradeOpen 等开合订阅
+  // 已下沉 LazyMount 边界自订阅，根组件仅保留低频 prop 与豁免项（DeviceBindModal）所需字段
+  const rulesDefaultTab = useTierStore(s => s.rulesDefaultTab)
+  const isDeviceBindOpen = useTierStore(s => s.isDeviceBindOpen)
+  const setIsDeviceBindOpen = useTierStore(s => s.setIsDeviceBindOpen)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
 
   const location = useLocation()
@@ -314,7 +381,8 @@ const App: React.FC = () => {
 
   const { setTheme } = useTheme()
   const [startupPhase, setStartupPhase] = useState<StartupPhase>(() => {
-    if (currentPath === '/preview-window') return 'ready'
+    // 独立窗口（预览窗/队列窗）直接就绪，跳过主窗口启动判定
+    if (currentPath === '/preview-window' || currentPath === '/queue-window') return 'ready'
     if (typeof window !== 'undefined') {
       const confirmed = localStorage.getItem('languageConfirmed') === 'true'
       return confirmed ? 'initializing' : 'config'
@@ -327,14 +395,12 @@ const App: React.FC = () => {
   useEffect(() => {
     startupPhaseRef.current = startupPhase
   }, [startupPhase])
-  const [startupMessage, setStartupMessage] = useState<string>(t('正在准备启动应用...'))
+  // R-11：startupMessage 死状态与 renderStartupScreen 已删除（从未渲染，消除启动期整树重渲染）
   const forceConfigFlagConsumedRef = useRef(false)
   // PRD-0044（S5 提前摘除）：模型下载完成"立即激活"确认弹窗链删除，模型激活归萤核AI引擎独占
 
-  // AI服务状态管理
+  // AI服务状态管理（错误弹窗开合订阅已下沉 LazyMount 边界；回调经 getState 取稳定 action）
   const { initializeAIService } = useAIServiceInitialization()
-  const { isOpen: isErrorDialogOpen, closeDialog: closeErrorDialog } = useAIServiceErrorDialog()
-  const { filePath: previewFilePath } = usePreviewOverlayStore()
 
   // PRD-0044（S5）：模型迁移进度监听与迁移蒙版超时兜底随「内置模型迁移链」整体清退删除。
   // 依据：V4 已取消内置模型，模型下载/迁移完全归萤核AI引擎（engine 项目）自管；
@@ -353,8 +419,12 @@ const App: React.FC = () => {
         return
       }
 
-      // 预览窗口不初始化 AI 服务（/preview 和 /preview-window 两个路由都是预览窗口）
-      if (currentPath === '/preview' || currentPath === '/preview-window') {
+      // 独立窗口不初始化 AI 服务（/preview、/preview-window、/queue-window 均早退豁免）
+      if (
+        currentPath === '/preview' ||
+        currentPath === '/preview-window' ||
+        currentPath === '/queue-window'
+      ) {
         hasDeterminedPhaseRef.current = true
         startupPhaseRef.current = 'ready'
         setStartupPhase('ready')
@@ -363,7 +433,6 @@ const App: React.FC = () => {
 
       // 不再设置 determining 阶段，避免阻塞初始界面或显示主界面占位
       // setStartupPhase('determining')
-      setStartupMessage(t('正在检测应用配置...'))
 
       try {
         const [config, startupFlags] = await Promise.all([
@@ -460,7 +529,6 @@ const App: React.FC = () => {
         }
 
         // 3. 授权检查（在欢迎向导完成后执行，避免离线授权弹窗取代或打断欢迎向导）
-        setStartupMessage(t('正在验证授权状态...'))
         const licenseResult = await window.electronAPI!.license.getStatus()
 
         // 获取 tier 数据中的 can_offline 门控
@@ -642,43 +710,64 @@ const App: React.FC = () => {
     }
   }, [navigate])
 
-  // 全局鼠标悬浮事件委托：在普通 truncate/line-clamp 文本实际发生溢出折断时，动态赋予原生 title 提示，零侵入解决省略提示需求
+  // 全局鼠标悬浮事件委托：在普通 truncate/line-clamp 文本实际发生溢出折断时，动态赋予原生 title 提示。
+  // R-24：原生 for 遍历 classList（零数组分配）；溢出测量放单槽 rAF（移走即 cancel），
+  // 避免高频 mouseover 同步读布局引发强制重排。
   useEffect(() => {
+    let rafId = 0
+    let pendingTarget: HTMLElement | null = null
+    let pendingLineClamp = false
+
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (!target) return
+      if (!target || !target.classList) return
 
-      // 1. 匹配具有省略特性的常规元素
-      const isEllipsisElement =
-        target.classList.contains('truncate') ||
-        [...target.classList].some(c => c.startsWith('line-clamp-')) ||
-        target.hasAttribute('data-overflow-tip')
-
-      if (isEllipsisElement) {
-        // 2. 区分单行和多行省略的溢出判断
-        const isLineClamp = [...target.classList].some(c => c.startsWith('line-clamp-'))
-
-        const isOverflowing = isLineClamp
-          ? target.scrollHeight > target.clientHeight
-          : target.scrollWidth > target.clientWidth
-
-        // 3. 动态赋予/移出 title 属性
-        const currentText = target.textContent?.trim() || ''
-        if (isOverflowing) {
-          if (target.getAttribute('title') !== currentText) {
-            target.setAttribute('title', currentText)
-          }
-        } else {
-          if (target.hasAttribute('title')) {
-            target.removeAttribute('title')
-          }
+      // 1. 原生 for 遍历匹配省略特性（仅检查 e.target 自身，不冒泡展开）
+      let isEllipsisElement = target.hasAttribute('data-overflow-tip')
+      let isLineClamp = false
+      const classList = target.classList
+      for (let i = 0; i < classList.length; i++) {
+        const cls = classList[i]
+        if (cls === 'truncate') {
+          isEllipsisElement = true
+        } else if (cls.startsWith('line-clamp-')) {
+          isEllipsisElement = true
+          isLineClamp = true
         }
       }
+      if (!isEllipsisElement) return
+
+      // 2. 单槽 rAF：同一帧内多次 mouseover 只保留最后一个目标，移走即撤销测量
+      pendingTarget = target
+      pendingLineClamp = isLineClamp
+      if (rafId) cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => {
+        rafId = 0
+        const el = pendingTarget
+        const lineClamp = pendingLineClamp
+        pendingTarget = null
+        if (!el || !el.isConnected) return
+
+        const isOverflowing = lineClamp
+          ? el.scrollHeight > el.clientHeight
+          : el.scrollWidth > el.clientWidth
+
+        // 3. 动态赋予/移出 title 属性
+        const currentText = el.textContent?.trim() || ''
+        if (isOverflowing) {
+          if (el.getAttribute('title') !== currentText) {
+            el.setAttribute('title', currentText)
+          }
+        } else if (el.hasAttribute('title')) {
+          el.removeAttribute('title')
+        }
+      })
     }
 
     document.addEventListener('mouseover', handleMouseOver, { passive: true })
     return () => {
       document.removeEventListener('mouseover', handleMouseOver)
+      if (rafId) cancelAnimationFrame(rafId)
     }
   }, [])
 
@@ -720,12 +809,10 @@ const App: React.FC = () => {
 
   const initializeApplication = useCallback(async () => {
     try {
-      setStartupMessage(t('正在初始化应用环境...'))
       if (window.electronAPI?.initializeAppPhase) {
         await window.electronAPI.initializeAppPhase()
       }
 
-      setStartupMessage(t('正在初始化AI服务...'))
       // 使用AI服务Store进行初始化（ST-P0-4：启动期传入 startupPhaseAOnly，由主进程 Deferred 链后台完成重型加载）
       try {
         await initializeAIService({ startupPhaseAOnly: true })
@@ -734,7 +821,6 @@ const App: React.FC = () => {
         logger.warn(LogCategory.RENDERER, 'AI服务初始化失败，将在后续使用时重试:', error)
       }
 
-      setStartupMessage(t('正在检查 AI 状态...'))
       await checkAIStatus()
       // 关键修复：只有当前阶段仍是 initializing 时才设为 ready，
       // 防止 determineStartupPhase 已将阶段改为 licensing 后被覆盖
@@ -800,6 +886,8 @@ const App: React.FC = () => {
   // 切回可见时一次性重同步（引擎裸探活 recordFailure:false，EQ-6 防误开熔断）。
   useEffect(() => {
     if (startupPhase !== 'ready') return
+    // 独立队列窗豁免主窗口状态兜底轮询与可见性重同步
+    if (currentPath === '/queue-window') return
 
     reportRendererStartupMark('renderer:phase:ready')
 
@@ -832,9 +920,10 @@ const App: React.FC = () => {
     }
   }, [startupPhase, checkAIStatus])
 
-  // 注册后台萤火变更通知监听
+  // 注册后台萤火变更通知监听（独立队列窗豁免）
   useEffect(() => {
     if (startupPhase !== 'ready') return
+    if (currentPath === '/queue-window') return
     useTierStore.getState().registerProfileListener()
   }, [startupPhase])
 
@@ -866,19 +955,23 @@ const App: React.FC = () => {
       window.removeEventListener('app:unauthorized', handleManualUnauthorized as EventListener)
   }, [startupPhase])
 
-  const renderStartupScreen = (title: string, description?: string) => (
-    <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500 mb-6"></div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">{title}</h2>
-        <p className="text-gray-600">{description}</p>
-        <p className="text-sm text-gray-500 mt-2">{startupMessage}</p>
-      </div>
-    </div>
-  )
+  // R-11：renderStartupScreen 死代码已删除（无任何调用点，startupMessage 从未上屏）
 
   // 移除 initializing 阶段的阻塞遮罩，允许直接进入应用
   // 并移除 licensing 阶段的阻塞全屏，改为进入主界面后弹层提示
+
+  // R-11：/queue-window 独立渲染早退——彻底跳过主壳浮层/弹窗挂载与启动初始化，
+  // 语言/主题由 renderer.tsx 顶层 config-sync 保持同步；队列页代码独立异步 chunk。
+  if (currentPath === '/queue-window') {
+    return (
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          <QueueWindowPageLazy />
+        </Suspense>
+        <ToastContainer />
+      </ErrorBoundary>
+    )
+  }
 
   // 仅在 config 阶段显示欢迎向导进行语言选择与基础能力装配
   if (startupPhase === 'config') {
@@ -927,60 +1020,32 @@ const App: React.FC = () => {
         )}
         <AIClassificationHandler />
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          {/* 整理视图 - KeepAlive */}
+          {/* 整理视图 - KeepAlive（R-23 可见性上下文 + memo 隔离） */}
           {hasMountedOrganize && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath === '/organize'
-                  ? 'opacity-100 z-10'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <Organize />
-            </div>
+            <KeepAlivePane visible={currentPath === '/organize'}>
+              <MemoOrganize />
+            </KeepAlivePane>
           )}
 
           {/* 真实目录视图 - KeepAlive */}
           {hasMountedReal && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath === '/' || currentPath === '/real-directory'
-                  ? 'opacity-100 z-10'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <RealDirectory />
-            </div>
+            <KeepAlivePane visible={currentPath === '/' || currentPath === '/real-directory'}>
+              <MemoRealDirectory />
+            </KeepAlivePane>
           )}
 
           {/* 已分析视图 - KeepAlive */}
           {hasMountedAnalyzed && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath === '/analyzed-directory'
-                  ? 'opacity-100 z-10'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <AnalyzedDirectory />
-            </div>
+            <KeepAlivePane visible={currentPath === '/analyzed-directory'}>
+              <MemoAnalyzedDirectory />
+            </KeepAlivePane>
           )}
 
           {/* 虚拟目录视图 - KeepAlive */}
           {hasMountedVirtual && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath.startsWith('/virtual-directory')
-                  ? 'opacity-100 z-10'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <VirtualDirectory />
-            </div>
+            <KeepAlivePane visible={currentPath.startsWith('/virtual-directory')}>
+              <MemoVirtualDirectory />
+            </KeepAlivePane>
           )}
 
           {/* 全域搜索浮层 - GlobalSearchOverlay (单例挂载于 App 顶层) */}
@@ -998,25 +1063,40 @@ const App: React.FC = () => {
             <Route path="/virtual-directory" element={null} />
             <Route path="/virtual-directory/export" element={null} />
             <Route path="/preview-window" element={null} />
-            <Route path="/queue-window" element={<QueueWindowPage />} />
+            {/* /queue-window 由上方独立早退分支渲染（R-11），不参与主壳路由 */}
           </Routes>
         </div>
         <QueueSplitPanel />
         <Footer />
-        <AnalysisQueueModal />
-        <ExtensionReconciliationDialog />
-        <AnalysisConfirmModal />
+        {/* R-05：低频非门禁弹窗 LazyMount 懒挂载（开合订阅内聚边界，首屏零挂载零加载） */}
+        <LazyMount useOpen={useQueueModalOpen} load={loadAnalysisQueueModal} />
+        <LazyMount useOpen={useReconciliationOpen} load={loadExtensionReconciliationDialog} />
+        <LazyMount useOpen={useConfirmModalOpen} load={loadAnalysisConfirmModal} />
         <ToastContainer />
-        <SystemSettingsDialog />
-        <WorkspaceSettingsDialog />
-        <FirecoresRulesDialog
-          open={isRulesOpen}
-          onOpenChange={open => (open ? openRulesDialog() : closeRulesDialog())}
-          defaultTab={rulesDefaultTab}
+        <LazyMount useOpen={useSystemSettingsOpen} load={loadSystemSettingsDialog} />
+        <LazyMount useOpen={useWorkspaceSettingsOpen} load={loadWorkspaceSettingsDialog} />
+        <LazyMount
+          useOpen={useRulesOpen}
+          load={loadFirecoresRulesDialog}
+          injectOpen
+          componentProps={{
+            onOpenChange: open =>
+              open
+                ? useTierStore.getState().openRulesDialog()
+                : useTierStore.getState().closeRulesDialog(),
+            defaultTab: rulesDefaultTab
+          }}
         />
-        <UpgradeAccountDialog
-          open={isUpgradeOpen}
-          onOpenChange={open => (open ? openUpgradeDialog() : closeUpgradeDialog())}
+        <LazyMount
+          useOpen={useUpgradeOpen}
+          load={loadUpgradeAccountDialog}
+          injectOpen
+          componentProps={{
+            onOpenChange: open =>
+              open
+                ? useTierStore.getState().openUpgradeDialog()
+                : useTierStore.getState().closeUpgradeDialog()
+          }}
         />
         <UpdateNotification />
         <DeviceBindModal
@@ -1024,22 +1104,26 @@ const App: React.FC = () => {
           onOpenChange={setIsDeviceBindOpen}
         />
 
-        {/* AI服务错误对话框 */}
-        <AIServiceErrorDialog
-          open={isErrorDialogOpen}
-          onClose={closeErrorDialog}
-          onOpenSettings={() => {
-            // PRD-0044：错误弹窗跳链改指「高级AI引擎配置」
-            useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-            closeErrorDialog()
-          }}
-          onSwitchToCloud={() => {
-            // PRD-0044：错误弹窗跳链改指「高级AI引擎配置」
-            useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-            useSettingsStore
-              .getState()
-              .updateConfigValue('AI_SERVICE_MODE', 'cloud', { preventAutoReload: true })
-            closeErrorDialog()
+        {/* AI服务错误对话框（R-05 LazyMount；回调经 getState 取稳定 action） */}
+        <LazyMount
+          useOpen={useAIErrorDialogOpen}
+          load={loadAIServiceErrorDialog}
+          injectOpen
+          componentProps={{
+            onClose: () => useAIServiceStore.getState().closeErrorDialog(),
+            onOpenSettings: () => {
+              // PRD-0044：错误弹窗跳链改指「高级AI引擎配置」
+              useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+              useAIServiceStore.getState().closeErrorDialog()
+            },
+            onSwitchToCloud: () => {
+              // PRD-0044：错误弹窗跳链改指「高级AI引擎配置」
+              useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+              useSettingsStore
+                .getState()
+                .updateConfigValue('AI_SERVICE_MODE', 'cloud', { preventAutoReload: true })
+              useAIServiceStore.getState().closeErrorDialog()
+            }
           }}
         />
 

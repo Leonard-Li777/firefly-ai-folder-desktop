@@ -1102,9 +1102,13 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
   }
 
   /** W4 压测读取最近一次空闲 checkpoint 的 (busy, log, checkpointed) 原始值 */
-  getLastIdleCheckpoint():
-    | { busy: number; log: number; checkpointed: number; reason: string; at: number }
-    | null {
+  getLastIdleCheckpoint(): {
+    busy: number
+    log: number
+    checkpointed: number
+    reason: string
+    at: number
+  } | null {
     return this.lastIdleCheckpointRecord
   }
 
@@ -2834,6 +2838,13 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
     }
     const prepared: J13PreparedRow[] = []
     const activeIgnoreRules = loadIgnoreRules()
+    // J-08 固定 SQL 在准备阶段只解析一次；@pro 存根下等价于循环外 prepare，避免 500 次重复编译。
+    const existingStmt = getCachedStatement<any>(
+      db,
+      `SELECT id, file_fingerprint, is_analyzed FROM workspace_files WHERE workspace_id = ? AND path = ?`
+    )
+    // 同目录批量入库时目录 ID 只需解析一次，避免每文件一次 SELECT/INSERT prepare。
+    const directoryIdCache = new Map<string, number>()
 
     for (let i = 0; i < inputs.length; i++) {
       const key = `${workspaceId}\u0000${inputs[i].filePath}`
@@ -2857,17 +2868,21 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         continue
       }
 
-      let directoryId: number
-      try {
-        directoryId = await this.addDirectory(path.dirname(input.filePath), workspaceId)
-      } catch (error) {
-        logger.warn(
-          LogCategory.DATABASE_SERVICE,
-          `[J-13] addDirectory 失败，跳过 (${input.filePath}):`,
-          error
-        )
-        result.droppedCount++
-        continue
+      const dirPath = path.dirname(input.filePath)
+      let directoryId = directoryIdCache.get(dirPath)
+      if (directoryId === undefined) {
+        try {
+          directoryId = await this.addDirectory(dirPath, workspaceId)
+          directoryIdCache.set(dirPath, directoryId)
+        } catch (error) {
+          logger.warn(
+            LogCategory.DATABASE_SERVICE,
+            `[J-13] addDirectory 失败，跳过 (${input.filePath}):`,
+            error
+          )
+          result.droppedCount++
+          continue
+        }
       }
 
       let fingerprint: string | null = input.fileFingerprint ?? null
@@ -2884,10 +2899,7 @@ export class DatabaseQueryProxyMixin extends DatabaseInitMixin {
         }
       }
 
-      const existing = getCachedStatement<any>(
-        db,
-        `SELECT id, file_fingerprint, is_analyzed FROM workspace_files WHERE workspace_id = ? AND path = ?`
-      ).get(workspaceId, input.filePath) as
+      const existing = existingStmt.get(workspaceId, input.filePath) as
         | { id: number; file_fingerprint: string | null; is_analyzed: number }
         | undefined
 

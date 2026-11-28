@@ -9,7 +9,7 @@
     "de-DE": "Nicht unterstützte Betriebssystemplattform: {platform}",
     "fr-FR": "Plateforme système d'exploitation non prise en charge : {platform}",
     "ko-KR": "지원되지 않는 운영 체제 플랫폼: {platform}",
-    "$files": ["src/electron/runtime-services/system/libreoffice-detector.ts(1892-1918)"],
+    "$files": ["src/electron/runtime-services/system/libreoffice-detector.ts(1956-1982)"],
     "$id": 5980
   },
   "未检测到 LibreOffice，请将其安装到默认路径或确保其在系统 PATH 中": {
@@ -23,9 +23,9 @@
     "fr-FR": "LibreOffice n'a pas été détecté. Veuillez l'installer dans le chemin par défaut ou vous assurer qu'il se trouve dans le PATH système.",
     "ko-KR": "LibreOffice 가 감지되지 않았습니다. 기본 경로에 설치하거나 시스템 PATH 에 포함되어 있는지 확인하십시오.",
     "$files": [
-      "src/electron/runtime-services/system/libreoffice-detector.ts(5988-6033)",
-      "src/electron/runtime-services/system/libreoffice-detector.ts(8540-8585)",
-      "src/electron/runtime-services/system/libreoffice-detector.ts(12490-12535)"
+      "src/electron/runtime-services/system/libreoffice-detector.ts(6183-6228)",
+      "src/electron/runtime-services/system/libreoffice-detector.ts(8827-8872)",
+      "src/electron/runtime-services/system/libreoffice-detector.ts(12914-12959)"
     ],
     "$id": 3261
   },
@@ -39,7 +39,7 @@
     "de-DE": "Das System konfiguriert den öffentlichen Schlüssel nicht",
     "fr-FR": "Le système ne configure pas la clé publique",
     "ko-KR": "시스템이 공개 키를 구성하지 않습니다.",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(16013-16024)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(16523-16534)"],
     "$id": 11064
   },
   "该授权码不适用于当前机器": {
@@ -52,7 +52,7 @@
     "de-DE": "Der Autorisierungscode gilt nicht für die aktuelle Maschine",
     "fr-FR": "Le code d'autorisation ne s'applique pas à la machine actuelle",
     "ko-KR": "인증 코드는 현재 기기에 적용되지 않습니다",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(16410-16426)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(16933-16949)"],
     "$id": 11065
   },
   "该授权码已过期": {
@@ -66,8 +66,8 @@
     "fr-FR": "Le code d'autorisation a expiré",
     "ko-KR": "인증 코드가 만료되었습니다",
     "$files": [
-      "src/electron/runtime-services/system/license-service.ts(16898-16909)",
-      "src/electron/runtime-services/system/license-service.ts(17112-17123)"
+      "src/electron/runtime-services/system/license-service.ts(17433-17444)",
+      "src/electron/runtime-services/system/license-service.ts(17653-17664)"
     ],
     "$id": 11066
   },
@@ -81,7 +81,7 @@
     "de-DE": "Die Schreibberechtigung ist fehlgeschlagen",
     "fr-FR": "L'autorisation d'écriture a échoué",
     "ko-KR": "쓰기 승인 실패",
-    "$files": ["src/electron/runtime-services/system/license-service.ts(19568-19578)"],
+    "$files": ["src/electron/runtime-services/system/license-service.ts(20174-20184)"],
     "$id": 11067
   },
   "性能优化正在进行中": {
@@ -94,7 +94,7 @@
     "de-DE": "Leistungsoptimierung läuft",
     "fr-FR": "L'optimisation des performances est en cours",
     "ko-KR": "성능 최적화 진행 중",
-    "$files": ["src/electron/runtime-services/system/performance-optimizer.ts(14451-14464)"],
+    "$files": ["src/electron/runtime-services/system/performance-optimizer.ts(15519-15532)"],
     "$id": 8141
   },
   "不支持的资源类型: {type}": {
@@ -107,7 +107,7 @@
     "de-DE": "Nicht unterstützter Ressourcentyp: {type}",
     "fr-FR": "Type de ressource non pris en charge : {type}",
     "ko-KR": "지원하지 않는 리소스 유형: {type}",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(12746-12766)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(12878-12898)"],
     "$id": 8142
   },
   "资源清理正在进行中": {
@@ -120,7 +120,7 @@
     "de-DE": "Ressourcenbereinigung läuft",
     "fr-FR": "Nettoyage des ressources en cours",
     "ko-KR": "리소스 정리 진행 중",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(13929-13942)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14264-14277)"],
     "$id": 8143
   },
   "资源清理过于频繁，请稍后再试": {
@@ -133,7 +133,7 @@
     "de-DE": "Ressourcenbereinigung erfolgt zu häufig, bitte versuchen Sie es später erneut",
     "fr-FR": "Le nettoyage des ressources est trop fréquent, veuillez réessayer plus tard.",
     "ko-KR": "리소스 정리가 너무 빈번합니다. 나중에 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14078-14096)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(14413-14431)"],
     "$id": 8144
   },
   "资源类型 {type} 的统计信息不存在": {
@@ -146,7 +146,46 @@
     "de-DE": "Keine Statistiken für Ressourcentyp {type} vorhanden",
     "fr-FR": "Les statistiques pour le type de ressource {type} n'existent pas",
     "ko-KR": "리소스 유형 {type}의 통계 정보가 존재하지 않습니다.",
-    "$files": ["src/electron/runtime-services/system/resource-manager.ts(17642-17666)"],
+    "$files": ["src/electron/runtime-services/system/resource-manager.ts(17977-18001)"],
     "$id": 8145
+  },
+  "当前软件缺少本地校验组件，无法确认离线包完整性，请重新安装软件后再试": {
+    "en-US": "The current software lacks local verification components and cannot confirm the integrity of the offline package. Please reinstall the software and try again.",
+    "es-ES": "El software actual carece de componentes de verificación locales y no puede confirmar la integridad del paquete sin conexión. Reinstale el software e inténtelo de nuevo.",
+    "ar-EG": "يفتقر البرنامج الحالي إلى مكونات التحقق المحلية ولا يمكنه تأكيد سلامة الحزمة غير المتصلة بالإنترنت. الرجاء إعادة تثبيت البرنامج وحاول مرة أخرى.",
+    "pt-PT": "O software actual carece de componentes de verificação local e não pode confirmar a integridade do pacote offline. Reinstale o software e tente novamente.",
+    "ru-RU": "В текущем программном обеспечении отсутствуют компоненты локальной проверки, и оно не может подтвердить целостность автономного пакета. Пожалуйста, переустановите программное обеспечение и повторите попытку.",
+    "ja-JP": "現在のソフトウェアにはローカル検証コンポーネントがなく、オフラインパッケージの整合性を確認できません。 ソフトウェアを再インストールして再試行してください。",
+    "de-DE": "Der aktuellen Software fehlen lokale Überprüfungskomponenten und sie kann die Integrität des Offline-Pakets nicht bestätigen. Bitte installieren Sie die Software neu und versuchen Sie es erneut.",
+    "fr-FR": "Le logiciel actuel manque de composants de vérification locaux et ne peut pas confirmer l'intégrité du package hors ligne. Veuillez réinstaller le logiciel et réessayer.",
+    "ko-KR": "현재 소프트웨어에는 로컬 확인 구성 요소가 없으며 오프라인 패키지의 무결성을 확인할 수 없습니다. 소프트웨어를 다시 설치하고 다시 시도하십시오.",
+    "$files": ["src/electron/runtime-services/system/visual-vocab-txn.ts(8732-8770)"],
+    "$id": 32701
+  },
+  "离线包版本过旧或内容不完整，缺少图像识别所需的词表文件，请重新获取新版离线包后再导入": {
+    "en-US": "The offline package version is too old or the content is incomplete, and the vocabulary file required for image recognition is missing. Please re-obtain the new version of the offline package before importing it.",
+    "es-ES": "La versión del paquete sin conexión es demasiado antigua o el contenido está incompleto, y falta el archivo de vocabulario necesario para el reconocimiento de imágenes. Vuelva a obtener la nueva versión del paquete sin conexión antes de importarlo.",
+    "ar-EG": "إصدار الحزمة غير المتصل قديم جدا أو المحتوى غير مكتمل ، وملف المفردات المطلوب للتعرف على الصور مفقود. يرجى إعادة الحصول على الإصدار الجديد من الحزمة غير المتصلة قبل استيرادها.",
+    "pt-PT": "A versão offline do pacote é demasiado antiga ou o conteúdo está incompleto e o ficheiro de vocabulário necessário para o reconhecimento de imagens está em falta. Obtenha novamente a nova versão do pacote offline antes de importá-lo.",
+    "ru-RU": "Версия автономного пакета слишком устарела или содержит неполную информацию, а файл словаря, необходимый для распознавания изображений, отсутствует. Пожалуйста, повторно загрузите новую версию автономного пакета перед его импортом.",
+    "ja-JP": "オフラインパッケージのバージョンが古すぎるか、コンテンツが不完全であり、画像認識に必要な語彙ファイルが欠落しています。 インポートする前に、オフラインパッケージの新しいバージョンを再入手してください。",
+    "de-DE": "Die Offline-Paketversion ist zu alt oder der Inhalt ist unvollständig und die für die Bilderkennung erforderliche Vokabeldatei fehlt. Bitte besorgen Sie sich die neue Version des Offline-Pakets erneut, bevor Sie es importieren.",
+    "fr-FR": "La version du package hors ligne est trop ancienne ou le contenu est incomplet et le fichier de vocabulaire requis pour la reconnaissance d'image est manquant. Veuillez récupérer la nouvelle version du package hors ligne avant de l'importer.",
+    "ko-KR": "오프라인 패키지 버전이 너무 오래되었거나 콘텐츠가 불완전하여 이미지 인식에 필요한 어휘 파일이 없습니다. 가져 오기 전에 오프라인 패키지의 새 버전을 다시 구하십시오.",
+    "$files": ["src/electron/runtime-services/system/visual-vocab-txn.ts(8929-8975)"],
+    "$id": 32702
+  },
+  "离线包中的图像识别数据已损坏或与当前软件版本不兼容，请重新获取新版离线包后再导入": {
+    "en-US": "The image recognition data in the offline package is corrupted or incompatible with the current software version, please re-obtain the new version of the offline package before importing",
+    "es-ES": "Los datos de reconocimiento de imágenes en el paquete sin conexión están dañados o son incompatibles con la versión actual del software; vuelva a obtener la nueva versión del paquete sin conexión antes de importar",
+    "ar-EG": "بيانات التعرف على الصور في الحزمة غير المتصلة تالفة أو غير متوافقة مع إصدار البرنامج الحالي ، يرجى إعادة الحصول على الإصدار الجديد من الحزمة غير المتصلة قبل الاستيراد",
+    "pt-PT": "Os dados de reconhecimento de imagem no Pacote offline estão corrompidos ou incompatíveis com a versão atual do software, obtenha novamente a nova versão do pacote offline antes de importar",
+    "ru-RU": "Данные распознавания изображений в автономном пакете повреждены или несовместимы с текущей версией программного обеспечения, пожалуйста, повторно получите новую версию автономного пакета перед импортом",
+    "ja-JP": "オフラインパッケージ内の画像認識データが破損しているか、現在のソフトウェアバージョンと互換性がないため、インポートする前にオフラインパッケージの新しいバージョンを再入手してください。",
+    "de-DE": "Die Bilderkennungsdaten im Offline-Paket sind beschädigt oder nicht mit der aktuellen Softwareversion kompatibel. Bitte besorgen Sie sich vor dem Import die neue Version des Offline-Pakets erneut",
+    "fr-FR": "Les données de reconnaissance d'image dans le package hors ligne sont corrompues ou incompatibles avec la version actuelle du logiciel, veuillez récupérer la nouvelle version du package hors ligne avant de l'importer",
+    "ko-KR": "오프라인 패키지의 이미지 인식 데이터가 손상되었거나 현재 소프트웨어 버전과 호환되지 않으므로 가져오기 전에 오프라인 패키지의 새 버전을 다시 구하십시오",
+    "$files": ["src/electron/runtime-services/system/visual-vocab-txn.ts(8990-9034)"],
+    "$id": 32703
   }
 }

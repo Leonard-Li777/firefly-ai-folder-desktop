@@ -9,7 +9,7 @@
     "de-DE": "Doppelter Fehler, ignoriert",
     "fr-FR": "Erreur en double, ignorée",
     "ko-KR": "중복 오류, 무시됨",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11074-11087)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11448-11461)"],
     "$id": 4436
   },
   "AI错误: {type} - {message}": {
@@ -22,7 +22,7 @@
     "de-DE": "KI-Fehler: {type} - {message}",
     "fr-FR": "Erreur IA : {type} - {message}",
     "ko-KR": "AI 오류: {type} - {message}",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11327-11355)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11716-11744)"],
     "$id": 4512
   },
   "错误不可恢复或正在恢复中": {
@@ -35,7 +35,7 @@
     "de-DE": "Der Fehler ist nicht behebbar oder wird behoben",
     "fr-FR": "L'erreur est irrécupérable ou en cours de récupération",
     "ko-KR": "오류가 복구 불가능하거나 복구 중입니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11955-11971)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(12367-12383)"],
     "$id": 4513
   },
   "没有找到适用于 {type} 的恢复策略": {
@@ -48,7 +48,7 @@
     "de-DE": "Keine Wiederherstellungsrichtlinie für {type} gefunden",
     "fr-FR": "Aucune politique de récupération trouvée pour {type}",
     "ko-KR": "{type}에 대한 복구 정책을 찾을 수 없습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(12701-12725)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13146-13170)"],
     "$id": 4514
   },
   "没有可用的恢复策略": {
@@ -61,7 +61,7 @@
     "de-DE": "Keine Wiederherstellungsstrategie verfügbar",
     "fr-FR": "Aucune stratégie de récupération disponible",
     "ko-KR": "사용 가능한 복구 전략이 없습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(12828-12841)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13277-13290)"],
     "$id": 4515
   },
   "使用策略 \"{name}\" 成功恢复": {
@@ -74,7 +74,7 @@
     "de-DE": "Mit Richtlinie „{name}“ erfolgreich wiederhergestellt",
     "fr-FR": "Restauré avec succès à l'aide de la stratégie \"{name}\"",
     "ko-KR": "\"{name}\" 정책을 사용하여 성공적으로 복원되었습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13652-13674)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(14129-14151)"],
     "$id": 4516
   },
   "所有恢复策略都失败": {
@@ -88,8 +88,8 @@
     "fr-FR": "Toutes les stratégies de récupération échouent",
     "ko-KR": "모든 복구 전략이 실패함",
     "$files": [
-      "src/electron/runtime-services/ai/ai-error-handler.ts(14148-14161)",
-      "src/electron/runtime-services/ai/ai-error-handler.ts(14277-14290)"
+      "src/electron/runtime-services/ai/ai-error-handler.ts(14641-14654)",
+      "src/electron/runtime-services/ai/ai-error-handler.ts(14775-14788)"
     ],
     "$id": 4517
   },
@@ -103,7 +103,7 @@
     "de-DE": "AI-Fehlerhistorie gelöscht",
     "fr-FR": "L'historique des erreurs de l'IA a été effacé",
     "ko-KR": "AI 오류 내역이 삭제되었습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(17803-17816)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(18440-18453)"],
     "$id": 4518
   },
   "恢复已在进行中": {
@@ -116,7 +116,7 @@
     "de-DE": "Die Wiederherstellung ist bereits im Gange",
     "fr-FR": "La reprise est déjà en cours",
     "ko-KR": "복구가 이미 진행 중입니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(18376-18387)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(19039-19050)"],
     "$id": 4519
   },
   "前往设置": {
@@ -129,7 +129,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(20111-20119)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(20840-20848)"],
     "$id": 4520
   },
   "已推送错误到前端: {type}": {
@@ -142,7 +142,7 @@
     "de-DE": "Fehler an Frontend übertragen: {type}",
     "fr-FR": "Erreur transmise au frontend : {type}",
     "ko-KR": "프런트엔드로 푸시된 오류: {type}",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(22510-22530)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(23314-23334)"],
     "$id": 4467
   },
   "baseUrl不能为空": {
@@ -156,9 +156,9 @@
     "fr-FR": "BaseUrl ne peut pas être vide",
     "ko-KR": "baseUrl은 공백일 수 없습니다.",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(3869-3884)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(6406-6421)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11874-11889)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(3982-3997)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(6606-6621)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(12249-12264)"
     ],
     "$id": 5746
   },
@@ -172,7 +172,7 @@
     "de-DE": "API-Antwortfehler: {status} - {errorText}",
     "fr-FR": "Erreur de réponse API : {status} - {errorText}",
     "ko-KR": "API 응답 오류: {status} - {errorText}",
-    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(5675-5710)"],
+    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(5849-5884)"],
     "$id": 5740
   },
   "provider 是必填项": {
@@ -186,9 +186,9 @@
     "fr-FR": "Le fournisseur est obligatoire",
     "ko-KR": "provider는 필수 입력 항목입니다.",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10366-10383)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10729-10746)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11341-11358)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10677-10694)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11057-11074)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11694-11711)"
     ],
     "$id": 5742
   },
@@ -203,9 +203,9 @@
     "fr-FR": "Le format de baseUrl est incorrect : {baseUrl}",
     "ko-KR": "baseUrl 형식이 올바르지 않습니다: {baseUrl}",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10503-10531)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11081-11109)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11648-11676)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10821-10849)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11423-11451)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(12013-12041)"
     ],
     "$id": 5743
   },
@@ -220,8 +220,8 @@
     "fr-FR": "La clé API est obligatoire",
     "ko-KR": "apiKey는 필수 입력 항목입니다.",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10876-10891)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11488-11503)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11208-11223)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11845-11860)"
     ],
     "$id": 5744
   },
@@ -235,7 +235,7 @@
     "de-DE": "Model ist ein Pflichtfeld",
     "fr-FR": "Le modèle est obligatoire",
     "ko-KR": "model은 필수 입력 항목입니다.",
-    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(10947-10961)"],
+    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(11282-11296)"],
     "$id": 5745
   }
 }

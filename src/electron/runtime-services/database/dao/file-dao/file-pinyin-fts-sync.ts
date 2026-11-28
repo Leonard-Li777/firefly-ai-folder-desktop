@@ -152,6 +152,10 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
         }>
         if (rows.length === 0) return
         const tagsBatch = this.collectTagsTextBatch(rows.map(r => r.file_fingerprint))
+        // [DB-09] 固定 UPDATE 提到循环外预编译一次；严禁每行重复 prepare。
+        const updatePinyinStateStmt = this.db.prepare(
+          'UPDATE files SET pinyin_state = ? WHERE id = ?'
+        )
         for (const r of rows) {
           const tagsText = tagsBatch
             ? (tagsBatch.get(r.file_fingerprint) ?? '')
@@ -162,9 +166,7 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
             description: r.description,
             tagsText
           })
-          this.db
-            .prepare('UPDATE files SET pinyin_state = ? WHERE id = ?')
-            .run(hasChinese ? 1 : 2, r.rid)
+          updatePinyinStateStmt.run(hasChinese ? 1 : 2, r.rid)
           refreshed++
         }
       })()
@@ -188,6 +190,32 @@ export class FilePinyinFtsSyncMixin extends FileCrudMixin {
         error
       )
       return 0
+    }
+  }
+
+  /**
+   * [J-10 / J-09] 只读探测是否存在需要空闲通道处理的拼音补写工作。
+   *
+   - pending 行（pinyin_state=0）优先；
+   - 历史库缺口：files_pinyin_fts 行数少于 files 行数。
+   *
+   * 纯 ASCII 文件不产生拼音行会造成恒定小缺口，调用方以有界 backfill 片收口，
+   * 禁止据此无限自调度。
+   */
+  hasPinyinBacklog(): boolean {
+    try {
+      const columns = this.db.prepare(`PRAGMA table_info(files)`).all() as Array<{ name: string }>
+      if (columns.some(column => column.name === 'pinyin_state')) {
+        const pending = this.db.prepare(`SELECT 1 FROM files WHERE pinyin_state = 0 LIMIT 1`).get()
+        if (pending) return true
+      }
+      const filesCount =
+        (this.db.prepare(`SELECT COUNT(*) AS n FROM files`).get() as { n: number } | undefined)
+          ?.n ?? 0
+      return this.countPinyinIndexRows() < filesCount
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '[PinyinIndex] 读取拼音待补写状态失败:', error)
+      return false
     }
   }
 
