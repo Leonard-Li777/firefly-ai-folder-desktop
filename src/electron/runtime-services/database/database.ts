@@ -49,6 +49,44 @@ export interface IMigrationConfig {
 }
 
 /**
+ * 视频切片作业创世 DDL 常量，供单元测试与系统创世单源复用 (ISS-79)
+ *
+ * [DB-14 / W1] 声明位置必须**前置于** `GENESIS_V1_SCHEMA`：后者在模块求值时即插值本常量，
+ * 若仍把本常量留在文件末尾（历史位置 `:1226`），ESM/TS 的 `const` 暂时性死区（TDZ）
+ * 会在建库期直接抛 `ReferenceError: Cannot access 'GENESIS_FILE_VIDEO_SEGMENTS_DDL' before initialization`。
+ * 原 `file_video_segments` 建表与三个索引 DDL 曾在本文件出现两份逐字副本，现已收敛为**单一事实源**：
+ * 创世基线内以 `${GENESIS_FILE_VIDEO_SEGMENTS_DDL}` 插值引用，严禁再写第二份字面量。
+ */
+export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
+  CREATE TABLE IF NOT EXISTS file_video_segments (
+    id TEXT PRIMARY KEY,
+    file_id TEXT NOT NULL,
+    segment_index INTEGER NOT NULL,
+    start_pts_sec REAL NOT NULL,
+    end_pts_sec REAL NOT NULL,
+    frame_count INTEGER NOT NULL DEFAULT 0,
+    visual_embedded_count INTEGER NOT NULL DEFAULT 0,
+    asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
+    attempt_count INTEGER NOT NULL DEFAULT 0,
+    params_hash TEXT NOT NULL,
+    error_message TEXT,
+    failure_code TEXT,
+    failure_encoder_id INTEGER,
+    failure_generation INTEGER,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(file_id, segment_index),
+    FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+  );
+  CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
+  CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
+  CREATE INDEX IF NOT EXISTS idx_fvs_visual_failed
+    ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
+    WHERE status = 'failed' AND failure_code IS NOT NULL;
+`
+
+/**
  * Genesis V1 创世基线架构（ADR-0038 瘦身版）
  * - 用户主库只保留动态业务数据与 expanded/user 标签
  * - 只读语义包（OMW/受控标签/别名）由 Omni 专职托管，不在主库建表
@@ -485,37 +523,8 @@ export const GENESIS_V1_SCHEMA = `
   ON file_video_chunks(file_fingerprint, start_sec, chunk_index, end_sec, rep_pts_sec);
 
   -- 16.6 视频宏观时间片段切片分析作业调度表 (Genesis V1 创世基线 - 读时派生升维版)
-  CREATE TABLE IF NOT EXISTS file_video_segments (
-    id TEXT PRIMARY KEY,
-    file_id TEXT NOT NULL,
-    segment_index INTEGER NOT NULL,
-    start_pts_sec REAL NOT NULL,
-    end_pts_sec REAL NOT NULL,
-    frame_count INTEGER NOT NULL DEFAULT 0,
-    visual_embedded_count INTEGER NOT NULL DEFAULT 0,
-    asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
-    attempt_count INTEGER NOT NULL DEFAULT 0,
-    params_hash TEXT NOT NULL,
-    error_message TEXT,
-    failure_code TEXT,
-    failure_encoder_id INTEGER,
-    failure_generation INTEGER,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL,
-    UNIQUE(file_id, segment_index),
-    FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_fvs_file_status 
-  ON file_video_segments(file_id, status);
-
-  CREATE INDEX IF NOT EXISTS idx_fvs_status_start 
-  ON file_video_segments(status, start_pts_sec);
-
-  CREATE INDEX IF NOT EXISTS idx_fvs_visual_failed
-  ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
-  WHERE status = 'failed' AND failure_code IS NOT NULL;
+  -- [DB-14] 建表 + 三个索引统一来自 GENESIS_FILE_VIDEO_SEGMENTS_DDL 单一事实源（严禁在此再写第二份字面量）。
+  ${GENESIS_FILE_VIDEO_SEGMENTS_DDL}
 
   -- 16.6b 视觉打标器状态代际持久化表 (Visual Tagger Spec v2.12 §3.3)
   CREATE TABLE IF NOT EXISTS visual_tagger_state (
@@ -825,6 +834,9 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_ftc_user_time
     ON firecore_transactions_cache(user_id, created_at DESC);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  -- [DB-05 / W1] 队列条目反查（按 (item_type, item_id) 等值 / IN 删除时不再全表扫描）。
+  -- 队列管理与准入删除的高频路径依赖本左前缀索引定位；队列表体量小，B 树维护开销可忽略。
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_item ON analysis_queue(item_type, item_id);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_visual_failed
     ON analysis_queue(failure_code, failure_encoder_id, failure_generation)
     WHERE status = 'failed' AND failure_code IS NOT NULL;
@@ -1221,36 +1233,10 @@ export function registerDatabaseFunctions(db: any): void {
 }
 
 /**
- * 视频切片作业创世 DDL 常量，供单元测试与系统创世单源复用 (ISS-79)
+ * [DB-14] `GENESIS_FILE_VIDEO_SEGMENTS_DDL` 已上移至本文件顶部（`GENESIS_V1_SCHEMA` 声明之前），
+ * 供单元测试与系统创世单源复用的唯一权威常量在那里；此处**严禁**再保留第二份字面量副本，
+ * 否则又会回到两处 DDL 逐字维护、逐字漂移的老问题。
  */
-export const GENESIS_FILE_VIDEO_SEGMENTS_DDL = `
-  CREATE TABLE IF NOT EXISTS file_video_segments (
-    id TEXT PRIMARY KEY,
-    file_id TEXT NOT NULL,
-    segment_index INTEGER NOT NULL,
-    start_pts_sec REAL NOT NULL,
-    end_pts_sec REAL NOT NULL,
-    frame_count INTEGER NOT NULL DEFAULT 0,
-    visual_embedded_count INTEGER NOT NULL DEFAULT 0,
-    asr_transcript_chars INTEGER NOT NULL DEFAULT 0,
-    status TEXT NOT NULL CHECK(status IN ('pending', 'processing', 'completed', 'failed')),
-    attempt_count INTEGER NOT NULL DEFAULT 0,
-    params_hash TEXT NOT NULL,
-    error_message TEXT,
-    failure_code TEXT,
-    failure_encoder_id INTEGER,
-    failure_generation INTEGER,
-    created_at INTEGER NOT NULL,
-    updated_at INTEGER NOT NULL,
-    UNIQUE(file_id, segment_index),
-    FOREIGN KEY (file_id) REFERENCES files(file_fingerprint) ON DELETE CASCADE
-  );
-  CREATE INDEX IF NOT EXISTS idx_fvs_file_status ON file_video_segments(file_id, status);
-  CREATE INDEX IF NOT EXISTS idx_fvs_status_start ON file_video_segments(status, start_pts_sec);
-  CREATE INDEX IF NOT EXISTS idx_fvs_visual_failed
-    ON file_video_segments(failure_code, failure_encoder_id, failure_generation)
-    WHERE status = 'failed' AND failure_code IS NOT NULL;
-`
 
 /**
  * ensureTagPath / parseCodePath 已下沉至 @firefly/shared（apps/desktop/pro/packages/shared/src/utils/tag-path-store.ts），
