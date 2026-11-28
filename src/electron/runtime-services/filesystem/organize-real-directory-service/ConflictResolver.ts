@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 import {
   FileOperation,
@@ -6,22 +5,23 @@ import {
   ConflictResolutionOptions
 } from '@firefly/types/organize-types'
 import { LogCategory, logger } from '@firefly/shared'
+import { statOrNull } from '../../../infra/fs'
 
 export class ConflictResolver {
-  detectConflicts(fileOperations: FileOperation[]): FileConflict[] {
+  async detectConflicts(fileOperations: FileOperation[]): Promise<FileConflict[]> {
     const conflicts: FileConflict[] = []
 
     for (const op of fileOperations) {
-      if (fs.existsSync(op.newPath)) {
+      const existingStats = await statOrNull(op.newPath)
+      if (existingStats) {
         try {
-          if (!fs.existsSync(op.oldPath)) {
+          const newStats = await statOrNull(op.oldPath)
+          if (!newStats) {
             logger.warn(LogCategory.FILE_ORGANIZATION, '检测冲突时发现源文件不存在，无法比较', {
               operation: op
             })
             continue
           }
-          const existingStats = fs.statSync(op.newPath)
-          const newStats = fs.statSync(op.oldPath)
 
           if (existingStats.ino === newStats.ino && existingStats.dev === newStats.dev) {
             continue
@@ -53,7 +53,10 @@ export class ConflictResolver {
     return conflicts
   }
 
-  generateNewPath(originalPath: string, pattern: 'number' | 'timestamp' | 'source'): string {
+  async generateNewPath(
+    originalPath: string,
+    pattern: 'number' | 'timestamp' | 'source'
+  ): Promise<string> {
     const dir = path.dirname(originalPath)
     const ext = path.extname(originalPath)
     const basename = path.basename(originalPath, ext)
@@ -62,7 +65,7 @@ export class ConflictResolver {
       case 'number': {
         let counter = 1
         let newPath = originalPath
-        while (fs.existsSync(newPath)) {
+        while (await statOrNull(newPath)) {
           newPath = path.join(dir, `${basename} (${counter})${ext}`)
           counter++
         }
@@ -88,7 +91,7 @@ export class ConflictResolver {
     fileOperations: FileOperation[],
     conflicts: FileConflict[],
     resolution: ConflictResolutionOptions,
-    createBackup: (path: string) => string
+    createBackup: (path: string) => Promise<string>
   ): Promise<FileOperation[]> {
     try {
       logger.info(LogCategory.FILE_ORGANIZATION, '应用冲突解决方案', {
@@ -105,7 +108,7 @@ export class ConflictResolver {
           if (operation) {
             switch (resolution.action) {
               case 'rename':
-                operation.newPath = this.generateNewPath(
+                operation.newPath = await this.generateNewPath(
                   operation.newPath,
                   resolution.renamePattern || 'number'
                 )
@@ -116,7 +119,7 @@ export class ConflictResolver {
                 break
               }
               case 'overwrite': {
-                const backupPath = createBackup(conflict.existingFile.path)
+                const backupPath = await createBackup(conflict.existingFile.path)
                 logger.info(LogCategory.FILE_ORGANIZATION, '备份现有文件', {
                   original: conflict.existingFile.path,
                   backup: backupPath

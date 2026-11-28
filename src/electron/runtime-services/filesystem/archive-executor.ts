@@ -4,7 +4,7 @@
  * 统一收敛所有物理文件移动/重命名操作，强制前置 assertPathWithinRoot 安全网关，
  * 并提供完备的撤销快照 (Undo) 与数据库路径同步机制
  */
-import fs from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import path from 'node:path'
 import {
   logger,
@@ -13,6 +13,7 @@ import {
   resolveUniquePath,
   SecurityViolationError
 } from '@firefly/shared'
+import { existsAsync, mkdirp } from '../../infra/fs'
 import { databaseService } from '../database/database-service'
 
 export interface ArchiveExecutionItem {
@@ -60,7 +61,7 @@ export class ArchiveExecutor {
         const safeTarget = await assertPathWithinRoot(this.workspaceRoot, item.targetPath)
 
         // 2. 验证源文件存在性
-        if (!fs.existsSync(safeSource)) {
+        if (!(await existsAsync(safeSource))) {
           failed.push({
             fileId: item.fileId,
             sourcePath: item.sourcePath,
@@ -84,13 +85,10 @@ export class ArchiveExecutor {
         }
 
         // 5. 确保目标目录已递归创建
-        const targetDir = path.dirname(finalTarget)
-        if (!fs.existsSync(targetDir)) {
-          await fs.promises.mkdir(targetDir, { recursive: true })
-        }
+        await mkdirp(path.dirname(finalTarget))
 
         // 6. 执行物理文件重命名 / 移动
-        await fs.promises.rename(safeSource, finalTarget)
+        await fsp.rename(safeSource, finalTarget)
 
         // 7. 级联同步数据库中的文件路径
         try {
@@ -154,7 +152,7 @@ export class ArchiveExecutor {
         const safeOriginalPath = await assertPathWithinRoot(this.workspaceRoot, record.oldPath)
         const safeCurrentPath = await assertPathWithinRoot(this.workspaceRoot, record.newPath)
 
-        if (!fs.existsSync(safeCurrentPath)) {
+        if (!(await existsAsync(safeCurrentPath))) {
           logger.warn(
             LogCategory.FILE_ORGANIZATION,
             `[归档撤销] 目标文件已不存在，跳过回退: ${safeCurrentPath}`
@@ -163,12 +161,9 @@ export class ArchiveExecutor {
           continue
         }
 
-        const originalDir = path.dirname(safeOriginalPath)
-        if (!fs.existsSync(originalDir)) {
-          await fs.promises.mkdir(originalDir, { recursive: true })
-        }
+        await mkdirp(path.dirname(safeOriginalPath))
 
-        await fs.promises.rename(safeCurrentPath, safeOriginalPath)
+        await fsp.rename(safeCurrentPath, safeOriginalPath)
 
         try {
           await databaseService.updateFilePath(safeCurrentPath, safeOriginalPath)

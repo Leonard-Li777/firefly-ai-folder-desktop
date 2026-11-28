@@ -11,14 +11,19 @@
  * 4. 在文件夹中定位：调用 shell.showItemInFolder
  */
 
-import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
 import * as path from 'node:path'
 import * as crypto from 'node:crypto'
 import { shell } from 'electron'
 import { logger, LogCategory, isSubPath } from '@firefly/shared'
+import { existsAsync, statOrNull, mkdirp, mapLimit } from '../../infra/fs'
+import {
+  injectOrUpdateMetaChunk as injectOrUpdateMetaChunkBuffer,
+  unwrapWavBuffer as unwrapWavBufferBuffer,
+  wrapPcmAsWav as wrapPcmAsWavBuffer,
+  calculateWavDuration as calculateWavDurationBuffer
+} from './tts-wav-buffer-utils'
 import { databaseService } from '../database/database-service'
-import { modularResourceService } from '../system/modular-resource-service'
 import { omniClient } from '../../services/omni-client'
 import {
   commonResourcePathService,
@@ -28,6 +33,9 @@ import {
 /** 旧版虚拟目录及 TTS 缓存目录常量（仅用于历史缓存只读懒兼容） */
 export const VIRTUAL_DIRECTORY_FOLDER = '.VirtualDirectory'
 export const TTS_CACHE_FOLDER = '.tts'
+
+/** M0 实测下的低阻塞并发度：批量 stat 预取按输入顺序回填，避免逐一等待磁盘往返 */
+const TTS_STAT_BATCH_CONCURRENCY = 8
 
 /** 单个分句时间戳条目（供合并后整音频 0 误差秒切任意分句） */
 export interface TTSChunkCue {
@@ -196,8 +204,12 @@ export class TTSWavCacheService {
             return row.file_fingerprint
           }
         }
-      } catch {
-        // 忽略数据库查询偶发异常
+      } catch (err) {
+        logger.warn(
+          LogCategory.FILE_PROCESSOR,
+          `[TTS缓存服务] 查询文件指纹失败，回退路径哈希: ${filePath}`,
+          err
+        )
       }
 
       // 数据库未命中时，基于文件规范路径派生确定性哈希
@@ -287,24 +299,29 @@ export class TTSWavCacheService {
       speed: speedVal,
       rootPath
     })
-    if (fs.existsSync(casPath)) {
+    if (await existsAsync(casPath)) {
       return casPath
     }
 
     // 2. 懒兼容历史公共资源目录（切换保存目录后只读复用已完成的旧资产，严禁向历史目录续写未完成文件）
     const fallbackRoots = commonResourcePathService.getLazyReadFallbackRoots(rootPath)
-    for (const prevRoot of fallbackRoots) {
-      const prevCasPath = commonResourcePathService.getAudioWavPath({
+    const fallbackPaths = fallbackRoots.map(prevRoot =>
+      commonResourcePathService.getAudioWavPath({
         fingerprint,
         voiceId: voiceIdVal,
         speed: speedVal,
         rootPath: prevRoot
       })
-      if (fs.existsSync(prevCasPath)) {
-        const meta = await this.readWavMetadata(prevCasPath)
-        if (meta?.completed) {
-          return prevCasPath
-        }
+    )
+    const fallbackExists = await mapLimit(fallbackPaths, TTS_STAT_BATCH_CONCURRENCY, p =>
+      existsAsync(p)
+    )
+    for (let i = 0; i < fallbackPaths.length; i++) {
+      if (!fallbackExists[i]) continue
+      const prevCasPath = fallbackPaths[i]
+      const meta = await this.readWavMetadata(prevCasPath)
+      if (meta?.completed) {
+        return prevCasPath
       }
     }
 
@@ -319,7 +336,7 @@ export class TTSWavCacheService {
       ? commonResourcePathService.getLegacyWorkspaceTtsDir(legacyWorkspacePath)
       : null
 
-    if (legacyTtsDir && fs.existsSync(legacyTtsDir)) {
+    if (legacyTtsDir && (await existsAsync(legacyTtsDir))) {
       const legacyCandidates = [
         path.join(
           legacyTtsDir,
@@ -332,12 +349,15 @@ export class TTSWavCacheService {
           path.join(legacyTtsDir, `${fingerprint}_${safeField}_${safeVoice}.wav`)
         )
       }
-      for (const candidate of legacyCandidates) {
-        if (fs.existsSync(candidate)) {
-          const meta = await this.readWavMetadata(candidate)
-          if (meta?.completed) {
-            return candidate
-          }
+      const legacyExists = await mapLimit(legacyCandidates, TTS_STAT_BATCH_CONCURRENCY, p =>
+        existsAsync(p)
+      )
+      for (let i = 0; i < legacyCandidates.length; i++) {
+        if (!legacyExists[i]) continue
+        const candidate = legacyCandidates[i]
+        const meta = await this.readWavMetadata(candidate)
+        if (meta?.completed) {
+          return candidate
         }
       }
     }
@@ -361,7 +381,7 @@ export class TTSWavCacheService {
           })
         )
       ]
-      if (legacyTtsDir && fs.existsSync(legacyTtsDir)) {
+      if (legacyTtsDir && (await existsAsync(legacyTtsDir))) {
         base1xCandidates.push(
           path.join(
             legacyTtsDir,
@@ -372,14 +392,17 @@ export class TTSWavCacheService {
         )
       }
 
-      for (const baseCandidate of base1xCandidates) {
-        if (fs.existsSync(baseCandidate)) {
-          const meta = await this.readWavMetadata(baseCandidate)
-          if (meta && meta.completed) {
-            const derived = await this.deriveScaledWav(baseCandidate, casPath, speedVal)
-            if (derived) {
-              return casPath
-            }
+      const baseExists = await mapLimit(base1xCandidates, TTS_STAT_BATCH_CONCURRENCY, p =>
+        existsAsync(p)
+      )
+      for (let i = 0; i < base1xCandidates.length; i++) {
+        if (!baseExists[i]) continue
+        const baseCandidate = base1xCandidates[i]
+        const meta = await this.readWavMetadata(baseCandidate)
+        if (meta && meta.completed) {
+          const derived = await this.deriveScaledWav(baseCandidate, casPath, speedVal)
+          if (derived) {
+            return casPath
           }
         }
       }
@@ -398,7 +421,7 @@ export class TTSWavCacheService {
     targetSpeed: number
   ): Promise<boolean> {
     try {
-      if (!fs.existsSync(baseWavPath)) {
+      if (!(await existsAsync(baseWavPath))) {
         return false
       }
       const baseBuffer = await fsPromises.readFile(baseWavPath)
@@ -422,9 +445,7 @@ export class TTSWavCacheService {
       }
 
       const parentDir = path.dirname(targetWavPath)
-      if (!fs.existsSync(parentDir)) {
-        await fsPromises.mkdir(parentDir, { recursive: true })
-      }
+      await mkdirp(parentDir)
 
       // 提取母本元数据并注入派生倍速与 completed 状态，确保通道 A 秒切接管能精准识别
       let finalScaledBuffer = scaledBuffer
@@ -465,53 +486,9 @@ export class TTSWavCacheService {
     }
   }
 
-  /**
-   * 将 meta 元数据注入或更新至 WAV Buffer 尾部，确保 RIFF 格式完全合规且自包含
-   */
+  /** 兼容既有 public API：实现已拆到 tts-wav-buffer-utils */
   public injectOrUpdateMetaChunk(wavBuffer: Buffer, meta: TTSWavMetadata): Buffer {
-    if (
-      wavBuffer.length < 44 ||
-      wavBuffer.toString('ascii', 0, 4) !== 'RIFF' ||
-      wavBuffer.toString('ascii', 8, 12) !== 'WAVE'
-    ) {
-      return wavBuffer
-    }
-
-    // 收集所有非 meta chunk 数据
-    const keptChunks: Buffer[] = []
-    let offset = 12
-    while (offset + 8 <= wavBuffer.length) {
-      const chunkId = wavBuffer.toString('ascii', offset, offset + 4)
-      const chunkSize = wavBuffer.readUInt32LE(offset + 4)
-      const chunkTotalLen = 8 + chunkSize + (chunkSize % 2)
-      const chunkEnd = Math.min(offset + chunkTotalLen, wavBuffer.length)
-
-      if (chunkId !== 'meta') {
-        keptChunks.push(wavBuffer.subarray(offset, chunkEnd))
-      }
-      offset = chunkEnd
-    }
-
-    const metaJsonBuffer = Buffer.from(JSON.stringify(meta), 'utf-8')
-    const metaChunkSize = metaJsonBuffer.length
-    const metaPadding = metaChunkSize % 2 !== 0 ? 1 : 0
-
-    const metaHeader = Buffer.alloc(8)
-    metaHeader.write('meta', 0)
-    metaHeader.writeUInt32LE(metaChunkSize, 4)
-
-    const chunksToCombine = [
-      wavBuffer.subarray(0, 12),
-      ...keptChunks,
-      metaHeader,
-      metaJsonBuffer,
-      ...(metaPadding ? [Buffer.alloc(1, 0)] : [])
-    ]
-    const finalBuffer = Buffer.concat(chunksToCombine)
-
-    // 重写 RIFF 总大小字段（总字节数 - 8）
-    finalBuffer.writeUInt32LE(finalBuffer.length - 8, 4)
-    return finalBuffer
+    return injectOrUpdateMetaChunkBuffer(wavBuffer, meta)
   }
 
   /**
@@ -519,7 +496,7 @@ export class TTSWavCacheService {
    */
   public async readWavMetadata(wavPath: string): Promise<TTSWavMetadata | null> {
     try {
-      if (!fs.existsSync(wavPath)) {
+      if (!(await existsAsync(wavPath))) {
         return null
       }
 
@@ -605,7 +582,7 @@ export class TTSWavCacheService {
    */
   public async readWavFile(wavPath: string): Promise<Buffer | null> {
     try {
-      if (!fs.existsSync(wavPath)) {
+      if (!(await existsAsync(wavPath))) {
         return null
       }
       const rawBuf = await fsPromises.readFile(wavPath)
@@ -661,7 +638,7 @@ export class TTSWavCacheService {
       let existingPcm: Buffer = Buffer.alloc(0)
 
       // 仅当 chunkIndex > 0 时才从已有文件中追加 PCM；若 chunkIndex === 0，必须作为新录制覆写重建
-      if (chunkIndex > 0 && fs.existsSync(wavPath)) {
+      if (chunkIndex > 0 && (await existsAsync(wavPath))) {
         try {
           const oldFile = await fsPromises.readFile(wavPath)
           if (
@@ -757,9 +734,7 @@ export class TTSWavCacheService {
 
       // 确保父目录存在
       const parentDir = path.dirname(wavPath)
-      if (!fs.existsSync(parentDir)) {
-        await fsPromises.mkdir(parentDir, { recursive: true })
-      }
+      await mkdirp(parentDir)
 
       // 原子写入文件
       await fsPromises.writeFile(wavPath, finalFileBuffer)
@@ -810,7 +785,7 @@ export class TTSWavCacheService {
       speed: 1.0,
       rootPath
     })
-    if (options?.forWrite || fs.existsSync(casChunksDir)) {
+    if (options?.forWrite || (await existsAsync(casChunksDir))) {
       return casChunksDir
     }
 
@@ -822,7 +797,7 @@ export class TTSWavCacheService {
         speed: 1.0,
         rootPath: prevRoot
       })
-      if (fs.existsSync(prevChunksDir)) {
+      if (await existsAsync(prevChunksDir)) {
         return prevChunksDir
       }
     }
@@ -839,12 +814,12 @@ export class TTSWavCacheService {
           '.chunks',
           `${fingerprint}_${safeDisplay}_${safeVoice}`
         )
-        if (fs.existsSync(legacyDisplayDir)) {
+        if (await existsAsync(legacyDisplayDir)) {
           return legacyDisplayDir
         }
       }
       const legacyBaseDir = path.join(legacyTtsDir, '.chunks', `${fingerprint}_${safeVoice}`)
-      if (fs.existsSync(legacyBaseDir)) {
+      if (await existsAsync(legacyBaseDir)) {
         return legacyBaseDir
       }
     }
@@ -852,11 +827,7 @@ export class TTSWavCacheService {
     return casChunksDir
   }
 
-  /**
-   * 严格解包并归一化 WAV 音频 Buffer
-   * 若音频外层被重复嵌套包裹了错误假头（如外层 48kHz 双声道而内层为 24kHz 单声道），
-   * 递归剥离所有冗余外壳，恢复最内层纯正声学格式，并准确提取规格参数。
-   */
+  /** 兼容既有 public API：实现已拆到 tts-wav-buffer-utils */
   public unwrapWavBuffer(
     inputBuffer: Buffer,
     defaultVoiceId?: string | number
@@ -867,103 +838,22 @@ export class TTSWavCacheService {
     sampleRate: number
     bitsPerSample: number
   } {
-    let cur = inputBuffer
-    // 递归剥离多层嵌套 RIFF 头
-    while (
-      cur.length >= 88 &&
-      cur.toString('ascii', 0, 4) === 'RIFF' &&
-      cur.toString('ascii', 8, 12) === 'WAVE' &&
-      cur.toString('ascii', 44, 48) === 'RIFF' &&
-      cur.toString('ascii', 52, 56) === 'WAVE'
-    ) {
-      logger.debug(
-        LogCategory.FILE_PROCESSOR,
-        `[TTS缓存服务] 检测并剥离嵌套外层假 WAV 头 (外层大小: ${cur.length} 字节)`
-      )
-      cur = cur.subarray(44)
-    }
-
-    if (
-      cur.length >= 44 &&
-      cur.toString('ascii', 0, 4) === 'RIFF' &&
-      cur.toString('ascii', 8, 12) === 'WAVE'
-    ) {
-      const numChannels = cur.readUInt16LE(22)
-      const sampleRate = cur.readUInt32LE(24)
-      const bitsPerSample = cur.readUInt16LE(34)
-      const rawPcm = cur.subarray(44)
-      return {
-        wavBuffer: cur,
-        rawPcm,
-        numChannels,
-        sampleRate,
-        bitsPerSample
-      }
-    }
-
-    // 确定当前引擎声学规格：M5-TTS 专有 24000Hz 单声道，杜绝 48000Hz 污染
-    const safeVoiceStr = String(defaultVoiceId || '')
-    const isM5 =
-      safeVoiceStr.includes('m5') ||
-      safeVoiceStr.includes('azure_') ||
-      safeVoiceStr.startsWith('preset_') ||
-      modularResourceService.getActiveModuleBySlot('voice_tts')?.id === 'tts_m5_onnx'
-
-    const numChannels = isM5 ? 1 : 2
-    const sampleRate = isM5 ? 24000 : 48000
-    const bitsPerSample = 16
-    const wrappedWav = this.wrapPcmAsWav(cur, numChannels, sampleRate, bitsPerSample)
-
-    return {
-      wavBuffer: wrappedWav,
-      rawPcm: cur,
-      numChannels,
-      sampleRate,
-      bitsPerSample
-    }
+    return unwrapWavBufferBuffer(inputBuffer, defaultVoiceId)
   }
 
-  /**
-   * 将分句 PCM 数据包装为标准 44 字节 WAV 容器
-   */
+  /** 兼容既有 public API：实现已拆到 tts-wav-buffer-utils */
   public wrapPcmAsWav(
     pcmData: Buffer,
     numChannels = 1,
     sampleRate = 24000,
     bitsPerSample = 16
   ): Buffer {
-    const byteRate = sampleRate * numChannels * (bitsPerSample / 8)
-    const blockAlign = numChannels * (bitsPerSample / 8)
-    const dataSize = pcmData.length
-    const riffSize = 36 + dataSize
-
-    const header = Buffer.alloc(44)
-    header.write('RIFF', 0)
-    header.writeUInt32LE(riffSize, 4)
-    header.write('WAVE', 8)
-    header.write('fmt ', 12)
-    header.writeUInt32LE(16, 16)
-    header.writeUInt16LE(1, 20)
-    header.writeUInt16LE(numChannels, 22)
-    header.writeUInt32LE(sampleRate, 24)
-    header.writeUInt32LE(byteRate, 28)
-    header.writeUInt16LE(blockAlign, 32)
-    header.writeUInt16LE(bitsPerSample, 34)
-    header.write('data', 36)
-    header.writeUInt32LE(dataSize, 40)
-
-    return Buffer.concat([header, pcmData])
+    return wrapPcmAsWavBuffer(pcmData, numChannels, sampleRate, bitsPerSample)
   }
 
-  /**
-   * 计算 WAV Buffer 物理发音时长（秒）
-   */
+  /** 兼容既有 public API：实现已拆到 tts-wav-buffer-utils */
   public calculateWavDuration(wavBuffer: Buffer): number {
-    if (wavBuffer.length < 44) return 0
-    const unwrap = this.unwrapWavBuffer(wavBuffer)
-    const dataSize = unwrap.rawPcm.length
-    const bytesPerSec = unwrap.sampleRate * unwrap.numChannels * (unwrap.bitsPerSample / 8)
-    return bytesPerSec > 0 ? dataSize / bytesPerSec : 0
+    return calculateWavDurationBuffer(wavBuffer)
   }
 
   /**
@@ -973,9 +863,7 @@ export class TTSWavCacheService {
     try {
       const chunksDir = await this.getChunksDirPath(params, { forWrite: true })
       if (!chunksDir) return false
-      if (!fs.existsSync(chunksDir)) {
-        await fsPromises.mkdir(chunksDir, { recursive: true })
-      }
+      await mkdirp(chunksDir)
 
       const chunkPath = path.join(chunksDir, `chunk_${params.chunkIndex}.wav`)
       const inputBuffer = Buffer.isBuffer(params.chunkData)
@@ -1011,11 +899,17 @@ export class TTSWavCacheService {
         cues: {}
       }
 
-      if (fs.existsSync(manifestPath)) {
+      if (await existsAsync(manifestPath)) {
         try {
           const raw = await fsPromises.readFile(manifestPath, 'utf-8')
           manifest = JSON.parse(raw)
-        } catch {}
+        } catch (err) {
+          logger.warn(
+            LogCategory.FILE_PROCESSOR,
+            `[TTS缓存服务] 读取或解析 manifest 失败，按空清单继续: ${manifestPath}`,
+            err
+          )
+        }
       }
 
       manifest.total = params.totalChunks
@@ -1072,12 +966,12 @@ export class TTSWavCacheService {
       const chunksDir = await this.getChunksDirPath(params)
       if (!chunksDir) return null
       const chunkPath = path.join(chunksDir, `chunk_${params.chunkIndex}.wav`)
-      if (!fs.existsSync(chunkPath)) return null
+      if (!(await existsAsync(chunkPath))) return null
 
       // 若指定了 chunkText，严格比对 manifest.json 中的文本指纹（Cache Shield 防错位屏障）
       if (params.chunkText && params.chunkText.trim()) {
         const manifestPath = path.join(chunksDir, 'manifest.json')
-        if (!fs.existsSync(manifestPath)) {
+        if (!(await existsAsync(manifestPath))) {
           logger.warn(
             LogCategory.FILE_PROCESSOR,
             `[TTS缓存服务] 分片 ${params.chunkIndex} 缺失 manifest.json，判定为未命中重新合成`
@@ -1140,7 +1034,7 @@ export class TTSWavCacheService {
 
       for (let i = 0; i < total; i++) {
         const chunkPath = path.join(chunksDir, `chunk_${i}.wav`)
-        if (!fs.existsSync(chunkPath)) {
+        if (!(await existsAsync(chunkPath))) {
           logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 合并中断：缺失分片 ${chunkPath}`)
           return null
         }
@@ -1279,9 +1173,9 @@ export class TTSWavCacheService {
   /**
    * 在系统资源管理器中定位并选中该音频文件
    */
-  public locateWavFile(wavPath: string): boolean {
+  public async locateWavFile(wavPath: string): Promise<boolean> {
     try {
-      if (fs.existsSync(wavPath)) {
+      if (await existsAsync(wavPath)) {
         shell.showItemInFolder(wavPath)
         return true
       }
@@ -1336,17 +1230,13 @@ export class StreamWavRecorder {
   public async init(): Promise<void> {
     try {
       const parentDir = path.dirname(this.options.wavPath)
-      if (!fs.existsSync(parentDir)) {
-        await fsPromises.mkdir(parentDir, { recursive: true })
-      }
+      await mkdirp(parentDir)
 
-      const isResuming =
-        Boolean(this.options.resumeCharStart && this.options.resumeCharStart > 0) &&
-        fs.existsSync(this.options.wavPath)
+      const existingStats = await statOrNull(this.options.wavPath)
 
       // 物理级防覆写保护：若已有目标文件存在且具备合法 PCM 数据，绝对严禁清空截断！
-      if (fs.existsSync(this.options.wavPath)) {
-        const stats = await fsPromises.stat(this.options.wavPath)
+      if (existingStats) {
+        const stats = existingStats
         if (stats.size >= 44) {
           const handle = await fsPromises.open(this.options.wavPath, 'r+')
           const headBuf = Buffer.alloc(44)
@@ -1360,8 +1250,12 @@ export class StreamWavRecorder {
             let existingMeta: TTSWavMetadata | null = null
             try {
               existingMeta = await ttsWavCacheService.readWavMetadata(this.options.wavPath)
-            } catch {
-              // 容错忽略
+            } catch (err) {
+              logger.warn(
+                LogCategory.FILE_PROCESSOR,
+                `[StreamWavRecorder] 读取已有 WAV 元数据失败，按无元数据续录: ${this.options.wavPath}`,
+                err
+              )
             }
 
             // 1. 若已有文件已经是全量完成状态且有合法数据，直接保护已有文件，绝对严禁清空覆写
@@ -1439,7 +1333,13 @@ export class StreamWavRecorder {
     } catch (err) {
       logger.error(LogCategory.FILE_PROCESSOR, `[StreamWavRecorder] 初始化 WAV 录制失败:`, err)
       if (this.fileHandle) {
-        await this.fileHandle.close().catch(() => {})
+        await this.fileHandle.close().catch(err => {
+          logger.warn(
+            LogCategory.FILE_PROCESSOR,
+            `[StreamWavRecorder] 初始化失败后关闭文件句柄异常: ${this.options.wavPath}`,
+            err
+          )
+        })
         this.fileHandle = null
       }
     }
@@ -1507,7 +1407,13 @@ export class StreamWavRecorder {
     if (this.isFinalized) return
     this.isFinalized = true
 
-    await this.writeQueue.catch(() => {})
+    await this.writeQueue.catch(err => {
+      logger.warn(
+        LogCategory.FILE_PROCESSOR,
+        `[StreamWavRecorder] 等待写入队列收敛时发现异常: ${this.options.wavPath}`,
+        err
+      )
+    })
 
     if (!this.fileHandle) return
 
@@ -1574,7 +1480,13 @@ export class StreamWavRecorder {
     } finally {
       try {
         await this.fileHandle.close()
-      } catch {}
+      } catch (err) {
+        logger.warn(
+          LogCategory.FILE_PROCESSOR,
+          `[StreamWavRecorder] finalize 关闭文件句柄异常: ${this.options.wavPath}`,
+          err
+        )
+      }
       this.fileHandle = null
     }
   }

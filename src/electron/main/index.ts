@@ -465,6 +465,8 @@ import {
   initializeFullServices,
   initializeHardwareDetection,
   initializeLlamaServer,
+  initDatabaseCore,
+  runDeferredStartupChain,
   initDatabaseAndDependentServices
 } from './initialization'
 import { trayService } from '../runtime-services/system/tray-service'
@@ -722,8 +724,7 @@ ConfigOrchestrator.getInstance().onValueChange<boolean>('LANGUAGE_CONFIRMED', as
       `用户已在欢迎界面确认语言 (${language})，开始建立并初始化数据库...`
     )
     try {
-      await initDatabaseAndDependentServices(language, true)
-      await analysisQueueService.reloadDatabase()
+      await initDatabaseCore(language, true)
       // 通知 Omni 热重连新语言的只读 SQLite (ADR-0035 §8.4 双消费者架构)
       omniService.reconnect(databaseService.getDbPath()).catch(err => {
         logger.warn(LogCategory.MAIN, 'Omni 欢迎向导热重连失败:', err)
@@ -731,6 +732,7 @@ ConfigOrchestrator.getInstance().onValueChange<boolean>('LANGUAGE_CONFIRMED', as
       BrowserWindow.getAllWindows().forEach(win => {
         win.webContents.send('database-switched', { language })
       })
+      void runDeferredStartupChain()
     } catch (error) {
       handleFatalStartupError(t('本地数据初始化失败，请检查磁盘空间与文件权限后重试。'), error)
     }
@@ -1081,48 +1083,75 @@ app.on('ready', async () => {
       }
     }
 
-    await regionDetectPromise
-    mark('region:done')
+    const isSplitMode = perfFlags.startup.earlyWindow && process.env.NODE_ENV !== 'test'
+    if (!isSplitMode) {
+      await regionDetectPromise
+      mark('region:done')
+    } else {
+      void regionDetectPromise.then(() => mark('region:done'))
+    }
   } catch (error) {
     handleFatalStartupError(t('应用核心服务初始化失败，请检查本地数据目录后重启应用。'), error)
   }
 
-  try {
-    let licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
-    mark('license:local')
-    logger.info(LogCategory.MAIN, '[App] 初始授权检查结果:', licenseResult.status)
+  const isSplitMode = perfFlags.startup.earlyWindow && process.env.NODE_ENV !== 'test'
+  if (!isSplitMode) {
+    try {
+      let licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
+      mark('license:local')
+      logger.info(LogCategory.MAIN, '[App] 初始授权检查结果:', licenseResult.status)
 
-    if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
-      try {
-        logger.debug(LogCategory.MAIN, '[App] 未检测到授权，尝试执行一次在线同步确认...')
-        await initializeHardwareDetection(true)
-        licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
-        mark('license:online')
-        if (licenseResult.status === LicenseStatus.AUTHORIZED) {
-          logger.info(LogCategory.MAIN, '[App] 在线授权确认成功')
-          await orchestrator.updateValue('MACHINE_REGISTERED', true)
+      if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
+        try {
+          logger.debug(LogCategory.MAIN, '[App] 未检测到授权，尝试执行一次在线同步确认...')
+          await initializeHardwareDetection(true)
+          licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
+          mark('license:online')
+          if (licenseResult.status === LicenseStatus.AUTHORIZED) {
+            logger.info(LogCategory.MAIN, '[App] 在线授权确认成功')
+            await orchestrator.updateValue('MACHINE_REGISTERED', true)
+          }
+        } catch (e) {
+          logger.warn(LogCategory.MAIN, '[App] 启动阶段在线授权同步尝试失败:', e)
         }
-      } catch (e) {
-        logger.warn(LogCategory.MAIN, '[App] 启动阶段在线授权同步尝试失败:', e)
+      }
+
+      if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
+        logger.warn(LogCategory.MAIN, '★★★ 授权校验未通过，锁定 AI 核心服务初始化 ★★★')
+      } else {
+        logger.debug(LogCategory.MAIN, '[App] 授权校验通过，正在加载 AI 服务模块...')
+        await initializeLlamaServer()
+        logger.debug(LogCategory.MAIN, '[App] AI 服务模块加载完成')
+      }
+    } catch (error) {
+      logger.error(LogCategory.MAIN, '[App] 授权检查过程发生异常:', error)
+    }
+  }
+
+  const scheduleDeferredOnMainReady = (win: BrowserWindow) => {
+    if (!isSplitMode) return
+    const triggerDeferred = () => {
+      if (orchestrator.getValue<boolean>('LANGUAGE_CONFIRMED')) {
+        void runDeferredStartupChain()
       }
     }
-
-    if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
-      logger.warn(LogCategory.MAIN, '★★★ 授权校验未通过，锁定 AI 核心服务初始化 ★★★')
+    if (win.isVisible()) {
+      triggerDeferred()
     } else {
-      logger.debug(LogCategory.MAIN, '[App] 授权校验通过，正在加载 AI 服务模块...')
-      await initializeLlamaServer()
-      logger.debug(LogCategory.MAIN, '[App] AI 服务模块加载完成')
+      win.once('ready-to-show', triggerDeferred)
     }
-  } catch (error) {
-    logger.error(LogCategory.MAIN, '[App] 授权检查过程发生异常:', error)
   }
 
   if (!isInitialSetupNeeded) {
     logger.debug(LogCategory.MAIN, '[App] 准备创建主窗口...')
-    createMainWindow()
+    const mainWin = createMainWindow()
+    scheduleDeferredOnMainReady(mainWin)
     logger.info(LogCategory.MAIN, '[App] 主窗口创建指令已发送。')
   } else {
+    const existingWin = getMainWindow()
+    if (existingWin) {
+      scheduleDeferredOnMainReady(existingWin)
+    }
     logger.debug(LogCategory.MAIN, '[App] 初始安装已在早期创建窗口，跳过重复创建')
   }
 })

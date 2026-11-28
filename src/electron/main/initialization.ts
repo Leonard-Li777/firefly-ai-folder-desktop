@@ -144,6 +144,8 @@ import { recoverPendingFsJournals } from '../runtime-services/filesystem/fs-jour
 import { enrichAIStatus, clearEnrichCache } from './utils'
 import { t, changeLanguage } from '@app/languages'
 import { mark } from '@pro/perf/startup-timeline'
+import { settleGateOk, settleGateFailed } from './startup-gates'
+import { getPerfFlagsSnapshot } from './perf-flags'
 
 /**
  * 初始化硬件检测并更新统一配置
@@ -263,33 +265,29 @@ export async function initializeLlamaServer(): Promise<void> {
 /**
  * 初始化数据库及依赖于数据库的服务
  */
-export async function initDatabaseAndDependentServices(
-  language: LanguageCode,
-  force = false
-): Promise<void> {
+/**
+ * Critical 层纯本地数据库初始化（ST-P0-2：零网络、零外部进程，必须在 createMainWindow 之前完成）。
+ * 含 databaseService.initialize + ConfigDbManager + recoverPendingFsJournals + reloadDatabase。
+ * 任何致命失败均原样上浮并 settle dbReady 失败，绝不伪兜底。
+ */
+export async function initDatabaseCore(language: LanguageCode, force = false): Promise<void> {
   try {
     logger.debug(
       LogCategory.MAIN,
-      `正在初始化数据库服务 (语言: ${language}${force ? ', 强制重新初始化' : ''})...`
+      `正在初始化数据库核心服务 (语言: ${language}${force ? ', 强制重新初始化' : ''})...`
     )
 
     if (force && databaseService.db) {
       logger.debug(LogCategory.MAIN, '强制重新初始化：关闭旧数据库连接...')
       databaseService.close()
       virtualDirectoryService.reset()
-      // 清理旧的回调，避免重复注册
       databaseService.clearPostMigrationCallbacks()
     }
 
-    // 注册迁移后回调：在数据库迁移完成后自动从本地 JSON 加载初始配置
-    // 这确保了配置数据在 databaseService.initialize() 返回时已就绪
     databaseService.registerPostMigrationCallback((db, currentLang) => {
       ConfigDbManager.getInstance().loadFromJson(db, currentLang)
     })
 
-    // 重要：必须在 databaseService.initialize 和 ConfigDbManager.initialize 之前注册
-    // 否则当 ConfigDbManager 初始化后向渲染进程广播配置时，ConfigOrchestrator 无法获取 DB_MANAGED_KEYS，
-    // 会导致 TIER_CONSTANTS 等关键配置为 undefined，进而在渲染进程引发空指针异常
     ConfigOrchestrator.registerConfigDbManager(ConfigDbManager.getInstance())
 
     if (typeof changeLanguage === 'function') {
@@ -301,19 +299,13 @@ export async function initDatabaseAndDependentServices(
     }
 
     await databaseService.initialize(language)
-    // loadFromJson 已在迁移后回调中执行，此处只需确保内存数据同步
     await ConfigDbManager.getInstance().initialize(language, force)
 
-    // 工作区准入服务单例是无参构造，必须在数据库与配置中枢就绪后显式注入运行时依赖。
-    // 它原先靠运行时 require('../database/database-service') 兜底，但该相对路径在
-    // electron-vite 打包产物中不存在（且 DatabaseService 只有 db getter、没有 getDb()），
-    // 导致保存工作区配置时恒定抛出「数据库未初始化且未提供 db 依赖」。
     workspaceAdmissionService.configureRuntimeDependencies({
       getDb: () => databaseService.db,
       systemRulesProvider: () => loadIgnoreRules()
     })
 
-    // 同样注入 ModularResourceService 依赖，防止打包后动态 require('../database/database-service') 抛出 MODULE_NOT_FOUND
     const { modularResourceService } =
       await import('../runtime-services/system/modular-resource-service')
     modularResourceService.configureRuntimeDependencies({
@@ -322,7 +314,6 @@ export async function initDatabaseAndDependentServices(
     })
     modularResourceService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
 
-    // 工作区策略提交服务单例注入数据库运行时依赖，杜绝打包产物中动态 require 失败
     const { workspacePolicyCommitService } =
       await import('../runtime-services/workspace/workspace-policy-commit-service')
     workspacePolicyCommitService.configureDependencies({
@@ -331,10 +322,7 @@ export async function initDatabaseAndDependentServices(
 
     unifiedModelManager.ensureLoaded(true)
 
-    // tier 收入流水已上移云端：由云端绑定/注册 RPC 原子入账（云端 SSOT），
-    // 端侧通过 trySync 拉取镜像，严禁端侧合成收入流水（防自铸萤火）
     if (databaseService.db) {
-      // 清理已移出插件中心的历史内置模块记录 (TASK-01 / Genesis V1 幂等清扫)
       try {
         databaseService.db
           .prepare("DELETE FROM builtin_modules WHERE id = 'ai_organize_skill'")
@@ -343,25 +331,6 @@ export async function initDatabaseAndDependentServices(
         logger.warn(LogCategory.MAIN, '[Initialization] 清理 ai_organize_skill 记录失败:', cleanErr)
       }
 
-      try {
-        const { SystemIdentityService } =
-          await import('../runtime-services/system/system-identity-service')
-        const { userTierService } = await import('../runtime-services/user-tier/user-tier-service')
-        const machineId = await SystemIdentityService.getInstance().getMachineId()
-
-        // welcome_grant 等收入流水已上移云端：由云端绑定/注册 RPC 原子入账，
-        // 端侧通过 trySync 拉取镜像（云端 SSOT，严禁端侧合成或上报收入，防自铸萤火）。
-        // 详见 docs/specs/cloud-provisioned-income-transactions-spec.md
-        await userTierService.initialize()
-        userTierService.syncToCache(machineId).catch(err => {
-          logger.error(LogCategory.MAIN, '[Initialization] tier 缓存同步失败:', err)
-        })
-      } catch (e) {
-        logger.error(LogCategory.MAIN, '[Initialization] tier 服务初始化失败:', e)
-      }
-    }
-
-    if (databaseService.db) {
       if (globalLlamaIndexService) {
         setDirectoryContextService(new DirectoryContextService(globalLlamaIndexService))
       }
@@ -370,90 +339,107 @@ export async function initDatabaseAndDependentServices(
       const cleanupService = new FileCleanupService(databaseService.db)
       setFileCleanupService(cleanupService)
 
-      // [Issue 04 Step 1] 启动孤儿指纹 GC 两阶段对账调度器（启动自愈 + 定时兜底）。
-      //   幂等：重复初始化时先 stop 旧调度器再新建，防定时器泄漏。
       orphanGcScheduler?.stop()
       const gcScheduler = new OrphanGcScheduler(cleanupService)
       setOrphanGcScheduler(gcScheduler)
       gcScheduler.start()
 
-      // [Issue 04 收尾] 启动期 fs_operation_journal 挂起意图自愈：
-      // 上次整理崩溃遗留的 intent 必须在文件监听等业务开放前从 journal 补偿/重放，
-      // 否则 watcher 会先扫到中间态并二次入队，workspace_files 与物理磁盘永久分叉。
-      // 此处必须 await（禁止 setImmediate 异步甩锅），保证两阶段闭环先于业务放行。
-      try {
-        await recoverPendingFsJournals(databaseService.db!)
-      } catch (err) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '启动期 fs_operation_journal 自愈异常:', err)
-      }
+      // [Issue 04 收尾 / ST-P0-2] 启动期 fs_operation_journal 自愈必须在开放业务前完成；
+      // 若抛出不可恢复致命异常，绝不吞掉伪兜底，由上层销毁 splash 并受控 exit(1)。
+      await recoverPendingFsJournals(databaseService.db!)
       mark('db:journal-recovered')
-      mark('db:ready')
 
       await analysisQueueService.reloadDatabase()
-      await fileWatcherService.startAllAutoWatchers().catch(err => {
-        logger.error(LogCategory.MAIN, '启动文件监听失败:', err)
-      })
+      mark('db:ready')
+      settleGateOk('dbReady')
+    } else {
+      throw new Error('数据库初始化失败，未获得有效的数据库实例')
+    }
+  } catch (error) {
+    settleGateFailed('dbReady', error)
+    logger.error(LogCategory.MAIN, '初始化数据库核心服务失败:', error)
+    throw error
+  }
+}
 
-      // [2026-11-24] 显式拉起云同步保底巡检：此前全仓没有任何 start() 调用点，
-      // 同步仅靠「分析完成事件 → triggerSync」驱动；分析一旦空闲，积压（含 24h 后才重试的失败批次）
-      // 就再无人捞取。启动即登记巡检并立即补一次，保证积压能被自动排干。
+/**
+ * Deferred 链 1：数据库就绪后的后台监听器、对账与云端配置同步（ST-P0-2 / ST-P1-5 / J-11）。
+ * 在 recoverPendingFsJournals 与 reloadDatabase 之后执行，切语言与向导首启共用本入口。
+ */
+export async function startDatabaseRuntimeWatchers(): Promise<void> {
+  if (!databaseService.db) return
+
+  // J-11 第 2 步：在 journal 自愈与 reloadDatabase 之后串行启动文件监听
+  await fileWatcherService.startAllAutoWatchers().catch(err => {
+    logger.error(LogCategory.MAIN, '启动文件监听失败:', err)
+  })
+
+  setImmediate(() => {
+    void workspaceAdmissionService.reconcileAllWorkspacesOnStartup().catch(err => {
+      logger.warn(LogCategory.MAIN, '启动期工作区准入对账自愈异常:', err)
+    })
+  })
+
+  try {
+    const { workspaceRuntimeContextService } =
+      await import('../runtime-services/system/workspace-runtime-context-service')
+    workspaceRuntimeContextService.initialize()
+  } catch (err) {
+    logger.warn(
+      LogCategory.MAIN,
+      '[Initialization] 初始化 WorkspaceRuntimeContextService 异常:',
+      err
+    )
+  }
+
+  try {
+    const { tombstoneGCService } =
+      await import('../runtime-services/modular-resource/tombstone-gc')
+    const { modularResourceService } =
+      await import('../runtime-services/system/modular-resource-service')
+    const persistenceFile = path.join(
+      app.getPath('userData'),
+      'modules',
+      '_pending_tombstones.json'
+    )
+    tombstoneGCService.setPersistenceFile(persistenceFile)
+    setImmediate(() => {
+      modularResourceService.reconcileOnStartup().catch(err => {
+        logger.warn(LogCategory.MAIN, '[Initialization] 插件模块启动期对账自愈异常:', err)
+      })
+    })
+  } catch (err) {
+    logger.warn(LogCategory.MAIN, '[Initialization] 配置 Tombstone 持久化异常:', err)
+  }
+
+  try {
+    const { userTierService } = await import('../runtime-services/user-tier/user-tier-service')
+    await userTierService.initialize()
+  } catch (e) {
+    logger.error(LogCategory.MAIN, '[Initialization] tier 服务初始化失败:', e)
+  }
+
+  // 云端依赖（cloudSyncWorker + ConfigDbManager.syncFromCloud）严格等待 cloudReady 门闸后再触发
+  void import('./startup-gates').then(async ({ gate }) => {
+    const cloudSettlement = await gate('cloudReady')
+    if (cloudSettlement.ok) {
       cloudSyncWorker.start()
-
-      // 启动期电平自愈对账 (ALT-1 / Y-02 / Y-07)
-      setImmediate(() => {
-        void workspaceAdmissionService.reconcileAllWorkspacesOnStartup().catch(err => {
-          logger.warn(LogCategory.MAIN, '启动期工作区准入对账自愈异常:', err)
-        })
-      })
-
-      // 初始化工作区运行时上下文服务（注册 get-snapshot / incremental-recovery IPC 与窗口 focus 复检）
-      try {
-        const { workspaceRuntimeContextService } =
-          await import('../runtime-services/system/workspace-runtime-context-service')
-        workspaceRuntimeContextService.initialize()
-      } catch (err) {
-        logger.warn(
-          LogCategory.MAIN,
-          '[Initialization] 初始化 WorkspaceRuntimeContextService 异常:',
-          err
-        )
-      }
-
-      // 模块化资源与 Tombstone 启动期对账与持久化配置 (Spec §7.1.1 #5)
-      try {
-        const { tombstoneGCService } =
-          await import('../runtime-services/modular-resource/tombstone-gc')
-        const { modularResourceService } =
-          await import('../runtime-services/system/modular-resource-service')
-        const persistenceFile = path.join(
-          app.getPath('userData'),
-          'modules',
-          '_pending_tombstones.json'
-        )
-        tombstoneGCService.setPersistenceFile(persistenceFile)
-        setImmediate(() => {
-          modularResourceService.reconcileOnStartup().catch(err => {
-            logger.warn(LogCategory.MAIN, '[Initialization] 插件模块启动期对账自愈异常:', err)
-          })
-        })
-      } catch (err) {
-        logger.warn(LogCategory.MAIN, '[Initialization] 配置 Tombstone 持久化异常:', err)
-      }
-
       ConfigDbManager.getInstance()
         .syncFromCloud()
         .catch(err => {
           logger.error(LogCategory.CONFIG, '数据库初始化后同步云端配置失败:', err)
         })
-
-      logger.debug(LogCategory.MAIN, '依赖数据库的业务服务初始化完成')
-    } else {
-      logger.error(LogCategory.MAIN, '数据库初始化失败，未获得有效的数据库实例')
     }
-  } catch (error) {
-    logger.error(LogCategory.MAIN, '初始化数据库及其依赖服务失败:', error)
-    throw error
-  }
+  })
+}
+
+export async function initDatabaseAndDependentServices(
+  language: LanguageCode,
+  force = false
+): Promise<void> {
+  await initDatabaseCore(language, force)
+  await startDatabaseRuntimeWatchers()
+  logger.debug(LogCategory.MAIN, '依赖数据库的业务服务初始化完成')
 }
 
 /**
@@ -578,52 +564,108 @@ export function registerServiceHealthChecks(): void {
 /**
  * 初始化配置阶段所需的最小服务集合
  */
+let deferredChainPromise: Promise<void> | null = null
+
+/**
+ * Deferred 启动链（ST-P0-2 / ST-P1-2 / ST-P1-3 / ST-P1-6）：
+ * 在主窗口 ready-to-show 之后单飞触发，不阻塞首屏渲染。
+ * 欢迎向导期间（LANGUAGE_CONFIRMED=false）绝不抢跑。
+ */
+export function runDeferredStartupChain(): Promise<void> {
+  if (deferredChainPromise) {
+    return deferredChainPromise
+  }
+
+  deferredChainPromise = (async () => {
+    logger.debug(LogCategory.MAIN, '[Deferred] 启动后台延迟初始化链...')
+
+    // 1. 数据库就绪后的监听器、对账与云端配置同步
+    await startDatabaseRuntimeWatchers().catch(err => {
+      logger.warn(LogCategory.MAIN, '[Deferred] 数据库后台监听器启动异常:', err)
+    })
+
+    // 2. Supabase 设备注册（cloudReady 门闸，失败时 settle { ok: false } 不永挂）
+    try {
+      const machineId = SystemIdentityService.getInstance().getMachineId()
+      const supabaseClient = createSupabaseClient(
+        WORKSPACE_CONSTANTS.SUPABASE_URL,
+        WORKSPACE_CONSTANTS.SUPABASE_ANON_KEY,
+        machineId
+      )
+      cloudAnalysisService.setSupabaseClient(supabaseClient)
+      cloudAnalysisService.setIdentityProvider(SystemIdentityService.getInstance())
+      await cloudAnalysisService.initialize()
+      mark('cloud:registered')
+      settleGateOk('cloudReady')
+    } catch (err) {
+      settleGateFailed('cloudReady', err)
+      logger.warn(LogCategory.MAIN, '[Deferred] 系统身份 Supabase 注册未完成 (可能离线):', err)
+    }
+
+    // 3. 在线授权校验（穿透 5s 节流，远端结果无条件覆盖本地 LOCAL_GRACE_PENDING）
+    try {
+      const licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
+      mark('license:online')
+      if (licenseResult.status === LicenseStatus.AUTHORIZED) {
+        await ConfigOrchestrator.getInstance().updateValue('MACHINE_REGISTERED', true)
+        void initializeLlamaServer().catch(err => {
+          logger.warn(LogCategory.MAIN, '[LlamaServer] 延迟健康检查异常:', err)
+        })
+      }
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[Deferred] 后台授权校验异常:', err)
+    }
+
+    // 4. 外部服务与引擎桥接（FFmpeg + Tier 2 引擎 + 全量后台服务）
+    await ffmpegService.initialize().catch(err => {
+      logger.warn(LogCategory.MAIN, '[Deferred] FFmpeg 服务初始化异常:', err)
+    })
+
+    try {
+      const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+      moduleHibernationCoordinator.setEngineBridgeService(engineBridgeService)
+      const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+      if (initMode !== 'cloud' && initMode !== 'disabled') {
+        const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
+        mark(tier2Online ? 'engine:ready' : 'engine:failed')
+      }
+    } catch (err) {
+      mark('engine:failed')
+      logger.warn(LogCategory.MAIN, '[Deferred] Tier 2 引擎桥接异常:', err)
+    }
+
+    if (ConfigOrchestrator.getInstance().getValue<boolean>('LANGUAGE_CONFIRMED')) {
+      await initializeFullServices().catch(err => {
+        logger.warn(LogCategory.MAIN, '[Deferred] initializeFullServices 异常:', err)
+      })
+    }
+
+    // 非首启路径补跑异步硬件探测，不阻塞主流程
+    if (!ConfigOrchestrator.getInstance().getValue<boolean>('IS_FIRST_RUN')) {
+      void initializeHardwareDetection(false)
+    }
+
+    logger.debug(LogCategory.MAIN, '[Deferred] 后台延迟初始化链完成')
+  })()
+
+  return deferredChainPromise
+}
+
 export async function initializeMinimalServices(options?: {
   onProgress?: (msg: string) => void
 }): Promise<void> {
+  const perfFlags = getPerfFlagsSnapshot(app.getPath('userData'))
+  const isSplitMode = perfFlags.startup.earlyWindow && process.env.NODE_ENV !== 'test'
+
   try {
     // 关键：将桌面侧 ConfigOrchestrator 注入 AI 包（包内服务如 unifiedModelManager 通过该静态入口读取配置）
     AIPackageConfigOrchestrator.setInstance(ConfigOrchestrator.getInstance())
     logger.debug(LogCategory.MAIN, '正在初始化配置阶段所需的最小服务...')
-    logger.debug(LogCategory.MAIN, '日志服务初始化成功')
-    logger.debug(LogCategory.MAIN, '错误处理服务初始化成功')
-    logger.debug(LogCategory.MAIN, '自动恢复服务初始化成功')
-    logger.debug(LogCategory.MAIN, '正在初始化系统健康检查服务...')
-    logger.debug(LogCategory.MAIN, '系统健康检查服务初始化成功')
     invitationService.initialize()
 
-    // 注入硬件探测服务的依赖 (ConfigOrchestrator, deploymentIntegrityVerifier)
-    // 注意：main/index.ts 的 app ready 回调中已提前注入（IPC 注册与窗口创建之前），
-    // 此处为兜底性重复注入，setter 为幂等操作，保证任何入口路径下依赖均已就绪
     hardwareDetectionService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
     hardwareDetectionService.setDeploymentIntegrityVerifier(deploymentIntegrityVerifier)
 
-    // 1. 在本地引擎部署和身份注册前，同步执行硬件资源探测，以确保能够获取硬件特征 (CPU/GPU/内存/存储)
-    await initializeHardwareDetection(true)
-
-    // 2. 及时在 Supabase 中同步注册机器记录 (含硬件特征)，确保后续交易和日志外键依赖在 DB 中存在
-    const machineId = SystemIdentityService.getInstance().getMachineId()
-    const supabaseClient = createSupabaseClient(
-      WORKSPACE_CONSTANTS.SUPABASE_URL,
-      WORKSPACE_CONSTANTS.SUPABASE_ANON_KEY,
-      machineId
-    )
-    cloudAnalysisService.setSupabaseClient(supabaseClient)
-    cloudAnalysisService.setIdentityProvider(SystemIdentityService.getInstance())
-    logger.debug(LogCategory.MAIN, '系统身份服务初始化成功')
-
-    try {
-      await cloudAnalysisService.initialize()
-      logger.debug(LogCategory.MAIN, '系统身份 Supabase 注册完成')
-    } catch (err) {
-      logger.warn(LogCategory.MAIN, '系统身份 Supabase 注册未完成 (可能离线):', err)
-    }
-    mark('cloud:registered')
-
-    // 2.5 桥接 Tier 2 上层 AI 引擎（slice-3 桌面解耦）：本地模式仅连接 38400 上的外部引擎，
-    //     desktop 不再自带任何推理进程。探活失败则静默拉起引擎应用；
-    //     仍不可用时由基础AI引擎（Tier 1 / Omni）全程保底，绝不回退到本地自拉起。
-    //     PRD-0044：生效引擎为「云端」或「禁用」时不拉起引擎（禁用 = 只跑基础AI引擎通道）。
     moduleHibernationCoordinator.setAnalysisQueueService(analysisQueueService)
     moduleHibernationCoordinator.setTtsActiveChecker(isTTSActive)
     moduleHibernationCoordinator.setOmniLifecycleProvider(omniService)
@@ -643,6 +685,82 @@ export async function initializeMinimalServices(options?: {
         moduleHibernationCoordinator.forceResetExternalHibernated(moduleId, nextGeneration)
       }
     })
+    registerClipTextRuntimeReset()
+
+    LicenseService.getInstance().initializeGraceTimestamps()
+    LicenseService.getInstance().startTimeMonitor()
+
+    if (isSplitMode) {
+      // Critical 分层启动路径：仅执行纯本地 DB + Journal 自愈 + 本地快速授权判定，
+      // 严禁在建主窗前阻塞于网络或外部进程。
+      const isFirstRun = ConfigOrchestrator.getInstance().getValue<boolean>('IS_FIRST_RUN')
+      if (isFirstRun) {
+        await initializeHardwareDetection(true)
+      }
+
+      const isLanguageConfirmed =
+        ConfigOrchestrator.getInstance().getValue<boolean>('LANGUAGE_CONFIRMED')
+      if (isLanguageConfirmed) {
+        const language = ConfigOrchestrator.getInstance().getValue<string>(
+          'DEFAULT_LANGUAGE'
+        ) as LanguageCode
+        await initDatabaseCore(language)
+        await dataMigrationService.migrate()
+      } else {
+        settleGateOk('dbReady')
+      }
+
+      // 构造轻量 LlamaIndexAIService 实例供阶段 A 注入 DirectoryContextService
+      if (!globalLlamaIndexService) {
+        setGlobalLlamaIndexService(
+          LlamaIndexAIService.getInstance(
+            ConfigOrchestrator.getInstance(),
+            llamaServerService,
+            ConfigOrchestrator.getInstance()
+          )
+        )
+      }
+      settleGateOk('phaseAGate')
+
+      await LicenseService.getInstance().checkLocalLicenseFast()
+      mark('license:local')
+
+      LicenseService.getInstance()
+        .restoreFromOfflineLicenseIfNeeded()
+        .catch(err => {
+          logger.error(LogCategory.SYSTEM, '[License] 从离线授权恢复 userTierData 失败:', err)
+        })
+      networkInterceptorService.initialize().catch(err => {
+        logger.error(LogCategory.SYSTEM, '网络拦截服务初始化失败:', err)
+      })
+
+      logger.debug(LogCategory.MAIN, 'Critical 阶段最小服务初始化完成')
+      return
+    }
+
+    // 回退或测试全量串行路径（earlyWindow=0 或 NODE_ENV=test）
+    await initializeHardwareDetection(true)
+
+    const machineId = SystemIdentityService.getInstance().getMachineId()
+    const supabaseClient = createSupabaseClient(
+      WORKSPACE_CONSTANTS.SUPABASE_URL,
+      WORKSPACE_CONSTANTS.SUPABASE_ANON_KEY,
+      machineId
+    )
+    cloudAnalysisService.setSupabaseClient(supabaseClient)
+    cloudAnalysisService.setIdentityProvider(SystemIdentityService.getInstance())
+    logger.debug(LogCategory.MAIN, '系统身份服务初始化成功')
+
+    try {
+      await cloudAnalysisService.initialize()
+      settleGateOk('cloudReady')
+      logger.debug(LogCategory.MAIN, '系统身份 Supabase 注册完成')
+    } catch (err) {
+      settleGateFailed('cloudReady', err)
+      logger.warn(LogCategory.MAIN, '系统身份 Supabase 注册未完成 (可能离线):', err)
+    }
+    mark('cloud:registered')
+
     try {
       const { engineBridgeService } = await import('../runtime-services/engine-bridge')
       moduleHibernationCoordinator.setEngineBridgeService(engineBridgeService)
@@ -650,17 +768,6 @@ export async function initializeMinimalServices(options?: {
       if (initMode !== 'cloud' && initMode !== 'disabled') {
         const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
         mark(tier2Online ? 'engine:ready' : 'engine:failed')
-        if (tier2Online) {
-          logger.debug(
-            LogCategory.MAIN,
-            '[EngineBridge] Tier 2 引擎在线，AIService 本地调用将重定向至端口 38400'
-          )
-        } else {
-          logger.warn(
-            LogCategory.MAIN,
-            '[EngineBridge] Tier 2 引擎不可用（熔断或未部署），分析将由 Tier 1（Omni）兜底'
-          )
-        }
       }
     } catch (bridgeError) {
       mark('engine:failed')
@@ -670,9 +777,6 @@ export async function initializeMinimalServices(options?: {
         bridgeError
       )
     }
-
-    // 2.6 CLIP 文本第 5 路陈旧状态复位：必须在任何检索发生前完成注册
-    registerClipTextRuntimeReset()
 
     await ffmpegService.initialize()
     logger.debug(LogCategory.MAIN, 'FFmpeg 服务初始化完成')
@@ -684,13 +788,10 @@ export async function initializeMinimalServices(options?: {
         'DEFAULT_LANGUAGE'
       ) as LanguageCode
       await initDatabaseAndDependentServices(language)
-
-      // 执行数据迁移
       await dataMigrationService.migrate()
       logger.debug(LogCategory.MAIN, '数据库服务初始化成功')
-
-      // ADR-0038 / Issue #682：多语言别名分表已落库，展示与反查走 DB 直查，不再需要内存总线 TaxonomyAliasCache
     } else {
+      settleGateOk('dbReady')
       logger.debug(
         LogCategory.MAIN,
         '[Initialization] 语言尚未确认 (LANGUAGE_CONFIRMED = false)，延迟初始化数据库，等待用户选择语言...'
@@ -704,25 +805,8 @@ export async function initializeMinimalServices(options?: {
       logger.error(LogCategory.MAIN, '统一模型配置初始化失败:', error)
     }
 
-    logger.debug(LogCategory.MAIN, '正在初始化配置服务...')
-    // 异步同步云端配置 (非阻塞，仅启动时同步一次)
-    ConfigDbManager.getInstance()
-      .syncFromCloud()
-      .catch(err => {
-        logger.error(LogCategory.CONFIG, 'ConfigDbManager syncFromCloud failed:', err)
-      })
-    logger.debug(LogCategory.MAIN, '配置服务初始化成功')
+    settleGateOk('phaseAGate')
 
-    LicenseService.getInstance().initializeGraceTimestamps()
-    LicenseService.getInstance().startTimeMonitor()
-    userTierService.initialize().catch(err => {
-      logger.error(LogCategory.SYSTEM, 'UserTier 服务初始化失败:', err)
-    })
-
-    // 在数据库初始化完成后注册邀请服务 IPC（依赖 TIER_CONSTANTS 配置）
-    invitationService.initialize()
-
-    // 启动时检查离线授权码是否包含内嵌 userTierData，并写入缓存（离线恢复企业版权益）
     LicenseService.getInstance()
       .restoreFromOfflineLicenseIfNeeded()
       .catch(err => {

@@ -8,8 +8,8 @@
  * 4. 返回分析状态和结果
  */
 
-import { stat } from 'fs/promises'
-import nodeFs from 'node:fs'
+import type { Stats } from 'node:fs'
+import { statOrNull } from '../infra/fs'
 import { loadIgnoreRules, shouldIgnoreFile } from './analysis/analysis-ignore-service'
 
 /** 文件分析结果响应 */
@@ -64,20 +64,13 @@ export async function getFileAnalysisData(
   const { databaseService } = await import('./database/database-service')
   const { calculateFileFingerprint } = await import('@firefly/shared')
   const nodePath = await import('path')
-  const fs = await import('fs')
 
   // 规范化路径，确保使用系统原生分隔符（Windows: backslash）
   const resolvedPath = nodePath.resolve(filePath)
 
-  // 1. 检查文件是否存在（使用同步方法更可靠）
-  let fileExists = false
-  try {
-    fileExists = fs.existsSync(resolvedPath)
-  } catch {
-    fileExists = false
-  }
-
-  if (!fileExists) {
+  // 1. 一次 statOrNull 同时完成存在性判定与后续插入所需的文件规格采样
+  const fileStats = await statOrNull(resolvedPath)
+  if (!fileStats) {
     return {
       belongsToWorkspace: false,
       isAnalyzed: false,
@@ -131,13 +124,8 @@ export async function getFileAnalysisData(
       const fileName = nodePath.basename(resolvedPath)
 
       // 插入 workspace_files 记录
-      // SC-1：同步维护 file_size/mtime_ms/is_ignored 预计算列；statSync 失败安全回退 0 值
-      let insertStats: nodeFs.Stats | null = null
-      try {
-        insertStats = nodeFs.statSync(resolvedPath)
-      } catch {
-        insertStats = null
-      }
+      // SC-1：同步维护 file_size/mtime_ms/is_ignored 预计算列；入口 statOrNull 失败安全回退 0 值
+      const insertStats: Stats | null = fileStats
       const insertResult = db
         .prepare(
           `INSERT OR IGNORE INTO workspace_files

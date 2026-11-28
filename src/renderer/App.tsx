@@ -90,6 +90,34 @@ const App: React.FC = () => {
     canOffline?: boolean
   } | null>(null)
 
+  const tierCanOffline = useTierStore(s => s.computed_limits?.can_offline === true)
+
+  useEffect(() => {
+    if (licenseInfo?.status === 'AUTHORIZED' && licenseInfo.canOffline !== tierCanOffline) {
+      setLicenseInfo(prev => (prev ? { ...prev, canOffline: tierCanOffline } : prev))
+    }
+  }, [licenseInfo?.status, licenseInfo?.canOffline, tierCanOffline])
+
+  // 订阅主进程后台授权状态变更推送（ST-P0-3：LOCAL_GRACE_PENDING → 云端 AUTHORIZED / UNAUTHORIZED 实时校正）
+  useEffect(() => {
+    const unsubscribe = window.electronAPI?.license?.onStatusChanged?.(async (nextResult: any) => {
+      if (!nextResult) return
+      let canOffline = false
+      if (nextResult.status === 'AUTHORIZED') {
+        try {
+          await useTierStore.getState().fetchProfile()
+          canOffline = useTierStore.getState().computed_limits?.can_offline === true
+        } catch (err) {
+          logger.warn(LogCategory.RENDERER, '[App] 授权转正后刷新 tier 配额失败:', err)
+        }
+      }
+      setLicenseInfo({ ...nextResult, canOffline })
+    })
+    return () => {
+      unsubscribe?.()
+    }
+  }, [])
+
   // 首次启动时检测当前设备是否已绑定微信小程序账号（未登录强制扫码绑定，不可跳过）
   // 离线/未授权检测优先：保证如果离线的话，弹出的是离线弹层，而不是登录；
   // 仅在授权状态确认且为 AUTHORIZED 时才检测设备绑定
@@ -698,10 +726,10 @@ const App: React.FC = () => {
       }
 
       setStartupMessage(t('正在初始化AI服务...'))
-      // 使用AI服务Store进行初始化
+      // 使用AI服务Store进行初始化（ST-P0-4：启动期传入 startupPhaseAOnly，由主进程 Deferred 链后台完成重型加载）
       try {
-        await initializeAIService()
-        logger.info(LogCategory.RENDERER, 'AI服务初始化成功')
+        await initializeAIService({ startupPhaseAOnly: true })
+        logger.info(LogCategory.RENDERER, 'AI服务阶段 A 初始化成功')
       } catch (error) {
         logger.warn(LogCategory.RENDERER, 'AI服务初始化失败，将在后续使用时重试:', error)
       }
@@ -879,7 +907,8 @@ const App: React.FC = () => {
   const showLicenseOverlay =
     hasDeterminedPhaseRef.current &&
     licenseInfo?.status != null &&
-    licenseInfo.status !== 'AUTHORIZED'
+    licenseInfo.status !== 'AUTHORIZED' &&
+    licenseInfo.status !== 'LOCAL_GRACE_PENDING'
 
   return (
     <ErrorBoundary>

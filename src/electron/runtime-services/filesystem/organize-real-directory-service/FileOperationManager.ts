@@ -1,9 +1,10 @@
-import fs from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
 import Database from 'better-sqlite3'
 import { FileOperation, FileOrganizeResult } from '@firefly/types/organize-types'
 import { LogCategory, logger, isPathEqual, assertPathWithinRoot } from '@firefly/shared'
+import { statOrNull, statOrThrow, readdirTyped, mkdirp, safeUnlink } from '../../../infra/fs'
 import { TwoPhaseBatchCoordinator, sampleFileIdentity } from '../fs-journal-recovery'
 import { FileSystemMutationDao } from '../../database/dao/file-system-mutation-dao'
 
@@ -21,9 +22,10 @@ export class FileOperationManager {
   async organizeFileWithHardlinks(operation: FileOperation): Promise<FileOrganizeResult> {
     try {
       const actualOldPath = operation.oldPath
+      const oldStats = await statOrNull(actualOldPath)
 
-      if (!fs.existsSync(actualOldPath)) {
-        if (fs.existsSync(operation.newPath)) {
+      if (!oldStats) {
+        if (await statOrNull(operation.newPath)) {
           logger.info(
             LogCategory.FILE_ORGANIZATION,
             `[一键整理] 文件已在目标路径存在（可能被其他虚拟目录移动），跳过: ${operation.oldPath}`,
@@ -79,7 +81,6 @@ export class FileOperationManager {
         }
       }
 
-      const oldStats = fs.statSync(actualOldPath)
       const inode = oldStats.ino
 
       const { databaseService } = await import('../../database/database-service')
@@ -98,8 +99,8 @@ export class FileOperationManager {
         }
 
         const targetDir = path.dirname(operation.newPath)
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true })
+        if (!(await statOrNull(targetDir))) {
+          await mkdirp(targetDir)
         }
       } else {
         logger.debug(LogCategory.FILE_ORGANIZATION, '源路径与目标路径相同，跳过移动', {
@@ -108,7 +109,7 @@ export class FileOperationManager {
       }
 
       // 移动前幂等补齐原路径记录：FileSystemMutationDao 依赖 workspace_files 旧路径行存在
-      // 才能在同一事务内完成路径改写；源文件此刻仍在，statSync 可拿到真实大小与指纹。
+      // 才能在同一事务内完成路径改写；源文件此刻仍在，上面的 statOrNull 已拿到真实大小与指纹。
       await databaseService.addFileFromPath(actualOldPath, '', undefined, true)
 
       const needsMove = !isPathEqual(actualOldPath, operation.newPath)
@@ -132,7 +133,9 @@ export class FileOperationManager {
       // 阶段一记 pending intent 并 rename；阶段二在单事务内由 FileSystemMutationDao
       // 原子更新 workspace_files(path/name/directory_id/mtime_ms) + FTS，并同步 journal committed。
       // 任一阶段失败由协调器逆向补偿，崩溃后可在重启时从 fs_operation_journal 重放/回滚。
-      let movedMtimeMs: number | undefined
+      // 协调器的物理阶段是 fs.promises.rename，rename 不改变 mtime；直接复用移动前采样值，
+      // 既保留 FileGuard 增量围栏精度，也避免在同步回调里再做一次 statSync 阻塞事件循环。
+      const movedMtimeMs = Math.trunc(oldStats.mtimeMs)
       const batchId = `organize_${crypto.randomUUID().slice(0, 8)}`
       const coordinatorResult = needsMove
         ? await this.coordinator.executeTwoPhaseBatch(
@@ -148,19 +151,6 @@ export class FileOperationManager {
               }
             ],
             {
-              onFsMoved: () => {
-                // [Issue 04 Step 2] 移动后重新 stat 取 mtime_ms，供 FileGuard 增量围栏精准比对
-                try {
-                  movedMtimeMs = Math.trunc(fs.statSync(operation.newPath).mtimeMs)
-                } catch (statErr: any) {
-                  logger.warn(
-                    LogCategory.FILE_ORGANIZATION,
-                    '[一键整理] 移动后 stat 取 mtime_ms 失败，退回 0 触发 FileGuard 下轮全量校验',
-                    { newPath: operation.newPath, error: statErr?.message }
-                  )
-                  movedMtimeMs = undefined
-                }
-              },
               commitDb: item => {
                 // 权威写入必须校验结果：DAO 在旧路径行缺失时仅 warn 并返回 updated:0，
                 // 此处必须抛错让协调器走物理逆向补偿，杜绝 journal 假 committed。
@@ -231,18 +221,16 @@ export class FileOperationManager {
     }
   }
 
-  createLink(sourcePath: string, targetPath: string): void {
+  async createLink(sourcePath: string, targetPath: string): Promise<void> {
     try {
-      if (fs.existsSync(targetPath)) {
-        fs.unlinkSync(targetPath)
-      }
-      fs.linkSync(sourcePath, targetPath)
+      await safeUnlink(targetPath)
+      await fsp.link(sourcePath, targetPath)
       logger.debug(LogCategory.FILE_ORGANIZATION, '[Organize] 创建硬链接成功:', targetPath)
     } catch (error: any) {
       if (error.code === 'EXDEV' || error.code === 'EPERM' || error.code === 'EACCES') {
         try {
           const type = process.platform === 'win32' ? 'file' : undefined
-          fs.symlinkSync(sourcePath, targetPath, type)
+          await fsp.symlink(sourcePath, targetPath, type)
           logger.info(
             LogCategory.FILE_ORGANIZATION,
             '[Organize] 硬链接失败(可能跨分区)，已改用符号链接:',
@@ -279,21 +267,21 @@ export class FileOperationManager {
     expectedInode: number
   ): Promise<void> {
     try {
-      const virtualLinks = this.getVirtualDirectoryLinks(fileId)
+      const virtualLinks = await this.getVirtualDirectoryLinks(fileId)
 
       for (const linkPath of virtualLinks) {
         try {
-          if (fs.existsSync(linkPath)) {
-            const linkStats = fs.statSync(linkPath)
+          const linkStats = await statOrNull(linkPath)
+          if (linkStats) {
             if (linkStats.ino !== expectedInode) {
               logger.warn(LogCategory.FILE_ORGANIZATION, '硬链接失效，重新创建', {
                 linkPath,
                 fileId
               })
-              this.createLink(newPath, linkPath)
+              await this.createLink(newPath, linkPath)
             }
           } else {
-            this.createLink(newPath, linkPath)
+            await this.createLink(newPath, linkPath)
           }
         } catch (error: any) {
           logger.error(LogCategory.FILE_ORGANIZATION, '修复硬链接失败', {
@@ -310,7 +298,7 @@ export class FileOperationManager {
     }
   }
 
-  getVirtualDirectoryLinks(fileId: number): string[] {
+  async getVirtualDirectoryLinks(fileId: number): Promise<string[]> {
     try {
       const file = this.db
         .prepare('SELECT path, workspace_id FROM workspace_files WHERE id = ?')
@@ -325,24 +313,24 @@ export class FileOperationManager {
       if (!directory) return []
 
       const virtualDirRoot = path.join(directory.path, VIRTUAL_DIRECTORY_FOLDER)
-      if (!fs.existsSync(virtualDirRoot)) return []
+      if (!(await statOrNull(virtualDirRoot))) return []
 
-      const fileStats = fs.statSync(file.path)
+      const fileStats = await statOrThrow(file.path)
       const targetInode = fileStats.ino
       const links: string[] = []
 
-      const searchDirectory = (dirPath: string) => {
+      const searchDirectory = async (dirPath: string): Promise<void> => {
         try {
-          const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+          const entries = await readdirTyped(dirPath)
           for (const entry of entries) {
             const fullPath = path.join(dirPath, entry.name)
             if (entry.isDirectory()) {
               if (!entry.name.match(/^ReadMe_[a-zA-Z\\-]{5}\\.txt$/)) {
-                searchDirectory(fullPath)
+                await searchDirectory(fullPath)
               }
             } else if (entry.isFile()) {
               try {
-                const stats = fs.statSync(fullPath)
+                const stats = await statOrThrow(fullPath)
                 if (stats.ino === targetInode) {
                   links.push(fullPath)
                 }
@@ -356,7 +344,7 @@ export class FileOperationManager {
         }
       }
 
-      searchDirectory(virtualDirRoot)
+      await searchDirectory(virtualDirRoot)
       return links
     } catch (error: any) {
       logger.error(LogCategory.FILE_ORGANIZATION, '获取虚拟目录链接失败', {
@@ -367,7 +355,7 @@ export class FileOperationManager {
     }
   }
 
-  createBackup(filePath: string): string {
+  async createBackup(filePath: string): Promise<string> {
     try {
       const dir = path.dirname(filePath)
       const ext = path.extname(filePath)
@@ -375,7 +363,7 @@ export class FileOperationManager {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_')
       const backupPath = path.join(dir, `.backup_${basename}_${timestamp}${ext}`)
 
-      fs.copyFileSync(filePath, backupPath)
+      await fsp.copyFile(filePath, backupPath)
       return backupPath
     } catch (error: any) {
       logger.error(LogCategory.FILE_ORGANIZATION, '创建备份失败', {
@@ -386,9 +374,9 @@ export class FileOperationManager {
     }
   }
 
-  ensureDirectoryExists(dirPath: string): void {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true })
+  async ensureDirectoryExists(dirPath: string): Promise<void> {
+    if (!(await statOrNull(dirPath))) {
+      await mkdirp(dirPath)
       logger.debug(LogCategory.FILE_ORGANIZATION, '创建目录', { dirPath })
     }
   }

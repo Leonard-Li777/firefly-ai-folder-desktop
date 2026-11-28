@@ -1,6 +1,5 @@
 import { app } from 'electron'
 import * as path from 'path'
-import * as fs from 'fs'
 import { execFile } from 'child_process'
 import fixPath from 'fix-path'
 import { t } from '@app/languages'
@@ -18,6 +17,7 @@ if (process.platform !== 'win32') {
 }
 import * as crypto from 'crypto'
 import { logger, LogCategory } from '@firefly/shared'
+import { existsAsync, mkdirp, readdirTyped, safeUnlink } from '../../infra/fs'
 import { ffmpegService } from '../system/ffmpeg-service'
 
 /**
@@ -29,13 +29,21 @@ import os from 'node:os'
 export class AudioConverter {
   private static instance: AudioConverter | null = null
   private tempDir: string
+  private tempDirReady: Promise<void> | null = null
 
   private constructor() {
     const tempBase = app?.getPath ? app.getPath('temp') : os.tmpdir()
     this.tempDir = path.join(tempBase, 'firefly-ai-audio-cache')
-    if (!fs.existsSync(this.tempDir)) {
-      fs.mkdirSync(this.tempDir, { recursive: true })
+  }
+
+  private ensureTempDir(): Promise<void> {
+    if (!this.tempDirReady) {
+      this.tempDirReady = mkdirp(this.tempDir).catch(error => {
+        this.tempDirReady = null
+        throw error
+      })
     }
+    return this.tempDirReady
   }
 
   static getInstance(): AudioConverter {
@@ -62,7 +70,7 @@ export class AudioConverter {
     try {
       const { omniService } = await import('../system/omni-service')
       const omniRes = await omniService.convertToStandardAudio(inputPath, DURATION_LIMIT)
-      if (omniRes && omniRes.output_path && fs.existsSync(omniRes.output_path)) {
+      if (omniRes && omniRes.output_path && (await existsAsync(omniRes.output_path))) {
         logger.info(
           LogCategory.FILE_PROCESSOR,
           `[AudioConverter] Omni 原生引擎标准音频转换完成: ${inputPath} -> ${omniRes.output_path} (耗时: ${omniRes.duration_ms}ms)`
@@ -82,6 +90,8 @@ export class AudioConverter {
       throw new Error(t('FFmpeg 未就绪（未检测到系统 FFmpeg），无法转换音频'))
     }
 
+    await this.ensureTempDir()
+
     // 2.1 生成基于路径和截断参数的哈希文件名
     const hash = crypto
       .createHash('md5')
@@ -91,7 +101,7 @@ export class AudioConverter {
     const outputPath = path.join(this.tempDir, `${hash}.wav`)
 
     // 2.2 如果文件已存在，直接复用
-    if (fs.existsSync(outputPath)) {
+    if (await existsAsync(outputPath)) {
       logger.debug(LogCategory.FILE_PROCESSOR, `[AudioConverter] 复用已有的转换文件: ${outputPath}`)
       return outputPath
     }
@@ -122,7 +132,7 @@ export class AudioConverter {
       )
 
       // windowsHide: ffmpeg 为控制台程序，缺省会在每次转换时闪出控制台窗口
-      execFile(ffmpegPath, args, { windowsHide: true }, (error, stdout, stderr) => {
+      execFile(ffmpegPath, args, { windowsHide: true }, async (error, stdout, stderr) => {
         if (error) {
           logger.error(
             LogCategory.FILE_PROCESSOR,
@@ -133,7 +143,7 @@ export class AudioConverter {
           return
         }
 
-        if (fs.existsSync(outputPath)) {
+        if (await existsAsync(outputPath)) {
           logger.info(LogCategory.FILE_PROCESSOR, `[AudioConverter] 音频转换成功: ${outputPath}`)
           resolve(outputPath)
         } else {
@@ -146,16 +156,15 @@ export class AudioConverter {
   /**
    * 清理缓存目录
    */
-  clearCache(): void {
+  async clearCache(): Promise<void> {
     try {
-      if (fs.existsSync(this.tempDir)) {
-        const files = fs.readdirSync(this.tempDir)
-        for (const file of files) {
-          fs.unlinkSync(path.join(this.tempDir, file))
-        }
-        logger.info(LogCategory.FILE_PROCESSOR, '[AudioConverter] 音频缓存已清理')
+      const files = await readdirTyped(this.tempDir)
+      for (const file of files) {
+        await safeUnlink(path.join(this.tempDir, file.name))
       }
-    } catch (e) {
+      logger.info(LogCategory.FILE_PROCESSOR, '[AudioConverter] 音频缓存已清理')
+    } catch (e: any) {
+      if (e?.code === 'ENOENT') return
       logger.error(LogCategory.FILE_PROCESSOR, '[AudioConverter] 清理缓存失败:', e)
     }
   }

@@ -9,7 +9,9 @@
     "de-DE": "Die Lightweight-CPU-Engine ist abnormal. Bitte überprüfen Sie den Selbsttest in den Einstellungen erneut.",
     "fr-FR": "Le moteur CPU léger est anormal, veuillez revérifier l'auto-test dans les paramètres.",
     "ko-KR": "경량 CPU 엔진이 비정상입니다. 설정에서 자체 테스트를 다시 확인하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9702-9725)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(9767-9790)"
+    ],
     "$id": 32061
   },
   "正在启动轻量CPU引擎，即将开始分析...": {
@@ -22,7 +24,9 @@
     "de-DE": "Die leichte CPU-Engine wird gestartet und die Analyse beginnt gleich ...",
     "fr-FR": "En démarrant le moteur CPU léger, l'analyse est sur le point de commencer...",
     "ko-KR": "경량 CPU 엔진을 가동하여 분석이 시작됩니다...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11003-11028)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11111-11136)"
+    ],
     "$id": 32283
   },
   "正在预热轻量CPU模型，即将开始分析...": {
@@ -35,7 +39,9 @@
     "de-DE": "Das leichte CPU-Modell wird aufgewärmt und die Analyse beginnt gleich ...",
     "fr-FR": "Le modèle de CPU léger est en cours d'échauffement et l'analyse est sur le point de commencer...",
     "ko-KR": "경량 CPU 모델이 워밍업 중이며 분석이 곧 시작됩니다...",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11285-11310)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11454-11479)"
+    ],
     "$id": 32062
   },
   "轻量CPU引擎已就绪，开始分析": {
@@ -48,7 +54,9 @@
     "de-DE": "Die leichte CPU-Engine ist bereit, mit der Analyse zu beginnen",
     "fr-FR": "Le moteur CPU léger est prêt à démarrer l'analyse",
     "ko-KR": "경량 CPU 엔진이 분석을 시작할 준비가 되었습니다.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(11777-11796)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(12007-12026)"
+    ],
     "$id": 32063
   },
   "轻量CPU引擎预热失败，请重试": {
@@ -61,8 +69,43 @@
     "de-DE": "Das Aufwärmen der Lightweight-CPU-Engine ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "Échec du préchauffage du moteur du processeur léger. Veuillez réessayer.",
     "ko-KR": "경량 CPU 엔진 워밍업에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(12454-12473)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/ai-service-manager.ts(12685-12704)"
+    ],
     "$id": 32064
+  },
+  "AI 服务暂时繁忙，请稍后重试": {
+    "en-US": "The AI service is temporarily busy, please try again later",
+    "es-ES": "El servicio de IA está temporalmente ocupado, inténtelo de nuevo más tarde",
+    "ar-EG": "خدمة الذكاء الاصطناعي مشغولة مؤقتا ، يرجى المحاولة مرة أخرى لاحقا",
+    "pt-PT": "O serviço de IA está temporariamente ocupado, tente novamente mais tarde",
+    "ru-RU": "Служба искусственного интеллекта временно занята, пожалуйста, повторите попытку позже",
+    "ja-JP": "AIサービスが一時的にビジー状態になっていますので、後で再試行してください",
+    "de-DE": "Der AI-Dienst ist vorübergehend ausgelastet, bitte versuchen Sie es später erneut",
+    "fr-FR": "Le service d'IA est temporairement occupé, veuillez réessayer plus tard",
+    "ko-KR": "인공 지능 서비스는 일시적으로 사용 중입니다,나중에 다시 시도하십시오",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/analysis-orchestrator-worker.ts(11030-11049)",
+      "src/electron/runtime-services/analysis-queue-service/analysis-orchestrator-worker.ts(17421-17440)"
+    ],
+    "$id": 32689
+  },
+  "AI 标签不可用": {
+    "en-US": "AI tags are not available",
+    "es-ES": "Las etiquetas de IA no están disponibles",
+    "ar-EG": "علامات الذكاء الاصطناعي غير متوفرة",
+    "pt-PT": "Tags AI não estão disponíveis",
+    "ru-RU": "Теги искусственного интеллекта недоступны",
+    "ja-JP": "AIタグは使用できません",
+    "de-DE": "AI-Tags sind nicht verfügbar",
+    "fr-FR": "Les balises AI ne sont pas disponibles",
+    "ko-KR": "인공 지능 태그를 사용할 수 없습니다",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(21262-21274)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(139916-139928)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(143532-143544)"
+    ],
+    "$id": 32690
   },
   "当前AI已经在工作中，如：分析队列，请停止后再请求": {
     "en-US": "The AI ​​is currently working, such as analyzing the queue. Please stop and then request again.",
@@ -74,8 +117,26 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(46636-46665)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(70721-70750)"
+    ],
     "$id": 11304
+  },
+  "前往设置": {
+    "en-US": "Go to settings",
+    "es-ES": "Ir a configuración",
+    "ar-EG": "انتقل إلى الإعدادات",
+    "pt-PT": "Vá para configurações",
+    "ru-RU": "Перейти в настройки",
+    "ja-JP": "設定に移動",
+    "de-DE": "Gehen Sie zu den Einstellungen",
+    "fr-FR": "Allez dans les paramètres",
+    "ko-KR": "설정으로 이동",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(7241-7249)",
+      "src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(7600-7608)"
+    ],
+    "$id": 4521
   },
   "分析时间太长": {
     "en-US": "Analysis time is too long",
@@ -87,7 +148,9 @@
     "de-DE": "Analysezeit ist zu lang",
     "fr-FR": "Le temps d'analyse est trop long",
     "ko-KR": "분석 시간이 너무 깁니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(1632-1642)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(7420-7430)"
+    ],
     "$id": 38305
   },
   "建议在设置里换一个更轻巧的识别方案": {
@@ -100,21 +163,10 @@
     "de-DE": "Es wird empfohlen, in den Einstellungen zu einem leichteren Identifikationsschema zu wechseln",
     "fr-FR": "Il est recommandé de passer à un schéma d'identification plus léger dans les paramètres",
     "ko-KR": "이 설정에서 가벼운 식별 방식으로 변경하는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(1661-1682)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(7449-7470)"
+    ],
     "$id": 38306
-  },
-  "前往设置": {
-    "en-US": "Go to settings",
-    "es-ES": "Ir a configuración",
-    "ar-EG": "انتقل إلى الإعدادات",
-    "pt-PT": "Vá para configurações",
-    "ru-RU": "Перейти в настройки",
-    "ja-JP": "設定に移動",
-    "de-DE": "Gehen Sie zu den Einstellungen",
-    "fr-FR": "Allez dans les paramètres",
-    "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-write-dispatcher.ts(1812-1820)"],
-    "$id": 4521
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
     "en-US": "Quota exhausted: {} private directory files have been analyzed; the current quota is {} files. Invite friends to unlock more capacity.",
@@ -127,8 +179,8 @@
     "fr-FR": "Quota épuisé : {count} fichiers de répertoires privés ont été analysés, le quota actuel est de {quota} fichiers. Vous pouvez inviter des amis pour débloquer plus de quota.",
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3352-3432)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(24639-24719)"
+      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3437-3517)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(26568-26648)"
     ],
     "$id": 11053
   },
@@ -143,8 +195,8 @@
     "fr-FR": "Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire",
     "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10321-10339)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(127404-127422)"
+      "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10406-10424)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(138057-138075)"
     ],
     "$id": 2977
   },
@@ -158,7 +210,9 @@
     "de-DE": "Die Datenbank ist nicht verbunden und ausstehende Elemente können nicht gelöscht werden.",
     "fr-FR": "La base de données n'est pas connectée et les éléments en attente ne peuvent pas être effacés.",
     "ko-KR": "데이터베이스 연결이 없어 처리 대기 항목을 비울 수 없습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/queue-manager.ts(20372-20392)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/queue-manager.ts(20901-20921)"
+    ],
     "$id": 8129
   },
   "数据库未初始化": {
@@ -173,7 +227,7 @@
     "ko-KR": "데이터베이스가 초기화되지 않았습니다",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(691-702)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1899-1910)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1953-1964)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(1621-1632)"
     ],
     "$id": 8130
@@ -188,7 +242,9 @@
     "de-DE": "Unbekannte Datei",
     "fr-FR": "Fichier inconnu",
     "ko-KR": "알 수 없는 파일",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(900-908)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(900-908)"
+    ],
     "$id": 8969
   },
   "空文件": {
@@ -218,7 +274,9 @@
     "de-DE": "Dateigröße beträgt 0",
     "fr-FR": "Taille du fichier égale à zéro",
     "ko-KR": "파일 크기가 0임",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(3114-3124)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(3114-3124)"
+    ],
     "$id": 8971
   },
   "建议减少 PDF 分析页数或关闭 OCR 功能": {
@@ -231,8 +289,70 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(127444-127471)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(138097-138124)"
+    ],
     "$id": 11054
+  },
+  "图片或视频文件已损坏，无法完成画面识别": {
+    "en-US": "The picture or video file is damaged and the screen recognition cannot be completed",
+    "es-ES": "El archivo de imagen o video está dañado y no se puede completar el reconocimiento de la pantalla",
+    "ar-EG": "ملف الصورة أو الفيديو تالف ولا يمكن إكمال التعرف على الشاشة",
+    "pt-PT": "O ficheiro de imagem ou vídeo está danificado e o reconhecimento do ecrã não pode ser concluído",
+    "ru-RU": "Изображение или видеофайл повреждены, и распознавание экрана не может быть завершено",
+    "ja-JP": "画像またはビデオファイルが破損していると、画面認識を完了することはできません",
+    "de-DE": "Die Bild- oder Videodatei ist beschädigt und die Bildschirmerkennung kann nicht abgeschlossen werden",
+    "fr-FR": "Le fichier image ou vidéo est endommagé et la reconnaissance d'écran ne peut pas être terminée",
+    "ko-KR": "사진 또는 비디오 파일이 손상되어 화면 인식을 완료 할 수 없습니다",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(139031-139054)"
+    ],
+    "$id": 32691
+  },
+  "需要更新应用后才能继续使用 AI 标签": {
+    "en-US": "You need to update the app to continue using the AI tag",
+    "es-ES": "Debe actualizar la aplicación para continuar usando la etiqueta AI",
+    "ar-EG": "تحتاج إلى تحديث التطبيق لمواصلة استخدام علامة الذكاء الاصطناعي",
+    "pt-PT": "Você precisa atualizar o aplicativo para continuar usando a tag AI",
+    "ru-RU": "Вам необходимо обновить приложение, чтобы продолжать использовать тег искусственного интеллекта",
+    "ja-JP": "AIタグを引き続き使用するには、アプリを更新する必要があります",
+    "de-DE": "Sie müssen die App aktualisieren, um das AI-Tag weiterhin verwenden zu können",
+    "fr-FR": "Vous devez mettre à jour l'application pour continuer à utiliser le tag AI",
+    "ko-KR": "당신은 인공 지능 태그를 계속 사용하려면 응용 프로그램을 업데이트해야합니다",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(143489-143512)"
+    ],
+    "$id": 32692
+  },
+  "画面识别服务返回异常，请稍后重试": {
+    "en-US": "The screen recognition service returned an exception, please try again later",
+    "es-ES": "El servicio de reconocimiento de pantalla devolvió una excepción, inténtelo de nuevo más tarde",
+    "ar-EG": "عادت خدمة التعرف على الشاشة استثناء ، يرجى المحاولة مرة أخرى لاحقا",
+    "pt-PT": "O serviço de reconhecimento de ecrã retornou uma exceção, tente novamente mais tarde",
+    "ru-RU": "Служба распознавания экрана выдала сообщение об исключении, пожалуйста, повторите попытку позже",
+    "ja-JP": "画面認識サービスが例外を返しました。",
+    "de-DE": "Der Bildschirmerkennungsdienst hat eine Ausnahme zurückgegeben. Bitte versuchen Sie es später erneut",
+    "fr-FR": "Le service de reconnaissance d'écran a renvoyé une exception, veuillez réessayer plus tard",
+    "ko-KR": "화면 인식 서비스는 예외를 반환,나중에 다시 시도하십시오",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(144858-144878)"
+    ],
+    "$id": 32693
+  },
+  "画面识别暂时失败，请稍后重试": {
+    "en-US": "Screen recognition temporarily failed, please try again later",
+    "es-ES": "El reconocimiento de pantalla falló temporalmente, inténtelo de nuevo más tarde",
+    "ar-EG": "فشل التعرف على الشاشة مؤقتا ، يرجى المحاولة مرة أخرى لاحقا",
+    "pt-PT": "O reconhecimento de ecrã falhou temporariamente, tente novamente mais tarde",
+    "ru-RU": "Временно не удалось распознать экран, пожалуйста, повторите попытку позже",
+    "ja-JP": "画面認識が一時的に失敗した場合は、後で再試行してください",
+    "de-DE": "Bildschirmerkennung vorübergehend fehlgeschlagen, bitte versuchen Sie es später erneut",
+    "fr-FR": "La reconnaissance d'écran a temporairement échoué, veuillez réessayer plus tard",
+    "ko-KR": "화면 인식이 일시적으로 실패했으므로 나중에 다시 시도하십시오",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(145779-145797)"
+    ],
+    "$id": 32694
   },
   "AI 服务未就绪": {
     "en-US": "AI service is not ready",
@@ -245,8 +365,8 @@
     "fr-FR": "Le service IA n'est pas prêt",
     "ko-KR": "AI 서비스가 준비되지 않았습니다",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(6929-6941)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/process-quick-name-analysis.ts(1441-1453)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7127-7139)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/process-quick-name-analysis.ts(1486-1498)"
     ],
     "$id": 8131
   },
@@ -260,7 +380,9 @@
     "de-DE": "Zusammenfassung",
     "fr-FR": "Résumé",
     "ko-KR": "요약",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7499-7505)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7712-7718)"
+    ],
     "$id": 20481
   },
   "正文": {
@@ -273,7 +395,9 @@
     "de-DE": "Text",
     "fr-FR": "Corps",
     "ko-KR": "본문",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7613-7619)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(7828-7834)"
+    ],
     "$id": 20482
   },
   "无法获取文件路径记录": {
@@ -286,7 +410,99 @@
     "de-DE": "Dateipfadeintrag konnte nicht abgerufen werden",
     "fr-FR": "Impossible d'obtenir l'enregistrement du chemin du fichier",
     "ko-KR": "파일 경로 레코드를 조회할 수 없습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(6514-6528)"],
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(6377-6391)"
+    ],
     "$id": 8132
+  },
+  "...": {
+    "en-US": "...",
+    "es-ES": "...",
+    "ar-EG": "...",
+    "pt-PT": "...",
+    "ru-RU": "...",
+    "ja-JP": "...",
+    "de-DE": "...",
+    "fr-FR": "...",
+    "ko-KR": "...",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/video-degraded-state-machine.ts(2724-2731)"
+    ],
+    "$id": 32695
+  },
+  "本次视频分析前置处理耗时较长，画面识别已暂停，可稍后点击重试": {
+    "en-US": "The pre-processing of this video analysis takes a long time, and the screen recognition has been paused. You can click to try again later.",
+    "es-ES": "El preprocesamiento de este análisis de video lleva mucho tiempo y el reconocimiento de la pantalla se ha pausado. Puede hacer clic para intentarlo de nuevo más tarde.",
+    "ar-EG": "تستغرق المعالجة المسبقة لتحليل الفيديو هذا وقتا طويلا ، وقد تم إيقاف التعرف على الشاشة مؤقتا. يمكنك النقر للمحاولة مرة أخرى لاحقا.",
+    "pt-PT": "O pré-processamento desta análise de vídeo demora muito tempo e o reconhecimento do ecrã foi interrompido. Você pode clicar para tentar novamente mais tarde.",
+    "ru-RU": "Предварительная обработка этого видеоанализа занимает много времени, и распознавание экрана было приостановлено. Вы можете нажать, чтобы повторить попытку позже.",
+    "ja-JP": "このビデオ分析の前処理には長い時間がかかり、画面認識は一時停止されています。 クリックして後でもう一度試すことができます。",
+    "de-DE": "Die Vorverarbeitung dieser Videoanalyse dauert lange und die Bildschirmerkennung wurde angehalten. Sie können klicken, um es später erneut zu versuchen.",
+    "fr-FR": "Le prétraitement de cette analyse vidéo prend beaucoup de temps et la reconnaissance de l'écran a été interrompue. Vous pouvez cliquer pour réessayer plus tard.",
+    "ko-KR": "이 비디오 분석의 사전 처리에는 시간이 오래 걸리고 화면 인식이 일시 중지되었습니다. 나중에 다시 시도하려면 클릭 할 수 있습니다.",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/video-degraded-state-machine.ts(2890-2924)"
+    ],
+    "$id": 32696
+  },
+  "当前视频分析时间上限偏短，未能完成画面识别，可在设置中调长分析时间或减少语音识别时长后重试": {
+    "en-US": "The current upper limit of video analysis time is too short, and the screen recognition cannot be completed. You can increase the analysis time in the settings or reduce the speech recognition time and try again.",
+    "es-ES": "El límite superior actual del tiempo de análisis de video es demasiado corto y no se puede completar el reconocimiento de la pantalla. Puede aumentar el tiempo de análisis en la configuración o reducir el tiempo de reconocimiento de voz e intentarlo de nuevo.",
+    "ar-EG": "الحد الأعلى الحالي لوقت تحليل الفيديو قصير جدا ، ولا يمكن إكمال التعرف على الشاشة. يمكنك زيادة وقت التحليل في الإعدادات أو تقليل وقت التعرف على الكلام والمحاولة مرة أخرى.",
+    "pt-PT": "O limite superior actual do tempo de análise de vídeo é demasiado curto e o reconhecimento do ecrã não pode ser concluído. Pode aumentar o tempo de análise nas definições ou reduzir o tempo de reconhecimento de voz e tentar novamente.",
+    "ru-RU": "Текущий верхний предел времени анализа видео слишком мал, и распознавание экрана не может быть завершено. Вы можете увеличить время анализа в настройках или уменьшить время распознавания речи и повторить попытку.",
+    "ja-JP": "現在のビデオ解析時間の上限が短すぎて、画面認識を完了できません。 設定で解析時間を増やしたり、音声認識時間を短縮して再試行することができます。",
+    "de-DE": "Die aktuelle Obergrenze der Videoanalysezeit ist zu kurz und die Bildschirmerkennung kann nicht abgeschlossen werden. Sie können die Analysezeit in den Einstellungen erhöhen oder die Spracherkennungszeit verkürzen und es erneut versuchen.",
+    "fr-FR": "La limite supérieure actuelle du temps d'analyse vidéo est trop courte et la reconnaissance d'écran ne peut pas être terminée. Vous pouvez augmenter le temps d'analyse dans les paramètres ou réduire le temps de reconnaissance vocale et réessayer.",
+    "ko-KR": "비디오 분석 시간의 현재 상한이 너무 짧아서 화면 인식을 완료 할 수 없습니다. 당신은 설정에서 분석 시간을 늘리거나 음성 인식 시간을 줄이고 다시 시도 할 수 있습니다.",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/video-degraded-state-machine.ts(2939-2993)"
+    ],
+    "$id": 32697
+  },
+  "需要更新软件版本后才能继续自动识别视频画面标签": {
+    "en-US": "You need to update the software version before you can continue to automatically recognize the video screen label",
+    "es-ES": "Debe actualizar la versión del software antes de poder continuar reconociendo automáticamente la etiqueta de la pantalla de video",
+    "ar-EG": "تحتاج إلى تحديث إصدار البرنامج قبل أن تتمكن من الاستمرار في التعرف تلقائيا على تسمية شاشة الفيديو",
+    "pt-PT": "É necessário atualizar a versão do software antes de poder continuar a reconhecer automaticamente a etiqueta do ecrã de vídeo",
+    "ru-RU": "Вам необходимо обновить версию программного обеспечения, прежде чем вы сможете продолжать автоматически распознавать надпись на видеоэкране",
+    "ja-JP": "ビデオ画面のラベルを自動的に認識し続けるには、ソフトウェアのバージョンを更新する必要があります",
+    "de-DE": "Sie müssen die Softwareversion aktualisieren, bevor Sie die Beschriftung des Videobildschirms weiterhin automatisch erkennen können",
+    "fr-FR": "Vous devez mettre à jour la version du logiciel avant de pouvoir continuer à reconnaître automatiquement l'étiquette de l'écran vidéo",
+    "ko-KR": "비디오 화면 레이블을 계속 자동으로 인식하려면 소프트웨어 버전을 업데이트해야 합니다",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/video-segment-executor.ts(12910-12937)"
+    ],
+    "$id": 32698
+  },
+  "本地识图服务暂时繁忙，稍后将自动重试": {
+    "en-US": "The local map recognition service is temporarily busy and will automatically try again later",
+    "es-ES": "El servicio de reconocimiento de mapas local está temporalmente ocupado y volverá a intentarlo automáticamente más tarde",
+    "ar-EG": "خدمة التعرف على الخرائط المحلية مشغولة مؤقتا وستحاول تلقائيا مرة أخرى لاحقا",
+    "pt-PT": "O serviço de reconhecimento de mapas locais está temporariamente ocupado e tentará novamente automaticamente mais tarde",
+    "ru-RU": "Служба распознавания местных карт временно занята и автоматически повторит попытку позже",
+    "ja-JP": "ローカルマップ認識サービスは一時的にビジー状態になり、後で自動的に再試行されます",
+    "de-DE": "Der lokale Kartenerkennungsdienst ist vorübergehend ausgelastet und versucht es später automatisch erneut",
+    "fr-FR": "Le service de reconnaissance de carte locale est temporairement occupé et réessayera automatiquement plus tard",
+    "ko-KR": "지역지도 인식 서비스는 일시적으로 사용 중이며 나중에 자동으로 다시 시도합니다",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/video-segment-executor.ts(14141-14163)"
+    ],
+    "$id": 32699
+  },
+  "当前视频片段画面识别遇到临时故障，稍后将自动重试": {
+    "en-US": "The screen recognition of the current video clip encounters a temporary failure, and it will be automatically retried later",
+    "es-ES": "El reconocimiento en pantalla del videoclip actual encuentra un error temporal y se volverá a intentar automáticamente más tarde",
+    "ar-EG": "يواجه التعرف على الشاشة لمقطع الفيديو الحالي فشلا مؤقتا ، وسيتم إعادة تجربته تلقائيا لاحقا",
+    "pt-PT": "O reconhecimento de ecrã do clip de vídeo actual encontra uma falha temporária e será repetido automaticamente mais tarde",
+    "ru-RU": "При распознавании текущего видеоклипа на экране произошел временный сбой, и позже он будет автоматически повторен",
+    "ja-JP": "現在のビデオクリップの画面認識に一時的な障害が発生し、後で自動的に再試行されます",
+    "de-DE": "Bei der Bildschirmerkennung des aktuellen Videoclips tritt ein vorübergehender Fehler auf, der später automatisch wiederholt wird",
+    "fr-FR": "La reconnaissance d'écran du clip vidéo en cours rencontre un échec temporaire et sera automatiquement réessayée ultérieurement",
+    "ko-KR": "현재 비디오 클립의 화면 인식에 일시적인 오류가 발생하고 나중에 자동으로 다시 시도됩니다",
+    "$files": [
+      "src/electron/runtime-services/analysis-queue-service/file-processor/video-segment-executor.ts(14179-14207)"
+    ],
+    "$id": 32700
   }
 }

@@ -4,9 +4,10 @@
  */
 
 import Database from 'better-sqlite3'
-import fs from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import path from 'node:path'
 import { logger, LogCategory } from '@firefly/shared'
+import { statOrNull, statOrThrow, readdirTyped, safeUnlink, mapLimit } from '../../infra/fs'
 import { t } from '@app/languages'
 
 /** 两阶段孤儿对账结果（Issue 04 Step 1） */
@@ -217,24 +218,25 @@ export class FileCleanupService {
 
       // 获取文件的inode（用于识别硬链接）
       let fileInode: number | null = null
-      try {
-        if (fs.existsSync(wf.path)) {
-          const stats = fs.statSync(wf.path)
-          fileInode = stats.ino
-          logger.info(LogCategory.DATABASE_SERVICE, `文件inode: ${fileInode}`)
-        }
-      } catch (error) {
-        logger.warn(LogCategory.DATABASE_SERVICE, `无法获取文件inode，文件可能已被移除: ${wf.path}`)
+      const fileStats = await statOrNull(wf.path, (error, targetPath) =>
+        logger.warn(
+          LogCategory.DATABASE_SERVICE,
+          `无法获取文件inode，文件可能已被移除: ${targetPath}`,
+          error
+        )
+      )
+      if (fileStats) {
+        fileInode = fileStats.ino
+        logger.info(LogCategory.DATABASE_SERVICE, `文件inode: ${fileInode}`)
       }
+
+      // 物理硬链接清理先于 DB 事务：旧实现把 fs.unlink 塞进同步事务体，
+      // 事务回滚也无法恢复物理删除；移到事务外保持实际提交语义不变，同时去掉同步 I/O。
+      const deletedHardlinks =
+        fileInode !== null ? await this.cleanupVirtualDirectoryHardlinks(wf.path, fileInode) : 0
 
       // 2. 使用事务确保原子性
       const transaction = this.db.transaction(() => {
-        // 2.1 删除虚拟目录中的硬链接
-        let deletedHardlinks = 0
-        if (fileInode !== null) {
-          deletedHardlinks = this.cleanupVirtualDirectoryHardlinks(wf.path, fileInode)
-        }
-
         // 2.2 删除数据库记录
         // 注意：tags 通过 file_fingerprint 关联，不会被删除
         this.db.prepare('DELETE FROM workspace_files WHERE id = ?').run(fileId)
@@ -277,7 +279,10 @@ export class FileCleanupService {
    * @param fileInode 文件inode
    * @returns 删除的硬链接数量
    */
-  private cleanupVirtualDirectoryHardlinks(originalPath: string, fileInode: number): number {
+  private async cleanupVirtualDirectoryHardlinks(
+    originalPath: string,
+    fileInode: number
+  ): Promise<number> {
     let deletedCount = 0
 
     try {
@@ -301,13 +306,13 @@ export class FileCleanupService {
       const virtualDirRoot = path.join(file.workspace_path, '.VirtualDirectory')
 
       // 检查虚拟目录是否存在
-      if (!fs.existsSync(virtualDirRoot)) {
+      if (!(await statOrNull(virtualDirRoot))) {
         logger.info(LogCategory.DATABASE_SERVICE, `虚拟目录不存在: ${virtualDirRoot}`)
         return 0
       }
 
       // 递归扫描虚拟目录，查找并删除硬链接
-      deletedCount = this.scanAndDeleteHardlinks(virtualDirRoot, fileInode, originalPath)
+      deletedCount = await this.scanAndDeleteHardlinks(virtualDirRoot, fileInode, originalPath)
 
       logger.info(LogCategory.DATABASE_SERVICE, `清理硬链接完成，删除数量: ${deletedCount}`)
     } catch (error) {
@@ -320,15 +325,15 @@ export class FileCleanupService {
   /**
    * 递归扫描目录并删除匹配的硬链接
    */
-  private scanAndDeleteHardlinks(
+  private async scanAndDeleteHardlinks(
     dirPath: string,
     targetInode: number,
     originalPath: string
-  ): number {
+  ): Promise<number> {
     let deletedCount = 0
 
     try {
-      const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+      const entries = await readdirTyped(dirPath)
 
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name)
@@ -338,20 +343,20 @@ export class FileCleanupService {
         }
 
         if (entry.isDirectory()) {
-          deletedCount += this.scanAndDeleteHardlinks(fullPath, targetInode, originalPath)
+          deletedCount += await this.scanAndDeleteHardlinks(fullPath, targetInode, originalPath)
           try {
-            const remainingEntries = fs.readdirSync(fullPath)
+            const remainingEntries = await readdirTyped(fullPath)
             if (remainingEntries.length === 0) {
-              fs.rmdirSync(fullPath)
+              await fsp.rmdir(fullPath)
             }
           } catch (error) {
-            logger.warn(LogCategory.FILE_WATCHER, '清理硬链接扫描空目录失败:', error)
+            logger.warn(LogCategory.FILE_WATCHER, '清理硬链接扫描空目录失败:', fullPath, error)
           }
         } else if (entry.isFile()) {
           try {
-            const stats = fs.statSync(fullPath)
+            const stats = await statOrThrow(fullPath)
             if (stats.ino === targetInode) {
-              fs.unlinkSync(fullPath)
+              await safeUnlink(fullPath)
               deletedCount++
             }
           } catch (error) {
@@ -421,15 +426,14 @@ export class FileCleanupService {
         Array<{ id: number; path: string; inode: number | null }>
       >()
 
-      for (const meta of fileMetadatas) {
-        let inode: number | null = null
-        try {
-          if (fs.existsSync(meta.path)) {
-            inode = fs.statSync(meta.path).ino
-          }
-        } catch (e) {
-          logger.warn(LogCategory.FILE_WATCHER, '获取文件 inode 失败:', meta.path, e)
-        }
+      const inodeSamples = await mapLimit(fileMetadatas, 32, meta =>
+        statOrNull(meta.path, (error, targetPath) =>
+          logger.warn(LogCategory.FILE_WATCHER, '获取文件 inode 失败:', targetPath, error)
+        ).then(stats => stats?.ino ?? null)
+      )
+      for (let i = 0; i < fileMetadatas.length; i++) {
+        const meta = fileMetadatas[i]
+        const inode = inodeSamples[i]
 
         if (!workspaceGroups.has(meta.workspace_path)) {
           workspaceGroups.set(meta.workspace_path, [])
@@ -444,14 +448,14 @@ export class FileCleanupService {
           let deletedHardlinks = 0
 
           // 4.1 批量清理硬链接 (每个工作区只扫描一次虚拟目录)
-          if (fs.existsSync(virtualDirRoot)) {
+          if (await statOrNull(virtualDirRoot)) {
             const inodesSet = new Set<number>()
             for (const f of files) {
               if (f.inode !== null) inodesSet.add(f.inode)
             }
 
             if (inodesSet.size > 0) {
-              deletedHardlinks = this.batchScanAndDeleteHardlinks(virtualDirRoot, inodesSet)
+              deletedHardlinks = await this.batchScanAndDeleteHardlinks(virtualDirRoot, inodesSet)
               totalDeletedHardlinks += deletedHardlinks
             }
           }
@@ -513,11 +517,14 @@ export class FileCleanupService {
   /**
    * 批量扫描并删除硬链接
    */
-  private batchScanAndDeleteHardlinks(dirPath: string, targetInodes: Set<number>): number {
+  private async batchScanAndDeleteHardlinks(
+    dirPath: string,
+    targetInodes: Set<number>
+  ): Promise<number> {
     let deletedCount = 0
 
     try {
-      const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+      const entries = await readdirTyped(dirPath)
 
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name)
@@ -527,20 +534,20 @@ export class FileCleanupService {
         }
 
         if (entry.isDirectory()) {
-          deletedCount += this.batchScanAndDeleteHardlinks(fullPath, targetInodes)
+          deletedCount += await this.batchScanAndDeleteHardlinks(fullPath, targetInodes)
           try {
-            const remainingEntries = fs.readdirSync(fullPath)
+            const remainingEntries = await readdirTyped(fullPath)
             if (remainingEntries.length === 0) {
-              fs.rmdirSync(fullPath)
+              await fsp.rmdir(fullPath)
             }
           } catch (error) {
             logger.warn(LogCategory.FILE_WATCHER, '批量清理空目录失败:', fullPath, error)
           }
         } else if (entry.isFile()) {
           try {
-            const stats = fs.statSync(fullPath)
+            const stats = await statOrThrow(fullPath)
             if (targetInodes.has(stats.ino)) {
-              fs.unlinkSync(fullPath)
+              await safeUnlink(fullPath)
               deletedCount++
             }
           } catch (error) {

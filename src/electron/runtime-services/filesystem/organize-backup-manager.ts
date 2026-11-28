@@ -1,6 +1,7 @@
-import fs from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import path from 'node:path'
 import { logger, LogCategory } from '@firefly/shared'
+import { existsAsync, statOrThrow, mkdirp } from '../../infra/fs'
 
 /**
  * 备份记录
@@ -21,18 +22,26 @@ export class OrganizeBackupManager {
   private backupRecords: BackupRecord[] = []
   private sessionId: string
 
-  constructor(workspaceDirectoryPath: string) {
+  private constructor(workspaceDirectoryPath: string) {
     this.sessionId = new Date().toISOString().replace(/[:.]/g, '-')
     this.backupDir = path.join(workspaceDirectoryPath, '.organize-backups', this.sessionId)
-    this.ensureBackupDirectory()
+  }
+
+  /**
+   * 异步工厂：原构造函数内的同步目录创建迁移到此处，失败行为与原构造函数一致（直接抛出）。
+   */
+  static async create(workspaceDirectoryPath: string): Promise<OrganizeBackupManager> {
+    const manager = new OrganizeBackupManager(workspaceDirectoryPath)
+    await manager.ensureBackupDirectory()
+    return manager
   }
 
   /**
    * 确保备份目录存在
    */
-  private ensureBackupDirectory(): void {
-    if (!fs.existsSync(this.backupDir)) {
-      fs.mkdirSync(this.backupDir, { recursive: true })
+  private async ensureBackupDirectory(): Promise<void> {
+    if (!(await existsAsync(this.backupDir))) {
+      await mkdirp(this.backupDir)
       logger.debug(LogCategory.FILE_ORGANIZATION, '创建备份目录', { backupDir: this.backupDir })
     }
   }
@@ -47,16 +56,13 @@ export class OrganizeBackupManager {
       const backupPath = path.join(this.backupDir, relativePath)
 
       // 确保备份目标目录存在
-      const backupDirPath = path.dirname(backupPath)
-      if (!fs.existsSync(backupDirPath)) {
-        fs.mkdirSync(backupDirPath, { recursive: true })
-      }
+      await mkdirp(path.dirname(backupPath))
 
       // 复制文件
-      fs.copyFileSync(filePath, backupPath)
+      await fsp.copyFile(filePath, backupPath)
 
       // 获取文件大小
-      const stats = fs.statSync(filePath)
+      const stats = await statOrThrow(filePath)
 
       // 记录备份
       const record: BackupRecord = {
@@ -118,7 +124,7 @@ export class OrganizeBackupManager {
         return false
       }
 
-      if (!fs.existsSync(record.backupPath)) {
+      if (!(await existsAsync(record.backupPath))) {
         logger.warn(LogCategory.FILE_ORGANIZATION, '备份文件不存在', {
           backupPath: record.backupPath
         })
@@ -126,7 +132,7 @@ export class OrganizeBackupManager {
       }
 
       // 恢复文件
-      fs.copyFileSync(record.backupPath, originalPath)
+      await fsp.copyFile(record.backupPath, originalPath)
 
       logger.debug(LogCategory.FILE_ORGANIZATION, '文件恢复成功', {
         original: originalPath,
@@ -173,8 +179,8 @@ export class OrganizeBackupManager {
    */
   async cleanup(): Promise<void> {
     try {
-      if (fs.existsSync(this.backupDir)) {
-        fs.rmSync(this.backupDir, { recursive: true, force: true })
+      if (await existsAsync(this.backupDir)) {
+        await fsp.rm(this.backupDir, { recursive: true, force: true })
         logger.debug(LogCategory.FILE_ORGANIZATION, '清理备份目录', { backupDir: this.backupDir })
       }
     } catch (error: any) {
@@ -224,7 +230,7 @@ export class OrganizeBackupManager {
         statistics: this.getStatistics()
       }
 
-      fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8')
+      await fsp.writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8')
 
       logger.debug(LogCategory.FILE_ORGANIZATION, '保存备份清单', { manifestPath })
     } catch (error: any) {
@@ -245,14 +251,15 @@ export class OrganizeBackupManager {
       const backupDir = path.join(workspaceDirectoryPath, '.organize-backups', sessionId)
       const manifestPath = path.join(backupDir, 'manifest.json')
 
-      if (!fs.existsSync(manifestPath)) {
+      if (!(await existsAsync(manifestPath))) {
         return null
       }
 
-      const manifestContent = fs.readFileSync(manifestPath, 'utf-8')
+      const manifestContent = await fsp.readFile(manifestPath, 'utf-8')
       const manifest = JSON.parse(manifestContent)
 
-      const manager = new OrganizeBackupManager(workspaceDirectoryPath)
+      // 保持旧语义：备份目录由新建会话确定，随后仅覆盖 sessionId / records。
+      const manager = await OrganizeBackupManager.create(workspaceDirectoryPath)
       manager.sessionId = manifest.sessionId
       manager.backupRecords = manifest.records
 
