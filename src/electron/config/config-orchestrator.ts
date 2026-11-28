@@ -1,19 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { Conf } from 'electron-conf'
-import fixPath from 'fix-path'
 import { setDisplayLocaleReader } from '../runtime-services/database/database-service/display-locale-seam'
-
-// 在 macOS 和 Linux 上修复 PATH 环境变量
-if (process.platform !== 'win32') {
-  try {
-    const fixPathFunc = typeof fixPath === 'function' ? fixPath : (fixPath as any).default
-    if (typeof fixPathFunc === 'function') {
-      fixPathFunc()
-    }
-  } catch (e) {
-    console.error('Failed to fix PATH in ConfigOrchestrator:', e)
-  }
-}
 import {
   logger,
   LogCategory,
@@ -647,14 +634,23 @@ export class ConfigOrchestrator extends EventEmitter {
         if (rule.isCzkawka === undefined) {
           hasUpgradedCzkawka = true
           // 优先通过 ID 或 Value 匹配系统预设定义
-          const matchedDefault = defaultRulesMap.get(rule.id) || defaultRulesMap.get(rule.value?.toLowerCase())
+          const matchedDefault =
+            defaultRulesMap.get(rule.id) || defaultRulesMap.get(rule.value?.toLowerCase())
           if (matchedDefault && matchedDefault.isCzkawka !== undefined) {
             return { ...rule, isCzkawka: matchedDefault.isCzkawka }
           }
           // 自定义规则回退策略：目录和非临时文件的系统规则默认保护，临时/扩展名/构建目录默认允许清理
-          const isCleanTarget = ['.tmp', '.log', '.bak', '.old', '.dmp', 'dist', 'build', 'out', 'target'].some(
-            t => (rule.value || '').toLowerCase().includes(t)
-          )
+          const isCleanTarget = [
+            '.tmp',
+            '.log',
+            '.bak',
+            '.old',
+            '.dmp',
+            'dist',
+            'build',
+            'out',
+            'target'
+          ].some(t => (rule.value || '').toLowerCase().includes(t))
           const isCzkawka = (rule.type === 'directory' || rule.type === 'file') && !isCleanTarget
           return { ...rule, isCzkawka }
         }

@@ -75,9 +75,10 @@ function fireAvailable(info: { version: string; minVersion?: string }) {
 }
 
 describe('AutoUpdateService · 工单 09 A7 强更三分支红线 / P1-15 minVersion 安全解析', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     registeredHandlers.clear()
+    await (autoUpdateService as any).getAutoUpdater()
     ;(autoUpdateService as any).setupUpdaterListeners()
   })
 

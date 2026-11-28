@@ -114,7 +114,7 @@ export class FileOperationManager {
       const needsMove = !isPathEqual(actualOldPath, operation.newPath)
       // 采样身份是 journal 崩溃恢复的唯一判据：拿不到必须失败关闭，否则空串会让
       // observeFs 的 sampledHash.startsWith('') 恒真，把已变更文件误判为同身份。
-      const fileIdentity = needsMove ? sampleFileIdentity(actualOldPath) : null
+      const fileIdentity = needsMove ? await sampleFileIdentity(actualOldPath) : null
       if (needsMove && !fileIdentity) {
         const errorMessage = `[一键整理] 无法采样文件身份，拒绝写入不可恢复的 journal: ${actualOldPath}`
         logger.warn(LogCategory.FILE_ORGANIZATION, errorMessage, { operation })

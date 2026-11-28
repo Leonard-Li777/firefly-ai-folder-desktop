@@ -147,14 +147,23 @@ export class PathLockManager {
 /** 5 次指数退避阶梯 (毫秒): 50ms, 100ms, 200ms, 400ms, 800ms */
 export const BACKOFF_DELAYS_MS = [50, 100, 200, 400, 800] as const
 
+/** 异步检查路径是否存在（替代同步 fs.existsSync，避免阻塞主进程事件循环） */
+async function existsAsync(filePath: string): Promise<boolean> {
+  try {
+    await fs.promises.access(filePath)
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** 观察文件系统的实际状态 */
-export function observeFs(
+export async function observeFs(
   fromPath: string,
   toPath: string,
   expectedIdentity: string
-): FsObservation {
-  const fromExists = fs.existsSync(fromPath)
-  const toExists = fs.existsSync(toPath)
+): Promise<FsObservation> {
+  const [fromExists, toExists] = await Promise.all([existsAsync(fromPath), existsAsync(toPath)])
   let sameIdentity = false
 
   if (toExists) {
@@ -162,7 +171,7 @@ export function observeFs(
       // [Issue 04 Step 2] 根治大视频 OOM：旧实现 readFileSync 全量读入 Buffer（GB 级视频直接 OOM），
       // 改为头 64KB + 尾 64KB 采样 + size + mtime_ms 构建轻量指纹。
       // 判定口径与旧实现一致：采样指纹与 expectedIdentity 的前 8 位前缀/后缀互含即认同一身份。
-      const sampledHash = sampleFileIdentity(toPath)
+      const sampledHash = await sampleFileIdentity(toPath)
       if (sampledHash) {
         sameIdentity =
           expectedIdentity.startsWith(sampledHash.slice(0, 8)) ||
@@ -184,16 +193,16 @@ export function observeFs(
 const IDENTITY_SAMPLE_BYTES = 64 * 1024
 
 /**
- * 头尾采样文件身份指纹（Issue 04 Step 2）。
- * 用 openSync + read 流式采样，绝不 readFileSync 全量载入，杜绝 GB 级视频恢复 OOM。
+ * 头尾采样文件身份指纹（Issue 04 Step 2 / 24-p1-7 异步化）。
+ * 使用 FileHandle.read 异步流式采样，用后立即 close 句柄，杜绝同步阻塞与大文件 OOM。
  * 指纹输入 = size + Math.trunc(mtimeMs) + 头 64KB + 尾 64KB，轻量且区分度高。
  * 文件小于窗口时头尾重叠按实际长度读，不重复计算。
  */
-export function sampleFileIdentity(filePath: string): string | null {
-  let fd: number | null = null
+export async function sampleFileIdentity(filePath: string): Promise<string | null> {
+  let handle: fs.promises.FileHandle | null = null
   try {
-    fd = fs.openSync(filePath, 'r')
-    const stats = fs.fstatSync(fd)
+    handle = await fs.promises.open(filePath, 'r')
+    const stats = await handle.stat()
     const size = stats.size
     const mtimeMs = Math.trunc(stats.mtimeMs)
     const hash = crypto.createHash('sha256')
@@ -202,12 +211,12 @@ export function sampleFileIdentity(filePath: string): string | null {
 
     const buf = Buffer.alloc(IDENTITY_SAMPLE_BYTES)
     // 头部采样
-    const headBytes = fs.readSync(fd, buf, 0, IDENTITY_SAMPLE_BYTES, 0)
+    const { bytesRead: headBytes } = await handle.read(buf, 0, IDENTITY_SAMPLE_BYTES, 0)
     if (headBytes > 0) hash.update(buf.subarray(0, headBytes))
     // 尾部采样（size>窗口 时才有独立尾部，否则已由头部覆盖）
     if (size > IDENTITY_SAMPLE_BYTES) {
       const tailStart = size - IDENTITY_SAMPLE_BYTES
-      const tailBytes = fs.readSync(fd, buf, 0, IDENTITY_SAMPLE_BYTES, tailStart)
+      const { bytesRead: tailBytes } = await handle.read(buf, 0, IDENTITY_SAMPLE_BYTES, tailStart)
       if (tailBytes > 0) hash.update(buf.subarray(0, tailBytes))
     }
     return hash.digest('hex')
@@ -218,11 +227,11 @@ export function sampleFileIdentity(filePath: string): string | null {
     })
     return null
   } finally {
-    if (fd !== null) {
+    if (handle !== null) {
       try {
-        fs.closeSync(fd)
+        await handle.close()
       } catch (err) {
-        logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 关闭采样文件描述符失败', {
+        logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 关闭采样文件句柄失败', {
           filePath,
           err
         })
@@ -273,7 +282,7 @@ export async function executeRecoveryForEntry(
   entry: JournalEntry,
   sleepFn: (ms: number) => Promise<void> = ms => new Promise(res => setTimeout(res, ms))
 ): Promise<DecideRecoveryResult> {
-  const fsObs = observeFs(entry.from_path, entry.to_path, entry.file_identity)
+  const fsObs = await observeFs(entry.from_path, entry.to_path, entry.file_identity)
   const dbObs = observeDb(db, entry.from_path, entry.to_path)
   const decision = decideRecovery(entry, fsObs, dbObs)
 
@@ -299,10 +308,8 @@ export async function executeRecoveryForEntry(
     for (let i = 0; i < BACKOFF_DELAYS_MS.length; i++) {
       try {
         const targetDir = path.dirname(entry.from_path)
-        if (!fs.existsSync(targetDir)) {
-          fs.mkdirSync(targetDir, { recursive: true })
-        }
-        fs.renameSync(entry.to_path, entry.from_path)
+        await fs.promises.mkdir(targetDir, { recursive: true })
+        await fs.promises.rename(entry.to_path, entry.from_path)
         success = true
         break
       } catch (err: any) {
@@ -319,6 +326,12 @@ export async function executeRecoveryForEntry(
       return { action: 'roll-back-fs' }
     } else {
       // 退避耗尽，进入 manual_recovery
+      logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 物理回滚退避耗尽，转入人工恢复', {
+        id: entry.id,
+        fromPath: entry.from_path,
+        toPath: entry.to_path,
+        err: lastError
+      })
       PathLockManager.acquireLocks([entry.from_path, entry.to_path])
       db.prepare(
         `UPDATE fs_operation_journal
@@ -344,16 +357,28 @@ export async function executeRecoveryForEntry(
  * [Issue 04 收尾] 启动期批量自愈：扫描 fs_operation_journal 挂起意图并逐条决策补偿/重放。
  * 生产启动链路唯一入口；单条失败不阻断其余条目，所有异常显式 logger.warn 上报（禁静默吞异常）。
  */
-export async function recoverPendingFsJournals(db: Database): Promise<{
+export async function recoverPendingFsJournals(
+  db: Database,
+  options?: {
+    yieldEvery?: number
+    onProgress?: (processed: number, total: number) => void
+  }
+): Promise<{
   scanned: number
   recovered: number
   stuck: number
 }> {
   const entries = probePendingIntents(db)
+  if (entries.length === 0) {
+    return { scanned: 0, recovered: 0, stuck: 0 }
+  }
+
+  const yieldEvery = Math.max(1, options?.yieldEvery ?? 10)
   let recovered = 0
   let stuck = 0
 
-  for (const entry of entries) {
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
     try {
       const result = await executeRecoveryForEntry(db, entry)
       if (result.action === 'mark-stuck') {
@@ -372,15 +397,19 @@ export async function recoverPendingFsJournals(db: Database): Promise<{
         err
       })
     }
+
+    options?.onProgress?.(i + 1, entries.length)
+    // 大批量待恢复条目批间让出事件循环，避免长阻塞主进程
+    if ((i + 1) % yieldEvery === 0 && i + 1 < entries.length) {
+      await new Promise<void>(resolve => setImmediate(resolve))
+    }
   }
 
-  if (entries.length > 0) {
-    logger.info(LogCategory.FILE_ORGANIZATION, '[FsJournal] 启动期挂起意图自愈完成', {
-      scanned: entries.length,
-      recovered,
-      stuck
-    })
-  }
+  logger.info(LogCategory.FILE_ORGANIZATION, '[FsJournal] 启动期挂起意图自愈完成', {
+    scanned: entries.length,
+    recovered,
+    stuck
+  })
   return { scanned: entries.length, recovered, stuck }
 }
 
@@ -457,10 +486,8 @@ export class TwoPhaseBatchCoordinator {
       for (const item of items) {
         if (!isPathEqual(item.fromPath, item.toPath)) {
           const targetDir = path.dirname(item.toPath)
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true })
-          }
-          fs.renameSync(item.fromPath, item.toPath)
+          await fs.promises.mkdir(targetDir, { recursive: true })
+          await fs.promises.rename(item.fromPath, item.toPath)
           movedItems.push(item)
         }
       }
@@ -469,7 +496,7 @@ export class TwoPhaseBatchCoordinator {
       logger.error(LogCategory.FILE_ORGANIZATION, '物理移动阶段异常，执行中止:', fsErr)
       for (const item of movedItems.reverse()) {
         try {
-          fs.renameSync(item.toPath, item.fromPath)
+          await fs.promises.rename(item.toPath, item.fromPath)
         } catch (rollbackErr) {
           logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 物理阶段逆向恢复失败', {
             itemId: item.id,
@@ -546,7 +573,7 @@ export class TwoPhaseBatchCoordinator {
       // 事务回滚后，物理逆向移动并落盘 compensated 状态
       for (const item of movedItems.reverse()) {
         try {
-          fs.renameSync(item.toPath, item.fromPath)
+          await fs.promises.rename(item.toPath, item.fromPath)
         } catch (rollbackFsErr) {
           logger.error(LogCategory.FILE_ORGANIZATION, '逆向移动补偿失败:', rollbackFsErr)
         }
@@ -610,12 +637,10 @@ export class TwoPhaseBatchCoordinator {
     const movedItems: JournalEntry[] = []
     try {
       for (const entry of committedEntries) {
-        if (fs.existsSync(entry.to_path)) {
+        if (await existsAsync(entry.to_path)) {
           const targetDir = path.dirname(entry.from_path)
-          if (!fs.existsSync(targetDir)) {
-            fs.mkdirSync(targetDir, { recursive: true })
-          }
-          fs.renameSync(entry.to_path, entry.from_path)
+          await fs.promises.mkdir(targetDir, { recursive: true })
+          await fs.promises.rename(entry.to_path, entry.from_path)
           movedItems.push(entry)
         }
       }
@@ -624,7 +649,7 @@ export class TwoPhaseBatchCoordinator {
       logger.error(LogCategory.FILE_ORGANIZATION, '撤销物理移动阶段异常，执行中止:', fsErr)
       for (const item of movedItems.reverse()) {
         try {
-          fs.renameSync(item.from_path, item.to_path)
+          await fs.promises.rename(item.from_path, item.to_path)
         } catch (rollbackErr) {
           logger.warn(LogCategory.FILE_ORGANIZATION, '[FsJournal] 撤销批次逆向恢复失败', {
             itemId: item.id,

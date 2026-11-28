@@ -16,6 +16,7 @@ declare global {
   const VITE_ENABLE_POSTHOG: string
   const __IS_DEV__: boolean
   const __IS_PROD__: boolean
+  const __FF_E2E__: boolean | undefined
 
   interface Window {
     VITE_POSTHOG_HOST: string

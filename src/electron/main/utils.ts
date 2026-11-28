@@ -3,7 +3,6 @@ import { logger, LogCategory, ErrorNormalizer, parseSizeToGB } from '@firefly/sh
 import { AIServiceStatus } from '@firefly/types'
 import { hardwareDetectionService } from '../runtime-services/system/hardware-detection-service'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
-import { LlamaModelManager } from '../runtime-services'
 import { LicenseService, LicenseStatus } from '../runtime-services/system/license-service'
 import { engineBridgeService } from '../runtime-services/engine-bridge'
 import * as path from 'path'
@@ -172,8 +171,9 @@ export const enrichAIStatus = async (info: any) => {
     currentMode === 'cloud'
       ? orchestrator.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
       : currentMode === 'cpu'
-      ? 'qwen2.5-0.5b-instruct'
-      : (await import('../runtime-services/engine-bridge')).engineBridgeService.getSnapshot().model
+        ? 'qwen2.5-0.5b-instruct'
+        : (await import('../runtime-services/engine-bridge')).engineBridgeService.getSnapshot()
+            .model
   const currentCloudProvider = orchestrator.getValue<string>('AI_CLOUD_PROVIDER')
 
   // Create a stable cache key based on model identity AND engine config AND selected model in orchestrator
@@ -314,9 +314,7 @@ export const enrichAIStatus = async (info: any) => {
 
       // 1. 优先用引擎桥接快照的当前模型名反查元数据（PRD-0044：id 或 name 匹配任一即可）
       let model = currentSelectedModelId
-        ? rawModels.find(
-            m => m.id === currentSelectedModelId || m.name === currentSelectedModelId
-          )
+        ? rawModels.find(m => m.id === currentSelectedModelId || m.name === currentSelectedModelId)
         : undefined
 
       // 2. 回退：如果根据配置没查到，再根据传入的 enriched.modelName 精确匹配
@@ -363,9 +361,10 @@ export const enrichAIStatus = async (info: any) => {
             (model as any).vramNeededGB ||
             parseSizeToGB(model.totalSize || model.size || '0B') * 1.15 + 0.5
         )
-        const totalSizeBytes = model.totalSize || model.size
-          ? Math.round(parseSizeToGB(model.totalSize || model.size) * 1024 ** 3)
-          : 0
+        const totalSizeBytes =
+          model.totalSize || model.size
+            ? Math.round(parseSizeToGB(model.totalSize || model.size) * 1024 ** 3)
+            : 0
 
         logger.debug(
           LogCategory.MAIN,

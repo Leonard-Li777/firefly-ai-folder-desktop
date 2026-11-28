@@ -83,10 +83,11 @@ function mockPointerResponse(statusCode: number, bodyText: string) {
 }
 
 describe('AutoUpdateService · 工单 02 AC2.1 / AC2.3', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
     registeredHandlers.clear()
     setFeedURLCalls.length = 0
+    await (autoUpdateService as any).getAutoUpdater()
   })
 
   it('AC2.1: BUILD_REGION=cn → getChannel()=cn 且 getCurrentProvider()=r2', () => {
@@ -181,7 +182,9 @@ describe('AutoUpdateService · Ticket 07 路线 B 单对象指针动态寻址', 
     mockPointerResponse(200, JSON.stringify({ version: '4.2.0', feedBasePath: '4.2.0' }))
     const res1 = await autoUpdateService.probeEndpoint('r2')
     expect(res1).toBe('alive')
-    expect(mockHttpsRequest.mock.calls[0][0]).toBe('https://download.iocn.cn/firefly-ai-folder/latest.json')
+    expect(mockHttpsRequest.mock.calls[0][0]).toBe(
+      'https://download.iocn.cn/firefly-ai-folder/latest.json'
+    )
     expect(setFeedURLCalls[setFeedURLCalls.length - 1].url).toBe(
       'https://download.iocn.cn/firefly-ai-folder/4.2.0'
     )
@@ -193,7 +196,9 @@ describe('AutoUpdateService · Ticket 07 路线 B 单对象指针动态寻址', 
     )
     const res2 = await autoUpdateService.probeEndpoint('r2')
     expect(res2).toBe('alive')
-    expect(mockHttpsRequest.mock.calls[1][0]).toBe('https://download.iocn.cn/firefly-ai-folder/staging.json')
+    expect(mockHttpsRequest.mock.calls[1][0]).toBe(
+      'https://download.iocn.cn/firefly-ai-folder/staging.json'
+    )
     expect(setFeedURLCalls[setFeedURLCalls.length - 1].url).toBe(
       'https://download.iocn.cn/firefly-ai-folder/candidates/4.2.0/run-9988'
     )

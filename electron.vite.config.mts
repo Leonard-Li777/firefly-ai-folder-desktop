@@ -7,6 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'fs'
 import { createRequire } from 'module'
+import ts from 'typescript'
 import {
   getRendererDevPortSlot,
   getOccupiedTcpPortsSync,
@@ -293,54 +294,113 @@ export default defineConfig(({ command, mode }) => {
         return resolvable
       }
 
-      const lines = code.split('\n')
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i]
-        if (!line.includes('require(')) continue
-        const commentIndex = line.indexOf('//')
-        const codePart = commentIndex === -1 ? line : line.slice(0, commentIndex)
-        const commentPart = commentIndex === -1 ? '' : line.slice(commentIndex)
-        if (!codePart.includes('require(')) continue
+      const isE2EBuild = process.env.FF_E2E_MODE === '1'
+      const scriptKind = id.endsWith('.tsx')
+        ? ts.ScriptKind.TSX
+        : id.endsWith('.mts')
+          ? ts.ScriptKind.MTS
+          : ts.ScriptKind.TS
+      const sourceFile = ts.createSourceFile(id, code, ts.ScriptTarget.Latest, true, scriptKind)
 
-        let replaced = ''
-        let cursor = 0
-        // 先处理相对路径（无条件改写），再处理可解析的裸模块
-        const requireRegex = /require\(\s*(['"])([^'"]+)\1\s*\)/g
-        let match: RegExpExecArray | null
-        while ((match = requireRegex.exec(codePart)) !== null) {
-          const quote = match[1]
-          const spec = match[2]
-          const isRelative = spec.startsWith('.')
-          const isAbsolute = spec.startsWith('/')
-          const isNodeBuiltin = spec.startsWith('node:')
-          const isElectron = spec === 'electron'
-          let shouldRewrite = isRelative
-          if (!isRelative && !isAbsolute && !isNodeBuiltin && !isElectron) {
-            // 裸模块：只有在构建期能真实解析到时才改写，避免把可选依赖变成硬失败
-            shouldRewrite = await canResolveBare(spec)
-          }
-          if (shouldRewrite) {
-            const alias = `__ffReq${aliasIndex++}`
-            // CJS 包走 default import（保住 `module.exports` 本体），ESM 包维持命名空间导入
-            const useDefaultImport =
-              !isRelative && !isAbsolute && !isNodeBuiltin && (await isCjsTarget(spec))
-            injects.push(
-              useDefaultImport
-                ? `import ${alias} from ${quote}${spec}${quote}`
-                : `import * as ${alias} from ${quote}${spec}${quote}`
-            )
-            rewritten++
-            replaced += codePart.slice(cursor, match.index) + alias
-            cursor = match.index + match[0].length
-          }
+      // 精确识别真值 __FF_E2E__ 守卫（如 __FF_E2E__ 或 typeof __FF_E2E__ !== 'undefined' && __FF_E2E__），
+      // 排除取反 (!__FF_E2E__) 与非条件对象字面量，并支持单行无花括号及换行花括号写法。
+      const isTruthyE2EGuard = (expr: ts.Expression): boolean => {
+        let current = expr
+        while (ts.isParenthesizedExpression(current)) {
+          current = current.expression
         }
-        if (cursor > 0) {
-          lines[i] = replaced + codePart.slice(cursor) + commentPart
+        if (ts.isIdentifier(current)) {
+          return current.text === '__FF_E2E__'
+        }
+        if (
+          ts.isBinaryExpression(current) &&
+          current.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+        ) {
+          return isTruthyE2EGuard(current.left) || isTruthyE2EGuard(current.right)
+        }
+        return false
+      }
+
+      const requireCalls: Array<{
+        start: number
+        end: number
+        spec: string
+        quote: string
+      }> = []
+
+      const visit = (node: ts.Node): void => {
+        // 仅在非 E2E 构建时跳过 __FF_E2E__ 真值条件分支内的按需 require 改写，
+        // 避免 enforce:'pre' 在 define 替换前提前升格为顶层静态 import；
+        // FF_E2E_MODE=1 时照常改写，防止打包产物残留悬空相对 require。
+        if (!isE2EBuild && ts.isIfStatement(node) && isTruthyE2EGuard(node.expression)) {
+          if (node.elseStatement) {
+            visit(node.elseStatement)
+          }
+          return
+        }
+
+        if (
+          ts.isCallExpression(node) &&
+          ts.isIdentifier(node.expression) &&
+          node.expression.text === 'require' &&
+          node.arguments.length === 1 &&
+          ts.isStringLiteral(node.arguments[0])
+        ) {
+          const arg = node.arguments[0]
+          const argText = code.slice(arg.getStart(sourceFile), arg.getEnd())
+          const quote = argText[0] === '"' ? '"' : "'"
+          requireCalls.push({
+            start: node.getStart(sourceFile),
+            end: node.getEnd(),
+            spec: arg.text,
+            quote
+          })
+          return
+        }
+
+        ts.forEachChild(node, visit)
+      }
+
+      visit(sourceFile)
+      if (requireCalls.length === 0) return null
+
+      const replacements: Array<{ start: number; end: number; alias: string }> = []
+      for (const call of requireCalls) {
+        const { spec, quote } = call
+        const isRelative = spec.startsWith('.')
+        const isAbsolute = spec.startsWith('/')
+        const isNodeBuiltin = spec.startsWith('node:')
+        const isElectron = spec === 'electron'
+        let shouldRewrite = isRelative
+        if (!isRelative && !isAbsolute && !isNodeBuiltin && !isElectron) {
+          // 裸模块：只有在构建期能真实解析到时才改写，避免把可选依赖变成硬失败
+          shouldRewrite = await canResolveBare(spec)
+        }
+        if (shouldRewrite) {
+          const alias = `__ffReq${aliasIndex++}`
+          // CJS 包走 default import（保住 `module.exports` 本体），ESM 包维持命名空间导入
+          const useDefaultImport =
+            !isRelative && !isAbsolute && !isNodeBuiltin && (await isCjsTarget(spec))
+          injects.push(
+            useDefaultImport
+              ? `import ${alias} from ${quote}${spec}${quote}`
+              : `import * as ${alias} from ${quote}${spec}${quote}`
+          )
+          rewritten++
+          replacements.push({ start: call.start, end: call.end, alias })
         }
       }
 
       if (rewritten === 0) return null
-      const result = `${lines.join('\n')}\n${injects.join('\n')}\n`
+      replacements.sort((a, b) => a.start - b.start)
+      let out = ''
+      let cursor = 0
+      for (const rep of replacements) {
+        out += code.slice(cursor, rep.start) + rep.alias
+        cursor = rep.end
+      }
+      out += code.slice(cursor)
+      const result = `${out}\n${injects.join('\n')}\n`
       console.log(
         `[vite-config] 🔗 已将 ${rewritten} 处 require 改写为静态 import: ${path.relative(__dirname, id)}`
       )

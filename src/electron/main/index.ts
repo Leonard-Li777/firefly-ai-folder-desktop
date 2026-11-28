@@ -4,10 +4,7 @@
 // 详见 ./worktree-bootstrap.ts 的说明。
 import { worktreeInfo } from './worktree-bootstrap'
 import { mark, setStartupTimelineLogger, flushIfNeeded } from '@pro/perf/startup-timeline'
-import {
-  startEventLoopDelayMonitor,
-  stopEventLoopDelayMonitor
-} from '@pro/perf/event-loop-monitor'
+import { startEventLoopDelayMonitor, stopEventLoopDelayMonitor } from '@pro/perf/event-loop-monitor'
 import {
   startIpcDiagnostics,
   stopIpcDiagnostics,
@@ -86,12 +83,7 @@ if (process.platform === 'linux') {
   app.commandLine.appendSwitch('no-sandbox')
 }
 import * as path from 'node:path'
-import {
-  logger,
-  LogCategory,
-  ErrorNormalizer,
-  PluginPathResolver
-} from '@firefly/shared'
+import { logger, LogCategory, ErrorNormalizer, PluginPathResolver } from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
 // 逆地理编码适配器注册：将 omniService 能力注入 core-engine（模块求值即注册，须早于任何维度分析）
 import '../runtime-services/system/geo-adapter'
@@ -114,7 +106,7 @@ loggingService.info(
 
 // 1.1 E2E 模式启动看门狗（Spec §4.5 assertE2ESandboxOrThrow 启动第一道防线）
 // 严禁生产打包未剥离运行、严禁 DB 路径越界、严禁破坏用户真实 appData
-if (process.env.FF_E2E_MODE === '1') {
+if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
   const { assertE2ESandboxOrThrow } =
     require('../runtime-services/e2e/e2e-gate') as typeof import('../runtime-services/e2e/e2e-gate')
   assertE2ESandboxOrThrow(process.env)
@@ -128,7 +120,7 @@ function flushLogsBeforeExit(): void {
 // 2. 检查单实例锁，避免重复打开多个应用实例
 // E2E 模式下同一测试套件可能并发启动多个沙箱实例（每个用例独立 runId），
 // 此时必须跳过 requestSingleInstanceLock，严禁互踢（Spec §4.4 Worktree 引导隔离规约）
-const isE2EMode = process.env.FF_E2E_MODE === '1'
+const isE2EMode = typeof __FF_E2E__ !== 'undefined' && __FF_E2E__
 const gotSingleInstanceLock = isE2EMode ? true : app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   console.log(`[App] 检测到已有实例正在运行 (${worktreeInfo.appName})，本实例直接退出。`)
@@ -846,7 +838,7 @@ app.on('ready', async () => {
   }
 
   // E2E 模式：安装出站网络拦截守卫并挂载主进程受控探针与故障总线 (Ticket 02 Spec §4.7 / §5.3)
-  if (process.env.FF_E2E_MODE === '1') {
+  if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
     const { session } = require('electron')
     const { EgressGuardService } = require('../runtime-services/e2e/egress-guard')
     const { ProbeBridgeService } = require('../runtime-services/e2e/probe-bridge')
@@ -1143,7 +1135,8 @@ app.on('before-quit', event => {
       // 关闭图标提取子进程，避免遗留孤儿子进程
       iconExtractorClient.dispose()
       // 确权关闭本地 HTTP 视频流子进程与回环网关，未确权时标记 cleanupFailed
-      const { localVideoStreamService } = await import('../runtime-services/system/local-video-stream-service')
+      const { localVideoStreamService } =
+        await import('../runtime-services/system/local-video-stream-service')
       const videoStreamShutdown = await localVideoStreamService.shutdown()
       if (videoStreamShutdown !== 'CLEAN') {
         cleanupFailed = true

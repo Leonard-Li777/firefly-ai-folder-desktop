@@ -27,8 +27,6 @@ import type {
 import { virtualDirectoryService, syncedDirectories } from '../state'
 import { trayService } from '../../runtime-services/system/tray-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { FaultInjectorService } from '../../runtime-services/e2e/fault-injector'
-import { ProbeBridgeService } from '../../runtime-services/e2e/probe-bridge'
 import { getModularResourceDao } from '../../runtime-services/database/dao/modular-resource-dao'
 import { workspaceAdmissionService } from '../../runtime-services/workspace/workspace-admission-service'
 
@@ -110,7 +108,9 @@ export function registerFileIPCHandlers() {
 
   // 记录最近一次搜索会话状态，用于测试探针桥
   const lastSearchSession = { activeRequestId: 0, lastPhase: 'idle' }
-  if (process.env.FF_E2E_MODE === '1') {
+  if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
+    const { ProbeBridgeService } =
+      require('../../runtime-services/e2e/probe-bridge') as typeof import('../../runtime-services/e2e/probe-bridge')
     ProbeBridgeService.registerScopeHandler('search-session', async () => ({
       activeRequestId: lastSearchSession.activeRequestId,
       lastPhase: lastSearchSession.lastPhase
@@ -188,7 +188,9 @@ export function registerFileIPCHandlers() {
 
             // E2E 故障注入点 1: search-phase-gate 门禁延迟（模拟冷态视觉模型等加载耗时）
             let gateDelayMs = 0
-            if (process.env.FF_E2E_MODE === '1') {
+            if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
+              const { FaultInjectorService } =
+                require('../../runtime-services/e2e/fault-injector') as typeof import('../../runtime-services/e2e/fault-injector')
               const gate = FaultInjectorService.triggerIfArmed(
                 'search-phase-gate',
                 f => f.phase === mappedPhase
@@ -199,7 +201,9 @@ export function registerFileIPCHandlers() {
             }
 
             // E2E 故障注入点 2: search-phase-fail 故障抛错
-            if (process.env.FF_E2E_MODE === '1') {
+            if (typeof __FF_E2E__ !== 'undefined' && __FF_E2E__) {
+              const { FaultInjectorService } =
+                require('../../runtime-services/e2e/fault-injector') as typeof import('../../runtime-services/e2e/fault-injector')
               const fault = FaultInjectorService.triggerIfArmed(
                 'search-phase-fail',
                 f => f.phase === mappedPhase

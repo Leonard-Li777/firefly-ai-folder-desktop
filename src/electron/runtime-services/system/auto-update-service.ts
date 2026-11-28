@@ -5,7 +5,7 @@ import * as crypto from 'crypto'
 import * as https from 'https'
 import * as http from 'http'
 import semver from 'semver'
-import { autoUpdater, UpdateInfo } from 'electron-updater'
+import type { AppUpdater, UpdateInfo } from 'electron-updater'
 import { logger, LogCategory, isTestEnvironment } from '@firefly/shared'
 import { resolveAppRegion } from '../../main/worktree-env'
 import {
@@ -65,6 +65,10 @@ export class AutoUpdateService {
   }
 
   private isInitialized = false
+  private cachedAutoUpdater: AppUpdater | null = null
+  private autoUpdaterPromise: Promise<AppUpdater> | null = null
+  private initPromise: Promise<void> | null = null
+  private hasExplicitFeedConfig = false
   private isChecking = false
   // A6 · 并发复用锁：在飞的更新检查 Promise，三路并发（5s 首检/4h 轮询/手动）复用同一任务
   private inFlightCheck: Promise<UpdateState> | null = null
@@ -121,6 +125,32 @@ export class AutoUpdateService {
     AutoUpdateService.instance = instance
   }
 
+  private async getAutoUpdater(): Promise<AppUpdater> {
+    if (this.cachedAutoUpdater) {
+      return this.cachedAutoUpdater
+    }
+    if (!this.autoUpdaterPromise) {
+      this.autoUpdaterPromise = import('electron-updater')
+        .then(mod => {
+          this.cachedAutoUpdater = mod.autoUpdater
+          return mod.autoUpdater
+        })
+        .catch(err => {
+          this.autoUpdaterPromise = null
+          throw err
+        })
+    }
+    return this.autoUpdaterPromise
+  }
+
+  /**
+   * 同步方法兼容读取：生产链路均先经 getAutoUpdater() 异步加载；
+   * 若尚未加载则返回 null，由调用方触发异步预热。
+   */
+  private getLoadedAutoUpdater(): AppUpdater | null {
+    return this.cachedAutoUpdater
+  }
+
   /**
    * 初始化自动更新监听器与配置（工单 11 · P1-17）。
    * 测试环境短路仍置 isInitialized=true + logger.info，保证状态机可观测。
@@ -140,19 +170,9 @@ export class AutoUpdateService {
     }
     this.isInitialized = true
 
-    // 配置 electron-updater 基础选项
-    autoUpdater.autoDownload = false // 静默发现后由状态机控制下载
-    autoUpdater.autoInstallOnAppQuit = true // 默认允许用户退出应用时自动应用更新
-    autoUpdater.disableWebInstaller = true
-    autoUpdater.allowPrerelease = false // 路线 B 硬门禁：严禁正式/测试客户端跨通道消费 -dev 预发布包
-    autoUpdater.logger = {
-      info: (msg: any) => logger.debug(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
-      warn: (msg: any) => logger.warn(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
-      error: (msg: any) => logger.error(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`)
-    }
-
-    this.setupUpdaterListeners()
-    this.configureFeedUrl(this.state.currentTrack)
+    this.initPromise = this.initializeUpdaterAsync().catch(err => {
+      logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 异步初始化失败:', err)
+    })
 
     // 延迟 5 秒后静默触发首次更新检查，避免与应用冷启动抢占网络和 CPU
     setTimeout(() => {
@@ -186,6 +206,25 @@ export class AutoUpdateService {
     }
   }
 
+  private async initializeUpdaterAsync(): Promise<void> {
+    const updater = await this.getAutoUpdater()
+    // 配置 electron-updater 基础选项
+    updater.autoDownload = false // 静默发现后由状态机控制下载
+    updater.autoInstallOnAppQuit = true // 默认允许用户退出应用时自动应用更新
+    updater.disableWebInstaller = true
+    updater.allowPrerelease = false // 路线 B 硬门禁：严禁正式/测试客户端跨通道消费 -dev 预发布包
+    updater.logger = {
+      info: (msg: any) => logger.debug(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
+      warn: (msg: any) => logger.warn(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`),
+      error: (msg: any) => logger.error(LogCategory.SYSTEM, `[AutoUpdater] ${msg}`)
+    }
+
+    this.setupUpdaterListeners()
+    if (!this.hasExplicitFeedConfig) {
+      this.configureFeedUrl(this.state.currentTrack)
+    }
+  }
+
   /**
    * 获取当前更新状态副本
    */
@@ -207,7 +246,7 @@ export class AutoUpdateService {
     return this.state.currentTrack
   }
 
-  private static readonly SAFE_FEED_BASE_PATH_RE = /^[a-zA-Z0-9._-]+(?:\/[a-zA-Z0-9._-]+)*$/
+  private static readonly SAFE_FEED_SEGMENT_RE = /^[a-zA-Z0-9._-]+$/
   private static readonly POINTER_MAX_BYTES = 64 * 1024
 
   /**
@@ -215,25 +254,39 @@ export class AutoUpdateService {
    */
   public static isSafeFeedBasePath(feedBasePath: unknown): feedBasePath is string {
     if (typeof feedBasePath !== 'string' || !feedBasePath) return false
-    if (!AutoUpdateService.SAFE_FEED_BASE_PATH_RE.test(feedBasePath)) return false
     const segments = feedBasePath.split('/')
-    return segments.every(seg => seg !== '.' && seg !== '..')
+    return (
+      segments.length > 0 &&
+      segments.every(
+        seg => seg !== '.' && seg !== '..' && AutoUpdateService.SAFE_FEED_SEGMENT_RE.test(seg)
+      )
+    )
   }
 
   /**
    * 配置下载源 Feed URL（第二参数可选，保持与既有调用及单测向后兼容）
    */
   public configureFeedUrl(track: UpdateTrack, feedBasePath?: string): void {
+    this.hasExplicitFeedConfig = true
     this.state.currentTrack = track
     const channel = resolveAppRegion()
 
     try {
+      const updater = this.getLoadedAutoUpdater()
+      if (!updater) {
+        void this.getAutoUpdater()
+          .then(() => this.configureFeedUrl(track, feedBasePath))
+          .catch(err => {
+            logger.error(LogCategory.SYSTEM, '[AutoUpdater] 延迟配置 FeedURL 失败:', err)
+          })
+        return
+      }
       if (track === 'r2') {
         const targetUrl =
           feedBasePath && AutoUpdateService.isSafeFeedBasePath(feedBasePath)
             ? `${this.R2_BASE_URL}/${feedBasePath}`
             : this.R2_BASE_URL
-        autoUpdater.setFeedURL({
+        updater.setFeedURL({
           provider: 'generic',
           url: targetUrl,
           channel,
@@ -247,7 +300,7 @@ export class AutoUpdateService {
           `[AutoUpdater] 已切换更新源至 R2: ${targetUrl} (channel=${channel})`
         )
       } else {
-        autoUpdater.setFeedURL({
+        updater.setFeedURL({
           provider: 'github',
           owner: this.GITHUB_OWNER,
           repo: this.GITHUB_REPO,
@@ -270,6 +323,9 @@ export class AutoUpdateService {
    * 返回 'alive'（域可达且指针合法）/ 'missing'（404/410 暂无可用版本）/ 'down'（不可达或指针损坏）。
    */
   public async probeEndpoint(track: UpdateTrack): Promise<'alive' | 'missing' | 'down'> {
+    await this.getAutoUpdater().catch(err => {
+      logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 探针预热 electron-updater 失败:', err)
+    })
     const pointerFile =
       process.env.FIREFLY_UPDATE_CHANNEL === 'staging' ? 'staging.json' : 'latest.json'
     const probeUrl =
@@ -441,12 +497,16 @@ export class AutoUpdateService {
     })
 
     try {
+      if (this.initPromise) {
+        await this.initPromise
+      }
+      const updater = await this.getAutoUpdater()
       // 手动触发视为显式重试意愿：复位降级旗标，允许重新评估首选源与差分下载，
       // 避免一次网络抖动将客户端永久钉在全量+备用源（修复 P0-5）。
       if (manual) {
         this.hasTriedFailover = false
         this.isFullDownloadFallback = false
-        autoUpdater.disableDifferentialDownload = false
+        updater.disableDifferentialDownload = false
       }
 
       // 探针健康预检：仅当首选源「真不可达」且本轮尚未探查时，静默平滑降级。
@@ -484,7 +544,7 @@ export class AutoUpdateService {
         }
       }
 
-      await autoUpdater.checkForUpdates()
+      await (await this.getAutoUpdater()).checkForUpdates()
     } catch (err: any) {
       logger.error(LogCategory.SYSTEM, '[AutoUpdater] 检查更新异常:', err)
       await this.handleUpdateError(err, 'check', manual)
@@ -545,7 +605,11 @@ export class AutoUpdateService {
     this.resetDownloadStallWatchdog(true)
 
     try {
-      await autoUpdater.downloadUpdate()
+      if (this.initPromise) {
+        await this.initPromise
+      }
+      const updater = await this.getAutoUpdater()
+      await updater.downloadUpdate()
     } catch (err: any) {
       this.stopDownloadStallWatchdog()
       logger.error(LogCategory.SYSTEM, '[AutoUpdater] 下载更新异常:', err)
@@ -601,7 +665,11 @@ export class AutoUpdateService {
       '[AutoUpdater] 关停握手通过，执行 autoUpdater.quitAndInstall(true, true)'
     )
     try {
-      autoUpdater.quitAndInstall(true, true)
+      if (this.initPromise) {
+        await this.initPromise
+      }
+      const updater = await this.getAutoUpdater()
+      updater.quitAndInstall(true, true)
     } catch (quitErr: any) {
       logger.error(LogCategory.SYSTEM, '[AutoUpdater] quitAndInstall 异常，尝试强制退出:', quitErr)
       app.quit()
@@ -727,7 +795,11 @@ export class AutoUpdateService {
    */
   public async verifyLocalCachedInstaller(info: UpdateInfo): Promise<string | null> {
     try {
-      const helper = (autoUpdater as any).downloadedUpdateHelper
+      if (this.initPromise) {
+        await this.initPromise
+      }
+      const updater = await this.getAutoUpdater()
+      const helper = (updater as any).downloadedUpdateHelper
       const cachedFile = helper?.file || helper?.downloadedFileInfo?.filePath
       if (cachedFile && fs.existsSync(cachedFile)) {
         const stat = fs.statSync(cachedFile)
@@ -823,6 +895,8 @@ export class AutoUpdateService {
       `[AutoUpdater] 发生更新错误 (阶段=${phase}, 当前源=${this.state.currentTrack}): ${errorMsg}`
     )
 
+    const updater = await this.getAutoUpdater()
+
     // L1 -> L2: 差分下载失败自动回退同源全量下载
     if (phase === 'download' && !this.isFullDownloadFallback) {
       logger.debug(
@@ -830,9 +904,9 @@ export class AutoUpdateService {
         '[AutoUpdater] L1 -> L2 降级: 差分增量下载失败，切换为同源全量下载重试...'
       )
       this.isFullDownloadFallback = true
-      autoUpdater.disableDifferentialDownload = true
+      updater.disableDifferentialDownload = true
       try {
-        await autoUpdater.downloadUpdate()
+        await updater.downloadUpdate()
         return
       } catch (fullErr) {
         logger.error(LogCategory.SYSTEM, '[AutoUpdater] 全量下载重试失败:', fullErr)
@@ -848,7 +922,7 @@ export class AutoUpdateService {
       )
       this.hasTriedFailover = true
       this.isFullDownloadFallback = false
-      autoUpdater.disableDifferentialDownload = false
+      updater.disableDifferentialDownload = false
 
       if (fallbackTrack === 'r2') {
         // R2-03：错误降级切换至 R2 前必须先异步解析单对象指针
@@ -859,7 +933,7 @@ export class AutoUpdateService {
         }
         if (fallbackProbe === 'alive') {
           try {
-            await autoUpdater.checkForUpdates()
+            await updater.checkForUpdates()
             return
           } catch (failoverErr) {
             logger.error(LogCategory.SYSTEM, '[AutoUpdater] 备用源 R2 重试依然失败:', failoverErr)
@@ -868,7 +942,7 @@ export class AutoUpdateService {
       } else {
         this.configureFeedUrl(fallbackTrack)
         try {
-          await autoUpdater.checkForUpdates()
+          await updater.checkForUpdates()
           return
         } catch (failoverErr) {
           logger.error(LogCategory.SYSTEM, '[AutoUpdater] 备用源重试依然失败:', failoverErr)
@@ -966,12 +1040,14 @@ export class AutoUpdateService {
   }
 
   private setupUpdaterListeners(): void {
-    autoUpdater.on('checking-for-update', () => {
+    const updater = this.getLoadedAutoUpdater()
+    if (!updater) return
+    updater.on('checking-for-update', () => {
       logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 正在检索云端更新清单...')
       this.updateState({ status: 'checking', error: null })
     })
 
-    autoUpdater.on('update-available', (info: UpdateInfo & { minVersion?: string }) => {
+    updater.on('update-available', (info: UpdateInfo & { minVersion?: string }) => {
       logger.info(
         LogCategory.SYSTEM,
         `[AutoUpdater] 发现新版本: ${info.version} (当前: ${this.state.currentVersion})`
@@ -999,7 +1075,7 @@ export class AutoUpdateService {
       })
     })
 
-    autoUpdater.on('update-not-available', (info: UpdateInfo) => {
+    updater.on('update-not-available', (info: UpdateInfo) => {
       logger.info(LogCategory.SYSTEM, `[AutoUpdater] 已是最新版本: ${info.version}`)
       this.activeUpdateInfo = null
       this.updateState({
@@ -1011,7 +1087,7 @@ export class AutoUpdateService {
       })
     })
 
-    autoUpdater.on('download-progress', (progressObj: any) => {
+    updater.on('download-progress', (progressObj: any) => {
       const transferred = progressObj.transferred || 0
       const lastTransferred = this.state.progress?.transferred || 0
       this.updateState({
@@ -1028,7 +1104,7 @@ export class AutoUpdateService {
       this.resetDownloadStallWatchdog(transferred > lastTransferred)
     })
 
-    autoUpdater.on('update-downloaded', (event: any) => {
+    updater.on('update-downloaded', (event: any) => {
       logger.info(
         LogCategory.SYSTEM,
         `[AutoUpdater] 更新包已成功下载完毕: ${event?.downloadedFile || ''}`
@@ -1046,7 +1122,7 @@ export class AutoUpdateService {
       })
     })
 
-    autoUpdater.on('error', (err: any) => {
+    updater.on('error', (err: any) => {
       logger.error(LogCategory.SYSTEM, '[AutoUpdater] 监听到底层 Updater 错误:', err)
       this.stopDownloadStallWatchdog()
       this.handleUpdateError(err, this.state.status === 'downloading' ? 'download' : 'check').catch(
