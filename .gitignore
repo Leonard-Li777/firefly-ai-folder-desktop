@@ -87,7 +87,10 @@ src/electron/runtime-services/system/fastfetch_out.json
 .VirtualDirectory
 tests/unit/test-files/
 test-results/
-reports/
+reports/*
+!reports/bench/
+reports/bench/*
+!reports/bench/README.md
 coverage/
 .nyc_output/
 .eslintcache
