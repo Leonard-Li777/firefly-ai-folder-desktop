@@ -2,7 +2,10 @@
 import fs from 'node:fs'
 import { t } from '@app/languages'
 import { LogCategory, logger } from '@firefly/shared'
-import { OmniPerceptionHttpError, type OmniPerceptionOptions } from '../../system/omni-service/types'
+import {
+  OmniPerceptionHttpError,
+  type OmniPerceptionOptions
+} from '../../system/omni-service/types'
 import { classifyVisualPerceptionError } from './analysis-error-classifier'
 import { visualTaggerCoordinator } from '../visual-tagger-coordinator'
 import {
@@ -15,6 +18,7 @@ import {
   serializeVideoDegradedMetadata,
   type VideoDegradedMetadata
 } from './video-degraded-state-machine'
+import { aggregateVideoSegmentSafetyAfterCompletion } from './video-segment-safety-aggregator'
 
 export interface VideoSegmentDescriptor {
   fileFingerprint: string
@@ -38,6 +42,7 @@ export interface VideoSegmentExecutorDeps {
         paramsHash?: string
       }
     ) => void
+    findTagCodeByLemma?: (lemma: string) => { tagCode: string } | null | undefined
     markVideoSegmentFailedOrPending: (fileId: string, segmentIndex: number, reason: string) => void
     markVideoSegmentTerminalFailed?: (fileId: string, segmentIndex: number, reason: string) => void
     recordVideoSegmentVisualFailureTx?: (params: {
@@ -76,6 +81,10 @@ export interface VideoSegmentExecutorDeps {
   resolveActiveEncoderId?: (encoderIdHint?: number) => number
   /** 409 `VISUAL_VOCAB_STALE` 对账触发回调（避免仅回滚 pending 而无对账唤醒） */
   onReconcile409?: (encoderId: number) => Promise<void> | void
+  /** 触发 FTS5 同步回调 */
+  queueFtsSync?: (fileFingerprint: string) => void
+  /** 当前界面/库语言（默认 zh-CN） */
+  language?: string
   /** 仅用于单测注入降级退避等待函数 */
   degradedRetrySleep?: (ms: number, signal?: AbortSignal) => Promise<void>
 }
@@ -276,6 +285,19 @@ export async function executeSingleVideoSegment(
       paramsHash
     })
 
+    // 5f. 切片安全聚合：单调合并打码/NSFW 风险分级并在全片音视觉完备后补签发「全年龄」
+    await aggregateVideoSegmentSafetyAfterCompletion({
+      db: deps.db,
+      fileFingerprint,
+      enableNsfwPerception: perceptionParams.enableNsfwPerception !== false,
+      perception: chunkResult?.perception,
+      language: deps.language,
+      resolveControlledCode: deps.databaseService.findTagCodeByLemma
+        ? (lemma: string) => deps.databaseService.findTagCodeByLemma?.(lemma)?.tagCode
+        : undefined,
+      queueFtsSync: deps.queueFtsSync
+    })
+
     return { outcome: 'completed', frameCount: chunkFrames.length }
   } catch (err: any) {
     if (signal?.aborted || err?.name === 'AbortError') {
@@ -301,7 +323,11 @@ export async function executeSingleVideoSegment(
             markStateNonOk: false
           })
         } else {
-          deps.databaseService.markVideoSegmentTerminalFailed?.(fileFingerprint, segmentIndex, reason)
+          deps.databaseService.markVideoSegmentTerminalFailed?.(
+            fileFingerprint,
+            segmentIndex,
+            reason
+          )
         }
         return { outcome: 'failed', frameCount: 0, reason: 'INPUT_REJECTED' }
       }
@@ -317,7 +343,11 @@ export async function executeSingleVideoSegment(
             markStateNonOk: true
           }).failureGeneration
         } else {
-          deps.databaseService.markVideoSegmentTerminalFailed?.(fileFingerprint, segmentIndex, reason)
+          deps.databaseService.markVideoSegmentTerminalFailed?.(
+            fileFingerprint,
+            segmentIndex,
+            reason
+          )
         }
         const breakerRes = visualTaggerCoordinator.recordAssetFailureForBreaker(encoderId, gen)
         if (breakerRes.newlyTripped) {
@@ -338,7 +368,11 @@ export async function executeSingleVideoSegment(
               markStateNonOk: false
             })
           } else {
-            deps.databaseService.markVideoSegmentTerminalFailed?.(fileFingerprint, segmentIndex, updateMsg)
+            deps.databaseService.markVideoSegmentTerminalFailed?.(
+              fileFingerprint,
+              segmentIndex,
+              updateMsg
+            )
           }
           return { outcome: 'failed', frameCount: 0, reason: 'needs_app_update' }
         }
@@ -358,7 +392,11 @@ export async function executeSingleVideoSegment(
           visualDecision.kind === 'transient_retry'
             ? t('本地识图服务暂时繁忙，稍后将自动重试')
             : t('当前视频片段画面识别遇到临时故障，稍后将自动重试')
-        deps.databaseService.markVideoSegmentFailedOrPending(fileFingerprint, segmentIndex, plainMsg)
+        deps.databaseService.markVideoSegmentFailedOrPending(
+          fileFingerprint,
+          segmentIndex,
+          plainMsg
+        )
         return {
           outcome: 'failed',
           frameCount: 0,
@@ -369,10 +407,7 @@ export async function executeSingleVideoSegment(
         }
       }
     }
-    logger.warn(
-      LogCategory.ANALYSIS_QUEUE,
-      `[视频补全] 片段 ${segmentIndex} 分析异常: ${reason}`
-    )
+    logger.warn(LogCategory.ANALYSIS_QUEUE, `[视频补全] 片段 ${segmentIndex} 分析异常: ${reason}`)
     deps.databaseService.markVideoSegmentFailedOrPending(fileFingerprint, segmentIndex, reason)
     return { outcome: 'failed', frameCount: 0, reason }
   }

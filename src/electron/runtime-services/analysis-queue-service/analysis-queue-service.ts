@@ -52,10 +52,7 @@ import {
   VideoSegmentBackfillWorker,
   computeVideoVisualParamsHash
 } from './video-segment-backfill-worker'
-import {
-  visualTaggerCoordinator,
-  isVisualMediaExtensionOrPath
-} from './visual-tagger-coordinator'
+import { visualTaggerCoordinator, isVisualMediaExtensionOrPath } from './visual-tagger-coordinator'
 import { anydocService } from '../system/anydoc-service'
 import { omniClient } from '../../services/omni-client'
 import { ProbeBridgeService } from '../e2e/probe-bridge'
@@ -69,7 +66,7 @@ import { AnalysisWriteDispatcher } from './analysis-write-dispatcher'
 import { AnalysisOrchestratorWorker } from './analysis-orchestrator-worker'
 import { OmniHttpAdapter } from './omni-http-adapter'
 import { OrphanWatchdog } from './orphan-watchdog'
-import { flushFtsSync } from './fts-sync-hooks'
+import { flushFtsSync, queueFtsSync } from './fts-sync-hooks'
 import {
   WorkerOrchestratorBridge,
   WriteSetBatchDispatcher,
@@ -338,6 +335,10 @@ export class AnalysisQueueService {
         databaseService,
         anydocService,
         omniClient,
+        queueFtsSync,
+        get language() {
+          return ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+        },
         resolveActiveEncoderId: (hint?: number) => {
           try {
             const { resolveActiveVisualEncoderAndResource } = require('./visual-tagger-coordinator')
@@ -399,7 +400,9 @@ export class AnalysisQueueService {
               )
               visualTaggerCoordinator.resetBreakerForGeneration(obs.currentGeneration)
               visualTaggerCoordinator.notifyRecoveryWake(encoderId, obs.currentGeneration, {
-                includeNeedsAppUpdate: Boolean(obs.appVersionChanged || obs.previousGeneration === 0)
+                includeNeedsAppUpdate: Boolean(
+                  obs.appVersionChanged || obs.previousGeneration === 0
+                )
               })
               setTimeout(() => {
                 this.videoSegmentBackfillWorker.scheduleStart('visual_409_recovered')
@@ -409,10 +412,13 @@ export class AnalysisQueueService {
             if (res.outcome === 'pending_reconcile') {
               const nextAt = visualTaggerCoordinator.getNextVisualReconcileRetryAt()
               const waitMs = Math.max(1000, (nextAt ?? Date.now() + 60_000) - Date.now())
-              setTimeout(() => {
-                this.wakeVisualBreakerWaiter()
-                this.videoSegmentBackfillWorker.scheduleStart('visual_409_cooldown_elapsed')
-              }, Math.min(waitMs, 30 * 60_000))
+              setTimeout(
+                () => {
+                  this.wakeVisualBreakerWaiter()
+                  this.videoSegmentBackfillWorker.scheduleStart('visual_409_cooldown_elapsed')
+                },
+                Math.min(waitMs, 30 * 60_000)
+              )
               return
             }
             // 终态阻断（如 needs_plugin_update）：使用非阻塞立标暂停以免在 runLoop 内自等待 activeLoopPromise 死锁
@@ -603,7 +609,9 @@ export class AnalysisQueueService {
              ORDER BY updated_at DESC
              LIMIT 1`
           )
-          .get() as { code: string; encoderId: number | null; generation: number | null } | undefined
+          .get() as
+          | { code: string; encoderId: number | null; generation: number | null }
+          | undefined
         lastFailure = failure ?? null
       } catch (error) {
         // 探针不得静默降级：失败必须显式上报，字段回落零值由调用方判定

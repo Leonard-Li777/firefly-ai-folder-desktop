@@ -1025,7 +1025,10 @@ export class FileProcessor {
         }
 
         // 双重保底：优先从 baseMetadata 恢复 omniPerception；
-        // 若缺失，从 Stage 2 已持久化的标签中反查内容分级（严禁缺失指标时回退生成全年龄冲掉 R-18）
+        // 若缺失，从 Stage 2 已持久化的标签中反查内容分级（严禁缺失指标或未完备时回退生成全年龄冲掉 R-18）
+        const isBaseIncomplete =
+          baseMetadata?.nsfw_completeness === 'partial' ||
+          baseMetadata?.nsfw_completeness === 'disabled'
         let fallbackRating: string | undefined
         if (!baseMetadata?.content_rating && Array.isArray(existingTagRows)) {
           const existingCodes = new Set(existingTagRows.map(r => r.tag_code))
@@ -1033,7 +1036,9 @@ export class FileProcessor {
           else if (existingCodes.has(CONTROLLED_CONCEPTS['R-18'])) fallbackRating = 'R-18'
           else if (existingCodes.has(CONTROLLED_CONCEPTS['R-15'])) fallbackRating = 'R-15'
           else if (existingCodes.has(CONTROLLED_CONCEPTS['PG-13'])) fallbackRating = 'PG-13'
-          else if (existingCodes.has(CONTROLLED_CONCEPTS['全年龄'])) fallbackRating = '全年龄'
+          else if (!isBaseIncomplete && existingCodes.has(CONTROLLED_CONCEPTS['全年龄'])) {
+            fallbackRating = '全年龄'
+          }
         }
 
         const restoredOmniPerception: Record<string, any> = {
@@ -1042,6 +1047,11 @@ export class FileProcessor {
           nsfw_text_tags: baseMetadata?.nsfw_text_tags,
           sensitive_types: baseMetadata?.sensitive_types,
           security_level: baseMetadata?.security_level,
+          nsfw_completeness: baseMetadata?.nsfw_completeness,
+          nsfw_perception: baseMetadata?.nsfw_perception,
+          audio_truncated: baseMetadata?.audio_truncated,
+          has_audio_stream: baseMetadata?.has_audio_stream,
+          video_truncated: baseMetadata?.video_truncated,
           winning_hypothesis: baseMetadata?.winning_hypothesis,
           smart_name: baseMetadata?.smart_name,
           binary_info: baseMetadata?.binary_info,
@@ -2574,9 +2584,13 @@ export class FileProcessor {
         if (p.binary_info) contentResult.metadata.binary_info = p.binary_info
         if (p.author) contentResult.metadata.author = p.author
         // 敏感内容字段仅在 perception_nsfw 启用时落库：插件关闭时下游既不检测也不沿用旧结论，
-        // 否则「关插件」会退化成「继续沿用历史误标结论」。
+        // 否则「关插件」会退化成「继续沿用历史误标结论」。未完备留空时同样主动清除旧 content_rating。
         if (capabilities.nsfwEffectivelyEnabled) {
-          if (p.content_rating) contentResult.metadata.content_rating = p.content_rating
+          if (p.content_rating) {
+            contentResult.metadata.content_rating = p.content_rating
+          } else {
+            delete contentResult.metadata.content_rating
+          }
           if (Array.isArray(p.nsfw_tags)) contentResult.metadata.nsfw_tags = p.nsfw_tags
           if (Array.isArray(p.nsfw_text_tags))
             contentResult.metadata.nsfw_text_tags = p.nsfw_text_tags
@@ -2584,12 +2598,28 @@ export class FileProcessor {
           if (Array.isArray(p.sensitive_types))
             contentResult.metadata.sensitive_types = p.sensitive_types
           if (p.security_level) contentResult.metadata.security_level = p.security_level
+          if (p.nsfw_completeness !== undefined) {
+            contentResult.metadata.nsfw_completeness = p.nsfw_completeness
+          }
         } else {
           delete contentResult.metadata.content_rating
           delete contentResult.metadata.nsfw_tags
           delete contentResult.metadata.nsfw_text_tags
           delete contentResult.metadata.nsfw_perception
           delete contentResult.metadata.sensitive_types
+          contentResult.metadata.nsfw_completeness = 'disabled'
+        }
+        if (p.has_audio_stream !== undefined) {
+          contentResult.metadata.has_audio_stream = p.has_audio_stream
+        }
+        if (p.audio_total_duration_sec !== undefined) {
+          contentResult.metadata.audio_total_duration_sec = p.audio_total_duration_sec
+        }
+        if (p.audio_analyzed_duration_sec !== undefined) {
+          contentResult.metadata.audio_analyzed_duration_sec = p.audio_analyzed_duration_sec
+        }
+        if (p.audio_truncated !== undefined) {
+          contentResult.metadata.audio_truncated = p.audio_truncated
         }
         if (p.face_perception) contentResult.metadata.face_perception = p.face_perception
         if (p.winning_hypothesis) contentResult.metadata.winning_hypothesis = p.winning_hypothesis
@@ -2723,6 +2753,22 @@ export class FileProcessor {
       }
       if (anydocResult?.perception?.video_truncated !== undefined) {
         contentResult.metadata.video_truncated = anydocResult.perception.video_truncated
+      }
+      if (anydocResult?.perception?.has_audio_stream !== undefined) {
+        contentResult.metadata.has_audio_stream = anydocResult.perception.has_audio_stream
+      }
+      if (anydocResult?.perception?.audio_truncated !== undefined) {
+        contentResult.metadata.audio_truncated = anydocResult.perception.audio_truncated
+      }
+      if (!capabilities.nsfwEffectivelyEnabled) {
+        delete contentResult.metadata.content_rating
+        delete contentResult.metadata.nsfw_tags
+        delete contentResult.metadata.nsfw_text_tags
+        delete contentResult.metadata.nsfw_perception
+        delete contentResult.metadata.sensitive_types
+        contentResult.metadata.nsfw_completeness = 'disabled'
+      } else if (anydocResult?.perception?.nsfw_completeness !== undefined) {
+        contentResult.metadata.nsfw_completeness = anydocResult.perception.nsfw_completeness
       }
 
       if (!fileFingerprint || fileFingerprint.startsWith('temp_')) {
@@ -3474,13 +3520,13 @@ export class FileProcessor {
         if (visualDecision) {
           const cfg = ConfigOrchestrator.getInstance()
           const { profile } = (await import('./stage-reuse-planner')).resolveTargetProfileAndDim()
-          const { encoderId, resourceId } = (await import('../visual-tagger-coordinator')).resolveActiveVisualEncoderAndResource(
-            {
-              embeddingProfile: profile,
-              language: cfg.getValue<string>('DEFAULT_LANGUAGE'),
-              encoderIdHint: error instanceof OmniPerceptionHttpError ? error.encoderId : undefined
-            }
-          )
+          const { encoderId, resourceId } = (
+            await import('../visual-tagger-coordinator')
+          ).resolveActiveVisualEncoderAndResource({
+            embeddingProfile: profile,
+            language: cfg.getValue<string>('DEFAULT_LANGUAGE'),
+            encoderIdHint: error instanceof OmniPerceptionHttpError ? error.encoderId : undefined
+          })
           const fp = filePath ? databaseService.getFileFingerprintByPath(filePath) : null
           if (visualDecision.kind === 'input_rejected_422') {
             const plainErrMsg = t('图片或视频文件已损坏，无法完成画面识别')
@@ -3536,7 +3582,9 @@ export class FileProcessor {
           }
 
           if (visualDecision.kind === 'reconcile_409') {
-            const catalogMeta = (await import('@firefly/shared')).BUILTIN_PLUGIN_CATALOG_META[resourceId]
+            const catalogMeta = (await import('@firefly/shared')).BUILTIN_PLUGIN_CATALOG_META[
+              resourceId
+            ]
             const expectedFingerprint =
               catalogMeta?.visualVocabMeta?.matrixSha256 ||
               catalogMeta?.expectedSha256 ||
@@ -3573,7 +3621,9 @@ export class FileProcessor {
               )
               visualTaggerCoordinator.resetBreakerForGeneration(obs.currentGeneration)
               visualTaggerCoordinator.notifyRecoveryWake(encoderId, obs.currentGeneration, {
-                includeNeedsAppUpdate: Boolean(obs.appVersionChanged || obs.previousGeneration === 0)
+                includeNeedsAppUpdate: Boolean(
+                  obs.appVersionChanged || obs.previousGeneration === 0
+                )
               })
               this.updateItemStatus(item.id, 'pending', 0)
               return phase === 'cpu' ? { outcome: 'terminal', terminalKind: 'skipped' } : undefined

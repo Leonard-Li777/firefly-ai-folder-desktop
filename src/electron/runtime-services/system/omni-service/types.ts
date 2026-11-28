@@ -279,6 +279,16 @@ export interface OmniPerceptionResponse {
   nsfw_high_confidence_tags?: string[]
   sensitive_types?: string[]
   content_rating?: string
+  /** 是否探测到有效音频轨（纯无声视频为 false） */
+  has_audio_stream?: boolean
+  /** 音频流/文件物理总时长（秒） */
+  audio_total_duration_sec?: number
+  /** 本次 ASR 实际解码覆盖的音频时长（秒） */
+  audio_analyzed_duration_sec?: number
+  /** 音频 ASR 是否截断或未完整覆盖 */
+  audio_truncated?: boolean
+  /** 本次请求对 NSFW 判定的完备性状态：complete / partial / disabled */
+  nsfw_completeness?: 'complete' | 'partial' | 'disabled'
   /** ASR 语音转录文本（Issue 0046 §1：替代旧 `audio_transcript` 命名） */
   asr?: string
   /** 是否存在有效 ASR 转录文本 */
