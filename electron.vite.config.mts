@@ -902,7 +902,10 @@ export default defineConfig(({ command, mode }) => {
             // 离线总包解包 worker_threads 入口（此前缺失 → 打包态只能回落到源码 .ts 路径，必然找不到）：
             // 编译为 out_build/main/bundle-extractor-worker.js，供 BundleExtractorDispatcher 拉起
             'bundle-extractor-worker':
-              'src/electron/runtime-services/modular-resource/workers/bundle-extractor-worker.ts'
+              'src/electron/runtime-services/modular-resource/workers/bundle-extractor-worker.ts',
+            // P1-3 模块目录字节统计 worker_threads 入口：编译为 out_build/main/module-size-worker.js
+            'module-size-worker':
+              'src/electron/runtime-services/modular-resource/workers/module-size-worker.ts'
           },
           formats: ['cjs']
         },

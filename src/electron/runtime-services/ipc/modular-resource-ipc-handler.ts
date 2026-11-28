@@ -11,9 +11,10 @@
  */
 
 import { ipcMain, BrowserWindow, dialog, app } from 'electron'
-import * as fs from 'fs'
+import { promises as fsp } from 'fs'
 import * as path from 'path'
 import { logger, LogCategory } from '@firefly/shared'
+import { existsAsync, readdirTyped } from '../../infra/fs'
 import { isE2EMode } from '../e2e/e2e-gate'
 import { ProbeBridgeService } from '../e2e/probe-bridge'
 import {
@@ -523,16 +524,17 @@ export function registerModularResourceIpcHandlers(
           stagingDir: string
           updatedAt: number
         }> = []
-        if (fs.existsSync(intentsDir)) {
-          const files = fs
-            .readdirSync(intentsDir)
+        if (await existsAsync(intentsDir)) {
+          const entries = await readdirTyped(intentsDir)
+          const files = entries
+            .map(e => e.name)
             .filter(
               f =>
                 (f.startsWith('dir-switch-') && f.endsWith('.json')) || f.endsWith('.intent.json')
             )
           for (const f of files) {
             try {
-              const content = JSON.parse(fs.readFileSync(path.join(intentsDir, f), 'utf-8'))
+              const content = JSON.parse(await fsp.readFile(path.join(intentsDir, f), 'utf-8'))
               intents.push(content)
             } catch {}
           }

@@ -1,8 +1,10 @@
 import { loggingService } from '../../runtime-services/system/logging-service'
 import * as fs from 'fs'
+import { promises as fsp } from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import { ipcMain, app, shell, BrowserWindow } from 'electron'
+import { existsAsync, mkdirp, safeUnlink, statOrNull } from '../../infra/fs'
 import { safeClipboard } from '../../utils/safe-clipboard'
 import { resolveAppRegion } from '../worktree-env'
 import { iconExtractorClient } from '../icon-extractor-client'
@@ -137,9 +139,9 @@ export function registerMiscIPCHandlers() {
 
       // 兜底防护：如果数据库没有该文件记录，但物理文件实际存在，
       // 仅读取基础文件系统属性返回，绝不调用 Omni 微服务消耗额外算力
-      if (!result && fs.existsSync(filePath)) {
-        try {
-          const stats = fs.statSync(filePath)
+      if (!result) {
+        const stats = await statOrNull(filePath)
+        if (stats) {
           const ext = path.extname(filePath).replace(/^\./, '').toLowerCase()
           const mimeType = getMimeTypeByExtension(ext)
           result = {
@@ -165,8 +167,6 @@ export function registerMiscIPCHandlers() {
               FileTypeExtension: ext.toUpperCase()
             }
           }
-        } catch (e) {
-          logger.warn(LogCategory.MAIN, '获取未入库物理文件基础属性失败:', e)
         }
       }
 
@@ -307,7 +307,7 @@ export function registerMiscIPCHandlers() {
    * 解析 Windows 快捷方式（.lnk）指向的实际目标路径。
    * 若解析失败或目标不存在，回退到原始 .lnk 路径。
    */
-  const resolveShortcutTarget = (filePath: string): string => {
+  const resolveShortcutTarget = async (filePath: string): Promise<string> => {
     if (process.platform !== 'win32') return filePath
     try {
       const details = shell.readShortcutLink(filePath)
@@ -316,7 +316,7 @@ export function registerMiscIPCHandlers() {
       if (typeof target === 'string' && target.startsWith('"') && target.endsWith('"')) {
         target = target.slice(1, -1)
       }
-      if (target && fs.existsSync(target)) return target
+      if (target && (await existsAsync(target))) return target
     } catch {
       // 解析失败（如 Store/UWP 快捷方式）时回退到 .lnk 本身
     }
@@ -338,7 +338,7 @@ export function registerMiscIPCHandlers() {
         : 'small'
       // .lnk 快捷方式先解析目标路径，取目标文件的专属图标（而非通用的快捷方式图标）
       const targetPath = filePath.toLowerCase().endsWith('.lnk')
-        ? resolveShortcutTarget(filePath)
+        ? await resolveShortcutTarget(filePath)
         : filePath
       // 防御性校验：解析后的目标路径若仍为空，直接返回，不进入原生模块调用
       if (!targetPath || targetPath.trim() === '') return null
@@ -639,8 +639,8 @@ export function registerMiscIPCHandlers() {
     try {
       const tempDir = app.getPath('temp')
       if (filePath.startsWith(tempDir) && filePath.includes('_preview_')) {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath)
+        if (await existsAsync(filePath)) {
+          await safeUnlink(filePath)
           logger.debug(LogCategory.MAIN, `[预处理] 已成功清理预览临时文件: ${filePath}`)
         }
       }
@@ -739,11 +739,9 @@ export function registerMiscIPCHandlers() {
       try {
         const { platformAdapter } = await import('@firefly/electron-llamaIndex-service')
         const logsDir = path.join(platformAdapter.getAppDataPath(), 'logs')
-        if (!fs.existsSync(logsDir)) {
-          fs.mkdirSync(logsDir, { recursive: true })
-        }
+        await mkdirp(logsDir)
         const targetPath = path.join(logsDir, filename)
-        fs.writeFileSync(targetPath, content, 'utf8')
+        await fsp.writeFile(targetPath, content, 'utf8')
         logger.debug(LogCategory.MAIN, `[Diagnostic] DOM 变动诊断报告已成功写入本地: ${targetPath}`)
         return { success: true, path: targetPath }
       } catch (err: any) {

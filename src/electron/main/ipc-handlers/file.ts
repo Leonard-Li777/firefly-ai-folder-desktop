@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { ipcMain, BrowserWindow } from 'electron'
+import { createLimiter, existsAsync } from '../../infra/fs'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { fileWatcherService } from '../../runtime-services/filesystem/file-watcher-service'
 import {
@@ -425,6 +426,7 @@ export function registerFileIPCHandlers() {
 
       if (workspaceId !== undefined) {
         const dbFiles = await databaseService.getFilesByParentPath(dirPath, workspaceId)
+        const statLimiter = createLimiter(32)
 
         await Promise.all(
           dbFiles.map(async file => {
@@ -449,7 +451,7 @@ export function registerFileIPCHandlers() {
             }
 
             let fileStatus = file.status ?? 1
-            const exists = fs.existsSync(safePath)
+            const exists = await statLimiter(() => existsAsync(safePath))
             if (fileStatus === 1 && !exists) {
               fileStatus = 0
               databaseService.updateFileStatus(file.id, 0).catch(() => {})
