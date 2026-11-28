@@ -3,8 +3,12 @@
 // 共享裸目录，导致 clear:user-data 后语言确认状态残留、启动不再进入欢迎向导。
 // 详见 ./worktree-bootstrap.ts 的说明。
 import { worktreeInfo } from './worktree-bootstrap'
+import { mark, setStartupTimelineLogger, flushIfNeeded } from '@pro/perf/startup-timeline'
 import * as fs from 'node:fs'
 import fixPath from 'fix-path'
+
+// 精确记录静态 import 图求值结束时刻（ESM import 会提升至模块体前求值，W0-02 §9）
+mark('mod:imports:evaluated')
 
 // 在 macOS 和 Linux 上修复 PATH 环境变量（必须在所有其他逻辑之前执行）
 if (process.platform !== 'win32') {
@@ -763,11 +767,15 @@ ConfigOrchestrator.getInstance().onValueChange('HARDWARE_GPU_INFO', () => {
 // PRD-0049：AI_ENGINE_FORCE_CPU_MODE 变更监听已清退
 // 引擎切换归萤核AI引擎（engineBridge.switchBackend），桌面不再以该配置驱动服务重启
 
+setStartupTimelineLogger(logger)
+mark('mod:eval:end')
+
 // =================================================================
 // 应用启动入口
 // =================================================================
 
 app.on('ready', async () => {
+  mark('app:ready')
   // 本地开发模式：建窗前完成 DevToolsActivePort + /json/version 真值核验与镜像发布；
   // 若发生 TOCTOU 抢占导致绑定失败，静默 relaunch 切入 --remote-debugging-port=0 后立即返回
   try {
@@ -852,6 +860,7 @@ app.on('ready', async () => {
 
   // 注册 IPC 处理器，确保在任何窗口创建及前端加载之前 IPC 响应就绪
   await setupIPCHandlers()
+  mark('ipc:registered')
   deepLinkManager.init()
 
   const orchestrator = ConfigOrchestrator.getInstance()
@@ -987,6 +996,7 @@ app.on('ready', async () => {
     }
 
     await regionDetectPromise
+    mark('region:done')
   } catch (error) {
     logger.error(LogCategory.MAIN, '[App] 最小服务初始化失败:', error)
     console.error('=== FIREFLY_CRASH: 最小服务初始化失败 ===', error)
@@ -996,6 +1006,7 @@ app.on('ready', async () => {
 
   try {
     let licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
+    mark('license:local')
     logger.info(LogCategory.MAIN, '[App] 初始授权检查结果:', licenseResult.status)
 
     if (licenseResult.status !== LicenseStatus.AUTHORIZED) {
@@ -1003,6 +1014,7 @@ app.on('ready', async () => {
         logger.debug(LogCategory.MAIN, '[App] 未检测到授权，尝试执行一次在线同步确认...')
         await initializeHardwareDetection(true)
         licenseResult = await LicenseService.getInstance().checkLicenseStatus(true)
+        mark('license:online')
         if (licenseResult.status === LicenseStatus.AUTHORIZED) {
           logger.info(LogCategory.MAIN, '[App] 在线授权确认成功')
           await orchestrator.updateValue('MACHINE_REGISTERED', true)
@@ -1050,6 +1062,8 @@ app.on('before-quit', event => {
   // Electron 不等待 async before-quit 监听器的 Promise；必须先阻止默认退出，
   // 待 R2-8 时序全部 await 完成后再显式 app.exit，否则 checkpoint/close 会被跳过。
   event.preventDefault()
+  // 若启动尚未到达 full:done 即退出，收口前补打一次启动时间线（仅开启且未 flush 时生效）
+  flushIfNeeded()
   logger.info(LogCategory.MAIN, '应用正在退出，清理资源...')
 
   // 兜底超时：任一 await（如 omniService.stop）挂起时不能让应用永不退出

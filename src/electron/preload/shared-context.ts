@@ -40,3 +40,4 @@ const rawPeerRegion = peerRegionArg
     ? 'intl'
     : 'cn'
 export const peerRegion: 'cn' | 'intl' = rawPeerRegion === 'cn' ? 'cn' : 'intl'
+export const startupTimelineEnabled: boolean = process.argv.includes('--ff-startup-timeline=1')

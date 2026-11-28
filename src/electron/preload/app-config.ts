@@ -4,11 +4,21 @@ import type { AppConfig, FileInfo, FileItem, AIClassificationResult } from '@fir
 import type { ConfigKey } from '@firefly/types/config-types'
 import type { LogCategory } from '../../../pro/packages/shared/src/logger/log-category'
 import { ipcRenderer } from 'electron'
-import { logger, isPackaged, appRegion, hasPeerData, peerRegion } from './shared-context'
+import {
+  logger,
+  isPackaged,
+  appRegion,
+  hasPeerData,
+  peerRegion,
+  startupTimelineEnabled
+} from './shared-context'
 
 export const appConfigApi = {
   // 应用是否已打包
   isPackaged,
+
+  // 启动时间线诊断开关（未开启时渲染端零上报）
+  isStartupTimelineEnabled: startupTimelineEnabled,
 
   // 获取当前区域 ('cn' | 'intl')
   getAppRegion: (): 'cn' | 'intl' => appRegion, // 跨区域历史数据检测状态 (P1 / ISS-04)

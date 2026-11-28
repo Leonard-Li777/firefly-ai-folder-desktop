@@ -35,6 +35,7 @@ import { SplitPane } from '../common/SplitPane'
 import { PAGE_IDS } from '../../constants/page-ids'
 import { useTierStore } from '../../stores/tier-store'
 import { RestrictedFeatureOverlay } from '../common/RestrictedFeatureOverlay'
+import { reportRendererStartupMarkAfterPaint } from '../../lib/startup-timeline'
 
 interface RealDirectoryProps {
   onFileSelect?: (files: any[], isFromCheckbox?: boolean) => void
@@ -574,6 +575,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   // 工作目录下拉菜单的 click-outside 关闭逻辑已下沉至 DirectoryHeader 内部统一处理
 
   // 获取当前目录的文件列表的函数
+  const hasReportedFirstListRef = useRef(false)
   const loadDirectoryContents = useCallback(async () => {
     if (!currentPath || !currentWorkspaceDirectory) return // 只有在有工作目录且路径存在时才加载内容
 
@@ -581,6 +583,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       const { files, directories } = await window.electronAPI!.readDirectory(currentPath)
       useFileExplorerStore.getState().setFiles(files)
       useFileExplorerStore.getState().setDirectories(directories)
+      if (!hasReportedFirstListRef.current) {
+        hasReportedFirstListRef.current = true
+        reportRendererStartupMarkAfterPaint('renderer:first-list-painted')
+      }
       logger.info(LogCategory.RENDERER, '已更新store', {
         storeFilesCount: useFileExplorerStore.getState().files.length,
         storeDirectoriesCount: useFileExplorerStore.getState().directories.length

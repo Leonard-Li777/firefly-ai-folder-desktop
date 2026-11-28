@@ -19,6 +19,15 @@
  * 因此把 userData 隔离提前到「任何捕获点之前」执行，使配置、日志、模型目录等
  * 全部收敛到当前实例的 userData 目录，与 worktree-env.ts 的隔离设计保持一致。
  */
+import { performance } from 'node:perf_hooks'
+import { initStartupTimeline } from '@pro/perf/startup-timeline'
 import { initWorktreeEnvironment } from './worktree-env'
 
+// 必须在主进程任何业务模块求值前采集启动时间基准点（W0-02）
+const bootstrapStartAbsTs = performance.timeOrigin + performance.now()
+
 export const worktreeInfo = initWorktreeEnvironment()
+
+// 严格在 initWorktreeEnvironment() 完成 app.setPath('userData') 后初始化启动时间线，
+// 确保读取的是隔离后的 <userData>/perf-flags.json 而非共享裸目录（V-01）。
+initStartupTimeline(bootstrapStartAbsTs, { userDataDir: worktreeInfo.userDataDir })

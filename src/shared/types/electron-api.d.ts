@@ -387,6 +387,15 @@ declare global {
       // 应用是否已打包（用于 PostHog 等服务的放行判断）
       isPackaged: boolean
 
+      // 启动时间线采集开关（与主进程 perf-flags / 环境变量对齐，关闭时渲染端零上报）
+      isStartupTimelineEnabled?: boolean
+
+      // 系统诊断日志（支持复用上报启动时间线）
+      writeDiagnosticLog?: (
+        filename: string,
+        content: string
+      ) => Promise<{ success: boolean; path?: string; error?: string }>
+
       // 系统日志
       onLogForwarded: (
         callback: (payload: {
