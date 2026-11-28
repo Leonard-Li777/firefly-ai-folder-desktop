@@ -1774,7 +1774,10 @@ export class ConfigDbManager {
     // 同时通过常规 config:change 通道广播，确保 useConfigStore 缓存刷新
     try {
       const { ConfigOrchestrator } = require('../../config/config-orchestrator')
-      const flattened = ConfigOrchestrator.getInstance().getFlattenedConfig()
+      const { filterBroadcastConfigPayload } = require('../../main/power-hub')
+      const flattened = filterBroadcastConfigPayload(
+        ConfigOrchestrator.getInstance().getFlattenedConfig()
+      )
       allWindows.forEach(win => {
         if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
           win.webContents.send('config:change', flattened)

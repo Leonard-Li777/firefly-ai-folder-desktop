@@ -6,7 +6,8 @@ import { ChildProcess, spawn } from 'node:child_process'
 import * as crypto from 'node:crypto'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import { app, BrowserWindow, dialog, powerMonitor, shell } from 'electron'
+import { app, BrowserWindow, dialog, shell } from 'electron'
+import { subscribePowerEvent } from '../../../main/power-hub'
 import { Agent as UndiciAgent, Dispatcher } from 'undici'
 import {
   ResourceLocator,
@@ -798,22 +799,20 @@ export class OmniService {
     }
   }
 
-  /** 注册系统休眠唤醒（powerMonitor.resume）纯事件唤醒源 */
+  /** 注册系统休眠唤醒（PowerEventHub resume）纯事件唤醒源 */
   private registerPowerResumeWakeup(): void {
     if (this.powerResumeListener) return
     try {
-      if (powerMonitor && typeof powerMonitor.on === 'function') {
-        const listener = () => {
-          logger.info(
-            LogCategory.SYSTEM,
-            '[OmniService] 检测到系统从休眠唤醒 (powerMonitor.resume)，重读发现文件并唤醒 SSE'
-          )
-          this.mountDiscoveryWatcher()
-          this.syncFromDiscoveryFileOnce({ resetFailures: true })
-        }
-        this.powerResumeListener = listener
-        powerMonitor.on('resume', listener)
+      const listener = () => {
+        logger.info(
+          LogCategory.SYSTEM,
+          '[OmniService] 检测到系统从休眠唤醒 (PowerEventHub.resume)，重读发现文件并唤醒 SSE'
+        )
+        this.mountDiscoveryWatcher()
+        this.syncFromDiscoveryFileOnce({ resetFailures: true })
       }
+      this.powerResumeListener = listener
+      subscribePowerEvent('resume', listener, { id: 'omni-service', resumeOffsetMs: 150 })
     } catch {}
   }
 

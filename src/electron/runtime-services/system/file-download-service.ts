@@ -36,17 +36,18 @@ if (typeof Uint8Array !== 'undefined') {
   } catch {}
 }
 
-import AdmZip from 'adm-zip'
+import type AdmZip from 'adm-zip'
 
 /**
  * adm-zip 是 CJS 包，`module.exports` 即构造器本体。若被 Bun/rollup/vm 等环境二次包裹成
  * `{ default: AdmZip }`（命名空间对象），直接 `new` 会抛 `AdmZip is not a constructor`。
- * 这里做一次构造器归一化，同时兼容 CJS 默认导出与 ES 默认导出两种形态。
+ * 这里做一次按需动态加载与构造器归一化，既避免启动热路径求值，又兼容 CJS/ESM 两种形态。
  */
-const AdmZipCtor: typeof AdmZip =
-  typeof AdmZip === 'function'
-    ? AdmZip
-    : ((AdmZip as unknown as { default: typeof AdmZip }).default as typeof AdmZip)
+async function getAdmZipCtor(): Promise<typeof AdmZip> {
+  const mod = (await import('adm-zip')) as unknown
+  const maybeDefault = (mod as { default?: typeof AdmZip }).default
+  return typeof maybeDefault === 'function' ? maybeDefault : (mod as typeof AdmZip)
+}
 
 export interface DownloadProgress {
   percent: number // 0-100
@@ -927,6 +928,7 @@ export async function safeExtractZip(
     let useFallbackExtractor = false
     try {
       // 传入 latin1 字节双射 decoder 防止不同非 UTF-8 中文名在默认 UTF-8 下均解成 \uFFFD 导致构造期误判 Duplicate entry name
+      const AdmZipCtor = await getAdmZipCtor()
       const zip = new AdmZipCtor(zipFilePath, {
         decoder: {
           encode: (data: string) => Buffer.from(data, 'latin1'),

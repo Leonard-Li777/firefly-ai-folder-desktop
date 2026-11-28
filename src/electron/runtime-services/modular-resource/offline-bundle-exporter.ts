@@ -13,7 +13,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
-import JSZip from 'jszip'
+import type JSZip from 'jszip'
 import * as yauzl from 'yauzl'
 import { PluginPathResolver } from '@firefly/shared'
 import { computeFileStreamSha256, computeResourceDirSha256 } from './deterministic-hasher'
@@ -390,6 +390,7 @@ export class OfflineBundleExporter {
       )
 
       // 4. 构建 Zip 包并边写边算流式哈希 (Streaming Hash-on-Write)
+      const { default: JSZip } = await import('jszip')
       const zip = new JSZip()
 
       // 4.1 构建根总包元数据 bundle.manifest.json (不可信索引，删除自指哈希)

@@ -1,4 +1,5 @@
-import { app, BrowserWindow, shell, powerMonitor } from 'electron'
+import { app, BrowserWindow, shell } from 'electron'
+import { subscribePowerEvent } from '../../main/power-hub'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as crypto from 'crypto'
@@ -192,18 +193,19 @@ export class AutoUpdateService {
       })
     }, this.POLL_INTERVAL_MS)
 
-    // P2-5：系统从休眠/待机恢复后 30s 静默补检，捕获长待机期间错过的更新窗口
-    if (powerMonitor) {
-      this.resumeHandler = () => {
-        logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 系统唤醒，30s 后静默补检更新 (P2-5)...')
-        setTimeout(() => {
-          this.checkForUpdates(false).catch(err => {
-            logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 唤醒后补检更新失败:', err)
-          })
-        }, 30 * 1000)
-      }
-      powerMonitor.on('resume', this.resumeHandler)
+    // P2-5：系统从休眠/待机恢复后经 PowerEventHub 错峰 2000ms 再静默补检
+    this.resumeHandler = () => {
+      logger.debug(LogCategory.SYSTEM, '[AutoUpdater] 系统唤醒，30s 后静默补检更新 (P2-5)...')
+      setTimeout(() => {
+        this.checkForUpdates(false).catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[AutoUpdater] 唤醒后补检更新失败:', err)
+        })
+      }, 30 * 1000)
     }
+    subscribePowerEvent('resume', this.resumeHandler, {
+      id: 'auto-update-service',
+      resumeOffsetMs: 2000
+    })
   }
 
   private async initializeUpdaterAsync(): Promise<void> {

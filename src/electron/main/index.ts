@@ -105,6 +105,12 @@ import {
 import { deepLinkManager } from './deep-link'
 import { initStartupGates, settleGateOk, settleGateFailed } from './startup-gates'
 import { getPerfFlagsSnapshot } from './perf-flags'
+import {
+  initPowerEventHub,
+  disposePowerEventHub,
+  shouldSkipConfigBroadcast,
+  filterBroadcastConfigPayload
+} from './power-hub'
 import { t } from '@app/languages'
 
 // 1. Worktree 实例环境与 userData 隔离已在 worktree-bootstrap 模块求值阶段完成
@@ -709,9 +715,15 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
   })
 })
 
-ConfigOrchestrator.getInstance().on('unified-change', async newConfig => {
+ConfigOrchestrator.getInstance().on('unified-change', async (newConfig, prevConfig) => {
+  if (shouldSkipConfigBroadcast(newConfig, prevConfig)) {
+    return
+  }
+  const filtered = filterBroadcastConfigPayload(newConfig)
   BrowserWindow.getAllWindows().forEach(win => {
-    win.webContents.send('config:change', newConfig)
+    if (!win.isDestroyed()) {
+      win.webContents.send('config:change', filtered)
+    }
   })
 })
 
@@ -845,6 +857,7 @@ mark('mod:eval:end')
 
 app.on('ready', async () => {
   mark('app:ready')
+  initPowerEventHub()
   const perfFlags = getPerfFlagsSnapshot(app.getPath('userData'))
   initStartupGates({ bypassAll: !perfFlags.startup.earlyWindow })
   // ST-P0-1：ready 首步立即弹出启动画面，解除主窗/splash 与网络及外部进程的串行阻塞
@@ -1238,6 +1251,7 @@ app.on('before-quit', event => {
       await devRuntimeController.revokeAsync()
       // 精准清理所有名下登记的子进程
       processReaper.cleanup()
+      disposePowerEventHub()
       // 停止 W0-03 IPC/定时器诊断，如有落盘目标或显式采样开关则先导出摘要再还原原生定时器与 send
       if (isIpcSendCounterInstalled() || isTimerWakeSamplerRunning()) {
         const ipcReportPath = process.env.FF_IPC_COUNTER_REPORT_PATH

@@ -6,7 +6,8 @@ import { ChildProcess, spawn, execSync } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
-import { app, BrowserWindow, powerMonitor } from 'electron'
+import { app, BrowserWindow } from 'electron'
+import { subscribePowerEvent } from '../../../main/power-hub'
 import {
   ResourceLocator,
   logger,
@@ -382,12 +383,14 @@ export class EngineBridgeService {
           this.handleWindowFocusRefresh()
         })
       }
-      // 唤醒源 5：系统休眠唤醒后主动重读发现文件并无闪烁重建 SSE 连接
-      if (powerMonitor && typeof powerMonitor.on === 'function') {
-        powerMonitor.on('resume', () => {
+      // 唤醒源 5：通过 PowerEventHub 订阅系统休眠唤醒（0ms 首顺位错峰，无闪烁重建 SSE 连接）
+      subscribePowerEvent(
+        'resume',
+        () => {
           this.handleSystemResume()
-        })
-      }
+        },
+        { id: 'engine-bridge', resumeOffsetMs: 0 }
+      )
       const cleanExitSync = () => this.stopSyncForSignal()
       process.once('exit', cleanExitSync)
       process.once('SIGINT', cleanExitSync)

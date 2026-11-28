@@ -65,7 +65,11 @@ export async function registerConfigDbTaxonomySelfHeal(): Promise<void> {
       const manager = ConfigDbManager.getInstance()
       manager.clearUnresolvableCodeCache()
       void manager.triggerEmptyTableSelfHeal().catch(err => {
-        logger.warn(LogCategory.CONFIG, '[ConfigDbManager] onInstanceChanged 触发词表自愈异常:', err)
+        logger.warn(
+          LogCategory.CONFIG,
+          '[ConfigDbManager] onInstanceChanged 触发词表自愈异常:',
+          err
+        )
       })
     })
   }
@@ -75,7 +79,11 @@ export async function registerConfigDbTaxonomySelfHeal(): Promise<void> {
     await ConfigDbManager.getInstance()
       .triggerEmptyTableSelfHeal()
       .catch(err => {
-        logger.warn(LogCategory.CONFIG, '[ConfigDbManager] ensureRunning pull 触发词表自愈异常:', err)
+        logger.warn(
+          LogCategory.CONFIG,
+          '[ConfigDbManager] ensureRunning pull 触发词表自愈异常:',
+          err
+        )
       })
   }
 }
@@ -389,8 +397,7 @@ export async function startDatabaseRuntimeWatchers(): Promise<void> {
   }
 
   try {
-    const { tombstoneGCService } =
-      await import('../runtime-services/modular-resource/tombstone-gc')
+    const { tombstoneGCService } = await import('../runtime-services/modular-resource/tombstone-gc')
     const { modularResourceService } =
       await import('../runtime-services/system/modular-resource-service')
     const persistenceFile = path.join(
@@ -1399,8 +1406,9 @@ export async function initializeFullServices(): Promise<void> {
 
     // ST-P1-8：将更新缓存清理与差分基线播种延后至 SchedulerService.runWhenIdle，不阻塞启动关键路径
     void import('@pro/perf/scheduler')
-      .then(({ runWhenIdle }) => {
-        runWhenIdle(
+      .then(({ getSchedulerService }) => {
+        getSchedulerService().runWhenIdle(
+          'initialization:updater-cleanup-and-baseline-seed',
           async () => {
             try {
               const { computeUpdaterCacheDir, seedBaselineInstaller } =
@@ -1410,7 +1418,12 @@ export async function initializeFullServices(): Promise<void> {
               const region = resolveAppRegion() // 'cn' | 'intl'
               const updaterCacheDir = computeUpdaterCacheDir(localAppData, region)
 
-              if (await fs.promises.access(updaterCacheDir).then(() => true, () => false)) {
+              if (
+                await fs.promises.access(updaterCacheDir).then(
+                  () => true,
+                  () => false
+                )
+              ) {
                 const files = await fs.promises.readdir(updaterCacheDir)
                 for (const f of files) {
                   const isTemp =

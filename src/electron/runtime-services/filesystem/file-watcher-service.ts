@@ -188,7 +188,7 @@ class FileWatcherService {
         depth: 1, // 监听根层级及其直接子目录，检测新子目录创建；文件变更由 addDir→syncDirectory 惰性扫描
         awaitWriteFinish: {
           stabilityThreshold: 2000, // 文件稳定2秒后才触发事件（等待文件写入完成）
-          pollInterval: 100
+          pollInterval: 250 // TM-04 / J-11 第3步（D-01）：在途文件轮询间隔收敛至 250ms
         },
         ignored: (filePath: string) => {
           // 检查是否应该忽略此文件

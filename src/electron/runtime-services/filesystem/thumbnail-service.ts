@@ -8,7 +8,6 @@ import fs from 'node:fs/promises'
 import fsSync from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import fixPath from 'fix-path'
 import { pathToFileURL } from 'node:url'
 import {
   logger,
@@ -22,20 +21,8 @@ import {
   commonResourcePathService,
   COMMON_THUMBNAILS_DIR_NAME
 } from './common-resource-path-service'
-import sharp from 'sharp'
+import type SharpFn from 'sharp'
 import { t } from '@app/languages'
-
-// 在 macOS 和 Linux 上修复 PATH 环境变量
-if (process.platform !== 'win32' && process.env.NODE_ENV !== 'test') {
-  try {
-    const fixPathFunc = typeof fixPath === 'function' ? fixPath : (fixPath as any).default
-    if (typeof fixPathFunc === 'function') {
-      fixPathFunc()
-    }
-  } catch (e) {
-    console.error('Failed to fix PATH in ThumbnailService:', e)
-  }
-}
 
 // 旧版工作区虚拟目录常量（仅用于历史缩略图清理与只读懒兼容）
 const VIRTUAL_DIRECTORY_FOLDER = '.VirtualDirectory'
@@ -75,28 +62,48 @@ export interface ThumbnailResult {
 export class ThumbnailService {
   /** 失败的缩略图生成负向缓存集合 */
   private failedThumbnailsSet = new Set<string>()
+  private sharpModule: typeof SharpFn | null = null
+  private sharpLoadPromise: Promise<typeof SharpFn> | null = null
 
-  constructor() {
-    // 显式配置 Sharp 图像处理引擎的堆外内存上限与缓存阈值
-    try {
-      sharp.cache({ memory: 32, files: 20, items: 100 })
-      sharp.concurrency(Math.max(1, Math.floor(os.cpus().length / 2)))
-      loggingService.info(
-        LogCategory.FILE_PROCESSOR,
-        `[缩略图服务] 初始化 Sharp 配置: memory=32MB, files=20, items=100, concurrency=${Math.max(1, Math.floor(os.cpus().length / 2))}`
-      )
-    } catch (error) {
-      loggingService.warn(LogCategory.FILE_PROCESSOR, `[缩略图服务] 初始化 Sharp 配置失败:`, error)
+  private async getSharp(): Promise<typeof SharpFn> {
+    if (this.sharpModule) return this.sharpModule
+    if (!this.sharpLoadPromise) {
+      this.sharpLoadPromise = import('sharp')
+        .then(mod => {
+          const sharpFn = ((mod as any).default ?? mod) as typeof SharpFn
+          try {
+            sharpFn.cache({ memory: 32, files: 20, items: 100 })
+            sharpFn.concurrency(Math.max(1, Math.floor(os.cpus().length / 2)))
+            loggingService.info(
+              LogCategory.FILE_PROCESSOR,
+              `[缩略图服务] 按需初始化 Sharp 配置: memory=32MB, files=20, items=100, concurrency=${Math.max(1, Math.floor(os.cpus().length / 2))}`
+            )
+          } catch (error) {
+            loggingService.warn(
+              LogCategory.FILE_PROCESSOR,
+              '[缩略图服务] 初始化 Sharp 配置失败:',
+              error
+            )
+          }
+          this.sharpModule = sharpFn
+          return sharpFn
+        })
+        .catch(err => {
+          this.sharpLoadPromise = null
+          throw err
+        })
     }
+    return this.sharpLoadPromise
   }
 
   /**
    * 释放临时解码内存
    */
   public releaseSharpMemory(): void {
+    if (!this.sharpModule) return
     try {
-      sharp.cache(false)
-      sharp.cache({ memory: 32, files: 20, items: 100 })
+      this.sharpModule.cache(false)
+      this.sharpModule.cache({ memory: 32, files: 20, items: 100 })
     } catch (error) {
       logger.warn(LogCategory.FILE_PROCESSOR, `[缩略图服务] 释放 Sharp 缓存失败:`, error)
     }
@@ -186,6 +193,7 @@ export class ThumbnailService {
       const buffer = thumbnail.toPNG()
 
       // 使用Sharp转换为 WebP
+      const sharp = await this.getSharp()
       await sharp(buffer).webp({ quality: 90 }).toFile(outputPath)
 
       logger.debug(
@@ -221,6 +229,7 @@ export class ThumbnailService {
         `[缩略图服务] 尝试使用Sharp直接生成图片缩略图: ${filePath}`
       )
 
+      const sharp = await this.getSharp()
       const sharpInstance = sharp(filePath)
       if (size && size > 0) {
         sharpInstance.resize(size, size, { fit: 'inside', withoutEnlargement: true })
@@ -535,6 +544,7 @@ export class ThumbnailService {
       )
 
       // 优先使用 Sharp 进行全尺寸转码
+      const sharp = await this.getSharp()
       try {
         await sharp(filePath).webp({ quality: 90 }).toFile(transcodedAbsPath)
 

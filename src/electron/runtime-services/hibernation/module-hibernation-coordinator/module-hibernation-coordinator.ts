@@ -3348,7 +3348,37 @@ export class ModuleHibernationCoordinator {
    */
   setupPowerMonitorIntegration(pm?: IPowerMonitorService): void {
     const powerMonitor = pm ?? this.powerMonitorServiceInstance
-    if (!powerMonitor) return
+    if (!powerMonitor) {
+      const { getPowerEventHub } = require('../../../main/power-hub')
+      const hub = getPowerEventHub()
+      if (!hub) return
+      hub.on(
+        'lock-screen',
+        () => {
+          logger.info(LogCategory.SYSTEM, '[Coordinator] 收到锁屏事件 (lock-screen)，执行即时节能')
+          this.handlePowerEventImmediateEviction()
+        },
+        { id: 'module-hibernation-lock' }
+      )
+      hub.on(
+        'suspend',
+        () => {
+          logger.info(LogCategory.SYSTEM, '[Coordinator] 收到休眠挂起事件 (suspend)，执行即时节能')
+          this.handlePowerEventImmediateEviction()
+        },
+        { id: 'module-hibernation-suspend' }
+      )
+      hub.on(
+        'resume',
+        () => {
+          logger.info(LogCategory.SYSTEM, '[Coordinator] 收到系统恢复事件 (resume)，执行对账')
+          void this.reconcileSuppressedIdentities()
+          void this.triggerOmniModuleLiveReconcile(true)
+        },
+        { id: 'module-hibernation-resume', resumeOffsetMs: 800 }
+      )
+      return
+    }
 
     this.powerMonitorServiceInstance = powerMonitor
 

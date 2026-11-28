@@ -14,7 +14,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
-import JSZip from 'jszip'
+import type JSZip from 'jszip'
 import * as yauzl from 'yauzl'
 import {
   logger,
@@ -320,6 +320,7 @@ export class OfflinePackageService {
       }
     }
 
+    const { default: JSZip } = await import('jszip')
     const zip = new JSZip()
     const pluginsRootDir = service.getPluginsRootDir()
     const ssotManifestDir = PluginPathResolver.getModuleManifestDirForRoot(pluginsRootDir, moduleId)
@@ -1227,6 +1228,7 @@ export class OfflinePackageService {
     }
 
     const fileBuffer = fs.readFileSync(archivePath)
+    const { default: JSZip } = await import('jszip')
     const zip = await JSZip.loadAsync(fileBuffer, {
       decodeFileName: (bytes: string[] | Buffer | Uint8Array) =>
         Array.isArray(bytes)

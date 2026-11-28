@@ -112,12 +112,14 @@ export class PluginWatchdogGuard {
     if (options?.powerMonitor) {
       this.bindPowerMonitor(options.powerMonitor)
     } else {
-      // 尝试在 Electron 运行时安全绑定
+      // 优先通过 PowerEventHub 接入统一 resume 错峰队列
       try {
-        const { powerMonitor } = require('electron')
-        if (powerMonitor) {
-          this.bindPowerMonitor(powerMonitor)
-        }
+        const { subscribePowerEvent } = require('../../main/power-hub')
+        this.onResumeListener = () => this.handleSystemResume()
+        subscribePowerEvent('resume', this.onResumeListener, {
+          id: 'plugin-watchdog-guard',
+          resumeOffsetMs: 1200
+        })
       } catch (_) {}
     }
   }
