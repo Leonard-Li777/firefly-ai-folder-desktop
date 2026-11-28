@@ -1,6 +1,7 @@
 import chokidar from 'chokidar'
 import path from 'node:path'
 import fs from 'node:fs'
+import { existsAsync, readdirTyped, statOrNull, statOrThrow, mapLimit } from '../../infra/fs'
 import {
   logger,
   LogCategory,
@@ -365,25 +366,41 @@ class FileWatcherService {
       const diskFileMap = new Map<string, fs.Stats>()
       const diskDirSet = new Set<string>()
 
-      if (!fs.existsSync(dirPath)) return
-      const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+      // P0-1：目录存在判定 + 读取 + stat 全链路异步化，主进程不再被同步 I/O 阻塞。
+      // existsAsync 与 existsSync 等价（内部复用 statOrNull，吞掉全部错误）。
+      if (!(await existsAsync(dirPath))) return
+      const entries = await readdirTyped(dirPath)
 
+      // shouldIngressFile 门禁与 shouldIgnoreFile 短路位置保持不变：
+      // 先按原顺序完成分流与门禁，再对通过门禁的文件并发 stat，最后按原索引回填。
+      const filePaths: string[] = []
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name)
         if (shouldIgnoreFile(fullPath, entry.name, this.ignoreRules)) continue
 
         if (entry.isFile()) {
-          // 门禁 B：白名单首行硬阻断，未准入文件彻底短路，绝对不触发 fs.statSync、落库与加入队列
+          // 门禁 B：白名单首行硬阻断，未准入文件彻底短路，绝对不触发 stat、落库与加入队列
           if (!shouldIngressFile(fullPath, false, allowedExts, this.ignoreRules)) continue
-          try {
-            diskFileMap.set(fullPath, fs.statSync(fullPath))
-          } catch (e) {
-            logger.warn(LogCategory.FILE_WATCHER, '同步目录时 stat 文件失败:', fullPath, e)
-          }
+          filePaths.push(fullPath)
         } else if (entry.isDirectory()) {
           diskDirSet.add(fullPath)
         }
       }
+
+      // mapLimit(32) 并发 stat 并按原索引回填；statOrThrow 保留原「stat 抛错进 catch」分支，
+      // 失败仍记同级 logger.warn（原第 380-382 行行为），且不写入 diskFileMap。
+      const statResults = await mapLimit(filePaths, 32, async fullPath => {
+        try {
+          return await statOrThrow(fullPath)
+        } catch (e) {
+          logger.warn(LogCategory.FILE_WATCHER, '同步目录时 stat 文件失败:', fullPath, e)
+          return null
+        }
+      })
+      filePaths.forEach((fullPath, index) => {
+        const stats = statResults[index]
+        if (stats) diskFileMap.set(fullPath, stats)
+      })
       logger.debug(
         LogCategory.FILE_WATCHER,
         `单层级扫描完成，找到 ${diskFileMap.size} 个文件, ${diskDirSet.size} 个子目录: ${dirPath}`
@@ -529,12 +546,13 @@ class FileWatcherService {
 
       this.logFileEvent('新增', filePath)
 
-      if (!fs.existsSync(filePath)) {
+      // P0-2：原 existsSync + statSync 两次磁盘访问合并为单次 statOrNull，消除二者间竞态。
+      // await 位于 processingFiles.add 之后，不插入 has 与 add 之间（INV-4）。
+      const stats = await statOrNull(filePath)
+      if (!stats) {
         logger.warn(LogCategory.FILE_WATCHER, `文件不存在: ${filePath}`)
         return
       }
-
-      const stats = fs.statSync(filePath)
       if (!stats.isFile()) {
         logger.debug(LogCategory.FILE_WATCHER, `跳过非文件: ${filePath}`)
         return
@@ -649,12 +667,13 @@ class FileWatcherService {
     try {
       this.logFileEvent('修改', filePath)
 
-      if (!fs.existsSync(filePath)) {
+      // P0-2：原 existsSync + statSync 两次磁盘访问合并为单次 statOrNull，消除二者间竞态。
+      // processingFiles.add 仍在首个 await 之前，await 不插入 has 与 add 之间（INV-4）。
+      const stats = await statOrNull(filePath)
+      if (!stats) {
         logger.warn(LogCategory.FILE_WATCHER, `文件不存在: ${filePath}`)
         return
       }
-
-      const stats = fs.statSync(filePath)
       if (!stats.isFile()) {
         logger.debug(LogCategory.FILE_WATCHER, `跳过非文件: ${filePath}`)
         return

@@ -67,9 +67,25 @@ export const SYNCHRONOUS_ALLOWLIST: readonly SyncAllowlistEntry[] = [
     reason:
       'process.on("exit") 触发时 Node 事件循环已不再驱动异步 I/O，仅允许通过同步尾刷保存未确认日志批次与缓冲（INV-6 / IO-07）',
     removalCondition: '仅当日志写入迁出主进程到独立常驻守护进程后移除'
+  },
+  {
+    file: 'apps/desktop/src/electron/main/perf-flags.ts',
+    function: 'readPerfFlagsSnapshotSync',
+    ticket: 'TM-W2 / B8',
+    reason:
+      '窗口 additionalArguments 在 bootstrap 期配置库尚不可读时必须同步拿到 perf-flags 快照（<userData>/perf-flags.json 容错读，预算 <10ms；INV-6 / [V-01]，启动性能计划 §10.3）',
+    removalCondition:
+      'W3 启动分层落地、窗口创建整体后移至配置就绪屏障之后（additionalArguments 改由 ConfigOrchestrator 异步快照供给）时移除'
+  },
+  {
+    file: 'apps/desktop/src/electron/main/perf-flags.ts',
+    function: 'getPerfFlagsSnapshot',
+    ticket: 'TM-W2 / B8',
+    reason:
+      '缓存包装仅首次调用透传 readPerfFlagsSnapshotSync 的启动前同步读（4 处窗口创建共用同一快照），无独立新增同步 I/O（INV-6 / [V-01]）',
+    removalCondition: '随 readPerfFlagsSnapshotSync 豁免一并移除（W3 窗口创建后移至配置就绪屏障之后）'
   }
   // 后续工单预留登记规范（不在本工单范围，须在对应工单落地时按 `file + function + ticket + reason + removalCondition` 正式入表）：
-  // - W1 `B8`：`worktree-bootstrap` 之后读取 `<userData>/perf-flags.json` 的独立具名同步读函数；
   // - W3 `J-06`（`apps/desktop/src/electron/main/process-reaper.ts`）：当前退出 `cleanup()` → `killVerified(..., 'fast')`
   //   与启动深校验 `cleanupStaleProcesses()` → `killVerified(..., 'deep')` 共用同一函数，按 `file:function` 登记会把启动路径一并豁免，
   //   与「启动阶段改异步」直接冲突。须待拆出独立退出同步函数（含 `writeFileAtomicSync` 退出写盘）后再精确入表（见 ADR-0075 决策 4 / ticket 23）。

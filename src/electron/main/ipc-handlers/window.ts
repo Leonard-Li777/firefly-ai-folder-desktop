@@ -2,6 +2,8 @@ import * as path from 'path'
 import { ipcMain, BrowserWindow, dialog, app } from 'electron'
 import { pathToFileURL } from 'url'
 import { t } from '@app/languages'
+import { getWorktreeInfo } from '../worktree-env'
+import { getCachedPerfFlagsArguments } from '../perf-flags'
 
 export function registerWindowIPCHandlers() {
   // 对话框相关
@@ -44,7 +46,9 @@ export function registerWindowIPCHandlers() {
         additionalArguments: [
           `--is-packaged=${app.isPackaged}`,
           `--app-region=${process.env.APP_REGION || 'intl'}`,
-          `--preview-path=${filePath}`
+          `--preview-path=${filePath}`,
+          // bootstrap 期配置库不可读时经 perf-flags.json 镜像同步注入启动开关（TM-W2 / B8）
+          ...getCachedPerfFlagsArguments(getWorktreeInfo()?.userDataDir || app.getPath('userData'))
         ]
       }
     })
