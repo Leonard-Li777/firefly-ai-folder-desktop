@@ -79,7 +79,6 @@ import {
   type PendingDeletionItem
 } from '../modular-resource'
 import { ModuleSizeCalculator } from '../modular-resource/module-size-calculator'
-import { calculateDirBytesAsync } from '../modular-resource/workers/module-size-worker'
 import {
   FileDownloadService,
   fileDownloadService,
@@ -901,10 +900,51 @@ export class ModularResourceService implements IModularResourceService {
   }
 
   /**
-   * 显式失效模块体积缓存
+   * 显式失效模块体积缓存，并联动失效依赖插件/目录的能力探针缓存（Omni / LLM / Poppler）
    */
   public invalidateUsedBytesCache(moduleId?: string): void {
     this.moduleSizeCalculator.invalidate(moduleId)
+    void this.invalidateCapabilityProbeCaches()
+  }
+
+  /**
+   * 联动失效三大能力探针缓存（动态 import 规避服务间循环引用，失败显式告警不静默吞错）
+   */
+  public async invalidateCapabilityProbeCaches(): Promise<void> {
+    const tasks: Array<{ name: string; run: () => Promise<void> }> = [
+      {
+        name: 'omniService.invalidateExecutableProbeCache',
+        run: async () => {
+          const { omniService } = await import('./omni-service/omni-service')
+          omniService.invalidateExecutableProbeCache()
+        }
+      },
+      {
+        name: 'llmGatewayService.invalidateLocalProbeCache',
+        run: async () => {
+          const { llmGatewayService } = await import('../llm/llm-gateway-service')
+          llmGatewayService.invalidateLocalProbeCache()
+        }
+      },
+      {
+        name: 'popplerDetector.invalidateCache',
+        run: async () => {
+          const { popplerDetector } = await import('./poppler-detector')
+          popplerDetector.invalidateCache()
+        }
+      }
+    ]
+
+    const results = await Promise.allSettled(tasks.map(t => t.run()))
+    results.forEach((res, idx) => {
+      if (res.status === 'rejected') {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[ModularResource] 失效能力探针缓存失败 (${tasks[idx].name}):`,
+          res.reason
+        )
+      }
+    })
   }
 
   /**

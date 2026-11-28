@@ -6,9 +6,35 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
+
+vi.mock('electron-conf', () => ({
+  Conf: class MockConf {
+    store: Record<string, unknown> = {}
+    get() {
+      return undefined
+    }
+    set() {}
+  }
+}))
+
+vi.mock('electron', () => ({
+  app: {
+    getPath: () => os.tmpdir(),
+    isPackaged: false,
+    getVersion: () => '0.0.0',
+    getAppPath: () => process.cwd()
+  },
+  powerMonitor: {
+    on: vi.fn(),
+    removeListener: vi.fn()
+  }
+}))
 import { ResourceLocator } from '@firefly/shared'
-import { PopplerDetector } from '../poppler-detector'
-import { OmniService } from '../omni-service/omni-service'
+import { logger } from '@firefly/shared'
+import { PopplerDetector, popplerDetector } from '../poppler-detector'
+import { OmniService, omniService } from '../omni-service/omni-service'
+import { llmGatewayService } from '../../llm/llm-gateway-service'
+import { modularResourceService } from '../modular-resource-service-core'
 
 describe('Probe Result Cache (Ticket 29 / P2-4)', () => {
   let tempDir: string
@@ -65,5 +91,47 @@ describe('Probe Result Cache (Ticket 29 / P2-4)', () => {
     // 显式失效可清空可执行文件候选缓存
     omni.invalidateExecutableProbeCache()
     expect(omni.cachedExecutableCandidates).toBeNull()
+  })
+
+  it('ModularResourceService.invalidateUsedBytesCache 联动失效三大能力探针缓存', async () => {
+    const omniSpy = vi
+      .spyOn(omniService, 'invalidateExecutableProbeCache')
+      .mockImplementation(() => {})
+    const llmSpy = vi
+      .spyOn(llmGatewayService, 'invalidateLocalProbeCache')
+      .mockImplementation(() => {})
+    const popplerSpy = vi.spyOn(popplerDetector, 'invalidateCache').mockImplementation(() => {})
+
+    modularResourceService.invalidateUsedBytesCache('mod-test')
+
+    await vi.waitFor(() => {
+      expect(omniSpy).toHaveBeenCalledTimes(1)
+      expect(llmSpy).toHaveBeenCalledTimes(1)
+      expect(popplerSpy).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  it('invalidateCapabilityProbeCaches 单个探针失效异常时显式告警且不阻断其余探针失效', async () => {
+    const warnSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const omniSpy = vi
+      .spyOn(omniService, 'invalidateExecutableProbeCache')
+      .mockImplementation(() => {
+        throw new Error('mock omni invalidate error')
+      })
+    const llmSpy = vi
+      .spyOn(llmGatewayService, 'invalidateLocalProbeCache')
+      .mockImplementation(() => {})
+    const popplerSpy = vi.spyOn(popplerDetector, 'invalidateCache').mockImplementation(() => {})
+
+    await expect(modularResourceService.invalidateCapabilityProbeCaches()).resolves.toBeUndefined()
+
+    expect(omniSpy).toHaveBeenCalledTimes(1)
+    expect(llmSpy).toHaveBeenCalledTimes(1)
+    expect(popplerSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.stringContaining('omniService.invalidateExecutableProbeCache'),
+      expect.any(Error)
+    )
   })
 })

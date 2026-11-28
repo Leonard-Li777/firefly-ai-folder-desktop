@@ -16,6 +16,7 @@ import {
   WatchdogReason
 } from './plugin-types'
 import { PluginHost } from './plugin-host'
+import { subscribePowerEvent } from '../../main/power-hub'
 
 export interface IWatchdogPowerMonitor {
   on(event: 'resume', listener: () => void): this
@@ -84,6 +85,7 @@ export class PluginWatchdogGuard {
   private readonly emergencyKillThresholdBytes: number
   private readonly logger: NonNullable<PluginWatchdogGuardOptions['logger']>
   private onResumeListener: (() => void) | null = null
+  private unsubscribePowerHub: (() => void) | null = null
 
   constructor(options?: PluginWatchdogGuardOptions) {
     this.sampleIntervalMs = options?.sampleIntervalMs ?? 2000
@@ -114,13 +116,20 @@ export class PluginWatchdogGuard {
     } else {
       // 优先通过 PowerEventHub 接入统一 resume 错峰队列
       try {
-        const { subscribePowerEvent } = require('../../main/power-hub')
         this.onResumeListener = () => this.handleSystemResume()
-        subscribePowerEvent('resume', this.onResumeListener, {
+        const unsubscribe = subscribePowerEvent('resume', this.onResumeListener, {
           id: 'plugin-watchdog-guard',
           resumeOffsetMs: 1200
         })
-      } catch (_) {}
+        if (typeof unsubscribe === 'function') {
+          this.unsubscribePowerHub = unsubscribe
+        }
+      } catch (err) {
+        this.logger.warn(
+          '[PluginWatchdogGuard] 订阅 PowerEventHub resume 事件失败，将跳过自动休眠唤醒监听:',
+          err
+        )
+      }
     }
   }
 
@@ -135,6 +144,15 @@ export class PluginWatchdogGuard {
    * 绑定休眠唤醒事件源
    */
   public bindPowerMonitor(powerMonitor: IWatchdogPowerMonitor): void {
+    if (this.unsubscribePowerHub) {
+      try {
+        this.unsubscribePowerHub()
+      } catch (err) {
+        this.logger.warn('[PluginWatchdogGuard] 切换 powerMonitor 时退订 PowerEventHub 异常:', err)
+      } finally {
+        this.unsubscribePowerHub = null
+      }
+    }
     if (this.powerMonitor && this.onResumeListener) {
       this.powerMonitor.removeListener('resume', this.onResumeListener)
     }
@@ -272,8 +290,19 @@ export class PluginWatchdogGuard {
    */
   public dispose(): void {
     this.stopMonitoring()
+    if (this.unsubscribePowerHub) {
+      try {
+        this.unsubscribePowerHub()
+      } catch (err) {
+        this.logger.warn('[PluginWatchdogGuard] 退订 PowerEventHub resume 监听异常:', err)
+      } finally {
+        this.unsubscribePowerHub = null
+      }
+    }
     if (this.powerMonitor && this.onResumeListener) {
       this.powerMonitor.removeListener('resume', this.onResumeListener)
+      this.onResumeListener = null
+    } else if (!this.powerMonitor) {
       this.onResumeListener = null
     }
     this.registeredHosts.clear()

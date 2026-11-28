@@ -12,7 +12,6 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow, dialog, shell } from 'electron'
 import { existsAsync, statOrNull } from '../../../infra/fs'
-import { subscribePowerEvent } from '../../../main/power-hub'
 import { Agent as UndiciAgent, Dispatcher } from 'undici'
 import {
   ResourceLocator,

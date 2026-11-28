@@ -82,8 +82,6 @@ import {
   offlinePackageService,
   type PendingDeletionItem
 } from './'
-import { ModuleSizeCalculator } from './module-size-calculator'
-import { calculateDirBytesAsync } from './workers/module-size-worker'
 import {
   FileDownloadService,
   fileDownloadService,
@@ -362,6 +360,10 @@ export async function mrStateExecuteUpdateModuleState(
     if (existing.capability_slot === 'ai_engine_cpu') {
       await host.syncCpuEngineStateToConfig(false)
     }
+  }
+
+  if (patch.active !== undefined) {
+    host.invalidateUsedBytesCache(moduleId)
   }
 
   return host.buildModuleView(dao.modules.findByIdSync(moduleId)!)

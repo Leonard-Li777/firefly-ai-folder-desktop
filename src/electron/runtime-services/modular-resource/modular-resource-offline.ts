@@ -82,8 +82,6 @@ import {
   offlinePackageService,
   type PendingDeletionItem
 } from './'
-import { ModuleSizeCalculator } from './module-size-calculator'
-import { calculateDirBytesAsync } from './workers/module-size-worker'
 import {
   FileDownloadService,
   fileDownloadService,

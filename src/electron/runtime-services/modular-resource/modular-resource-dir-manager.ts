@@ -82,7 +82,6 @@ import {
   offlinePackageService,
   type PendingDeletionItem
 } from './'
-import { ModuleSizeCalculator } from './module-size-calculator'
 import { calculateDirBytesAsync } from './workers/module-size-worker'
 import {
   FileDownloadService,
@@ -337,7 +336,7 @@ export async function mrDirChangePluginDirectory(
 
   if (result.success) {
     host.oldDirCleanupDismissed = false
-    host.moduleSizeCalculator.invalidate()
+    host.invalidateUsedBytesCache()
   }
 
   return result
@@ -414,7 +413,7 @@ export async function mrDirApplyInitialPluginDirectory(
   //    ModularResourceService.getPluginsRootDir() 取得根目录。
   host.effectivePluginsRootDir = resolvedTarget
   process.env.FIREFLY_MODULES_ROOT = resolvedTarget
-  host.moduleSizeCalculator.invalidate()
+  host.invalidateUsedBytesCache()
   host.fastReadySnapshot.clear()
   host.repairPendingResources.clear()
 

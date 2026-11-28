@@ -82,8 +82,6 @@ import {
   offlinePackageService,
   type PendingDeletionItem
 } from './'
-import { ModuleSizeCalculator } from './module-size-calculator'
-import { calculateDirBytesAsync } from './workers/module-size-worker'
 import {
   FileDownloadService,
   fileDownloadService,
@@ -210,8 +208,7 @@ export async function mrInstallerInstallModule(
         dao.modules.updateInstallStateSync(moduleId, 'active')
       }
       host.liveProgress.delete(moduleId)
-      host.moduleSizeCalculator.invalidate()
-      host.moduleSizeCalculator.invalidate()
+      host.invalidateUsedBytesCache(moduleId)
       return host.buildModuleView(dao.modules.findByIdSync(moduleId)!)
     }
 
@@ -409,8 +406,7 @@ export async function mrInstallerInstallModule(
       }
 
       host.liveProgress.delete(moduleId)
-      host.moduleSizeCalculator.invalidate()
-      host.moduleSizeCalculator.invalidate()
+      host.invalidateUsedBytesCache(moduleId)
       return host.buildModuleView(dao.modules.findByIdSync(moduleId)!)
     } catch (err: any) {
       const errorMsg = err?.message || String(err)
@@ -1271,7 +1267,7 @@ export async function mrInstallerUninstallModule(
         })
     }
 
-    host.moduleSizeCalculator.invalidate()
+    host.invalidateUsedBytesCache(moduleId)
     return host.buildModuleView(dao.modules.findByIdSync(moduleId)!)
   })
 }
